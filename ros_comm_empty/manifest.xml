@@ -1,0 +1,13 @@
+<package>
+  <description brief="ros_comm_empty">
+
+     Empty package because rosmake in cturtle does not allow empty stacks
+
+  </description>
+  <author>Ken Conley</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+
+</package>
+
+

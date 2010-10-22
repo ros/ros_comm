@@ -1,0 +1,9 @@
+<stack>
+  <description brief="ros_comm">Empty version of the ros_comm stack for cturtle. This is stack is provided so that stacks can declare a dependency on it without having to separately branch for Diamondback.</description>
+  <author>Maintained by Ken Conley</author>
+  <license>BSD</license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/ros_comm</url>
+  <depend stack="ros" />
+
+</stack>
