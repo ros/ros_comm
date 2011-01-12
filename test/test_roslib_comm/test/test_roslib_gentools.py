@@ -33,8 +33,9 @@
 #
 # Revision $Id$
 
+PKG = 'test_roslib_comm'
 NAME = 'test_gentools'
-import roslib; roslib.load_manifest('test_roslib')
+import roslib; roslib.load_manifest(PKG)
 
 import os
 import string 
@@ -52,7 +53,7 @@ class TestGentools(unittest.TestCase):
         pass
         
     def _load_md5_tests(self, dir):
-        test_dir = os.path.join(roslib.packages.get_pkg_dir('test_roslib'), 'test', 'md5tests', dir)
+        test_dir = os.path.join(roslib.packages.get_pkg_dir(PKG), 'test', 'md5tests', dir)
         tests = {}
         for f in os.listdir(test_dir):
             path = os.path.join(test_dir, f)
@@ -131,4 +132,4 @@ class TestGentools(unittest.TestCase):
             self.assertEquals(len(md5s), len(files))
     
 if __name__ == '__main__':
-    rosunit.unitrun('test_roslib', NAME, TestGentools, sys.argv, coverage_packages=['roslib.gentools'])
+    rosunit.unitrun(PKG, NAME, TestGentools, sys.argv, coverage_packages=['roslib.gentools'])

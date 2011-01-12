@@ -53,25 +53,34 @@ def print_trans(old, new, indent):
     print '    ' * indent + ' * From: %s' % from_txt
     print '    ' * indent + '   To:   %s' % to_txt
 
+def handle_split(option, opt_str, value, parser):
+    parser.values.split = True
+    if len(parser.rargs) > 0 and parser.rargs[0].isdigit():
+        print >> sys.stderr, "Use of \"--split <MAX_SIZE>\" has been deprecated.  Please use --split --size <MAX_SIZE> or --split --duration <MAX_DURATION>"
+        parser.values.size = int(parser.rargs.pop(0))
+
 def record_cmd(argv):
     parser = optparse.OptionParser(usage="rosbag record TOPIC1 [TOPIC2 TOPIC3 ...]",
                                    description="Record a bag file with the contents of specified topics.",
                                    formatter=optparse.IndentedHelpFormatter())
 
-    parser.add_option("-a", "--all",           dest="all",           default=False, action="store_true",        help="record all topics")
-    parser.add_option("-e", "--regex",         dest="regex",         default=False, action="store_true",        help="match topics using regular expressions")
-    parser.add_option("-x", "--exclude",       dest="exclude_regex", default="",    action="store",             help="Exclude topics matching the follow regular expression (subtracts from -a or regex)")
-    parser.add_option("-q", "--quiet",         dest="quiet",         default=False, action="store_true",        help="suppress console output")
-    parser.add_option("-o", "--output-prefix", dest="prefix",        default=None,  action="store",             help="prepend PREFIX to beginning of bag name (name will always end with date stamp)")
-    parser.add_option("-O", "--output-name",   dest="name",          default=None,  action="store",             help="record to bag with name NAME.bag")
-    parser.add_option(      "--split",         dest="split",         default=0,     type='int', action="store", help="split bag into files of size SIZE MB", metavar="SIZE")
-    parser.add_option("-b", "--buffsize",      dest="buffsize",      default=256,   type='int', action="store", help="use an internal buffer of SIZE MB (Default: %default, 0 = infinite)", metavar="SIZE")
-    parser.add_option("-l", "--limit",         dest="num",           default=0,     type='int', action="store", help="only record NUM messages on each topic")
-    parser.add_option("-j", "--bz2",           dest="bz2",           default=False, action="store_true",        help="use BZ2 compression")
+    parser.add_option("-a", "--all",           dest="all",           default=False, action="store_true",          help="record all topics")
+    parser.add_option("-e", "--regex",         dest="regex",         default=False, action="store_true",          help="match topics using regular expressions")
+    parser.add_option("-x", "--exclude",       dest="exclude_regex", default="",    action="store",               help="exclude topics matching the follow regular expression (subtracts from -a or regex)")
+    parser.add_option("-q", "--quiet",         dest="quiet",         default=False, action="store_true",          help="suppress console output")
+    parser.add_option("-o", "--output-prefix", dest="prefix",        default=None,  action="store",               help="prepend PREFIX to beginning of bag name (name will always end with date stamp)")
+    parser.add_option("-O", "--output-name",   dest="name",          default=None,  action="store",               help="record to bag with name NAME.bag")
+    parser.add_option(      "--split",         dest="split",         default=False, callback=handle_split, action="callback",    help="split the bag when maximum size or duariton is reached")
+    parser.add_option(      "--size",          dest="size",                         type='int',   action="store", help="record a bag of maximum size SIZE", metavar="SIZE")
+    parser.add_option(      "--duration",      dest="duration",                     type='string',action="store", help="record a bag of maximum duration DURATION in seconds, unless 'm', or 'h' is appended.", metavar="DURATION")
+    parser.add_option("-b", "--buffsize",      dest="buffsize",      default=256,   type='int',   action="store", help="use an internal buffer of SIZE MB (Default: %default, 0 = infinite)", metavar="SIZE")
+    parser.add_option("-l", "--limit",         dest="num",           default=0,     type='int',   action="store", help="only record NUM messages on each topic")
+    parser.add_option(      "--node",          dest="node",          default=None,  type='string',action="store", help="record all topics subscribed to by a specific node")
+    parser.add_option("-j", "--bz2",           dest="bz2",           default=False, action="store_true",          help="use BZ2 compression")
 
     (options, args) = parser.parse_args(argv)
 
-    if len(args) == 0 and not options.all:
+    if len(args) == 0 and not options.all and not options.node:
         parser.error("You must specify a topic name or else use the '-a' option.")
 
     if options.prefix is not None and options.name is not None:
@@ -80,9 +89,8 @@ def record_cmd(argv):
     cmd = ['record']
 
     cmd.extend(['--buffsize', str(options.buffsize)])
-    cmd.extend(['--limit', str(options.num)])
-    cmd.extend(['--split', str(options.split)])
 
+    if options.num != 0:      cmd.extend(['--limit', str(options.num)])
     if options.quiet:         cmd.extend(["--quiet"])
     if options.prefix:        cmd.extend(["-o", options.prefix])
     if options.name:          cmd.extend(["-O", options.name])
@@ -90,6 +98,16 @@ def record_cmd(argv):
     if options.all:           cmd.extend(["--all"])
     if options.regex:         cmd.extend(["--regex"])
     if options.bz2:           cmd.extend(["--bz2"])
+    if options.split:
+        if not options.duration and not options.size:
+            parser.error("Split specified without giving a maximum duration or size")
+        cmd.extend(["--split"])
+        if options.duration:
+            cmd.extend(["--duration", options.duration])
+        if options.size:
+            cmd.extend(["--size", str(options.size)])
+    if options.node:
+        cmd.extend(["--node", options.node])
 
     cmd.extend(args)
 
@@ -99,8 +117,9 @@ def record_cmd(argv):
 def info_cmd(argv):
     parser = optparse.OptionParser(usage='rosbag info [options] BAGFILE1 [BAGFILE2 BAGFILE3 ...]',
                                    description='Summarize the contents of one or more bag files.')
-    parser.add_option("-y", "--yaml", dest="yaml", default=False, action="store_true", help="print information in YAML format")
-    parser.add_option("-k", "--key",  dest="key",  default=None,  action="store",      help="print information on the given key")
+    parser.add_option('-y', '--yaml', dest='yaml', default=False, action='store_true', help='print information in YAML format')
+    parser.add_option('-k', '--key',  dest='key',  default=None,  action='store',      help='print information on the given key')
+    parser.add_option(      '--freq', dest='freq', default=False, action='store_true', help='display topic message frequency statistics')
     (options, args) = parser.parse_args(argv)
 
     if len(args) == 0:
@@ -110,7 +129,7 @@ def info_cmd(argv):
 
     for i, arg in enumerate(args):
         try:
-            b = Bag(arg)
+            b = Bag(arg, 'r', skip_index=not options.freq)
             if options.yaml:
                 info = b._get_yaml_info(key=options.key)
                 if info is not None:
@@ -130,21 +149,37 @@ def info_cmd(argv):
             
     print
 
+
+def handle_topics(option, opt_str, value, parser):
+    topics = []
+    for arg in parser.rargs:
+        if arg[:2] == "--" and len(arg) > 2:
+            break
+        if arg[:1] == "-" and len(arg) > 1:
+            break
+        topics.append(arg)
+    parser.values.topics.extend(topics)
+    del parser.rargs[:len(topics)]
+
+
 def play_cmd(argv):
     parser = optparse.OptionParser(usage="rosbag play BAGFILE1 [BAGFILE2 BAGFILE3 ...]",
                                    description="Play back the contents of one or more bag files in a time-synchronized fashion.")
     parser.add_option("-q", "--quiet",        dest="quiet",      default=False, action="store_true", help="suppress console output")
     parser.add_option("-i", "--immediate",    dest="immediate",  default=False, action="store_true", help="play back all messages without waiting")
     parser.add_option("--pause",              dest="pause",      default=False, action="store_true", help="start in paused mode")
-    parser.add_option("--queue",              dest="queue",      default=0,     type='int', action="store", help="use an outgoing queue of size SIZE (defaults to %default)", metavar="SIZE")
+    parser.add_option("--queue",              dest="queue",      default=100,     type='int', action="store", help="use an outgoing queue of size SIZE (defaults to %default)", metavar="SIZE")
     parser.add_option("--clock",              dest="clock",      default=False, action="store_true", help="publish the clock time")
     parser.add_option("--hz",                 dest="freq",       default=100,   type='float', action="store", help="use a frequency of HZ when publishing clock time (default: %default)", metavar="HZ")
     parser.add_option("-d", "--delay",        dest="delay",      default=0.2,   type='float', action="store", help="sleep SEC seconds after every advertise call (to allow subscribers to connect)", metavar="SEC")
     parser.add_option("-r", "--rate",         dest="rate",       default=1.0,   type='float', action="store", help="multiply the publish rate by FACTOR", metavar="FACTOR")
     parser.add_option("-s", "--start",        dest="start",      default=0.0,   type='float', action="store", help="start SEC seconds into the bag files", metavar="SEC")
+    parser.add_option("--skip-empty",         dest="skip_empty", default=None,  type='float', action="store", help="skip regions in the bag with no messages for more than SEC seconds", metavar="SEC")
     parser.add_option("-l", "--loop",         dest="loop",       default=False, action="store_true", help="loop playback")
     parser.add_option("-k", "--keep-alive",   dest="keep_alive", default=False, action="store_true", help="keep alive past end of bag (useful for publishing latched topics)")
     parser.add_option("--try-future-version", dest="try_future", default=False, action="store_true", help="still try to open a bag file, even if the version number is not known to the player")
+    parser.add_option("--topics", dest="topics", default=[],  callback=handle_topics, action="callback", help="the list topics to play back")
+    parser.add_option("--bags",  help="the list bags to play back from")
 
     (options, args) = parser.parse_args(argv)
 
@@ -167,6 +202,11 @@ def play_cmd(argv):
     cmd.extend(['--rate', str(options.rate)])
     cmd.extend(['--delay', str(options.delay)])
     cmd.extend(['--start', str(options.start)])
+    if options.skip_empty:
+        cmd.extend(['--skip-empty', str(options.skip_empty)])
+
+    if options.topics:
+        cmd.extend(['--topics'] + options.topics + ['--bags'])
 
     cmd.extend(args)
 
@@ -583,7 +623,8 @@ def reindex_op(inbag, outbag, quiet):
     if inbag.version == 102:
         if quiet:
             try:
-                inbag.reindex()
+                for offset in inbag.reindex():
+                    pass
             except:
                 pass
 
@@ -592,7 +633,7 @@ def reindex_op(inbag, outbag, quiet):
         else:
             meter = ProgressMeter(outbag.filename, inbag.size)
             try:
-                for offset in inbag.reindex(True):
+                for offset in inbag.reindex():
                     meter.step(offset)
             except:
                 pass
@@ -606,13 +647,14 @@ def reindex_op(inbag, outbag, quiet):
     else:
         if quiet:
             try:
-                outbag.reindex()
+                for offset in outbag.reindex():
+                    pass
             except:
                 pass
         else:
             meter = ProgressMeter(outbag.filename, outbag.size)
             try:
-                for offset in outbag.reindex(True):
+                for offset in outbag.reindex():
                     meter.step(offset)
             except:
                 pass

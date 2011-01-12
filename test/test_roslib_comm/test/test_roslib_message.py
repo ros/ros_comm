@@ -29,7 +29,9 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-import roslib; roslib.load_manifest('test_roslib')
+
+PKG = 'test_roslib_comm'
+import roslib; roslib.load_manifest(PKG)
 
 import os
 import sys
@@ -48,7 +50,7 @@ class MessageTest(unittest.TestCase):
         # #2128: test that check_types works with a Header
         # #message. This is a weird case because Header has an aliased
         # #type and is the only ROS type for which that is true
-        from test_roslib.msg import HeaderTest
+        from test_roslib_comm.msg import HeaderTest
         x = HeaderTest()
         x._check_types()
         
@@ -299,7 +301,7 @@ d:
         self.assertEquals(val, roundtrip(val))
 
         # test array of Messages field. We can't use M4 or M5 because fill_message_args has to instantiate the embedded type
-        from test_roslib.msg import ArrayOfMsgs
+        from test_roslib_comm.msg import ArrayOfMsgs
         from std_msgs.msg import String, Time, MultiArrayLayout, MultiArrayDimension
         dims1 = [MultiArrayDimension(*args) for args in [('', 0, 0), ('x', 1, 2), ('y of z', 3, 4)]]
         dims2 = [MultiArrayDimension('hello world', 91280, 1983274)]
@@ -377,7 +379,7 @@ d:
     def test_fill_message_args_embed_time(self):
         from roslib.rostime import Time, Duration
         from roslib.message import fill_message_args
-        from test_roslib.msg import FillEmbedTime
+        from test_roslib_comm.msg import FillEmbedTime
 
         # test fill_message_args with embeds and time vals
         # time t
@@ -473,7 +475,7 @@ d:
         
     def test_fill_message_args_simple(self):
         from roslib.message import fill_message_args
-        from test_roslib.msg import FillSimple
+        from test_roslib_comm.msg import FillSimple
         #int32 i32
         #string str
         #int32[] i32_array
@@ -560,5 +562,5 @@ d:
         self.assertEquals(std_srvs.srv.Empty, get_service_class('std_srvs/Empty'))    
 
 if __name__ == '__main__':
-  rosunit.unitrun('test_roslib', 'test_message', MessageTest, coverage_packages=['roslib.message'])
+  rosunit.unitrun(PKG, 'test_message', MessageTest, coverage_packages=['roslib.message'])
 

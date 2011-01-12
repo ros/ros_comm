@@ -29,7 +29,9 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-import roslib; roslib.load_manifest('test_roslib')
+
+PKG = 'test_roslib_comm'
+import roslib; roslib.load_manifest(PKG)
 
 import os
 import sys
@@ -58,16 +60,16 @@ class MsgSpecTest(unittest.TestCase):
     from roslib.msgs import resolve_type
     for t in ['string', 'string[]', 'string[14]', 'int32', 'int32[]']:
       bt = roslib.msgs.base_msg_type(t)
-      self.assertEquals(t, resolve_type(t, 'test_roslib'))
+      self.assertEquals(t, resolve_type(t, PKG))
       
-    self.assertEquals('foo/string', resolve_type('foo/string', 'test_roslib'))
+    self.assertEquals('foo/string', resolve_type('foo/string', PKG))
     self.assertEquals('std_msgs/Header', resolve_type('Header', 'roslib'))
     self.assertEquals('std_msgs/Header', resolve_type('std_msgs/Header', 'roslib'))
     self.assertEquals('std_msgs/Header', resolve_type('Header', 'stereo_msgs'))
     self.assertEquals('std_msgs/String', resolve_type('String', 'std_msgs'))    
     self.assertEquals('std_msgs/String', resolve_type('std_msgs/String', 'std_msgs'))
-    self.assertEquals('std_msgs/String', resolve_type('std_msgs/String', 'test_roslib'))    
-    self.assertEquals('std_msgs/String[]', resolve_type('std_msgs/String[]', 'test_roslib'))
+    self.assertEquals('std_msgs/String', resolve_type('std_msgs/String', PKG))    
+    self.assertEquals('std_msgs/String[]', resolve_type('std_msgs/String[]', PKG))
     
   def test_parse_type(self):
     tests = [
@@ -223,13 +225,13 @@ class MsgSpecTest(unittest.TestCase):
   def test_load_package_dependencies(self):
     # in order to do this test, we have to observe some inner state
     roslib.msgs.reinit()
-    self.failIf('test_roslib' in roslib.msgs._loaded_packages)
+    self.failIf(PKG in roslib.msgs._loaded_packages)
     self.failIf('std_msgs' in roslib.msgs._loaded_packages)
-    roslib.msgs.load_package_dependencies('test_roslib')
+    roslib.msgs.load_package_dependencies(PKG)
     
     self.assert_('std_msgs' in roslib.msgs._loaded_packages, roslib.msgs._loaded_packages)
     # should load deps only, not package itself
-    self.failIf('test_roslib' in roslib.msgs._loaded_packages)
+    self.failIf(PKG in roslib.msgs._loaded_packages)
 
     spec = roslib.msgs.get_registered('std_msgs/String')
     self.assert_('data' in spec.names) # make sure we have an actual std_msgs msg
@@ -237,12 +239,12 @@ class MsgSpecTest(unittest.TestCase):
     # we don't have a test that properly exercises the recursive
     # differences, but we need to at least test that branch of code
     roslib.msgs.reinit()
-    self.failIf('test_roslib' in roslib.msgs._loaded_packages)
+    self.failIf(PKG in roslib.msgs._loaded_packages)
     self.failIf('std_msgs' in roslib.msgs._loaded_packages)
-    roslib.msgs.load_package_dependencies('test_roslib', load_recursive=True)    
+    roslib.msgs.load_package_dependencies(PKG, load_recursive=True)    
     self.assert_('std_msgs' in roslib.msgs._loaded_packages, roslib.msgs._loaded_packages)
     # should load deps only, not package itself
-    self.failIf('test_roslib' in roslib.msgs._loaded_packages)
+    self.failIf(PKG in roslib.msgs._loaded_packages)
 
     spec = roslib.msgs.get_registered('std_msgs/String')
     self.assert_('data' in spec.names) # make sure we have an actual std_msgs msg
@@ -250,16 +252,16 @@ class MsgSpecTest(unittest.TestCase):
   def test_load_package(self):
     # in order to do this test, we have to observe some inner state
     roslib.msgs.reinit()
-    self.failIf('test_roslib' in roslib.msgs._loaded_packages)
+    self.failIf(PKG in roslib.msgs._loaded_packages)
     self.failIf('std_msgs' in roslib.msgs._loaded_packages)
-    roslib.msgs.load_package('test_roslib')
+    roslib.msgs.load_package(PKG)
     
-    self.assert_('test_roslib' in roslib.msgs._loaded_packages)
+    self.assert_(PKG in roslib.msgs._loaded_packages)
     # - shouldn't load deps
     self.failIf('std_msgs' in roslib.msgs._loaded_packages, roslib.msgs._loaded_packages)
 
     self.failIf(roslib.msgs.is_registered('std_msgs/String'))
-    spec = roslib.msgs.get_registered('test_roslib/FillSimple')
+    spec = roslib.msgs.get_registered('%s/FillSimple'%(PKG))
     self.assertEquals(['i32', 'str', 'i32_array', 'b'], spec.names) # make sure we have an actual msg
     
   def test_list_msg_types(self):
@@ -336,5 +338,5 @@ class MsgSpecTest(unittest.TestCase):
     
 
 if __name__ == '__main__':
-  rosunit.unitrun('test_roslib', 'test_msgspec', MsgSpecTest, coverage_packages=['roslib.msgs'])
+  rosunit.unitrun(PKG, 'test_msgspec', MsgSpecTest, coverage_packages=['roslib.msgs'])
 

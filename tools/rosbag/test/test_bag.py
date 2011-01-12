@@ -2,16 +2,20 @@
 #
 # test_bag.py
 
+from __future__ import with_statement
+
 PKG = 'rosbag'
 import roslib; roslib.load_manifest(PKG)
 
 import heapq
 import os
+import shutil
 import sys
 import time
 import unittest
 
 import rosbag
+from rosbag import bag
 import rospy
 from std_msgs.msg import Int32
 from std_msgs.msg import ColorRGBA
@@ -22,12 +26,11 @@ class TestRosbag(unittest.TestCase):
     
     def test_opening_stream_works(self):
         f = open('/tmp/test_opening_stream_works.bag', 'w')
-        b = rosbag.Bag(f, 'w')
-        for i in range(10):
-            msg = Int32()
-            msg.data = i
-            b.write('/int', msg)
-        b.close()
+        with rosbag.Bag(f, 'w') as b:
+            for i in range(10):
+                msg = Int32()
+                msg.data = i
+                b.write('/int', msg)
         
         f = open('/tmp/test_opening_stream_works.bag', 'r')
         b = rosbag.Bag(f, 'r')
@@ -54,20 +57,19 @@ class TestRosbag(unittest.TestCase):
         
     def test_write_invalid_message_fails(self):
         def fn():
-            b = rosbag.Bag('/tmp/test_write_invalid_message_fails.bag', 'w')
-            b.write(None, None, None)
+            with rosbag.Bag('/tmp/test_write_invalid_message_fails.bag', 'w') as b:
+                b.write(None, None, None)
         self.failUnlessRaises(ValueError, fn)
 
     def test_simple_write_uncompressed_works(self):
-        b = rosbag.Bag('/tmp/test_simple_write_uncompressed_works.bag', 'w')
-        msg_count = 0
-        for i in range(5, 0, -1):
-            msg = Int32()
-            msg.data = i
-            t = roslib.rostime.Time.from_sec(i)
-            b.write('/ints' + str(i), msg, t)
-            msg_count += 1
-        b.close()
+        with rosbag.Bag('/tmp/test_simple_write_uncompressed_works.bag', 'w') as b:
+            msg_count = 0
+            for i in range(5, 0, -1):
+                msg = Int32()
+                msg.data = i
+                t = roslib.rostime.Time.from_sec(i)
+                b.write('/ints' + str(i), msg, t)
+                msg_count += 1
 
         msgs = list(rosbag.Bag('/tmp/test_simple_write_uncompressed_works.bag').read_messages())
         
@@ -77,15 +79,14 @@ class TestRosbag(unittest.TestCase):
             self.assert_(t1 < t2, 'messages returned unordered: got timestamp %s before %s' % (str(t1), str(t2)))
 
     def test_writing_nonchronological_works(self):
-        b = rosbag.Bag('/tmp/test_writing_nonchronological_works.bag', 'w')
-        msg_count = 0
-        for i in range(5, 0, -1):
-            msg = Int32()
-            msg.data = i
-            t = roslib.rostime.Time.from_sec(i)
-            b.write('/ints', msg, t)
-            msg_count += 1
-        b.close()
+        with rosbag.Bag('/tmp/test_writing_nonchronological_works.bag', 'w') as b:
+            msg_count = 0
+            for i in range(5, 0, -1):
+                msg = Int32()
+                msg.data = i
+                t = roslib.rostime.Time.from_sec(i)
+                b.write('/ints', msg, t)
+                msg_count += 1
 
         msgs = list(rosbag.Bag('/tmp/test_writing_nonchronological_works.bag').read_messages())
         
@@ -96,15 +97,14 @@ class TestRosbag(unittest.TestCase):
 
     def test_large_write_works(self):
         for compression in [rosbag.Compression.NONE, rosbag.Compression.BZ2]:
-            b = rosbag.Bag('/tmp/test_large_write_works.bag', 'w', compression=compression)
-            msg_count = 0
-            for i in range(10000):
-                msg = Int32()
-                msg.data = i
-                t = roslib.rostime.Time.from_sec(i)
-                b.write('/ints', msg, t)
-                msg_count += 1
-            b.close()
+            with rosbag.Bag('/tmp/test_large_write_works.bag', 'w', compression=compression) as b:
+                msg_count = 0
+                for i in range(10000):
+                    msg = Int32()
+                    msg.data = i
+                    t = roslib.rostime.Time.from_sec(i)
+                    b.write('/ints', msg, t)
+                    msg_count += 1
 
             msgs = list(rosbag.Bag('/tmp/test_large_write_works.bag').read_messages())
 
@@ -114,13 +114,12 @@ class TestRosbag(unittest.TestCase):
                 self.assert_(t1 < t2, 'messages returned unordered: got timestamp %s before %s' % (str(t1), str(t2)))
 
     def test_get_messages_time_range_works(self):
-        b = rosbag.Bag('/tmp/test_get_messages_time_range_works.bag', 'w')
-        for i in range(30):
-            msg = Int32()
-            msg.data = i
-            t = roslib.rostime.Time.from_sec(i)
-            b.write('/ints', msg, t)
-        b.close()
+        with rosbag.Bag('/tmp/test_get_messages_time_range_works.bag', 'w') as b:
+            for i in range(30):
+                msg = Int32()
+                msg.data = i
+                t = roslib.rostime.Time.from_sec(i)
+                b.write('/ints', msg, t)
         
         start_time = roslib.rostime.Time.from_sec(3)
         end_time = roslib.rostime.Time.from_sec(7)
@@ -129,13 +128,12 @@ class TestRosbag(unittest.TestCase):
         self.assertEquals(len(msgs), 5)
         
     def test_get_messages_filter_works(self):
-        b = rosbag.Bag('/tmp/test_get_messages_filter_works.bag', 'w')
-        for i in range(30):
-            msg = Int32()
-            msg.data = i
-            t = roslib.rostime.Time.from_sec(i)
-            b.write('/ints' + str(i), msg, t)
-        b.close()
+        with rosbag.Bag('/tmp/test_get_messages_filter_works.bag', 'w') as b:
+            for i in range(30):
+                msg = Int32()
+                msg.data = i
+                t = roslib.rostime.Time.from_sec(i)
+                b.write('/ints' + str(i), msg, t)
 
         def filter(topic, datatype, md5sum, msg_def, header):
             return '5' in topic and datatype == Int32._type and md5sum == Int32._md5sum and msg_def == Int32._full_text
@@ -146,13 +144,12 @@ class TestRosbag(unittest.TestCase):
         inbag_filename  = '/tmp/test_rosbag_filter__1.bag'
         outbag_filename = '/tmp/test_rosbag_filter__2.bag'
         
-        b = rosbag.Bag(inbag_filename, 'w')
-        for i in range(30):
-            msg = Int32()
-            msg.data = i
-            t = roslib.rostime.Time.from_sec(i)
-            b.write('/ints' + str(i), msg, t)
-        b.close()
+        with rosbag.Bag(inbag_filename, 'w') as b:
+            for i in range(30):
+                msg = Int32()
+                msg.data = i
+                t = roslib.rostime.Time.from_sec(i)
+                b.write('/ints' + str(i), msg, t)
 
         expression = "(int(t.secs) == m.data) and (topic == '/ints' + str(m.data)) and (m.data >= 15 and m.data < 20)"
 
@@ -161,7 +158,88 @@ class TestRosbag(unittest.TestCase):
         msgs = list(rosbag.Bag(outbag_filename).read_messages())
 
         self.assertEquals(len(msgs), 5)
+
+    def test_reindex_works(self):
+        fn = '/tmp/test_reindex_works.bag'
         
+        chunk_threshold = 1024
+
+        with rosbag.Bag(fn, 'w', chunk_threshold=chunk_threshold) as b:
+            for i in range(100):
+                for j in range(5):
+                    msg = Int32()
+                    msg.data = i
+                    b.write('/topic%d' % j, msg)
+            file_header_pos = b._file_header_pos
+
+        start_index = 4117 + chunk_threshold * 2 + chunk_threshold / 2
+
+        trunc_filename   = '%s.trunc%s'   % os.path.splitext(fn)
+        reindex_filename = '%s.reindex%s' % os.path.splitext(fn)
+
+        for trunc_index in range(start_index, start_index + chunk_threshold):
+            shutil.copy(fn, trunc_filename)
+            
+            with open(trunc_filename, 'r+b') as f:
+                f.seek(file_header_pos)
+                header = {
+                    'op':          bag._pack_uint8(bag._OP_FILE_HEADER),
+                    'index_pos':   bag._pack_uint64(0),
+                    'conn_count':  bag._pack_uint32(0),
+                    'chunk_count': bag._pack_uint32(0)
+                }
+                bag._write_record(f, header, padded_size=bag._FILE_HEADER_LENGTH)
+                f.truncate(trunc_index)
+
+            shutil.copy(trunc_filename, reindex_filename)
+       
+            try:
+                b = rosbag.Bag(reindex_filename, 'a', allow_unindexed=True)
+            except Exception, ex:
+                pass
+            for done in b.reindex():
+                pass
+            b.close()
+
+            msgs = list(rosbag.Bag(reindex_filename, 'r'))
+
+    def test_future_version_works(self):
+        fn = '/tmp/test_future_version_2.1.bag'
+
+        with rosbag.Bag(fn, 'w', chunk_threshold=256) as b:
+            for i in range(10):
+                msg = Int32()
+                msg.data = i
+                b.write('/int', msg)
+
+                header = { 'op': bag._pack_uint8(max(bag._OP_CODES.iterkeys()) + 1) }
+                data = 'ABCDEFGHI123456789'
+                bag._write_record(b._file, header, data)
+
+            b._file.seek(0)
+            b._file.write('#ROSBAG V%d.%d\n' % (b._version / 100, (b._version % 100) + 1))   # increment the minor version
+            b._file.seek(0, os.SEEK_END)
+
+        with rosbag.Bag(fn) as b:
+            for topic, msg, t in b:
+                pass
+
+    def _print_bag_records(self, fn):
+        with open(fn) as f:
+            f.seek(0, os.SEEK_END)
+            size = f.tell()
+            f.seek(0)
+
+            version_line = f.readline().rstrip()
+            print version_line
+
+            while f.tell() < size:
+                header = bag._read_header(f)
+                op = bag._read_uint8_field(header, 'op')
+                data = bag._read_record_data(f)
+
+                print bag._OP_CODES.get(op, op)
+
 if __name__ == '__main__':
     import rostest
     rostest.run(PKG, 'TestRosbag', TestRosbag, sys.argv)

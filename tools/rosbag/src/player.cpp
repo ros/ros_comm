@@ -69,7 +69,8 @@ PlayerOptions::PlayerOptions() :
     has_time(false),
     loop(false),
     time(0.0f),
-    keep_alive(false)
+    keep_alive(false),
+    skip_empty(ros::DURATION_MAX)
 {
 }
 
@@ -130,11 +131,25 @@ void Player::publish() {
 
     initial_time += ros::Duration(options_.time);
 
+
     View view;
-    foreach(shared_ptr<Bag> bag, bags_)
-      view.addQuery(*bag, initial_time, ros::TIME_MAX);
+    TopicQuery topics(options_.topics);
 
+    if (options_.topics.empty())
+    {
+      foreach(shared_ptr<Bag> bag, bags_)
+        view.addQuery(*bag, initial_time, ros::TIME_MAX);
+    } else {
+      foreach(shared_ptr<Bag> bag, bags_)
+        view.addQuery(*bag, topics, initial_time, ros::TIME_MAX);
+    }
 
+    if (view.size() == 0)
+    {
+      std::cerr << "No messages to play on specified topics.  Exiting." << std::endl;
+      ros::shutdown();
+      return;
+    }
 
     // Advertise all of our messages
     foreach(const ConnectionInfo* c, view.getConnections())
@@ -162,6 +177,8 @@ void Player::publish() {
 
     std::cout << std::endl << "Hit space to toggle paused, or 's' to step." << std::endl;
 
+    paused_ = options_.start_paused;
+
     while (true) {
         // Set up our time_translator and publishers
 
@@ -183,7 +200,6 @@ void Player::publish() {
         else
             time_publisher_.setPublishFrequency(-1.0);
 
-        paused_ = options_.start_paused;
         paused_time_ = now_wt;
 
         // Call do-publish for each message
@@ -246,11 +262,26 @@ void Player::doPublish(MessageInstance const& m) {
     map<string, ros::Publisher>::iterator pub_iter = publishers_.find(callerid_topic);
     ROS_ASSERT(pub_iter != publishers_.end());
 
+    // If immediate specified, play immediately
     if (options_.at_once) {
         time_publisher_.stepClock();
         pub_iter->second.publish(m);
         printTime();
         return;
+    }
+
+    // If skip_empty is specified, skip this region and shift.
+    if (time - time_publisher_.getTime() > options_.skip_empty)
+    {
+      time_publisher_.stepClock();
+
+      ros::WallDuration shift = ros::WallTime::now() - horizon ;
+      time_translator_.shift(ros::Duration(shift.sec, shift.nsec));
+      horizon += shift;
+      time_publisher_.setWCHorizon(horizon);
+      (pub_iter->second).publish(m);
+      printTime();
+      return;
     }
 
     while ((paused_ || !time_publisher_.horizonReached()) && node_handle_.ok())

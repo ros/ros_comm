@@ -33,8 +33,9 @@
 #
 # Revision $Id$
 
+PKG = 'test_roslib_comm'
 NAME = 'test_genpy'
-import roslib; roslib.load_manifest('test_roslib')
+import roslib; roslib.load_manifest(PKG)
 
 import sys 
 import unittest
@@ -500,4 +501,4 @@ var_name = str[start:end]"""
         self.assertEquals(val, '\n'.join(g))
 
 if __name__ == '__main__':
-    rosunit.unitrun('test_roslib', NAME, TestGenpy, sys.argv, coverage_packages=['roslib.genpy'])
+    rosunit.unitrun(PKG, NAME, TestGenpy, sys.argv, coverage_packages=['roslib.genpy'])

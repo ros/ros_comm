@@ -1,6 +1,6 @@
 # Software License Agreement (BSD License)
 #
-# Copyright (c) 2009, Willow Garage, Inc.
+# Copyright (c) 2010, Willow Garage, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,39 +29,41 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-import roslib; roslib.load_manifest('test_roslib')
+#
 
-import os
-import struct
+"""
+Dumps parameters from ROSLaunch files to stdout as YAML.
+"""
+
 import sys
-import unittest
 
-import rosunit
+import roslaunch.config
+import roslaunch.xmlloader 
 
-class RoslibScriptutilTest(unittest.TestCase):
-  
-    def test_myargv(self):
-        orig_argv = sys.argv
+import yaml
+
+def dump_params(files):
+    """
+    Dumps ROS parameters of a list of files to STDOUT in YAML
+    
+    @param files: List of ROSLaunch files to load
+    @type  files: [ str ]
+    @return: True if loaded parameters successfully
+    @rtype: bool
+    """
+    config = roslaunch.config.ROSLaunchConfig()
+    loader = roslaunch.xmlloader.XmlLoader()
+
+    for f in files:
         try:
-            from roslib.scriptutil import myargv
-            args = myargv()
-            sysargv = [a for a in sys.argv if not a.startswith('__log:=')]
-            self.assertEquals(args, sysargv)
-            self.assertEquals(['foo', 'bar', 'baz'], myargv(['foo','bar', 'baz']))
-            self.assertEquals(['-foo', 'bar', '-baz'], myargv(['-foo','bar', '-baz']))
-            
-            self.assertEquals(['foo'], myargv(['foo','bar:=baz']))
-            self.assertEquals(['foo'], myargv(['foo','-bar:=baz']))
-        finally:
-            sys.argv = orig_argv
+            loader.load(f, config, verbose = False)
+        except Exception as e:
+            sys.stderr.write("Unable to load file %s: %s" % (f, e))
+            return False
 
-    def test_interactive(self):
-        import roslib.scriptutil
-        self.failIf(roslib.scriptutil.is_interactive(), "interactive should be false by default")
-        for v in [True, False]:
-            roslib.scriptutil.set_interactive(v)        
-            self.assertEquals(v, roslib.scriptutil.is_interactive())
-        
-if __name__ == '__main__':
-    rosunit.unitrun('test_roslib', 'test_scriptutil', RoslibScriptutilTest, coverage_packages=['roslib.scriptutil'])
-
+    # Now print params in YAML format.
+    params_dict = {}
+    for k, v in config.params.iteritems():
+        params_dict[str(k)] = v.value
+    sys.stdout.write(yaml.safe_dump(params_dict)+'\n')
+    return True

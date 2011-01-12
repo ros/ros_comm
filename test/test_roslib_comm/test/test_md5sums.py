@@ -1,6 +1,7 @@
+#!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
-# Copyright (c) 2009, Willow Garage, Inc.
+# Copyright (c) 2008, Willow Garage, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,33 +30,29 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-import roslib; roslib.load_manifest('test_roslib')
+#
+# Revision $Id$
 
-import os
-import struct
-import sys
+import roslib; roslib.load_manifest('test_roslib_comm')
+
 import unittest
-
 import rosunit
+from test_roslib_comm.msg import *
 
-class RoslibTest(unittest.TestCase):
-  
-    def test_load_manifest(self):
-        # this is a bit of a noop as it's a prerequisite of running with rosunit
-        import roslib
-        roslib.load_manifest('test_roslib')
-        
-    def test_interactive(self):
-        import roslib
-        import roslib.scriptutil
-        
-        # make sure that it's part of high-level API
-        self.failIf(roslib.is_interactive(), "interactive should be false by default")
-        for v in [True, False]:
-            roslib.set_interactive(v)        
-            self.assertEquals(v, roslib.is_interactive())
-            self.assertEquals(v, roslib.scriptutil.is_interactive())
-        
+
+class TestMd5sums(unittest.TestCase):
+    
+    def test_field_name_change(self):
+        self.assertNotEquals(FieldNameChange1._md5sum, FieldNameChange2._md5sum)
+
+    def test_type_name_change(self):
+        self.assertEquals(TypeNameChange1._md5sum, TypeNameChange2._md5sum)
+
+    def test_type_name_change_array(self):
+        self.assertEquals(TypeNameChangeArray1._md5sum, TypeNameChangeArray2._md5sum)
+
+    def test_type_name_change_complex(self):
+        self.assertEquals(TypeNameChangeComplex1._md5sum, TypeNameChangeComplex2._md5sum)
+
 if __name__ == '__main__':
-    rosunit.unitrun('test_roslib', 'test_roslib_module', RoslibTest, coverage_packages=['roslib'])
-
+    rosunit.unitrun('test_roslib_comm', 'test_md5sums', TestMd5sums, coverage_packages=[])

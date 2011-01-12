@@ -38,12 +38,11 @@ NAME = 'test_roslaunch_command_line_online'
 import roslib; roslib.load_manifest(PKG)
 
 import os
-import signal
 import sys 
 import time
 import unittest
+import yaml
 
-import rospy
 import rostest
 
 from subprocess import Popen, PIPE, check_call, call
@@ -65,6 +64,6 @@ class TestRoslaunchOnline(unittest.TestCase):
 
         # tripwire test for #2370, not really possible to validate output on this
         check_call([cmd, '--screen', 'test_roslaunch', 'noop.launch'])        
-            
+
 if __name__ == '__main__':
     rostest.run(PKG, NAME, TestRoslaunchOnline, sys.argv)

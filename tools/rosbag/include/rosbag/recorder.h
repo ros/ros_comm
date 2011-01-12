@@ -96,9 +96,12 @@ struct RecorderOptions
     std::string     prefix;
     std::string     name;
     boost::regex    exclude_regex;
-    uint32_t        split_size;
     uint32_t        buffer_size;
     uint32_t        limit;
+    bool            split;
+    uint32_t        max_size;
+    ros::Duration   max_duration;
+    std::string     node;
 
     std::vector<std::string> topics;
 };
@@ -131,10 +134,12 @@ private:
     //    void doQueue(topic_tools::ShapeShifter::ConstPtr msg, std::string const& topic, boost::shared_ptr<ros::Subscriber> subscriber, boost::shared_ptr<int> count);
     void doQueue(ros::MessageEvent<topic_tools::ShapeShifter const> msg_event, std::string const& topic, boost::shared_ptr<ros::Subscriber> subscriber, boost::shared_ptr<int> count);
     void doRecord();
+    bool checkSize();
+    bool checkDuration(const ros::Time&);
     void doRecordSnapshotter();
     void doCheckMaster(ros::TimerEvent const& e, ros::NodeHandle& node_handle);
 
-    bool shouldSubscribeToTopic(std::string const& topic);
+    bool shouldSubscribeToTopic(std::string const& topic, bool from_node = false);
 
     template<class T>
     static std::string timeToStr(T ros_t);
@@ -164,10 +169,12 @@ private:
 
     ros::Time                     last_buffer_warn_;
 
-    bool          writing_enabled_;
-    boost::mutex  check_disk_mutex_;
-    ros::WallTime check_disk_next_;
-    ros::WallTime warn_next_;
+    ros::Time                     start_time_;
+
+    bool                          writing_enabled_;
+    boost::mutex                  check_disk_mutex_;
+    ros::WallTime                 check_disk_next_;
+    ros::WallTime                 warn_next_;
 };
 
 } // namespace rosbag

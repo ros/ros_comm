@@ -47,9 +47,14 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/xtime.hpp>
 
 #include <ros/ros.h>
 #include <topic_tools/shape_shifter.h>
+
+#include "ros/network.h"
+#include "ros/xmlrpc_manager.h"
+#include "XmlRpc.h"
 
 #define foreach BOOST_FOREACH
 
@@ -88,13 +93,16 @@ RecorderOptions::RecorderOptions() :
     append_date(true),
     snapshot(false),
     verbose(false),
-    compression(compression::None),
+    compression(compression::Uncompressed),
     prefix(""),
     name(""),
     exclude_regex(),
-    split_size(0),
     buffer_size(1048576 * 256),
-    limit(0)
+    limit(0),
+    split(false),
+    max_size(0),
+    max_duration(-1.0),
+    node("")
 {
 }
 
@@ -102,10 +110,10 @@ RecorderOptions::RecorderOptions() :
 
 Recorder::Recorder(RecorderOptions const& options) :
     options_(options),
-	num_subscribers_(0),
-	exit_code_(0),
-	queue_size_(0),
-	split_count_(0),
+    num_subscribers_(0),
+    exit_code_(0),
+    queue_size_(0),
+    split_count_(0),
     writing_enabled_(true)
 {
 }
@@ -124,7 +132,7 @@ int Recorder::run() {
         }
 
         // Make sure topics are specified
-        if (!options_.record_all) {
+        if (!options_.record_all && (options_.node == std::string(""))) {
             fprintf(stderr, "No topics specified.\n");
             return 1;
         }
@@ -135,8 +143,24 @@ int Recorder::run() {
         return 0;
 
     last_buffer_warn_ = Time();
-
     queue_ = new std::queue<OutgoingMessage>;
+
+    // Subscribe to each topic
+    if (!options_.regex) {
+    	foreach(string const& topic, options_.topics)
+			subscribe(topic);
+    }
+
+    if (!ros::Time::waitForValid(ros::WallDuration(2.0)))
+      ROS_WARN("/use_sim_time set to true and no clock published.  Still waiting for valid time...");
+
+    ros::Time::waitForValid();
+
+    start_time_ = ros::Time::now();
+
+    // Don't bother doing anything if we never got a valid time
+    if (!nh.ok())
+        return 0;
 
     ros::Subscriber trigger_sub;
 
@@ -152,17 +176,10 @@ int Recorder::run() {
     else
         record_thread = boost::thread(boost::bind(&Recorder::doRecord, this));
 
-    ros::Time::waitForValid();
 
-
-    // Subscribe to each topic
-    if (!options_.regex) {
-    	foreach(string const& topic, options_.topics)
-			subscribe(topic);
-    }
 
     ros::Timer check_master_timer;
-    if (options_.record_all || options_.regex)
+    if (options_.record_all || options_.regex || (options_.node != std::string("")))
         check_master_timer = nh.createTimer(ros::Duration(1.0), boost::bind(&Recorder::doCheckMaster, this, _1, boost::ref(nh)));
 
     ros::MultiThreadedSpinner s(10);
@@ -194,7 +211,7 @@ bool Recorder::isSubscribed(string const& topic) const {
     return currently_recording_.find(topic) != currently_recording_.end();
 }
 
-bool Recorder::shouldSubscribeToTopic(std::string const& topic) {
+bool Recorder::shouldSubscribeToTopic(std::string const& topic, bool from_node) {
     // ignore already known topics
     if (isSubscribed(topic)) {
         return false;
@@ -205,7 +222,7 @@ bool Recorder::shouldSubscribeToTopic(std::string const& topic) {
         return false;
     }
 
-    if(options_.record_all) {
+    if(options_.record_all || from_node) {
         return true;
     }
     
@@ -301,7 +318,7 @@ void Recorder::updateFilenames() {
         parts.push_back(prefix);
     if (options_.append_date)
         parts.push_back(timeToStr(ros::WallTime::now()));
-    if (options_.split_size > 0)
+    if (options_.split)
         parts.push_back(boost::lexical_cast<string>(split_count_));
 
     target_filename_ = parts[0];
@@ -349,6 +366,51 @@ void Recorder::stopWriting() {
     rename(write_filename_.c_str(), target_filename_.c_str());
 }
 
+bool Recorder::checkSize()
+{
+    if (options_.max_size > 0)
+    {
+        if (bag_.getSize() > options_.max_size)
+        {
+            if (options_.split)
+            {
+                stopWriting();
+                split_count_++;
+                startWriting();
+            } else {
+                ros::shutdown();
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool Recorder::checkDuration(const ros::Time& t)
+{
+    if (options_.max_duration > ros::Duration(0))
+    {
+        if (t - start_time_ > options_.max_duration)
+        {
+            if (options_.split)
+            {
+                while (start_time_ + options_.max_duration < t)
+                {
+                    stopWriting();
+                    split_count_++;
+                    start_time_ += options_.max_duration;
+                    startWriting();
+                }
+            } else {
+                ros::shutdown();
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
 //! Thread that actually does writing to file.
 void Recorder::doRecord() {
     // Open bag file for writing
@@ -373,7 +435,15 @@ void Recorder::doRecord() {
                 finished = true;
                 break;
             }
-            queue_condition_.wait(lock);
+            boost::xtime xt;
+            boost::xtime_get(&xt, boost::TIME_UTC);
+            xt.nsec += 250000000;
+            queue_condition_.timed_wait(lock, xt);
+            if (checkDuration(ros::Time::now()))
+            {
+                finished = true;
+                break;
+            }
         }
         if (finished)
             break;
@@ -383,12 +453,12 @@ void Recorder::doRecord() {
         queue_size_ -= out.msg->size();
         
         lock.release()->unlock();
+        
+        if (checkSize())
+            break;
 
-        if (options_.split_size > 0 && bag_.getSize() > options_.split_size) {
-            stopWriting();
-            split_count_++;
-            startWriting();
-        }
+        if (checkDuration(out.time))
+            break;
 
         if (scheduledCheckDisk() && checkLogging())
             bag_.write(out.topic, out.time, *out.msg, out.connection_header);
@@ -442,6 +512,45 @@ void Recorder::doCheckMaster(ros::TimerEvent const& e, ros::NodeHandle& node_han
 			if (shouldSubscribeToTopic(t.name))
 				subscribe(t.name);
 		}
+    }
+    
+    if (options_.node != std::string(""))
+    {
+
+      XmlRpc::XmlRpcValue req;
+      req[0] = ros::this_node::getName();
+      req[1] = options_.node;
+      XmlRpc::XmlRpcValue resp;
+      XmlRpc::XmlRpcValue payload;
+
+      if (ros::master::execute("lookupNode", req, resp, payload, true))
+      {
+        std::string peer_host;
+        uint32_t peer_port;
+
+        if (!ros::network::splitURI(static_cast<std::string>(resp[2]), peer_host, peer_port))
+        {
+          ROS_ERROR("Bad xml-rpc URI trying to inspect node at: [%s]", static_cast<std::string>(resp[2]).c_str());
+        } else {
+
+          XmlRpc::XmlRpcClient c(peer_host.c_str(), peer_port, "/");
+          XmlRpc::XmlRpcValue req;
+          XmlRpc::XmlRpcValue resp;
+          req[0] = ros::this_node::getName();
+          c.execute("getSubscriptions", req, resp);
+          
+          if (!c.isFault() && resp.size() > 0 && static_cast<int>(resp[0]) == 1)
+          {
+            for(int i = 0; i < resp[2].size(); i++)
+            {
+              if (shouldSubscribeToTopic(resp[2][i][0], true))
+                subscribe(resp[2][i][0]);
+            }
+          } else {
+            ROS_ERROR("Node at: [%s] failed to return subscriptions.", static_cast<std::string>(resp[2]).c_str());
+          }
+        }
+      }
     }
 }
 
