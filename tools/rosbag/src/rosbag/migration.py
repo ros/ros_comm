@@ -127,10 +127,10 @@ def fixbag(migrator, inbag, outbag):
     if not False in [m[1] == [] for m in res]:
         bag = rosbag.Bag(inbag, 'r')
         rebag = rosbag.Bag(outbag, 'w', options=bag.options)
-        for topic, msg, t in bag.read_messages():
-            new_msg = migrator.find_target(msg.__class__)()
-            migrator.migrate(msg, new_msg)
-            rebag.write(topic, new_msg, t)
+        for topic, msg, t in bag.read_messages(raw=True):
+            new_msg_type = migrator.find_target(msg[4])
+            mig_msg = migrator.migrate_raw(msg, (new_msg_type._type, None, new_msg_type._md5sum, None, new_msg_type))
+            rebag.write(topic, mig_msg, t, raw=True)
         rebag.close()
         bag.close()
         return True
@@ -143,24 +143,30 @@ def fixbag(migrator, inbag, outbag):
 # @param inbag Name of the bag to be fixed.
 # @param outbag Name of the bag to be saved.
 # @returns [] if bag could be migrated, otherwise, it returns the list of necessary migration paths
-def fixbag2(migrator, inbag, outbag):
+def fixbag2(migrator, inbag, outbag, force=False):
     # This checks/builds up rules for the given migrator
     res = checkbag(migrator, inbag)
 
     migrations = [m for m in res if len(m[1]) > 0]
 
     # Deserializing all messages is inefficient, but we can speed this up later
-    if len(migrations) == 0:
+    if len(migrations) == 0 or force:
         bag = rosbag.Bag(inbag, 'r')
         rebag = rosbag.Bag(outbag, 'w', options=bag.options)
-        for topic, msg, t in bag.read_messages():
-            new_msg = migrator.find_target(msg.__class__)()
-            migrator.migrate(msg, new_msg)
-            rebag.write(topic, new_msg, t)
+        for topic, msg, t in bag.read_messages(raw=True):
+            new_msg_type = migrator.find_target(msg[4])
+            if new_msg_type != None:
+                mig_msg = migrator.migrate_raw(msg, (new_msg_type._type, None, new_msg_type._md5sum, None, new_msg_type))
+                rebag.write(topic, mig_msg, t, raw=True)
+            else:
+                rebag.write(topic, msg, t, raw=True)
         rebag.close()
         bag.close()
 
-    return migrations
+    if force:
+        return []
+    else:
+        return migrations
 
 ## Helper function to strip out roslib and package name from name usages.
 # 
@@ -698,6 +704,18 @@ class MessageMigrator(object):
         # Construction should be done, we can now use the system in
         # the event that we don't have invalid update rules.
 
+        self.class_dict = {}
+
+        for sn in self.base_nodes + self.extra_nodes:
+            self.class_dict[get_message_key(sn.old_class)] = sn.old_class
+            self.class_dict[get_message_key(sn.new_class)] = sn.new_class
+
+
+    def lookup_type(self, key):
+        if key in self.class_dict:
+            return self.class_dict[key]
+        else:
+            return None
 
     # Add an update rule to our set of rule chains
     def add_update_rule(self, r):
@@ -1026,6 +1044,30 @@ class MessageMigrator(object):
 
         self.found_paths[key] = sn_range
         return sn_range
+
+
+    def migrate_raw(self, msg_from, msg_to):
+        path = self.find_path(msg_from[4], msg_to[4])
+
+        if False in [sn.rule.valid for sn in path]:
+            raise BagMigrationException("Migrate called, but no valid migration path from [%s] to [%s]"%(msg_from._type, msg_to._type))
+
+        # Short cut to speed up case of matching md5sum:
+        if path == [] or msg_from[2] == msg_to[2]:
+            return (msg_to[0], msg_from[1], msg_to[2], msg_to[3], msg_to[4])
+
+        tmp_msg = path[0].old_class()
+        tmp_msg.deserialize(msg_from[1])
+
+        for sn in path:
+            tmp_msg = sn.rule.apply(tmp_msg)
+
+        buff = StringIO()
+        tmp_msg.serialize(buff)
+
+        return (msg_to[0], buff.getvalue(), msg_to[2], msg_to[3], msg_to[4])
+
+
 
     def migrate(self, msg_from, msg_to):
         path = self.find_path(msg_from.__class__, msg_to.__class__)
