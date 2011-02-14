@@ -381,6 +381,19 @@ TEST(rosbag, bad_topic_query_works) {
     bag.close();
 }
 
+//This test fails on the storm machines
+/*
+TEST(rosbag, incremental_time) {
+  ros::Time last = ros::Time::now();
+  ros::Time next = ros::Time::now();
+   for (int i = 0; i < 1000; i++) {
+     next = ros::Time::now();
+     ASSERT_TRUE(last != next);
+     last = next;
+   }
+}
+*/
+
 TEST(rosbag, multiple_bag_works) {
     rosbag::Bag outbag1("/tmp/multiple_bag_works1.bag", rosbag::bagmode::Write);
     rosbag::Bag outbag2("/tmp/multiple_bag_works2.bag", rosbag::bagmode::Write);
@@ -389,11 +402,11 @@ TEST(rosbag, multiple_bag_works) {
     for (int i = 0; i < 1000; i++) {
         imsg.data = i;
         switch (rand() % 5) {
-        case 0: outbag1.write("t0", ros::Time::now(), imsg); break;
-        case 1: outbag1.write("t1", ros::Time::now(), imsg); break;
-        case 2: outbag1.write("t2", ros::Time::now(), imsg); break;
-        case 3: outbag2.write("t0", ros::Time::now(), imsg); break;
-        case 4: outbag2.write("t1", ros::Time::now(), imsg); break;
+        case 0: outbag1.write("t0", ros::Time(0,i+1), imsg); break;
+        case 1: outbag1.write("t1", ros::Time(0,i+1), imsg); break;
+        case 2: outbag1.write("t2", ros::Time(0,i+1), imsg); break;
+        case 3: outbag2.write("t0", ros::Time(0,i+1), imsg); break;
+        case 4: outbag2.write("t1", ros::Time(0,i+1), imsg); break;
         }
     }
 
