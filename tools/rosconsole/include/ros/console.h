@@ -74,6 +74,7 @@ namespace ros
 {
 namespace console
 {
+  void shutdown(); // disables future logging calls
 
 namespace levels
 {
