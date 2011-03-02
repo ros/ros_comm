@@ -54,6 +54,7 @@ namespace console
 {
 
 bool g_initialized = false;
+bool g_shutting_down = false;
 boost::mutex g_init_mutex;
 
 log4cxx::LevelPtr g_level_lookup[ levels::Count ] =
@@ -430,6 +431,11 @@ void initialize()
   }
 }
 
+void shutdown()
+{
+  g_shutting_down = true;
+}
+
 void vformatToBuffer(boost::shared_array<char>& buffer, size_t& buffer_size, const char* fmt, va_list args)
 {
   va_list arg_copy;
@@ -475,7 +481,9 @@ static boost::mutex g_print_mutex;
 static boost::shared_array<char> g_print_buffer(new char[INITIAL_BUFFER_SIZE]);
 static size_t g_print_buffer_size = INITIAL_BUFFER_SIZE;
 static boost::thread::id g_printing_thread_id;
-void print(FilterBase* filter, log4cxx::Logger* logger, Level level, const char* file, int line, const char* function, const char* fmt, ...)
+
+void print(FilterBase* filter, log4cxx::Logger* logger, Level level, 
+           const char* file, int line, const char* function, const char* fmt, ...)
 {
   if (g_printing_thread_id == boost::this_thread::get_id())
   {
@@ -525,6 +533,12 @@ void print(FilterBase* filter, log4cxx::Logger* logger, Level level, const char*
 
   if (enabled)
   {
+    if (g_shutting_down)
+      {
+        fprintf(stderr, "%s\n", g_print_buffer.get());
+        return;
+      }
+
     try
     {
       logger_ptr->forcedLog(g_level_lookup[level], g_print_buffer.get(), log4cxx::spi::LocationInfo(file, function, line));
@@ -540,6 +554,9 @@ void print(FilterBase* filter, log4cxx::Logger* logger, Level level, const char*
 
 void print(FilterBase* filter, log4cxx::Logger* logger, Level level, const std::stringstream& ss, const char* file, int line, const char* function)
 {
+  if (g_shutting_down)
+    return;
+
   if (g_printing_thread_id == boost::this_thread::get_id())
   {
     fprintf(stderr, "Warning: recursive print statement has occurred.  Throwing out recursive print.\n");
@@ -575,6 +592,12 @@ void print(FilterBase* filter, log4cxx::Logger* logger, Level level, const std::
 
   if (enabled)
   {
+  if (g_shutting_down) 
+    {
+      fprintf(stderr, "%s\n", g_print_buffer.get());
+      return;
+    }
+
     try
     {
       logger->forcedLog(g_level_lookup[level], str, log4cxx::spi::LocationInfo(file, function, line));
