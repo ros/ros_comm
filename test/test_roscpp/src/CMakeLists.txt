@@ -155,13 +155,3 @@ rosbuild_declare_test(publisher_for_star_subscriber)
 
 rosbuild_add_executable(parameter_validation EXCLUDE_FROM_ALL parameter_validation.cpp)
 rosbuild_add_gtest_build_flags(parameter_validation)
-
-rosbuild_add_executable(test_remapping EXCLUDE_FROM_ALL test_remapping.cpp)
-rosbuild_add_gtest_build_flags(test_remapping)
-
-rosbuild_add_executable(test_ns_node_remapping EXCLUDE_FROM_ALL test_ns_node_remapping.cpp)
-rosbuild_add_gtest_build_flags(test_ns_node_remapping)
-
-rosbuild_add_executable(test_search_param EXCLUDE_FROM_ALL test_search_param.cpp)
-rosbuild_add_gtest_build_flags(test_search_param)
-

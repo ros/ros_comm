@@ -1465,11 +1465,7 @@ if (handle)
   bool ok() const;
 
 private:
-  struct no_validate { };
-  // this is pretty awful, but required to preserve public interface (and make minimum possible changes)
-  std::string resolveName(const std::string& name, bool remap, no_validate) const;
-
-  void construct(const std::string& ns, bool validate_name);
+  void construct();
   void destruct();
 
   void initRemappings(const M_string& remappings);

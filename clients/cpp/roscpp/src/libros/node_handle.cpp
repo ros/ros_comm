@@ -41,7 +41,6 @@
 #include "ros/names.h"
 #include "ros/init.h"
 #include "ros/this_node.h"
-#include "ros/file_log.h"
 #include "XmlRpc.h"
 
 #include <boost/thread.hpp>
@@ -69,17 +68,11 @@ public:
 };
 
 NodeHandle::NodeHandle(const std::string& ns, const M_string& remappings)
-  : namespace_(this_node::getNamespace())
-  , callback_queue_(0)
-  , collection_(0)
+: namespace_(ns)
+, callback_queue_(0)
+, collection_(0)
 {
-  std::string tilde_resolved_ns;
-  if (!ns.empty() && ns[0] == '~')// starts with tilde
-    tilde_resolved_ns = names::resolve(ns);
-  else
-    tilde_resolved_ns = ns;
-
-  construct(tilde_resolved_ns, true);
+  construct();
 
   initRemappings(remappings);
 }
@@ -87,25 +80,22 @@ NodeHandle::NodeHandle(const std::string& ns, const M_string& remappings)
 NodeHandle::NodeHandle(const NodeHandle& parent, const std::string& ns)
 : collection_(0)
 {
-  namespace_ = parent.getNamespace();
+  namespace_ = parent.getNamespace() + "/" + ns;
   callback_queue_ = parent.callback_queue_;
+
+  construct();
 
   remappings_ = parent.remappings_;
   unresolved_remappings_ = parent.unresolved_remappings_;
-
-  construct(ns, false);
 }
 
 NodeHandle::NodeHandle(const NodeHandle& parent, const std::string& ns, const M_string& remappings)
 : collection_(0)
 {
-  namespace_ = parent.getNamespace();
+  namespace_ = parent.getNamespace() + "/" + ns;
   callback_queue_ = parent.callback_queue_;
 
-  remappings_ = parent.remappings_;
-  unresolved_remappings_ = parent.unresolved_remappings_;
-
-  construct(ns, false);
+  construct();
 
   initRemappings(remappings);
 }
@@ -113,13 +103,12 @@ NodeHandle::NodeHandle(const NodeHandle& parent, const std::string& ns, const M_
 NodeHandle::NodeHandle(const NodeHandle& rhs)
 : collection_(0)
 {
+  namespace_ = rhs.namespace_;
   callback_queue_ = rhs.callback_queue_;
   remappings_ = rhs.remappings_;
   unresolved_remappings_ = rhs.unresolved_remappings_;
 
-  construct(rhs.namespace_, true); 
-
-  unresolved_namespace_ = rhs.unresolved_namespace_;
+  construct();
 }
 
 NodeHandle::~NodeHandle()
@@ -143,7 +132,7 @@ void spinThread()
   ros::spin();
 }
 
-void NodeHandle::construct(const std::string& ns, bool validate_name)
+void NodeHandle::construct()
 {
   if (!ros::isInitialized())
   {
@@ -152,16 +141,8 @@ void NodeHandle::construct(const std::string& ns, bool validate_name)
   }
 
   collection_ = new NodeHandleBackingCollection;
-  unresolved_namespace_ = ns;
-  // if callback_queue_ is nonnull, we are in a non-nullary constructor
-
-  if (validate_name)
-    namespace_ = resolveName(ns, true);
-  else
-    {
-      namespace_ = resolveName(ns, true, no_validate());
-      // FIXME validate namespace_ now
-    }
+  unresolved_namespace_ = namespace_;
+  namespace_ = names::resolve(namespace_);
   ok_ = true;
 
   boost::mutex::scoped_lock lock(g_nh_refcount_mutex);
@@ -233,11 +214,6 @@ std::string NodeHandle::resolveName(const std::string& name, bool remap) const
     throw InvalidNameException(error);
   }
 
-  return resolveName(name, remap, no_validate());
-}
-
-std::string NodeHandle::resolveName(const std::string& name, bool remap, no_validate) const
-{
   if (name.empty())
   {
     return namespace_;
@@ -289,8 +265,7 @@ Publisher NodeHandle::advertise(AdvertiseOptions& ops)
     }
   }
 
-  SubscriberCallbacksPtr callbacks(new SubscriberCallbacks(ops.connect_cb, ops.disconnect_cb, 
-							   ops.tracked_object, ops.callback_queue));
+  SubscriberCallbacksPtr callbacks(new SubscriberCallbacks(ops.connect_cb, ops.disconnect_cb, ops.tracked_object, ops.callback_queue));
 
   if (TopicManager::instance()->advertise(ops, callbacks))
   {
@@ -592,10 +567,9 @@ bool NodeHandle::searchParam(const std::string &key, std::string& result_out) co
 {
   // searchParam needs a separate form of remapping -- remapping on the unresolved name, rather than the
   // resolved one.
-  ROSCPP_LOG_DEBUG("searchParam(%s, ...) namespace=%s", key.c_str(), namespace_.c_str()); 
+
   std::string remapped = key;
   M_string::const_iterator it = unresolved_remappings_.find(key);
-
   // First try our local remappings
   if (it != unresolved_remappings_.end())
   {
