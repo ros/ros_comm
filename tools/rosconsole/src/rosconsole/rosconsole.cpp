@@ -485,6 +485,9 @@ static boost::thread::id g_printing_thread_id;
 void print(FilterBase* filter, log4cxx::Logger* logger, Level level, 
            const char* file, int line, const char* function, const char* fmt, ...)
 {
+  if (g_shutting_down)
+    return;
+
   if (g_printing_thread_id == boost::this_thread::get_id())
   {
     fprintf(stderr, "Warning: recursive print statement has occurred.  Throwing out recursive print.\n");
@@ -533,12 +536,6 @@ void print(FilterBase* filter, log4cxx::Logger* logger, Level level,
 
   if (enabled)
   {
-    if (g_shutting_down)
-      {
-        fprintf(stderr, "%s\n", g_print_buffer.get());
-        return;
-      }
-
     try
     {
       logger_ptr->forcedLog(g_level_lookup[level], g_print_buffer.get(), log4cxx::spi::LocationInfo(file, function, line));
@@ -552,7 +549,8 @@ void print(FilterBase* filter, log4cxx::Logger* logger, Level level,
   g_printing_thread_id = boost::thread::id();
 }
 
-void print(FilterBase* filter, log4cxx::Logger* logger, Level level, const std::stringstream& ss, const char* file, int line, const char* function)
+void print(FilterBase* filter, log4cxx::Logger* logger, Level level, 
+	   const std::stringstream& ss, const char* file, int line, const char* function)
 {
   if (g_shutting_down)
     return;
