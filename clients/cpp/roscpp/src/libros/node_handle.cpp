@@ -68,11 +68,17 @@ public:
 };
 
 NodeHandle::NodeHandle(const std::string& ns, const M_string& remappings)
-: namespace_(ns)
-, callback_queue_(0)
-, collection_(0)
+  : namespace_(this_node::getNamespace())
+  , callback_queue_(0)
+  , collection_(0)
 {
-  construct();
+  std::string tilde_resolved_ns;
+  if (!ns.empty() && ns[0] == '~')// starts with tilde
+    tilde_resolved_ns = names::resolve(ns);
+  else
+    tilde_resolved_ns = ns;
+
+  construct(tilde_resolved_ns, true);
 
   initRemappings(remappings);
 }
@@ -80,22 +86,25 @@ NodeHandle::NodeHandle(const std::string& ns, const M_string& remappings)
 NodeHandle::NodeHandle(const NodeHandle& parent, const std::string& ns)
 : collection_(0)
 {
-  namespace_ = parent.getNamespace() + "/" + ns;
+  namespace_ = parent.getNamespace();
   callback_queue_ = parent.callback_queue_;
-
-  construct();
 
   remappings_ = parent.remappings_;
   unresolved_remappings_ = parent.unresolved_remappings_;
+
+  construct(ns, false);
 }
 
 NodeHandle::NodeHandle(const NodeHandle& parent, const std::string& ns, const M_string& remappings)
 : collection_(0)
 {
-  namespace_ = parent.getNamespace() + "/" + ns;
+  namespace_ = parent.getNamespace();
   callback_queue_ = parent.callback_queue_;
 
-  construct();
+  remappings_ = parent.remappings_;
+  unresolved_remappings_ = parent.unresolved_remappings_;
+
+  construct(ns, false);
 
   initRemappings(remappings);
 }
@@ -103,12 +112,13 @@ NodeHandle::NodeHandle(const NodeHandle& parent, const std::string& ns, const M_
 NodeHandle::NodeHandle(const NodeHandle& rhs)
 : collection_(0)
 {
-  namespace_ = rhs.namespace_;
   callback_queue_ = rhs.callback_queue_;
   remappings_ = rhs.remappings_;
   unresolved_remappings_ = rhs.unresolved_remappings_;
 
-  construct();
+  construct(rhs.namespace_, true); 
+
+  unresolved_namespace_ = rhs.unresolved_namespace_;
 }
 
 NodeHandle::~NodeHandle()
@@ -132,7 +142,7 @@ void spinThread()
   ros::spin();
 }
 
-void NodeHandle::construct()
+void NodeHandle::construct(const std::string& ns, bool validate_name)
 {
   if (!ros::isInitialized())
   {
@@ -141,8 +151,16 @@ void NodeHandle::construct()
   }
 
   collection_ = new NodeHandleBackingCollection;
-  unresolved_namespace_ = namespace_;
-  namespace_ = names::resolve(namespace_);
+  unresolved_namespace_ = ns;
+  // if callback_queue_ is nonnull, we are in a non-nullary constructor
+
+  if (validate_name)
+    namespace_ = resolveName(ns, true);
+  else
+    {
+      namespace_ = resolveName(ns, true, no_validate());
+      // FIXME validate namespace_ now
+    }
   ok_ = true;
 
   boost::mutex::scoped_lock lock(g_nh_refcount_mutex);
@@ -199,6 +217,7 @@ std::string NodeHandle::remapName(const std::string& name) const
   M_string::const_iterator it = remappings_.find(resolved);
   if (it != remappings_.end())
   {
+    // ROSCPP_LOG_DEBUG("found 'local' remapping: %s", it->second.c_str());
     return it->second;
   }
 
@@ -208,12 +227,18 @@ std::string NodeHandle::remapName(const std::string& name) const
 
 std::string NodeHandle::resolveName(const std::string& name, bool remap) const
 {
+  // ROSCPP_LOG_DEBUG("resolveName(%s, %s)", name.c_str(), remap ? "true" : "false");
   std::string error;
   if (!names::validate(name, error))
   {
     throw InvalidNameException(error);
   }
 
+  return resolveName(name, remap, no_validate());
+}
+
+std::string NodeHandle::resolveName(const std::string& name, bool remap, no_validate) const
+{
   if (name.empty())
   {
     return namespace_;
@@ -237,14 +262,18 @@ std::string NodeHandle::resolveName(const std::string& name, bool remap) const
   }
   else if (!namespace_.empty())
   {
+    // ROSCPP_LOG_DEBUG("Appending namespace_ (%s)", namespace_.c_str());
     final = names::append(namespace_, final);
   }
 
+  // ROSCPP_LOG_DEBUG("resolveName, pre-clean: %s", final.c_str());
   final = names::clean(final);
+  // ROSCPP_LOG_DEBUG("resolveName, post-clean: %s", final.c_str());
 
   if (remap)
   {
     final = remapName(final);
+    // ROSCPP_LOG_DEBUG("resolveName, remapped: %s", final.c_str());
   }
 
   return names::resolve(final, false);
@@ -265,7 +294,8 @@ Publisher NodeHandle::advertise(AdvertiseOptions& ops)
     }
   }
 
-  SubscriberCallbacksPtr callbacks(new SubscriberCallbacks(ops.connect_cb, ops.disconnect_cb, ops.tracked_object, ops.callback_queue));
+  SubscriberCallbacksPtr callbacks(new SubscriberCallbacks(ops.connect_cb, ops.disconnect_cb, 
+							   ops.tracked_object, ops.callback_queue));
 
   if (TopicManager::instance()->advertise(ops, callbacks))
   {
