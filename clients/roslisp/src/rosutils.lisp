@@ -137,15 +137,16 @@
 (defun get-topic-class-name (topic)
   "Given a topic foo with message type, say the string /std_msgs/bar, this returns the symbol named bar from the package std_msgs. The topic must be one that has already been advertised or subscribed to."
   (let ((sub (gethash topic *subscriptions*))
-	(pub (gethash topic *publications*)))
-    (assert (or sub pub) nil "Can't get class name of topic ~a that we neither publish or subscribe" topic)
-    (let ((tokens (tokens (if sub (sub-topic-type sub) (pub-topic-type pub)) :separators '(#\/))))
-      (assert (= 2 (length tokens)) nil "topic name ~a was not of the form /foo/bar" topic)
+        (pub (gethash topic *publications*)))
+    (assert (or sub pub) nil "Can't get class name of topic ~a that we neither publish nor subscribe" topic)
+    (let* ((type (if sub (sub-topic-type sub) (pub-topic-type pub)))
+           (tokens (tokens type :separators '(#\/))))
+      (assert (= 2 (length tokens)) nil "topic type ~a of topic ~a was not of the form foo/bar" type topic)
       (let* ((class-name (concatenate 'string (string-upcase (second tokens))))
-	     (pkg-name (string-upcase (concatenate 'string (first tokens) "-msg")))
-	     (class-symbol (find-symbol class-name pkg-name)))
-	(assert class-symbol nil "Could not find symbol ~a in ~a" class-name pkg-name)
-	class-symbol))))
+             (pkg-name (string-upcase (concatenate 'string (first tokens) "-msg")))
+             (class-symbol (find-symbol class-name pkg-name)))
+        (assert class-symbol nil "Could not find symbol ~a in ~a" class-name pkg-name)
+        class-symbol))))
 
 (defvar *message-dir-cache* (make-hash-table :test #'equal))
 (defvar *service-dir-cache* (make-hash-table :test #'equal))
@@ -226,11 +227,10 @@ Used if you want a callback function for a topic that just stores the message in
      (load-service-types ,msg-type)
      (use-package ,(intern (string-upcase (concatenate 'string pkg-name "-srv")) :keyword)))))
 
-
 (defun lookup-topic-type (type)
   "if it's, e.g., the string std_msgs/String just return it, if it's, e.g., 'std_msgs:<String>, return the string std_msgs/String"
   (etypecase type
-    (string type)
+    (string (ros-datatype (string-to-ros-msgtype-symbol type)))
     (symbol (ros-datatype type))))
 
 (defun make-service-symbol (type-string)

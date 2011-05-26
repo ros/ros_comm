@@ -114,10 +114,8 @@ class ROSTopicHz(object):
         # #694: ignore messages that don't match filter
         if self.filter_expr is not None and not self.filter_expr(m):
             return
-        try:
+        with self.lock:
             curr_rostime = rospy.get_rostime()
-            
-            self.lock.acquire()
 
             # time reset
             if curr_rostime.is_zero():
@@ -128,7 +126,6 @@ class ROSTopicHz(object):
             
             curr = curr_rostime.to_sec()
             if self.msg_t0 < 0 or self.msg_t0 > curr:
-                #print "reset t0"
                 self.msg_t0 = curr
                 self.msg_tn = curr
                 self.times = []
@@ -139,8 +136,6 @@ class ROSTopicHz(object):
             #only keep statistics for the last 10000 messages so as not to run out of memory
             if len(self.times) > self.window_size - 1:
                 self.times.pop(0)
-        finally:
-            self.lock.release()
 
     def print_hz(self):
         """
@@ -151,22 +146,20 @@ class ROSTopicHz(object):
         elif self.msg_tn == self.last_printed_tn:
             print "no new messages"
             return
-        try:
-            self.lock.acquire()
+        with self.lock:
             #frequency
             
-            # The commented-out rate calculate allows the rate to
-            # decay when a publisher dies. The uncommented one uses
-            # the last received message to perform the calculation.
-            # Now that we report a count and keep track of
-            # last_printed_tn, it's easier to detect when a
-            # publisher dies, so I've gone back to using a non-decaying
-            # calculation - kwc
+            # kwc: In the past, the rate decayed when a publisher
+            # dies.  Now, we use the last received message to perform
+            # the calculation.  This change was made because we now
+            # report a count and keep track of last_printed_tn.  This
+            # makes it easier for users to see when a publisher dies,
+            # so the decay is no longer necessary.
             
             n = len(self.times)
             #rate = (n - 1) / (rospy.get_time() - self.msg_t0)
             mean = sum(self.times) / n
-            rate = 1./mean
+            rate = 1./mean if mean > 0. else 0
 
             #std dev
             std_dev = math.sqrt(sum((x - mean)**2 for x in self.times) /n)
@@ -176,8 +169,6 @@ class ROSTopicHz(object):
             min_delta = min(self.times)
 
             self.last_printed_tn = self.msg_tn
-        finally:
-            self.lock.release()
         print "average rate: %.3f\n\tmin: %.3fs max: %.3fs std dev: %.5fs window: %s"%(rate, min_delta, max_delta, std_dev, n+1)
     
 def _rostopic_hz(topic, window_size=-1, filter_expr=None):
@@ -1278,7 +1269,16 @@ def publish_message(pub, msg_class, pub_args, rate=None, once=False, verbose=Fal
         roslib.message.fill_message_args(msg, pub_args, keys=keys)
     except roslib.message.ROSMessageException, e:
         raise ROSTopicException(str(e)+"\n\nArgs are: [%s]"%roslib.message.get_printable_message_args(msg))
-    try:        
+    try:
+        
+        if rate is None:
+            s = "publishing and latching [%s]"%(msg) if verbose else "publishing and latching message"
+            if once:
+                s = s + " for %s seconds"%_ONCE_DELAY
+            else:
+                s = s + ". Press ctrl-C to terminate"
+            print s
+        
         if rate is None:
             _publish_latched(pub, msg, once, verbose)
         else:
@@ -1403,14 +1403,6 @@ def file_yaml_arg(filename):
     return bagy_iter
     
 def argv_publish(pub, msg_class, pub_args, rate, once, verbose):
-    if rate is None:
-        s = "publishing and latching [%s]"%msg if verbose else "publishing and latching message"
-        if once:
-            s = s + " for %s seconds"%_ONCE_DELAY
-        else:
-            s = s + ". Press ctrl-C to terminate"
-        print s
-
     publish_message(pub, msg_class, pub_args, rate, once, verbose=verbose)
 
     if once:

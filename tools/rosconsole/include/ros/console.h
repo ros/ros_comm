@@ -35,6 +35,7 @@
 #include <cstdio>
 #include <sstream>
 #include <ros/time.h>
+#include <cstdarg>
 
 // TODO: this header is no longer needed to be included here, but removing it will break various code that incorrectly does not itself include log4cxx/logger.h
 // We should vet all the code using log4cxx directly and make sure the includes/link flags are used in those packages, and then we can remove this include
@@ -75,6 +76,8 @@ namespace ros
 namespace console
 {
 
+void shutdown();
+
 namespace levels
 {
 enum Level
@@ -113,9 +116,12 @@ class FilterBase;
  * @param line Line of code this logging statement is from (usually generated with __LINE__)
  * @param fmt Format string
  */
-void print(FilterBase* filter, log4cxx::Logger* logger, Level level, const char* file, int line, const char* function, const char* fmt, ...) ROSCONSOLE_PRINTF_ATTRIBUTE(7, 8);
+void print(FilterBase* filter, log4cxx::Logger* logger, Level level, 
+	   const char* file, int line, 
+	   const char* function, const char* fmt, ...) ROSCONSOLE_PRINTF_ATTRIBUTE(7, 8);
 
-void print(FilterBase* filter, log4cxx::Logger* logger, Level level, const std::stringstream& str, const char* file, int line, const char* function);
+void print(FilterBase* filter, log4cxx::Logger* logger, Level level, 
+	   const std::stringstream& str, const char* file, int line, const char* function);
 
 struct LogLocation;
 

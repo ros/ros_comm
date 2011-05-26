@@ -41,9 +41,6 @@ rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/multiple_init_fini.xml)
 # Test node inspection functionality
 rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/inspection.xml)
 
-# Test logging functionality
-rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/log.xml)
-
 # Test that advertising a service multiple times fails
 rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/service_adv_multiple.xml)
 
@@ -84,3 +81,9 @@ rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/nonconst_subscriptions.xml)
 rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/subscribe_retry_tcp.xml)
 rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/subscribe_star.xml)
 rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/parameter_validation.xml)
+
+rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/no_remappings.xml)
+rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/local_remappings.xml)
+rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/global_remappings.xml)
+rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/ns_node_remapping.xml)
+rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/search_param.xml)

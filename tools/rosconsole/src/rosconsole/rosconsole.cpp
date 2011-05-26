@@ -54,6 +54,7 @@ namespace console
 {
 
 bool g_initialized = false;
+bool g_shutting_down = false;
 boost::mutex g_init_mutex;
 
 log4cxx::LevelPtr g_level_lookup[ levels::Count ] =
@@ -65,11 +66,17 @@ log4cxx::LevelPtr g_level_lookup[ levels::Count ] =
   log4cxx::Level::getFatal(),
 };
 
-#define COLOR_NORMAL "\033[0m"
-#define COLOR_RED "\033[31m"
-#define COLOR_GREEN "\033[32m"
-#define COLOR_YELLOW "\033[33m"
-
+#ifdef WIN32
+	#define COLOR_NORMAL ""
+	#define COLOR_RED ""
+	#define COLOR_GREEN ""
+	#define COLOR_YELLOW ""
+#else
+	#define COLOR_NORMAL "\033[0m"
+	#define COLOR_RED "\033[31m"
+	#define COLOR_GREEN "\033[32m"
+	#define COLOR_YELLOW "\033[33m"
+#endif
 const char* g_format_string = "[${severity}] [${time}]: ${message}";
 
 struct Token
@@ -475,8 +482,12 @@ static boost::mutex g_print_mutex;
 static boost::shared_array<char> g_print_buffer(new char[INITIAL_BUFFER_SIZE]);
 static size_t g_print_buffer_size = INITIAL_BUFFER_SIZE;
 static boost::thread::id g_printing_thread_id;
-void print(FilterBase* filter, log4cxx::Logger* logger, Level level, const char* file, int line, const char* function, const char* fmt, ...)
+void print(FilterBase* filter, log4cxx::Logger* logger, Level level, 
+	   const char* file, int line, const char* function, const char* fmt, ...)
 {
+  if (g_shutting_down)
+    return;
+
   if (g_printing_thread_id == boost::this_thread::get_id())
   {
     fprintf(stderr, "Warning: recursive print statement has occurred.  Throwing out recursive print.\n");
@@ -538,8 +549,12 @@ void print(FilterBase* filter, log4cxx::Logger* logger, Level level, const char*
   g_printing_thread_id = boost::thread::id();
 }
 
-void print(FilterBase* filter, log4cxx::Logger* logger, Level level, const std::stringstream& ss, const char* file, int line, const char* function)
+void print(FilterBase* filter, log4cxx::Logger* logger, Level level, 
+	   const std::stringstream& ss, const char* file, int line, const char* function)
 {
+  if (g_shutting_down)
+    return;
+
   if (g_printing_thread_id == boost::this_thread::get_id())
   {
     fprintf(stderr, "Warning: recursive print statement has occurred.  Throwing out recursive print.\n");
@@ -656,6 +671,14 @@ public:
   }
 };
 StaticInit g_static_init;
+
+
+void shutdown() 
+{
+  g_shutting_down = true;
+}
+
+
 
 } // namespace console
 } // namespace ros

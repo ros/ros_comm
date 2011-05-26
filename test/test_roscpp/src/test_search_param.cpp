@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2009, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Willow Garage, Inc. nor the names of its
+ *     * Neither the name of the Willow Garage, Inc. nor the names of its
  *       contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
  *
@@ -27,67 +27,37 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* Author: Josh Faust */
-
-/*
- * Test logging functionality
- */
-
-#include <string>
-#include <sstream>
-#include <fstream>
-
+#include <ros/ros.h>
 #include <gtest/gtest.h>
 
-#include <time.h>
-#include <stdlib.h>
+static int argc_;
+static char** argv_;
 
-#include <ros/ros.h>
-#include <ros/file_log.h>
-#include <test_roscpp/TestArray.h>
+#define PRINT(cmd) printf(#cmd"\n"); cmd; printf("\n");
 
-TEST(roscpp, logToFile)
+TEST(SearchParamTest, search_test_A)
 {
-  const std::string log_string = "Testing 1 2 3";
+  ros::NodeHandle nh;
+  ros::param::set("A", "right one!");
+  std::string result;
 
-  log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger(ROSCONSOLE_DEFAULT_NAME);
-  log4cxx::LevelPtr old_level = logger->getLevel();
+  // Sanity check with getParam
+  EXPECT_TRUE(nh.getParam("A", result));
+  EXPECT_STREQ("right one!", result.c_str());
 
-  logger->setLevel(log4cxx::Level::getInfo());
-  ROS_INFO("%s", log_string.c_str());
-  logger->setLevel(old_level);
-
-  // Open the log file, read, and try to find the log string
-  std::string log_file = ros::file_log::getLogFilename();
-  std::ifstream ifs( log_file.c_str() );
-
-  ASSERT_TRUE( ifs.is_open() );
-
-  bool found = false;
-
-  while ( !ifs.eof() )
-  {
-    char line_cstr[2048];
-    ifs.getline( line_cstr, 2048 );
-
-    std::string line = line_cstr;
-    if ( line.find( log_string ) != std::string::npos )
-    {
-      found = true;
-      break;
-    }
-  }
-
-  ASSERT_TRUE( found );
+  // The Actual search Param test
+  std::string full_name;
+  EXPECT_TRUE(nh.searchParam("A", full_name));
+  EXPECT_STREQ("/A", full_name.c_str());
+  EXPECT_TRUE(nh.getParam(full_name, result));
+  EXPECT_STREQ("right one!", result.c_str());
 }
 
-int
-main(int argc, char** argv)
+int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
-
-  ros::init( argc, argv, "log" );
-  ros::NodeHandle nh;
-
+  ros::init(argc, argv, "search_param_tester");
+  argc_ = argc;
+  argv_ = argv;
   return RUN_ALL_TESTS();
 }

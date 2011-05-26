@@ -85,7 +85,9 @@ public:
   }
 
 private:
-  Subscriber(const std::string& topic, const NodeHandle& node_handle, const SubscriptionCallbackHelperPtr& helper);
+
+  Subscriber(const std::string& topic, const NodeHandle& node_handle, 
+	     const SubscriptionCallbackHelperPtr& helper);
 
   class Impl
   {

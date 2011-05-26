@@ -81,10 +81,6 @@ rosbuild_add_gtest_build_flags(multiple_init_fini)
 rosbuild_add_executable(inspection EXCLUDE_FROM_ALL inspection.cpp)
 rosbuild_add_gtest_build_flags(inspection)
 
-# Test logging functionality
-rosbuild_add_executable(log EXCLUDE_FROM_ALL log.cpp)
-rosbuild_add_gtest_build_flags(log)
-
 # Test that advertising a service multiple times fails
 rosbuild_add_executable(service_adv_multiple EXCLUDE_FROM_ALL service_adv_multiple.cpp)
 rosbuild_add_gtest_build_flags(service_adv_multiple)
@@ -155,3 +151,23 @@ rosbuild_declare_test(publisher_for_star_subscriber)
 
 rosbuild_add_executable(parameter_validation EXCLUDE_FROM_ALL parameter_validation.cpp)
 rosbuild_add_gtest_build_flags(parameter_validation)
+
+rosbuild_add_executable(param_locale_avoidance_test EXCLUDE_FROM_ALL param_locale_avoidance_test.cpp)
+rosbuild_add_gtest_build_flags(param_locale_avoidance_test)
+
+rosbuild_add_executable(crashes_under_gprof EXCLUDE_FROM_ALL crashes_under_gprof.cpp)
+
+rosbuild_add_executable(test_remapping EXCLUDE_FROM_ALL test_remapping.cpp)
+rosbuild_add_gtest_build_flags(test_remapping)
+
+rosbuild_add_executable(test_ns_node_remapping EXCLUDE_FROM_ALL test_ns_node_remapping.cpp)
+rosbuild_add_gtest_build_flags(test_ns_node_remapping)
+
+rosbuild_add_executable(test_search_param EXCLUDE_FROM_ALL test_search_param.cpp)
+rosbuild_add_gtest_build_flags(test_search_param)
+
+rosbuild_add_executable(left_right EXCLUDE_FROM_ALL left_right.cpp)
+
+rosbuild_add_executable(string_msg_expect EXCLUDE_FROM_ALL string_msg_expect.cpp)
+rosbuild_add_gtest_build_flags(string_msg_expect)
+

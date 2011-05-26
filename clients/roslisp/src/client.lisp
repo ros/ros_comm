@@ -56,7 +56,7 @@ Set up things so that publish may now be called with this topic.  Also, returns 
   (ensure-node-is-running)
   (setq topic-type (lookup-topic-type topic-type))
   (with-fully-qualified-name topic
-    (with-mutex (*ros-lock*)
+    (with-recursive-lock (*ros-lock*)
       (or (gethash topic *publications*)
           (let ((pub (make-publication :pub-topic-type topic-type :subscriber-connections nil :is-latching latch :last-message nil)))
             (setf (gethash topic *publications*) pub)      
@@ -70,7 +70,7 @@ Set up things so that publish may now be called with this topic.  Also, returns 
 (defun unadvertise (topic)
   (ensure-node-is-running)
   (with-fully-qualified-name topic
-    (with-mutex (*ros-lock*)
+    (with-recursive-lock (*ros-lock*)
       (unless (hash-table-has-key *publications* topic)
         (roslisp-warn "Not publishing on ~a" topic))
       (remhash topic *publications*)
@@ -131,7 +131,7 @@ Postcondition: the node has set up a callback for calls to this service, and reg
   (declare (string service-name) (function function) (symbol service-type))
   (ensure-node-is-running)
   (with-fully-qualified-name service-name
-    (with-mutex (*ros-lock*)
+    (with-recursive-lock (*ros-lock*)
       (let ((info (gethash service-name *services*)))
 	(when info (roslisp-error "Cannot create service ~a as it already exists with info ~a" service-name info)))
 
@@ -241,9 +241,14 @@ Can also be called on a topic that we're already subscribed to - in this case, i
   
   (declare (string topic) (type (or symbol string) topic-type) (function callback))
   (ensure-node-is-running)
-  (setq topic-type (lookup-topic-type topic-type))
+  (handler-case 
+      (setq topic-type (lookup-topic-type topic-type))
+    (error (c)
+      (declare (ignore c))
+      (warn "Couldn't lookup topic type ~a for ~a, so not subscribing." topic-type topic)
+      (return-from subscribe)))
   (with-fully-qualified-name topic
-    (with-mutex (*ros-lock*)
+    (with-recursive-lock (*ros-lock*)
       
       (if (hash-table-has-key *subscriptions* topic)
 
@@ -261,14 +266,22 @@ Can also be called on a topic that we're already subscribed to - in this case, i
                   (topic-thread sub) (sb-thread:make-thread
                                       (subscriber-thread sub)
                                       :name (format nil "Subscriber thread for topic ~a" topic)))
-            (update-publishers topic
-                               (protected-call-to-master ( "registerSubscriber" topic topic-type *xml-rpc-caller-api*) c
-                                 (roslisp-error "Could not contact master at ~a when registering as subscriber to ~a: ~a" *master-uri* topic c)))
-            (make-subscriber :topic topic :subscription sub :callback callback))))))
+            (handler-case
+                (progn 
+                  (update-publishers
+                   topic
+                   (protected-call-to-master ("registerSubscriber" topic topic-type *xml-rpc-caller-api*) c
+                     (roslisp-error "Could not contact master at ~a when registering as subscriber to ~a: ~a"
+                                    *master-uri* topic c)))
+                  (make-subscriber :topic topic :subscription sub :callback callback))
+              (error (c)
+                (warn "Received error ~a when attempting to setup subscription to ~a of type ~a, so not subscribing."
+                      c topic topic-type)
+                (remhash topic *subscriptions*))))))))
 
 (defun unsubscribe (subscriber)
   (check-type subscriber subscriber)
-  (with-mutex (*ros-lock*)  
+  (with-recursive-lock (*ros-lock*)  
     (let ((sub (gethash (subscriber-topic subscriber) *subscriptions*)))
       (assert sub () (format nil "Subscription to topic `~a' invalid." (subscriber-topic subscriber)))
       (setf (callbacks sub) (delete (subscriber-callback subscriber) (callbacks sub)))
@@ -298,7 +311,7 @@ Can also be called on a topic that we're already subscribed to - in this case, i
      ;; Allow the tcp server to respond to any incoming connections
      (handler-bind
          ((error #'(lambda (c)
-                     (with-mutex (*ros-lock*)
+                     (with-recursive-lock (*ros-lock*)
                        (unless (eq *node-status* :running)
                          (ros-info (roslisp event-loop) "Event loop received error ~a.  Node-status is now ~a" c *node-status*)
                          (return))))))

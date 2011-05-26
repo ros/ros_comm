@@ -9,6 +9,12 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/rosgraph_msgs</url>
 
+  <rosbuild2>
+    <msgs>
+      msg/Clock.msg
+      msg/Log.msg
+    </msgs>
+  </rosbuild2>
 </package>
 
 

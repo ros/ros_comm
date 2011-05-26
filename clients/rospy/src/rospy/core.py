@@ -52,6 +52,7 @@ import roslib.rosenv
 import roslib.roslogging
 
 import rospy.exceptions
+import rospy.rostime
 
 from rospy.names import *
 from rospy.impl.validators import ParameterInvalid
@@ -463,7 +464,7 @@ def signal_shutdown(reason):
             t.join(_TIMEOUT_SHUTDOWN_JOIN)
     del _shutdown_threads[:]
     try:
-        time.sleep(0.1) #hack for now until we get rid of all the extra threads
+        rospy.rostime.wallsleep(0.1) #hack for now until we get rid of all the extra threads
     except KeyboardInterrupt: pass
 
 def _ros_signal(sig, stackframe):
@@ -500,7 +501,6 @@ def is_topic(param_name):
         return v
     return validator
 
-_proxies = {} #cache ServerProxys
 def xmlrpcapi(uri):
     """
     @return: instance for calling remote server or None if not a valid URI
@@ -511,7 +511,5 @@ def xmlrpcapi(uri):
     uriValidate = urlparse.urlparse(uri)
     if not uriValidate[0] or not uriValidate[1]:
         return None
-    if not _proxies.has_key(uri):
-        _proxies[uri] = xmlrpclib.ServerProxy(uri)
-    return _proxies[uri]
+    return xmlrpclib.ServerProxy(uri)
 

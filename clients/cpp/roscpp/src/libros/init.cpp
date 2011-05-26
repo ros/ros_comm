@@ -315,6 +315,8 @@ void start()
     signal(SIGINT, basicSigintHandler);
   }
 
+  ros::Time::init();
+
   if (!(g_init_options & init_options::NoRosout))
   {
     g_rosout_appender = new ROSOutAppender;
@@ -356,8 +358,6 @@ void start()
     bool use_sim_time = false;
     param::param("/use_sim_time", use_sim_time, use_sim_time);
 
-    ros::Time::init();
-
     if (use_sim_time)
     {
       Time::setNow(ros::Time());
@@ -379,7 +379,10 @@ void start()
   g_internal_queue_thread = boost::thread(internalCallbackQueueThreadFunc);
   getGlobalCallbackQueue()->enable();
 
-  ROSCPP_LOG_DEBUG("Started node [%s], pid [%d], bound on [%s], xmlrpc port [%d], tcpros port [%d], logging to [%s], using [%s] time", this_node::getName().c_str(), getpid(), network::getHost().c_str(), XMLRPCManager::instance()->getServerPort(), ConnectionManager::instance()->getTCPPort(), file_log::getLogFilename().c_str(), Time::useSystemTime() ? "real" : "sim");
+  ROSCPP_LOG_DEBUG("Started node [%s], pid [%d], bound on [%s], xmlrpc port [%d], tcpros port [%d], using [%s] time", 
+		   this_node::getName().c_str(), getpid(), network::getHost().c_str(), 
+		   XMLRPCManager::instance()->getServerPort(), ConnectionManager::instance()->getTCPPort(), 
+		   Time::useSystemTime() ? "real" : "sim");
 
   // Label used to abort if we've started shutting down in the middle of start(), which can happen in
   // threaded code or if Ctrl-C is pressed while we're initializing
@@ -411,7 +414,9 @@ void init(const M_string& remappings, const std::string& name, uint32_t options)
 
     ROSCONSOLE_AUTOINIT;
     // Disable SIGPIPE
+#ifndef WIN32
     signal(SIGPIPE, SIG_IGN);
+#endif
     network::init(remappings);
     master::init(remappings);
     // names:: namespace is initialized by this_node
@@ -438,6 +443,7 @@ void init(int& argc, char** argv, const std::string& name, uint32_t options)
       std::string local_name = arg.substr(0, pos);
       std::string external_name = arg.substr(pos + 2);
 
+      ROSCPP_LOG_DEBUG("remap: %s => %s", local_name.c_str(), external_name.c_str());
       remappings[local_name] = external_name;
 
       // shuffle everybody down and stuff this guy at the end of argv
@@ -520,13 +526,11 @@ void shutdown()
 {
   boost::recursive_mutex::scoped_lock lock(g_shutting_down_mutex);
   if (g_shutting_down)
-  {
     return;
-  }
+  else
+    g_shutting_down = true;
 
-  ROSCPP_LOG_DEBUG("Shutting down roscpp");
-
-  g_shutting_down = true;
+  ros::console::shutdown();
 
   g_global_queue->disable();
   g_global_queue->clear();
@@ -545,8 +549,7 @@ void shutdown()
   //
   // See https://code.ros.org/trac/ros/ticket/3271
   //
-  log4cxx::LoggerPtr& fo_logger = ros::file_log::getFileOnlyLogger();
-  fo_logger = log4cxx::LoggerPtr();
+  log4cxx::Logger::getRootLogger()->getLoggerRepository()->shutdown();
   
   if (g_started)
   {
@@ -558,8 +561,6 @@ void shutdown()
   }
 
   WallTime end = WallTime::now();
-
-  ROSCPP_LOG_DEBUG("Shutdown finished");
 
   g_started = false;
   g_ok = false;

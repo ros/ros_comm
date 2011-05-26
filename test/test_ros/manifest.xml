@@ -9,6 +9,7 @@
   <depend package="roscpp" />
   <depend package="rostest" />
   <depend package="roslib" />
+  <depend package="rosgraph" />
   <!-- for test nodes -->
   <depend package="std_msgs" />
   <depend package="rosgraph_msgs" />
@@ -16,4 +17,9 @@
   <platform os="ubuntu" version="9.10"/>
   <platform os="ubuntu" version="10.04"/>
   <platform os="macports" version="macports"/>
+
+  <rosbuild2>
+    <msgs></msgs>
+  </rosbuild2>
+
 </package>
