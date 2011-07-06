@@ -16,14 +16,14 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #rosbuild_add_executable(demo src/demo/demo.cpp)
 
 rosbuild_add_library(rosrecorder src/rosrecord/recorder.cpp)
-rosbuild_link_boost(rosrecorder iostreams system)
+rosbuild_link_boost(rosrecorder iostreams system filesystem-mt)
 
 rosbuild_add_executable(rosrecord src/rosrecord/rosrecord.cpp)
 target_link_libraries(rosrecord rosrecorder)
 rosbuild_link_boost(rosrecord iostreams)
 
 rosbuild_add_executable(rosplay src/rosplay/rosplay.cpp src/rosplay/time_publisher.cpp)
-rosbuild_link_boost(rosplay iostreams system)
+rosbuild_link_boost(rosplay iostreams system filesystem)
 
 #INSTALL(TARGETS rosrecord rosplay
 #        RUNTIME DESTINATION $ENV{ROS_ROOT}/bin)
