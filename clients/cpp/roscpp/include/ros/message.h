@@ -28,6 +28,8 @@
 #ifndef ROSCPP_MESSAGE_H
 #define ROSCPP_MESSAGE_H
 
+#warning You shouldn't be using this file
+
 #include "ros/macros.h"
 #include "ros/assert.h"
 #include <string>
@@ -35,6 +37,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/array.hpp>
 #include <stdint.h>
+
 
 #define ROSCPP_MESSAGE_HAS_DEFINITION
 
@@ -46,6 +49,7 @@ typedef std::map<std::string, std::string> M_string;
 /**
  * \deprecated This base-class is deprecated in favor of a template-based serialization and traits system
  */
+#if 0
 class Message
 {
 public:
@@ -73,6 +77,7 @@ public:
 
 typedef boost::shared_ptr<Message> MessagePtr;
 typedef boost::shared_ptr<Message const> MessageConstPtr;
+#endif
 
 #define SROS_SERIALIZE_PRIMITIVE(ptr, data) { memcpy(ptr, &data, sizeof(data)); ptr += sizeof(data); }
 #define SROS_SERIALIZE_BUFFER(ptr, data, data_size) { if (data_size > 0) { memcpy(ptr, data, data_size); ptr += data_size; } }

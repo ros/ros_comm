@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
-# Copyright (c) 2009, Willow Garage, Inc.
+# Copyright (c) 2008, Willow Garage, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,44 +30,35 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+#
 
-PKG = 'rosrecord'
-import roslib; roslib.load_manifest(PKG)
+import roslib
+roslib.load_manifest('test_topic_tools')
+
+import unittest
 import rospy
-import rosrecord
-
+import rostest
 import sys
-import array
-import Image
+from std_msgs.msg import *
 
-def int16_str(d):
-  return array.array('B', [ min(x,255) for x in d ]).tostring()
-  #return array.array('f', [ float(x) for x in d ]).tostring()
+class LatchedSub(unittest.TestCase):
 
-def msg2im(msg):
-  """ Take an image_msgs::Image and return a PIL image """
-  if len(msg.uint8_data.data) == 0 and len(msg.int16_data.data) == 0:
-    return None
-  else:
-    if msg.depth == 'uint8':
-      ma = msg.uint8_data
-      image_data = ma.data
-    else:
-      ma = msg.int16_data
-      image_data = int16_str(ma.data)
-    dim = dict([ (d.label,d.size) for d in ma.layout.dim ])
-    mode = { ('uint8',1) : "L", ('uint8',3) : "RGB", ('int16',1) : "L" }[msg.depth, dim['channel']]
-    (w,h) = (dim['width'], dim['height'])
-    return Image.fromstring(mode, (w,h), image_data)
+  def msg_cb(self, msg):
+    self.success = True
 
-counter = 0
-for topic, msg, t in rosrecord.logplayer(sys.argv[1]):
-  if rospy.is_shutdown():
-    break
-  if topic.endswith("stereo/raw_stereo"):
-    for (mi,c) in [ (msg.left_image, 'L'), (msg.right_image, 'R'), (msg.disparity_image, 'D')]:
-      im = msg2im(mi)
-      if im:
-        ext = { 'L':'png', 'RGB':'png', 'F':'tiff' }[im.mode]
-        im.save("%06d%s.%s" % (counter, c, ext))
-    counter += 1
+
+  def test_latched_sub(self):
+    rospy.init_node('random_sub')
+
+    self.success = False
+
+    sub = rospy.Subscriber("output", String, self.msg_cb)
+
+    while not self.success:
+      rospy.sleep(rospy.Duration.from_sec(0.5))
+
+    self.assertEqual(self.success, True)
+
+if __name__ == '__main__':
+  rostest.rosrun('rosbag', 'latched_sub', LatchedSub, sys.argv)
+

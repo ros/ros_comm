@@ -39,12 +39,12 @@ using namespace topic_tools;
 bool ShapeShifter::uses_old_API_ = false;
 
 ShapeShifter::ShapeShifter()
-  :  ros::Message(),
-     typed(false),
+  :  typed(false),
      msgBuf(NULL),
      msgBufUsed(0),
      msgBufAlloc(0)
-{ }
+{ 
+}
 
 
 ShapeShifter::~ShapeShifter()
@@ -66,13 +66,14 @@ std::string const& ShapeShifter::getMD5Sum()            const { return md5;   }
 std::string const& ShapeShifter::getMessageDefinition() const { return msg_def;  }
 
 
-void ShapeShifter::morph(const std::string& _md5sum, const std::string& _datatype, const std::string& _msg_def)
+void ShapeShifter::morph(const std::string& _md5sum, const std::string& _datatype, const std::string& _msg_def,
+                         const std::string& _latching)
 {
   md5 = _md5sum;
   datatype = _datatype;
   msg_def = _msg_def;
-
-  typed = (md5 != std::string("*"));
+  latching = _latching;
+  typed = md5 != "*";
 }
 
 
@@ -89,82 +90,4 @@ uint32_t ShapeShifter::size() const
 {
   return msgBufUsed;
 }
-
-
-// The following methods are deprecated
-const std::string ShapeShifter::__getDataType() const 
-{
-  uses_old_API_ = true;
-  return getDataType(); 
-}
-
-const std::string ShapeShifter::__getMD5Sum()   const 
-{
-  uses_old_API_ = true;
-  return getMD5Sum(); 
-}
-
-const std::string ShapeShifter::__getMessageDefinition()   const 
-{
-  uses_old_API_ = true;
-  return getMessageDefinition(); 
-}
-
-
-const std::string ShapeShifter::__s_getDataType() 
-{
-  uses_old_API_ = true;
-  return "*"; 
-}
-
-const std::string ShapeShifter::__s_getMD5Sum()   
-{
-  uses_old_API_ = true;
-  return "*"; 
-}
-
-const std::string ShapeShifter::__s_getMessageDefinition()   
-{
-  uses_old_API_ = true;
-  ROS_ASSERT_MSG(0, "Tried to get static message definition of a ShapeShifter.");
-  return "";
-}
-
-
-uint8_t*
-ShapeShifter::serialize(uint8_t *writePtr, uint32_t) const
-{
-  uses_old_API_ = true;
-
-  // yack up what we stored
-  memcpy(writePtr, msgBuf, msgBufUsed);
-  return writePtr + msgBufUsed;
-}
-
-uint8_t*
-ShapeShifter::deserialize(uint8_t *readPtr)
-{
-  uses_old_API_ = true;
-
-  // Set our md5sum, datatype, and definition from the connection header
-  // (Defined in base class)
-   md5 = (*__connection_header)["md5sum"];
-  datatype = (*__connection_header)["type"];
-  msg_def = (*__connection_header)["message_definition"];
-  typed = true;
-
-  // stash this message in our buffer
-  if (__serialized_length > msgBufAlloc)
-  {
-    delete[] msgBuf;
-    msgBuf = new uint8_t[__serialized_length];
-    msgBufAlloc = __serialized_length;
-  }
-  msgBufUsed = __serialized_length;
-  memcpy(msgBuf, readPtr, __serialized_length);
-    
-  return NULL;
-}
-
-
 
