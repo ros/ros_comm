@@ -33,6 +33,8 @@
 #
 # Revision $Id: gensrv_py.py 1030 2008-05-22 22:11:12Z sfkwc $
 
+from __future__ import print_function
+
 """
 ROS message source code generation for rospy.
 
@@ -88,7 +90,7 @@ class SrvGenerator(genutil.Generator):
         outfile = self.outfile_name(outdir, f)
         f = open(outfile, 'w')
         if verbose:
-            print  "... generating %s"%outfile
+            print("... generating %s"%outfile)
         try:
             for mspec, suffix in ((spec.request, REQUEST), (spec.response, RESPONSE)):
                 #outfile = os.path.join(outdir, prefix+suffix+".py")    
