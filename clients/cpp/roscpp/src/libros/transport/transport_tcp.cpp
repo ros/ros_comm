@@ -262,6 +262,14 @@ bool TransportTCP::connect(const std::string& host, int port)
     return false;
   }
 
+  // from daniel stonier:
+#ifdef WIN32
+  // This is hackish, but windows fails at recv() if its slow to connect (e.g. happens with wireless)
+  // recv() needs to check if its connected or not when its asynchronous?
+  Sleep(100);
+#endif
+
+
   std::stringstream ss;
   ss << host << ":" << port << " on socket " << sock_;
   cached_remote_host_ = ss.str();
@@ -603,8 +611,13 @@ void TransportTCP::socketUpdate(int events)
     {
       ROSCPP_LOG_DEBUG("getsockopt failed on socket [%d]", sock_);
     }
-    
+  #ifdef _MSC_VER
+    char err[60];
+    strerror_s(err,60,error);
+    ROSCPP_LOG_DEBUG("Socket %d closed with (ERR|HUP|NVAL) events %d: %s", sock_, events, err);
+  #else
     ROSCPP_LOG_DEBUG("Socket %d closed with (ERR|HUP|NVAL) events %d: %s", sock_, events, strerror(error));
+  #endif
     close();
   }
 }

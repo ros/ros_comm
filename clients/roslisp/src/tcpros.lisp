@@ -40,6 +40,7 @@
 
 (in-package :roslisp)
 
+(defparameter *tcp-timeout* 5.0 "How many seconds to wait until giving up")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utility
@@ -156,11 +157,21 @@
 
 
 
+(defparameter *setup-tcpros-subscription-max-retry* 3)
 
 (defun setup-tcpros-subscription (hostname port topic)
   "Connect to the publisher at the given address and do the header exchange, then start a thread that will deserialize messages onto the queue for this topic."
   (check-type hostname string)
-
+  (dotimes (retry-count *setup-tcpros-subscription-max-retry* (error 'simple-error :format-control "Timeout when
+    trying to communicate with publisher ~a:~a for topic ~a, check publisher node
+    status. Change *tcp-timeout* to increase wait-time."
+                                     :format-arguments (list hostname
+                                     port topic)))
+    (when (> retry-count 0) (ros-warn (roslisp tcpros) "Failed to communicate
+      with publisher ~a:~a for topic ~a, retrying: ~a" hostname port
+      topic retry-count))
+     (handler-case
+        (return
   (mvbind (str connection) (tcp-connect hostname port)
     (ros-debug (roslisp tcp) "~&Successfully connected to ~a:~a for topic ~a" hostname port topic)
     (handler-case
@@ -176,7 +187,7 @@
                                 "md5sum" (md5sum topic) 
                                 "type" (ros-datatype topic)
                                 "callerid" (caller-id))
-            (let ((response (parse-tcpros-header str)))
+            (let ((response (with-function-timeout *tcp-timeout* (lambda () (parse-tcpros-header str)))))
 
               (when (assoc "error" response :test #'equal)
                 (roslisp-error "During TCPROS handshake, publisher sent error message ~a" (cdr (assoc "error" response :test #'equal))))
@@ -226,7 +237,8 @@
         (send-tcpros-header str "error" (msg c))
         (socket-close connection)
         (error c)))))
-
+  (function-timeout () ;;just retry
+      nil))) )
 
 
 (defvar *stream-error-in-progress* nil)
@@ -294,14 +306,20 @@
 
 
 
-
+(define-condition service-error (simple-error) ())
 
 (defun handle-single-service-request (stream request-class-name callback)
   ;; Read length
   (dotimes (i 4)
     (read-byte stream))
+  (flet ((write-service-error (msg)
+           (assert (stringp msg))
+           (write-byte 0 stream)
+           (serialize-string msg stream)
+           (finish-output stream)))
   (let ((msg (deserialize request-class-name stream)))
     (ros-debug (roslisp service tcp) "Deserialized service request of type ~a" request-class-name)
+      (handler-case
     (let ((response (funcall callback msg)))
       (ros-debug (roslisp service tcp) "Callback returned")
       (write-byte 1 stream)
@@ -310,26 +328,58 @@
       (serialize response stream)
       (ros-debug (roslisp service tcp) "Wrote response; flushing stream.")
       (finish-output stream)
-      (ros-debug (roslisp service tcp) "Finished handling service request"))))
+            (ros-debug (roslisp service tcp) "Finished handling service request"))
+        (service-error (e)
+          (let ((msg (apply #'format nil
+                            (simple-condition-format-control e)
+                            (simple-condition-format-arguments e))))
+            (ros-debug (roslisp service tcp) "Service-error during request ~a:~% ~a" e msg)
+            (write-service-error
+             (concatenate 'string "service cannot process request: " msg))))
+        (error (e)
+          (let ((msg (format nil "~a" e)))
+            (ros-error (roslisp service tcp) "Error processing request ~a:~% ~a" e msg)
+            (write-service-error
+             (concatenate 'string "error processing request: " msg))))))))
 
 
 (defun tcpros-call-service (hostname port service-name req response-type)
   (check-type hostname string)
+  (dotimes (retry-count *setup-tcpros-subscription-max-retry* (error 'simple-error
+                                :format-control "Timeout when
+    trying to communicate with ~a:~a for service ~a, check service node
+    status. Change *tcp-timeout* to increase wait-time."
+                                 :format-arguments (list hostname port
+                                                         service-name)))
+    (when (> retry-count 0) (ros-warn (roslisp tcpros) "Failed to communicate
+      with ~a:~a for service-name ~a, retrying: ~a" hostname port
+      service-name retry-count))
+    (handler-case
+        (return
   (mvbind (str socket) (tcp-connect hostname port)
     (unwind-protect
          (progn
            (send-tcpros-header str "service" service-name "md5sum" (md5sum (class-name (class-of req))) 
                                "callerid" (caller-id))
-           (parse-tcpros-header str)
+           (with-function-timeout *tcp-timeout* (lambda () (parse-tcpros-header str)))
            (tcpros-write req str)
            (let ((ok-byte (read-byte str)))
              (unless (eq ok-byte 1)
-               (roslisp-error "service-call to ~a:~a with request ~a failed" hostname port req))
+               (let (message )
+                 (handler-case
+                     (setf message (deserialize-string str))
+                   (error nil))
+                 (when (null message)
+                   (setf message ""))
+                 (unless (string= message "")
+                   (setf message (concatenate 'string " with message: " message)))
+                 (roslisp-error "service-call to ~a:~a with request ~a failed~a" hostname port req message)))
              (let ((len (deserialize-int str)))
                (declare (ignore len))
                (deserialize response-type str))))
       (socket-close socket))))
-
+  (function-timeout () ;;just retry
+        nil))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Internal

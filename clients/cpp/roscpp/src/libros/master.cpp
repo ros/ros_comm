@@ -57,7 +57,12 @@ void init(const M_string& remappings)
 
   if (g_uri.empty())
   {
-    char *master_uri_env = getenv("ROS_MASTER_URI");
+    char *master_uri_env = NULL;
+    #ifdef _MSC_VER
+      _dupenv_s(&master_uri_env, NULL, "ROS_MASTER_URI");
+    #else
+      master_uri_env = getenv("ROS_MASTER_URI");
+    #endif
     if (!master_uri_env)
     {
       ROS_FATAL( "ROS_MASTER_URI is not defined in the environment. Either " \
@@ -71,6 +76,11 @@ void init(const M_string& remappings)
     }
 
     g_uri = master_uri_env;
+
+#ifdef _MSC_VER
+    // http://msdn.microsoft.com/en-us/library/ms175774(v=vs.80).aspx
+    free(master_uri_env);
+#endif
   }
 
   // Split URI into

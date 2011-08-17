@@ -116,12 +116,6 @@ Set up things so that publish may now be called with this topic.  Also, returns 
 	(incf num-written (tcpros-write message (subscriber-stream sub))))
       )))
 
-(defun publish-on-topic (&rest args)
-  "Alias for publish (backwards compatibility)"
-  ;; Remove by Jan 2010
-  (ros-warn roslisp "Deprecated usage: use publish instead of publish-on-topic")
-  (apply #'publish args))
-
 
 
 (defun register-service-fn (service-name function service-type)
@@ -331,9 +325,12 @@ Can also be called on a topic that we're already subscribed to - in this case, i
 	   (let ((callbacks (callbacks sub)))
 	     (mvbind (item exists) (dequeue-wait q)
 	       (if exists
-		   (dolist (callback callbacks)
-		     (funcall callback item))
-		   (return))))))))
+           (dolist (callback callbacks)
+             (handler-case
+                 (funcall callback item)
+               (error (e)
+                 (ros-error (roslisp service tcp) "Error during subscriber callback: '~a' for topic item: ~%~a " e item))))
+           (return))))))))
 	   
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

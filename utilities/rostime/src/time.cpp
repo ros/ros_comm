@@ -31,6 +31,11 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
+#ifdef _MSC_VER
+  #ifndef NOMINMAX
+    #define NOMINMAX
+  #endif
+#endif
 
 #include "ros/time.h"
 #include "ros/impl/time.h"
@@ -86,7 +91,10 @@ namespace ros
    * These have only internal linkage to this translation unit.
    * (i.e. not exposed to users of the time classes)
    */
-  void ros_walltime(uint32_t& sec, uint32_t& nsec) throw(NoHighPerformanceTimersException)
+  void ros_walltime(uint32_t& sec, uint32_t& nsec) 
+#ifndef WIN32    
+    throw(NoHighPerformanceTimersException)
+#endif
   {
 #ifndef WIN32
 #if HAS_CLOCK_GETTIME
@@ -145,7 +153,7 @@ namespace ros
     // also, think about clock wraparound. seems extremely unlikey, but possible
     double d_delta_cpu_time = delta_cpu_time.QuadPart / (double) cpu_freq.QuadPart;
     uint32_t delta_sec = (uint32_t) floor(d_delta_cpu_time);
-    uint32_t delta_nsec = (uint32_t) round((d_delta_cpu_time-delta_sec) * 1e9);
+    uint32_t delta_nsec = (uint32_t) boost::math::round((d_delta_cpu_time-delta_sec) * 1e9);
 
     int64_t sec_sum  = (int64_t)start_sec  + (int64_t)delta_sec;
     int64_t nsec_sum = (int64_t)start_nsec + (int64_t)delta_nsec;
@@ -166,8 +174,8 @@ namespace ros
     HANDLE timer = NULL;
     LARGE_INTEGER sleepTime;
     sleepTime.QuadPart = -
-      static_cast<uint64_t>(sec)*10000000LL -
-      static_cast<uint64_t>(nsec) / 100LL;
+      static_cast<int64_t>(sec)*10000000LL -
+      static_cast<int64_t>(nsec) / 100LL;
 
     timer = CreateWaitableTimer(NULL, TRUE, NULL);
     if (timer == NULL)

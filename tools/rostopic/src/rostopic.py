@@ -34,7 +34,7 @@
 # Revision $Id$
 
 # make sure we aren't using floor division
-from __future__ import division, with_statement
+from __future__ import division, print_function
 
 NAME='rostopic'
 
@@ -45,6 +45,7 @@ import math
 import socket
 import time
 import traceback
+import yaml
 import xmlrpclib
 
 from urlparse import urlparse
@@ -83,7 +84,8 @@ def _master_get_topic_types(master):
     try:
         val = master.getTopicTypes()
     except xmlrpclib.Fault:
-        print >> sys.stderr, "WARNING: rostopic is being used against an older version of ROS/roscore"
+        #TODO: remove, this is for 1.1
+        sys.stderr.write("WARNING: rostopic is being used against an older version of ROS/roscore\n")
         val = master.getPublishedTopics('/')
     return val
 
@@ -120,7 +122,7 @@ class ROSTopicHz(object):
             # time reset
             if curr_rostime.is_zero():
                 if len(self.times) > 0:
-                    print "time has reset, resetting counters"
+                    print("time has reset, resetting counters")
                     self.times = []
                 return
             
@@ -144,7 +146,7 @@ class ROSTopicHz(object):
         if not self.times:
             return
         elif self.msg_tn == self.last_printed_tn:
-            print "no new messages"
+            print("no new messages")
             return
         with self.lock:
             #frequency
@@ -169,7 +171,7 @@ class ROSTopicHz(object):
             min_delta = min(self.times)
 
             self.last_printed_tn = self.msg_tn
-        print "average rate: %.3f\n\tmin: %.3fs max: %.3fs std dev: %.5fs window: %s"%(rate, min_delta, max_delta, std_dev, n+1)
+        print("average rate: %.3f\n\tmin: %.3fs max: %.3fs std dev: %.5fs window: %s"%(rate, min_delta, max_delta, std_dev, n+1))
     
 def _rostopic_hz(topic, window_size=-1, filter_expr=None):
     """
@@ -193,7 +195,7 @@ def _rostopic_hz(topic, window_size=-1, filter_expr=None):
         sub = rospy.Subscriber(real_topic, msg_class, rt.callback_hz)
     else:
         sub = rospy.Subscriber(real_topic, rospy.AnyMsg, rt.callback_hz)        
-    print "subscribed to [%s]"%real_topic
+    print("subscribed to [%s]"%real_topic)
     while not rospy.is_shutdown():
         time.sleep(1.0)
         rt.print_hz()
@@ -220,7 +222,6 @@ class ROSTopicBandwidth(object):
                     self.times.pop(0)
                     self.sizes.pop(0)
             except:
-                import traceback
                 traceback.print_exc()
 
     def print_bw(self):
@@ -250,7 +251,7 @@ class ROSTopicBandwidth(object):
         else:
             bw, mean, min_s, max_s = ["%.2fMB"%(v/1000000) for v in [bytes_per_s, mean, min_s, max_s]]
             
-        print "average: %s/s\n\tmean: %s min: %s max: %s window: %s"%(bw, mean, min_s, max_s, n)
+        print("average: %s/s\n\tmean: %s min: %s max: %s window: %s"%(bw, mean, min_s, max_s, n))
 
 def _rostopic_bw(topic, window_size=-1):
     """
@@ -267,7 +268,7 @@ def _rostopic_bw(topic, window_size=-1):
     # we use a large buffer size as we don't know what sort of messages we're dealing with.
     # may parameterize this in the future
     sub = rospy.Subscriber(real_topic, rospy.AnyMsg, rt.callback)
-    print "subscribed to [%s]"%real_topic
+    print("subscribed to [%s]"%real_topic)
     while not rospy.is_shutdown():
         time.sleep(1.0)
         rt.print_bw()
@@ -288,7 +289,7 @@ def msgevalgen(pattern):
         # I will probably replace this with some less beautiful but more efficient
         try:
             return eval('msg'+'.'.join(pattern.split('/')))
-        except AttributeError, e:
+        except AttributeError as e:
             sys.stdout.write("no field named [%s]"%pattern+"\n")
             return None
     return msgeval
@@ -338,7 +339,7 @@ def get_topic_type(topic, blocking=False):
     if topic_type:
         return topic_type, real_topic, msg_eval
     elif blocking:
-        print >> sys.stderr, "WARNING: topic [%s] does not appear to be published yet"%topic
+        sys.stderr.write("WARNING: topic [%s] does not appear to be published yet\n"%topic)
         while not rospy.is_shutdown():
             topic_type, real_topic, msg_eval = _get_topic_type(topic)
             if topic_type:
@@ -364,8 +365,6 @@ def get_topic_class(topic, blocking=False):
         raise ROSTopicException("Cannot load message class for [%s]. Are your messages built?"%topic_type)
     return msg_class, real_topic, msg_eval
 
-from itertools import izip
-
 def _str_plot_fields(val, f, field_filter):
     """
     get CSV representation of fields used by _str_plot
@@ -390,7 +389,7 @@ def _sub_str_plot_fields(val, f, field_filter):
             fields = list(field_filter(val))
         else:
             fields = val.__slots__
-        sub = (_sub_str_plot_fields(_convert_getattr(val, a, t), f+"."+a, field_filter) for a,t in itertools.izip(val.__slots__, val._slot_types) if a in fields)
+        sub = (_sub_str_plot_fields(_convert_getattr(val, a, t), f+"."+a, field_filter) for a,t in zip(val.__slots__, val._slot_types) if a in fields)
         sub = [s for s in sub if s is not None]
         if sub:
             return ','.join([s for s in sub])
@@ -410,7 +409,7 @@ def _sub_str_plot_fields(val, f, field_filter):
             return ','.join(["%s%s"%(f,x) for x in xrange(0,len(val))])
         elif isinstance(val0, rospy.Message):
             labels = ["%s%s"%(f,x) for x in xrange(0,len(val))]
-            sub = [s for s in [_sub_str_plot_fields(v, sf, field_filter) for v,sf in izip(val, labels)] if s]
+            sub = [s for s in [_sub_str_plot_fields(v, sf, field_filter) for v,sf in zip(val, labels)] if s]
             if sub:
                 return ','.join([s for s in sub])
     return None
@@ -464,7 +463,7 @@ def _sub_str_plot(val, time_offset, field_filter):
         else:
             fields = val.__slots__            
 
-        sub = (_sub_str_plot(_convert_getattr(val, f, t), time_offset, field_filter) for f,t in itertools.izip(val.__slots__, val._slot_types) if f in fields)
+        sub = (_sub_str_plot(_convert_getattr(val, f, t), time_offset, field_filter) for f,t in zip(val.__slots__, val._slot_types) if f in fields)
         sub = [s for s in sub if s is not None]
         if sub:
             return ','.join(sub)
@@ -644,9 +643,9 @@ def _rostopic_type(topic):
     """
     t, _, _ = get_topic_type(topic, blocking=False)
     if t:
-        print t
+        print(t)
     else:
-        print >> sys.stderr, 'unknown topic type [%s]'%topic
+        sys.stderr.write('unknown topic type [%s]\n'%topic)
         sys.exit(1)
 
 def _rostopic_echo_bag(callback_echo, bag_file):
@@ -711,7 +710,7 @@ def _rostopic_echo(topic, callback_echo, bag_file=None, echo_all_topics=False):
             if callback_echo.count == 0 and \
                     not rospy.is_shutdown() and \
                     not callback_echo.done:
-                print >> sys.stderr, "WARNING: no messages received and simulated time is active.\nIs /clock being published?"
+                sys.stderr.write("WARNING: no messages received and simulated time is active.\nIs /clock being published?\n")
 
         while not rospy.is_shutdown() and not callback_echo.done:
             time.sleep(0.1)
@@ -770,12 +769,12 @@ def _rostopic_list_bag(bag_file, topic=None):
                     break
             import time
             earliest, latest = [time.strftime("%d %b %Y %H:%M:%S", time.localtime(t.to_time())) for t in (earliest, latest)]
-            print "%s message(s) from %s to %s"%(count, earliest, latest)
+            print("%s message(s) from %s to %s"%(count, earliest, latest))
         else:
             topics = set()
             for top, msg, _ in b.read_messages(raw=True):
                 if top not in topics:
-                    print top
+                    print(top)
                     topics.add(top)
                 if rospy.is_shutdown():
                     break
@@ -791,22 +790,22 @@ def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, ve
         topic_types = _master_get_topic_types(master)
 
         if not subscribers_only:
-            print "\n%sPublished topics:"%indent
+            print("\n%sPublished topics:"%indent)
             for t, l in pubs:
                 if len(l) > 1:
-                    print indent+" * %s [%s] %s publishers"%(t, topic_type(t, topic_types), len(l))
+                    print(indent+" * %s [%s] %s publishers"%(t, topic_type(t, topic_types), len(l)))
                 else:
-                    print indent+" * %s [%s] 1 publisher"%(t, topic_type(t, topic_types))                    
+                    print(indent+" * %s [%s] 1 publisher"%(t, topic_type(t, topic_types)))                    
 
         if not publishers_only:
-            print indent
-            print indent+"Subscribed topics:"
+            print(indent)
+            print(indent+"Subscribed topics:")
             for t,l in subs:
                 if len(l) > 1:
-                    print indent+" * %s [%s] %s subscribers"%(t, topic_type(t, topic_types), len(l))
+                    print(indent+" * %s [%s] %s subscribers"%(t, topic_type(t, topic_types), len(l)))
                 else:
-                    print indent+" * %s [%s] 1 subscriber"%(t, topic_type(t, topic_types))
-        print ''
+                    print(indent+" * %s [%s] 1 subscriber"%(t, topic_type(t, topic_types)))
+        print('')
     else:
         if publishers_only:
             topics = [t for t,_ in pubs]
@@ -815,7 +814,7 @@ def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, ve
         else:
             topics = list(set([t for t,_ in pubs] + [t for t,_ in subs]))                
         topics.sort()
-        print '\n'.join(["%s%s"%(indent, t) for t in topics])
+        print('\n'.join(["%s%s"%(indent, t) for t in topics]))
 
 # #3145
 def _rostopic_list_group_by_host(master, pubs, subs):
@@ -885,7 +884,7 @@ def _rostopic_list(topic, verbose=False,
     if group_by_host:
         # #3145
         host_pub_topics, host_sub_topics  = _rostopic_list_group_by_host(master, pubs, subs)
-        for hostname in set(host_pub_topics.keys() + host_sub_topics.keys()):
+        for hostname in set(list(host_pub_topics.keys()) + list(host_sub_topics.keys())): #py3k
             pubs, subs = host_pub_topics.get(hostname,[]), host_sub_topics.get(hostname, []),
             if (pubs and not subscribers_only) or (subs and not publishers_only):
                 print("Host [%s]:" % hostname)
@@ -955,7 +954,7 @@ def _rostopic_info(topic):
     @param topic: topic name 
     @type  topic: str
     """
-    print get_info_text(topic)
+    print(get_info_text(topic))
             
 ##########################################################################################
 # COMMAND PROCESSING #####################################################################
@@ -1039,13 +1038,13 @@ def _rostopic_cmd_echo(argv):
     try:
         _rostopic_echo(topic, callback_echo, bag_file=options.bag)
     except socket.error:
-        print >> sys.stderr, "Network communication failed. Most likely failed to communicate with master."
+        sys.stderr.write("Network communication failed. Most likely failed to communicate with master.\n")
 
 def create_field_filter(echo_nostr, echo_noarr):
     def field_filter(val):
         fields = val.__slots__
         field_types = val._slot_types
-        for f, t in itertools.izip(val.__slots__, val._slot_types):
+        for f, t in zip(val.__slots__, val._slot_types):
             if echo_noarr and '[' in t:
                 continue
             elif echo_nostr and 'string' in t:
@@ -1156,7 +1155,7 @@ def _rostopic_cmd_find(argv=sys.argv):
         parser.error("please specify a message type")
     if len(args) > 1:
         parser.error("you may only specify one message type")
-    print '\n'.join(find_by_type(args[0]))
+    print('\n'.join(find_by_type(args[0])))
     
 
 def create_publisher(topic_name, topic_type, latch):
@@ -1207,7 +1206,7 @@ def _publish_at_rate(pub, msg, rate, verbose=False):
         raise ROSTopicException("Rate must be a number")
     while not rospy.is_shutdown():
         if verbose:
-            print "publishing %s"%msg
+            print("publishing %s"%msg)
         pub.publish(msg)
         r.sleep()
 
@@ -1227,7 +1226,7 @@ def _publish_latched(pub, msg, once=False, verbose=False):
     """
     try:
         pub.publish(msg)
-    except TypeError, e:
+    except TypeError as e:
         raise ROSTopicException(str(e))
 
     if not once:
@@ -1268,7 +1267,7 @@ def publish_message(pub, msg_class, pub_args, rate=None, once=False, verbose=Fal
         import std_msgs.msg
         keys = { 'now': now, 'auto': std_msgs.msg.Header(stamp=now) }
         roslib.message.fill_message_args(msg, pub_args, keys=keys)
-    except roslib.message.ROSMessageException, e:
+    except roslib.message.ROSMessageException as e:
         raise ROSTopicException(str(e)+"\n\nArgs are: [%s]"%roslib.message.get_printable_message_args(msg))
     try:
         
@@ -1278,14 +1277,14 @@ def publish_message(pub, msg_class, pub_args, rate=None, once=False, verbose=Fal
                 s = s + " for %s seconds"%_ONCE_DELAY
             else:
                 s = s + ". Press ctrl-C to terminate"
-            print s
+            print(s)
         
         if rate is None:
             _publish_latched(pub, msg, once, verbose)
         else:
             _publish_at_rate(pub, msg, rate, verbose)
             
-    except rospy.ROSSerializationException, e:
+    except rospy.ROSSerializationException as e:
         import rosmsg
         # we could just print the message definition, but rosmsg is more readable
         raise ROSTopicException("Unable to publish message. One of the fields has an incorrect type:\n"+\
@@ -1299,11 +1298,6 @@ def _rostopic_cmd_pub(argv):
     @param argv: [str]
     @raise ROSTopicException: if call command cannot be executed
     """
-    try:
-        import yaml
-    except ImportError, e:
-        raise ROSTopicException("Cannot import yaml. Please make sure the pyyaml system dependency is installed")
-
     args = argv[2:]
     from optparse import OptionParser
     parser = OptionParser(usage="usage: %prog pub /topic type [args...]", prog=NAME)
@@ -1352,7 +1346,7 @@ def _rostopic_cmd_pub(argv):
         pub_args = []
         for arg in args[2:]:
             pub_args.append(yaml.load(arg))
-    except Exception, e:
+    except Exception as e:
         parser.error("Argument error: "+str(e))
 
     # make sure master is online. we wait until after we've parsed the
@@ -1399,7 +1393,7 @@ def file_yaml_arg(filename):
                 data = yaml.load_all(f)
                 for d in data:
                     yield [d]
-        except yaml.YAMLError, e:
+        except yaml.YAMLError as e:
             raise ROSTopicException("invalid YAML in file: %s"%(str(e)))
     return bagy_iter
     
@@ -1488,8 +1482,8 @@ def param_publish(pub, msg_class, param_name, rate, verbose):
         try:
             if publish:
                 publish_message(pub, msg_class, pub_args, None, True, verbose=verbose)
-        except ValueError, e:
-            print >> sys.stderr, str(e)
+        except ValueError as e:
+            sys.stderr.write("%s\n"%str(e))
             break
         if r is not None:
             r.sleep()
@@ -1545,8 +1539,8 @@ def stdin_publish(pub, msg_class, rate, once, filename, verbose):
                 # but, for now, this is the best re-use of the
                 # underlying methods.
                 publish_message(pub, msg_class, pub_args, None, bool(r) or once, verbose=verbose)
-            except ValueError, e:
-                print >> sys.stderr, str(e)
+            except ValueError as e:
+                sys.stderr.write("%s\n"%str(e))
                 break
         if r is not None:
             r.sleep()
@@ -1560,7 +1554,7 @@ def stdin_publish(pub, msg_class, rate, once, filename, verbose):
                 publish_message(pub, msg_class, pub_args, None, True, verbose=verbose)
                 if r is not None:
                     r.sleep()
-            except ValueError, e:
+            except ValueError as e:
                 break
 
 def stdin_yaml_arg():
@@ -1590,8 +1584,8 @@ def stdin_yaml_arg():
             if arg.strip() == '---': # End of document
                 try:
                     loaded = yaml.load(buff.rstrip())
-                except Exception, e:
-                    print >> sys.stderr, "Invalid YAML: %s"%str(e)
+                except Exception as e:
+                    sys.stderr.write("Invalid YAML: %s\n"%str(e))
                 if loaded is not None:
                     yield loaded
             elif arg == '': #EOF
@@ -1669,7 +1663,7 @@ def _rostopic_cmd_info(argv):
         sys.exit(exitval)
             
 def _fullusage():
-    print """rostopic is a command-line tool for printing information about ROS Topics.
+    print("""rostopic is a command-line tool for printing information about ROS Topics.
 
 Commands:
 \trostopic bw\tdisplay bandwidth used by topic
@@ -1682,7 +1676,7 @@ Commands:
 \trostopic type\tprint topic type
 
 Type rostopic <command> -h for more detailed usage, e.g. 'rostopic echo -h'
-"""
+""")
     sys.exit(os.EX_USAGE)
 
 def rostopicmain(argv=None):
@@ -1715,17 +1709,17 @@ def rostopicmain(argv=None):
         else:
             _fullusage()
     except socket.error:
-        print >> sys.stderr, "Network communication failed. Most likely failed to communicate with master."
+        sys.stderr.write("Network communication failed. Most likely failed to communicate with master.\n")
         sys.exit(1)
-    except rosbag.ROSBagException, e:
-        print >> sys.stderr, "ERROR: unable to use bag file: "+str(e)
+    except rosbag.ROSBagException as e:
+        sys.stderr.write("ERROR: unable to use bag file: %s\n"%str(e))
         sys.exit(1)
     except roslib.exceptions.ROSLibException, e:
         # mainly for invalid master URI or rosgraph.masterapi.ROSMasterException
-        print >> sys.stderr, "ERROR: "+str(e)
+        sys.stderr.write("ERROR: %s\n"%str(e))
         sys.exit(1)
     except ROSTopicException, e:
-        print >> sys.stderr, "ERROR: "+str(e)
+        sys.stderr.write("ERROR: %s\n"%str(e))
         sys.exit(1)
     except KeyboardInterrupt: pass
     except rospy.ROSInterruptException: pass
