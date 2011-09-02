@@ -12,7 +12,11 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #rosbuild_add_executable(demo src/demo/demo.cpp)
 
 rosbuild_add_library(rosrecorder src/rosrecord/recorder.cpp)
+if (${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
+rosbuild_link_boost(rosrecorder iostreams system filesystem)
+else (${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
 rosbuild_link_boost(rosrecorder iostreams system filesystem-mt)
+endif (${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
 
 rosbuild_add_executable(rosrecord src/rosrecord/rosrecord.cpp)
 target_link_libraries(rosrecord rosrecorder)
