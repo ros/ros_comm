@@ -62,9 +62,8 @@ python-imaging:
   arch: python-imaging
   macports: py26-pil
   osxbrew:
-    lion:
-      homebrew:
-        packages: [ pil ]
+    pip:
+      packages: [ PIL ]
   gentoo: dev-python/imaging
   freebsd: py27-imaging
 python-numpy:
