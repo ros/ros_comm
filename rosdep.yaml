@@ -7,9 +7,8 @@ apr:
   rhel: apr-devel apr-util
   macports: apr apr-util
   osxbrew:
-    lion:
-      homebrew:
-        packages: |
+    homebrew:
+      packages: |
   gentoo: dev-libs/apr dev-libs/apr-util
   cygwin: libapr1 libaprutil1
   freebsd: builtin # i.e. ignore, only needed to manually build log4cxx on other OSes
@@ -46,10 +45,9 @@ log4cxx:
     if ! pacman -Q log4cxx; then yaourt -S log4cxx; fi
   macports: log4cxx
   osxbrew:
-    lion:
-      homebrew:
-        packages: [ log4cxx ]
-        args: [ --universal ]
+    homebrew:
+       packages: [ log4cxx ]
+       args: [ --universal ]
   gentoo: dev-libs/log4cxx
   cygwin: liblog4cxx-devel
   freebsd: log4cxx
@@ -75,9 +73,8 @@ python-numpy:
   arch: python2-numpy
   macports: py26-numpy
   osxbrew:
-    lion:
-      pip:
-        packages: [ numpy ]
+    pip:
+      packages: [ numpy ]
   gentoo: dev-python/numpy
   freebsd: py-numpy
 python-matplotlib:
@@ -86,10 +83,9 @@ python-matplotlib:
   debian: python-matplotlib
   macports: py26-matplotlib
   osxbrew:
-    lion:
-      pip:
-        packages: [ matplotlib ]
-        alt_install_cmd: '-e git+https://github.com/matplotlib/matplotlib#egg=matplotlib-dev'
+    pip:
+       packages: [ matplotlib ]
+       alt_install_cmd: '-e git+https://github.com/matplotlib/matplotlib#egg=matplotlib-dev'
   opensuse: python-matplotlib
   fedora: python-matplotlib
   rhel: python-matplotlib
@@ -102,9 +98,8 @@ paramiko:
   fedora: python-paramiko
   macports: py26-paramiko
   osxbrew:
-    lion:
-      pip:
-        packages: [ paramiko ]
+    pip:
+      packages: [ paramiko ]
   gentoo: dev-python/paramiko
   freebsd: py27-paramiko
   arch: python-paramiko
