@@ -33,6 +33,8 @@ rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/pubsub_unadv.xml)
 # Call a service
 rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/service_call.xml)
 
+rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/service_deadlock.xml)
+
 rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/service_call_unadv.xml)
 
 # Repeatedly call ros::init() and ros::fini()
@@ -47,11 +49,17 @@ rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/service_adv_multiple.xml)
 # Test that the second node to advertise a service "wins"
 rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/service_multiple_providers.xml)
 
+# Test namespaces
+rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/namespaces.xml)
+
 # Test command-line name remapping
 rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/name_remapping.xml)
 
-# Test namespaces
-rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/namespaces.xml)
+rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/name_not_remappable.xml)
+
+# Test command-line name remapping
+rosbuild_add_rostest(
+  ${CMAKE_CURRENT_SOURCE_DIR}/name_remapping_ROS_NAMESPACE.xml)
 
 # Test params
 rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/params.xml)

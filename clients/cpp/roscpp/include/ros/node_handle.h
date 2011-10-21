@@ -34,6 +34,7 @@
 #include "ros/service_server.h"
 #include "ros/service_client.h"
 #include "ros/timer.h"
+#include "ros/rate.h"
 #include "ros/wall_timer.h"
 #include "ros/advertise_options.h"
 #include "ros/advertise_service_options.h"
@@ -1172,15 +1173,16 @@ if (handle)
    * When the Timer (and all copies of it) returned goes out of scope, the timer will automatically
    * be stopped, and the callback will no longer be called.
    *
-   * \param period The period at which to call the callback
+   * \param r The rate at which to call the callback
    * \param callback The method to call
    * \param obj The object to call the method on
    * \param oneshot If true, this timer will only fire once
+   * \param autostart If true (default), return timer that is already started
    */
-  template<class T>
-  Timer createTimer(Duration period, void(T::*callback)(const TimerEvent&) const, T* obj, bool oneshot = false) const
+  template<class Handler, class Obj>
+  Timer createTimer(Rate r, Handler h, Obj o, bool oneshot = false, bool autostart = true) const
   {
-    return createTimer(period, boost::bind(callback, obj, _1), oneshot);
+    return createTimer(r.expectedCycleTime(), h, o, oneshot, autostart);
   }
 
   /**
@@ -1194,11 +1196,33 @@ if (handle)
    * \param callback The method to call
    * \param obj The object to call the method on
    * \param oneshot If true, this timer will only fire once
+   * \param autostart If true (default), return timer that is already started
    */
   template<class T>
-  Timer createTimer(Duration period, void(T::*callback)(const TimerEvent&), T* obj, bool oneshot = false) const
+  Timer createTimer(Duration period, void(T::*callback)(const TimerEvent&) const, T* obj, 
+                    bool oneshot = false, bool autostart = true) const
   {
-    return createTimer(period, boost::bind(callback, obj, _1), oneshot);
+    return createTimer(period, boost::bind(callback, obj, _1), oneshot, autostart);
+  }
+
+  /**
+   * \brief Create a timer which will call a callback at the specified rate.  This variant takes
+   * a class member function, and a bare pointer to the object to call the method on.
+   *
+   * When the Timer (and all copies of it) returned goes out of scope, the timer will automatically
+   * be stopped, and the callback will no longer be called.
+   *
+   * \param period The period at which to call the callback
+   * \param callback The method to call
+   * \param obj The object to call the method on
+   * \param oneshot If true, this timer will only fire once
+   * \param autostart If true (default), return timer that is already started
+   */
+  template<class T>
+  Timer createTimer(Duration period, void(T::*callback)(const TimerEvent&), T* obj, 
+                    bool oneshot = false, bool autostart = true) const
+  {
+    return createTimer(period, boost::bind(callback, obj, _1), oneshot, autostart);
   }
 
   /**
@@ -1214,13 +1238,16 @@ if (handle)
    * automatically be tracked with a weak_ptr so that if it is deleted before the Timer goes out of
    * scope the callback will no longer be called (and therefore will not crash).
    * \param oneshot If true, this timer will only fire once
+   * \param autostart If true (default), return timer that is already started
    */
   template<class T>
-  Timer createTimer(Duration period, void(T::*callback)(const TimerEvent&), const boost::shared_ptr<T>& obj, bool oneshot = false) const
+  Timer createTimer(Duration period, void(T::*callback)(const TimerEvent&), const boost::shared_ptr<T>& obj, 
+                    bool oneshot = false, bool autostart = true) const
   {
     TimerOptions ops(period, boost::bind(callback, obj.get(), _1), 0);
     ops.tracked_object = obj;
     ops.oneshot = oneshot;
+    ops.autostart = autostart;
     return createTimer(ops);
   }
 
@@ -1234,8 +1261,10 @@ if (handle)
    * \param period The period at which to call the callback
    * \param callback The function to call
    * \param oneshot If true, this timer will only fire once
+   * \param autostart If true (default), return timer that is already started
    */
-  Timer createTimer(Duration period, const TimerCallback& callback, bool oneshot = false) const;
+  Timer createTimer(Duration period, const TimerCallback& callback, bool oneshot = false,
+                    bool autostart = true) const;
 
   /**
    * \brief Create a timer which will call a callback at the specified rate.  This variant allows
@@ -1264,11 +1293,13 @@ if (handle)
    * \param callback The method to call
    * \param obj The object to call the method on
    * \param oneshot If true, this timer will only fire once
+   * \param autostart If true (default), return timer that is already started
    */
   template<class T>
-  WallTimer createWallTimer(WallDuration period, void(T::*callback)(const WallTimerEvent&), T* obj, bool oneshot = false) const
+  WallTimer createWallTimer(WallDuration period, void(T::*callback)(const WallTimerEvent&), T* obj, 
+                            bool oneshot = false, bool autostart = true) const
   {
-    return createWallTimer(period, boost::bind(callback, obj, _1), oneshot);
+    return createWallTimer(period, boost::bind(callback, obj, _1), oneshot, autostart);
   }
 
   /**
@@ -1287,11 +1318,14 @@ if (handle)
    * \param oneshot If true, this timer will only fire once
    */
   template<class T>
-  WallTimer createWallTimer(WallDuration period, void(T::*callback)(const WallTimerEvent&), const boost::shared_ptr<T>& obj, bool oneshot = false) const
+  WallTimer createWallTimer(WallDuration period, void(T::*callback)(const WallTimerEvent&), 
+                            const boost::shared_ptr<T>& obj, 
+                            bool oneshot = false, bool autostart = true) const
   {
     WallTimerOptions ops(period, boost::bind(callback, obj.get(), _1), 0);
     ops.tracked_object = obj;
     ops.oneshot = oneshot;
+    ops.autostart = autostart;
     return createWallTimer(ops);
   }
 
@@ -1307,7 +1341,8 @@ if (handle)
    * \param callback The function to call
    * \param oneshot If true, this timer will only fire once
    */
-  WallTimer createWallTimer(WallDuration period, const WallTimerCallback& callback, bool oneshot = false) const;
+  WallTimer createWallTimer(WallDuration period, const WallTimerCallback& callback, 
+                            bool oneshot = false, bool autostart = true) const;
 
   /**
    * \brief Create a timer which will call a callback at the specified rate, using wall time to determine

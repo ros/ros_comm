@@ -29,6 +29,10 @@
 
 // Author: Josh Faust
 
+#if defined(__APPLE__) && defined(__GNUC__) && defined(__llvm__) && !defined(__clang__) && (__GNUC__ == 4) && (__GNUC_MINOR__ == 2)
+#error This code is known to provoke a compiler crash with llvm-gcc 4.2. You will have better luck with clang++. See code.ros.org/trac/ros/ticket/3626
+#endif
+
 #include "ros/console.h"
 #include "ros/assert.h"
 #include <ros/time.h>
@@ -104,7 +108,7 @@ struct FixedToken : public Token
   : str_(str)
   {}
 
-  virtual std::string getString(const log4cxx::spi::LoggingEventPtr& event)
+  virtual std::string getString(const log4cxx::spi::LoggingEventPtr&)
   {
     return str_.c_str();
   }
@@ -118,7 +122,7 @@ struct FixedMapToken : public Token
   : str_(str)
   {}
 
-  virtual std::string getString(const log4cxx::spi::LoggingEventPtr& event)
+  virtual std::string getString(const log4cxx::spi::LoggingEventPtr&)
   {
     M_string::iterator it = g_extra_fixed_tokens.find(str_);
     if (it == g_extra_fixed_tokens.end())
@@ -134,7 +138,7 @@ struct FixedMapToken : public Token
 
 struct PlaceHolderToken : public Token
 {
-  virtual std::string getString(const log4cxx::spi::LoggingEventPtr& event)
+  virtual std::string getString(const log4cxx::spi::LoggingEventPtr&)
   {
     return "PLACEHOLDER";
   }
@@ -185,7 +189,7 @@ struct MessageToken : public Token
 
 struct TimeToken : public Token
 {
-  virtual std::string getString(const log4cxx::spi::LoggingEventPtr& event)
+  virtual std::string getString(const log4cxx::spi::LoggingEventPtr&)
   {
     std::stringstream ss;
     if (ros::Time::isValid() && ros::Time::isSimTime())
@@ -202,7 +206,7 @@ struct TimeToken : public Token
 
 struct ThreadToken : public Token
 {
-  virtual std::string getString(const log4cxx::spi::LoggingEventPtr& event)
+  virtual std::string getString(const log4cxx::spi::LoggingEventPtr&)
   {
     std::stringstream ss;
     ss << boost::this_thread::get_id();
@@ -386,7 +390,8 @@ public:
   }
 
 protected:
-  virtual void append(const log4cxx::spi::LoggingEventPtr& event, log4cxx::helpers::Pool& pool)
+  virtual void append(const log4cxx::spi::LoggingEventPtr& event, 
+                      log4cxx::helpers::Pool&)
   {
     g_formatter.print(event);
   }

@@ -11,6 +11,10 @@ set(ROS_BUILD_TYPE RelWithDebInfo)
 
 rosbuild_init()
 
+IF(${CMAKE_SYSTEM} MATCHES "Darwin-11.*")
+  set(CMAKE_CXX_COMPILER /usr/bin/g++-4.2)
+ENDIF(${CMAKE_SYSTEM} MATCHES "Darwin-11.*")
+
 include_directories(include/rosconsole)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 

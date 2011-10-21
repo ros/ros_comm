@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Willow Garage, Inc.
+ * Copyright (c) 2009, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,7 +10,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Willow Garage, Inc. nor the names of its
+ *     * Neither the name of the Willow Garage, Inc. nor the names of its
  *       contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
  *
@@ -27,28 +27,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* Author: Brian Gerkey */
+#include <ros/ros.h>
+#include <gtest/gtest.h>
 
-#include <time.h>
-
-#include "ros/ros.h"
-#include "test_roscpp/TestArray.h"
-
-int main(int argc, char **argv)
+TEST(RemappingTest, remapping_test)
 {
-  ros::init(argc, argv, "publish_constantly");
   ros::NodeHandle nh;
-  ros::Publisher pub = nh.advertise<test_roscpp::TestArray>("test_roscpp/pubsub_test", 100);
 
-  test_roscpp::TestArray msg;
-  msg.float_arr.resize(100);
+  ASSERT_EQ(ros::this_node::getName(), "/NAME");
+}
 
-  ros::WallDuration d(0.01);
-  while(ros::ok())
-  {
-    d.sleep();
-    pub.publish(msg);
-  }
-
-  return 0;
+int main(int argc, char** argv)
+{
+  testing::InitGoogleTest(&argc, argv);
+  ros::init(argc, argv, "remapping_tester");
+  return RUN_ALL_TESTS();
 }
