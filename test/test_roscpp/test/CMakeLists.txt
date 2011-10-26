@@ -33,7 +33,8 @@ rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/pubsub_unadv.xml)
 # Call a service
 rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/service_call.xml)
 
-rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/service_deadlock.xml)
+# This test should be re-enabled after #2742 is fixed.
+#rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/service_deadlock.xml)
 
 rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/service_call_unadv.xml)
 
