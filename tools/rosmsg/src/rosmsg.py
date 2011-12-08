@@ -326,7 +326,7 @@ def list_types(package, mode=roslib.msgs.EXT):
     elif mode == roslib.srvs.EXT:
         return [roslib.names.resource_name(package, t) for t in roslib.srvs.list_srv_types(package, False)]
     else:
-        raise ValueError('Unknown mode: %s'%mode)
+        raise ValueError('mode')
 
 def iterate_packages(mode):
     """
@@ -339,7 +339,7 @@ def iterate_packages(mode):
     elif mode == roslib.srvs.EXT:
         subdir = roslib.packages.SRV_DIR
     else:
-        raise ValueError('Unknown mode: %s'%mode)
+        raise ValueError('mode')
 
     pkgs = roslib.packages.list_pkgs()
     for p in pkgs:

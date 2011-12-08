@@ -52,4 +52,8 @@ rosbuild_add_rostest(test/play_play.test)
 rosbuild_add_rostest(test/latched_pub.test)
 rosbuild_add_rostest(test/latched_sub.test)
 rosbuild_add_rostest(test/record_two_publishers.test)
+rosbuild_add_rostest(test/record_one_publisher_two_topics.test)
 add_dependencies(rostest_test_latched_sub.test rostest_test_latched_pub.test)
+
+rosbuild_add_executable(double_pub test/double_pub.cpp)
+rosbuild_declare_test(double_pub)
