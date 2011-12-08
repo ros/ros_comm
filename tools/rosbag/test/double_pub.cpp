@@ -17,6 +17,7 @@ main(int argc, char** argv)
     p1.publish(s);
     s.data = "goodbye";
     p2.publish(s);
+    r.sleep();
   }
   return 0;
 }
