@@ -28,7 +28,15 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_add_boost_directories()
 
 rosbuild_add_library(${PROJECT_NAME} src/rosconsole/rosconsole.cpp)
-target_link_libraries(${PROJECT_NAME} log4cxx)
+
+# required for correct linking with log4cxx
+find_package(PkgConfig)
+pkg_check_modules(LOG4CXX REQUIRED liblog4cxx>=0.10.0)
+get_target_property(_rpaths ${PROJECT_NAME} INSTALL_RPATH)
+list(APPEND _rpaths ${LOG4CXX_LIBRARY_DIRS})
+set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${_rpaths}")
+include_directories(${LOG4CXX_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} ${LOG4CXX_LDFLAGS})
 rosbuild_link_boost(${PROJECT_NAME} thread regex)
 
 rosbuild_add_executable(example examples/example.cpp)
