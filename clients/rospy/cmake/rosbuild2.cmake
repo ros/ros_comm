@@ -62,7 +62,7 @@ macro(genmsg_py TYPE)
     add_custom_command(OUTPUT ${_output_py}
       COMMAND 
       ${ROSBUILD_SUBSHELL} 
-      python ${genmsg_py_exe} 
+      ${PYTHON_EXECUTABLE} ${genmsg_py_exe} 
       --initpy 
       -p ${PROJECT_NAME}
       -s ${CMAKE_CURRENT_SOURCE_DIR}/src
