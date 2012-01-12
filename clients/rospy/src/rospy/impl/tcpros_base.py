@@ -506,7 +506,12 @@ class TCPROSTransport(Transport):
             # FATAL: no reconnection as error is unknown
             self.done = True
             if self.socket:
-                self.socket.close()
+                try:
+                    self.socket.shutdown()
+                except:
+                    pass
+                finally:
+                    self.socket.close()
             self.socket = None
             
             #logerr("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, str(e)))
@@ -698,7 +703,12 @@ class TCPROSTransport(Transport):
                     # set socket to None so we reconnect
                     try:
                         if self.socket is not None:
-                            self.socket.close()
+                            try:
+                                self.socket.shutdown()
+                            except:
+                                pass
+                            finally:
+                                self.socket.close()
                     except:
                         pass
                     self.socket = None
@@ -725,9 +735,14 @@ class TCPROSTransport(Transport):
     def close(self):
         """close i/o and release resources"""
         self.done = True
-        try:        
+        try:
             if self.socket is not None:
-                self.socket.close()
+                try:
+                    self.socket.shutdown()
+                except:
+                    pass
+                finally:
+                    self.socket.close()
         finally:
             self.socket = self.read_buff = self.write_buff = self.protocol = None
             super(TCPROSTransport, self).close()
