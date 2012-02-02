@@ -48,6 +48,8 @@ import roslib.network
 import roslib.substitution_args
 import roslib.rosenv
 
+from xml.sax.saxutils import escape
+
 #TODO:temporary until xacro is ported after next ROS stable release
 resolve_args = roslib.substitution_args.resolve_args
 
@@ -625,13 +627,11 @@ def _xml_escape(s):
     @return: string with XML entities (<, >, ", &) escaped.
     @rtype: str
     """
-    # gross, but doesn't need to be fast. always replace amp first
-    s = str(s)
-    s = s.replace('&', '&amp;')
-    s = s.replace('"', '&quot;')
-    s = s.replace('>', '&gt;')
-    s = s.replace('<', '&lt;')
-    return s
+    if isinstance(s,basestring):
+        # use official escaping to preserve unicode, #3799
+        return escape(s, entities={'"': '&quot;'})
+    else:
+        return s
     
 TEST_TIME_LIMIT_DEFAULT = 1 * 60 #seconds
 
