@@ -63,8 +63,7 @@ Common parent classes for all rospy topics. The rospy topic autogenerators
 create classes that are children of these implementations.
 """
 
-
-import struct
+import select
 try:
     from cStringIO import StringIO #Python 2.x
     import thread as _thread # Python 2
@@ -215,6 +214,10 @@ class _TopicImpl(object):
         self.closed = False
         # number of Topic instances using this
         self.ref_count = 0
+
+        #TODO:UNIXONLY mask out on windows
+        self.connection_poll = select.poll()
+        
         #STATS
         self.dead_connections = [] #for retaining stats on old conns
 
@@ -290,12 +293,49 @@ class _TopicImpl(object):
         @return: True if connection was added
         @rtype: bool
         """
+        rospyinfo("topic[%s] adding connection to [%s], count %s"%(self.resolved_name, c.endpoint_id, len(self.connections)))
         with self.c_lock:
             # c_lock is to make add_connection thread-safe, but we
             # still make a copy of self.connections so that the rest of the
             # code can use self.connections in an unlocked manner
             new_connections = self.connections[:]
+
+            # #3808: "garbage collect" bad sockets whenever we add new
+            # connections. This allows at most one stale connection
+            # per topic.  Otherwise, we only detect bad connections on
+            # write.  An alternative (given the current
+            # implementation) would be to start a thread that
+            # regularly polls all fds, but that would create a lot of
+            # synchronization events and also have a separate thread
+            # to manage.  It would be desireable to move to this, but
+            # this change is less impactful and keeps the codebase
+            # more stable as we move towards an entirely different
+            # event loop for rospy -- the heart of the problem is that
+            # rospy's i/o is blocking-based, which has the obvious
+            # issues.
+
+            if self.connection_poll is not None:
+                events = self.connection_poll.poll(0)
+                for fd, event in events:
+                    if event | select.POLLHUP or event | select.POLLERR:
+                        to_remove = [x for x in new_connections if x.fileno() == fd]
+                        for x in to_remove:
+                            rospydebug("removing connection to %s, connection error detected"%(x.endpoint_id))
+                            try:
+                                x.close()
+                            except:
+                                pass
+                            new_connections.remove(x)
+
+            # Add new connection to poller, register for all events,
+            # though we only care about POLLHUP/ERR
+            new_fd = c.fileno()
+            if new_fd is not None:
+                self.connection_poll.register(new_fd)
+            
+            # add in new connection
             new_connections.append(c)
+
             self.connections = new_connections
 
             # connections make a callback when closed
@@ -309,6 +349,7 @@ class _TopicImpl(object):
         @param c: connection instance to remove
         @type  c: Transport
         """
+        rospyinfo("topic[%s] removing connection to %s"%(self.resolved_name, c.endpoint_id))
         with self.c_lock:
             # c_lock is to make remove_connection thread-safe, but we
             # still make a copy of self.connections so that the rest of the
@@ -1098,12 +1139,12 @@ class _TopicManager(object):
             impl.ref_count -= 1
             assert impl.ref_count >= 0, "topic impl's reference count has gone below zero"
             if impl.ref_count == 0:
-                _logger.debug("topic impl's ref count is zero, deleting topic %s...", resolved_name)
+                rospyinfo("topic impl's ref count is zero, deleting topic %s...", resolved_name)
                 impl.close()
                 self._remove(impl, rmap, reg_type)
                 del impl
                 _logger.debug("... done deleting topic %s", resolved_name)
-
+                
     def get_publisher_impl(self, resolved_name):
         """
         @param resolved_name: resolved topic name
