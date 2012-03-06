@@ -318,6 +318,11 @@ class _TopicImpl(object):
                 events = self.connection_poll.poll(0)
                 for fd, event in events:
                     if event | select.POLLHUP or event | select.POLLERR:
+                        # Remove from poll instance as well as connections
+                        try:
+                            self.connection_poll.unregister(fd)
+                        except:
+                            pass
                         to_remove = [x for x in new_connections if x.fileno() == fd]
                         for x in to_remove:
                             rospydebug("removing connection to %s, connection error detected"%(x.endpoint_id))
@@ -354,6 +359,15 @@ class _TopicImpl(object):
             # c_lock is to make remove_connection thread-safe, but we
             # still make a copy of self.connections so that the rest of the
             # code can use self.connections in an unlocked manner
+
+            fd = c.fileno()
+            if fd is not None:
+                # Remove from poll instance as well as connections
+                try:
+                    self.connection_poll.unregister(fd)
+                except:
+                    pass
+            
             new_connections = self.connections[:]
             new_dead_connections = self.dead_connections[:]                        
             if c in new_connections:
