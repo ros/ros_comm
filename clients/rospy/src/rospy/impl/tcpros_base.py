@@ -446,6 +446,14 @@ class TCPROSTransport(Transport):
         self.md5sum = None
         self.type = None 
             
+    def fileno(self):
+        """
+        Get descriptor for select
+        """
+        s = self.socket
+        if s is not None:
+            return s.fileno()
+        
     def set_socket(self, sock, endpoint_id):
         """
         Set the socket for this transport
