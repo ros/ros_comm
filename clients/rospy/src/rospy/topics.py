@@ -178,6 +178,54 @@ class Topic(object):
             get_topic_manager().release_impl(self.reg_type, resolved_name)
             self.impl = self.resolved_name = self.type = self.md5sum = self.data_class = None
 
+
+class Poller(object):
+    """
+    select.poll/kqueue abstraction to handle socket failure detection
+    on multiple platforms.  NOT thread-safe.
+    """
+    def __init__(self):
+        try:
+            self.poller = select.poll()
+            self.add_fd = self.add_poll
+            self.remove_fd = self.remove_poll
+            self.error_iter = self.error_poll_iter
+        except:
+            # poll() not available, try kqueue
+            self.poller = select.kqueue()
+            self.add_fd = self.add_kqueue
+            self.remove_fd = self.remove_kqueue
+            self.error_iter = self.error_kqueue_iter
+            self.kevents = []
+            
+            #TODO: fallback for Windows
+            
+    def add_poll(self, fd):
+        self.poller.register(fd)
+
+    def remove_poll(self, fd):
+        self.poller.unregister(fd)
+
+    def error_poll_iter(self):
+        events = self.poller.poll(0)
+        for fd, event in events:
+            if event & (select.POLLHUP | select.POLLERR):
+                yield fd
+
+    def add_kqueue(self, fd):
+        self.kevents.append(select.kevent(fd))
+
+    def error_kqueue_iter(self):
+        events = self.poller.control(self.kevents, 0)
+        for event in events:
+            if event & (select.KQ_EV_ERROR | select.KQ_EV_EOF):
+                yield event.ident
+            
+    def remove_kqueue(self, fd):
+        e = [x for x in self.kevents if x.ident == fd]
+        for x in e:
+            self.kevents.remove(x)
+            
 class _TopicImpl(object):
     """
     Base class of internal topic implementations. Each topic has a
@@ -216,7 +264,7 @@ class _TopicImpl(object):
         self.ref_count = 0
 
         #TODO:UNIXONLY mask out on windows
-        self.connection_poll = select.poll()
+        self.connection_poll = Poller()
         
         #STATS
         self.dead_connections = [] #for retaining stats on old conns
@@ -315,28 +363,26 @@ class _TopicImpl(object):
             # issues.
 
             if self.connection_poll is not None:
-                events = self.connection_poll.poll(0)
-                for fd, event in events:
-                    if event | select.POLLHUP or event | select.POLLERR:
-                        # Remove from poll instance as well as connections
+                for fd in self.connection_poll.error_iter():
+                    # Remove from poll instance as well as connections
+                    try:
+                        self.poller.remove_fd(fd)
+                    except:
+                        pass
+                    to_remove = [x for x in new_connections if x.fileno() == fd]
+                    for x in to_remove:
+                        rospydebug("removing connection to %s, connection error detected"%(x.endpoint_id))
                         try:
-                            self.connection_poll.unregister(fd)
+                            x.close()
                         except:
                             pass
-                        to_remove = [x for x in new_connections if x.fileno() == fd]
-                        for x in to_remove:
-                            rospydebug("removing connection to %s, connection error detected"%(x.endpoint_id))
-                            try:
-                                x.close()
-                            except:
-                                pass
-                            new_connections.remove(x)
+                        new_connections.remove(x)
 
             # Add new connection to poller, register for all events,
             # though we only care about POLLHUP/ERR
             new_fd = c.fileno()
             if new_fd is not None:
-                self.connection_poll.register(new_fd)
+                self.connection_poll.add_fd(new_fd)
             
             # add in new connection
             new_connections.append(c)
@@ -364,7 +410,7 @@ class _TopicImpl(object):
             if fd is not None:
                 # Remove from poll instance as well as connections
                 try:
-                    self.connection_poll.unregister(fd)
+                    self.connection_poll.remove_fd(fd)
                 except:
                     pass
             
