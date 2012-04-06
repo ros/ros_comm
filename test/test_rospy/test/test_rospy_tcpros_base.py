@@ -44,27 +44,14 @@ import cStringIO
         
 import rospy
 
-g_fileno = 1
-
 class MockSock:
     def __init__(self, buff):
-        global g_fileno
-        g_fileno += 1
-        self._fileno = g_fileno
         self.buff = buff
-    def fileno(self):
-        return self._fileno
     def recv(self, buff_size):
         return self.buff[:buff_size]
     def close(self):
         self.buff = None
 class MockEmptySock:
-    def __init__(self):
-        global g_fileno
-        g_fileno += 1
-        self.fileno = g_fileno
-    def fileno(self):
-        return self._fileno
     def recv(self, buff_size):
         return ''
     def close(self):
