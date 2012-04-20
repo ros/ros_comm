@@ -239,7 +239,7 @@ struct Serializer<std::basic_string<char, std::char_traits<char>, ContainerAlloc
 
     if (len > 0)
     {
-      memcpy(stream.advance(len), str.data(), len);
+      memcpy(stream.advance((uint32_t)len), str.data(), len);
     }
   }
 
@@ -390,7 +390,7 @@ struct VectorSerializer<T, ContainerAllocator, typename boost::enable_if<mt::IsS
     stream.next(len);
     if (!v.empty())
     {
-      const uint32_t data_len = len * sizeof(T);
+      const uint32_t data_len = len * (uint32_t)sizeof(T);
       memcpy(stream.advance(data_len), &v.front(), data_len);
     }
   }
@@ -404,14 +404,14 @@ struct VectorSerializer<T, ContainerAllocator, typename boost::enable_if<mt::IsS
 
     if (len > 0)
     {
-      const uint32_t data_len = sizeof(T) * len;
+      const uint32_t data_len = (uint32_t)sizeof(T) * len;
       memcpy(&v.front(), stream.advance(data_len), data_len);
     }
   }
 
   inline static uint32_t serializedLength(const VecType& v)
   {
-    return 4 + v.size() * sizeof(T);
+    return 4 + v.size() * (uint32_t)sizeof(T);
   }
 };
 
