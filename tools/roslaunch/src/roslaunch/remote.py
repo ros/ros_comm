@@ -197,7 +197,8 @@ in your launch"""%'\n'.join([" * %s (timeout %ss)"%(m.name, m.timeout) for m in 
         for child in self.remote_processes:
             nodes = self.remote_nodes[child.machine.config_key()]
             body = '\n'.join([n.to_remote_xml() for n in nodes])
-            xml = '<launch>\n%s</launch>'%body
+            # force utf-8 encoding, #3799
+            xml = '<?xml version="1.0" encoding="utf-8"?>\n<launch>\n%s</launch>'%body
             if 0:
                 print xml
                 

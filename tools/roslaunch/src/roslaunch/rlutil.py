@@ -44,6 +44,10 @@ import time
 from roslib.names import SEP
 
 import roslaunch.core
+import roslaunch.config
+import roslaunch.depends
+import roslaunch.xmlloader
+
 from rosmaster import DEFAULT_MASTER_PORT
 
 def check_log_disk_usage():
@@ -193,14 +197,12 @@ def check_roslaunch(f):
     @rtype: str
     """
     try:
-        import roslaunch.config
         config = roslaunch.config.load_config_default([f], DEFAULT_MASTER_PORT, verbose=False)
-    except roslaunch.RLException, e:
+    except roslaunch.core.RLException as e:
         return str(e)
     
     errors = []
     # check for missing deps
-    import roslaunch.depends
     base_pkg, file_deps, missing = roslaunch.depends.roslaunch_deps([f])
     for pkg, miss in missing.iteritems():
         if miss:
@@ -254,7 +256,6 @@ def print_file_list(roslaunch_files):
     @return list of files involved in processing roslaunch_files, including the files themselves.
     """
     from roslaunch.config import load_config_default, get_roscore_filename
-    import roslaunch.xmlloader
     try:
         loader = roslaunch.xmlloader.XmlLoader(resolve_anon=False)
         config = load_config_default(roslaunch_files, None, loader=loader, verbose=False, assign_machines=False)

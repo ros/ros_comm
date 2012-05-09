@@ -108,12 +108,10 @@ mantissa-bits)
     (values (ash mantissa (- exponent (1+ (- bias)))) (- bias))))
 
 (defun encode-single-float-bits (float)
-  (let ((float (float float 0.0)))
-    (encode-float-bits float (byte 1 31) (byte 8 23) (byte 23 0) 127)))
+  (encode-float-bits float (byte 1 31) (byte 8 23) (byte 23 0) 127))
 
 (defun encode-double-float-bits (float)
-  (let ((float (float float 0.0d0)))
-    (encode-float-bits float (byte 1 63) (byte 11 52) (byte 52 0) 1023)))
+  (encode-float-bits float (byte 1 63) (byte 11 52) (byte 52 0) 1023))
 
 (defun decode-single-float-bits (bits)
   (decode-float-bits bits (byte 1 31) (byte 8 23) (byte 23 0) 127))

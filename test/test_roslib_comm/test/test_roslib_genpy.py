@@ -72,7 +72,7 @@ class TestGenpy(unittest.TestCase):
             self.assertEquals(result, reduce_pattern(input))
     def test_is_simple(self):
         from roslib.genpy import is_simple
-        for t in ['uint8', 'int8', 'uint16', 'int16', 'uint32', 'int32', 'uint64', 'int64', 'float32', 'float64', 'byte', 'char']:
+        for t in ['uint8', 'int8', 'uint16', 'int16', 'uint32', 'int32', 'uint64', 'int64', 'float32', 'float64']:
             self.assert_(is_simple(t))
     def test_SIMPLE_TYPES(self):
         import roslib.msgs
@@ -219,25 +219,22 @@ class TestGenpy(unittest.TestCase):
         self.assertEquals('fake_msgs.msg.ThreeNums()', default_value('ThreeNums', 'fake_msgs'))
 
         # var-length arrays always default to empty arrays... except for byte and uint8 which are strings
-        for t in ['int8', 'uint16', 'int16', 'uint32', 'int32', 'uint64', 'int64', 'float32', 'float64', 'char']:
+        for t in ['int8', 'uint16', 'int16', 'uint32', 'int32', 'uint64', 'int64', 'float32', 'float64']:
             self.assertEquals('[]', default_value(t+'[]', 'std_msgs'))
             self.assertEquals('[]', default_value(t+'[]', 'roslib'))
 
         self.assertEquals("''", default_value('uint8[]', 'roslib'))
-        self.assertEquals("''", default_value('byte[]', 'roslib'))
         
-        # fixed-length arrays should be zero-filled... except for byte and uint8 which are strings
+        # fixed-length arrays should be zero-filled... except for uint8 which is a string
         for t in ['float32', 'float64']:
             self.assertEquals('[0.,0.,0.]', default_value(t+'[3]', 'std_msgs'))
             self.assertEquals('[0.]', default_value(t+'[1]', 'std_msgs'))
-        for t in ['int8', 'uint16', 'int16', 'uint32', 'int32', 'uint64', 'int64', 'char']:
+        for t in ['int8', 'uint16', 'int16', 'uint32', 'int32', 'uint64', 'int64']:
             self.assertEquals('[0,0,0,0]', default_value(t+'[4]', 'std_msgs'))
             self.assertEquals('[0]', default_value(t+'[1]', 'roslib'))
 
         self.assertEquals("chr(0)*1", default_value('uint8[1]', 'roslib'))
         self.assertEquals("chr(0)*4", default_value('uint8[4]', 'roslib'))
-        self.assertEquals("chr(0)*1", default_value('byte[1]', 'roslib'))
-        self.assertEquals("chr(0)*4", default_value('byte[4]', 'roslib'))
         
         self.assertEquals('[]', default_value('fake_msgs/String[]', 'std_msgs'))        
         self.assertEquals('[fake_msgs.msg.String(),fake_msgs.msg.String()]', default_value('fake_msgs/String[2]', 'std_msgs'))        

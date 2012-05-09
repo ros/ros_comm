@@ -327,7 +327,7 @@ expires, deletes the file."
   (dolist (p (asdf-paths-to-add package))
     (pushnew p asdf:*central-registry* :test #'equal)))
 
-(defun load-system (package &optional (asdf-name package) force)
+(defun load-system (package &optional (asdf-name package))
   "Sets *CURRENT-ROS-PACKAGE* and performs an asdf load operation on `package'"
   (let ((*current-ros-package* package))
-    (asdf:operate 'asdf:load-op asdf-name :force force)))
+    (asdf:operate 'asdf:load-op asdf-name)))

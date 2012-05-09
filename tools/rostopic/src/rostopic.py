@@ -48,6 +48,7 @@ import traceback
 import yaml
 import xmlrpclib
 
+from operator import itemgetter
 from urlparse import urlparse
 
 import roslib.exceptions
@@ -310,8 +311,9 @@ def _get_topic_type(topic):
     matches = [(t, t_type) for t, t_type in val if t == topic]
     if not matches:
         matches = [(t, t_type) for t, t_type in val if topic.startswith(t+'/')]
+        # choose longest match
+        matches.sort(key=itemgetter(0), reverse=True)
     if matches:
-        #TODO logic for multiple matches if we are prefix matching
         t, t_type = matches[0]
         if t_type == roslib.names.ANYTYPE:
             return None, None, None

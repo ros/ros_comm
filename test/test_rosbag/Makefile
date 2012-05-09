@@ -7,7 +7,7 @@ all:
 ifneq ($(MAKE),)
 	cd build && $(MAKE) $(ROS_PARALLEL_JOBS)
 else
-	cd build && make $(ROS_PARALLEL_JOBS)
+	cd build && $(MAKE) $(ROS_PARALLEL_JOBS)
 endif
 
 PACKAGE_NAME=$(shell basename $(PWD))
@@ -20,7 +20,7 @@ clean-msg-only:
 	rm -rf msg/cpp msg/lisp msg/oct msg/java srv/cpp srv/lisp srv/oct srv/java src/$(PACKAGE_NAME)/msg src/$(PACKAGE_NAME)/srv
 
 clean:
-	-cd build && make clean
+	-cd build && $(MAKE) clean
 	rm -rf msg/cpp msg/lisp msg/oct msg/java srv/cpp srv/lisp srv/oct srv/java src/$(PACKAGE_NAME)/msg src/$(PACKAGE_NAME)/srv
 	rm -rf build
 	rm -f .build-version
@@ -30,12 +30,12 @@ clean:
 
 # All other targets are just passed through
 test: all
-	./generate_data; if cd build && make -k $@; then make test-results; else make test-results && exit 1; fi
+	./generate_data; if cd build && $(MAKE) -k $@; then $(MAKE) test-results; else $(MAKE) test-results && exit 1; fi
 tests: all
-	cd build && make $@
+	cd build && $(MAKE) $@
 test-future: all
-	cd build && make -k $@
+	cd build && $(MAKE) -k $@
 gcoverage: all
-	cd build && make $@
+	cd build && $(MAKE) $@
 
 include $(shell rospack find mk)/buildtest.mk
