@@ -26,6 +26,7 @@
  */
 
 #include "ros/publisher.h"
+#include "ros/publication.h"
 #include "ros/node_handle.h"
 #include "ros/topic_manager.h"
 
@@ -126,6 +127,23 @@ uint32_t Publisher::getNumSubscribers() const
   }
 
   return 0;
+}
+
+bool Publisher::isLatched() const {
+  PublicationPtr publication_ptr;
+  if (impl_ && impl_->isValid()) {
+    publication_ptr =
+      TopicManager::instance()->lookupPublication(impl_->topic_);
+  } else {
+    ROS_ASSERT_MSG(false, "Call to isLatched() on an invalid Publisher");
+    throw ros::Exception("Call to isLatched() on an invalid Publisher");
+  }
+  if (publication_ptr) {
+    return publication_ptr->isLatched();
+  } else {
+    ROS_ASSERT_MSG(false, "Call to isLatched() on an invalid Publisher");
+    throw ros::Exception("Call to isLatched() on an invalid Publisher");
+  }
 }
 
 } // namespace ros
