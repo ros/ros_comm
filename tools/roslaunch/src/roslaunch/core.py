@@ -85,12 +85,12 @@ def is_machine_local(machine):
     :returns: True if machine is local and doesn't require remote login, ``bool``
     """    
     try:
-        machine_addr = socket.gethostbyname(machine.address)
+        machine_ips = [host[4][0] for host in socket.getaddrinfo(machine.address, 0, 0, 0, socket.SOL_TCP)]
     except socket.gaierror:
         raise RLException("cannot resolve host address for machine [%s]"%machine.address)
     local_addresses = ['localhost'] + rosgraph.network.get_local_addresses()
     # check 127/8 and local addresses
-    is_local = machine_addr.startswith('127.') or machine_addr in local_addresses
+    is_local = ([ip for ip in machine_ips if (ip.startswith('127.') or ip == '::1')] != []) or (set(machine_ips) & set(local_addresses) != set())
 
     #491: override local to be ssh if machine.user != local user
     if is_local and machine.user:

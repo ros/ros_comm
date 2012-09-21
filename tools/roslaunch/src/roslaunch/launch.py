@@ -84,12 +84,12 @@ def validate_master_launch(m, is_core, is_rostest=False):
             # only warn if network configuration appears
             # non-local.
             try:
-                reverse_ip = socket.gethostbyname(m.get_host())
+                reverse_ips = [host[4][0] for host in socket.getaddrinfo(m.get_host(), 0, 0, 0, socket.SOL_TCP)]
                 local_addrs = rosgraph.network.get_local_addresses()
-                printerrlog("""WARNING: IP address %s for local hostname '%s' does not appear to match
+                printerrlog("""WARNING: IP addresses %s for local hostname '%s' do not appear to match
     any local IP address (%s). Your ROS nodes may fail to communicate.
 
-    Please use ROS_IP to set the correct IP address to use."""%(reverse_ip, m.get_host(), ','.join(local_addrs)))
+    Please use ROS_IP to set the correct IP address to use."""%(','.join(reverse_ips), m.get_host(), ','.join(local_addrs)))
             except:
                 printerrlog("""WARNING: local hostname '%s' does not map to an IP address.
     Your ROS nodes may fail to communicate.

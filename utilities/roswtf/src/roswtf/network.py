@@ -46,11 +46,14 @@ from roswtf.rules import warning_rule, error_rule
 # #1220
 def ip_check(ctx):
     # best we can do is compare roslib's routine against socket resolution and make sure they agree
-    addrs = rosgraph.network.get_local_addresses()
+    local_addrs = rosgraph.network.get_local_addresses()
 
-    resolved = socket.gethostbyname(socket.gethostname())
-    if not resolved.startswith('127.') and resolved not in addrs:
-        return "Local hostname [%s] resolves to [%s], which does not appear to be a local IP address %s."%(socket.gethostname(), resolved, str(addrs))
+    resolved_ips = [host[4][0] for host in socket.getaddrinfo(socket.gethostname(), 0, 0, 0, socket.SOL_TCP)]
+    global_ips = [ ip for ip in resolved_ips if not ip.startswith('127.') and not ip == '::1']
+
+    remote_ips = list(set(global_ips) - set(local_addrs))
+    if remote_ips:
+        return "Local hostname [%s] resolves to [%s], which does not appear to be a local IP address %s."%(socket.gethostname(), ','.join(remote_ips), str(local_addrs))
 
 # suggestion by mquigley based on laptop dhcp issues    
 def ros_hostname_check(ctx):
@@ -60,15 +63,16 @@ def ros_hostname_check(ctx):
 
     hostname = ctx.env[rosgraph.ROS_HOSTNAME]
     try:
-        resolved = socket.gethostbyname(hostname)
+        resolved_ips = [host[4][0] for host in socket.getaddrinfo(hostname, 0, 0, 0, socket.SOL_TCP)]
     except socket.gaierror:
         return "ROS_HOSTNAME [%s] cannot be resolved to an IP address"%(hostname)
     
     # best we can do is compare roslib's routine against socket resolution and make sure they agree
-    addrs = rosgraph.network.get_local_addresses()
+    local_addrs = rosgraph.network.get_local_addresses()
 
-    if resolved not in addrs:
-        return "ROS_HOSTNAME [%s] resolves to [%s], which does not appear to be a local IP address %s."%(hostname, resolved, str(addrs))
+    remote_ips = list(set(resolved_ips) - set(local_addrs))
+    if remote_ips:
+        return "ROS_HOSTNAME [%s] resolves to [%s], which does not appear to be a local IP address %s."%(hostname, ','.join(remote_ips), str(local_addrs))
 
 def ros_ip_check(ctx):
     """Make sure that ROS_IP is a local IP address"""

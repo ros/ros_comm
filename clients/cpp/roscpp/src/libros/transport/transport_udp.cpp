@@ -150,7 +150,11 @@ bool TransportUDP::connect(const std::string& host, int port, int connection_id)
   if (inet_addr(host.c_str()) == INADDR_NONE)
   {
     struct addrinfo* addr;
-    if (getaddrinfo(host.c_str(), NULL, NULL, &addr) != 0)
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+
+    if (getaddrinfo(host.c_str(), NULL, &hints, &addr) != 0)
     {
       close();
       ROS_ERROR("couldn't resolve host [%s]", host.c_str());

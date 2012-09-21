@@ -432,7 +432,6 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
     } \
   } while(0)
 
-// inside a macro which uses args use only well namespaced variable names in order to not overlay variables coming in via args
 /**
  * \brief Log to a given named logger at a given verbosity level, limited to a specific rate of printing, with printf-style formatting
  *
