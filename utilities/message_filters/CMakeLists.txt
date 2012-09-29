@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 2.8)
 project(message_filters)
 find_package(catkin REQUIRED COMPONENTS roscpp xmlrpcpp rosconsole)
 catkin_package(
