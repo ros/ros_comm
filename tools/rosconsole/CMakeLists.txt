@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 2.8)
 project(rosconsole)
 find_package(catkin REQUIRED COMPONENTS cpp_common rostime rosunit)
 catkin_package(
