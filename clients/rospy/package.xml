@@ -27,8 +27,6 @@
 
   <build_depend>catkin</build_depend>
 
-  <run_depend package="roslang"/>
-
   <export>
     <rosdoc config="rosdoc.yaml"/>
   </export>
