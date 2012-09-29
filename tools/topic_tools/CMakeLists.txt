@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(topic_tools)
-find_package(catkin COMPONENTS cpp_common rosconsole roscpp rostest rostime rosunit xmlrpcpp)
+find_package(catkin COMPONENTS cpp_common genmsg rosconsole roscpp rostest rostime rosunit xmlrpcpp)
 
 catkin_package(
   LIBRARIES topic_tools
