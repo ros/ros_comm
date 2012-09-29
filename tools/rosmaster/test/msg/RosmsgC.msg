@@ -1,2 +1,2 @@
-rosmaster/String s1
-rosmaster/String s2
+String s1
+String s2

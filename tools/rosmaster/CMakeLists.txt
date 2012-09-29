@@ -35,6 +35,3 @@ add_rostest(test/rosmaster.test)
 add_rostest(test/paramserver.test)
 
 catkin_add_nosetests(test/nosetests)
-
-install(FILES manifest.xml
-  DESTINATION share/rosmaster)
