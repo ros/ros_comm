@@ -1,6 +1,6 @@
 <package>
   <name>rostest</name>
-  <version>1.9.11</version>
+  <version>1.9.12</version>
   <description>
      Integration test suite based on roslaunch that is compatible with xUnit frameworks.
   </description>
@@ -10,6 +10,7 @@
   <url>http://ros.org/wiki/rostest</url>
   <author>Ken Conley</author>
 
+  <build_depend>boost</build_depend>
   <build_depend>catkin</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>rosunit</build_depend>
