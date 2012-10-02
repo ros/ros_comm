@@ -24,6 +24,7 @@
 
   <run_depend>python-paramiko</run_depend>
   <run_depend>python-yaml</run_depend>
+  <run_depend>rosclean</run_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>
