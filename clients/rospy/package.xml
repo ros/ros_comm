@@ -27,6 +27,13 @@
 
   <build_depend>catkin</build_depend>
 
+  <run_depend>genpy</run_depend>
+  <run_depend>numpy</run_depend>
+  <run_depend>python-rospkg</run_depend>
+  <run_depend>rosgraph</run_depend>
+  <run_depend>roslib</run_depend>
+  <run_depend>std_msgs</run_depend>
+
   <export>
     <rosdoc config="rosdoc.yaml"/>
   </export>
