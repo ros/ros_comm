@@ -32,6 +32,7 @@
 
   <run_depend>genmsg</run_depend>
   <run_depend>genpy</run_depend>
+  <run_depend>python-rospkg</run_depend>
   <run_depend>roslib</run_depend>
   <run_depend>rospy</run_depend>
 
