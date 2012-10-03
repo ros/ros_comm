@@ -6,7 +6,7 @@ find_package(Boost COMPONENTS thread)
 
 include_directories(include ${Boost_INCLUDE_DIRS})
 
-catkin_package(
+catkin_package(DEPENDS Boost
   INCLUDE_DIRS include
   CFG_EXTRAS ${PROJECT_NAME}-extras.cmake
   )
@@ -26,9 +26,9 @@ add_rostest(test/distro_version.test)
 
 # required for old rosbuild macro
 install(PROGRAMS scripts/roslaunch-check.py
-  DESTINATION  ${CATKIN_PACKAGE_INCLUDE_DESTINATION}/scripts)
+  DESTINATION  ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts)
 install(PROGRAMS nodes/hztest
-  DESTINATION  ${CATKIN_PACKAGE_INCLUDE_DESTINATION}/nodes/hztest)
+  DESTINATION  ${CATKIN_PACKAGE_BIN_DESTINATION}/nodes/hztest)
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h")
