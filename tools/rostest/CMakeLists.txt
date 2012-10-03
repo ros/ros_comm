@@ -26,9 +26,9 @@ add_rostest(test/distro_version.test)
 
 # required for old rosbuild macro
 install(PROGRAMS scripts/roslaunch-check.py
-  DESTINATION  ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts)
+  DESTINATION  ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts)
 install(PROGRAMS nodes/hztest
-  DESTINATION  ${CATKIN_PACKAGE_BIN_DESTINATION}/nodes/hztest)
+  DESTINATION  ${CATKIN_PACKAGE_SHARE_DESTINATION}/nodes/hztest)
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h")
