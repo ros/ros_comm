@@ -10,6 +10,7 @@
   <url>http://ros.org/wiki/rostest</url>
   <author>Ken Conley</author>
 
+  <build_depend>boost</build_depend>
   <build_depend>catkin</build_depend>
   <build_depend>rosunit</build_depend>
 
@@ -18,7 +19,7 @@
   <run_depend>rosunit</run_depend>
 
   <test_depend>boost</test_depend>
-  <test_depend>rospy</test_depend>
+  <!--<test_depend>rospy</test_depend>-->
   <test_depend>rosunit</test_depend>
 
   <export>
