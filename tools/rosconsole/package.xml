@@ -1,6 +1,6 @@
 <package>
   <name>rosconsole</name>
-  <version>1.9.19</version>
+  <version>1.9.20</version>
   <description>ROS console output library.</description>
   <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
   <license>BSD</license>
