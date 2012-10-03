@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.3)
 project(xmlrpcpp)
 find_package(catkin REQUIRED COMPONENTS cpp_common)
 catkin_package(

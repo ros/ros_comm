@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.3)
 project(rosbag)
 find_package(catkin REQUIRED COMPONENTS cpp_common genmsg roscpp_serialization roscpp rosconsole xmlrpcpp topic_tools rosunit rostest rosgraph_msgs)
 find_package(Boost REQUIRED COMPONENTS regex program_options)
