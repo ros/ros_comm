@@ -27,6 +27,7 @@
   <run_depend>rosgraph_msgs</run_depend>
   <run_depend>std_srvs</run_depend>
 
+  <run_depend>ros</run_depend> <!-- Depend on ros for backwards compatability.  This will be removed in Hydro -->
   <run_depend>rosbag</run_depend>
   <run_depend>rosconsole</run_depend>
   <run_depend>rosgraph</run_depend>
