@@ -5,6 +5,7 @@ catkin_package(
   LIBRARIES rosconsole
   INCLUDE_DIRS include
   CFG_EXTRAS rosconsole-extras.cmake
+  DEPENDS cpp_common rostime
   )
 
 include(cmake/rosconsole-extras.cmake.in)
