@@ -39,9 +39,9 @@
 
 #include <boost/shared_array.hpp>
 
-#define ROS_VERSION_MAJOR 1
-#define ROS_VERSION_MINOR 9
-#define ROS_VERSION_PATCH 25
+#define ROS_VERSION_MAJOR roscpp_VERSION_MAJOR
+#define ROS_VERSION_MINOR roscpp_VERSION_MINOR
+#define ROS_VERSION_PATCH roscpp_VERSION_PATCH
 #define ROS_VERSION_COMBINED(major, minor, patch) (((major) << 20) | ((minor) << 10) | (patch))
 #define ROS_VERSION ROS_VERSION_COMBINED(ROS_VERSION_MAJOR, ROS_VERSION_MINOR, ROS_VERSION_PATCH)
 
