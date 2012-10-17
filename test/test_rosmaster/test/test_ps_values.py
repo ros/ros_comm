@@ -31,17 +31,20 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-PKG='rosmaster'
-NAME = 'test_node_api'
+PKG = 'test_rosmaster'
+NAME = 'test_ps_values'
 
 import sys
 
 import rospy
 import rostest
 
-from node import NodeApiTestCase, set_node_name
+from param_server_test_case import ParamServerTestCase
+
+class PsValuesTestCase(ParamServerTestCase):
+    def testParamValues(self):
+        return self._testParamValues()
 
 if __name__ == '__main__':
     rospy.init_node(NAME)
-    set_node_name(NAME) 
-    rostest.rosrun(PKG, NAME, NodeApiTestCase, sys.argv)
+    rostest.rosrun(PKG, NAME, PsValuesTestCase, sys.argv)

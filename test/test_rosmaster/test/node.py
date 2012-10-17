@@ -50,10 +50,10 @@ _required_subscriptions = 'test_string_in', 'test_primitives_in', 'test_arrays_i
 
 # only publishers determine topic type, so we test against their declared spec
 _required_publications_map = {
-    'test_string_out': 'rosmaster/TestString',
-    'test_primitives_out': 'rosmaster/TestPrimitives',
-    'test_arrays_out': 'rosmaster/TestArrays',
-    'test_header_out': 'rosmaster/TestHeader',
+    'test_string_out': 'test_rosmaster/TestString',
+    'test_primitives_out': 'test_rosmaster/TestPrimitives',
+    'test_arrays_out': 'test_rosmaster/TestArrays',
+    'test_header_out': 'test_rosmaster/TestHeader',
     }
 _required_publications  = _required_publications_map.keys()
 
@@ -328,30 +328,30 @@ class NodeIntegrationTestCase(_NodeTestCase):
         rospy.init_node(NODE_INTEGRATION_NAME)
         
     def testString(self):
-        pub = rospy.Publisher('test_string_in', rosmaster.msg.String)
-        sub = rospy.Subscriber('test_string_in', rosmaster.msg.String)
+        pub = rospy.Publisher('test_string_in', test_rosmaster.msg.String)
+        sub = rospy.Subscriber('test_string_in', test_rosmaster.msg.String)
         #TODO: publish a bunch and check sequencing + caller_id
         pub.unregister()
         sub.unregister()
 
     def testPrimitives(self):
-        pub = rospy.Publisher('test_primitives_in', rosmaster.msg.String)
-        sub = rospy.Subscriber('test_primitives_out', rosmaster.msg.String) 
+        pub = rospy.Publisher('test_primitives_in', test_rosmaster.msg.String)
+        sub = rospy.Subscriber('test_primitives_out', test_rosmaster.msg.String) 
         #TODO: publish a bunch and check sequencing + caller_id
         pub.unregister()
         sub.unregister()
 
     def testArrays(self):
-        pub = rospy.Publisher('test_header_in', rosmaster.msg.String)
-        sub = rospy.Subscriber('test_header_out', rosmaster.msg.String)
+        pub = rospy.Publisher('test_header_in', test_rosmaster.msg.String)
+        sub = rospy.Subscriber('test_header_out', test_rosmaster.msg.String)
         #TODO: publish a bunch and check sequencing + caller_id        
         pub.unregister()
         sub.unregister()
 
     def testHeader(self):
         #msg.auto_header = True
-        pub = rospy.Publisher('test_header_in', rosmaster.msg.String)
-        sub = rospy.Subscriber('test_header_out', rosmaster.msg.String)
+        pub = rospy.Publisher('test_header_in', test_rosmaster.msg.String)
+        sub = rospy.Subscriber('test_header_out', test_rosmaster.msg.String)
         #TODO: publish a bunch and check sequencing + caller_id        
         pub.unregister()
         sub.unregister()

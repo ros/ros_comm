@@ -15,12 +15,9 @@
   <build_depend>rosunit</build_depend>
 
   <run_depend>boost</run_depend>
-  <!--<run_depend>rospy</run_depend> This one should be here but there is a circular dependency: rospy run depends on rosgraph which build depends on rostest -->
+  <run_depend>rospy</run_depend>
+  <run_depend>roslaunch</run_depend>
   <run_depend>rosunit</run_depend>
-
-  <test_depend>boost</test_depend>
-  <!--<test_depend>rospy</test_depend>-->
-  <test_depend>rosunit</test_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>

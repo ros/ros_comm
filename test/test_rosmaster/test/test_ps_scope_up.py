@@ -31,7 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-PKG = 'rosmaster'
+PKG = 'test_rosmaster'
 NAME = 'test_ps_scope_up'
 
 import sys

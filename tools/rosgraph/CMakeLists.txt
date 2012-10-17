@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(rosgraph)
-find_package(catkin REQUIRED COMPONENTS rostest)
+find_package(catkin REQUIRED)
 catkin_package()
 
 catkin_python_setup()
@@ -15,5 +15,4 @@ install(FILES conf/python_logging.conf
 install(PROGRAMS scripts/rosgraph
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
-add_rostest(test/rostest/masterapi.test)
 catkin_add_nosetests(test)

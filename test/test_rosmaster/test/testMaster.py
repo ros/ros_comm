@@ -44,7 +44,7 @@ import rospy
 from rostest import *
 from testSlave import msMain
 
-MYPKG = 'rosmaster'
+MYPKG = 'test_rosmaster'
 
 HAS_PARAM = True
 

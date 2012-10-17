@@ -14,8 +14,4 @@ install(FILES resources/roscore.xml
 install(DIRECTORY resources
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
-add_rostest(test/rostests/roslaunch.test)
-add_rostest(test/rostests/env.test)
-add_rostest(test/rostests/params_basic.test)
-
 catkin_add_nosetests(test/unit)

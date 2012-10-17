@@ -34,7 +34,7 @@
 ## Integration test for empty services to test serializers
 ## and transport
 
-PKG='rosmaster'
+PKG='test_rosmaster'
 NAME = 'test_master'
 
 import sys

@@ -31,8 +31,8 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-PKG = 'rosmaster'
-NAME = 'test_ps_encapsulation'
+PKG='test_rosmaster'
+NAME = 'test_ps_has_param'
 
 import sys
 
@@ -41,10 +41,10 @@ import rostest
 
 from param_server_test_case import ParamServerTestCase
 
-class PsEncapsulationTestCase(ParamServerTestCase):
-    def testEncapsulation(self):
-        return self._testEncapsulation()
+class PsGetParamTestCase(ParamServerTestCase):
+    def testGetParam(self):
+        return self._testGetParam()
 
 if __name__ == '__main__':
     rospy.init_node(NAME)
-    rostest.rosrun(PKG, NAME, PsEncapsulationTestCase, sys.argv)
+    rostest.rosrun(PKG, NAME, PsGetParamTestCase, sys.argv)

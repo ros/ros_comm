@@ -1,0 +1,4 @@
+<launch>
+  <master type="test_rosmaster" />
+  <include file="$(find test_rosmaster)/test/test-param-server.xml" />
+</launch>
