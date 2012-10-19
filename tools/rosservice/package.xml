@@ -1,6 +1,6 @@
 <package>
   <name>rosservice</name>
-  <version>1.9.25</version>
+  <version>1.9.26</version>
   <description>
     rosservice contains the rosservice command-line tool for listing
     and querying ROS <a
