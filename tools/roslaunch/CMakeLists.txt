@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(roslaunch)
-find_package(catkin REQUIRED COMPONENTS rostest rosgraph_msgs)
+find_package(catkin REQUIRED)
 catkin_package()
 
 catkin_add_env_hooks(10.roslaunch SHELLS bat sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
