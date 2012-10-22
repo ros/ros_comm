@@ -13,7 +13,7 @@
   <build_depend>catkin</build_depend>
   <build_depend>rostest</build_depend>
 
+  <test_depend>python-rospkg</test_depend>
   <test_depend>rosgraph</test_depend>
   <test_depend>roslaunch</test_depend>
-  <test_depend>rospkg</test_depend>
 </package>
