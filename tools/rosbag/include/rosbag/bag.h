@@ -37,7 +37,7 @@
 
 #include "rosbag/buffer.h"
 #include "rosbag/chunked_file.h"
-#include "rosbag/constants.h"
+#include "rosbag/rosbag_constants.h"
 #include "rosbag/exceptions.h"
 #include "rosbag/structures.h"
 
