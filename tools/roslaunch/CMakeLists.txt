@@ -3,7 +3,11 @@ project(roslaunch)
 find_package(catkin REQUIRED)
 catkin_package()
 
-catkin_add_env_hooks(10.roslaunch SHELLS bat sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
+if(CMAKE_HOST_UNIX)
+  catkin_add_env_hooks(10.roslaunch SHELLS sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
+else()
+  catkin_add_env_hooks(10.roslaunch SHELLS bat DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
+endif()
 
 catkin_python_setup()
 

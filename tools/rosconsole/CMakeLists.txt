@@ -40,7 +40,11 @@ endif()
 
 target_link_libraries(rosconsole ${catkin_LIBRARIES} ${LOG4CXX_LIBRARIES} ${Boost_LIBRARIES})
 
-catkin_add_env_hooks(10.rosconsole SHELLS bat sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
+if(CMAKE_HOST_UNIX)
+  catkin_add_env_hooks(10.rosconsole SHELLS sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
+else()
+  catkin_add_env_hooks(10.rosconsole SHELLS bat DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
+endif()
 
 install(TARGETS rosconsole
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
