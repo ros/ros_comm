@@ -1,14 +1,17 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.3)
 project(rostest)
 
 find_package(catkin COMPONENTS rosunit)
 find_package(Boost COMPONENTS thread)
 
 include_directories(include ${Boost_INCLUDE_DIRS})
-catkin_project(rostest
+
+catkin_package(DEPENDS Boost
   INCLUDE_DIRS include
   CFG_EXTRAS ${PROJECT_NAME}-extras.cmake
   )
+catkin_python_setup()
+
 find_package(catkin COMPONENTS rostest)
 
 catkin_add_gtest(test_permuter test/test_permuter.cpp)
@@ -23,12 +26,9 @@ add_rostest(test/distro_version.test)
 
 # required for old rosbuild macro
 install(PROGRAMS scripts/roslaunch-check.py
-  DESTINATION share/rostest/scripts
-  )
-
+  DESTINATION  ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts)
 install(PROGRAMS nodes/hztest
-  DESTINATION share/rostest/nodes/hztest
-  )
+  DESTINATION  ${CATKIN_PACKAGE_SHARE_DESTINATION}/nodes/hztest)
 install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PROJECT_INCLUDE_DESTINATION}
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h")

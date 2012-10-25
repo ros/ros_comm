@@ -1,11 +1,8 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.3)
 project(rosmaster)
-find_package(catkin REQUIRED COMPONENTS rostest)
+find_package(catkin REQUIRED)
+catkin_package()
 
-add_rostest(test/rosmaster.test)
-add_rostest(test/paramserver.test)
+catkin_python_setup()
 
 catkin_add_nosetests(test)
-
-install(FILES manifest.xml
-  DESTINATION share/rosmaster)

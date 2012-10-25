@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.3)
 project(test_rospy)
 find_package(catkin REQUIRED COMPONENTS genmsg test_ros rosunit rostest)
 catkin_project(${PROJECT_NAME})

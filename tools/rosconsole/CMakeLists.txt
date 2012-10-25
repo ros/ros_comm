@@ -1,9 +1,11 @@
+cmake_minimum_required(VERSION 2.8.3)
 project(rosconsole)
 find_package(catkin REQUIRED COMPONENTS cpp_common rostime rosunit)
-catkin_project(rosconsole
+catkin_package(
   LIBRARIES rosconsole
   INCLUDE_DIRS include
   CFG_EXTRAS rosconsole-extras.cmake
+  DEPENDS cpp_common rostime
   )
 
 include(cmake/rosconsole-extras.cmake.in)
@@ -23,7 +25,7 @@ include_directories(${catkin_INCLUDE_DIRS})
 
 find_package(Boost COMPONENTS regex thread)
 
-include_directories(include)
+include_directories(include ${Boost_INCLUDE_DIR})
 
 add_library(rosconsole src/rosconsole/rosconsole.cpp)
 
@@ -38,9 +40,18 @@ endif()
 
 target_link_libraries(rosconsole ${catkin_LIBRARIES} ${LOG4CXX_LIBRARIES} ${Boost_LIBRARIES})
 
+if(CMAKE_HOST_UNIX)
+  catkin_add_env_hooks(10.rosconsole SHELLS sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
+else()
+  catkin_add_env_hooks(10.rosconsole SHELLS bat DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
+endif()
+
 install(TARGETS rosconsole
-  ARCHIVE DESTINATION ${CATKIN_PROJECT_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PROJECT_LIB_DESTINATION})
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+
+install(FILES config/rosconsole.config
+  DESTINATION ${CATKIN_GLOBAL_SHARE_DESTINATION}/ros/config)
 
 install(DIRECTORY include/
   DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}

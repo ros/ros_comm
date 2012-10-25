@@ -1,0 +1,15 @@
+<package>
+  <name>test_rosgraph</name>
+  <version>1.9.27</version>
+  <description>
+    Tests for rosgraph which depend on rostest.
+  </description>
+  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <license>BSD</license>
+
+  <url>http://ros.org/wiki/rosgraph</url>
+  <author>Ken Conley</author>
+
+  <build_depend>catkin</build_depend>
+  <build_depend>rostest</build_depend>
+</package>

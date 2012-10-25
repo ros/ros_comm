@@ -1,0 +1,16 @@
+<package>
+  <name>std_srvs</name>
+  <version>1.9.27</version>
+  <description>Common service definitions. Currently just the 'Empty' service.</description>
+  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <license>BSD</license>
+
+  <url>http://ros.org/wiki/std_srvs</url>
+  <author>Morgan Quigley</author>
+
+  <build_depend>catkin</build_depend>
+  <build_depend>genmsg</build_depend>
+  <build_depend>langs-dev</build_depend>
+
+  <run_depend>langs</run_depend>
+</package>

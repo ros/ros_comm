@@ -1,0 +1,22 @@
+<package>
+  <name>rosgraph</name>
+  <version>1.9.27</version>
+  <description>
+    rosgraph contains the rosgraph command-line tool, which prints
+    information about the ROS Computation Graph. It also provides an
+    internal library that can be used by graphical tools.
+  </description>
+  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <license>BSD</license>
+
+  <url>http://ros.org/wiki/rosgraph</url>
+  <author>Ken Conley</author>
+
+  <build_depend>catkin</build_depend>
+
+  <test_depend>python-mock</test_depend>
+
+  <export>
+    <rosdoc config="rosdoc.yaml"/>
+  </export>
+</package>

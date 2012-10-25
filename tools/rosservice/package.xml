@@ -1,0 +1,29 @@
+<package>
+  <name>rosservice</name>
+  <version>1.9.27</version>
+  <description>
+    rosservice contains the rosservice command-line tool for listing
+    and querying ROS <a
+    href="http://www.ros.org/wiki/Services">Services</a>. It also
+    contains a Python library for retrieving information about
+    Services and dynamically invoking them. The Python library is
+    experimental and is for internal-use only.
+  </description>
+  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <license>BSD</license>
+
+  <url>http://ros.org/wiki/rosservice</url>
+  <author>Ken Conley</author>
+
+  <build_depend>catkin</build_depend>
+
+  <run_depend>genpy</run_depend>
+  <run_depend>rosgraph</run_depend>
+  <run_depend>roslib</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>rosmsg</run_depend>
+
+  <export>
+    <rosdoc config="rosdoc.yaml"/>
+  </export>
+</package>

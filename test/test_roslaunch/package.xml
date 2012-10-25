@@ -1,0 +1,19 @@
+<package>
+  <name>test_roslaunch</name>
+  <version>1.9.27</version>
+  <description>
+    Tests for roslaunch which depend on rostest.
+  </description>
+  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <license>BSD</license>
+
+  <url>http://ros.org/wiki/roslaunch</url>
+  <author>Ken Conley</author>
+
+  <build_depend>catkin</build_depend>
+  <build_depend>rostest</build_depend>
+
+  <test_depend>python-rospkg</test_depend>
+  <test_depend>rosgraph</test_depend>
+  <test_depend>roslaunch</test_depend>
+</package>

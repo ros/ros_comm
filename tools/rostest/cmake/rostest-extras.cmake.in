@@ -1,5 +1,7 @@
 find_package(catkin REQUIRED)
 
+include(CMakeParseArguments)
+
 function(add_rostest file)
   if (@BUILDSPACE@)
     find_program_required(ROSTEST_EXE rostest 
@@ -11,7 +13,7 @@ function(add_rostest file)
                           NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
   endif()
 
-  parse_arguments(_rostest "WORKING_DIRECTORY" "" ${ARGN})
+  cmake_parse_arguments(_rostest "" "WORKING_DIRECTORY" "" ${ARGN})
 
   # Check that the file exists, #1621
   set(_file_name _file_name-NOTFOUND)

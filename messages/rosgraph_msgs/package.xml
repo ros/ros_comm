@@ -1,0 +1,19 @@
+<package>
+  <name>rosgraph_msgs</name>
+  <version>1.9.27</version>
+  <description>
+     Messages relating to the ROS Computation Graph. These are generally considered to be low-level messages that end users do not interact with.
+  </description>
+  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <license>BSD</license>
+
+  <url>http://ros.org/wiki/rosgraph_msgs</url>
+  <author>Ken Conley</author>
+
+  <build_depend>catkin</build_depend>
+  <build_depend>genmsg</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>langs-dev</build_depend>
+
+  <run_depend>langs</run_depend>
+</package>

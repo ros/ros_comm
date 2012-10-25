@@ -1,11 +1,14 @@
+cmake_minimum_required(VERSION 2.8.3)
 project(topic_tools)
-catkin_project(topic_tools
+find_package(catkin COMPONENTS cpp_common genmsg rosconsole roscpp rostest rostime rosunit xmlrpcpp)
+
+catkin_package(
   LIBRARIES topic_tools
   INCLUDE_DIRS include
-  DEPENDS roscpp rosconsole xmlrpcpp rostime
+  DEPENDS rosconsole roscpp rostime xmlrpcpp
   )
+
 include_directories(include)
-find_package(catkin COMPONENTS cpp_common roscpp rosconsole xmlrpcpp rosunit rostest rostime)
 include_directories(${catkin_INCLUDE_DIRS})
 
 add_library(topic_tools src/shape_shifter.cpp src/parse.cpp)
@@ -28,18 +31,21 @@ add_executable(throttle src/throttle.cpp)
 target_link_libraries(throttle topic_tools ${catkin_LIBRARIES})
 
 add_service_files(DIRECTORY srv
-  FILES MuxAdd.srv MuxDelete.srv MuxList.srv MuxSelect.srv
-  )
+  FILES
+  MuxAdd.srv
+  MuxDelete.srv
+  MuxList.srv
+  MuxSelect.srv)
 
 generate_messages(DEPENDENCIES std_msgs)
 
 install(TARGETS topic_tools switch_mux mux relay drop throttle
-  ARCHIVE DESTINATION ${CATKIN_PROJECT_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PROJECT_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PROJECT_BIN_DESTINATION})
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PROJECT_INCLUDE_DESTINATION}
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h")
 
 install(PROGRAMS
@@ -47,7 +53,7 @@ install(PROGRAMS
   scripts/mux_delete
   scripts/mux_list
   scripts/mux_select
-  DESTINATION ${CATKIN_PROJECT_BIN_DESTINATION})
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #Testing
 catkin_add_gtest(${PROJECT_NAME}-utest test/utest.cpp)
