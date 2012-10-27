@@ -8,12 +8,23 @@ find_package(catkin REQUIRED COMPONENTS
   rostest
   )
 
+catkin_package_xml()
+# split version in parts and pass to extra file
+string(REPLACE "." ";" roscpp_VERSION_LIST "${roscpp_VERSION}")
+list(LENGTH roscpp_VERSION_LIST _count)
+if(NOT _count EQUAL 3)
+  message(FATAL_ERROR "roscpp version '${roscpp_VERSION}' does not match 'MAJOR.MINOR.PATCH' pattern")
+endif()
+list(GET roscpp_VERSION_LIST 0 roscpp_VERSION_MAJOR)
+list(GET roscpp_VERSION_LIST 1 roscpp_VERSION_MINOR)
+list(GET roscpp_VERSION_LIST 2 roscpp_VERSION_PATCH)
+
 catkin_package(
   LIBRARIES roscpp
   INCLUDE_DIRS include
   DEPENDS cpp_common rostime rosconsole roscpp_serialization
           roscpp_traits std_msgs rosgraph_msgs xmlrpcpp
-  )
+  CFG_EXTRAS roscpp-extras.cmake)
 
 find_package(Boost REQUIRED COMPONENTS signals filesystem system)
 
@@ -30,17 +41,6 @@ CHECK_FUNCTION_EXISTS(trunc HAVE_TRUNC)
 # Output test results to config.h
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/libros/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
-# split version in parts and pass to preprocessor
-string(REPLACE "." ";" roscpp_VERSION_LIST "${roscpp_VERSION}")
-list(LENGTH roscpp_VERSION_LIST _count)
-if(NOT _count EQUAL 3)
-  message(FATAL_ERROR "roscpp version '${roscpp_VERSION}' does not match 'MAJOR.MINOR.PATCH' pattern")
-endif()
-list(GET roscpp_VERSION_LIST 0 roscpp_VERSION_MAJOR)
-list(GET roscpp_VERSION_LIST 1 roscpp_VERSION_MINOR)
-list(GET roscpp_VERSION_LIST 2 roscpp_VERSION_PATCH)
-add_definitions(-Droscpp_VERSION_MAJOR=${roscpp_VERSION_MAJOR} -Droscpp_VERSION_MINOR=${roscpp_VERSION_MINOR} -Droscpp_VERSION_PATCH=${roscpp_VERSION_PATCH})
 
 add_library(roscpp 
   src/libros/master.cpp
