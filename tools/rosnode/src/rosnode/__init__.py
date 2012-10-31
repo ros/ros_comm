@@ -747,6 +747,7 @@ Commands:
 \trosnode info\tprint information about node
 \trosnode machine\tlist nodes running on a particular machine or list machines
 \trosnode kill\tkill a running node
+\trosnode cleanup\tpurge registration information of unreachable nodes
 
 Type rosnode <command> -h for more detailed usage, e.g. 'rosnode ping -h'
 """)
