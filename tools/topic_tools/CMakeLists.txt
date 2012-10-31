@@ -2,14 +2,23 @@ cmake_minimum_required(VERSION 2.8.3)
 project(topic_tools)
 find_package(catkin COMPONENTS cpp_common genmsg rosconsole roscpp rostest rostime rosunit xmlrpcpp)
 
+include_directories(include)
+include_directories(${catkin_INCLUDE_DIRS})
+
+add_service_files(DIRECTORY srv
+  FILES
+  MuxAdd.srv
+  MuxDelete.srv
+  MuxList.srv
+  MuxSelect.srv)
+
+generate_messages(DEPENDENCIES std_msgs)
+
 catkin_package(
   LIBRARIES topic_tools
   INCLUDE_DIRS include
   DEPENDS rosconsole roscpp rostime xmlrpcpp
   )
-
-include_directories(include)
-include_directories(${catkin_INCLUDE_DIRS})
 
 add_library(topic_tools src/shape_shifter.cpp src/parse.cpp)
 target_link_libraries(topic_tools ${catkin_LIBRARIES})
@@ -29,15 +38,6 @@ target_link_libraries(drop topic_tools ${catkin_LIBRARIES})
 
 add_executable(throttle src/throttle.cpp)
 target_link_libraries(throttle topic_tools ${catkin_LIBRARIES})
-
-add_service_files(DIRECTORY srv
-  FILES
-  MuxAdd.srv
-  MuxDelete.srv
-  MuxList.srv
-  MuxSelect.srv)
-
-generate_messages(DEPENDENCIES std_msgs)
 
 install(TARGETS topic_tools switch_mux mux relay drop throttle
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

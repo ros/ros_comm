@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(test_rosmaster)
+
 find_package(catkin REQUIRED COMPONENTS genmsg rostest)
-catkin_package()
 
 add_message_files(DIRECTORY msg
   FILES
@@ -25,6 +25,8 @@ add_service_files(DIRECTORY srv
 )
 
 generate_messages()
+
+catkin_package()
 
 add_rostest(test/rosmaster.test)
 add_rostest(test/paramserver.test)

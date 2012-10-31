@@ -4,11 +4,6 @@ find_package(catkin REQUIRED COMPONENTS cpp_common genmsg roscpp_serialization r
 find_package(Boost REQUIRED COMPONENTS regex program_options)
 find_package(BZip2 REQUIRED)
 
-catkin_package(
-  LIBRARIES rosbag
-  INCLUDE_DIRS include
-  )
-
 catkin_python_setup()
 
 # Support large bags (>2GB) on 32-bit systems
@@ -29,30 +24,6 @@ target_link_libraries(record rosbag)
 
 add_executable(play src/play.cpp)
 target_link_libraries(play rosbag)
-
-#rosbuild_add_executable(example_write examples/write.cpp)
-#target_link_libraries(example_write rosbag)
-
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h")
-install(TARGETS rosbag record play
-  ARCHIVE DESTINATION {PROJECT_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-install(PROGRAMS
-  scripts/bag2png.py
-  scripts/bagsort.py
-  scripts/fastrebag.py
-  scripts/fixbag.py
-  scripts/fixbag_batch.py
-  scripts/fix_md5sums.py
-  scripts/fix_moved_messages.py
-  scripts/fix_msg_defs.py
-  scripts/makerule.py
-  scripts/savemsg.py
-  scripts/topic_renamer.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 download_test_data(http://pr.willowgarage.com/data/rosbag/test_indexed_1.2.bag
   test/test_indexed_1.2.bag 523cc0deb66269c84be4a7c605ff5eb3)
@@ -90,3 +61,30 @@ if(TARGET tests)
 endif()
 
 add_subdirectory(bag_migration_tests)
+
+catkin_package(
+  LIBRARIES rosbag
+  INCLUDE_DIRS include
+  )
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h")
+install(TARGETS rosbag record play
+  ARCHIVE DESTINATION {PROJECT_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(PROGRAMS
+  scripts/bag2png.py
+  scripts/bagsort.py
+  scripts/fastrebag.py
+  scripts/fixbag.py
+  scripts/fixbag_batch.py
+  scripts/fix_md5sums.py
+  scripts/fix_moved_messages.py
+  scripts/fix_msg_defs.py
+  scripts/makerule.py
+  scripts/savemsg.py
+  scripts/topic_renamer.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+  
