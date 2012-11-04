@@ -39,6 +39,7 @@ This API should not be considered stable.
 from __future__ import print_function
 
 import os
+import sys
 import time
 
 import roslib.packages
