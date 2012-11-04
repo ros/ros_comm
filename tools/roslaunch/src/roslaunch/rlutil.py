@@ -95,7 +95,7 @@ def resolve_launch_arguments(args):
             if len(resolved) == 1:
                 resolved = resolved[0]
             elif len(resolved) > 1:
-                raise roslaunch.core.RLException("multiple files named [%s] in package [%s].\nPlease specify full path instead"%(args[1], top))
+                raise roslaunch.core.RLException("multiple files named [%s] in package [%s]:%s\nPlease specify full path instead" % (args[1], top, ''.join(['\n- %s' % r for r in resolved])))
         except rospkg.ResourceNotFound as e:
             raise roslaunch.core.RLException("[%s] is not a package or launch file name"%top)
         if not resolved:
