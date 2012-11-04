@@ -3,15 +3,17 @@ find_package(catkin REQUIRED)
 include(CMakeParseArguments)
 
 function(add_rostest file)
-  if (@BUILDSPACE@)
-    find_program_required(ROSTEST_EXE rostest 
-                          PATHS @PROJECT_SOURCE_DIR@/scripts
-                          NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
-  else()
-    find_program_required(ROSTEST_EXE rostest 
-                          PATHS @CMAKE_INSTALL_PREFIX@/bin
-                          NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
-  endif()
+@[if BUILDSPACE]@
+  # find program in buildspace
+  find_program_required(ROSTEST_EXE rostest 
+    PATHS @(PROJECT_SOURCE_DIR)/scripts
+    NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
+@[else]@
+  # find program in installspace
+  find_program_required(ROSTEST_EXE rostest 
+    PATHS @(CMAKE_INSTALL_PREFIX)/bin
+    NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
+@[end if]@
 
   cmake_parse_arguments(_rostest "" "WORKING_DIRECTORY" "" ${ARGN})
 

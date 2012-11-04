@@ -8,7 +8,7 @@ catkin_package(
   DEPENDS cpp_common rostime
   )
 
-include(cmake/rosconsole-extras.cmake.in)
+include(cmake/rosconsole-extras.cmake)
 
 # See ticket: https://code.ros.org/trac/ros/ticket/3626
 # On mac use g++-4.2
