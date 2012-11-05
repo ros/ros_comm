@@ -37,6 +37,12 @@ import logging
 import sys
 import traceback
 
+# monkey-patch to suppress threading error message in Python 2.7.3
+# see http://stackoverflow.com/questions/13193278/understand-python-threading-bug
+if sys.version_info[:3] == (2, 7, 3):
+    import threading
+    threading._DummyThread._Thread__stop = lambda _dummy: None
+
 import rospkg
 
 from . import core as roslaunch_core
