@@ -447,8 +447,9 @@ def rosnode_cleanup():
         master = rosgraph.Master(ID)
         print("Unable to contact the following nodes:")
         print('\n'.join(' * %s'%n for n in unpinged))
-        print("cleanup will purge all information about these nodes from the master")
-        print("Please type y or n to continue")
+        print("Warning: these might include alive and functioning nodes, e.g. in unstable networks.")
+        print("Cleanup will purge all information about these nodes from the master.")
+        print("Please type y or n to continue:")
         input = sys.stdin.readline()
         while not input.strip() in ['y', 'n']:
             input = sys.stdin.readline()
@@ -747,6 +748,7 @@ Commands:
 \trosnode info\tprint information about node
 \trosnode machine\tlist nodes running on a particular machine or list machines
 \trosnode kill\tkill a running node
+\trosnode cleanup\tpurge registration information of unreachable nodes
 
 Type rosnode <command> -h for more detailed usage, e.g. 'rosnode ping -h'
 """)
