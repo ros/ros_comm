@@ -36,7 +36,11 @@ function(add_rostest file)
   string(LENGTH "${PROJECT_SOURCE_DIR}/" prefix_length)
   string(SUBSTRING "${_testname}" 0 ${prefix_length} prefix)
   if("${PROJECT_SOURCE_DIR}/" STREQUAL "${prefix}")
-    string(SUBSTRING "${_testname}" ${prefix_length} -1 _testname)
+    # passing length -1 does not work for CMake < 2.8.5
+    # http://public.kitware.com/Bug/view.php?id=10740
+    string(LENGTH "${_testname}" _rest)
+    math(EXPR _rest "${_rest} - ${prefix_length}")
+    string(SUBSTRING "${_testname}" ${prefix_length} ${_rest} _testname)
   endif()
 
   string(REPLACE "/" "_" _testname ${_testname})
