@@ -3,8 +3,8 @@ find_package(catkin REQUIRED)
 include(CMakeParseArguments)
 
 function(add_rostest file)
-@[if BUILDSPACE]@
-  # find program in buildspace
+@[if DEVELSPACE]@
+  # find program in develspace
   find_program_required(ROSTEST_EXE rostest 
     PATHS @(PROJECT_SOURCE_DIR)/scripts
     NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
