@@ -12,6 +12,13 @@ add_definitions(-D_FILE_OFFSET_BITS=64)
 include_directories(include ${Boost_INCLUDE_DIR} ${BZIP2_INCLUDE_DIR} ${catkin_INCLUDE_DIRS} ${roscpp_INCLUDE_DIRS})
 add_definitions(${BZIP2_DEFINITIONS})
 
+add_subdirectory(bag_migration_tests)
+
+catkin_package(
+  LIBRARIES rosbag
+  INCLUDE_DIRS include
+  )
+
 add_library(rosbag 
   src/bag.cpp src/buffer.cpp src/bz2_stream.cpp src/chunked_file.cpp
   src/message_instance.cpp src/player.cpp
@@ -59,13 +66,6 @@ target_link_libraries(double_pub ${GTEST_LIBRARIES} ${catkin_LIBRARIES})
 if(TARGET tests)
   add_dependencies(tests double_pub rosgraph_msgs_genpy)
 endif()
-
-add_subdirectory(bag_migration_tests)
-
-catkin_package(
-  LIBRARIES rosbag
-  INCLUDE_DIRS include
-  )
 
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
