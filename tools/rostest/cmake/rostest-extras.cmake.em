@@ -39,7 +39,7 @@ function(add_rostest file)
   string(REPLACE "/" "_" _testname ${_testname})
   get_filename_component(_output_name ${_testname} NAME_WE)
   set(_output_name "${_output_name}.xml")
-  set(cmd "${ROSTEST_EXE} --pkgdir=${PROJECT_SOURCE_DIR} --package=${PROJECT_NAME} ${_file_name}")
+  set(cmd "${ROSTEST_EXE} --pkgdir=${PROJECT_SOURCE_DIR} --package=${PROJECT_NAME} --results-filename ${_output_name} ${_file_name}")
   catkin_run_tests_target("rostest" ${_testname} "rostest-${_output_name}" COMMAND ${cmd} WORKING_DIRECTORY ${_rostest_WORKING_DIRECTORY})
 endfunction()
 

@@ -91,6 +91,9 @@ def rostestmain():
     parser.add_option("--package", metavar="PACKAGE",
                       dest="package", default=None,
                       help="package")
+    parser.add_option("--results-filename", metavar="RESULTS_FILENAME",
+                      dest="results_filename", default=None,
+                      help="results_filename")
     (options, args) = parser.parse_args()
     try:
         args = roslaunch.rlutil.resolve_launch_arguments(args)
@@ -122,7 +125,7 @@ def rostestmain():
         r = rospkg.RosPack()
         pkg_dir = r.get_path(pkg)
 
-    outname = rostest_name_from_path(pkg_dir, test_file)
+    outname = rostest_name_from_path(pkg_dir, options.results_filename if options.results_filename else test_file)
 
     # #1140
     if not os.path.isfile(test_file):
