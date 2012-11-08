@@ -4,7 +4,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp xmlrpcpp rosconsole)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES message_filters
-  DEPENDS roscpp xmlrpcpp rosconsole
+  CATKIN_DEPENDS roscpp xmlrpcpp rosconsole
 )
 catkin_python_setup()
 

@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 2.8.3)
 project(rosconsole)
 find_package(catkin REQUIRED COMPONENTS cpp_common rostime rosunit)
 catkin_package(
-  LIBRARIES rosconsole
   INCLUDE_DIRS include
+  LIBRARIES rosconsole
+  CATKIN_DEPENDS cpp_common rostime
   CFG_EXTRAS rosconsole-extras.cmake
-  DEPENDS cpp_common rostime
-  )
+)
 
 include(cmake/rosconsole-extras.cmake)
 

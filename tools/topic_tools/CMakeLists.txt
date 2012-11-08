@@ -15,10 +15,10 @@ add_service_files(DIRECTORY srv
 generate_messages(DEPENDENCIES std_msgs)
 
 catkin_package(
-  LIBRARIES topic_tools
   INCLUDE_DIRS include
-  DEPENDS rosconsole roscpp rostime xmlrpcpp
-  )
+  LIBRARIES topic_tools
+  CATKIN_DEPENDS rosconsole roscpp rostime xmlrpcpp
+ )
 
 add_library(topic_tools src/shape_shifter.cpp src/parse.cpp)
 target_link_libraries(topic_tools ${catkin_LIBRARIES})

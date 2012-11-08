@@ -101,11 +101,12 @@ add_message_files(
 generate_messages(DEPENDENCIES std_msgs rosgraph_msgs)
 
 catkin_package(
-  LIBRARIES roscpp
   INCLUDE_DIRS include
-  DEPENDS Boost cpp_common rostime rosconsole roscpp_serialization
-          roscpp_traits std_msgs rosgraph_msgs xmlrpcpp
-  CFG_EXTRAS roscpp-extras.cmake)
+  LIBRARIES roscpp
+  CATKIN_DEPENDS cpp_common rostime rosconsole roscpp_serialization roscpp_traits rosgraph_msgs std_msgs xmlrpcpp
+  DEPENDS Boost
+  CFG_EXTRAS roscpp-extras.cmake
+)
 
 include(CheckIncludeFiles)
 include(CheckFunctionExists)

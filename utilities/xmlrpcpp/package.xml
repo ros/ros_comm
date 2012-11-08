@@ -18,6 +18,8 @@
   <build_depend>catkin</build_depend>
   <build_depend>cpp_common</build_depend>
 
+  <run_depend>cpp_common</run_depend>
+
   <export>
     <rosdoc external="http://xmlrpcpp.sourceforge.net/doc/hierarchy.html"/>
   </export>

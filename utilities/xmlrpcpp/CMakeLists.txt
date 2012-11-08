@@ -4,7 +4,8 @@ find_package(catkin REQUIRED COMPONENTS cpp_common)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES xmlrpcpp
-  )
+  CATKIN_DEPENDS cpp_common
+)
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 link_directories(${catkin_LIBRARY_DIRS})
@@ -13,7 +14,7 @@ if(WIN32)
   add_definitions(-D_WINDOWS)
 endif()
 
-add_library(xmlrpcpp 
+add_library(xmlrpcpp
   src/XmlRpcClient.cpp
   src/XmlRpcDispatch.cpp
   src/XmlRpcServer.cpp
@@ -29,7 +30,7 @@ if(WIN32)
   target_link_libraries(xmlrpcpp ws2_32)
 endif()
 
-message("TODO: consider moving xmlrpcpp's headers into a subdirectory")
+# FIXME the headers should be in a package-specific subfolder but can not be for backward compatibility
 install(DIRECTORY include/
   DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h")
