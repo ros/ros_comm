@@ -103,7 +103,7 @@ generate_messages(DEPENDENCIES std_msgs rosgraph_msgs)
 catkin_package(
   LIBRARIES roscpp
   INCLUDE_DIRS include
-  DEPENDS cpp_common rostime rosconsole roscpp_serialization
+  DEPENDS Boost cpp_common rostime rosconsole roscpp_serialization
           roscpp_traits std_msgs rosgraph_msgs xmlrpcpp
   CFG_EXTRAS roscpp-extras.cmake)
 
