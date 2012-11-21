@@ -704,8 +704,7 @@ class RosbagCmds(UserDict):
         if cmd in self:
             self[cmd](['-h'])
         else:
-            sys.stderr.write("Unknown command: '%s'" % cmd)
-            sys.stderr.write()
+            print("Unknown command: '%s'" % cmd, file=sys.stderr)
             sys.stderr.write(self.get_valid_cmds())
 
 class ProgressMeter(object):
