@@ -23,6 +23,8 @@ namespace XmlRpc {
   class XMLRPCPP_DECL XmlRpcSocket {
   public:
 
+    static bool s_use_ipv6_;
+
     //! Creates a stream (TCP) socket. Returns -1 on failure.
     static int socket();
 

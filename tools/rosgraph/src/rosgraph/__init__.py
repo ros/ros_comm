@@ -32,7 +32,7 @@
 
 import sys
 
-from . rosenv import get_master_uri, ROS_MASTER_URI, ROS_NAMESPACE, ROS_HOSTNAME, ROS_IP
+from . rosenv import get_master_uri, ROS_MASTER_URI, ROS_NAMESPACE, ROS_HOSTNAME, ROS_IP, ROS_IPV6
 from . masterapi import Master, MasterFailure, MasterError, MasterException
 from . masterapi import is_online as is_master_online
 
@@ -50,7 +50,7 @@ def myargv(argv=None):
     return [a for a in argv if not names.REMAP in a]
 
 __all__ = ['myargv',
-        'get_master_uri', 'ROS_MASTER_URI', 'ROS_NAMESPACE', 'ROS_HOSTNAME', 'ROS_IP',
+        'get_master_uri', 'ROS_MASTER_URI', 'ROS_NAMESPACE', 'ROS_HOSTNAME', 'ROS_IP', 'ROS_IPV6',
         'Master', 'MasterFailure', 'MasterError', 'MasterException',
         'is_master_online']
 

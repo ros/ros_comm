@@ -66,8 +66,10 @@ def verifyNodeAddress(master, callerId, name, machine, addr, port):
         if addr == 'localhost':
             addr = socket.gethostname()
         if raddr == 'localhost':
-            raddr = socket.gethostname() 
-        assert socket.gethostbyname(raddr) == socket.gethostbyname(addr), "%s!=%s"%(socket.gethostbyname(raddr), socket.gethostbyname(addr))
+            raddr = socket.gethostname()
+        addrinfo = socket.getaddrinfo(addr, 0, 0, 0, socket.SOL_TCP)
+        raddrinfo = socket.getaddrinfo(raddr, 0, 0, 0, socket.SOL_TCP)
+        assert raddrinfo == addrinfo, "%s!=%s" % (raddrinfo, addrinfo)
     #ping the node
     apiSuccess(xmlrpclib.ServerProxy("http://%s:%s/"%(raddr, rport)).getPid(''))
 
