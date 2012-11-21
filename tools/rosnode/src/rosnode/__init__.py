@@ -181,14 +181,14 @@ def get_nodes_by_machine(machine):
     
     master = rosgraph.Master(ID)
     try:
-        machine_actual = socket.gethostbyname(machine)
+        machine_actual = [host[4][0] for host in socket.getaddrinfo(machine, 0, 0, 0, socket.SOL_TCP)]
     except:
         raise ROSNodeException("cannot resolve machine name [%s] to address"%machine)
 
     # get all the node names, lookup their uris, parse the hostname
     # from the uris, and then compare the resolved hostname against
     # the requested machine name.
-    matches = [machine, machine_actual]
+    matches = [machine] +  machine_actual
     not_matches = [] # cache lookups
     node_names = get_node_names()
     retval = []
@@ -206,8 +206,8 @@ def get_nodes_by_machine(machine):
             elif h in not_matches:
                 continue
             else:
-                r = socket.gethostbyname(h)
-                if r == machine_actual:
+                r = [host[4][0] for host in socket.getaddrinfo(h, 0, 0, 0, socket.SOL_TCP)]
+                if set(r) & set(machine_actual):
                     matches.append(r)
                     retval.append(n)
                 else:

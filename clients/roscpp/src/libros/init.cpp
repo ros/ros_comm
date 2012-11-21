@@ -48,6 +48,7 @@
 #include "ros/subscribe_options.h"
 #include "ros/transport/transport_tcp.h"
 #include "ros/internal_timer_manager.h"
+#include "XmlRpcSocket.h"
 
 #include "roscpp/GetLoggers.h"
 #include "roscpp/SetLoggerLevel.h"
@@ -310,6 +311,30 @@ void start()
     {
     }
   }
+
+  char *use_ipv6 = NULL;
+#ifdef _MSC_VER
+    _dupenv_s(&use_ipv6, NULL, "ROS_IPV6");
+#else
+    use_ipv6 = getenv("ROS_IPV6");
+#endif
+  if (use_ipv6 && strcmp(use_ipv6,"on") == 0)
+  {
+    TransportTCP::s_use_ipv6_ = true;
+    XmlRpc::XmlRpcSocket::s_use_ipv6_ = true;
+  }
+  else
+  {
+    TransportTCP::s_use_ipv6_ = false;
+    XmlRpc::XmlRpcSocket::s_use_ipv6_ = false;
+  }
+
+#ifdef _MSC_VER
+  if (use_ipv6)
+  {
+    free(use_ipv6);
+  }
+#endif
 
   param::param("/tcp_keepalive", TransportTCP::s_use_keepalive_, TransportTCP::s_use_keepalive_);
 

@@ -45,6 +45,7 @@ The common entry point for most libraries is the L{XmlRpcNode} class.
 import logging
 import select
 import socket
+import fcntl
 
 try:
     import _thread
@@ -93,7 +94,32 @@ class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
         # to True to allow quick restart on the same port.  This is equivalent 
         # to calling setsockopt(SOL_SOCKET,SO_REUSEADDR,1)
         self.allow_reuse_address = True
-        SimpleXMLRPCServer.__init__(self, addr, SilenceableXMLRPCRequestHandler, log_requests)
+        if rosgraph.network.use_ipv6():
+            logger = logging.getLogger('xmlrpc')
+            # The XMLRPC library does not support IPv6 out of the box
+            # We have to monipulate private members and duplicate
+            # code from the constructor.
+            # TODO IPV6: Get this into SimpleXMLRPCServer 
+            SimpleXMLRPCServer.__init__(self, addr, SilenceableXMLRPCRequestHandler, log_requests,  bind_and_activate=False)
+            self.address_family = socket.AF_INET6
+            self.socket = socket.socket(self.address_family,
+                                        self.socket_type)
+            logger.info('binding ipv6 xmlrpc socket to' + str(addr))
+            # TODO: set IPV6_V6ONLY to 0:
+            # self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+            self.server_bind()
+            self.server_activate()
+            logger.info('bound to ' + str(self.socket.getsockname()[0:2]))
+            # TODO IPV6: check Windows compatibility
+            # [Bug #1222790] If possible, set close-on-exec flag; if a
+            # method spawns a subprocess, the subprocess shouldn't have
+            # the listening socket open.
+            if fcntl is not None and hasattr(fcntl, 'FD_CLOEXEC'):
+                flags = fcntl.fcntl(self.fileno(), fcntl.F_GETFD)
+                flags |= fcntl.FD_CLOEXEC
+                fcntl.fcntl(self.fileno(), fcntl.F_SETFD, flags)
+        else:
+            SimpleXMLRPCServer.__init__(self, addr, SilenceableXMLRPCRequestHandler, log_requests)
 
     def handle_error(self, request, client_address):
         """
@@ -210,7 +236,7 @@ class XmlRpcNode(object):
             port = self.port or 0 #0 = any
 
             bind_address = rosgraph.network.get_bind_address()
-            logger.info("XML-RPC server binding to %s"%bind_address)
+            logger.info("XML-RPC server binding to %s:%d"%(bind_address, port))
             
             self.server = ThreadingXMLRPCServer((bind_address, port), log_requests)
             self.port = self.server.server_address[1] #set the port to whatever server bound to
@@ -230,7 +256,8 @@ class XmlRpcNode(object):
             else:
                 try:
                     hostname = socket.gethostname()
-                    if hostname and not hostname == 'localhost' and not hostname.startswith('127.'):
+                    if hostname and not hostname == 'localhost' and not hostname.startswith('127.') \
+                                and not hostname == '::':
                         uri = 'http://%s:%s/'%(hostname, self.port)
                 except:
                     pass

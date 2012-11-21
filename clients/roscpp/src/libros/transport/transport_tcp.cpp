@@ -46,6 +46,7 @@ namespace ros
 {
 
 bool TransportTCP::s_use_keepalive_ = true;
+bool TransportTCP::s_use_ipv6_ = false;
 
 TransportTCP::TransportTCP(PollSet* poll_set, int flags)
 : sock_(ROS_INVALID_SOCKET)
@@ -194,9 +195,17 @@ void TransportTCP::setKeepAlive(bool use, uint32_t idle, uint32_t interval, uint
 
 bool TransportTCP::connect(const std::string& host, int port)
 {
-  sock_ = socket(AF_INET, SOCK_STREAM, 0);
   connected_host_ = host;
   connected_port_ = port;
+
+  if (s_use_ipv6_)
+  {
+    sock_ = socket(AF_INET6, SOCK_STREAM, 0);
+  }
+  else
+  {
+    sock_ = socket(AF_INET, SOCK_STREAM, 0);
+  }
 
   if (sock_ == ROS_INVALID_SOCKET)
   {
@@ -206,12 +215,32 @@ bool TransportTCP::connect(const std::string& host, int port)
 
   setNonBlocking();
 
-  sockaddr_in sin;
-  sin.sin_family = AF_INET;
-  if (inet_addr(host.c_str()) == INADDR_NONE)
+  sockaddr_storage ss;
+  socklen_t ss_len;
+
+  if (inet_pton(AF_INET, host.c_str(), (sockaddr_in*) &ss))
+  {
+    sockaddr_in *address = (sockaddr_in*) &ss;
+    ss_len = sizeof(sockaddr_in);
+    
+    address->sin_family = AF_INET;
+    address->sin_port = htons(port);
+  }
+  else if (inet_pton(AF_INET, host.c_str(), (sockaddr_in*) &ss))
+  {
+    sockaddr_in6 *address = (sockaddr_in6*) &ss;
+    ss_len = sizeof(sockaddr_in6);
+    address->sin6_family = AF_INET6;
+    address->sin6_port = htons(port);
+  }
+  else
   {
     struct addrinfo* addr;
-    if (getaddrinfo(host.c_str(), NULL, NULL, &addr) != 0)
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+
+    if (getaddrinfo(host.c_str(), NULL, &hints, &addr) != 0)
     {
       close();
       ROS_ERROR("couldn't resolve publisher host [%s]", host.c_str());
@@ -220,14 +249,33 @@ bool TransportTCP::connect(const std::string& host, int port)
 
     bool found = false;
     struct addrinfo* it = addr;
+    char namebuf[128];
     for (; it; it = it->ai_next)
     {
-      if (it->ai_family == AF_INET)
+      if (!s_use_ipv6_ && it->ai_family == AF_INET)
       {
-        memcpy(&sin, it->ai_addr, it->ai_addrlen);
-        sin.sin_family = it->ai_family;
-        sin.sin_port = htons(port);
-
+        sockaddr_in *address = (sockaddr_in*) &ss;
+        ss_len = sizeof(*address);
+        
+        memcpy(address, it->ai_addr, it->ai_addrlen);
+        address->sin_family = it->ai_family;
+        address->sin_port = htons(port);
+	
+        strcpy(namebuf, inet_ntoa(address->sin_addr));
+        found = true;
+        break;
+      }
+      if (s_use_ipv6_ && it->ai_family == AF_INET6)
+      {
+        sockaddr_in6 *address = (sockaddr_in6*) &ss;
+        ss_len = sizeof(*address);
+      
+        memcpy(address, it->ai_addr, it->ai_addrlen);
+        address->sin6_family = it->ai_family;
+        address->sin6_port = htons((u_short) port);
+      
+        // TODO IPV6: does inet_ntop need other includes for Windows?
+        inet_ntop(AF_INET6, (void*)&(address->sin6_addr), namebuf, sizeof(namebuf));
         found = true;
         break;
       }
@@ -237,20 +285,14 @@ bool TransportTCP::connect(const std::string& host, int port)
 
     if (!found)
     {
-      ROS_ERROR("Couldn't find an AF_INET address for [%s]\n", host.c_str());
+      ROS_ERROR("Couldn't resolve an address for [%s]\n", host.c_str());
       return false;
     }
 
-    ROSCPP_LOG_DEBUG("Resolved publisher host [%s] to [%s] for socket [%d]", host.c_str(), inet_ntoa(sin.sin_addr), sock_);
-  }
-  else
-  {
-    sin.sin_addr.s_addr = inet_addr(host.c_str()); // already an IP addr
+    ROSCPP_LOG_DEBUG("Resolved publisher host [%s] to [%s] for socket [%d]", host.c_str(), namebuf, sock_);
   }
 
-  sin.sin_port = htons(port);
-
-  int ret = ::connect(sock_, (sockaddr *)&sin, sizeof(sin));
+  int ret = ::connect(sock_, (sockaddr*) &ss, ss_len);
   // windows might need some time to sleep (input from service robotics hack) add this if testing proves it is necessary.
   ROS_ASSERT((flags_ & SYNCHRONOUS) || ret != 0);
   if (((flags_ & SYNCHRONOUS) && ret != 0) || // synchronous, connect() should return 0
@@ -270,9 +312,9 @@ bool TransportTCP::connect(const std::string& host, int port)
 #endif
 
 
-  std::stringstream ss;
-  ss << host << ":" << port << " on socket " << sock_;
-  cached_remote_host_ = ss.str();
+  std::stringstream bufferss;
+  bufferss << host << ":" << port << " on socket " << sock_;
+  cached_remote_host_ = bufferss.str();
 
   if (!initializeSocket())
   {
@@ -296,7 +338,24 @@ bool TransportTCP::listen(int port, int backlog, const AcceptCallback& accept_cb
   is_server_ = true;
   accept_cb_ = accept_cb;
 
-  sock_ = socket(AF_INET, SOCK_STREAM, 0);
+  if (s_use_ipv6_)
+  {
+    sock_ = socket(AF_INET6, SOCK_STREAM, 0);
+    sockaddr_in6 *address = (sockaddr_in6 *)&server_address_;
+    address->sin6_family = AF_INET6;
+    address->sin6_addr = in6addr_any;
+    address->sin6_port = htons(port);
+    sa_len_ = sizeof(sockaddr_in6);
+  }
+  else
+  {
+    sock_ = socket(AF_INET, SOCK_STREAM, 0);
+    sockaddr_in *address = (sockaddr_in *)&server_address_;
+    address->sin_family = AF_INET;
+    address->sin_addr.s_addr = INADDR_ANY;
+    address->sin_port = htons(port);
+    sa_len_ = sizeof(sockaddr_in);
+  }
 
   if (sock_ <= 0)
   {
@@ -304,19 +363,26 @@ bool TransportTCP::listen(int port, int backlog, const AcceptCallback& accept_cb
     return false;
   }
 
-  server_address_.sin_family = AF_INET;
-  server_address_.sin_port = htons(port);
-  server_address_.sin_addr.s_addr = INADDR_ANY;
-  if (bind(sock_, (sockaddr *)&server_address_, sizeof(server_address_)) < 0)
+
+  if (bind(sock_, (sockaddr *)&server_address_, sa_len_) < 0)
   {
     ROS_ERROR("bind() failed with error [%s]", last_socket_error_string());
     return false;
   }
 
   ::listen(sock_, backlog);
-  socklen_t len = sizeof(server_address_);
-  getsockname(sock_, (sockaddr *)&server_address_, &len);
-  server_port_ = ntohs(server_address_.sin_port);
+  getsockname(sock_, (sockaddr *)&server_address_, &sa_len_);
+  
+  switch (server_address_.ss_family)
+  {
+    case AF_INET:
+      server_port_ = ntohs(((sockaddr_in *)&server_address_)->sin_port);
+    break;
+    case AF_INET6:
+      server_port_ = ntohs(((sockaddr_in6 *)&server_address_)->sin6_port);
+    break;
+
+  }
 
   if (!initializeSocket())
   {
@@ -642,12 +708,34 @@ std::string TransportTCP::getClientURI()
 {
   ROS_ASSERT(!is_server_);
 
-  sockaddr_in addr;
-  socklen_t len = sizeof(addr);
-  getpeername(sock_, (sockaddr *)&addr, &len);
-  int port = ntohs(addr.sin_port);
-  std::string ip = inet_ntoa(addr.sin_addr);
+  sockaddr_storage ss;
+  socklen_t ss_len = sizeof(ss);
+  getpeername(sock_, (sockaddr *)&ss, &ss_len);
+  
+  sockaddr_in *sin = (sockaddr_in *)&ss;
+  sockaddr_in6 *sin6 = (sockaddr_in6 *)&ss;
 
+  char namebuf[128];
+  int port;
+
+  switch (ss.ss_family)
+  {
+    case AF_INET:
+      port = ntohs(sin->sin_port);
+      strcpy(namebuf, inet_ntoa(sin->sin_addr));
+    break;
+    case AF_INET6:
+      port = ntohs(sin6->sin6_port);
+      inet_ntop(AF_INET6, (void*)&(sin6->sin6_addr),
+        namebuf, sizeof(namebuf));
+    break;
+    default:
+      namebuf[0] = 0;
+      port = 0;
+    break;
+  }
+
+  std::string ip = namebuf;
   std::stringstream uri;
   uri << ip << ":" << port;
 

@@ -57,6 +57,7 @@ class ROSCPP_DECL TransportTCP : public Transport
 {
 public:
   static bool s_use_keepalive_;
+  static bool s_use_ipv6_;
 
 public:
   enum Flags
@@ -145,7 +146,9 @@ private:
   bool expecting_write_;
 
   bool is_server_;
-  sockaddr_in server_address_;
+  sockaddr_storage server_address_;
+  socklen_t sa_len_;
+
   int server_port_;
   AcceptCallback accept_cb_;
 
