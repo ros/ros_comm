@@ -256,7 +256,7 @@ namespace ros
      // Do something
      }
 
-     handle.advertise<std_msgs::Empty>("my_topic", 1, connectCallback);
+     handle.advertise<std_msgs::Empty>("my_topic", 1, (ros::SubscriberStatusCallback)connectCallback);
      \endverbatim
      *
      * With class member functions it can be used with boost::bind:
