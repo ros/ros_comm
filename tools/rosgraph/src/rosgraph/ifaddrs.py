@@ -107,49 +107,50 @@ def getifaddrs():
 	result = {}
  
 	while True:
-		name = ifa.ifa_name
-#		name = ifa.ifa_name.decode('UTF-8') # use this for python3
- 
-		if name not in result:
-			result[name] = {}
- 
-		sa = sockaddr.from_address(ifa.ifa_addr)
- 
-		if sa.sa_family not in result[name]:
-			result[name][sa.sa_family] = []
- 
-		data = {}
- 
-		if sa.sa_family == AF_INET:
-			if ifa.ifa_addr is not None:
-				si = sockaddr_in.from_address(ifa.ifa_addr)
-				data['addr'] = inet_ntop(si.sin_family,si.sin_addr)
-			if ifa.ifa_netmask is not None:
-				si = sockaddr_in.from_address(ifa.ifa_netmask)
-				data['netmask'] = inet_ntop(si.sin_family,si.sin_addr)
- 
-		if sa.sa_family == AF_INET6:
-			if ifa.ifa_addr is not None:
-				si = sockaddr_in6.from_address(ifa.ifa_addr)
-				data['addr'] = inet_ntop(si.sin6_family,si.sin6_addr)
-				if data['addr'].startswith('fe80:'):
-					data['scope'] = si.sin6_scope_id
-			if ifa.ifa_netmask is not None:
-				si = sockaddr_in6.from_address(ifa.ifa_netmask)
-				data['netmask'] = inet_ntop(si.sin6_family,si.sin6_addr)
- 
-		if sa.sa_family == AF_PACKET:
-			if ifa.ifa_addr is not None:
-				si = sockaddr_ll.from_address(ifa.ifa_addr)
-				addr = ""
-				for i in range(si.sll_halen):
-					addr += "%02x:" % si.sll_addr[i]
-				addr = addr[:-1]
-				data['addr'] = addr
- 
-		if len(data) > 0:
-			result[name][sa.sa_family].append(data)
- 
+		if ifa.ifa_addr:
+			name = ifa.ifa_name
+#			name = ifa.ifa_name.decode('UTF-8') # use this for python3
+	 
+			if name not in result:
+				result[name] = {}
+	 
+			sa = sockaddr.from_address(ifa.ifa_addr)
+	 
+			if sa.sa_family not in result[name]:
+				result[name][sa.sa_family] = []
+	 
+			data = {}
+	 
+			if sa.sa_family == AF_INET:
+				if ifa.ifa_addr is not None:
+					si = sockaddr_in.from_address(ifa.ifa_addr)
+					data['addr'] = inet_ntop(si.sin_family,si.sin_addr)
+				if ifa.ifa_netmask is not None:
+					si = sockaddr_in.from_address(ifa.ifa_netmask)
+					data['netmask'] = inet_ntop(si.sin_family,si.sin_addr)
+	 
+			if sa.sa_family == AF_INET6:
+				if ifa.ifa_addr is not None:
+					si = sockaddr_in6.from_address(ifa.ifa_addr)
+					data['addr'] = inet_ntop(si.sin6_family,si.sin6_addr)
+					if data['addr'].startswith('fe80:'):
+						data['scope'] = si.sin6_scope_id
+				if ifa.ifa_netmask is not None:
+					si = sockaddr_in6.from_address(ifa.ifa_netmask)
+					data['netmask'] = inet_ntop(si.sin6_family,si.sin6_addr)
+	 
+			if sa.sa_family == AF_PACKET:
+				if ifa.ifa_addr is not None:
+					si = sockaddr_ll.from_address(ifa.ifa_addr)
+					addr = ""
+					for i in range(si.sll_halen):
+						addr += "%02x:" % si.sll_addr[i]
+					addr = addr[:-1]
+					data['addr'] = addr
+	 
+			if len(data) > 0:
+				result[name][sa.sa_family].append(data)
+	 
 		if ifa.ifa_next:
 			ifa = ifaddrs.from_address(ifa.ifa_next)
 		else:
