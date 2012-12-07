@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
-from catkin_pkg.package import parse_package_for_distutils
+from catkin_pkg.python_setup import generate_distutils_setup
 
-d = parse_package_for_distutils()
-d['packages'] = ['rosmsg']
-d['package_dir'] = {'': 'src'}
-d['scripts'] = ['scripts/rosmsg', 'scripts/rosmsg-proto', 'scripts/rossrv']
-d['requires'] = ['genmsg', 'rosbag', 'roslib', 'rospkg']
+d = generate_distutils_setup(
+    packages=['rosmsg'],
+    package_dir={'': 'src'},
+    scripts=['scripts/rosmsg', 'scripts/rosmsg-proto', 'scripts/rossrv'],
+    requires=['genmsg', 'rosbag', 'roslib', 'rospkg']
+)
 
 setup(**d)

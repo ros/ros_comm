@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
-from catkin_pkg.package import parse_package_for_distutils
+from catkin_pkg.python_setup import generate_distutils_setup
 
-d = parse_package_for_distutils()
-d['packages'] = ['message_filters']
-d['package_dir'] = {'': 'src'}
-d['requires'] = ['genmsg', 'genpy', 'roslib', 'rospkg']
+d = generate_distutils_setup(
+    packages=['message_filters'],
+    package_dir={'': 'src'},
+    requires=['genmsg', 'genpy', 'roslib', 'rospkg']
+)
 
 setup(**d)

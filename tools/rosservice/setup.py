@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
-from catkin_pkg.package import parse_package_for_distutils
+from catkin_pkg.python_setup import generate_distutils_setup
 
-d = parse_package_for_distutils()
-d['packages'] = ['rosservice']
-d['package_dir'] = {'': 'src'}
-d['scripts'] = ['scripts/rosservice']
-d['requires'] = ['genpy', 'rosgraph', 'roslib', 'rospy', 'rosmsg']
+d = generate_distutils_setup(
+    packages=['rosservice'],
+    package_dir={'': 'src'},
+    scripts=['scripts/rosservice'],
+    requires=['genpy', 'rosgraph', 'roslib', 'rospy', 'rosmsg']
+)
 
 setup(**d)
