@@ -31,6 +31,7 @@
   <run_depend>python-numpy</run_depend>
   <run_depend>python-rospkg</run_depend>
   <run_depend>rosgraph</run_depend>
+  <run_depend>rosgraph_msgs</run_depend>
   <run_depend>roslib</run_depend>
   <run_depend>std_msgs</run_depend>
 
