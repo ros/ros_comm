@@ -39,7 +39,7 @@ import unittest
 import rospy
 import rostest
 
-import test_ros.srv
+import test_rosmaster.srv
 
 from subprocess import Popen, PIPE, check_call, call
 
@@ -91,10 +91,10 @@ class TestRosserviceOnline(unittest.TestCase):
 
             # type
             output = Popen([cmd, 'type', name], stdout=PIPE).communicate()[0]
-            self.assertEquals('test_ros/AddTwoInts', output.strip())
+            self.assertEquals('test_rosmaster/AddTwoInts', output.strip())
 
             # find
-            output = Popen([cmd, 'find', 'test_ros/AddTwoInts'], stdout=PIPE).communicate()[0]
+            output = Popen([cmd, 'find', 'test_rosmaster/AddTwoInts'], stdout=PIPE).communicate()[0]
             values = [v.strip() for v in output.split('\n') if v.strip()]
             self.assertEquals(set(values), set(services))
 
@@ -154,7 +154,7 @@ class TestRosserviceOnline(unittest.TestCase):
         t1.start()
         
         rospy.init_node('test_call_wait')
-        rospy.Service("wait_two_ints", test_ros.srv.AddTwoInts, lambda x: x.a + x.b)
+        rospy.Service("wait_two_ints", test_rosmaster.srv.AddTwoInts, lambda x: x.a + x.b)
         while not t1.done and time.time() < timeout_t:
             time.sleep(0.5)
         self.assert_(t1.success)

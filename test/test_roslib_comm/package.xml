@@ -1,0 +1,21 @@
+<package>
+  <name>test_roslib_comm</name>
+  <version>1.9.34</version>
+  <description>
+    Unit tests verifying that roslib is operating as expected.
+  </description>
+  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <license>BSD</license>
+
+  <url>http://ros.org/wiki/roslib</url>
+  <author>Jeremy Leibs</author>
+  <author>Ken Conley</author>
+
+  <build_depend>catkin</build_depend>
+  <build_depend>genmsg</build_depend>
+  <build_depend>rosgraph_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+
+  <test_depend>genpy</test_depend>
+  <test_depend>roslib</test_depend>
+</package>

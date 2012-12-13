@@ -34,7 +34,7 @@
 ## Simple demo of a rospy service client that calls a service to add
 ## two integers. 
 
-PKG = 'test_ros' # this package name
+PKG = 'test_rosmaster' # this package name
 
 import sys
 import os
@@ -43,7 +43,7 @@ import string
 import rospy
 
 # imports the AddTwoInts service 
-from test_ros.srv import *
+from test_rosmaster.srv import *
 
 ## add two numbers using the add_two_ints service
 ## @param x int: first number to add

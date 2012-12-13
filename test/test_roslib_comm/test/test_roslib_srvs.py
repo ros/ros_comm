@@ -94,17 +94,17 @@ class RoslibSrvTest(unittest.TestCase):
     def test_srv_file(self):
         from roslib.srvs import srv_file
         
-        d = roslib.packages.get_pkg_dir('test_ros')
+        d = roslib.packages.get_pkg_dir('test_rosmaster')
         filename = os.path.join(d, 'srv', 'AddTwoInts.srv')
         with open(filename, 'r') as f:
             text = f.read()
 
-        self.assertEquals(filename, srv_file('test_ros', 'AddTwoInts'))
+        self.assertEquals(filename, srv_file('test_rosmaster', 'AddTwoInts'))
         
     def test_load_from_file(self):
         from roslib.srvs import load_from_file, set_verbose
         
-        d = roslib.packages.get_pkg_dir('test_ros')
+        d = roslib.packages.get_pkg_dir('test_rosmaster')
         filename = os.path.join(d, 'srv', 'AddTwoInts.srv')
         with open(filename, 'r') as f:
             text = f.read()

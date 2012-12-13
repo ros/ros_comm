@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(test_rospy)
-find_package(catkin REQUIRED COMPONENTS genmsg test_ros rosunit rostest)
-catkin_project(${PROJECT_NAME})
+find_package(catkin REQUIRED COMPONENTS genmsg test_rosmaster rosunit rostest std_msgs)
 
 # messages are for integration testing only
 add_message_files(DIRECTORY msg
@@ -18,6 +17,7 @@ add_message_files(DIRECTORY msg
   TransitiveMsg1.msg
   TransitiveMsg2.msg
   Val.msg
+  NOINSTALL
   )
 add_service_files(DIRECTORY srv
   FILES
@@ -29,9 +29,12 @@ add_service_files(DIRECTORY srv
   MultipleAddTwoInts.srv
   StringString.srv
   TransitiveSrv.srv
+  NOINSTALL
   )
 
-generate_messages(DEPENDENCIES std_msgs test_ros)
+generate_messages(DEPENDENCIES std_msgs test_rosmaster)
+
+catkin_package()
 
 catkin_add_nosetests(test/unit)
 

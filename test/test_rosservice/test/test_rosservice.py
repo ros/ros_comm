@@ -87,7 +87,7 @@ class TestRosservice(unittest.TestCase):
         
     def test_get_service_type(self):
         import rosservice
-        self.assertEquals('test_ros/AddTwoInts', rosservice.get_service_type('/add_two_ints'))
+        self.assertEquals('test_rosmaster/AddTwoInts', rosservice.get_service_type('/add_two_ints'))
         self.assertEquals(None, rosservice.get_service_type('/fake_add_two_ints'))
 
     def test_offline(self):
@@ -151,7 +151,7 @@ class TestRosservice(unittest.TestCase):
             with fakestdout() as b:
                 rosservice.rosservicemain([cmd, 'type', s])
                 v = b.getvalue().strip()
-                self.assertEquals('test_ros/AddTwoInts', v)
+                self.assertEquals('test_rosmaster/AddTwoInts', v)
 
     def test_cmd_uri(self):
         import rosservice
@@ -218,7 +218,7 @@ class TestRosservice(unittest.TestCase):
                     self.assertEquals('/foo/a2iserver', d['Node'])
                 else:
                     self.assertEquals('/a2iserver', d['Node'], repr(d['Node']))
-                self.assertEquals('test_ros/AddTwoInts', d['Type'])
+                self.assertEquals('test_rosmaster/AddTwoInts', d['Type'])
                 self.assertEquals('a b', d['Args'])
                 self.assert_('URI' in d)
 
@@ -237,7 +237,7 @@ class TestRosservice(unittest.TestCase):
         
         v = set(['/add_two_ints', '/bar/add_two_ints', '/foo/add_two_ints'])
         with fakestdout() as b:
-            rosservice.rosservicemain([cmd, 'find', 'test_ros/AddTwoInts'])
+            rosservice.rosservicemain([cmd, 'find', 'test_rosmaster/AddTwoInts'])
             d = set([x for x in b.getvalue().split('\n') if x.strip()])
             self.assertEquals(v, d)
 
@@ -310,16 +310,19 @@ class TestRosservice(unittest.TestCase):
             rosservice._rosservice_cmd_list([cmd, 'list'])
             v = [x.strip() for x in b.getvalue().split('\n') if x.strip()]
             v = [x for x in v if not x.startswith('/rosout/')]
+            v = [x for x in v if not x.endswith('/get_loggers') and not x.endswith('/set_logger_level')]
             self.assertEquals(set(services), set(v))
         with fakestdout() as b:
             rosservice._rosservice_cmd_list([cmd, 'list', '-n'])
             v = [x.strip() for x in b.getvalue().split('\n') if x.strip()]
             v = [x for x in v if not x.startswith('/rosout/')]
+            v = [x for x in v if x.find('/get_loggers ') == -1 and x.find('/set_logger_level ') == -1]
             self.assertEquals(set(services_nodes), set(v))
         with fakestdout() as b:            
             rosservice._rosservice_cmd_list([cmd, 'list', '--nodes'])
             v = [x.strip() for x in b.getvalue().split('\n') if x.strip()]
             v = [x for x in v if not x.startswith('/rosout/')]
+            v = [x for x in v if x.find('/get_loggers ') == -1 and x.find('/set_logger_level ') == -1]
             self.assertEquals(set(services_nodes), set(v))
 
         # test with multiple service names

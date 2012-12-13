@@ -145,10 +145,10 @@ class TestRospyClientOnline(unittest.TestCase):
         # lazy-import for coverage
         import rospy
         import time
-        import test_ros.srv
+        import test_rosmaster.srv
 
         # test wait for service in success case        
-        proxy = rospy.ServiceProxy('add_two_ints', test_ros.srv.AddTwoInts)
+        proxy = rospy.ServiceProxy('add_two_ints', test_rosmaster.srv.AddTwoInts)
         class ProxyTask(object):
             def __init__(self, proxy, timeout=None):
                 self.proxy = proxy
@@ -174,7 +174,7 @@ class TestRospyClientOnline(unittest.TestCase):
         self.assert_(t2.success)
 
         # test wait for service in failure case
-        fake_proxy = rospy.ServiceProxy('fake_service', test_ros.srv.AddTwoInts)
+        fake_proxy = rospy.ServiceProxy('fake_service', test_rosmaster.srv.AddTwoInts)
         timeout_t = time.time() + 2.        
         t3 = TestTask(ProxyTask(fake_proxy, timeout=0.1))        
         t3.start()

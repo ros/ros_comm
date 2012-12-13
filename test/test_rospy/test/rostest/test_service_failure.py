@@ -47,7 +47,7 @@ class TestServiceFailure(unittest.TestCase):
     def test_persistent(self):
         # fail_two_ints succeeds unless the first argument is -1.
         # this makes sure, in the persistent case, that the proxy handle remains valid after a call
-        from test_ros.srv import AddTwoInts
+        from test_rosmaster.srv import AddTwoInts
         import rospy
         rospy.wait_for_service('fail_two_ints', 10.)
         p = rospy.ServiceProxy('fail_two_ints', AddTwoInts, persistent=True)
@@ -68,7 +68,7 @@ class TestServiceFailure(unittest.TestCase):
     def test_non_persistent(self):
         # fail_two_ints succeeds unless the first argument is -1.
         # this makes sure, in the non-persistent case, that the proxy handle remains valid after a call
-        from test_ros.srv import AddTwoInts
+        from test_rosmaster.srv import AddTwoInts
         import rospy
         rospy.wait_for_service('fail_two_ints', 10.)
         p = rospy.ServiceProxy('fail_two_ints', AddTwoInts)

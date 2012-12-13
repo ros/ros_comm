@@ -64,7 +64,7 @@ EMBEDDED_MSG_SERVICE = 'embedded_msg_service'
 WAIT_TIMEOUT = 10.0 #s
 
 def add_two_ints_wrapped(req):
-    from test_ros.srv import AddTwoIntsResponse
+    from test_rosmaster.srv import AddTwoIntsResponse
     return AddTwoIntsResponse(req.a + req.b)
 def add_two_ints_naked(req):
     return req.a + req.b
@@ -105,7 +105,7 @@ def handle_constants_naked(req):
         print "test failed, req.selection not in (X,Y,Z)", req.selection
         
 def services():
-    from test_ros.srv import AddTwoInts
+    from test_rosmaster.srv import AddTwoInts
     rospy.init_node(NAME)
     s1 = rospy.Service(CONSTANTS_SERVICE_NAKED, ConstantsMultiplex, handle_constants_naked)
     s2 = rospy.Service(CONSTANTS_SERVICE_WRAPPED, ConstantsMultiplex, handle_constants_wrapped)
@@ -162,7 +162,7 @@ class TestBasicServicesClient(unittest.TestCase):
     def test_add_two_ints(self):
         # add two ints checks single, integer return value, which is
         # an interesting in the naked case
-        from test_ros.srv import AddTwoInts, AddTwoIntsRequest
+        from test_rosmaster.srv import AddTwoInts, AddTwoIntsRequest
         Cls = AddTwoInts
         Req = AddTwoIntsRequest
 

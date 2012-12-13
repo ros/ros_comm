@@ -189,7 +189,7 @@ class MasterApiTestCase(_MasterTestCase):
         #  - #457 make sure that lookupNode isn't returning stale info
         self.apiError(master.lookupNode(self.caller_id, caller_id), "master has a stale reference to unregistered service node API")
         _, _, srvs = self.apiSuccess(master.getSystemState(self.caller_id))
-        srvs = [s for s in srvs if not s[0].startswith('/rosout/')]
+        srvs = [s for s in srvs if not s[0].startswith('/rosout/') and not s[0].endswith('/get_loggers') and not s[0].endswith('/set_logger_level')]
         self.assertEquals(0, len(srvs), "all services should have been unregistered: %s"%srvs)
 
     def _testRegisterServiceInvalid(self):

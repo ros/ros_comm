@@ -63,7 +63,7 @@ class TestRospyTcprosService(unittest.TestCase):
     def test_convert_return_to_response(self):
         import rospy
         from rospy.impl.tcpros_service import convert_return_to_response
-        from test_ros.srv import AddTwoIntsResponse
+        from test_rosmaster.srv import AddTwoIntsResponse
 
         cls = AddTwoIntsResponse
         v = cls(3)

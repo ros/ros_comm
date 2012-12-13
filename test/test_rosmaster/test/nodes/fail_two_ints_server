@@ -33,11 +33,11 @@
 
 ## variant of add two ints that fails if the first argument is -1
 
-PKG = 'test_ros' # this package name
+PKG = 'test_rosmaster' # this package name
 NAME = 'add_two_ints_server'
 
 # import the AddTwoInts service
-from test_ros.srv import *
+from test_rosmaster.srv import *
 import rospy 
 
 def add_two_ints(req):

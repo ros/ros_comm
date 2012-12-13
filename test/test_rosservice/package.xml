@@ -1,0 +1,20 @@
+<package>
+  <name>test_rosservice</name>
+  <version>1.9.34</version>
+  <description>
+    Tests for the rosservice tool.
+  </description>
+  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <license>BSD</license>
+
+  <url>http://ros.org/wiki/rosservice</url>
+  <author>Ken Conley</author>
+
+  <build_depend>catkin</build_depend>
+  <build_depend>genmsg</build_depend>
+  <build_depend>rostest</build_depend>
+  <build_depend>std_msgs</build_depend>
+
+  <test_depend>test_ros</test_depend>
+  <test_depend>test_rosmaster</test_depend>
+</package>

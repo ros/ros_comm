@@ -140,7 +140,7 @@ class TestRospyCore(unittest.TestCase):
         self.assertEquals(rr, rospy.core.get_ros_root(env={'ROS_ROOT': rr}, required=False))
         self.assertEquals(rr, rospy.core.get_ros_root(env={'ROS_ROOT': rr}, required=True))        
 
-        self.assertEquals(os.environ['ROS_ROOT'], rospy.core.get_ros_root(required=False))
+        self.assertEquals(os.path.normpath(os.environ['ROS_ROOT']), rospy.core.get_ros_root(required=False))
     def test_node_uri(self):
         uri = "http://localhost-%s:1234"%random.randint(1, 1000)
         self.assertEquals(None, rospy.core.get_node_uri())
