@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(topic_tools)
-find_package(catkin COMPONENTS cpp_common genmsg rosconsole roscpp rostest rostime rosunit xmlrpcpp)
+find_package(catkin COMPONENTS cpp_common message_generation rosconsole roscpp rostest rostime rosunit xmlrpcpp)
 
 include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})
@@ -17,7 +17,7 @@ generate_messages(DEPENDENCIES std_msgs)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES topic_tools
-  CATKIN_DEPENDS rosconsole roscpp rostime xmlrpcpp
+  CATKIN_DEPENDS message_runtime rosconsole roscpp xmlrpcpp
  )
 
 add_library(topic_tools src/shape_shifter.cpp src/parse.cpp)

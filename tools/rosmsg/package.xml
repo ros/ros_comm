@@ -20,9 +20,9 @@
   <build_depend>catkin</build_depend>
 
   <run_depend>genmsg</run_depend>
+  <run_depend>python-rospkg</run_depend>
   <run_depend>rosbag</run_depend>
   <run_depend>roslib</run_depend>
-  <run_depend>python-rospkg</run_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>

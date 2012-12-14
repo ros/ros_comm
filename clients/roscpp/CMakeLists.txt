@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(roscpp)
 
 find_package(catkin REQUIRED COMPONENTS
-  genmsg
+  message_generation
   cpp_common rostime rosconsole roscpp_serialization
   roscpp_traits std_msgs rosgraph_msgs xmlrpcpp rosunit
   rostest
@@ -98,12 +98,12 @@ add_message_files(
 )
 
 # dependencies std_msgs and rosgraph_msgs are needed by tests, but not by roscpp otherwise.
-generate_messages(DEPENDENCIES std_msgs rosgraph_msgs)
+generate_messages(DEPENDENCIES rosgraph_msgs std_msgs)
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES roscpp
-  CATKIN_DEPENDS cpp_common rostime rosconsole roscpp_serialization roscpp_traits rosgraph_msgs std_msgs xmlrpcpp
+  CATKIN_DEPENDS message_runtime rosconsole rosgraph_msgs std_msgs xmlrpcpp
   DEPENDS Boost
   CFG_EXTRAS roscpp-extras.cmake
 )

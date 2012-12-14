@@ -23,8 +23,7 @@
 
   <build_depend>catkin</build_depend>
   <build_depend>cpp_common</build_depend>
-  <build_depend>genmsg</build_depend>
-  <build_depend>langs-dev</build_depend>
+  <build_depend>message_generation</build_depend>
   <build_depend>pkg-config</build_depend>
   <build_depend>rosconsole</build_depend>
   <build_depend>roscpp_serialization</build_depend>
@@ -37,13 +36,9 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>xmlrpcpp</build_depend>
 
-  <run_depend>cpp_common</run_depend>
-  <run_depend>langs</run_depend>
+  <run_depend>message_runtime</run_depend>
   <run_depend>rosconsole</run_depend>
-  <run_depend>roscpp_serialization</run_depend>
-  <run_depend>roscpp_traits</run_depend>
   <run_depend>rosgraph_msgs</run_depend>
-  <run_depend>rostime</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>xmlrpcpp</run_depend>
 </package>

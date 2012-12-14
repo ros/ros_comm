@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(rosbag)
-find_package(catkin REQUIRED COMPONENTS cpp_common genmsg roscpp_serialization roscpp rosconsole xmlrpcpp topic_tools rosunit rostest rosgraph_msgs)
+find_package(catkin REQUIRED COMPONENTS message_generation roscpp rosconsole xmlrpcpp topic_tools rosunit rostest rosgraph_msgs)
 find_package(Boost REQUIRED COMPONENTS regex program_options)
 find_package(BZip2 REQUIRED)
 
@@ -17,6 +17,7 @@ add_subdirectory(bag_migration_tests)
 catkin_package(
   LIBRARIES rosbag
   INCLUDE_DIRS include
+  CATKIN_DEPENDS message_runtime
   )
 
 add_library(rosbag 
