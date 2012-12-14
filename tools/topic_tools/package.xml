@@ -23,11 +23,13 @@
   <build_depend>rostest</build_depend>
   <build_depend>rostime</build_depend>
   <build_depend>rosunit</build_depend>
+  <build_depend>std_msgs</build_depend>
   <build_depend>xmlrpcpp</build_depend>
 
   <run_depend>message_runtime</run_depend>
   <run_depend>rosconsole</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>rostime</run_depend>
+  <run_depend>std_msgs</run_depend>
   <run_depend>xmlrpcpp</run_depend>
 </package>
