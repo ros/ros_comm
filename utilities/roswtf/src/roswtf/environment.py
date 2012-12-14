@@ -100,7 +100,7 @@ def ros_root_check(ctx, ros_root=None):
         path = ros_root
     else:
         path = ctx.ros_root
-    if not os.path.basename(path) == 'ros':
+    if not os.path.basename(os.path.normpath(path)) == 'ros':
         return "ROS_ROOT [%s] must end in directory named 'ros'"%path      
     
 def _writable_dir_check(ctx, path, name):
