@@ -14,9 +14,10 @@
   <author>Jeremy Leibs</author>
   <author>James Bowman</author>
 
+  <buildtool_depend>catkin</buildtool_depend>
+
   <build_depend>boost</build_depend>
   <build_depend>bzip2</build_depend>
-  <build_depend>catkin</build_depend>
   <build_depend>cpp_common</build_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>python-imaging</build_depend>

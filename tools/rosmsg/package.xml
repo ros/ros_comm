@@ -17,7 +17,7 @@
   <author>Ken Conley</author>
   <author>Tully Foote</author>
 
-  <build_depend>catkin</build_depend>
+  <buildtool_depend>catkin</buildtool_depend>
 
   <run_depend>genmsg</run_depend>
   <run_depend>python-rospkg</run_depend>

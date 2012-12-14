@@ -12,7 +12,7 @@
   <url>http://ros.org/wiki/rosgraph</url>
   <author>Ken Conley</author>
 
-  <build_depend>catkin</build_depend>
+  <buildtool_depend>catkin</buildtool_depend>
 
   <test_depend>python-mock</test_depend>
 

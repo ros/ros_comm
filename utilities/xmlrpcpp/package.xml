@@ -15,7 +15,8 @@
   <author>Konstantin Pilipchuk</author>
   <author>Morgan Quigley</author>
 
-  <build_depend>catkin</build_depend>
+  <buildtool_depend>catkin</buildtool_depend>
+
   <build_depend>cpp_common</build_depend>
 
   <run_depend>cpp_common</run_depend>

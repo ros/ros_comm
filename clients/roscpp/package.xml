@@ -21,7 +21,8 @@
   <author>Brian Gerkey</author>
   <author>Troy Straszheim</author>
 
-  <build_depend>catkin</build_depend>
+  <buildtool_depend>catkin</buildtool_depend>
+
   <build_depend>cpp_common</build_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>pkg-config</build_depend>
