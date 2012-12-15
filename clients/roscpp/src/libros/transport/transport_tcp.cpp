@@ -210,20 +210,24 @@ bool TransportTCP::connect(const std::string& host, int port)
   sockaddr_storage sas;
   socklen_t sas_len;
 
-  if (inet_pton(AF_INET, host.c_str(), (sockaddr_in*) &sas))
+  in_addr ina;
+  in6_addr in6a;
+  if (inet_pton(AF_INET, host.c_str(), &ina) == 1)
   {
     sockaddr_in *address = (sockaddr_in*) &sas;
     sas_len = sizeof(sockaddr_in);
     
     address->sin_family = AF_INET;
     address->sin_port = htons(port);
+    address->sin_addr.s_addr = ina.s_addr;
   }
-  else if (inet_pton(AF_INET, host.c_str(), (sockaddr_in*) &sas))
+  else if (inet_pton(AF_INET6, host.c_str(), &in6a) == 1)
   {
     sockaddr_in6 *address = (sockaddr_in6*) &sas;
     sas_len = sizeof(sockaddr_in6);
     address->sin6_family = AF_INET6;
     address->sin6_port = htons(port);
+    memcpy(address->sin6_addr.s6_addr, in6a.s6_addr, sizeof(in6a.s6_addr));
   }
   else
   {
