@@ -12,5 +12,10 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>log4cxx</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>rosgraph_msgs</build_depend>
+
+  <run_depend>log4cxx</run_depend>
+  <run_depend>roscpp</run_depend>
 </package>

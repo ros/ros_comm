@@ -2,11 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(roscpp)
 
 find_package(catkin REQUIRED COMPONENTS
-  message_generation
-  cpp_common rostime rosconsole roscpp_serialization
-  roscpp_traits std_msgs rosgraph_msgs xmlrpcpp rosunit
-  rostest
-  )
+  cpp_common message_generation rosconsole roscpp_serialization roscpp_traits rosgraph_msgs rostime std_msgs xmlrpcpp
+)
 
 catkin_package_xml()
 # split version in parts and pass to extra file
@@ -21,7 +18,7 @@ list(GET roscpp_VERSION_LIST 2 roscpp_VERSION_PATCH)
 
 find_package(Boost REQUIRED COMPONENTS signals filesystem system)
 
-include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
 
 add_message_files(
   DIRECTORY msg
@@ -33,77 +30,12 @@ add_service_files(
   FILES Empty.srv GetLoggers.srv SetLoggerLevel.srv
 )
 
-# Testing message and service files.  See comment below about subdirectory support.
-add_message_files(
-  NOINSTALL
-  DIRECTORY test/msg
-  FILES
-  TestArray.msg
-  TestEmpty.msg
-  TestStringInt.msg
-  TestWithHeader.msg
-)
-add_service_files(
-  NOINSTALL
-  DIRECTORY test/srv
-  FILES
-  BadTestStringString.srv
-  TestStringString.srv
-)
-
-# Serialization testing message files.
-add_message_files(
-  NOINSTALL
-  DIRECTORY test_serialization/msg
-  FILES
-  ArrayOfFixedLength.msg
-  ArrayOfVariableLength.msg
-  Constants.msg
-  CustomHeader.msg
-  EmbeddedExternal.msg
-  EmbeddedFixedLength.msg
-  EmbeddedVariableLength.msg
-  FixedLengthArrayOfExternal.msg
-  FixedLength.msg
-  FixedLengthStringArray.msg
-  HeaderNotFirstMember.msg
-  VariableLengthArrayOfExternal.msg
-  VariableLength.msg
-  VariableLengthStringArray.msg
-  WithDuration.msg
-  WithHeader.msg
-  WithMemberNamedHeaderThatIsNotAHeader.msg
-  WithTime.msg
-)
-
-# Performance testing message files.  add_message_files() does not
-# currently support being called from a subdirectory, so this is here
-# for now.
-add_message_files(
-  NOINSTALL
-  DIRECTORY perf/msg
-  FILES
-  LatencyMessage.msg
-  ThroughputMessage.msg
-)
-
-# Message files for testing the performance of serialization.
-add_message_files(
-  NOINSTALL
-  DIRECTORY perf_serialization/msg
-  FILES
-  ChannelFloat32.msg
-  Point32.msg
-  PointCloud.msg
-)
-
-# dependencies std_msgs and rosgraph_msgs are needed by tests, but not by roscpp otherwise.
-generate_messages(DEPENDENCIES rosgraph_msgs std_msgs)
+generate_messages()
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES roscpp
-  CATKIN_DEPENDS message_runtime rosconsole rosgraph_msgs std_msgs xmlrpcpp
+  CATKIN_DEPENDS cpp_common message_runtime rosconsole roscpp_serialization roscpp_traits rosgraph_msgs rostime std_msgs xmlrpcpp
   DEPENDS Boost
   CFG_EXTRAS roscpp-extras.cmake
 )
@@ -193,8 +125,3 @@ install(PROGRAMS
 install(FILES
   rosbuild/scripts/msg_gen.py
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/rosbuild/scripts)
-
-add_subdirectory(test)
-add_subdirectory(perf)
-add_subdirectory(test_serialization)
-add_subdirectory(perf_serialization)
