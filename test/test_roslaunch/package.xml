@@ -1,6 +1,6 @@
 <package>
   <name>test_roslaunch</name>
-  <version>1.9.37</version>
+  <version>1.9.38</version>
   <description>
     Tests for roslaunch which depend on rostest.
   </description>
