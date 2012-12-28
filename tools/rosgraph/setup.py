@@ -7,7 +7,7 @@ d = generate_distutils_setup(
     packages=['rosgraph', 'rosgraph.impl'],
     package_dir={'': 'src'},
     scripts=['scripts/rosgraph'],
-    requires=['genmsg', 'genpy', 'roslib', 'rospkg']
+    requires=['rospkg']
 )
 
 setup(**d)

@@ -26,6 +26,7 @@
   <run_depend>rosgraph_msgs</run_depend>
   <run_depend>rosmaster</run_depend>
   <run_depend>rosout</run_depend>
+  <run_depend>rosparam</run_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>

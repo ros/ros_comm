@@ -22,6 +22,7 @@
   <build_depend>rostest</build_depend>
 
   <run_depend>python-yaml</run_depend>
+  <run_depend>rosgraph</run_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>
