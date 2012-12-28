@@ -19,8 +19,6 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>rostest</build_depend>
-
   <run_depend>python-yaml</run_depend>
   <run_depend>rosgraph</run_depend>
 
