@@ -16,6 +16,7 @@
   <build_depend>rostest</build_depend>
   <build_depend>std_msgs</build_depend>
 
-  <test_depend>test_ros</test_depend>
+  <test_depend>rospy</test_depend>
+  <test_depend>rosunit</test_depend>
   <test_depend>test_rosmaster</test_depend>
 </package>
