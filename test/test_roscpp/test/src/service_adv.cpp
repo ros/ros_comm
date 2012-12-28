@@ -34,10 +34,10 @@
  */
 
 #include "ros/ros.h"
-#include <roscpp/TestStringString.h>
+#include <test_roscpp/TestStringString.h>
 
-bool caseFlip(roscpp::TestStringString::Request  &req,
-                     roscpp::TestStringString::Response &res)
+bool caseFlip(test_roscpp::TestStringString::Request  &req,
+                     test_roscpp::TestStringString::Response &res)
 {
   // copy over the request and overwrite the letters with their case-flip
   res.str = req.str;
@@ -53,8 +53,8 @@ bool caseFlip(roscpp::TestStringString::Request  &req,
   return true;
 }
 
-bool caseFlipLongRunning(roscpp::TestStringString::Request  &req,
-                     roscpp::TestStringString::Response &res)
+bool caseFlipLongRunning(test_roscpp::TestStringString::Request  &req,
+                     test_roscpp::TestStringString::Response &res)
 {
   caseFlip(req, res);
 
@@ -62,8 +62,8 @@ bool caseFlipLongRunning(roscpp::TestStringString::Request  &req,
   return true;
 }
 
-bool caseFlipUnadvertise(roscpp::TestStringString::Request  &req,
-                     roscpp::TestStringString::Response &res, ros::ServiceServer& srv)
+bool caseFlipUnadvertise(test_roscpp::TestStringString::Request  &req,
+                     test_roscpp::TestStringString::Response &res, ros::ServiceServer& srv)
 {
   caseFlip(req, res);
 
@@ -83,7 +83,7 @@ main(int argc, char** argv)
   ros::ServiceServer srv1, srv2, srv3;
   srv1 = nh.advertiseService("service_adv", caseFlip);
   srv2 = nh.advertiseService("service_adv_long", caseFlipLongRunning);
-  srv3 = nh.advertiseService<roscpp::TestStringString::Request, roscpp::TestStringString::Response>("service_adv_unadv_in_callback", boost::bind(caseFlipUnadvertise, _1, _2, boost::ref(srv3)));
+  srv3 = nh.advertiseService<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response>("service_adv_unadv_in_callback", boost::bind(caseFlipUnadvertise, _1, _2, boost::ref(srv3)));
   ros::spin();
 }
 

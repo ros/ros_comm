@@ -36,8 +36,8 @@
 #include <time.h>
 #include <stdlib.h>
 #include "ros/ros.h"
-#include <roscpp/TestArray.h>
-#include <roscpp/TestEmpty.h>
+#include <test_roscpp/TestArray.h>
+#include <test_roscpp/TestEmpty.h>
 
 int g_argc;
 char** g_argv;
@@ -53,11 +53,11 @@ class Subscriptions : public testing::Test
     bool test_ready;
     int n_test;
 
-    void cb0(const roscpp::TestArrayConstPtr&) { if (!test_ready) return; got_it[0] = true; }
-    void cb1(const roscpp::TestArrayConstPtr&) { if (!test_ready) return; got_it[1] = true; }
-    void cb2(const roscpp::TestArrayConstPtr&) { if (!test_ready) return; got_it[2] = true; }
-    void cb3(const roscpp::TestArrayConstPtr&) { if (!test_ready) return; got_it[3] = true; }
-    void cb_verify(const roscpp::TestArrayConstPtr&)
+    void cb0(const test_roscpp::TestArrayConstPtr&) { if (!test_ready) return; got_it[0] = true; }
+    void cb1(const test_roscpp::TestArrayConstPtr&) { if (!test_ready) return; got_it[1] = true; }
+    void cb2(const test_roscpp::TestArrayConstPtr&) { if (!test_ready) return; got_it[2] = true; }
+    void cb3(const test_roscpp::TestArrayConstPtr&) { if (!test_ready) return; got_it[3] = true; }
+    void cb_verify(const test_roscpp::TestArrayConstPtr&)
     {
       if (!test_ready)
         return;
@@ -69,7 +69,7 @@ class Subscriptions : public testing::Test
                    (should_have_it[3] ? got_it[3] : true)));
       */
     }
-    void cb_reset(const roscpp::TestArrayConstPtr&)
+    void cb_reset(const test_roscpp::TestArrayConstPtr&)
     {
       got_it[0] = got_it[1] = got_it[2] = got_it[3] = false; test_ready = true;
     }
@@ -78,7 +78,7 @@ class Subscriptions : public testing::Test
     bool sub(int cb_num)
     { 
       ROS_INFO("Subscribing %d", cb_num);
-      boost::function<void(const roscpp::TestArrayConstPtr&)> funcs[4] =
+      boost::function<void(const test_roscpp::TestArrayConstPtr&)> funcs[4] =
       {
         boost::bind(&Subscriptions::cb0, this, _1),
         boost::bind(&Subscriptions::cb1, this, _1),
@@ -153,12 +153,12 @@ TEST_F(Subscriptions, multipleSubscriptions)
   SUCCEED();
 }
 
-void callback1(const roscpp::TestArrayConstPtr&)
+void callback1(const test_roscpp::TestArrayConstPtr&)
 {
 
 }
 
-void callback2(const roscpp::TestEmptyConstPtr&)
+void callback2(const test_roscpp::TestEmptyConstPtr&)
 {
 
 }

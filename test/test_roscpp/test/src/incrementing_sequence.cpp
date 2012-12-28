@@ -39,10 +39,10 @@
 #include <stdlib.h>
 
 #include "ros/ros.h"
-#include <roscpp/TestWithHeader.h>
+#include <test_roscpp/TestWithHeader.h>
 
 using namespace ros;
-using namespace roscpp;
+using namespace test_roscpp;
 
 uint32_t g_recv_count = 0;
 uint32_t g_sequence = 0;

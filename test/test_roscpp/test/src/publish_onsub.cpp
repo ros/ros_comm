@@ -39,12 +39,12 @@
 #include <stdlib.h>
 
 #include "ros/ros.h"
-#include <roscpp/TestEmpty.h>
+#include <test_roscpp/TestEmpty.h>
 
 int32_t g_msg_count = 0;
 void subscriberCallback(const ros::SingleSubscriberPublisher& pub)
 {
-  roscpp::TestEmpty msg;
+  test_roscpp::TestEmpty msg;
   for(int i = 0; i < g_msg_count; i++)
   {
     pub.publish(msg);
@@ -67,7 +67,7 @@ int main(int argc, char** argv)
   g_msg_count = atoi(argv[1]);
 
   ros::NodeHandle nh;
-  ros::Publisher pub = nh.advertise<roscpp::TestEmpty>("roscpp/pubsub_test", g_msg_count, boost::bind(subscriberCallback, _1));
+  ros::Publisher pub = nh.advertise<test_roscpp::TestEmpty>("roscpp/pubsub_test", g_msg_count, boost::bind(subscriberCallback, _1));
 
   ros::spin();
 }

@@ -37,7 +37,7 @@
 #include <stdlib.h>
 
 #include "ros/ros.h"
-#include <roscpp/TestArray.h>
+#include <test_roscpp/TestArray.h>
 
 static int g_argc;
 static char** g_argv;
@@ -63,7 +63,7 @@ public:
 
   bool adv()
   {
-    pub_ = nh_.advertise<roscpp::TestArray>("roscpp/pubsub_test", 1, boost::bind(&Publications::subscriberCallback, this, _1));
+    pub_ = nh_.advertise<test_roscpp::TestArray>("roscpp/pubsub_test", 1, boost::bind(&Publications::subscriberCallback, this, _1));
     return pub_;
   }
 

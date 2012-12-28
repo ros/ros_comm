@@ -33,8 +33,8 @@
 
 #include <ros/ros.h>
 #include <std_srvs/Empty.h>
-#include <roscpp/TestEmpty.h>
-#include <roscpp/TestArray.h>
+#include <test_roscpp/TestEmpty.h>
+#include <test_roscpp/TestArray.h>
 
 ros::Publisher g_pub;
 int8_t type = 0;
@@ -47,10 +47,10 @@ bool switchPublisherType(std_srvs::EmptyRequest&, std_srvs::EmptyResponse&)
   switch (type)
   {
   case 0:
-    g_pub = nh.advertise<roscpp::TestEmpty>("test_star_inter", 0);
+    g_pub = nh.advertise<test_roscpp::TestEmpty>("test_star_inter", 0);
     break;
   case 1:
-    g_pub = nh.advertise<roscpp::TestArray>("test_star_inter", 0);
+    g_pub = nh.advertise<test_roscpp::TestArray>("test_star_inter", 0);
     break;
   }
   return true;
@@ -58,7 +58,7 @@ bool switchPublisherType(std_srvs::EmptyRequest&, std_srvs::EmptyResponse&)
 
 void pubTimer(const ros::TimerEvent&)
 {
-  g_pub.publish(roscpp::TestEmpty());
+  g_pub.publish(test_roscpp::TestEmpty());
 }
 
 int main(int argc, char** argv)
@@ -66,7 +66,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "publisher_for_star_subscriber");
   ros::NodeHandle nh;
 
-  g_pub = nh.advertise<roscpp::TestEmpty>("test_star_inter", 0);
+  g_pub = nh.advertise<test_roscpp::TestEmpty>("test_star_inter", 0);
   ros::Timer t = nh.createTimer(ros::Duration(0.01), pubTimer);
   ros::ServiceServer s = nh.advertiseService("switch_publisher_type", switchPublisherType);
   ros::spin();

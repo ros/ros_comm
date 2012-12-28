@@ -39,10 +39,10 @@
 #include <stdlib.h>
 
 #include "ros/ros.h"
-#include <roscpp/TestArray.h>
+#include <test_roscpp/TestArray.h>
 
 using namespace ros;
-using namespace roscpp;
+using namespace test_roscpp;
 
 std::string g_node_name = "test_latching_publisher";
 

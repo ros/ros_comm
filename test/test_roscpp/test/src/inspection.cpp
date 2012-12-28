@@ -39,9 +39,9 @@
 
 #include <ros/ros.h>
 #include <ros/names.h>
-#include <roscpp/TestArray.h>
-#include <roscpp/TestStringInt.h>
-#include <roscpp/TestEmpty.h>
+#include <test_roscpp/TestArray.h>
+#include <test_roscpp/TestStringInt.h>
+#include <test_roscpp/TestEmpty.h>
 
 const char* g_node_name = "inspection_test";
 
@@ -61,9 +61,9 @@ TEST(Inspection, getAdvertisedTopics)
   ASSERT_EQ(topics[0], "/rosout");
 
   {
-    ros::Publisher pub1 = nh.advertise<roscpp::TestArray>("topic",1);
-    ros::Publisher pub2 = nh.advertise<roscpp::TestArray>("ns/topic",1);
-    ros::Publisher pub3 = nh.advertise<roscpp::TestArray>("/global/topic",1);
+    ros::Publisher pub1 = nh.advertise<test_roscpp::TestArray>("topic",1);
+    ros::Publisher pub2 = nh.advertise<test_roscpp::TestArray>("ns/topic",1);
+    ros::Publisher pub3 = nh.advertise<test_roscpp::TestArray>("/global/topic",1);
 
     topics.clear();
     ros::this_node::getAdvertisedTopics(topics);

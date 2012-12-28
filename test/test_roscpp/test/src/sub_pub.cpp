@@ -42,7 +42,7 @@
 
 #include "ros/ros.h"
 #include <ros/callback_queue.h>
-#include <roscpp/TestArray.h>
+#include <test_roscpp/TestArray.h>
 
 int g_msg_count;
 ros::Duration g_dt;
@@ -56,7 +56,7 @@ class Subscriptions : public testing::Test
     int msg_i;
     ros::Publisher pub_;
 
-    void messageCallback(const roscpp::TestArrayConstPtr& msg)
+    void messageCallback(const test_roscpp::TestArrayConstPtr& msg)
     {
       if(failure || success)
         return;
@@ -87,7 +87,7 @@ class Subscriptions : public testing::Test
 
     void subscriberCallback(const ros::SingleSubscriberPublisher&)
     {
-      roscpp::TestArray msg;
+      test_roscpp::TestArray msg;
       msg.counter = 0;
       pub_.publish(msg);
     }
@@ -111,7 +111,7 @@ TEST_F(Subscriptions, subPub)
   ros::NodeHandle nh;
   ros::Subscriber sub = nh.subscribe("roscpp/pubsub_test", 0, &Subscriptions::messageCallback, (Subscriptions*)this);
   ASSERT_TRUE(sub);
-  pub_ = nh.advertise<roscpp::TestArray>("roscpp/subpub_test", 0, boost::bind(&Subscriptions::subscriberCallback, this, _1));
+  pub_ = nh.advertise<test_roscpp::TestArray>("roscpp/subpub_test", 0, boost::bind(&Subscriptions::subscriberCallback, this, _1));
   ASSERT_TRUE(pub_);
   ros::Time t1(ros::Time::now()+g_dt);
 

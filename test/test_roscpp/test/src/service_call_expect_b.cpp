@@ -39,12 +39,12 @@
 
 #include "ros/ros.h"
 #include "ros/service.h"
-#include <roscpp/TestStringString.h>
+#include <test_roscpp/TestStringString.h>
 
 TEST(SrvCall, callSrv)
 {
-  roscpp::TestStringString::Request req;
-  roscpp::TestStringString::Response res;
+  test_roscpp::TestStringString::Request req;
+  test_roscpp::TestStringString::Response res;
 
   req.str = "nothing";
   ros::NodeHandle nh;

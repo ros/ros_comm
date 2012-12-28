@@ -40,7 +40,7 @@
 #include <stdlib.h>
 
 #include "ros/ros.h"
-#include <roscpp/TestArray.h>
+#include <test_roscpp/TestArray.h>
 
 int g_msg_count;
 ros::Duration g_dt;
@@ -51,7 +51,7 @@ int32_t g_msg_i = -1;
 
 void subscriberCallback(const ros::SingleSubscriberPublisher&, const ros::Publisher& pub)
 {
-  roscpp::TestArray outmsg;
+  test_roscpp::TestArray outmsg;
   for(int i=0;i<g_msg_count;i++)
   {
     outmsg.counter = i;
@@ -60,7 +60,7 @@ void subscriberCallback(const ros::SingleSubscriberPublisher&, const ros::Publis
   }
 }
 
-void messageCallback(const roscpp::TestArrayConstPtr& msg)
+void messageCallback(const test_roscpp::TestArrayConstPtr& msg)
 {
   ROS_INFO("received message %d", msg->counter);
   if(g_failure || g_success)
@@ -91,7 +91,7 @@ TEST(SelfSubscribe, advSub)
 
   {
     ros::Publisher pub;
-    pub = nh.advertise<roscpp::TestArray>("roscpp/pubsub_test", g_msg_count, boost::bind(subscriberCallback, _1, boost::ref(pub)));
+    pub = nh.advertise<test_roscpp::TestArray>("roscpp/pubsub_test", g_msg_count, boost::bind(subscriberCallback, _1, boost::ref(pub)));
     ASSERT_TRUE(pub);
     ros::Subscriber sub = nh.subscribe("roscpp/pubsub_test", g_msg_count, messageCallback);
     ASSERT_TRUE(sub);
@@ -115,7 +115,7 @@ TEST(SelfSubscribe, advSub)
     ros::Subscriber sub = nh.subscribe("roscpp/pubsub_test", g_msg_count, messageCallback);
     ASSERT_TRUE(sub);
     ros::Publisher pub;
-    pub = nh.advertise<roscpp::TestArray>("roscpp/pubsub_test", g_msg_count, boost::bind(subscriberCallback, _1, boost::ref(pub)));
+    pub = nh.advertise<test_roscpp::TestArray>("roscpp/pubsub_test", g_msg_count, boost::bind(subscriberCallback, _1, boost::ref(pub)));
     ASSERT_TRUE(pub);
 
     ros::Time t1(ros::Time::now()+g_dt);

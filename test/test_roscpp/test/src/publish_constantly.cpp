@@ -32,15 +32,15 @@
 #include <time.h>
 
 #include "ros/ros.h"
-#include "roscpp/TestArray.h"
+#include "test_roscpp/TestArray.h"
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "publish_constantly");
   ros::NodeHandle nh;
-  ros::Publisher pub = nh.advertise<roscpp::TestArray>("roscpp/pubsub_test", 100);
+  ros::Publisher pub = nh.advertise<test_roscpp::TestArray>("roscpp/pubsub_test", 100);
 
-  roscpp::TestArray msg;
+  test_roscpp::TestArray msg;
   msg.float_arr.resize(100);
 
   ros::WallDuration d(0.01);

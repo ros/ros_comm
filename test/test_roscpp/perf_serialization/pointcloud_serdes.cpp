@@ -32,7 +32,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "roscpp/PointCloud.h"
+#include "test_roscpp/PointCloud.h"
 #include <cstdlib>
 #include <cstdio>
 
@@ -52,7 +52,7 @@ inline double toc()
 
 int main(int, char **)
 {
-  roscpp::PointCloud pc;
+  test_roscpp::PointCloud pc;
 
   const int NUM_ITER = 100;
   const int NUM_PTS = 1000000;
@@ -77,7 +77,7 @@ int main(int, char **)
   tic();
   for (int i = 0; i < NUM_ITER; i++)
   {
-    roscpp::PointCloud pc2;
+    test_roscpp::PointCloud pc2;
     deserializeMessage(m, pc2);
   }
   printf("avg deserization time %.6f sec\n", toc() / (double)NUM_ITER);

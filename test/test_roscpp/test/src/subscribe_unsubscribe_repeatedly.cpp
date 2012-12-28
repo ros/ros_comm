@@ -30,9 +30,9 @@
 #include <time.h>
 
 #include "ros/ros.h"
-#include <roscpp/TestArray.h>
+#include <test_roscpp/TestArray.h>
 
-void callback(const roscpp::TestArrayConstPtr& msg)
+void callback(const test_roscpp::TestArrayConstPtr& msg)
 {
 }
 

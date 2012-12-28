@@ -36,11 +36,11 @@
 #include <ros/ros.h>
 #include <ros/connection_manager.h>
 
-#include "roscpp/TestArray.h"
+#include "test_roscpp/TestArray.h"
 #include "roscpp/Empty.h"
 
 int32_t g_count = 0;
-void callback(const roscpp::TestArrayConstPtr& msg)
+void callback(const test_roscpp::TestArrayConstPtr& msg)
 {
   ++g_count;
 }

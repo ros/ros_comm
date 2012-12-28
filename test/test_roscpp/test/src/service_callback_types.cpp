@@ -36,40 +36,40 @@
 
 #include <gtest/gtest.h>
 #include "ros/ros.h"
-#include "roscpp/TestStringString.h"
+#include "test_roscpp/TestStringString.h"
 
 #include <vector>
 
-bool add(roscpp::TestStringString::Request  &req,
-         roscpp::TestStringString::Response &res )
+bool add(test_roscpp::TestStringString::Request  &req,
+         test_roscpp::TestStringString::Response &res )
 {
   return true;
 }
 
-bool add2(ros::ServiceEvent<roscpp::TestStringString::Request, roscpp::TestStringString::Response>& event)
+bool add2(ros::ServiceEvent<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response>& event)
 {
   return true;
 }
 
-bool add3(ros::ServiceEvent<roscpp::TestStringString::Request, roscpp::TestStringString::Response>& event, const std::string& bound)
+bool add3(ros::ServiceEvent<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response>& event, const std::string& bound)
 {
   return true;
 }
 
 struct A
 {
-  bool add(roscpp::TestStringString::Request  &req,
-           roscpp::TestStringString::Response &res )
+  bool add(test_roscpp::TestStringString::Request  &req,
+           test_roscpp::TestStringString::Response &res )
   {
     return true;
   }
 
-  bool add2(ros::ServiceEvent<roscpp::TestStringString::Request, roscpp::TestStringString::Response>& event)
+  bool add2(ros::ServiceEvent<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response>& event)
   {
     return true;
   }
 
-  bool add3(ros::ServiceEvent<roscpp::TestStringString::Request, roscpp::TestStringString::Response>& event, const std::string& bound)
+  bool add3(ros::ServiceEvent<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response>& event, const std::string& bound)
   {
     return true;
   }
@@ -82,12 +82,12 @@ TEST(ServiceCallbackTypes, compile)
   std::vector<ros::ServiceServer> srvs;
   srvs.push_back(n.advertiseService("add_two_ints", add));
   srvs.push_back(n.advertiseService("add_two_ints2", add2));
-  srvs.push_back(n.advertiseService<ros::ServiceEvent<roscpp::TestStringString::Request, roscpp::TestStringString::Response> >("add_two_ints3", boost::bind(add3, _1, std::string("blah"))));
+  srvs.push_back(n.advertiseService<ros::ServiceEvent<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response> >("add_two_ints3", boost::bind(add3, _1, std::string("blah"))));
 
   A a;
   srvs.push_back(n.advertiseService("add_two_ints10", &A::add, &a));
   srvs.push_back(n.advertiseService("add_two_ints11", &A::add2, &a));
-  srvs.push_back(n.advertiseService<ros::ServiceEvent<roscpp::TestStringString::Request, roscpp::TestStringString::Response> >("add_two_ints12", boost::bind(&A::add3, &a, _1, std::string("blah"))));
+  srvs.push_back(n.advertiseService<ros::ServiceEvent<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response> >("add_two_ints12", boost::bind(&A::add3, &a, _1, std::string("blah"))));
 }
 
 int main(int argc, char **argv)

@@ -42,13 +42,13 @@
 #include "ros/service.h"
 #include "ros/connection.h"
 #include "ros/service_client.h"
-#include <roscpp/TestStringString.h>
-#include <roscpp/BadTestStringString.h>
+#include <test_roscpp/TestStringString.h>
+#include <test_roscpp/BadTestStringString.h>
 
 TEST(SrvCall, callSrv)
 {
-  roscpp::TestStringString::Request req;
-  roscpp::TestStringString::Response res;
+  test_roscpp::TestStringString::Request req;
+  test_roscpp::TestStringString::Response res;
 
   req.str = std::string("case_FLIP");
 
@@ -60,8 +60,8 @@ TEST(SrvCall, callSrv)
 
 TEST(SrvCall, callSrvMultipleTimes)
 {
-  roscpp::TestStringString::Request req;
-  roscpp::TestStringString::Response res;
+  test_roscpp::TestStringString::Request req;
+  test_roscpp::TestStringString::Response res;
 
   req.str = std::string("case_FLIP");
 
@@ -83,8 +83,8 @@ TEST(SrvCall, callSrvMultipleTimes)
 
 TEST(SrvCall, callSrvWithWrongType)
 {
-  roscpp::BadTestStringString::Request req;
-  roscpp::BadTestStringString::Response res;
+  test_roscpp::BadTestStringString::Request req;
+  test_roscpp::BadTestStringString::Response res;
 
   ASSERT_TRUE(ros::service::waitForService("service_adv"));
 
@@ -97,8 +97,8 @@ TEST(SrvCall, callSrvWithWrongType)
 
 TEST(SrvCall, callSrvHandle)
 {
-  roscpp::TestStringString::Request req;
-  roscpp::TestStringString::Response res;
+  test_roscpp::TestStringString::Request req;
+  test_roscpp::TestStringString::Response res;
 
   req.str = std::string("case_FLIP");
 
@@ -106,7 +106,7 @@ TEST(SrvCall, callSrvHandle)
   header["test1"] = "testing 1";
   header["test2"] = "testing 2";
   ros::NodeHandle nh;
-  ros::ServiceClient handle = nh.serviceClient<roscpp::TestStringString>("service_adv", false, header);
+  ros::ServiceClient handle = nh.serviceClient<test_roscpp::TestStringString>("service_adv", false, header);
   ASSERT_TRUE(handle.waitForExistence());
 
   ros::Time start = ros::Time::now();
@@ -125,8 +125,8 @@ TEST(SrvCall, callSrvHandle)
 
 TEST(SrvCall, callSrvPersistentHandle)
 {
-  roscpp::TestStringString::Request req;
-  roscpp::TestStringString::Response res;
+  test_roscpp::TestStringString::Request req;
+  test_roscpp::TestStringString::Response res;
 
   req.str = std::string("case_FLIP");
 
@@ -136,7 +136,7 @@ TEST(SrvCall, callSrvPersistentHandle)
   header["test1"] = "testing 1";
   header["test2"] = "testing 2";
   ros::NodeHandle nh;
-  ros::ServiceClient handle = nh.serviceClient<roscpp::TestStringString>("service_adv", true, header);
+  ros::ServiceClient handle = nh.serviceClient<test_roscpp::TestStringString>("service_adv", true, header);
 
   ros::Time start = ros::Time::now();
 
@@ -154,8 +154,8 @@ TEST(SrvCall, callSrvPersistentHandle)
 
 TEST(SrvCall, callSrvLongRunning)
 {
-  roscpp::TestStringString::Request req;
-  roscpp::TestStringString::Response res;
+  test_roscpp::TestStringString::Request req;
+  test_roscpp::TestStringString::Response res;
 
   req.str = std::string("case_FLIP");
 
@@ -167,8 +167,8 @@ TEST(SrvCall, callSrvLongRunning)
 
 TEST(SrvCall, callSrvWhichUnadvertisesInCallback)
 {
-  roscpp::TestStringString::Request req;
-  roscpp::TestStringString::Response res;
+  test_roscpp::TestStringString::Request req;
+  test_roscpp::TestStringString::Response res;
 
   req.str = std::string("case_FLIP");
 
@@ -178,8 +178,8 @@ TEST(SrvCall, callSrvWhichUnadvertisesInCallback)
 
 TEST(SrvCall, handleValid)
 {
-  roscpp::TestStringString::Request req;
-  roscpp::TestStringString::Response res;
+  test_roscpp::TestStringString::Request req;
+  test_roscpp::TestStringString::Response res;
 
   req.str = std::string("case_FLIP");
 
@@ -189,7 +189,7 @@ TEST(SrvCall, handleValid)
   header["test1"] = "testing 1";
   header["test2"] = "testing 2";
   ros::NodeHandle nh;
-  ros::ServiceClient handle = nh.serviceClient<roscpp::TestStringString>("service_adv", true, header);
+  ros::ServiceClient handle = nh.serviceClient<test_roscpp::TestStringString>("service_adv", true, header);
   ASSERT_TRUE(handle.call(req, res));
   ASSERT_TRUE(handle.isValid());
   handle.shutdown();
@@ -204,7 +204,7 @@ TEST(SrvCall, waitForServiceTimeout)
   ASSERT_FALSE(ros::service::waitForService("iojergoiwjoiewg", 1000));
   ASSERT_FALSE(ros::service::waitForService("iojergoiwjoiewg", ros::Duration(1)));
 
-  ros::ServiceClient handle = nh.serviceClient<roscpp::TestStringString>("migowiowejowieuhwejg", false);
+  ros::ServiceClient handle = nh.serviceClient<test_roscpp::TestStringString>("migowiowejowieuhwejg", false);
   ASSERT_FALSE(handle.waitForExistence(ros::Duration(1)));
 }
 

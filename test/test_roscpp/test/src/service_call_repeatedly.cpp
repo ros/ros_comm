@@ -37,7 +37,7 @@
 
 #include "ros/ros.h"
 #include "ros/service.h"
-#include <roscpp/TestStringString.h>
+#include <test_roscpp/TestStringString.h>
 
 int
 main(int argc, char** argv)
@@ -45,8 +45,8 @@ main(int argc, char** argv)
   ros::init(argc, argv, "service_call_repeatedly");
   ros::NodeHandle nh;
 
-  roscpp::TestStringString::Request req;
-  roscpp::TestStringString::Response res;
+  test_roscpp::TestStringString::Request req;
+  test_roscpp::TestStringString::Response res;
 
   while(ros::ok())
   {

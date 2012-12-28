@@ -36,8 +36,8 @@
 #include <ros/ros.h>
 #include <ros/connection_manager.h>
 
-#include "roscpp/TestEmpty.h"
-#include "roscpp/TestArray.h"
+#include "test_roscpp/TestEmpty.h"
+#include "test_roscpp/TestArray.h"
 
 #include <std_srvs/Empty.h>
 
@@ -109,7 +109,7 @@ TEST(SubscribeStar, simpleSubFirstIntra)
   ros::NodeHandle nh;
   AnyHelper h;
   ros::Subscriber sub = nh.subscribe("test_star_intra", 0, &AnyHelper::cb, &h);
-  ros::Publisher pub = nh.advertise<roscpp::TestEmpty>("test_star_intra", 0);
+  ros::Publisher pub = nh.advertise<test_roscpp::TestEmpty>("test_star_intra", 0);
 
   EXPECT_EQ(pub.getNumSubscribers(), 1U);
   EXPECT_EQ(sub.getNumPublishers(), 1U);
@@ -124,7 +124,7 @@ TEST(SubscribeStar, simplePubFirstIntra)
 {
   ros::NodeHandle nh;
   AnyHelper h;
-  ros::Publisher pub = nh.advertise<roscpp::TestEmpty>("test_star_intra", 0);
+  ros::Publisher pub = nh.advertise<test_roscpp::TestEmpty>("test_star_intra", 0);
   ros::Subscriber sub = nh.subscribe("test_star_intra", 0, &AnyHelper::cb, &h);
 
   EXPECT_EQ(pub.getNumSubscribers(), 1U);
@@ -136,7 +136,7 @@ TEST(SubscribeStar, simplePubFirstIntra)
   EXPECT_EQ(h.count, 1U);
 }
 
-void emptyCallback(const roscpp::TestEmptyConstPtr&)
+void emptyCallback(const test_roscpp::TestEmptyConstPtr&)
 {
 
 }
@@ -148,13 +148,13 @@ TEST(SubscribeStar, multipleSubsStarFirstIntra)
   ros::Subscriber sub = nh.subscribe("test_star_intra", 0, &AnyHelper::cb, &h);
   ros::Subscriber sub2 = nh.subscribe("test_star_intra", 0, emptyCallback);
 
-  ros::Publisher pub = nh.advertise<roscpp::TestEmpty>("test_star_intra", 0);
+  ros::Publisher pub = nh.advertise<test_roscpp::TestEmpty>("test_star_intra", 0);
   EXPECT_EQ(pub.getNumSubscribers(), 1U);
   EXPECT_EQ(sub.getNumPublishers(), 1U);
   EXPECT_EQ(sub2.getNumPublishers(), 1U);
 
   pub.shutdown();
-  pub = nh.advertise<roscpp::TestArray>("test_star_intra", 0);
+  pub = nh.advertise<test_roscpp::TestArray>("test_star_intra", 0);
   EXPECT_EQ(pub.getNumSubscribers(), 0U);
   EXPECT_EQ(sub.getNumPublishers(), 0U);
   EXPECT_EQ(sub2.getNumPublishers(), 0U);
@@ -167,13 +167,13 @@ TEST(SubscribeStar, multipleSubsConcreteFirstIntra)
   ros::Subscriber sub2 = nh.subscribe("test_star_intra", 0, emptyCallback);
   ros::Subscriber sub = nh.subscribe("test_star_intra", 0, &AnyHelper::cb, &h);
 
-  ros::Publisher pub = nh.advertise<roscpp::TestEmpty>("test_star_intra", 0);
+  ros::Publisher pub = nh.advertise<test_roscpp::TestEmpty>("test_star_intra", 0);
   EXPECT_EQ(pub.getNumSubscribers(), 1U);
   EXPECT_EQ(sub.getNumPublishers(), 1U);
   EXPECT_EQ(sub2.getNumPublishers(), 1U);
 
   pub.shutdown();
-  pub = nh.advertise<roscpp::TestArray>("test_star_intra", 0);
+  pub = nh.advertise<test_roscpp::TestArray>("test_star_intra", 0);
   EXPECT_EQ(pub.getNumSubscribers(), 0U);
   EXPECT_EQ(sub.getNumPublishers(), 0U);
   EXPECT_EQ(sub2.getNumPublishers(), 0U);
@@ -187,12 +187,12 @@ TEST(SubscribeStar, multipleShutdownConcreteIntra)
   ros::Subscriber sub2 = nh.subscribe("test_star_intra", 0, emptyCallback);
   sub2.shutdown();
 
-  ros::Publisher pub = nh.advertise<roscpp::TestEmpty>("test_star_intra", 0);
+  ros::Publisher pub = nh.advertise<test_roscpp::TestEmpty>("test_star_intra", 0);
   EXPECT_EQ(pub.getNumSubscribers(), 1U);
   EXPECT_EQ(sub.getNumPublishers(), 1U);
 
   pub.shutdown();
-  pub = nh.advertise<roscpp::TestArray>("test_star_intra", 0);
+  pub = nh.advertise<test_roscpp::TestArray>("test_star_intra", 0);
   EXPECT_EQ(pub.getNumSubscribers(), 0U);
   EXPECT_EQ(sub.getNumPublishers(), 0U);
 }

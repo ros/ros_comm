@@ -41,7 +41,7 @@
 #include <stdlib.h>
 
 #include "ros/ros.h"
-#include <roscpp/TestEmpty.h>
+#include <test_roscpp/TestEmpty.h>
 
 int g_argc;
 char** g_argv;
@@ -49,14 +49,14 @@ char** g_argv;
 class Subscriptions : public testing::Test
 {
   public:
-    roscpp::TestEmpty msg;
+    test_roscpp::TestEmpty msg;
     bool success;
     bool failure;
     int msg_count;
     int msg_i;
     ros::Duration dt;
 
-    void messageCallback(const roscpp::TestEmptyConstPtr& msg)
+    void messageCallback(const test_roscpp::TestEmptyConstPtr& msg)
     {
       if(failure || success)
         return;

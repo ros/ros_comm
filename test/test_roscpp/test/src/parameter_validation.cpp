@@ -31,7 +31,7 @@
 
 #include <ros/ros.h>
 
-#include <roscpp/TestEmpty.h>
+#include <test_roscpp/TestEmpty.h>
 
 #define ASSERT_THROWS(expr) \
   try \
@@ -44,7 +44,7 @@
     ROS_INFO("Caught exception: %s", e.what());\
   }
 
-void callback(const roscpp::TestEmptyConstPtr&)
+void callback(const test_roscpp::TestEmptyConstPtr&)
 {
 
 }
@@ -53,7 +53,7 @@ TEST(ParameterValidation, subscribeEmptyMD5Sum)
 {
   ros::NodeHandle nh;
   ros::SubscribeOptions ops;
-  ops.init<roscpp::TestEmpty>("blah", 0, callback);
+  ops.init<test_roscpp::TestEmpty>("blah", 0, callback);
   ops.md5sum.clear();
   ASSERT_THROWS(nh.subscribe(ops));
 }
@@ -62,7 +62,7 @@ TEST(ParameterValidation, subscribeEmptyDataType)
 {
   ros::NodeHandle nh;
   ros::SubscribeOptions ops;
-  ops.init<roscpp::TestEmpty>("blah", 0, callback);
+  ops.init<test_roscpp::TestEmpty>("blah", 0, callback);
   ops.datatype.clear();
   ASSERT_THROWS(nh.subscribe(ops));
 }

@@ -33,11 +33,11 @@
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
 
-#include "roscpp/TestArray.h"
+#include "test_roscpp/TestArray.h"
 
 uint32_t g_pub_count = 0;
 
-void callback(const roscpp::TestArrayConstPtr& msg)
+void callback(const test_roscpp::TestArrayConstPtr& msg)
 {
 
 }
@@ -59,7 +59,7 @@ TEST(LoadsOfPublishers, waitForAll)
 
 struct Helper
 {
-  void callback(const roscpp::TestArrayConstPtr& msg)
+  void callback(const test_roscpp::TestArrayConstPtr& msg)
   {
     alive[(*msg->__connection_header)["callerid"]] = true;
   }

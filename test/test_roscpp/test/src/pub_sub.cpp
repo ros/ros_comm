@@ -39,13 +39,13 @@
 #include <stdlib.h>
 
 #include "ros/ros.h"
-#include <roscpp/TestArray.h>
+#include <test_roscpp/TestArray.h>
 
 int32_t g_array_size = 1;
 
-void messageCallback(const roscpp::TestArrayConstPtr& msg, ros::Publisher pub)
+void messageCallback(const test_roscpp::TestArrayConstPtr& msg, ros::Publisher pub)
 {
-  roscpp::TestArray copy = *msg;
+  test_roscpp::TestArray copy = *msg;
   copy.counter++;
 
   while (ros::ok() && pub.getNumSubscribers() == 0)
@@ -72,8 +72,8 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh;
 
-  ros::Publisher pub = nh.advertise<roscpp::TestArray>("roscpp/pubsub_test", 1);
-  ros::Subscriber sub = nh.subscribe<roscpp::TestArray>("roscpp/subpub_test", 1, boost::bind(messageCallback, _1, pub));
+  ros::Publisher pub = nh.advertise<test_roscpp::TestArray>("roscpp/pubsub_test", 1);
+  ros::Subscriber sub = nh.subscribe<test_roscpp::TestArray>("roscpp/subpub_test", 1, boost::bind(messageCallback, _1, pub));
 
   ros::spin();
 }

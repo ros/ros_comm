@@ -44,7 +44,7 @@
 #include <stdlib.h>
 
 #include "ros/ros.h"
-#include "roscpp/TestEmpty.h"
+#include "test_roscpp/TestEmpty.h"
 
 TEST(masterInfo, getPublishedTopics)
 {
@@ -68,7 +68,7 @@ TEST(masterInfo, getPublishedTopics)
   for ( ; adv_it != adv_end; ++adv_it )
   {
     const std::string& topic = *adv_it;
-    pubs.push_back(nh.advertise<roscpp::TestEmpty>( topic, 0 ));
+    pubs.push_back(nh.advertise<test_roscpp::TestEmpty>( topic, 0 ));
   }
 
   ros::master::V_TopicInfo master_topics;

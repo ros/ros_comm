@@ -34,7 +34,7 @@
  */
 
 #include "ros/ros.h"
-#include <roscpp/TestStringString.h>
+#include <test_roscpp/TestStringString.h>
 
 #include <unistd.h>
 #include <errno.h>
@@ -43,8 +43,8 @@
 #include <sys/wait.h>
 #include <cstdlib>
 
-bool srvCallback(roscpp::TestStringString::Request  &req,
-                 roscpp::TestStringString::Response &res)
+bool srvCallback(test_roscpp::TestStringString::Request  &req,
+                 test_roscpp::TestStringString::Response &res)
 {
   res.str = "A";
   return true;

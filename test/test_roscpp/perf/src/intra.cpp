@@ -33,8 +33,8 @@
  */
 
 #include "perf_roscpp/intra.h"
-#include "roscpp/ThroughputMessage.h"
-#include "roscpp/LatencyMessage.h"
+#include "test_roscpp/ThroughputMessage.h"
+#include "test_roscpp/LatencyMessage.h"
 
 #include <ros/ros.h>
 #include <ros/callback_queue.h>

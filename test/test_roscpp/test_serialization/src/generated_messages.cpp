@@ -35,27 +35,27 @@
 
 #include <gtest/gtest.h>
 #include "helpers.h"
-#include "roscpp/ArrayOfFixedLength.h"
-#include "roscpp/ArrayOfVariableLength.h"
-#include "roscpp/EmbeddedFixedLength.h"
-#include "roscpp/EmbeddedVariableLength.h"
-#include "roscpp/FixedLength.h"
-#include "roscpp/VariableLength.h"
-#include "roscpp/WithHeader.h"
-#include "roscpp/EmbeddedExternal.h"
-#include "roscpp/WithTime.h"
-#include "roscpp/WithDuration.h"
-#include "roscpp/WithMemberNamedHeaderThatIsNotAHeader.h"
-#include "roscpp/FixedLengthArrayOfExternal.h"
-#include "roscpp/VariableLengthArrayOfExternal.h"
-#include "roscpp/Constants.h"
-#include "roscpp/VariableLengthStringArray.h"
-#include "roscpp/FixedLengthStringArray.h"
-#include "roscpp/HeaderNotFirstMember.h"
+#include "test_roscpp/ArrayOfFixedLength.h"
+#include "test_roscpp/ArrayOfVariableLength.h"
+#include "test_roscpp/EmbeddedFixedLength.h"
+#include "test_roscpp/EmbeddedVariableLength.h"
+#include "test_roscpp/FixedLength.h"
+#include "test_roscpp/VariableLength.h"
+#include "test_roscpp/WithHeader.h"
+#include "test_roscpp/EmbeddedExternal.h"
+#include "test_roscpp/WithTime.h"
+#include "test_roscpp/WithDuration.h"
+#include "test_roscpp/WithMemberNamedHeaderThatIsNotAHeader.h"
+#include "test_roscpp/FixedLengthArrayOfExternal.h"
+#include "test_roscpp/VariableLengthArrayOfExternal.h"
+#include "test_roscpp/Constants.h"
+#include "test_roscpp/VariableLengthStringArray.h"
+#include "test_roscpp/FixedLengthStringArray.h"
+#include "test_roscpp/HeaderNotFirstMember.h"
 
-using namespace roscpp;
+using namespace test_roscpp;
 
-namespace roscpp
+namespace test_roscpp
 {
   ROS_DECLARE_MESSAGE_WITH_ALLOCATOR(ArrayOfFixedLength, MyArrayOfFixedLength, Allocator);
   ROS_DECLARE_MESSAGE_WITH_ALLOCATOR(ArrayOfVariableLength, MyArrayOfVariableLength, Allocator);

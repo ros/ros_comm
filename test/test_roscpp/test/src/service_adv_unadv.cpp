@@ -36,7 +36,7 @@
 #include <gtest/gtest.h>
 
 #include "ros/ros.h"
-#include <roscpp/TestStringString.h>
+#include <test_roscpp/TestStringString.h>
 
 
 static int g_argc;
@@ -51,8 +51,8 @@ class ServiceAdvertiser : public testing::Test
     bool advertised_;
     bool failure_;
 
-    bool srvCallback(roscpp::TestStringString::Request  &req,
-                     roscpp::TestStringString::Response &res)
+    bool srvCallback(test_roscpp::TestStringString::Request  &req,
+                     test_roscpp::TestStringString::Response &res)
     {
       ROS_INFO("in callback");
       if(!advertised_)

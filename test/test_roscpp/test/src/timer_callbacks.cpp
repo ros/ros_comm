@@ -44,13 +44,13 @@
 
 #include "ros/ros.h"
 #include "ros/callback_queue.h"
-#include <roscpp/TestArray.h>
-#include <roscpp/TestStringString.h>
+#include <test_roscpp/TestArray.h>
+#include <test_roscpp/TestStringString.h>
 
 #include <boost/scoped_ptr.hpp>
 
 using namespace ros;
-using namespace roscpp;
+using namespace test_roscpp;
 
 std::string g_node_name = "test_timer_callbacks";
 

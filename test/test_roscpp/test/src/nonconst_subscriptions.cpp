@@ -41,27 +41,27 @@
 
 #include "ros/ros.h"
 
-#include "roscpp/TestEmpty.h"
+#include "test_roscpp/TestEmpty.h"
 
 
 struct ConstHelper
 {
-  void callback(const roscpp::TestEmptyConstPtr& msg)
+  void callback(const test_roscpp::TestEmptyConstPtr& msg)
   {
     message_ = msg;
   }
 
-  roscpp::TestEmptyConstPtr message_;
+  test_roscpp::TestEmptyConstPtr message_;
 };
 
 struct NonConstHelper
 {
-  void callback(const roscpp::TestEmptyPtr& msg)
+  void callback(const test_roscpp::TestEmptyPtr& msg)
   {
     message_ = msg;
   }
 
-  roscpp::TestEmptyPtr message_;
+  test_roscpp::TestEmptyPtr message_;
 };
 
 TEST(NonConstSubscriptions, oneNonConstSubscriber)
@@ -69,9 +69,9 @@ TEST(NonConstSubscriptions, oneNonConstSubscriber)
   NonConstHelper h;
   ros::NodeHandle nh;
   ros::Subscriber sub = nh.subscribe("test", 0, &NonConstHelper::callback, &h);
-  ros::Publisher pub = nh.advertise<roscpp::TestEmpty>("test", 0);
+  ros::Publisher pub = nh.advertise<test_roscpp::TestEmpty>("test", 0);
 
-  roscpp::TestEmptyPtr msg(new roscpp::TestEmpty);
+  test_roscpp::TestEmptyPtr msg(new test_roscpp::TestEmpty);
   pub.publish(msg);
   ros::spinOnce();
 
@@ -86,9 +86,9 @@ TEST(NonConstSubscriptions, oneConstOneNonConst)
   ros::NodeHandle nh;
   ros::Subscriber sub = nh.subscribe("test", 0, &NonConstHelper::callback, &h);
   ros::Subscriber sub2 = nh.subscribe("test", 0, &ConstHelper::callback, &h2);
-  ros::Publisher pub = nh.advertise<roscpp::TestEmpty>("test", 0);
+  ros::Publisher pub = nh.advertise<test_roscpp::TestEmpty>("test", 0);
 
-  roscpp::TestEmptyPtr msg(new roscpp::TestEmpty);
+  test_roscpp::TestEmptyPtr msg(new test_roscpp::TestEmpty);
   pub.publish(msg);
   ros::spinOnce();
 
@@ -104,9 +104,9 @@ TEST(NonConstSubscriptions, twoNonConst)
   ros::NodeHandle nh;
   ros::Subscriber sub = nh.subscribe("test", 0, &NonConstHelper::callback, &h);
   ros::Subscriber sub2 = nh.subscribe("test", 0, &NonConstHelper::callback, &h2);
-  ros::Publisher pub = nh.advertise<roscpp::TestEmpty>("test", 0);
+  ros::Publisher pub = nh.advertise<test_roscpp::TestEmpty>("test", 0);
 
-  roscpp::TestEmptyPtr msg(new roscpp::TestEmpty);
+  test_roscpp::TestEmptyPtr msg(new test_roscpp::TestEmpty);
   pub.publish(msg);
   ros::spinOnce();
 
@@ -121,9 +121,9 @@ TEST(NonConstSubscriptions, twoConst)
   ros::NodeHandle nh;
   ros::Subscriber sub = nh.subscribe("test", 0, &ConstHelper::callback, &h);
   ros::Subscriber sub2 = nh.subscribe("test", 0, &ConstHelper::callback, &h2);
-  ros::Publisher pub = nh.advertise<roscpp::TestEmpty>("test", 0);
+  ros::Publisher pub = nh.advertise<test_roscpp::TestEmpty>("test", 0);
 
-  roscpp::TestEmptyPtr msg(new roscpp::TestEmpty);
+  test_roscpp::TestEmptyPtr msg(new test_roscpp::TestEmpty);
   pub.publish(msg);
   ros::spinOnce();
 

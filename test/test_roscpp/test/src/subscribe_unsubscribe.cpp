@@ -41,7 +41,7 @@
 #include <stdlib.h>
 
 #include "ros/ros.h"
-#include <roscpp/TestArray.h>
+#include <test_roscpp/TestArray.h>
 
 #include <boost/thread.hpp>
 
@@ -54,7 +54,7 @@ public:
   ros::NodeHandle nh_;
   ros::Subscriber sub_;
 
-  void messageCallback(const roscpp::TestArrayConstPtr& msg)
+  void messageCallback(const test_roscpp::TestArrayConstPtr& msg)
   {
     ROS_INFO("in callback");
 
@@ -65,7 +65,7 @@ public:
     }
   }
 
-  void autoUnsubscribeCallback(const roscpp::TestArrayConstPtr& msg)
+  void autoUnsubscribeCallback(const test_roscpp::TestArrayConstPtr& msg)
   {
     ROS_INFO("in autounsub callback");
     sub_.shutdown();
@@ -130,7 +130,7 @@ TEST_F(Subscriptions, unsubInCallbackAndOtherThread)
   for (int i = 0; i < 100; ++i)
   {
     ros::Subscriber sub;
-    sub_ = nh_.subscribe<roscpp::TestArray>("roscpp/pubsub_test", 1, boost::bind(unsubscribeAfterBarrierWait, &barrier, boost::ref(sub)));
+    sub_ = nh_.subscribe<test_roscpp::TestArray>("roscpp/pubsub_test", 1, boost::bind(unsubscribeAfterBarrierWait, &barrier, boost::ref(sub)));
     sub = sub_;
 
     bool cont = true;

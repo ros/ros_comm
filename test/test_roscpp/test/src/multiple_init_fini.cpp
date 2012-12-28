@@ -41,12 +41,12 @@
 #include <stdlib.h>
 
 #include "ros/ros.h"
-#include <roscpp/TestArray.h>
+#include <test_roscpp/TestArray.h>
 
 int g_argc;
 char** g_argv;
 
-void callback(const roscpp::TestArrayConstPtr& msg)
+void callback(const test_roscpp::TestArrayConstPtr& msg)
 {
 }
 
@@ -66,7 +66,7 @@ TEST(roscpp, multipleInitAndFini)
     ros::Subscriber sub = nh.subscribe("test", 1, callback);
     ASSERT_TRUE(sub);
 
-    ros::Publisher pub = nh.advertise<roscpp::TestArray>( "test2", 1 );
+    ros::Publisher pub = nh.advertise<test_roscpp::TestArray>( "test2", 1 );
     ASSERT_TRUE(pub);
 
     ros::shutdown();

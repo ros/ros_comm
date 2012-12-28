@@ -41,7 +41,7 @@
 #include <stdlib.h>
 
 #include "ros/ros.h"
-#include <roscpp/TestArray.h>
+#include <test_roscpp/TestArray.h>
 
 int g_argc;
 char** g_argv;
@@ -55,7 +55,7 @@ class Subscriptions : public testing::Test
     int msg_i;
     ros::Duration dt;
 
-    void messageCallback(const roscpp::TestArrayConstPtr& msg)
+    void messageCallback(const test_roscpp::TestArrayConstPtr& msg)
     {
       if(failure || success)
         return;
