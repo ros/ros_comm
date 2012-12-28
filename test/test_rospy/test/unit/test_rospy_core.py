@@ -61,21 +61,6 @@ class TestRospyCore(unittest.TestCase):
                 parse_rosrpc_uri(i)
                 self.fail("%s was an invalid rosrpc uri"%i)
             except: pass
-        
-    def test_add_log_handler(self):
-        # tripwire test
-        import rospy.core
-        from rosgraph_msgs.msg import Log
-        for level in [Log.DEBUG, 
-                      Log.INFO,
-                      Log.WARN,
-                      Log.ERROR,
-                      Log.FATAL]:
-            rospy.core.add_log_handler(level, lambda x: x)
-        import rospy.exceptions
-        try:
-            rospy.core.add_log_handler(lambda x: x, -1)
-        except rospy.exceptions.ROSInternalException, e: pass
 
     def test_loggers(self):
         # trip wire tests
