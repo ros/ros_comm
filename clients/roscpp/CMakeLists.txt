@@ -16,9 +16,11 @@ list(GET roscpp_VERSION_LIST 0 roscpp_VERSION_MAJOR)
 list(GET roscpp_VERSION_LIST 1 roscpp_VERSION_MINOR)
 list(GET roscpp_VERSION_LIST 2 roscpp_VERSION_PATCH)
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ros/common.h.in ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/ros/common.h)
+
 find_package(Boost REQUIRED COMPONENTS signals filesystem system)
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
+include_directories(include ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/ros ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
 
 add_message_files(
   DIRECTORY msg
@@ -33,11 +35,10 @@ add_service_files(
 generate_messages()
 
 catkin_package(
-  INCLUDE_DIRS include
+  INCLUDE_DIRS include ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/ros
   LIBRARIES roscpp
   CATKIN_DEPENDS cpp_common message_runtime rosconsole roscpp_serialization roscpp_traits rosgraph_msgs rostime std_msgs xmlrpcpp
   DEPENDS Boost
-  CFG_EXTRAS roscpp-extras.cmake
 )
 
 include(CheckIncludeFiles)
@@ -115,6 +116,8 @@ install(TARGETS roscpp
 install(DIRECTORY include/
   DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h")
+install(FILES ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/ros/common.h
+  DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}/ros)
 # install legacy infrastructure needed by rosbuild
 install(FILES rosbuild/roscpp.cmake
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/rosbuild)

@@ -40,7 +40,7 @@
 
 #include <boost/thread/recursive_mutex.hpp>
 #include "ros/io.h"
-#include "../common.h"
+#include <ros/common.h>
 
 namespace ros
 {
