@@ -1,7 +1,0 @@
-# generated from ros_comm/clients/roscpp/cmake/roscpp-extras.cmake.in
-
-# used to define ROS_VERSION_*
-set(roscpp_VERSION_MAJOR "@roscpp_VERSION_MAJOR@")
-set(roscpp_VERSION_MINOR "@roscpp_VERSION_MINOR@")
-set(roscpp_VERSION_PATCH "@roscpp_VERSION_PATCH@")
-add_definitions(-Droscpp_VERSION_MAJOR=${roscpp_VERSION_MAJOR} -Droscpp_VERSION_MINOR=${roscpp_VERSION_MINOR} -Droscpp_VERSION_PATCH=${roscpp_VERSION_PATCH})
