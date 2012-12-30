@@ -40,7 +40,7 @@ def sortbags(inbag, outbag):
     rebag = rosbag.Bag(outbag, 'w')
 
     try:
-        schedule = [(t, i) for (topic, msg, t) in enumerate(rosbag.Bag(inbag).read_messages(raw=True))]
+        schedule = [(t, i) for i, (topic, msg, t) in enumerate(rosbag.Bag(inbag).read_messages(raw=True))]
 
         schedule = [i for (t, i) in sorted(schedule)]
         print(schedule)
