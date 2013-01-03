@@ -88,14 +88,16 @@ def configure_logging(uuid):
         
 def write_pid_file(options_pid_fn, options_core, port):
     if options_pid_fn or options_core:
+        # #2987
+        ros_home = rospkg.get_ros_home()
         if options_pid_fn:
             pid_fn = os.path.expanduser(options_pid_fn)
+            if os.path.dirname(pid_fn) == ros_home and not os.path.exists(ros_home):
+                os.makedirs(ros_home)
         else:
             # NOTE: this assumption is not 100% valid until work on #3097 is complete
             if port is None:
                 port = DEFAULT_MASTER_PORT
-            # #2987
-            ros_home = rospkg.get_ros_home()
             pid_fn = os.path.join(ros_home, 'roscore-%s.pid'%(port))
             # #3828
             if not os.path.exists(ros_home):
