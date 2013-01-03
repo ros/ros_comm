@@ -89,7 +89,7 @@ def configure_logging(uuid):
 def write_pid_file(options_pid_fn, options_core, port):
     if options_pid_fn or options_core:
         if options_pid_fn:
-            pid_fn = options_pid_fn
+            pid_fn = os.path.expanduser(options_pid_fn)
         else:
             # NOTE: this assumption is not 100% valid until work on #3097 is complete
             if port is None:
