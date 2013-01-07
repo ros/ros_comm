@@ -24,6 +24,7 @@
   <run_depend>python-yaml</run_depend>
   <run_depend>rosclean</run_depend>
   <run_depend>rosgraph_msgs</run_depend>
+  <run_depend>roslib</run_depend>
   <run_depend>rosmaster</run_depend>
   <run_depend>rosout</run_depend>
   <run_depend>rosparam</run_depend>
