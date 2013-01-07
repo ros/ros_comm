@@ -13,7 +13,6 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <run_depend>rosgraph</run_depend>
-  <run_depend>rosout</run_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>
