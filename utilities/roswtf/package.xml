@@ -4,7 +4,7 @@
   <description>
      roswtf is a tool for diagnosing issues with a running ROS system. Think of it as a FAQ implemented in code.
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="mshah@willowgarage.com">Mirza A. Shah</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/roswtf</url>
