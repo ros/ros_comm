@@ -510,8 +510,8 @@ void vformatToBuffer(boost::shared_array<char>& buffer, size_t& buffer_size, con
 #else
     vsnprintf(buffer.get(), buffer_size, fmt, arg_copy);
 #endif
-    va_end(arg_copy);
   }
+  va_end(arg_copy);
 }
 
 void formatToBuffer(boost::shared_array<char>& buffer, size_t& buffer_size, const char* fmt, ...)
