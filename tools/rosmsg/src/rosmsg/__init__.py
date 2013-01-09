@@ -673,19 +673,25 @@ def rosmsg_cmd_list(mode, full, argv=None):
             print( "%s/%s"%(p, file))
         
 
-def fullusage(cmd):
+def fullusage(mode):
     """
     :param cmd: command name, ``str``
     :returns: usage text for cmd, ``str``
     """
-    return """rosmsg is a command-line tool for displaying information about ROS Message types.
+    cmd = 'ros' + mode[1:]
+    if mode == MODE_MSG:
+        type_ = 'Message'
+    else:
+        type_ = 'Service'
+    type_lower = type_.lower()
+    return """%(cmd)s is a command-line tool for displaying information about ROS %(type_)s types.
 
 Commands:
-\t%(cmd)s show\tShow message description
-\t%(cmd)s list\tList all messages
-\t%(cmd)s md5\tDisplay message md5sum
-\t%(cmd)s package\tList messages in a package
-\t%(cmd)s packages\tList packages that contain messages
+\t%(cmd)s show\tShow %(type_lower)s description
+\t%(cmd)s list\tList all %(type_lower)ss
+\t%(cmd)s md5\tDisplay %(type_lower)s md5sum
+\t%(cmd)s package\tList %(type_lower)ss in a package
+\t%(cmd)s packages\tList packages that contain %(type_lower)ss
 
 Type %(cmd)s <command> -h for more detailed usage
 """%locals()
@@ -706,7 +712,7 @@ def rosmsgmain(mode=MODE_MSG):
         else:
             raise ROSMsgException("Invalid mode: %s"%mode)
         if len(sys.argv) == 1:
-            print(fullusage('ros'+mode[1:]))
+            print(fullusage(mode))
             sys.exit(0)
 
         command = sys.argv[1]
@@ -721,10 +727,10 @@ def rosmsgmain(mode=MODE_MSG):
         elif command == 'md5':
             rosmsg_cmd_md5(ext, full)
         elif command == '--help':
-            print(fullusage('ros'+mode[1:]))
+            print(fullusage(mode))
             sys.exit(0)
         else:
-            print(fullusage('ros'+mode[1:]))
+            print(fullusage(mode))
             sys.exit(getattr(os, 'EX_USAGE', 1))
     except KeyError as e:
         print("Unknown message type: %s"%e, file=sys.stderr)
