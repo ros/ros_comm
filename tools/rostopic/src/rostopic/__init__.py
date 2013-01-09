@@ -372,7 +372,7 @@ def _sub_str_plot_fields(val, f, field_filter):
     """recursive helper function for _str_plot_fields"""
     # CSV
     type_ = type(val)
-    if type_ in (int, float) or \
+    if type_ in (bool, int, float) or \
            isinstance(val, genpy.TVal):
         return f
     # duck-type check for messages
@@ -393,7 +393,7 @@ def _sub_str_plot_fields(val, f, field_filter):
         val0 = val[0]
         type0 = type(val0)
         # no arrays of arrays
-        if type0 in (int, float) or \
+        if type0 in (bool, int, float) or \
                isinstance(val0, genpy.TVal):
             return ','.join(["%s%s"%(f,x) for x in xrange(0,len(val))])
         elif type0 in (str, unicode):
@@ -438,7 +438,9 @@ def _sub_str_plot(val, time_offset, field_filter):
     # CSV
     type_ = type(val)
     
-    if type_ in (int, float) or \
+    if type_ == bool:
+        return '1' if val else '0'
+    elif type_ in (int, float) or \
            isinstance(val, genpy.TVal):
         if time_offset is not None and isinstance(val, genpy.Time):
             return str(val-time_offset)
@@ -462,7 +464,9 @@ def _sub_str_plot(val, time_offset, field_filter):
         val0 = val[0]
         # no arrays of arrays
         type0 = type(val0)
-        if type0 in (int, float) or \
+        if type0 == bool:
+            return ','.join([('1' if v else '0') for v in val])
+        elif type0 in (int, float) or \
                isinstance(val0, genpy.TVal):
             return ','.join([str(v) for v in val])
         elif type0 in (str, unicode):
