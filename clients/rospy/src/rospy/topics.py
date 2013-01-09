@@ -205,10 +205,15 @@ class Poller(object):
                 self.poller = self.noop
                 self.add_fd = self.noop
                 self.remove_fd = self.noop
-                self.error_iter = self.noop
+                self.error_iter = self.noop_iter
 
     def noop(self, *args):
         pass
+
+    def noop_iter(self):
+        empty_generator = (x for x in list())
+        for x in empty_generator:
+            yield x
 
     def add_poll(self, fd):
         self.poller.register(fd)
