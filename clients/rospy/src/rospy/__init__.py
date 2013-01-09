@@ -72,10 +72,6 @@ from .topics import Message, SubscribeListener, Publisher, Subscriber
 ## \defgroup validators Validators
 ## \defgroup clientapi Client API
 
-# initialize default loggers, this has to happen independent of a node being created
-from .impl import init
-init.init_log_handlers()
-
 __all__ = [
     'Header',
     'spin',

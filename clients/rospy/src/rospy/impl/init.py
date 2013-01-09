@@ -105,32 +105,32 @@ def start_node(environ, resolved_name, master_uri=None, port=None):
     return node
 
 _logging_to_rospy_names = {
-      'DEBUG':    'DEBUG',
-      'INFO':     'INFO',
-      'WARNING':  'WARN',
-      'ERROR':    'ERROR',
-      'CRITICAL': 'FATAL',
-      }
+    'DEBUG': ('DEBUG', '\033[32m'),
+    'INFO': ('INFO', None),
+    'WARNING': ('WARN', '\033[33m'),
+    'ERROR': ('ERROR', '\033[31m'),
+    'CRITICAL': ('FATAL', '\033[31m')
+}
+_color_reset = '\033[0m'
 
 class RosStreamHandler(logging.Handler):
-   def emit(self, record):
-      # TODO: (AJH) convert levelname CRITICAL to FATAL
-      level = _logging_to_rospy_names[record.levelname]
-      if is_wallclock():
-         msg = "[%s] [WallTime: %f] %s\n"%(level, time.time(),
-               record.getMessage())
-      else:
-         msg = "[%s] [WallTime: %f] [%f] %s\n"%(level, time.time(), get_time(),
-               record.getMessage())
-      if record.levelno < logging.WARNING:
-         sys.stdout.write(msg)
-      else:
-         sys.stderr.write(msg)
+    def __init__(self, colorize=True):
+        super(RosStreamHandler, self).__init__()
+        self._colorize = colorize
 
-_loggers_initialized = False
-def init_log_handlers():
-    global _loggers_initialized
-    if _loggers_initialized:
-        return
+    def emit(self, record):
+        level, color = _logging_to_rospy_names[record.levelname]
+        if is_wallclock():
+            msg = "[%s] [WallTime: %f] %s\n"%(level, time.time(), record.getMessage())
+        else:
+            msg = "[%s] [WallTime: %f] [%f] %s\n"%(level, time.time(), get_time(), record.getMessage())
 
-    logging.getLogger('').addHandler(RosStreamHandler())
+        if record.levelno < logging.WARNING:
+            self._write(sys.stdout, msg, color)
+        else:
+            self._write(sys.stderr, msg, color)
+
+    def _write(self, fd, msg, color):
+        if self._colorize and color and fd.isatty():
+            msg = color + msg + _color_reset
+        fd.write(msg)
