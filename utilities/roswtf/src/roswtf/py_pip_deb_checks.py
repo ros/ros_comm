@@ -50,7 +50,7 @@ py_to_deb_packages = {
     'rospkg': 'python-rospkg',
     'rosinstall': 'python-rosinstall',
     'rosrelease': 'python-rosrelease',
-    'rosdep': 'python-rosdep',
+    'rosdep2': 'python-rosdep',
 }
 
 
