@@ -29,17 +29,12 @@
   <build_depend>topic_tools</build_depend>
   <build_depend>xmlrpcpp</build_depend>
 
-  <test_depend>boost</test_depend>
-  <test_depend>bzip2</test_depend>
   <test_depend>genmsg</test_depend>
   <test_depend>genpy</test_depend>
   <test_depend>message_runtime</test_depend>
   <test_depend>python-rospkg</test_depend>
-  <test_depend>rosbag</test_depend>
-  <test_depend>roscpp</test_depend>
   <test_depend>roslib</test_depend>
   <test_depend>rospy</test_depend>
-  <test_depend>topic_tools</test_depend>
 
   <export>
     <rosdoc config="${prefix}/rosdoc.yaml"/>

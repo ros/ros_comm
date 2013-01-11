@@ -20,5 +20,4 @@
   <test_depend>python-numpy</test_depend>
   <test_depend>rosgraph</test_depend>
   <test_depend>rospy</test_depend>
-  <test_depend>std_msgs</test_depend>
 </package>

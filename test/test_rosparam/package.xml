@@ -17,7 +17,6 @@
   <test_depend>python-yaml</test_depend>
   <test_depend>rosgraph</test_depend>
   <test_depend>rosparam</test_depend>
-  <test_depend>rostest</test_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>
