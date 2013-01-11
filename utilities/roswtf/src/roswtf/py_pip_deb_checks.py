@@ -46,7 +46,7 @@ import os
 #A dictionary of core ROS python packages and their corresponding .deb packages
 py_to_deb_packages = {
     'bloom': 'python-bloom',
-    'catkin': 'python-catkin',
+    'catkin_pkg': 'python-catkin-pkg',
     'rospkg': 'python-rospkg',
     'rosinstall': 'python-rosinstall',
     'rosrelease': 'python-rosrelease',
