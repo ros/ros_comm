@@ -278,9 +278,13 @@ class NodeInfoThread(threading.Thread):
 
         try:
             socket.setdefaulttimeout(3.0)
-            node_api = rosnode.get_api_uri(master, n)
+            with lock: #Apparently get_api_uri is not thread safe...
+                node_api = rosnode.get_api_uri(master, n)
+
+
             if not node_api:
-                ctx.errors.append(WtfError("Master does not have lookup information for node [%s]"%n))
+                with lock:
+                    ctx.errors.append(WtfError("Master does not have lookup information for node [%s]"%n))
                 return
                 
             node = xmlrpclib.ServerProxy(node_api)
