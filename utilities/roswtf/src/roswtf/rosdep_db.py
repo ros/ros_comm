@@ -49,7 +49,7 @@ def rosdep_database_initialized_check(ctx):
 warnings = []
 
 errors = [(rosdep_database_initialized_check,
-           "ROS Dep database not initialized:"),
+           "ROS Dep database not initialized: "),
          ]
 
 
