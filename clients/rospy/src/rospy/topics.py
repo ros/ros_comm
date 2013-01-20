@@ -324,7 +324,7 @@ class _TopicImpl(object):
         # save reference to avoid lock
         conn = self.connections
         for c in conn:
-            if c.endpoint_id == endpoint_id:
+            if c.endpoint_id == endpoint_id and not c.done:
                 return True
         return False
 

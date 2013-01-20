@@ -761,6 +761,7 @@ class TCPROSTransport(Transport):
         finally:
             if not self.done:
                 self.close()
+            self.done = True
 
     def close(self):
         """close i/o and release resources"""
