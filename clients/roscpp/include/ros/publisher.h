@@ -76,7 +76,7 @@ namespace ros
           return;
         }
 
-      ROS_ASSERT_MSG(impl_->md5sum_ != "*" || impl_->md5sum_ == mt::md5sum<M>(*message), 
+      ROS_ASSERT_MSG(impl_->md5sum_ == "*" || impl_->md5sum_ == mt::md5sum<M>(*message),
                      "Trying to publish message of type [%s/%s] on a publisher with type [%s/%s]",
                      impl_->datatype_.c_str(), impl_->md5sum_.c_str(), 
                      mt::datatype<M>(*message), mt::md5sum<M>(*message));
@@ -109,7 +109,7 @@ namespace ros
           return;
         }
 
-      ROS_ASSERT_MSG(impl_->md5sum_ != "*" || impl_->md5sum_ == mt::md5sum<M>(message), 
+      ROS_ASSERT_MSG(impl_->md5sum_ == "*" || impl_->md5sum_ == mt::md5sum<M>(message),
                      "Trying to publish message of type [%s/%s] on a publisher with type [%s/%s]",
                      impl_->datatype_.c_str(), impl_->md5sum_.c_str(), 
                      mt::datatype<M>(message), mt::md5sum<M>(message));
