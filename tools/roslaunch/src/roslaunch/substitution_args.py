@@ -47,6 +47,8 @@ except ImportError:
 import rosgraph.names
 import rospkg
 
+_rospack = None
+
 class SubstitutionException(Exception):
     """
     Base class for exceptions in substitution_args routines
@@ -135,7 +137,10 @@ def _find(resolved, a, args, context):
     resolved = resolved.replace(slash_orig, slash_orig.replace('/', sep))
     resolved = resolved.replace(slash_orig, slash_orig.replace('\\', sep))
 
-    r = rospkg.RosPack()
+    global _rospack
+    if _rospack is None:
+        _rospack = rospkg.RosPack()
+    r = _rospack
     return resolved[0:idx-len(arg)] + r.get_path(args[0]) + resolved[idx:]
     
 def _arg(resolved, a, args, context):
