@@ -108,6 +108,11 @@ const std::string& getURI()
 
 void setRetryTimeout(ros::WallDuration timeout)
 {
+  if (timeout < ros::WallDuration(0))
+  {
+    ROS_FATAL("retry timeout must not be negative.");
+    ROS_BREAK();
+  }
   g_retry_timeout = timeout;
 }
 
@@ -208,14 +213,11 @@ bool execute(const std::string& method, const XmlRpc::XmlRpcValue& request, XmlR
         return false;
       }
 
-      if (g_retry_timeout.isZero())
+      if (!g_retry_timeout.isZero() && (ros::WallTime::now() - start_time) >= g_retry_timeout)
       {
-        if (g_retry_timeout > ros::WallDuration(0) && (ros::WallTime::now() - start_time) >= g_retry_timeout)
-        {
-          ROS_ERROR("[%s] Timed out trying to connect to the master after [%f] seconds", method.c_str(), g_retry_timeout.toSec());
-          XMLRPCManager::instance()->releaseXMLRPCClient(c);
-          return false;
-        }
+        ROS_ERROR("[%s] Timed out trying to connect to the master after [%f] seconds", method.c_str(), g_retry_timeout.toSec());
+        XMLRPCManager::instance()->releaseXMLRPCClient(c);
+        return false;
       }
 
       ros::WallDuration(0.05).sleep();
