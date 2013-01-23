@@ -223,45 +223,55 @@ TEST(SubscribeStar, simpleInterUDP)
   EXPECT_GT(h.count, 0U);
 }
 
+// must be the last test as it makes the service node exit
 TEST(SubscribeStar, switchTypeInter)
 {
   ros::NodeHandle nh;
   AnyHelper h;
   ros::Subscriber sub = nh.subscribe("test_star_inter", 0, &AnyHelper::cb, &h);
+  ros::Subscriber sub2 = nh.subscribe("test_star_inter", 0, emptyCallback);
 
   ros::WallDuration(1.0).sleep();
   ros::spinOnce();
 
   ASSERT_EQ(sub.getNumPublishers(), 1U);
+  ASSERT_EQ(sub2.getNumPublishers(), 1U);
 
   std_srvs::Empty srv;
+  // by invoking the service call the service node will exit with FATAL
   ASSERT_TRUE(ros::service::call("switch_publisher_type", srv));
 
   ros::WallDuration(1.0).sleep();
   ros::spinOnce();
 
   ASSERT_EQ(sub.getNumPublishers(), 0U);
+  ASSERT_EQ(sub2.getNumPublishers(), 0U);
 }
 
-TEST(SubscribeStar, switchTypeInterUDP)
-{
-  ros::NodeHandle nh;
-  AnyHelper h;
-  ros::Subscriber sub = nh.subscribe("test_star_inter", 0, &AnyHelper::cb, &h, ros::TransportHints().udp());
-
-  ros::WallDuration(1.0).sleep();
-  ros::spinOnce();
-
-  ASSERT_EQ(sub.getNumPublishers(), 1U);
-
-  std_srvs::Empty srv;
-  ASSERT_TRUE(ros::service::call("switch_publisher_type", srv));
-
-  ros::WallDuration(1.0).sleep();
-  ros::spinOnce();
-
-  ASSERT_EQ(sub.getNumPublishers(), 0U);
-}
+// disabled because switchTypeInter will stop the other node intentionally
+//TEST(SubscribeStar, switchTypeInterUDP)
+//{
+//  ros::NodeHandle nh;
+//  AnyHelper h;
+//  ros::Subscriber sub = nh.subscribe("test_star_inter", 0, &AnyHelper::cb, &h, ros::TransportHints().udp());
+//  ros::Subscriber sub2 = nh.subscribe("test_star_inter", 0, emptyCallback, ros::TransportHints().udp());
+//
+//  ros::WallDuration(1.0).sleep();
+//  ros::spinOnce();
+//
+//  ASSERT_EQ(sub.getNumPublishers(), 1U);
+//  ASSERT_EQ(sub2.getNumPublishers(), 1U);
+//
+//  std_srvs::Empty srv;
+//  // by invoking the service call the service node will exit with FATAL
+//  ASSERT_TRUE(ros::service::call("switch_publisher_type", srv));
+//
+//  ros::WallDuration(1.0).sleep();
+//  ros::spinOnce();
+//
+//  ASSERT_EQ(sub.getNumPublishers(), 0U);
+//  ASSERT_EQ(sub2.getNumPublishers(), 0U);
+//}
 
 int main(int argc, char** argv)
 {
