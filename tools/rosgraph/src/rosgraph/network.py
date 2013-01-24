@@ -142,10 +142,18 @@ def get_address_override():
             msg = 'invalid ROS_HOSTNAME (an empty string)'
             sys.stderr.write(msg + '\n')
             logger.warn(msg)
+        elif os.environ[ROS_HOSTNAME].count(':') > 0:
+            msg = 'invalid ROS_HOSTNAME (protocols, ports and passwords should not be included)'
+            sys.stderr.write(msg + '\n')
+            logger.warn(msg)
         return os.environ[ROS_HOSTNAME]
     elif ROS_IP in os.environ:
         if os.environ[ROS_IP] == '':
             msg = 'invalid ROS_IP (an empty string)'
+            sys.stderr.write(msg + '\n')
+            logger.warn(msg)
+        elif os.environ[ROS_IP].count('.') != 4 and os.environ[ROS_IP].count(':') not in (4, 5, 8):
+            msg = 'invalid ROS_IP (should be a valid IPv4 or IPv6 address)'
             sys.stderr.write(msg + '\n')
             logger.warn(msg)
         return os.environ[ROS_IP]
