@@ -34,9 +34,22 @@ add_service_files(
 
 generate_messages()
 
+set(PTHREAD_LIB "")
+find_package(Threads)
+if(CMAKE_THREAD_LIBS_INIT)
+  string(LENGTH ${CMAKE_THREAD_LIBS_INIT} _length)
+  if(_length GREATER 2)
+    string(SUBSTRING ${CMAKE_THREAD_LIBS_INIT} 0 2 _prefix)
+    if(${_prefix} STREQUAL "-l")
+      math(EXPR _rest_len "${_length} - 2")
+      string(SUBSTRING ${CMAKE_THREAD_LIBS_INIT} 2 ${_rest_len} PTHREAD_LIB)
+    endif()
+  endif()
+endif()
+
 catkin_package(
   INCLUDE_DIRS include ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/ros
-  LIBRARIES roscpp
+  LIBRARIES roscpp ${PTHREAD_LIB}
   CATKIN_DEPENDS cpp_common message_runtime rosconsole roscpp_serialization roscpp_traits rosgraph_msgs rostime std_msgs xmlrpcpp
   DEPENDS Boost
 )

@@ -57,7 +57,6 @@
 	#include <arpa/inet.h>
 	#include <netdb.h>
     #include <unistd.h>
-   	#include <pthread.h>
     #include <netdb.h>       // getnameinfo in network.cpp
     #include <netinet/in.h>  // sockaddr_in in network.cpp
 	#include <netinet/tcp.h> // TCP_NODELAY in transport/transport_tcp.cpp
