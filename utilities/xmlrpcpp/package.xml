@@ -8,7 +8,7 @@
     own fork.
   </description>
   <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
-  <license>LGPL</license>
+  <license>LGPL-2.1</license>
 
   <url>http://xmlrpcpp.sourceforge.net</url>
   <author>Chris Morley</author>
