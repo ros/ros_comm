@@ -207,10 +207,10 @@ def get_local_addresses():
             except KeyError: pass
     elif _is_unix_like_platform():
         # unix-only branch
-        import ifaddrs
-        ifaces = ifaddrs.getifaddrs()
-        v4addrs = [addr['addr'] for iface in ifaces.values() if socket.AF_INET in iface for addr in iface[socket.AF_INET]]
-        v6addrs = [addr['addr'] for iface in ifaces.values() if socket.AF_INET6 in iface for addr in iface[socket.AF_INET6]]
+        import netifaces
+        ifaces = netifaces.interfaces()
+        v4addrs = [addr['addr'] for iface in ifaces if socket.AF_INET in netifaces.ifaddresses(iface) for addr in netifaces.ifaddresses(iface)[socket.AF_INET]]
+        v6addrs = [addr['addr'] for iface in ifaces if socket.AF_INET6 in netifaces.ifaddresses(iface) for addr in netifaces.ifaddresses(iface)[socket.AF_INET6]]
         if use_ipv6():
             return v6addrs + v4addrs
         else:

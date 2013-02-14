@@ -14,6 +14,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <run_depend>python-netifaces</run_depend>
   <run_depend>python-rospkg</run_depend>
 
   <test_depend>python-mock</test_depend>
