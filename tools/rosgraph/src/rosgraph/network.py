@@ -152,11 +152,18 @@ def get_address_override():
             msg = 'invalid ROS_IP (an empty string)'
             sys.stderr.write(msg + '\n')
             logger.warn(msg)
-        elif os.environ[ROS_IP].count('.') != 3 and os.environ[ROS_IP].count(':') not in range(2,8):
-            msg = 'invalid ROS_IP (should be a valid IPv4 or IPv6 address)'
+        elif os.environ[ROS_IP].count('.') != 3 and os.environ[ROS_IP].count('.') > 0:
+            msg = 'invalid ROS_IP (valid IPv4 addresses have format 1.2.3.4)'
             sys.stderr.write(msg + '\n')
             logger.warn(msg)
-        return os.environ[ROS_IP]
+        elif os.environ[ROS_IP].count(':') != 7 and os.environ[ROS_IP].count(':') > 0 and os.environ[ROS_IP].count('"::"') == 0:
+            msg = 'invalid ROS_IP (valid IPv6 addresses have format 1:2:3:4:5:6:7:8)'
+            sys.stderr.write(msg + '\n')
+            logger.warn(msg)
+        elif os.environ[ROS_IP].count(':') > 7 and os.environ[ROS_IP].count('"::"') > 0:
+            msg = 'invalid ROS_IP (valid IPv6 addresses have format 1:2:3:4:5:6:7:8)'
+            sys.stderr.write(msg + '\n')
+            logger.warn(msg)
     return None
 
 
