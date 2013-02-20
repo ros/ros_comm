@@ -619,60 +619,42 @@ TransportTCPPtr TransportTCP::accept()
 
 void TransportTCP::socketUpdate(int events)
 {
-  boost::recursive_mutex::scoped_lock lock(close_mutex_);
-  {
-    if (closed_)
-    {
-      return;
-    }
-  }
-
-  // Handle read events before err/hup/nval, since there may be data left on the wire
-  if ((events & POLLIN) && expecting_read_)
-  {
-    if (is_server_)
-    {
-      // Should not block here, because poll() said that it's ready
-      // for reading
-      TransportTCPPtr transport = accept();
-      if (transport)
-      {
-        ROS_ASSERT(accept_cb_);
-        accept_cb_(transport);
-      }
-    }
-    else
-    {
-      if (read_cb_)
-      {
-        read_cb_(shared_from_this());
-      }
-    }
-  }
-
   {
     boost::recursive_mutex::scoped_lock lock(close_mutex_);
-
     if (closed_)
     {
       return;
     }
-  }
 
-  if ((events & POLLOUT) && expecting_write_)
-  {
-    if (write_cb_)
+    // Handle read events before err/hup/nval, since there may be data left on the wire
+    if ((events & POLLIN) && expecting_read_)
     {
-      write_cb_(shared_from_this());
+      if (is_server_)
+      {
+        // Should not block here, because poll() said that it's ready
+        // for reading
+        TransportTCPPtr transport = accept();
+        if (transport)
+        {
+          ROS_ASSERT(accept_cb_);
+          accept_cb_(transport);
+        }
+      }
+      else
+      {
+        if (read_cb_)
+        {
+          read_cb_(shared_from_this());
+        }
+      }
     }
-  }
 
-  {
-    boost::recursive_mutex::scoped_lock lock(close_mutex_);
-
-    if (closed_)
+    if ((events & POLLOUT) && expecting_write_)
     {
-      return;
+      if (write_cb_)
+      {
+        write_cb_(shared_from_this());
+      }
     }
   }
 
