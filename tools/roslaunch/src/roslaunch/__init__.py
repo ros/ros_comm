@@ -158,6 +158,9 @@ def _get_optparse():
     parser.add_option("--dump-params", default=False, action="store_true",
                       dest="dump_params",
                       help="Dump parameters of all roslaunch files to stdout")
+    parser.add_option("--skip-log-check", default=False, action="store_true",
+                      dest="skip_log_check",
+                      help="skip check size of log folder")
     return parser
     
 def _validate_args(parser, options, args):
@@ -231,7 +234,7 @@ def main(argv=sys.argv):
         configure_logging(uuid)
 
         # #3088: don't check disk usage on remote machines
-        if not options.child_name:
+        if not options.child_name and not options.skip_log_check:
             # #2761
             rlutil.check_log_disk_usage()
 
