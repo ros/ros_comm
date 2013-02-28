@@ -254,6 +254,10 @@ The following variables are available:
         sys.stderr.write('Cannot locate input bag file [%s]' % inbag_filename)
         sys.exit(2)
 
+    if os.path.realpath(inbag_filename) == os.path.realpath(outbag_filename):
+        sys.stderr.write('Cannot use same file as input and output [%s]' % inbag_filename)
+        sys.exit(3)
+
     filter_fn = expr_eval(expr)
 
     outbag = Bag(outbag_filename, 'w')
@@ -261,7 +265,7 @@ The following variables are available:
     try:
         inbag = Bag(inbag_filename)
     except ROSBagUnindexedException as ex:
-        sys.stderr.write('ERROR bag unindexed: %s.  Run rosbag reindex.' % arg)
+        sys.stderr.write('ERROR bag unindexed: %s.  Run rosbag reindex.' % inbag_filename)
         return
 
     try:
