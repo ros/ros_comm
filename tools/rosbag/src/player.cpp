@@ -69,6 +69,8 @@ PlayerOptions::PlayerOptions() :
     has_time(false),
     loop(false),
     time(0.0f),
+    has_duration(false),
+    duration(0.0f),
     keep_alive(false),
     skip_empty(ros::DURATION_MAX)
 {
@@ -77,6 +79,8 @@ PlayerOptions::PlayerOptions() :
 void PlayerOptions::check() {
     if (bags.size() == 0)
         throw Exception("You must specify at least one bag file to play from");
+    if (has_duration && duration <= 0.0)
+        throw Exception("Invalid duration, must be > 0.0");
 }
 
 // Player
@@ -131,6 +135,11 @@ void Player::publish() {
 
     initial_time += ros::Duration(options_.time);
 
+    ros::Time finish_time = ros::TIME_MAX;
+    if (options_.has_duration)
+    {
+      finish_time = initial_time + ros::Duration(options_.duration);
+    }
 
     View view;
     TopicQuery topics(options_.topics);
@@ -138,10 +147,10 @@ void Player::publish() {
     if (options_.topics.empty())
     {
       foreach(shared_ptr<Bag> bag, bags_)
-        view.addQuery(*bag, initial_time, ros::TIME_MAX);
+        view.addQuery(*bag, initial_time, finish_time);
     } else {
       foreach(shared_ptr<Bag> bag, bags_)
-        view.addQuery(*bag, topics, initial_time, ros::TIME_MAX);
+        view.addQuery(*bag, topics, initial_time, finish_time);
     }
 
     if (view.size() == 0)
