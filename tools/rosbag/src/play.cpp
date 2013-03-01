@@ -53,6 +53,7 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
       ("delay,d", po::value<float>()->default_value(0.2), "sleep SEC seconds after every advertise call")
       ("rate,r", po::value<float>()->default_value(1.0), "multiply the publish rate by FACTOR")
       ("start,s", po::value<float>()->default_value(0.0), "start SEC seconds into the bag files")
+      ("duration,u", po::value<float>(), "play only SEC seconds from the bag files")
       ("loop,l", "loop playback")
       ("keep-alive,k", "keep alive past end of bag")
       ("try-future-version", "still try to open a bag file, even if the version is not known to the player")
@@ -101,6 +102,11 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
     {
       opts.time = vm["start"].as<float>();
       opts.has_time = true;
+    }
+    if (vm.count("duration"))
+    {
+      opts.duration = vm["duration"].as<float>();
+      opts.has_duration = true;
     }
     if (vm.count("skip-empty"))
       opts.skip_empty = ros::Duration(vm["skip-empty"].as<float>());

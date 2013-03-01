@@ -70,6 +70,8 @@ struct PlayerOptions
     bool     has_time;
     bool     loop;
     float    time;
+    bool     has_duration;
+    float    duration;
     bool     keep_alive;
     ros::Duration skip_empty;
 
