@@ -36,6 +36,7 @@ Library for configuring python logging to standard ROS locations (e.g. ROS_LOG_D
 
 import os
 import sys
+import time
 import logging
 import logging.config
 
@@ -127,3 +128,41 @@ def makedirs_with_parent_perms(p):
             os.chown(p, s.st_uid, s.st_gid)
         if s.st_mode != s2.st_mode:
             os.chmod(p, s.st_mode)    
+
+_logging_to_rospy_names = {
+    'DEBUG': ('DEBUG', '\033[32m'),
+    'INFO': ('INFO', None),
+    'WARNING': ('WARN', '\033[33m'),
+    'ERROR': ('ERROR', '\033[31m'),
+    'CRITICAL': ('FATAL', '\033[31m')
+}
+_color_reset = '\033[0m'
+
+class RosStreamHandler(logging.Handler):
+    def __init__(self, colorize=True):
+        super(RosStreamHandler, self).__init__()
+        self._colorize = colorize
+        try:
+            from rospy.rostime import get_time, is_wallclock
+            self._get_time = get_time
+            self._is_wallclock = is_wallclock
+        except ImportError:
+            self._get_time = None
+            self._is_wallclock = None
+
+    def emit(self, record):
+        level, color = _logging_to_rospy_names[record.levelname]
+        msg = '[%s] [WallTime: %f]' % (level, time.time())
+        if self._get_time is not None and not self._is_wallclock():
+            msg += ' [%f]' % self._get_time()
+        msg += ' %s\n' % record.getMessage()
+
+        if record.levelno < logging.WARNING:
+            self._write(sys.stdout, msg, color)
+        else:
+            self._write(sys.stderr, msg, color)
+
+    def _write(self, fd, msg, color):
+        if self._colorize and color and fd.isatty():
+            msg = color + msg + _color_reset
+        fd.write(msg)
