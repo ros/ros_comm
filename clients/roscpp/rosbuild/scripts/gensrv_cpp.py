@@ -46,6 +46,7 @@ import traceback
 import roslib.srvs
 import roslib.packages
 import roslib.gentools
+from rospkg import RosPack
 
 try:
     from cStringIO import StringIO #Python 2.x
@@ -113,7 +114,7 @@ def write_trait_char_class(s, class_name, cpp_msg, value):
     s.write('  static const char* value(const %s&) { return value(); } \n'%(cpp_msg))
     s.write('};\n\n')
     
-def write_traits(s, spec, cpp_name_prefix):
+def write_traits(s, spec, cpp_name_prefix, rospack=None):
     """
     Write all the service traits for a message
     
@@ -124,8 +125,8 @@ def write_traits(s, spec, cpp_name_prefix):
     @param cpp_name_prefix: The C++ prefix to prepend when referencing the service, e.g. "std_srvs::"
     @type cpp_name_prefix: str
     """
-    gendeps_dict = roslib.gentools.get_dependencies(spec, spec.package)
-    md5sum = roslib.gentools.compute_md5(gendeps_dict)
+    gendeps_dict = roslib.gentools.get_dependencies(spec, spec.package, rospack=rospack)
+    md5sum = roslib.gentools.compute_md5(gendeps_dict, rospack=rospack)
     
     s.write('namespace ros\n{\n')
     s.write('namespace service_traits\n{\n')
@@ -161,8 +162,9 @@ def generate(srv_path):
     s.write('\n')
     genmsg_cpp.write_includes(s, spec.response)
     
-    gendeps_dict = roslib.gentools.get_dependencies(spec, spec.package)
-    md5sum = roslib.gentools.compute_md5(gendeps_dict)
+    rospack = RosPack()
+    gendeps_dict = roslib.gentools.get_dependencies(spec, spec.package, rospack=rospack)
+    md5sum = roslib.gentools.compute_md5(gendeps_dict, rospack=rospack)
     
     s.write('namespace %s\n{\n'%(package))
     genmsg_cpp.write_struct(s, spec.request, cpp_prefix, {'ServerMD5Sum': md5sum})
@@ -181,14 +183,14 @@ def generate(srv_path):
     
     request_cpp_name = "Request"
     response_cpp_name = "Response"
-    genmsg_cpp.write_traits(s, spec.request, cpp_prefix)
+    genmsg_cpp.write_traits(s, spec.request, cpp_prefix, rospack=rospack)
     s.write('\n')
-    genmsg_cpp.write_traits(s, spec.response, cpp_prefix)
+    genmsg_cpp.write_traits(s, spec.response, cpp_prefix, rospack=rospack)
     genmsg_cpp.write_serialization(s, spec.request, cpp_prefix)
     s.write('\n')
     genmsg_cpp.write_serialization(s, spec.response, cpp_prefix)
     
-    write_traits(s, spec, cpp_prefix)
+    write_traits(s, spec, cpp_prefix, rospack=rospack)
     
     write_end(s, spec)
     
