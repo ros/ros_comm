@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(test_roscpp)
 
 find_package(catkin REQUIRED COMPONENTS
-  message_generation roscpp rostest rosunit
+  message_generation roscpp rostest rosunit std_srvs
 )
 
 find_package(Boost REQUIRED COMPONENTS signals filesystem system)
