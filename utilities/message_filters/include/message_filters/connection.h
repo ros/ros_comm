@@ -37,6 +37,7 @@
 
 #include <boost/function.hpp>
 #include <boost/signals/connection.hpp>
+#include "macros.h"
 
 namespace message_filters
 {
@@ -44,7 +45,7 @@ namespace message_filters
 /**
  * \brief Encapsulates a connection from one filter to another (or to a user-specified callback)
  */
-class Connection
+class MESSAGE_FILTERS_DECL Connection
 {
 public:
   typedef boost::function<void(void)> VoidDisconnectFunction;
