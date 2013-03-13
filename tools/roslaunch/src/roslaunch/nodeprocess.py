@@ -409,6 +409,73 @@ executable permission. This is often caused by a bad launch-prefix."""%(msg, ' '
         finally:
             self.popen = None
 
+    def _stop_win32(self, errors):
+        """
+        Win32 implementation of process killing. In part, refer to
+
+          http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/347462
+        
+        Note that it doesn't work as completely as _stop_unix as it can't utilise
+        group id's. This means that any program which forks children underneath it
+        won't get caught by this kill mechanism.
+        
+        @param errors: error messages. stop() will record messages into this list.
+        @type  errors: [str]
+        """
+        self.exit_code = self.popen.poll()
+        if self.exit_code is not None:
+            _logger.debug("process[%s].stop(): process has already returned %s", self.name, self.exit_code)
+            self.popen = None
+            self.stopped = True
+            return
+
+        pid = self.popen.pid
+        _logger.info("process[%s]: killing os process/subprocesses with pid[%s]", self.name, pid)
+        # windows has no group id's :(
+        try:
+            # Start with SIGINT and escalate from there.
+            _logger.info("[%s] sending SIGINT to pgid [%s]", self.name, pid)
+            os.kill(pid, signal.SIGINT)
+            _logger.info("[%s] sent SIGINT to pgid [%s]", self.name, pid)
+            timeout_t = time.time() + _TIMEOUT_SIGINT
+            retcode = self.popen.poll()
+            while time.time() < timeout_t and retcode is None:
+                time.sleep(0.1)
+                retcode = self.popen.poll()
+            # Escalate non-responsive process
+            if retcode is None:
+                printerrlog("[%s] escalating to SIGTERM"%self.name)
+                timeout_t = time.time() + _TIMEOUT_SIGTERM
+                os.killpg(pid, signal.SIGTERM)
+                _logger.info("[%s] sent SIGTERM to pid [%s]"%(self.name, pid))
+                retcode = self.popen.poll()
+                while time.time() < timeout_t and retcode is None:
+                    time.sleep(0.2)
+                    _logger.debug('poll for retcode')
+                    retcode = self.popen.poll()
+                if retcode is None:
+                    printerrlog("[%s] escalating to SIGKILL"%self.name)
+                    errors.append("process[%s, pid %s]: required SIGKILL. May still be running."%(self.name, pid))
+                    try:
+                        os.killpg(pid, signal.SIGKILL)
+                        _logger.info("[%s] sent SIGKILL to pid [%s]"%(self.name, pid))
+                        # #2096: don't block on SIGKILL, because this results in more orphaned processes overall
+                        #self.popen.wait()
+                        #os.wait()
+                        _logger.info("process[%s]: sent SIGKILL", self.name)
+                    except OSError, e:
+                        if e.args[0] == 3:
+                            printerrlog("no [%s] process with pid [%s]"%(self.name, pid))
+                        else:
+                            printerrlog("errors shutting down [%s], see log for details"%self.name)
+                            _logger.error(traceback.format_exc())
+                else:
+                    _logger.info("process[%s]: SIGTERM killed with return value %s", self.name, retcode)
+            else:
+                _logger.info("process[%s]: SIGINT killed with return value %s", self.name, retcode)
+        finally:
+            self.popen = None
+			
     def stop(self, errors=None):
         """
         Stop the process. Record any significant error messages in the errors parameter
@@ -426,9 +493,10 @@ executable permission. This is often caused by a bad launch-prefix."""%(msg, ' '
                 if self.popen is None:
                     _logger.debug("process[%s].stop(): popen is None, nothing to kill") 
                     return
-                #NOTE: currently POSIX-only. Need to add in Windows code once I have a test environment:
-                # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/347462
-                self._stop_unix(errors)
+                if sys.platform in ['win32']: # cygwin seems to be ok
+                    self._stop_win32(errors)
+                else:
+                    self._stop_unix(errors)
             except:
                 #traceback.print_exc() 
                 _logger.error("[%s] EXCEPTION %s", self.name, traceback.format_exc())                                
