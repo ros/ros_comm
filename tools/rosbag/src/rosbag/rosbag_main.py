@@ -92,7 +92,10 @@ def record_cmd(argv):
     if options.prefix is not None and options.name is not None:
         parser.error("Can't set both prefix and name.")
 
-    cmd = ['record']
+    recordpath = roslib.packages.find_node('rosbag', 'record')
+    if not recordpath:
+        parser.error("Cannot find rosbag/record executable")
+    cmd = [recordpath[0]]
 
     cmd.extend(['--buffsize', str(options.buffsize)])
 
@@ -114,11 +117,10 @@ def record_cmd(argv):
         cmd.extend(["--node", options.node])
 
     cmd.extend(args)
-
-    recordpath = roslib.packages.find_node('rosbag', 'record')
-    if not recordpath:
-        parser.error("Cannot find rosbag/record executable")
-    os.execv(recordpath[0], cmd)
+    
+    # Better way of handling it than os.execv
+    # This makes sure stdin handles are passed to the process.
+    subprocess.call(cmd)
 
 def info_cmd(argv):
     parser = optparse.OptionParser(usage='rosbag info [options] BAGFILE1 [BAGFILE2 BAGFILE3 ...]',
@@ -192,7 +194,10 @@ def play_cmd(argv):
     if len(args) == 0:
         parser.error('You must specify at least 1 bag file to play back.')
 
-    cmd = ['play']
+    playpath = roslib.packages.find_node('rosbag', 'play')
+    if not playpath:
+        parser.error("Cannot find rosbag/play executable")
+    cmd = [playpath[0]]
 
     if options.quiet:      cmd.extend(["--quiet"])
     if options.pause:      cmd.extend(["--pause"])
@@ -215,11 +220,9 @@ def play_cmd(argv):
         cmd.extend(['--topics'] + options.topics + ['--bags'])
 
     cmd.extend(args)
-
-    playpath = roslib.packages.find_node('rosbag', 'play')
-    if not playpath:
-        parser.error("Cannot find rosbag/play executable")
-    os.execv(playpath[0], cmd)
+    # Better way of handling it than os.execv
+	# This makes sure stdin handles are passed to the process.
+    subprocess.call(cmd)
 
 def filter_cmd(argv):
     def expr_eval(expr):
@@ -784,7 +787,7 @@ class ProgressMeter(object):
             s     = struct.pack('HHHH', 0, 0, 0, 0)
             x     = fcntl.ioctl(1, termios.TIOCGWINSZ, s)
             width = struct.unpack('HHHH', x)[1]
-        except IOError:
+        except (IOError, ImportError):
             pass
         if width <= 0:
             try:

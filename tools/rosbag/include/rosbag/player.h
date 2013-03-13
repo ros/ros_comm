@@ -36,9 +36,11 @@
 #define ROSBAG_PLAYER_H
 
 #include <sys/stat.h>
-#include <termios.h>
+#if !defined(_MSC_VER)
+  #include <termios.h>
+  #include <unistd.h>
+#endif
 #include <time.h>
-#include <unistd.h>
 
 #include <queue>
 #include <string>
@@ -178,8 +180,13 @@ private:
 
     // Terminal
     bool    terminal_modified_;
+#if defined(_MSC_VER)
+    HANDLE input_handle;
+	DWORD stdin_set;
+#else
     termios orig_flags_;
     fd_set  stdin_fdset_;
+#endif
     int     maxfd_;
 
     TimeTranslator time_translator_;

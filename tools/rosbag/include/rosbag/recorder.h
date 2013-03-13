@@ -36,9 +36,11 @@
 #define ROSBAG_RECORDER_H
 
 #include <sys/stat.h>
-#include <termios.h>
+#if !defined(_MSC_VER)
+  #include <termios.h>
+  #include <unistd.h>
+#endif
 #include <time.h>
-#include <unistd.h>
 
 #include <queue>
 #include <string>
