@@ -38,7 +38,7 @@
 #include <ios>
 #include <stdint.h>
 #include <string>
-
+#include "macros.h"
 #include <boost/shared_ptr.hpp>
 
 #include <bzlib.h>
@@ -48,7 +48,7 @@
 namespace rosbag {
 
 //! ChunkedFile reads and writes files which contain interleaved chunks of compressed and uncompressed data.
-class ChunkedFile
+class ROSBAG_DECL ChunkedFile
 {
     friend class Stream;
 
