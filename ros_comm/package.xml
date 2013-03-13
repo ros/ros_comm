@@ -21,6 +21,8 @@
   <author email="straszheim@willowgarage.com">Troy Straszheim</author>
   <author email="wheeler@willowgarage.com">Rob Wheeler</author>
 
+  <buildtool_depend>catkin</buildtool_depend>
+
   <run_depend>roscpp</run_depend>
   <run_depend>rospy</run_depend>
 
