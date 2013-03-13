@@ -4,7 +4,7 @@
   <description>
     ROS communications-related packages, including core client libraries (roscpp, rospy) and graph introspection tools (rostopic, rosnode, rosservice, rosparam).
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://www.ros.org/wiki/ros_comm</url>
@@ -14,7 +14,7 @@
   <author email="rdiankov@cs.cmu.edu">Rosen Diankov</author>
   <author email="jfaust@willowgarage.com">Josh Faust</author>
   <author email="tfield@willowgarage.com">Tim Field</author>
-  <author email="tfoote@willowgarage.com">Tully Foote</author>
+  <author email="tfoote@osrfoundation.org">Tully Foote</author>
   <author email="gerkey@willowgarage.com">Brian Gerkey</author>
   <author email="leibs@willowgarage.com">Jeremy Leibs</author>
   <author email="bhaskara@willowgarage.com">Bhaskara Marthi</author>

@@ -19,7 +19,7 @@
     and <a href="http://ros.org/wiki/rosservice">rosservice</a>, are
     built on top of rospy.
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/rospy</url>

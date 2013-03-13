@@ -7,7 +7,7 @@
     support roscpp's threading model. As such, we are maintaining our
     own fork.
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>LGPL-2.1</license>
 
   <url>http://xmlrpcpp.sourceforge.net</url>

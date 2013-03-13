@@ -12,7 +12,7 @@
     roscpp is the most widely used ROS client library and is designed to
     be the high-performance library for ROS.
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/roscpp</url>

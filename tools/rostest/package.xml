@@ -4,7 +4,7 @@
   <description>
      Integration test suite based on roslaunch that is compatible with xUnit frameworks.
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/rostest</url>

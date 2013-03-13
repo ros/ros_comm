@@ -6,7 +6,7 @@
     information about the ROS Computation Graph. It also provides an
     internal library that can be used by graphical tools.
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/rosgraph</url>

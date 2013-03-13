@@ -12,7 +12,7 @@
     specify the parameters to set and nodes to launch, as well as the
     machines that they should be run on.
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/roslaunch</url>

@@ -13,7 +13,7 @@
     examples of how to implement dynamic subscription and publication
     behaviors in ROS.
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/rostopic</url>

@@ -8,7 +8,7 @@
     contains an experimental library for retrieving node
     information. This library is intended for internal use only.
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/rosnode</url>
