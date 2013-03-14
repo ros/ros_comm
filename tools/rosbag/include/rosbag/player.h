@@ -182,7 +182,7 @@ private:
     bool    terminal_modified_;
 #if defined(_MSC_VER)
     HANDLE input_handle;
-	DWORD stdin_set;
+    DWORD stdin_set;
 #else
     termios orig_flags_;
     fd_set  stdin_fdset_;

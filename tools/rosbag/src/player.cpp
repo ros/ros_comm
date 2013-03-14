@@ -409,28 +409,28 @@ void Player::doKeepAlive() {
 
 
 void Player::setupTerminal() {
-	if (terminal_modified_)
-		return;
+    if (terminal_modified_)
+        return;
 
 #if defined(_MSC_VER)
     input_handle = GetStdHandle(STD_INPUT_HANDLE);
-	if (input_handle == INVALID_HANDLE_VALUE)
-	{
+    if (input_handle == INVALID_HANDLE_VALUE)
+    {
         std::cout << "Failed to set up standard input handle." << std::endl;
-		return;
-	}
-	if (! GetConsoleMode(input_handle, &stdin_set) )
-	{
+        return;
+    }
+    if (! GetConsoleMode(input_handle, &stdin_set) )
+    {
         std::cout << "Failed to save the console mode." << std::endl;
-		return;
-	}
-	// don't actually need anything but the default.
-	//DWORD event_mode = ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT; 
-	//if (! SetConsoleMode(input_handle, event_mode) ) 
-	//{
-    //    std::cout << "Failed to set the console mode." << std::endl;
-	//	return;
-	//}
+        return;
+    }
+    // don't actually need anything but the default, alternatively try this
+    //DWORD event_mode = ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT;
+    //if (! SetConsoleMode(input_handle, event_mode) )
+    //{
+    // std::cout << "Failed to set the console mode." << std::endl;
+    // return;
+    //}
     terminal_modified_ = true;
 #else
     const int fd = fileno(stdin);
@@ -472,24 +472,24 @@ char Player::readCharFromStdin() {
 
 #if defined(_MSC_VER)
     DWORD events = 0;
-	INPUT_RECORD input_record[1];
+    INPUT_RECORD input_record[1];
     DWORD input_size = 1;
-	BOOL b = GetNumberOfConsoleInputEvents(input_handle, &events);
-	if (b && events > 0) 
-	{
-	    b = ReadConsoleInput(input_handle, input_record, input_size, &events);
-		if (b)
-		{
-		    for (unsigned int i = 0; i < events; i++)
-			{
-			    if (input_record[i].EventType & KEY_EVENT & input_record[i].Event.KeyEvent.bKeyDown)
-				{
-				    CHAR ch = input_record[i].Event.KeyEvent.uChar.AsciiChar;
-					return ch;
-			    }
-			}
-		}
-	}
+    BOOL b = GetNumberOfConsoleInputEvents(input_handle, &events);
+    if (b && events > 0)
+    {
+        b = ReadConsoleInput(input_handle, input_record, input_size, &events);
+        if (b)
+        {
+            for (unsigned int i = 0; i < events; i++)
+            {
+                if (input_record[i].EventType & KEY_EVENT & input_record[i].Event.KeyEvent.bKeyDown)
+                {
+                    CHAR ch = input_record[i].Event.KeyEvent.uChar.AsciiChar;
+                    return ch;
+                }
+            }
+        }
+    }
     return EOF;
 #else
     timeval tv;

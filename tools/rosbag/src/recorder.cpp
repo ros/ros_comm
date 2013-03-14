@@ -251,7 +251,8 @@ bool Recorder::shouldSubscribeToTopic(std::string const& topic, bool from_node) 
 }
 
 template<class T>
-std::string Recorder::timeToStr(T ros_t) {
+std::string Recorder::timeToStr(T ros_t)
+{
     std::stringstream msg;
     const boost::posix_time::ptime now=
         boost::posix_time::second_clock::local_time();
@@ -589,47 +590,54 @@ bool Recorder::scheduledCheckDisk() {
 bool Recorder::checkDisk() {
 #if BOOST_FILESYSTEM_VERSION < 3
     struct statvfs fiData;
-	if ((statvfs(bag_.getFileName().c_str(), &fiData)) < 0) {
-		ROS_WARN("Failed to check filesystem stats.");
-		return true;
-	}
-	unsigned long long free_space = 0;
-	free_space = (unsigned long long) (fiData.f_bsize) * (unsigned long long) (fiData.f_bavail);
-	if (free_space < 1073741824ull) {
-		ROS_ERROR("Less than 1GB of space free on disk with %s.  Disabling recording.", bag_.getFileName().c_str());
-		writing_enabled_ = false;
-		return false;
-	}
-	else if (free_space < 5368709120ull) {
-		ROS_WARN("Less than 5GB of space free on disk with %s.", bag_.getFileName().c_str());
-	}
-	else {
-		writing_enabled_ = true;
-	}
+    if ((statvfs(bag_.getFileName().c_str(), &fiData)) < 0)
+    {
+        ROS_WARN("Failed to check filesystem stats.");
+        return true;
+    }
+    unsigned long long free_space = 0;
+    free_space = (unsigned long long) (fiData.f_bsize) * (unsigned long long) (fiData.f_bavail);
+    if (free_space < 1073741824ull)
+    {
+        ROS_ERROR("Less than 1GB of space free on disk with %s.  Disabling recording.", bag_.getFileName().c_str());
+        writing_enabled_ = false;
+        return false;
+    }
+    else if (free_space < 5368709120ull)
+    {
+        ROS_WARN("Less than 5GB of space free on disk with %s.", bag_.getFileName().c_str());
+    }
+    else
+    {
+        writing_enabled_ = true;
+    }
 #else
     boost::filesystem::path p(boost::filesystem::system_complete(bag_.getFileName().c_str()));
-	p = p.parent_path();
-	boost::filesystem::space_info info;
-	try 
-	{
+    p = p.parent_path();
+    boost::filesystem::space_info info;
+    try
+    {
         info = boost::filesystem::space(p);
-	} 
+    }
     catch (boost::filesystem::filesystem_error &e) 
     { 
         ROS_WARN("Failed to check filesystem stats [%s].", e.what());
         writing_enabled_ = false;
         return false;
     }
-    if ( info.available < 1073741824ull) {
+    if ( info.available < 1073741824ull)
+    {
         ROS_ERROR("Less than 1GB of space free on disk with %s.  Disabling recording.", bag_.getFileName().c_str());
         writing_enabled_ = false;
         return false;
     }
-    else if (info.available < 5368709120ull) {
+    else if (info.available < 5368709120ull)
+    {
         ROS_WARN("Less than 5GB of space free on disk with %s.", bag_.getFileName().c_str());
         writing_enabled_ = true;
     }
-    else {
+    else
+    {
         writing_enabled_ = true;
     }
 #endif

@@ -117,7 +117,7 @@ def record_cmd(argv):
         cmd.extend(["--node", options.node])
 
     cmd.extend(args)
-    
+
     # Better way of handling it than os.execv
     # This makes sure stdin handles are passed to the process.
     subprocess.call(cmd)
@@ -221,7 +221,7 @@ def play_cmd(argv):
 
     cmd.extend(args)
     # Better way of handling it than os.execv
-	# This makes sure stdin handles are passed to the process.
+    # This makes sure stdin handles are passed to the process.
     subprocess.call(cmd)
 
 def filter_cmd(argv):

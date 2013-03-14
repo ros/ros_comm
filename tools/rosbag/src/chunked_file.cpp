@@ -87,7 +87,7 @@ void ChunkedFile::open(string const& filename, string const& mode) {
     if (mode == "r+b") {
         // Read + write requires file to exists.  Create a new file if it doesn't exist.
         #if defined(_MSC_VER) && (_MSC_VER >= 1400 )
-    	    fopen_s( &file_, filename.c_str(), "r" );
+            fopen_s( &file_, filename.c_str(), "r" );
         #else
             file_ = fopen(filename.c_str(), "r");
         #endif
