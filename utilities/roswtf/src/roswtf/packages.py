@@ -40,6 +40,7 @@ from roswtf.rules import warning_rule, error_rule
 
 import roslib.msgs
 import roslib.srvs
+from roslib.packages import get_pkg_dir, InvalidROSPkgException, PACKAGE_FILE
 
 ## look for unknown tags in manifest
 def manifest_valid(ctx):
@@ -56,7 +57,15 @@ def _manifest_msg_srv_export(ctx, type_):
         if os.path.isdir(d):
             files = os.listdir(d)
             if filter(lambda x: x.endswith('.'+type_), files):
-                m_file = roslib.manifest.manifest_file(pkg, True)
+                try:
+                    m_file = roslib.manifest.manifest_file(pkg, True)
+                except InvalidROSPkgException:
+                    # ignore wet package from further investigation
+                    env = os.environ
+                    pkg_path = get_pkg_dir(pkg, True, ros_root=env['ROS_ROOT'])
+                    if os.path.exists(os.path.join(pkg_path, PACKAGE_FILE)):
+                        continue
+                    raise
                 m = roslib.manifest.parse_file(m_file)
                 cflags = m.get_export('cpp', 'cflags')
                 include = '-I${prefix}/%s/cpp'%type_
