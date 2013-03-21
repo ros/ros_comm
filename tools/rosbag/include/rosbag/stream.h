@@ -44,6 +44,7 @@
 #include <bzlib.h>
 
 #include "rosbag/exceptions.h"
+#include "rosbag/macros.h"
 
 namespace rosbag {
 
@@ -59,7 +60,7 @@ typedef compression::CompressionType CompressionType;
 
 class ChunkedFile;
 
-class Stream
+class ROSBAG_DECL Stream
 {
 public:
     Stream(ChunkedFile* file);
@@ -93,7 +94,7 @@ protected:
     ChunkedFile* file_;
 };
 
-class StreamFactory
+class ROSBAG_DECL StreamFactory
 {
 public:
     StreamFactory(ChunkedFile* file);
@@ -105,7 +106,7 @@ private:
     boost::shared_ptr<Stream> bz2_stream_;
 };
 
-class UncompressedStream : public Stream
+class ROSBAG_DECL UncompressedStream : public Stream
 {
 public:
     UncompressedStream(ChunkedFile* file);
@@ -121,7 +122,7 @@ public:
 /*!
  * BZ2Stream uses libbzip2 (http://www.bzip.org) for reading/writing compressed data in the BZ2 format.
  */
-class BZ2Stream : public Stream
+class ROSBAG_DECL BZ2Stream : public Stream
 {
 public:
     BZ2Stream(ChunkedFile* file);

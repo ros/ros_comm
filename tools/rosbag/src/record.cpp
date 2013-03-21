@@ -147,9 +147,10 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       if ((iss >> duration).fail())
         throw ros::Exception("Duration must start with a floating point number.");
 
-      if (!iss.eof() and ((iss >> unit).fail()))
+      if ( (!iss.eof() && ((iss >> unit).fail())) )
+      {
         throw ros::Exception("Duration unit must be s, m, or h");
-      
+      }
       if (unit == std::string(""))
         multiplier = 1.0;
       else if (unit == std::string("s"))

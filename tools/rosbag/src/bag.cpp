@@ -30,7 +30,11 @@
 #include "rosbag/query.h"
 #include "rosbag/view.h"
 
-#include <inttypes.h>
+#if defined(_MSC_VER)
+  #include <stdint.h> // only on v2010 and later -> is this enough for msvc and linux?
+#else
+  #include <inttypes.h>
+#endif
 #include <signal.h>
 
 #include <iomanip>
@@ -210,7 +214,11 @@ void Bag::readVersion() {
 
     char logtypename[100];
     int version_major, version_minor;
+#if defined(_MSC_VER)
+    if (sscanf_s(version_line.c_str(), "#ROS%s V%d.%d", logtypename, sizeof(logtypename), &version_major, &version_minor) != 3)
+#else
     if (sscanf(version_line.c_str(), "#ROS%s V%d.%d", logtypename, &version_major, &version_minor) != 3)
+#endif
         throw BagIOException("Error reading version line");
 
     version_ = version_major * 100 + version_minor;
