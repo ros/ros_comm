@@ -235,7 +235,7 @@ def print_file_list(roslaunch_files):
     from roslaunch.config import load_config_default, get_roscore_filename
     import roslaunch.xmlloader
     try:
-        loader = roslaunch.xmlloader.XmlLoader(resolve_anon=False)
+        loader = roslaunch.xmlloader.XmlLoader(resolve_anon=True)
         config = load_config_default(roslaunch_files, None, loader=loader, verbose=False, assign_machines=False)
         files = [os.path.abspath(x) for x in set(config.roslaunch_files) - set([get_roscore_filename()])]
         print('\n'.join(files))
