@@ -156,6 +156,10 @@ def get_address_override():
             msg = 'invalid ROS_IP (must be a valid IPv4 or IPv6 address)'
             sys.stderr.write(msg + '\n')
             logger.warn(msg)
+        elif not set(os.environ[ROS_IP]).issubset(set('.:1234567890aAbBcCdDeEfF')):
+            msg = 'invalid ROS_IP (must be a valid IPv4 or IPv6 address)'
+            sys.stderr.write(msg + '\n')
+            logger.warn(msg)
         elif os.environ[ROS_IP].count('.') != 3 and os.environ[ROS_IP].count('.') > 0:
             msg = 'invalid ROS_IP (valid IPv4 addresses have format 1.2.3.4)'
             sys.stderr.write(msg + '\n')
