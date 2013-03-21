@@ -39,7 +39,12 @@ target_link_libraries(drop topic_tools ${catkin_LIBRARIES})
 add_executable(throttle src/throttle.cpp)
 target_link_libraries(throttle topic_tools ${catkin_LIBRARIES})
 
-install(TARGETS topic_tools switch_mux mux relay drop throttle
+install(TARGETS topic_tools
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
+
+install(TARGETS switch_mux mux relay drop throttle
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

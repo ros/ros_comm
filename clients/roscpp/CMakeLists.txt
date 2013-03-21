@@ -124,6 +124,7 @@ target_link_libraries(roscpp
 
 #explicitly install library and includes
 install(TARGETS roscpp
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 install(DIRECTORY include/
