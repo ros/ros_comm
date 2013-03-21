@@ -36,6 +36,7 @@
 #define ROSBAG_TIME_TRANSLATOR_H
 
 #include "ros/time.h"
+#include "macros.h"
 
 namespace rosbag {
 
@@ -51,7 +52,7 @@ namespace rosbag {
  * That is, a time-sequence with time-scale 2 will finish twice as
  * quickly.
  */
-class TimeTranslator
+class ROSBAG_DECL TimeTranslator
 {
 public:
     TimeTranslator();
