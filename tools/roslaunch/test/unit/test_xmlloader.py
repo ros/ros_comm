@@ -350,6 +350,16 @@ class TestXmlLoader(unittest.TestCase):
             except roslaunch.xmlloader.XmlParseException, e:
                 pass
 
+        tests = []
+
+    def test_node_rosparam_sub_args(self):
+        mock = self._load(os.path.join(self.xml_dir, 'test-rosparam-sub-args.xml'))
+
+        # verify that 'param' attribute is not required
+        with_sub = [p for p in mock.params if p.key == '/with_sub'][0]
+        without_sub =  [p for p in mock.params if p.key == '/without_sub'][0]
+        self.assertEquals(with_sub.value, without_sub.value)
+
     def test_node_rosparam(self):
         from roslaunch.core import PHASE_SETUP
 
