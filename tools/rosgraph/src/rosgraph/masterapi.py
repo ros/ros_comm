@@ -452,8 +452,6 @@ class Master(object):
 
         New in ROS 1.2.
 
-        @param caller_id: ROS caller id    
-        @type  caller_id: str
         @rtype: (int, str, [[str,str]] )
         @return: (code, statusMessage, topicTypes). topicTypes is a list of [topicName, topicType] pairs.
         """
