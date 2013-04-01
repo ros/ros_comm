@@ -376,6 +376,9 @@ class Loader(object):
             if file_:
                 with open(file_, 'r') as f:
                     text = f.read()
+
+            # Apply substitution args
+            text = self.resolve_args(text, context)
                     
             # parse YAML text
             # - lazy import
