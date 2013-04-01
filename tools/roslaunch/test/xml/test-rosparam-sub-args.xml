@@ -1,0 +1,15 @@
+<launch>
+
+  <!-- Test chckes if with_sub == without_sub -->
+  <arg name="my_arg" value="my_value"/>
+  <rosparam>
+    with_sub: $(arg my_arg)
+    without_sub: my_value
+  </rosparam>
+
+  <rosparam>
+    shouldnt_sub: $ROS_ROOT
+  </rosparam>
+
+</launch>
+
