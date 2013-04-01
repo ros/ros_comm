@@ -7,5 +7,9 @@
     without_sub: my_value
   </rosparam>
 
+  <rosparam>
+    shouldnt_sub: $ROS_ROOT
+  </rosparam>
+
 </launch>
 

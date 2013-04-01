@@ -355,10 +355,14 @@ class TestXmlLoader(unittest.TestCase):
     def test_node_rosparam_sub_args(self):
         mock = self._load(os.path.join(self.xml_dir, 'test-rosparam-sub-args.xml'))
 
-        # verify that 'param' attribute is not required
+        # verify that subtitutions are happening properly
         with_sub = [p for p in mock.params if p.key == '/with_sub'][0]
         without_sub =  [p for p in mock.params if p.key == '/without_sub'][0]
         self.assertEquals(with_sub.value, without_sub.value)
+
+        # verify that normal BASH-like environment variables aren't replaced
+        shouldnt_sub =  [p for p in mock.params if p.key == '/shouldnt_sub'][0]
+        self.assertEquals(shouldnt_sub.value, '$ROS_ROOT')
 
     def test_node_rosparam(self):
         from roslaunch.core import PHASE_SETUP
