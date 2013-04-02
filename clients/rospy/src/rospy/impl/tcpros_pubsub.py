@@ -245,6 +245,8 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
                              queue_size=sub.queue_size, buff_size=sub.buff_size,
                              tcp_nodelay=sub.tcp_nodelay)
         conn = TCPROSTransport(protocol, resolved_name)
+        conn.set_endpoint_id(pub_uri);
+
         t = threading.Thread(name=resolved_name, target=robust_connect_subscriber, args=(conn, dest_addr, dest_port, pub_uri, sub.receive_callback,resolved_name))
         # don't enable this just yet, need to work on this logic
         #rospy.core._add_shutdown_thread(t)
