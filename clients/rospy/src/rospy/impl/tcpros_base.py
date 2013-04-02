@@ -470,6 +470,13 @@ class TCPROSTransport(Transport):
         """
         return self._fileno
         
+    def set_endpoint_id(self, endpoint_id):
+        """
+        Set the endpoint_id of this transport.
+        Allows the endpoint_id to be set before the socket is initialized.
+        """
+        self.endpoint_id = endpoint_id
+
     def set_socket(self, sock, endpoint_id):
         """
         Set the socket for this transport
