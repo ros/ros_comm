@@ -215,7 +215,7 @@ def get_local_addresses():
             try:
                 v4addrs.extend([addr['addr'] for iface in ifaces if socket.AF_INET in netifaces.ifaddresses(iface) for addr in netifaces.ifaddresses(iface)[socket.AF_INET]])
                 v6addrs.extend([addr['addr'] for iface in ifaces if socket.AF_INET6 in netifaces.ifaddresses(iface) for addr in netifaces.ifaddresses(iface)[socket.AF_INET6]])
-            except: pass
+            except ValueError: pass
 
         if use_ipv6():
             return v6addrs + v4addrs
