@@ -49,8 +49,12 @@ from rospy.impl.tcpros_pubsub import TCPROSHandler
 
 _handler = TCPROSHandler()
 
-def init_tcpros():
-    server = init_tcpros_server()
+def init_tcpros(port=0):
+    """
+    @param tcpros_port: override the port of the TCP server
+    @type  tcpros_port: int
+    """
+    server = init_tcpros_server(port)
     server.topic_connection_handler = _handler.topic_connection_handler
     server.service_connection_handler = rospy.impl.tcpros_service.service_connection_handler
 
