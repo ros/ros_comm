@@ -53,6 +53,14 @@ from rosgraph_msgs.msg import Log
 _ROSOUT = '/rosout'
 _rosout_pub = None
 
+_rospy_to_logging_levels = {
+    Log.DEBUG: logging.DEBUG,
+    Log.INFO: logging.INFO,
+    Log.WARN: logging.WARNING,
+    Log.ERROR: logging.ERROR,
+    Log.FATAL: logging.CRITICAL,
+}
+
 def init_rosout():
     logger = logging.getLogger("rospy.rosout")
     try:
@@ -109,4 +117,4 @@ def load_rosout_handlers(level):
     logger = logging.getLogger('rosout')
     logger.addHandler(RosOutHandler())
     if level != None:
-        logger.setLevel(level)
+        logger.setLevel(_rospy_to_logging_levels[level])
