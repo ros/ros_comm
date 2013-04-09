@@ -465,7 +465,7 @@ class TCPROSTransport(Transport):
     def set_endpoint_id(self, endpoint_id):
         """
         Set the endpoint_id of this transport.
-        Allows the enpoint_id to be set before the socket is intialized.
+        Allows the endpoint_id to be set before the socket is initialized.
         """
         self.endpoint_id = endpoint_id
 
