@@ -73,14 +73,6 @@ WARN = Log.WARN
 ERROR = Log.ERROR
 FATAL = Log.FATAL
 
-_rospy_to_logging_levels = {
-    DEBUG: logging.DEBUG,
-    INFO: logging.INFO,
-    WARN: logging.WARNING,
-    ERROR: logging.ERROR,
-    FATAL: logging.CRITICAL,
-    }
-
 def myargv(argv=None):
     """
     Remove ROS remapping arguments from sys.argv arguments.
