@@ -209,8 +209,16 @@ def get_local_addresses():
         # unix-only branch
         import netifaces
         ifaces = netifaces.interfaces()
-        v4addrs = [addr['addr'] for iface in ifaces if socket.AF_INET in netifaces.ifaddresses(iface) for addr in netifaces.ifaddresses(iface)[socket.AF_INET]]
-        v6addrs = [addr['addr'] for iface in ifaces if socket.AF_INET6 in netifaces.ifaddresses(iface) for addr in netifaces.ifaddresses(iface)[socket.AF_INET6]]
+        v4addrs = []
+        v6addrs = []
+        for iface in ifaces:
+            try:
+                if socket.AF_INET in netifaces.ifaddresses(iface):
+                    v4addrs.extend([addr['addr'] for addr in netifaces.ifaddresses(iface)[socket.AF_INET]])
+                if socket.AF_INET6 in netifaces.ifaddresses(iface):
+                    v6addrs.extend([addr['addr'] for addr in netifaces.ifaddresses(iface)[socket.AF_INET6]])
+            except ValueError: pass
+
         if use_ipv6():
             return v6addrs + v4addrs
         else:
