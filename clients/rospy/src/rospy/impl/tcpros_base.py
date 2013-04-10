@@ -791,5 +791,4 @@ class TCPROSTransport(Transport):
             finally:
                 self.socket = self.read_buff = self.write_buff = self.protocol = None
                 super(TCPROSTransport, self).close()
-                self.done = True
 
