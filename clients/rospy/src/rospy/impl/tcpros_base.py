@@ -542,16 +542,7 @@ class TCPROSTransport(Transport):
             rospywarn("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, traceback.format_exc()))            
 
             # FATAL: no reconnection as error is unknown
-            self.done = True
-            if self.socket:
-                try:
-                    self.socket.shutdown(socket.SHUT_RDWR)
-                except:
-                    pass
-                finally:
-                    self.socket.close()
-            self.socket = None
-            
+            self.close()
             raise TransportInitError(str(e)) #re-raise i/o error
                 
     def _validate_header(self, header):
