@@ -43,6 +43,7 @@ import traceback
 import roslib.msgs 
 import roslib.packages
 import roslib.gentools
+from rospkg import RosPack
 
 try:
     from cStringIO import StringIO #Python 2.x
@@ -196,9 +197,10 @@ def write_struct(s, spec, cpp_name_prefix, extra_deprecated_traits = {}):
     write_members(s, spec)
     write_constant_declarations(s, spec)
     
-    gendeps_dict = roslib.gentools.get_dependencies(spec, spec.package, compute_files=False)
-    md5sum = roslib.gentools.compute_md5(gendeps_dict)
-    full_text = compute_full_text_escaped(gendeps_dict)
+    #rospack = RosPack()
+    #gendeps_dict = roslib.gentools.get_dependencies(spec, spec.package, compute_files=False, rospack=rospack)
+    #md5sum = roslib.gentools.compute_md5(gendeps_dict, rospack=rospack)
+    #full_text = compute_full_text_escaped(gendeps_dict)
     
     # write_deprecated_member_functions(s, spec, dict(list({'MD5Sum': md5sum, 'DataType': '%s/%s'%(spec.package, spec.short_name), 'MessageDefinition': full_text}.items()) + list(extra_deprecated_traits.items())))
     
@@ -569,7 +571,7 @@ def write_trait_true_class(s, class_name, cpp_msg_with_alloc):
     """
     s.write('template<class ContainerAllocator> struct %s<%s> : public TrueType {};\n'%(class_name, cpp_msg_with_alloc))
 
-def write_traits(s, spec, cpp_name_prefix, datatype = None):
+def write_traits(s, spec, cpp_name_prefix, datatype = None, rospack=None):
     """
     Writes all the traits classes for a message
     
@@ -583,8 +585,8 @@ def write_traits(s, spec, cpp_name_prefix, datatype = None):
     @type datatype: str
     """
     # generate dependencies dictionary
-    gendeps_dict = roslib.gentools.get_dependencies(spec, spec.package, compute_files=False)
-    md5sum = roslib.gentools.compute_md5(gendeps_dict)
+    gendeps_dict = roslib.gentools.get_dependencies(spec, spec.package, compute_files=False, rospack=rospack)
+    md5sum = roslib.gentools.compute_md5(gendeps_dict, rospack=rospack)
     full_text = compute_full_text_escaped(gendeps_dict)
     
     if (datatype is None):
@@ -704,7 +706,8 @@ def generate(msg_path):
     write_ostream_operator(s, spec, cpp_prefix)
     s.write('} // namespace %s\n\n'%(package))
     
-    write_traits(s, spec, cpp_prefix)
+    rospack = RosPack()
+    write_traits(s, spec, cpp_prefix, rospack=rospack)
     write_serialization(s, spec, cpp_prefix)
     write_operations(s, spec, cpp_prefix)
     

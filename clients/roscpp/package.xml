@@ -1,6 +1,6 @@
 <package>
   <name>roscpp</name>
-  <version>1.9.40</version>
+  <version>1.9.44</version>
   <description>
     roscpp is a C++ implementation of ROS. It provides
     a <a href="http://www.ros.org/wiki/Client%20Libraries">client
@@ -12,7 +12,7 @@
     roscpp is the most widely used ROS client library and is designed to
     be the high-performance library for ROS.
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/roscpp</url>

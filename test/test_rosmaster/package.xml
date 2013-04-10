@@ -1,10 +1,10 @@
 <package>
   <name>test_rosmaster</name>
-  <version>1.9.40</version>
+  <version>1.9.44</version>
   <description>
     Tests for rosmaster which depend on rostest.
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/rosmaster</url>
@@ -15,4 +15,5 @@
   <build_depend>genmsg</build_depend>
   <build_depend>rosgraph</build_depend>
   <build_depend>rostest</build_depend>
+  <build_depend>std_msgs</build_depend>
 </package>

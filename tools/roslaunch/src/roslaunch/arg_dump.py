@@ -1,6 +1,6 @@
 # Software License Agreement (BSD License)
 #
-# Copyright (c) 2008, Willow Garage, Inc.
+# Copyright (c) 2013, Willow Garage, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,32 +31,32 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 # Revision $Id$
+
 """
-TCPROS connection protocol.
-
-Implements: U{http://ros.org/wiki/ROS/TCPROS}
-
-The rospy tcpros implementation is split into three areas:
- - L{rospy.tcpros_base}: common TCPROS routines, including header and connection processing
- - L{rospy.tcpros_pubsub}: Topic-specific capabilities for publishing and subscribing
- - L{rospy.tcpros_service}: Service-specific capabilities 
+Utility module of roslaunch that computes the command-line arguments
+for a launch file.
 """
 
-import rospy.impl.tcpros_service
+import roslaunch.xmlloader
+from roslaunch.core import RLException
+from roslaunch.config import load_config_default
 
-from rospy.impl.tcpros_base import init_tcpros_server, DEFAULT_BUFF_SIZE
-from rospy.impl.tcpros_pubsub import TCPROSHandler
+def get_args(roslaunch_files):
+    loader = roslaunch.xmlloader.XmlLoader(resolve_anon=False)
+    config = load_config_default(roslaunch_files, None, loader=loader, verbose=False, assign_machines=False)
+    return loader.root_context.resolve_dict['arg']
 
-_handler = TCPROSHandler()
-
-def init_tcpros(port=0):
+def dump_args(roslaunch_files):
     """
-    @param tcpros_port: override the port of the TCP server
-    @type  tcpros_port: int
-    """
-    server = init_tcpros_server(port)
-    server.topic_connection_handler = _handler.topic_connection_handler
-    server.service_connection_handler = rospy.impl.tcpros_service.service_connection_handler
+    Print list of args to screen. Will cause system exit if exception
+    occurs. This is a subroutine for the roslaunch main handler.
 
-def get_tcpros_handler():
-    return _handler
+    @param roslaunch_files: list of launch files to load
+    @type  roslaunch_files: str
+    """
+    try:
+        for arg in sorted(get_args(roslaunch_files).items()):
+        	print arg[0]
+    except RLException as e:
+        print >> sys.stderr, str(e)
+        sys.exit(1)

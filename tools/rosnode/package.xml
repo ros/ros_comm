@@ -1,6 +1,6 @@
 <package>
   <name>rosnode</name>
-  <version>1.9.40</version>
+  <version>1.9.44</version>
   <description>
     rosnode is a command-line tool for displaying debug information
     about ROS <a href="http://www.ros.org/wiki/Nodes">Nodes</a>,
@@ -8,7 +8,7 @@
     contains an experimental library for retrieving node
     information. This library is intended for internal use only.
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/rosnode</url>

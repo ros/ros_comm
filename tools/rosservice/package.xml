@@ -1,6 +1,6 @@
 <package>
   <name>rosservice</name>
-  <version>1.9.40</version>
+  <version>1.9.44</version>
   <description>
     rosservice contains the rosservice command-line tool for listing
     and querying ROS <a
@@ -9,7 +9,7 @@
     Services and dynamically invoking them. The Python library is
     experimental and is for internal-use only.
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/rosservice</url>

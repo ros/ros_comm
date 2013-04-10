@@ -45,7 +45,6 @@ The common entry point for most libraries is the L{XmlRpcNode} class.
 import logging
 import select
 import socket
-import fcntl
 
 try:
     import _thread
@@ -109,14 +108,6 @@ class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
             self.server_bind()
             self.server_activate()
             logger.info('bound to ' + str(self.socket.getsockname()[0:2]))
-            # TODO IPV6: check Windows compatibility
-            # [Bug #1222790] If possible, set close-on-exec flag; if a
-            # method spawns a subprocess, the subprocess shouldn't have
-            # the listening socket open.
-            if fcntl is not None and hasattr(fcntl, 'FD_CLOEXEC'):
-                flags = fcntl.fcntl(self.fileno(), fcntl.F_GETFD)
-                flags |= fcntl.FD_CLOEXEC
-                fcntl.fcntl(self.fileno(), fcntl.F_SETFD, flags)
         else:
             SimpleXMLRPCServer.__init__(self, addr, SilenceableXMLRPCRequestHandler, log_requests)
 

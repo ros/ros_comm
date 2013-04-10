@@ -1,6 +1,6 @@
 <package>
   <name>topic_tools</name>
-  <version>1.9.40</version>
+  <version>1.9.44</version>
   <description>
     Tools for directing, throttling, selecting, and otherwise messing with
     ROS topics at a meta level. None of the programs in this package actually
@@ -8,7 +8,7 @@
     tools deal with messages as generic binary blobs. This means they can be
     applied to any ROS topic.
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/topic_tools</url>

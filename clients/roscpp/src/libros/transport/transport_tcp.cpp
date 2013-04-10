@@ -450,9 +450,11 @@ int32_t TransportTCP::read(uint8_t* buffer, uint32_t size)
     }
   }
 
-  ROS_ASSERT((int32_t)size > 0);
+  ROS_ASSERT(size > 0);
 
-  int num_bytes = ::recv(sock_, reinterpret_cast<char*>(buffer), size, 0);
+  // never read more than INT_MAX since this is the maximum we can report back with the current return type
+  uint32_t read_size = std::min(size, static_cast<uint32_t>(INT_MAX));
+  int num_bytes = ::recv(sock_, reinterpret_cast<char*>(buffer), read_size, 0);
   if (num_bytes < 0)
   {
 	if ( !last_socket_error_is_would_block() ) // !WSAWOULDBLOCK / !EAGAIN && !EWOULDBLOCK
@@ -467,7 +469,7 @@ int32_t TransportTCP::read(uint8_t* buffer, uint32_t size)
   }
   else if (num_bytes == 0)
   {
-    ROSCPP_LOG_DEBUG("Socket [%d] received 0/%d bytes, closing", sock_, size);
+    ROSCPP_LOG_DEBUG("Socket [%d] received 0/%u bytes, closing", sock_, size);
     close();
     return -1;
   }
@@ -487,9 +489,11 @@ int32_t TransportTCP::write(uint8_t* buffer, uint32_t size)
     }
   }
 
-  ROS_ASSERT((int32_t)size > 0);
+  ROS_ASSERT(size > 0);
 
-  int num_bytes = ::send(sock_, reinterpret_cast<const char*>(buffer), size, 0);
+  // never write more than INT_MAX since this is the maximum we can report back with the current return type
+  uint32_t writesize = std::min(size, static_cast<uint32_t>(INT_MAX));
+  int num_bytes = ::send(sock_, reinterpret_cast<const char*>(buffer), writesize, 0);
   if (num_bytes < 0)
   {
     if ( !last_socket_error_is_would_block() )
@@ -615,60 +619,42 @@ TransportTCPPtr TransportTCP::accept()
 
 void TransportTCP::socketUpdate(int events)
 {
-  boost::recursive_mutex::scoped_lock lock(close_mutex_);
-  {
-    if (closed_)
-    {
-      return;
-    }
-  }
-
-  // Handle read events before err/hup/nval, since there may be data left on the wire
-  if ((events & POLLIN) && expecting_read_)
-  {
-    if (is_server_)
-    {
-      // Should not block here, because poll() said that it's ready
-      // for reading
-      TransportTCPPtr transport = accept();
-      if (transport)
-      {
-        ROS_ASSERT(accept_cb_);
-        accept_cb_(transport);
-      }
-    }
-    else
-    {
-      if (read_cb_)
-      {
-        read_cb_(shared_from_this());
-      }
-    }
-  }
-
   {
     boost::recursive_mutex::scoped_lock lock(close_mutex_);
-
     if (closed_)
     {
       return;
     }
-  }
 
-  if ((events & POLLOUT) && expecting_write_)
-  {
-    if (write_cb_)
+    // Handle read events before err/hup/nval, since there may be data left on the wire
+    if ((events & POLLIN) && expecting_read_)
     {
-      write_cb_(shared_from_this());
+      if (is_server_)
+      {
+        // Should not block here, because poll() said that it's ready
+        // for reading
+        TransportTCPPtr transport = accept();
+        if (transport)
+        {
+          ROS_ASSERT(accept_cb_);
+          accept_cb_(transport);
+        }
+      }
+      else
+      {
+        if (read_cb_)
+        {
+          read_cb_(shared_from_this());
+        }
+      }
     }
-  }
 
-  {
-    boost::recursive_mutex::scoped_lock lock(close_mutex_);
-
-    if (closed_)
+    if ((events & POLLOUT) && expecting_write_)
     {
-      return;
+      if (write_cb_)
+      {
+        write_cb_(shared_from_this());
+      }
     }
   }
 

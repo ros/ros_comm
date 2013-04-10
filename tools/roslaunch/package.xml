@@ -1,6 +1,6 @@
 <package>
   <name>roslaunch</name>
-  <version>1.9.40</version>
+  <version>1.9.44</version>
   <description>
     roslaunch is a tool for easily launching multiple ROS <a
     href="http://ros.org/wiki/Nodes">nodes</a> locally and remotely
@@ -12,7 +12,7 @@
     specify the parameters to set and nodes to launch, as well as the
     machines that they should be run on.
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/roslaunch</url>

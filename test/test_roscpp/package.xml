@@ -1,10 +1,10 @@
 <package>
   <name>test_roscpp</name>
-  <version>1.9.40</version>
+  <version>1.9.44</version>
   <description>
     Tests for roscpp which depend on rostest.
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/roscpp</url>
@@ -28,11 +28,13 @@
   <build_depend>rostime</build_depend>
   <build_depend>rosunit</build_depend>
   <build_depend>std_msgs</build_depend>
+  <build_depend>std_srvs</build_depend>
   <build_depend>xmlrpcpp</build_depend>
 
   <run_depend>message_runtime</run_depend>
   <run_depend>rosconsole</run_depend>
   <run_depend>rosgraph_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
+  <run_depend>std_srvs</run_depend>
   <run_depend>xmlrpcpp</run_depend>
 </package>

@@ -1,12 +1,12 @@
 <package>
   <name>rosbag</name>
-  <version>1.9.40</version>
+  <version>1.9.44</version>
   <description>
     This is a set of tools for recording from and playing back to ROS
     topics.  It is intended to be high performance and avoids
     deserialization and reserialization of the messages. 
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/rosbag</url>

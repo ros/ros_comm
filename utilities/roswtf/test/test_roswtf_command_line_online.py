@@ -76,8 +76,15 @@ class TestRostopicOnline(unittest.TestCase):
         env = os.environ.copy()
 
         rospack = rospkg.RosPack()
-        rosstack = rospkg.RosStack()
-        env['ROS_PACKAGE_PATH'] = os.pathsep.join([rosstack.get_path('ros_comm'), rospack.get_path('std_msgs'), rosstack.get_path('roscpp_core')])
+        # add all dependencies to ros package path
+        pkgs = ['roswtf',
+            'rosgraph', 'roslaunch', 'roslib', 'rosnode', 'rosservice',
+            'rosbag', 'rosconsole', 'roscpp', 'rosgraph_msgs', 'roslang', 'rosmaster', 'rosmsg', 'rosout', 'rosparam', 'rospy', 'rostest', 'rostopic', 'topic_tools', 'xmlrpcpp',
+            'cpp_common', 'roscpp_serialization', 'roscpp_traits', 'rostime',  # roscpp_core
+            'rosclean', 'rosunit',  # ros
+            'rospack', 'std_msgs', 'message_runtime', 'message_generation', 'gencpp', 'genlisp', 'genpy', 'genmsg', 'catkin'
+        ]
+        env['ROS_PACKAGE_PATH'] = os.pathsep.join([rospack.get_path(pkg) for pkg in pkgs])
 
         cwd  = rospack.get_path('roswtf')
         kwds = { 'env': env, 'stdout': PIPE, 'stderr': PIPE, 'cwd': cwd}

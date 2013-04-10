@@ -70,19 +70,6 @@ if platform.system() == 'FreeBSD':
     else:
         SIOCGIFCONF = 0xc0086924
 
-if 0:
-    # disabling netifaces as it accounts for 50% of startup latency
-    try:
-        import netifaces
-        _use_netifaces = True
-    except:
-        # NOTE: in rare cases, I've seen Python fail to extract the egg
-        # cache when launching multiple python nodes.  Thus, we do
-        # except-all instead of except ImportError (kwc).
-        _use_netifaces = False
-else:
-    _use_netifaces = False
-
 logger = logging.getLogger('rosgraph.network')
 
 def parse_http_host_and_port(url):
@@ -195,26 +182,27 @@ def get_local_addresses():
         return _local_addrs
 
     local_addrs = None
-    if _use_netifaces:
-        # #552: netifaces is a more robust package for looking up
-        # #addresses on multiple platforms (OS X, Unix, Windows)
-        # TODO IPV6: test netifaces with ipv6
-        local_addrs = []
-        # see http://alastairs-place.net/netifaces/
-        for i in netifaces.interfaces():
-            try:
-                local_addrs.extend([d['addr'] for d in netifaces.ifaddresses(i)[netifaces.AF_INET]])
-            except KeyError: pass
-    elif _is_unix_like_platform():
+    if _is_unix_like_platform():
         # unix-only branch
-        import ifaddrs
-        ifaces = ifaddrs.getifaddrs()
-        v4addrs = [addr['addr'] for iface in ifaces.values() if socket.AF_INET in iface for addr in iface[socket.AF_INET]]
-        v6addrs = [addr['addr'] for iface in ifaces.values() if socket.AF_INET6 in iface for addr in iface[socket.AF_INET6]]
+        v4addrs = []
+        v6addrs = []
+        import netifaces
+        for iface in netifaces.interfaces():
+            try:
+                ifaddrs = netifaces.ifaddresses(iface)
+            except ValueError:
+                # even if interfaces() returns an interface name
+                # ifaddresses() might raise a ValueError
+                # https://bugs.launchpad.net/ubuntu/+source/netifaces/+bug/753009
+                continue
+            if socket.AF_INET in ifaddrs:
+                v4addrs.extend([addr['addr'] for addr in ifaddrs[socket.AF_INET]])
+            if socket.AF_INET6 in ifaddrs:
+                v6addrs.extend([addr['addr'] for addr in ifaddrs[socket.AF_INET6]])
         if use_ipv6():
-            return v6addrs + v4addrs
+            local_addrs = v6addrs + v4addrs
         else:
-            return v4addrs
+            local_addrs = v4addrs
     else:
         # cross-platform branch, can only resolve one address
         if use_ipv6():

@@ -1410,6 +1410,8 @@ if (handle)
   bool getParam(const std::string& key, std::string& s) const;
   /** \brief Get a double value from the parameter server.
    *
+   * If you want to provide a default value in case the key does not exist use param().
+   *
    * \param key The key to be used in the parameter server's dictionary
    * \param[out] d Storage for the retrieved value.
    *
@@ -1418,6 +1420,8 @@ if (handle)
    */
   bool getParam(const std::string& key, double& d) const;
   /** \brief Get a integer value from the parameter server.
+   *
+   * If you want to provide a default value in case the key does not exist use param().
    *
    * \param key The key to be used in the parameter server's dictionary
    * \param[out] i Storage for the retrieved value.
@@ -1428,6 +1432,8 @@ if (handle)
   bool getParam(const std::string& key, int& i) const;
   /** \brief Get a boolean value from the parameter server.
    *
+   * If you want to provide a default value in case the key does not exist use param().
+   *
    * \param key The key to be used in the parameter server's dictionary
    * \param[out] b Storage for the retrieved value.
    *
@@ -1436,6 +1442,8 @@ if (handle)
    */
   bool getParam(const std::string& key, bool& b) const;
   /** \brief Get an arbitrary XML/RPC value from the parameter server.
+   *
+   * If you want to provide a default value in case the key does not exist use param().
    *
    * \param key The key to be used in the parameter server's dictionary
    * \param[out] v Storage for the retrieved value.
@@ -1446,6 +1454,8 @@ if (handle)
   bool getParam(const std::string& key, XmlRpc::XmlRpcValue& v) const;
 
   /** \brief Get a string value from the parameter server, with local caching
+   *
+   * If you want to provide a default value in case the key does not exist use param().
    *
    * This method will cache parameters locally, and subscribe for updates from
    * the parameter server.  Once the parameter is retrieved for the first time

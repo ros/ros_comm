@@ -265,6 +265,15 @@ bool getImpl(const std::string &key, double &d, bool use_cache)
   return true;
 }
 
+bool getImpl(const std::string &key, float &f, bool use_cache)
+{
+  double d = static_cast<double>(f);
+  bool result = getImpl(key, d, use_cache);
+  if (result)
+    f = static_cast<float>(d);
+  return result;
+}
+
 bool getImpl(const std::string &key, int &i, bool use_cache)
 {
   XmlRpc::XmlRpcValue v;
@@ -319,6 +328,11 @@ bool get(const std::string& key, std::string& s)
 bool get(const std::string& key, double& d)
 {
 	return getImpl(key, d, false);
+}
+
+bool get(const std::string& key, float& f)
+{
+	return getImpl(key, f, false);
 }
 
 bool get(const std::string& key, int& i)

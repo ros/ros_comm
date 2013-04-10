@@ -1,12 +1,12 @@
 <package>
   <name>rosgraph</name>
-  <version>1.9.40</version>
+  <version>1.9.44</version>
   <description>
     rosgraph contains the rosgraph command-line tool, which prints
     information about the ROS Computation Graph. It also provides an
     internal library that can be used by graphical tools.
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/rosgraph</url>
@@ -14,6 +14,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <run_depend>python-netifaces</run_depend>
   <run_depend>python-rospkg</run_depend>
 
   <test_depend>python-mock</test_depend>

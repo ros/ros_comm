@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(test_rosmaster)
 
-find_package(catkin REQUIRED COMPONENTS genmsg rostest)
+find_package(catkin REQUIRED COMPONENTS genmsg rostest std_msgs)
 
 add_message_files(DIRECTORY msg
   FILES
@@ -13,6 +13,7 @@ add_message_files(DIRECTORY msg
   RosmsgB.msg
   RosmsgC.msg
   TestArrays.msg
+  TestHeader.msg
   TestPrimitives.msg
   TestString.msg
   TVals.msg
@@ -24,7 +25,7 @@ add_service_files(DIRECTORY srv
   RossrvB.srv
 )
 
-generate_messages()
+generate_messages(DEPENDENCIES std_msgs)
 
 catkin_package()
 

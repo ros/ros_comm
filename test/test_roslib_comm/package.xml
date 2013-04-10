@@ -1,10 +1,10 @@
 <package>
   <name>test_roslib_comm</name>
-  <version>1.9.40</version>
+  <version>1.9.44</version>
   <description>
     Unit tests verifying that roslib is operating as expected.
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/roslib</url>

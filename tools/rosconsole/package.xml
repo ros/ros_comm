@@ -1,8 +1,8 @@
 <package>
   <name>rosconsole</name>
-  <version>1.9.40</version>
+  <version>1.9.44</version>
   <description>ROS console output library.</description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://www.ros.org/wiki/rosconsole</url>

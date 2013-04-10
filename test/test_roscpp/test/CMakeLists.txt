@@ -92,8 +92,7 @@ add_rostest(launch/pubsub_unadv.xml)
 # Call a service
 add_rostest(launch/service_call.xml)
 
-# This test should be re-enabled after #2742 is fixed.
-#add_rostest(launch/service_deadlock.xml)
+add_rostest(launch/service_deadlock.xml)
 
 add_rostest(launch/service_exception.xml)
 

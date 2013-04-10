@@ -1,6 +1,6 @@
 <package>
   <name>rospy</name>
-  <version>1.9.40</version>
+  <version>1.9.44</version>
   <description>
     rospy is a pure Python client library for ROS. The rospy client
     API enables Python programmers to quickly interface with ROS <a
@@ -19,7 +19,7 @@
     and <a href="http://ros.org/wiki/rosservice">rosservice</a>, are
     built on top of rospy.
   </description>
-  <maintainer email="dthomas@willowgarage.com">Dirk Thomas</maintainer>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/rospy</url>

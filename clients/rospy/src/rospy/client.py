@@ -73,14 +73,6 @@ WARN = Log.WARN
 ERROR = Log.ERROR
 FATAL = Log.FATAL
 
-_rospy_to_logging_levels = {
-    DEBUG: logging.DEBUG,
-    INFO: logging.INFO,
-    WARN: logging.WARNING,
-    ERROR: logging.ERROR,
-    FATAL: logging.CRITICAL,
-    }
-
 def myargv(argv=None):
     """
     Remove ROS remapping arguments from sys.argv arguments.
@@ -194,7 +186,7 @@ def _init_node_params(argv, node_name):
 
 _init_node_args = None
 
-def init_node(name, argv=None, anonymous=False, log_level=None, disable_rostime=False, disable_rosout=False, disable_signals=False):
+def init_node(name, argv=None, anonymous=False, log_level=None, disable_rostime=False, disable_rosout=False, disable_signals=False, xmlrpc_port=0, tcpros_port=0):
     """
     Register client node with the master under the specified name.
     This MUST be called from the main Python thread unless
@@ -246,6 +238,14 @@ def init_node(name, argv=None, anonymous=False, log_level=None, disable_rostime=
     @param disable_rosout: for internal testing only: suppress
         auto-publication of rosout
     @type  disable_rostime: bool
+
+    @param xmlrpc_port: If provided, it will use this port number for the client
+        XMLRPC node. 
+    @type  xmlrpc_port: int
+
+    @param tcpros_port: If provided, the TCPROS server will listen for
+        connections on this port
+    @type  tcpros_port: int
 
     @raise ROSInitException: if initialization/registration fails
     @raise ValueError: if parameters are invalid (e.g. name contains a namespace or is otherwise illegal)
@@ -308,7 +308,7 @@ def init_node(name, argv=None, anonymous=False, log_level=None, disable_rostime=
     logger.info("init_node, name[%s], pid[%s]", resolved_node_name, os.getpid())
             
     # node initialization blocks until registration with master
-    node = rospy.impl.init.start_node(os.environ, resolved_node_name) 
+    node = rospy.impl.init.start_node(os.environ, resolved_node_name, port=xmlrpc_port, tcpros_port=tcpros_port) 
     rospy.core.set_node_uri(node.uri)
     rospy.core.add_shutdown_hook(node.shutdown)    
     

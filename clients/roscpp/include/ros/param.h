@@ -102,6 +102,15 @@ ROSCPP_DECL bool get(const std::string& key, std::string& s);
  * \throws InvalidNameException if the key is not a valid graph resource name
  */
 ROSCPP_DECL bool get(const std::string& key, double& d);
+/** \brief Get a float value from the parameter server (internally using the double value).
+ *
+ * \param key The key to be used in the parameter server's dictionary
+ * \param[out] f Storage for the retrieved value.
+ *
+ * \return true if the parameter value was retrieved, false otherwise
+ * \throws InvalidNameException if the key is not a valid graph resource name
+ */
+ROSCPP_DECL bool get(const std::string& key, float& f);
 /** \brief Get a integer value from the parameter server.
  *
  * \param key The key to be used in the parameter server's dictionary
