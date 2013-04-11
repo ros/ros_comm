@@ -37,6 +37,7 @@ Utility module of roslaunch that computes the command-line arguments
 for a launch file.
 """
 
+import sys
 import roslaunch.xmlloader
 from roslaunch.core import RLException
 from roslaunch.config import load_config_default
