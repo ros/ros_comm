@@ -40,6 +40,9 @@ import cStringIO
 from subprocess import Popen, PIPE, check_call, call
 
 from contextlib import contextmanager
+
+import rostest
+
 @contextmanager
 def fakestdout():
     realstdout = sys.stdout
@@ -245,7 +248,11 @@ class TestRosnode(unittest.TestCase):
         for n in ['to_kill/kill1', '/to_kill/kill2']:
             self.assert_(rosnode.rosnode_ping(n, max_count=1))
             rosnode._rosnode_cmd_kill([cmd, 'kill', n])
-            self.failIf(rosnode.rosnode_ping(n, max_count=1))
+            try:
+                is_pingged = rosnode.rosnode_ping(n, max_count=1)
+            except rosnode.ROSNodeIOException as e:
+                is_pingged = False
+            self.failIf(is_pingged)
         
     def test_fullusage(self):
         import rosnode
@@ -258,3 +265,8 @@ class TestRosnode(unittest.TestCase):
         try:
             rosnode.rosnodemain(['rosnode', 'invalid'])        
         except SystemExit: pass
+
+PKG = 'test_rosnode'
+NAME = 'test_rosnode'
+if __name__ == '__main__':
+    rostest.run(PKG, NAME, TestRosnode, sys.argv)

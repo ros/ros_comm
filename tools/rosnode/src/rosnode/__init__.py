@@ -60,6 +60,7 @@ import rostopic
 NAME='rosnode'
 ID = '/rosnode'
 
+
 class ROSNodeException(Exception):
     """
     rosnode base exception type
@@ -300,7 +301,7 @@ def rosnode_ping(node_name, max_count=None, verbose=False):
     @rtype: bool
     """
     master = rosgraph.Master(ID)
-    node_api = get_api_uri(master,node_name)
+    node_api = get_api_uri(master, node_name)
     if not node_api:
         print("cannot ping [%s]: unknown node"%node_name, file=sys.stderr)
         return False
@@ -335,15 +336,16 @@ def rosnode_ping(node_name, max_count=None, verbose=False):
                     errnum, msg = e
                     if errnum == -2: #name/service unknown
                         p = urlparse.urlparse(node_api)
-                        print("ERROR: Unknown host [%s] for node [%s]"%(p.hostname, node_name), file=sys.stderr)
+                        raise ROSNodeIOException(
+                            "ERROR: Unknown host [%s] for node [%s]"%(p.hostname, node_name))
                     elif errnum == errno.ECONNREFUSED:
                         p = urlparse.urlparse(node_api)
-                        print("ERROR: connection refused to [%s]"%(node_api), file=sys.stderr)
+                        raise ROSNodeIOException("ERROR: connection refused to [%s]"%(node_api))
                     else:
-                        print("connection to [%s] timed out"%node_name, file=sys.stderr)
+                        raise ROSNodeIOException("connection to [%s] timed out"%node_name)
                     return False
                 except ValueError:
-                    print("unknown network error contacting node: %s"%(str(e)))
+                    ROSNodeIOException("unknown network error contacting node: %s"%(str(e)))
             if max_count and count >= max_count:
                 break
             time.sleep(1.0)
@@ -376,7 +378,11 @@ def rosnode_ping_all(verbose=False):
     pinged = []
     unpinged = []
     for node in nodes:
-        if rosnode_ping(node, max_count=1, verbose=verbose):
+        try:
+            node_pingable = rosnode_ping(node, max_count=1, verbose=verbose)
+        except ROSNodeIOException as e:
+            node_pingable = False
+        if node_pingable:
             pinged.append(node)
         else:
             unpinged.append(node)
