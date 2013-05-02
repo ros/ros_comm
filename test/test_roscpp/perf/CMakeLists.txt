@@ -20,4 +20,4 @@ target_link_libraries(${PROJECT_NAME}_perf ${Boost_LIBRARIES} ${catkin_LIBRARIES
 # These performance tests will not be built or executed automatically.
 # TODO: automate them in some useful way.
 add_executable(${PROJECT_NAME}-intra_suite EXCLUDE_FROM_ALL src/intra_suite.cpp)
-target_link_libraries(${PROJECT_NAME}-intra_suite ${PROJECT_NAME}_perf roscpp)
+target_link_libraries(${PROJECT_NAME}-intra_suite ${PROJECT_NAME}_perf ${catkin_LIBRARIES})
