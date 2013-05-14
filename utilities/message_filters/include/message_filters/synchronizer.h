@@ -301,25 +301,25 @@ public:
   template<class C>
   Connection registerCallback(C& callback)
   {
-    return signal_.template addCallback(callback);
+    return signal_.addCallback(callback);
   }
 
   template<class C>
   Connection registerCallback(const C& callback)
   {
-    return signal_.template addCallback(callback);
+    return signal_.addCallback(callback);
   }
 
   template<class C, typename T>
   Connection registerCallback(const C& callback, T* t)
   {
-    return signal_.template addCallback(callback, t);
+    return signal_.addCallback(callback, t);
   }
 
   template<class C, typename T>
   Connection registerCallback(C& callback, T* t)
   {
-    return signal_.template addCallback(callback, t);
+    return signal_.addCallback(callback, t);
   }
 
   void setName(const std::string& name) { name_ = name; }
