@@ -340,6 +340,9 @@ int32_t TransportUDP::read(uint8_t* buffer, uint32_t size)
   {
     TransportUDPHeader header;
 
+    // Get the data either from the reorder buffer or the socket
+    // copy_bytes will contain the read size.
+    // from_previous is true if the data belongs to the previous UDP datagram.
     uint32_t copy_bytes = 0;
     bool from_previous = false;
     if (reorder_bytes_)
@@ -424,18 +427,20 @@ int32_t TransportUDP::read(uint8_t* buffer, uint32_t size)
       // Copy from the data buffer, whether it has data left in it from a previous datagram or
       // was just filled by readv()
       memcpy(buffer + bytes_read, data_start_, copy_bytes);
-      data_filled_ = std::max((int64_t)0, (int64_t)data_filled_ - (int64_t)size);
+      data_filled_ -= copy_bytes;
       data_start_ += copy_bytes;
     }
 
 
     if (from_previous)
     {
+      // We are simply reading data from the last UDP datagram, nothing to
+      // parse
       bytes_read += copy_bytes;
     }
     else
     {
-      // Process header
+      // This datagram is new, process header
       switch (header.op_)
       {
         case ROS_UDP_DATA0:
@@ -443,8 +448,11 @@ int32_t TransportUDP::read(uint8_t* buffer, uint32_t size)
           {
             ROS_DEBUG("Received new message [%d:%d], while still working on [%d] (block %d of %d)", header.message_id_, header.block_, current_message_id_, last_block_ + 1, total_blocks_);
             reorder_header_ = header;
-            reorder_bytes_ = copy_bytes;
-            memcpy(reorder_buffer_, buffer + bytes_read, copy_bytes);
+
+            // Copy the entire data buffer to the reorder buffer, as we will
+            // need to replay this UDP datagram in the next call.
+            reorder_bytes_ = data_filled_ + (data_start_ - data_buffer_);
+            memcpy(reorder_buffer_, data_buffer_, reorder_bytes_);
             reorder_start_ = reorder_buffer_;
             current_message_id_ = 0;
             total_blocks_ = 0;
@@ -462,11 +470,13 @@ int32_t TransportUDP::read(uint8_t* buffer, uint32_t size)
           if (header.message_id_ != current_message_id_)
           {
             ROS_DEBUG("Message Id mismatch: %d != %d", header.message_id_, current_message_id_);
+            data_filled_ = 0; // discard datagram
             return 0;
           }
           if (header.block_ != last_block_ + 1)
           {
             ROS_DEBUG("Expected block %d, received %d", last_block_ + 1, header.block_);
+            data_filled_ = 0; // discard datagram
             return 0;
           }
           last_block_ = header.block_;
