@@ -93,3 +93,29 @@ def list_processes(roslaunch_uris=None):
             pass 
     return procs
 
+def list_complete(roslaunch_uris=None):
+    """
+    @param roslaunch_uris: (optional) list of XML-RPCS. If none
+        are provided, will look up URIs dynamically
+    @type  roslaunch_uris: [str]
+    @return: list of roslaunch complete
+    @rtype: [bool]
+    """
+    if not roslaunch_uris:
+        roslaunch_uris = get_roslaunch_uris()
+        if not roslaunch_uris:
+            return []
+
+    comps = []
+    for uri in roslaunch_uris:
+        try:
+            r = xmlrpclib.ServerProxy(uri)
+            code, msg, val = r.get_registrations_complete()
+            if code == 1:
+                comps.append(val)
+        except:
+            #import traceback
+            #traceback.print_exc()
+            # don't have a mechanism for reporting these errors upwards yet
+            pass
+    return comps
