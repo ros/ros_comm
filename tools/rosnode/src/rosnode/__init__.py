@@ -300,6 +300,7 @@ def rosnode_ping(node_name, max_count=None, verbose=False):
     @type  verbose: bool
     @return: True if node pinged
     @rtype: bool
+    @raise ROSNodeIOException: if unable to communicate with master
     """
     master = rosgraph.Master(ID)
     node_api = get_api_uri(master,node_name)
