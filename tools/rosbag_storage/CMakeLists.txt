@@ -4,7 +4,10 @@ project(rosbag_storage)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS rosconsole)
+find_package(Boost REQUIRED COMPONENTS date_time regex program_options filesystem)
+find_package(BZip2 REQUIRED)
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -48,9 +51,9 @@ find_package(catkin REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES rosbag_storage
-#  CATKIN_DEPENDS other_catkin_pkg
+ INCLUDE_DIRS include
+ LIBRARIES rosbag_storage
+ CATKIN_DEPENDS rosconsole
 #  DEPENDS system_lib
 )
 
@@ -63,9 +66,11 @@ catkin_package(
 # include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 ## Declare a cpp library
-# add_library(rosbag_storage
-#   src/${PROJECT_NAME}/rosbag_storage.cpp
-# )
+add_library(rosbag_storage
+  src/bag.cpp
+  )
+
+target_link_libraries(rosbag_storage ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${BZIP2_LIBRARIES})
 
 ## Declare a cpp executable
 # add_executable(rosbag_storage_node src/rosbag_storage_node.cpp)

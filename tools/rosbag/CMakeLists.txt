@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(rosbag)
-find_package(catkin REQUIRED COMPONENTS rosconsole roscpp topic_tools xmlrpcpp)
+find_package(catkin REQUIRED COMPONENTS rosbag_storage rosconsole roscpp topic_tools xmlrpcpp)
 find_package(Boost REQUIRED COMPONENTS date_time regex program_options filesystem)
 find_package(BZip2 REQUIRED)
 
@@ -18,7 +18,6 @@ catkin_package(
   CATKIN_DEPENDS rosconsole roscpp topic_tools xmlrpcpp)
 
 add_library(rosbag
-  src/bag.cpp
   src/buffer.cpp
   src/bz2_stream.cpp
   src/chunked_file.cpp
