@@ -371,14 +371,22 @@ CallbackQueue::CallOneResult CallbackQueue::callOneCB(TLS* tls)
     tls->calling_in_this_thread = id_info->id;
 
     CallbackInterface::CallResult result = CallbackInterface::Invalid;
-    if (info.marked_for_removal)
-    {
-      tls->cb_it = tls->callbacks.erase(tls->cb_it);
+    try {
+      if (info.marked_for_removal)
+      {
+        tls->cb_it = tls->callbacks.erase(tls->cb_it);
+      }
+      else
+      {
+        tls->cb_it = tls->callbacks.erase(tls->cb_it);
+        result = cb->call();
+      }
     }
-    else
+    catch (std::exception&)
     {
-      tls->cb_it = tls->callbacks.erase(tls->cb_it);
-      result = cb->call();
+      // ensure that thread id gets restored, even in case of an exception
+      tls->calling_in_this_thread = last_calling;
+      throw;
     }
 
     tls->calling_in_this_thread = last_calling;
