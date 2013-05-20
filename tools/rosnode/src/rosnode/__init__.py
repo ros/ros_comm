@@ -79,18 +79,20 @@ def _succeed(args):
     return val
 
 _caller_apis = {}
-def get_api_uri(master, caller_id):
+def get_api_uri(master, caller_id, skip_cache=False):
     """
     @param master: XMLRPC handle to ROS Master
     @type  master: rosgraph.Master
     @param caller_id: node name
     @type  caller_id: str
+    @param skip_cache: flag to skip cached data and force to lookup node from master
+    @type  skip_cache: bool
     @return: xmlrpc URI of caller_id
     @rtype: str
     @raise ROSNodeIOException: if unable to communicate with master
     """
     caller_api = _caller_apis.get(caller_id, None)
-    if not caller_api:
+    if not caller_api or skip_cache:
         try:
             caller_api = master.lookupNode(caller_id)
             _caller_apis[caller_id] = caller_api
@@ -337,7 +339,14 @@ def rosnode_ping(node_name, max_count=None, verbose=False):
                         p = urlparse.urlparse(node_api)
                         print("ERROR: Unknown host [%s] for node [%s]"%(p.hostname, node_name), file=sys.stderr)
                     elif errnum == errno.ECONNREFUSED:
-                        p = urlparse.urlparse(node_api)
+                        # check if node url has changed
+                        new_node_api = get_api_uri(master,node_name, skip_cache=True)
+                        if new_node_api != node_api:
+                            if verbose:
+                                print("node url has changed from [%s] to [%s], retrying to ping"%(node_api, new_node_api))
+                            node_api = new_node_api
+                            node = xmlrpclib.ServerProxy(node_api)
+                            continue
                         print("ERROR: connection refused to [%s]"%(node_api), file=sys.stderr)
                     else:
                         print("connection to [%s] timed out"%node_name, file=sys.stderr)
