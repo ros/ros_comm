@@ -40,12 +40,12 @@
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
 
-  <build_depend>rosconsole</build_depend>
+  <build_depend>console_bridge</build_depend>
 
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend>rosconsole</run_depend>
+  <run_depend>console_bridge</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
