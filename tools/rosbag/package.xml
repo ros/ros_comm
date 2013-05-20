@@ -20,6 +20,7 @@
   <build_depend>bzip2</build_depend>
   <build_depend>cpp_common</build_depend>
   <build_depend>python-imaging</build_depend>
+  <build_depend>rosbag_storage</build_depend>
   <build_depend>rosconsole</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>roscpp_serialization</build_depend>
@@ -31,6 +32,7 @@
   <run_depend>genmsg</run_depend>
   <run_depend>genpy</run_depend>
   <run_depend>python-rospkg</run_depend>
+  <run_depend>rosbag_storage</run_depend>
   <run_depend>rosconsole</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>roslib</run_depend>
