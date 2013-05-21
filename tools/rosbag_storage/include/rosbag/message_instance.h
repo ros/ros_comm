@@ -36,11 +36,11 @@
 #define ROSBAG_MESSAGE_INSTANCE_H
 
 #include <ros/message_traits.h>
-#include <ros/ros.h>
+//#include <ros/ros.h>
 #include <ros/time.h>
 
 #include "rosbag/structures.h"
-#include "macros.h"
+#include "rosbag/macros.h"
 
 namespace rosbag {
 

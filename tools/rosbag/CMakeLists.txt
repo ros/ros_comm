@@ -18,17 +18,12 @@ catkin_package(
   CATKIN_DEPENDS rosconsole roscpp topic_tools xmlrpcpp)
 
 add_library(rosbag
-  src/buffer.cpp
   src/bz2_stream.cpp
-  src/chunked_file.cpp
-  src/message_instance.cpp
   src/player.cpp
-  src/query.cpp
   src/recorder.cpp
-  src/stream.cpp
   src/time_translator.cpp
-  src/uncompressed_stream.cpp
-  src/view.cpp)
+  src/uncompressed_stream.cpp)
+
 target_link_libraries(rosbag ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${BZIP2_LIBRARIES})
 
 add_executable(record src/record.cpp)

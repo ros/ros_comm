@@ -39,7 +39,7 @@
 #include <vector>
 
 #include "ros/time.h"
-#include "ros/ros.h"
+#include "ros/datatypes.h"
 #include "macros.h"
 
 namespace rosbag {

@@ -5,7 +5,7 @@ project(rosbag_storage)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(console_bridge REQUIRED)
-find_package(catkin REQUIRED COMPONENTS rosconsole)
+find_package(catkin REQUIRED COMPONENTS cpp_common rostime roscpp_traits)
 find_package(Boost REQUIRED COMPONENTS date_time regex program_options filesystem)
 find_package(BZip2 REQUIRED)
 
@@ -55,7 +55,7 @@ catkin_package(
  INCLUDE_DIRS include
  LIBRARIES rosbag_storage
 # CATKIN_DEPENDS rosconsole
- DEPENDS console_bridge
+ DEPENDS console_bridge Boost
 )
 
 ###########
@@ -64,11 +64,17 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 ## Declare a cpp library
 add_library(rosbag_storage
   src/bag.cpp
+  src/buffer.cpp
+  src/chunked_file.cpp
+  src/message_instance.cpp
+  src/query.cpp
+  src/stream.cpp
+  src/view.cpp
   )
 
 target_link_libraries(rosbag_storage ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${BZIP2_LIBRARIES} ${console_bridge_LIBRARIES} )

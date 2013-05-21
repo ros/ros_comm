@@ -36,6 +36,7 @@
 #define ROSBAG_BAG_H
 
 #include "rosbag/macros.h"
+
 #include "rosbag/buffer.h"
 #include "rosbag/chunked_file.h"
 #include "rosbag/constants.h"
@@ -45,8 +46,7 @@
 #include "ros/header.h"
 #include "ros/time.h"
 #include "ros/message_traits.h"
-#include "ros/subscription_callback_helper.h"
-#include "ros/ros.h"
+//#include "ros/subscription_callback_helper.h"
 
 #include <ios>
 #include <map>
