@@ -62,8 +62,4 @@ uint32_t MessageInstance::size() const {
     return bag_->readMessageDataSize(index_entry_);
 }
 
-ros::AdvertiseOptions createAdvertiseOptions(MessageInstance const& m, uint32_t queue_size) {
-    return ros::AdvertiseOptions(m.getTopic(), queue_size, m.getMD5Sum(), m.getDataType(), m.getMessageDefinition());
-}
-
 } // namespace rosbag
