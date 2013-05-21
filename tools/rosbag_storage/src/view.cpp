@@ -31,6 +31,7 @@
 
 #include <boost/foreach.hpp>
 #include <set>
+#include <assert.h>
 
 #define foreach BOOST_FOREACH
 
@@ -59,7 +60,7 @@ View::iterator::iterator(View* view, bool end) : view_(view), view_revision_(0),
 View::iterator::iterator(const iterator& i) : view_(i.view_), iters_(i.iters_), view_revision_(i.view_revision_), message_instance_(NULL) { }
 
 void View::iterator::populate() {
-    ROS_ASSERT(view_ != NULL);
+    assert(view_ != NULL);
 
     iters_.clear();
     foreach(MessageRange const* range, view_->ranges_)
@@ -71,7 +72,7 @@ void View::iterator::populate() {
 }
 
 void View::iterator::populateSeek(multiset<IndexEntry>::const_iterator iter) {
-    ROS_ASSERT(view_ != NULL);
+    assert(view_ != NULL);
 
     iters_.clear();
     foreach(MessageRange const* range, view_->ranges_) {
@@ -101,7 +102,7 @@ bool View::iterator::equal(View::iterator const& other) const {
 }
 
 void View::iterator::increment() {
-    ROS_ASSERT(view_ != NULL);
+    assert(view_ != NULL);
 
     // Our message instance is no longer valid
     if (message_instance_ != NULL)
