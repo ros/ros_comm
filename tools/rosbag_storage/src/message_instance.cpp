@@ -27,6 +27,8 @@
 
 #include "rosbag/message_instance.h"
 
+#include "ros/message_event.h"
+
 using std::string;
 using ros::Time;
 using boost::shared_ptr;
