@@ -5,11 +5,14 @@
 #include "std_msgs/Int32.h"
 #include "boost/foreach.hpp"
 
+#include "ros/time.h"
 
 #include "gtest/gtest.h"
 
 int main(void)
 {
+
+  ros::Time::init();
 
   rosbag::Bag bag;
   bag.open("test.bag", rosbag::bagmode::Read);

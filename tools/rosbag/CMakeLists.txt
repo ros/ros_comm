@@ -9,8 +9,7 @@ catkin_python_setup()
 # Support large bags (>2GB) on 32-bit systems
 add_definitions(-D_FILE_OFFSET_BITS=64)
 
-include_directories(include ${Boost_INCLUDE_DIR} ${BZIP2_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
-add_definitions(${BZIP2_DEFINITIONS})
+include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 
 catkin_package(
   LIBRARIES rosbag
@@ -18,13 +17,11 @@ catkin_package(
   CATKIN_DEPENDS rosconsole roscpp topic_tools xmlrpcpp)
 
 add_library(rosbag
-  src/bz2_stream.cpp
   src/player.cpp
   src/recorder.cpp
-  src/time_translator.cpp
-  src/uncompressed_stream.cpp)
+  src/time_translator.cpp)
 
-target_link_libraries(rosbag ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${BZIP2_LIBRARIES})
+target_link_libraries(rosbag ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 add_executable(record src/record.cpp)
 target_link_libraries(record rosbag)

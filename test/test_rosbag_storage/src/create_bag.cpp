@@ -2,9 +2,12 @@
 #include "rosbag/view.h"
 #include "std_msgs/String.h"
 #include "std_msgs/Int32.h"
+#include "ros/time.h"
 
 int main(void)
 {
+
+  ros::Time::init();
 
   rosbag::Bag bag;
   bag.open("test.bag", rosbag::bagmode::Write);

@@ -64,23 +64,25 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+include_directories(include ${BZIP2_INCLUDE_DIR} ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+add_definitions(${BZIP2_DEFINITIONS})
 
 ## Declare a cpp library
 add_library(rosbag_storage
   src/bag.cpp
   src/buffer.cpp
+  src/bz2_stream.cpp
   src/chunked_file.cpp
   src/message_instance.cpp
   src/query.cpp
   src/stream.cpp
   src/view.cpp
+  src/uncompressed_stream.cpp
   )
 
-target_link_libraries(rosbag_storage ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${BZIP2_LIBRARIES} ${console_bridge_LIBRARIES} )
+target_link_libraries(rosbag_storage ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${BZIP2_LIBRARIES} ${console_bridge_LIBRARIES} ${BZIP2_LIBRARIES})
 
 ## Declare a cpp executable
-# add_executable(rosbag_storage_node src/rosbag_storage_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes

@@ -40,6 +40,8 @@
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
 
+  <build_depend>boost</build_depend>
+  <build_depend>bzip2</build_depend>
   <build_depend>console_bridge</build_depend>
   <build_depend>cpp_common</build_depend>
   <build_depend>roscpp_serialization</build_depend>
@@ -49,6 +51,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <run_depend>boost</run_depend>
+  <run_depend>bzip2</run_depend>
   <run_depend>console_bridge</run_depend>
   <run_depend>cpp_common</run_depend>
   <build_depend>roscpp_serialization</build_depend>

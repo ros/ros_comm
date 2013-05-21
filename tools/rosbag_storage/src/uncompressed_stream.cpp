@@ -35,10 +35,9 @@
 #include "rosbag/chunked_file.h"
 
 #include <iostream>
+#include <cstring>
 
 #include <boost/format.hpp>
-
-#include <ros/ros.h>
 
 using std::string;
 using boost::format;
