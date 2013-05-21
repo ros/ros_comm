@@ -47,7 +47,7 @@
 #include "ros/time.h"
 #include "ros/message_traits.h"
 #include "ros/message_event.h"
-
+#include "ros/serialization.h"
 
 //#include "ros/subscription_callback_helper.h"
 
