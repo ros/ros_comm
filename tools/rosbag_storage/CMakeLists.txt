@@ -5,7 +5,7 @@ project(rosbag_storage)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(console_bridge REQUIRED)
-find_package(catkin REQUIRED COMPONENTS cpp_common rostime roscpp_traits)
+find_package(catkin REQUIRED COMPONENTS cpp_common rostime roscpp_serialization roscpp_traits)
 find_package(Boost REQUIRED COMPONENTS date_time regex program_options filesystem)
 find_package(BZip2 REQUIRED)
 
