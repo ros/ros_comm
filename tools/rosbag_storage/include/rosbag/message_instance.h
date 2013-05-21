@@ -101,13 +101,6 @@ private:
 };
 
 
-//! Helper function to create AdvertiseOptions from a MessageInstance
-/*!
- *  param msg         The Message instance for which to generate adveritse options
- *  param queue_size  The size of the outgoing queue
- */
-ros::AdvertiseOptions createAdvertiseOptions(MessageInstance const& msg, uint32_t queue_size);
-
 } // namespace rosbag
 
 namespace ros {
