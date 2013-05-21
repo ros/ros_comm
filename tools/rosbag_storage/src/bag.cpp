@@ -36,7 +36,7 @@
   #include <inttypes.h>
 #endif
 #include <signal.h>
-
+#include <assert.h>
 #include <iomanip>
 
 #include <boost/foreach.hpp>
@@ -967,7 +967,7 @@ void Bag::appendDataLengthToBuffer(Buffer& buf, uint32_t data_len) {
 
 //! \todo clean this up
 void Bag::readHeaderFromBuffer(Buffer& buffer, uint32_t offset, ros::Header& header, uint32_t& data_size, uint32_t& bytes_read) const {
-    ROS_ASSERT(buffer.getSize() > 8);
+    assert(buffer.getSize() > 8);
 
     uint8_t* start = (uint8_t*) buffer.getData() + offset;
 
