@@ -5,6 +5,7 @@ catkin_package()
 
 if(CMAKE_HOST_UNIX)
   catkin_add_env_hooks(10.roslaunch SHELLS sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
+  catkin_add_env_hooks(20.roslaunch SHELLS bash DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
 else()
   catkin_add_env_hooks(10.roslaunch SHELLS bat DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
 endif()
