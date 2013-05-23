@@ -3,7 +3,7 @@ function _roscomplete_launch {
     arg="${COMP_WORDS[COMP_CWORD]}"
     COMPREPLY=()
     if [[ ${arg} =~ \-\-.* ]]; then
-        COMPREPLY=(${COMPREPLY[@]} $(compgen -W "--files --args --nodes --find-node --child --local --screen --server_uri --run_id --wait --port --core --pid --dump-params" -- ${arg}))
+        COMPREPLY=(${COMPREPLY[@]} $(compgen -W "--files --args --nodes --find-node --child --local --screen --server_uri --run_id --wait --port --core --pid --dump-params --skip-log-check --ros-args" -- ${arg}))
 
     else
         _roscomplete_search_dir "( -type f -regex .*\.launch$ -o -type f -regex .*\.test$ )"
