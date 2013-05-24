@@ -113,36 +113,143 @@ def _anon(resolved, a, args, context):
         anon_context[id] = resolve_to
         return resolved.replace("$(%s)"%a, resolve_to)
 
+
 def _find(resolved, a, args, context):
     """
-    process $(find) arg
+    process $(find PKG)
+    Resolves the path while considering the path following the command to provide backward compatible results.
+    If it is followed by a path it first tries to resolve it as an executable and than as a normal file under share.
+    Else it resolves to the source share folder of the PKG.
     :returns: updated resolved argument, ``str``
-    :raises: :exc:SubstitutionException: if arg invalidly specified
-    :raises: :exc:`rospkg.ResourceNotFound` If arg requires resource (e.g. package) that does not exist
+    :raises: :exc:SubstitutionException: if PKG invalidly specified
+    :raises: :exc:`rospkg.ResourceNotFound` If PKG requires resource (e.g. package) that does not exist
     """
     if len(args) != 1:
-        raise SubstitutionException("$(find pkg) command only accepts one argument [%s]"%a)
-    arg = "$(%s)"%a
-    sep = os.sep #set to var for easier testing
+        raise SubstitutionException("$(find pkg) command only accepts one argument [%s]" % a)
+    before, after = _split_command(resolved, a)
+    path, after = _separate_first_path(after)
+    resolve_without_path = before + ('$(%s)' % a) + after
+    path = _sanitize_path(path)
+    if path.startswith('/') or path.startswith('\\'):
+        path = path[1:]
+    try:
+        return _find_executable(resolve_without_path, a, [args[0], path], context)
+    except SubstitutionException:
+        pass
+    if path:
+        try:
+            return _find_resource(resolve_without_path, a, [args[0], path], context)
+        except SubstitutionException:
+            pass
+    rp = _get_rospack()
+    pkg_path = rp.get_path(args[0])
+    return before + pkg_path + after
 
-    #Force / and \ file separators to the os-native
-    #convention. We replace everything from the end of the
-    #$(find) command to the next space. As we don't support
-    #filenames with spaces, this is dandy.
-    idx = resolved.find(arg)+len(arg)
-    endidx = resolved.find(' ', idx)
-    if endidx < 0:
-        endidx = len(resolved)
-    slash_orig = resolved[idx:endidx]
-    resolved = resolved.replace(slash_orig, slash_orig.replace('/', sep))
-    resolved = resolved.replace(slash_orig, slash_orig.replace('\\', sep))
+    base_path = None
+    if path:
+        path = _sanitize_path(path)
+        # if the command is followed by a path
+        # we try to find the specific path in libexec and share via catkin
+        # which will search in install/devel space and the source folder of the package
+        from catkin.find_in_workspaces import find_in_workspaces
+        paths = find_in_workspaces(['libexec', 'share'], project=args[0], first_matching_workspace_only=True)
+        for p in paths:
+            if os.path.exists(p + path):
+                base_path = p
+                break
+    if not base_path:
+        # if the command is not followed by a path
+        # or was not discoverable by catkin
+        # we have no other option than to use the path returned by rospkg
+        rp = _get_rospack()
+        base_path = rp.get_path(args[0])
+    return before + base_path + path + after
 
+
+def _find_executable(resolved, a, args, _context):
+    """
+    process $(find-executable PKG PATH)
+    It finds the executable with the basename(PATH) in the libexec folder
+    or under the PATH relative to the package.xml file.
+    :returns: updated resolved argument, ``str``
+    :raises: :exc:SubstitutionException: if PKG/PATH invalidly specified or executable is not found for PKG
+    """
+    if len(args) != 2:
+        raise SubstitutionException("$(find-executable pkg path) command only accepts two argument [%s]" % a)
+    before, after = _split_command(resolved, a)
+    path = _sanitize_path(args[1])
+    # we try to find the specific executable in libexec via catkin
+    # which will search in install/devel space
+    full_path = None
+    from catkin.find_in_workspaces import find_in_workspaces
+    paths = find_in_workspaces(['libexec'], project=args[0], first_matching_workspace_only=True)  # implicitly first_match_only=True
+    if paths:
+        full_path = _get_executable_path(paths[0], os.path.basename(path))
+    if not full_path:
+        # else we will look for the executable in the source folder of the package
+        rp = _get_rospack()
+        full_path = _get_executable_path(rp.get_path(args[0]), path)
+    if not full_path:
+        raise SubstitutionException("$(find-executable pkg path) could not find executable [%s]" % a)
+    return before + full_path + after
+
+
+def _find_resource(resolved, a, args, _context):
+    """
+    process $(find-resource PKG PATH)
+    Resolves the relative PATH from the share folder of the PKG either from install space, devel space or from the source folder.
+    :returns: updated resolved argument, ``str``
+    :raises: :exc:SubstitutionException: if PKG and PATH invalidly specified or relative PATH is not found for PKG
+    """
+    if len(args) != 2:
+        raise SubstitutionException("$(find-resource pkg path) command only accepts two argument [%s]" % a)
+    before, after = _split_command(resolved, a)
+    path = _sanitize_path(args[1])
+    # we try to find the specific path in share via catkin
+    # which will search in install/devel space and the source folder of the package
+    from catkin.find_in_workspaces import find_in_workspaces
+    paths = find_in_workspaces(['share'], project=args[0], path=path, first_matching_workspace_only=True, first_match_only=True)
+    if not paths:
+        raise SubstitutionException("$(find-resource pkg path) could not find path [%s]" % a)
+    return before + paths[0] + after
+
+
+def _split_command(resolved, command_with_args):
+    cmd = '$(%s)' % command_with_args
+    idx1 = resolved.find(cmd)
+    idx2 = idx1 + len(cmd)
+    return resolved[0:idx1], resolved[idx2:]
+
+
+def _separate_first_path(value):
+    idx = value.find(' ')
+    if idx < 0:
+        path, rest = value, ''
+    else:
+        path, rest = value[0:idx], value[idx:]
+    return path, rest
+
+
+def _sanitize_path(path):
+    path = path.replace('/', os.sep)
+    path = path.replace('\\', os.sep)
+    return path
+
+
+def _get_executable_path(base_path, path):
+    full_path = os.path.join(base_path, path)
+    if os.access(full_path, os.X_OK):
+        return full_path
+    return None
+
+
+def _get_rospack():
     global _rospack
     if _rospack is None:
         _rospack = rospkg.RosPack()
-    r = _rospack
-    return resolved[0:idx-len(arg)] + r.get_path(args[0]) + resolved[idx:]
-    
+    return _rospack
+
+
 def _arg(resolved, a, args, context):
     """
     process $(arg) arg
@@ -195,8 +302,23 @@ def resolve_args(arg_str, context=None, resolve_anon=True):
     #parse found substitution args
     if not arg_str:
         return arg_str
+    # first resolve variables like 'env' and 'arg'
+    commands = {
+        'env': _env,
+        'optenv': _optenv,
+        'anon': _anon,
+        'arg': _arg,
+    }
+    resolved = _resolve_args(arg_str, context, resolve_anon, commands)
+    # than resolve 'find' as it requires the subsequent path to be expanded already
+    commands = {
+        'find': _find,
+    }
+    resolved = _resolve_args(resolved, context, resolve_anon, commands)
+    return resolved
+
+def _resolve_args(arg_str, context, resolve_anon, commands):
     valid = ['find', 'env', 'optenv', 'anon', 'arg']
-    # disabled 'export' due to lack of use and API change
     resolved = arg_str
     for a in _collect_args(arg_str):
         splits = [s for s in a.split(' ') if s]
@@ -204,17 +326,8 @@ def resolve_args(arg_str, context=None, resolve_anon=True):
             raise SubstitutionException("Unknown substitution command [%s]. Valid commands are %s"%(a, valid))
         command = splits[0]
         args = splits[1:]
-        if command == 'find':
-            resolved = _find(resolved, a, args, context)
-        elif command == 'env':
-            resolved = _env(resolved, a, args, context)
-        elif command == 'optenv':
-            resolved = _optenv(resolved, a, args, context)
-        elif command == 'anon' and resolve_anon:
-            resolved = _anon(resolved, a, args, context)
-        elif command == 'arg':
-            resolved = _arg(resolved, a, args, context)
-
+        if command in commands:
+            resolved = commands[command](resolved, a, args, context)
     return resolved
 
 _OUT  = 0
