@@ -66,6 +66,8 @@ void PollManager::start()
 
 void PollManager::shutdown()
 {
+  if (shutting_down_) return;
+
   shutting_down_ = true;
   if (thread_.get_id() != boost::this_thread::get_id())
   {

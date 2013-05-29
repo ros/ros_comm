@@ -1,5 +1,5 @@
 add_executable(${PROJECT_NAME}-pointcloud_serdes EXCLUDE_FROM_ALL pointcloud_serdes.cpp)
-target_link_libraries(${PROJECT_NAME}-pointcloud_serdes ${catkin_LIBRARIES} roscpp)
+target_link_libraries(${PROJECT_NAME}-pointcloud_serdes ${catkin_LIBRARIES})
 if(TARGET tests)
   add_dependencies(tests ${PROJECT_NAME}-pointcloud_serdes) 
 endif()

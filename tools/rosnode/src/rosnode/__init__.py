@@ -80,18 +80,20 @@ def _succeed(args):
     return val
 
 _caller_apis = {}
-def get_api_uri(master, caller_id):
+def get_api_uri(master, caller_id, skip_cache=False):
     """
     @param master: XMLRPC handle to ROS Master
     @type  master: rosgraph.Master
     @param caller_id: node name
     @type  caller_id: str
+    @param skip_cache: flag to skip cached data and force to lookup node from master
+    @type  skip_cache: bool
     @return: xmlrpc URI of caller_id
     @rtype: str
     @raise ROSNodeIOException: if unable to communicate with master
     """
     caller_api = _caller_apis.get(caller_id, None)
-    if not caller_api:
+    if not caller_api or skip_cache:
         try:
             caller_api = master.lookupNode(caller_id)
             _caller_apis[caller_id] = caller_api
@@ -299,6 +301,7 @@ def rosnode_ping(node_name, max_count=None, verbose=False):
     @type  verbose: bool
     @return: True if node pinged
     @rtype: bool
+    @raise ROSNodeIOException: if unable to communicate with master
     """
     master = rosgraph.Master(ID)
     node_api = get_api_uri(master, node_name)

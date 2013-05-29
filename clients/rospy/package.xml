@@ -30,6 +30,7 @@
   <run_depend>genpy</run_depend>
   <run_depend>python-numpy</run_depend>
   <run_depend>python-rospkg</run_depend>
+  <run_depend>python-yaml</run_depend>
   <run_depend>rosgraph</run_depend>
   <run_depend>rosgraph_msgs</run_depend>
   <run_depend>roslib</run_depend>

@@ -122,17 +122,43 @@ def get_address_override():
     # check ROS_HOSTNAME and ROS_IP environment variables, which are
     # aliases for each other
     if ROS_HOSTNAME in os.environ:
-        if os.environ[ROS_HOSTNAME] == '':
+        hostname = os.environ[ROS_HOSTNAME]
+        if hostname == '':
             msg = 'invalid ROS_HOSTNAME (an empty string)'
             sys.stderr.write(msg + '\n')
             logger.warn(msg)
-        return os.environ[ROS_HOSTNAME]
+        else:
+            parts = urlparse.urlparse(hostname)
+            if parts.scheme:
+                msg = 'invalid ROS_HOSTNAME (protocol ' + ('and port ' if parts.port else '') + 'should not be included)'
+                sys.stderr.write(msg + '\n')
+                logger.warn(msg)
+            elif hostname.find(':') != -1:
+                # this can not be checked with urlparse()
+                # since it does not extract the port for a hostname like "foo:1234"
+                msg = 'invalid ROS_HOSTNAME (port should not be included)'
+                sys.stderr.write(msg + '\n')
+                logger.warn(msg)
+        return hostname
     elif ROS_IP in os.environ:
-        if os.environ[ROS_IP] == '':
+        ip = os.environ[ROS_IP]
+        if ip == '':
             msg = 'invalid ROS_IP (an empty string)'
             sys.stderr.write(msg + '\n')
             logger.warn(msg)
-        return os.environ[ROS_IP]
+        elif ip.find('://') != -1:
+            msg = 'invalid ROS_IP (protocol should not be included)'
+            sys.stderr.write(msg + '\n')
+            logger.warn(msg)
+        elif ip.find('.') != -1 and ip.rfind(':') > ip.rfind('.'):
+            msg = 'invalid ROS_IP (port should not be included)'
+            sys.stderr.write(msg + '\n')
+            logger.warn(msg)
+        elif ip.find('.') == -1 and ip.find(':') == -1:
+            msg = 'invalid ROS_IP (must be a valid IPv4 or IPv6 address)'
+            sys.stderr.write(msg + '\n')
+            logger.warn(msg)
+        return ip
     return None
 
 def is_local_address(hostname):
