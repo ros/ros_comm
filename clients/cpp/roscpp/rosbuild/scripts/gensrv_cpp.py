@@ -166,8 +166,10 @@ def generate(srv_path):
     
     s.write('namespace %s\n{\n'%(package))
     genmsg_cpp.write_struct(s, spec.request, cpp_prefix, {'ServerMD5Sum': md5sum})
+    genmsg_cpp.write_constant_definitions(s, spec.request)
     s.write('\n')
     genmsg_cpp.write_struct(s, spec.response, cpp_prefix, {'ServerMD5Sum': md5sum})
+    genmsg_cpp.write_constant_definitions(s, spec.response)
     s.write('struct %s\n{\n'%(spec.short_name))
     s.write('\n')
     s.write('typedef %s Request;\n'%(spec.request.short_name))
