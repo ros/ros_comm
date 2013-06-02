@@ -143,27 +143,9 @@ def _find(resolved, a, args, context):
             pass
     rp = _get_rospack()
     pkg_path = rp.get_path(args[0])
-    return before + pkg_path + after
-
-    base_path = None
     if path:
-        path = _sanitize_path(path)
-        # if the command is followed by a path
-        # we try to find the specific path in libexec and share via catkin
-        # which will search in install/devel space and the source folder of the package
-        from catkin.find_in_workspaces import find_in_workspaces
-        paths = find_in_workspaces(['libexec', 'share'], project=args[0], first_matching_workspace_only=True)
-        for p in paths:
-            if os.path.exists(p + path):
-                base_path = p
-                break
-    if not base_path:
-        # if the command is not followed by a path
-        # or was not discoverable by catkin
-        # we have no other option than to use the path returned by rospkg
-        rp = _get_rospack()
-        base_path = rp.get_path(args[0])
-    return before + base_path + path + after
+        pkg_path = os.path.join(pkg_path, path)
+    return before + pkg_path + after
 
 
 def _find_executable(resolved, a, args, _context):
