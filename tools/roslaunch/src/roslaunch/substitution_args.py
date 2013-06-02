@@ -132,11 +132,11 @@ def _find(resolved, a, args, context):
     path = _sanitize_path(path)
     if path.startswith('/') or path.startswith('\\'):
         path = path[1:]
-    try:
-        return _find_executable(resolve_without_path, a, [args[0], path], context)
-    except SubstitutionException:
-        pass
     if path:
+        try:
+            return _find_executable(resolve_without_path, a, [args[0], path], context)
+        except SubstitutionException:
+            pass
         try:
             return _find_resource(resolve_without_path, a, [args[0], path], context)
         except SubstitutionException:
@@ -220,7 +220,7 @@ def _sanitize_path(path):
 
 def _get_executable_path(base_path, path):
     full_path = os.path.join(base_path, path)
-    if os.access(full_path, os.X_OK):
+    if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
         return full_path
     return None
 

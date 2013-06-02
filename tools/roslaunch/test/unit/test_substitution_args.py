@@ -105,7 +105,7 @@ def test_resolve_args():
         ('$$(find roslaunch )', '$'+roslaunch_dir),
         ('$( find roslaunch )', roslaunch_dir),
         ('$(find  roslaunch )', roslaunch_dir),
-        ('$(find roslaunch)$(find roslaunch)', roslaunch_dir+roslaunch_dir),
+        ('$(find roslaunch)$(find roslaunch)', roslaunch_dir+os.sep+roslaunch_dir),
         ('$(find roslaunch)/foo/bar.xml', roslaunch_dir+os.sep+'foo'+os.sep+'bar.xml'),
         (r'$(find roslaunch)\foo\bar.xml $(find roslaunch)\bar.xml', roslaunch_dir+os.sep+'foo'+os.sep+'bar.xml '+roslaunch_dir+os.sep+'bar.xml'),
         ('$(find roslaunch)\\foo\\bar.xml more/stuff\\here', roslaunch_dir+os.sep+'foo'+os.sep+'bar.xml more/stuff\\here'),
