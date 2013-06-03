@@ -192,6 +192,17 @@ add_executable(${PROJECT_NAME}-string_msg_expect EXCLUDE_FROM_ALL string_msg_exp
 target_link_libraries(${PROJECT_NAME}-string_msg_expect ${GTEST_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME}-string_msg_expect std_msgs_gencpp)
 
+# The publisher and subscriber are compiled but not registered as a unit test
+# since the test execution requires a network connection which drops packages.
+# Call scripts/test_udp_with_dropped_packets.sh to run the test.
+add_executable(${PROJECT_NAME}-publisher EXCLUDE_FROM_ALL publisher.cpp)
+target_link_libraries(${PROJECT_NAME}-publisher ${catkin_LIBRARIES})
+add_dependencies(${PROJECT_NAME}-publisher std_msgs_gencpp)
+
+add_executable(${PROJECT_NAME}-subscriber EXCLUDE_FROM_ALL subscriber.cpp)
+target_link_libraries(${PROJECT_NAME}-subscriber ${catkin_LIBRARIES})
+add_dependencies(${PROJECT_NAME}-subscriber std_msgs_gencpp)
+
 if(TARGET tests)
   add_dependencies(tests
     ${PROJECT_NAME}-handles
@@ -251,6 +262,8 @@ if(TARGET tests)
     ${PROJECT_NAME}-test_search_param
     ${PROJECT_NAME}-left_right
     ${PROJECT_NAME}-string_msg_expect
+    ${PROJECT_NAME}-publisher
+    ${PROJECT_NAME}-subscriber
   )
 endif()
 
