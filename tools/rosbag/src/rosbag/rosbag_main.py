@@ -155,7 +155,7 @@ def info_cmd(argv):
         except IOError as ex:
             sys.stderr.write('ERROR reading %s: %s' % (arg, str(ex)))
             
-    print
+    print()
 
 
 def handle_topics(option, opt_str, value, parser):
@@ -699,12 +699,12 @@ class RosbagCmds(UserDict):
 
         if len(argv) == 0:
             print('Usage: rosbag <subcommand> [options] [args]')
-            print 
+            print()
             print("A bag is a file format in ROS for storing ROS message data. The rosbag command can record, replay and manipulate bags.")
-            print
+            print()
             print(self.get_valid_cmds())
             print('For additional information, see http://code.ros.org/wiki/rosbag/')
-            print
+            print()
             return
 
         cmd = argv[0]
@@ -763,7 +763,8 @@ class ProgressMeter(object):
         else:
             progress = '%-*s 100%% %19s %02d:%02d    ' % (max_path_len, path, bytes_total_str, self.elapsed / 60, self.elapsed % 60)
 
-        print('\r', progress, sys.stdout.flush())
+        print('\r', progress, end='')
+        sys.stdout.flush()
         
     def _human_readable_size(self, size):
         multiple = 1024.0
@@ -776,7 +777,7 @@ class ProgressMeter(object):
 
     def finish(self):
         self.step(self.bytes_total, force_update=True)
-        print
+        print()
 
     @staticmethod
     def terminal_width():
