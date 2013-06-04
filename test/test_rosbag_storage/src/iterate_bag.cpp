@@ -7,8 +7,6 @@
 
 #include "ros/time.h"
 
-#include "gtest/gtest.h"
-
 int main(void)
 {
 
