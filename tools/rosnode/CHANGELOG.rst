@@ -2,8 +2,8 @@
 Changelog for package rosnode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.45 (2013-06-06)
+-------------------
 * modify rosnode_ping to check for changed node uri if connection is refused (`#221 <https://github.com/ros/ros_comm/issues/221>`_)
 
 1.9.44 (2013-03-21)

@@ -2,8 +2,8 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.45 (2013-06-06)
+-------------------
 * add missing run_depend on python-yaml
 * allow configuration of ports for XML RPCs and TCP ROS
 * fix race condition where rospy subscribers do not connect to all publisher
