@@ -181,12 +181,13 @@ def play_cmd(argv):
     parser.add_option("-d", "--delay",        dest="delay",      default=0.2,   type='float', action="store", help="sleep SEC seconds after every advertise call (to allow subscribers to connect)", metavar="SEC")
     parser.add_option("-r", "--rate",         dest="rate",       default=1.0,   type='float', action="store", help="multiply the publish rate by FACTOR", metavar="FACTOR")
     parser.add_option("-s", "--start",        dest="start",      default=0.0,   type='float', action="store", help="start SEC seconds into the bag files", metavar="SEC")
+    parser.add_option("-u", "--duration",     dest="duration",   default=None,  type='float', action="store", help="play only SEC seconds from the bag files", metavar="SEC")
     parser.add_option("--skip-empty",         dest="skip_empty", default=None,  type='float', action="store", help="skip regions in the bag with no messages for more than SEC seconds", metavar="SEC")
     parser.add_option("-l", "--loop",         dest="loop",       default=False, action="store_true", help="loop playback")
     parser.add_option("-k", "--keep-alive",   dest="keep_alive", default=False, action="store_true", help="keep alive past end of bag (useful for publishing latched topics)")
     parser.add_option("--try-future-version", dest="try_future", default=False, action="store_true", help="still try to open a bag file, even if the version number is not known to the player")
-    parser.add_option("--topics", dest="topics", default=[],  callback=handle_topics, action="callback", help="the list topics to play back")
-    parser.add_option("--bags",  help="the list bags to play back from")
+    parser.add_option("--topics", dest="topics", default=[],  callback=handle_topics, action="callback", help="topics to play back")
+    parser.add_option("--bags",  help="bags files to play back from")
 
     (options, args) = parser.parse_args(argv)
 
@@ -212,6 +213,8 @@ def play_cmd(argv):
     cmd.extend(['--rate', str(options.rate)])
     cmd.extend(['--delay', str(options.delay)])
     cmd.extend(['--start', str(options.start)])
+    if options.duration:
+        cmd.extend(['--duration', str(options.duration)])
     if options.skip_empty:
         cmd.extend(['--skip-empty', str(options.skip_empty)])
 

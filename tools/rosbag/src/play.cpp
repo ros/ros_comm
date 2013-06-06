@@ -50,14 +50,14 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
       ("queue", po::value<int>()->default_value(100), "use an outgoing queue of size SIZE")
       ("clock", "publish the clock time")
       ("hz", po::value<float>()->default_value(100.0f), "use a frequency of HZ when publishing clock time")
-      ("delay,d", po::value<float>()->default_value(0.2f), "sleep SEC seconds after every advertise call")
+      ("delay,d", po::value<float>()->default_value(0.2f), "sleep SEC seconds after every advertise call (to allow subscribers to connect)")
       ("rate,r", po::value<float>()->default_value(1.0f), "multiply the publish rate by FACTOR")
       ("start,s", po::value<float>()->default_value(0.0f), "start SEC seconds into the bag files")
       ("duration,u", po::value<float>(), "play only SEC seconds from the bag files")
-      ("loop,l", "loop playback")
-      ("keep-alive,k", "keep alive past end of bag")
-      ("try-future-version", "still try to open a bag file, even if the version is not known to the player")
       ("skip-empty", po::value<float>(), "skip regions in the bag with no messages for more than SEC seconds")
+      ("loop,l", "loop playback")
+      ("keep-alive,k", "keep alive past end of bag (useful for publishing latched topics)")
+      ("try-future-version", "still try to open a bag file, even if the version is not known to the player")
       ("topics", po::value< std::vector<std::string> >()->multitoken(), "topics to play back")
       ("bags", po::value< std::vector<std::string> >(), "bag files to play back from");
     
