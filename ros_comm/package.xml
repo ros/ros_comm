@@ -34,6 +34,7 @@
   <run_depend>rosconsole</run_depend>
   <run_depend>rosgraph</run_depend>
   <run_depend>roslaunch</run_depend>
+  <run_depend>roslisp</run_depend> <!-- Depend on roslisp to enable lisp message generation in dry packages -->
   <run_depend>rosmaster</run_depend>
   <run_depend>rosmsg</run_depend>
   <run_depend>rosnode</run_depend>
