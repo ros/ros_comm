@@ -20,5 +20,10 @@
     <node name="kill3" pkg="rospy" type="talker.py" />
     <node name="kill4" pkg="rospy" type="talker.py" />
   </group>
+
   <test test-name="rosnode_command_line_online" pkg="rosnode" type="test_rosnode_command_online.py" />
+<!-- 
+  <test test-name="rosnode_command_line_offline" pkg="rosnode" type="test_rosnode_command_offline.py" />
+-->
+  <test test-name="rosnode_pingger" pkg="rosnode" type="test_rosnode.py" />
 </launch>
