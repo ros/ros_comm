@@ -24,9 +24,6 @@ add_rostest(test/hztest.test)
 add_rostest(test/clean_master.test)
 add_rostest(test/distro_version.test)
 
-# required for old rosbuild macro
-install(PROGRAMS scripts/roslaunch-check.py
-  DESTINATION  ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts)
 install(PROGRAMS nodes/hztest
   DESTINATION  ${CATKIN_PACKAGE_SHARE_DESTINATION}/nodes/hztest)
 install(DIRECTORY include/${PROJECT_NAME}/
