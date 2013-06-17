@@ -342,6 +342,9 @@ def rosnode_ping(node_name, max_count=None, verbose=False):
                     elif errnum == errno.ECONNREFUSED:
                         # check if node url has changed
                         new_node_api = get_api_uri(master,node_name, skip_cache=True)
+                        if not new_node_api:
+                            print("cannot ping [%s]: unknown node"%node_name, file=sys.stderr)
+                            return False
                         if new_node_api != node_api:
                             if verbose:
                                 print("node url has changed from [%s] to [%s], retrying to ping"%(node_api, new_node_api))
