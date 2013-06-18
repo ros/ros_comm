@@ -763,7 +763,7 @@ class MessageMigrator(object):
                     rulechain.chain[otherind].location, r.location, r.old_type, r.location)
                 return
             else:
-                if rulechain.rename and (r.order >= rulechain.chain[-1]):
+                if rulechain.rename and (r.order >= rulechain.rename.order):
                     print >> sys.stderr, "WARNING: Update rule [%s] has order number larger than rename rule [%s]. Ignoring"%(
                         r.location, rulechain.rename.location)
                     return
