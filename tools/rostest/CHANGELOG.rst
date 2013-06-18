@@ -2,6 +2,9 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.46 (2013-06-18)
+-------------------
+
 1.9.45 (2013-06-06)
 -------------------
 * allow passing arguments to add_rostest(ARGS ...) (`#232 <https://github.com/ros/ros_comm/issues/232>`_)

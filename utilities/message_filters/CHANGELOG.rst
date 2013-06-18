@@ -2,6 +2,9 @@
 Changelog for package message_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.46 (2013-06-18)
+-------------------
+
 1.9.45 (2013-06-06)
 -------------------
 * fix template syntax for signal_.template addCallback() to work with Intel compiler

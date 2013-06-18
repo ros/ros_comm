@@ -2,6 +2,10 @@
 Changelog for package rosnode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.46 (2013-06-18)
+-------------------
+* fix rosnode_ping to check if new node uri is valid before using it (`#235 <https://github.com/ros/ros_comm/issues/235>`_)
+
 1.9.45 (2013-06-06)
 -------------------
 * modify rosnode_ping to check for changed node uri if connection is refused (`#221 <https://github.com/ros/ros_comm/issues/221>`_)

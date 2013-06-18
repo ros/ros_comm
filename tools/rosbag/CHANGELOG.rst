@@ -2,6 +2,10 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.46 (2013-06-18)
+-------------------
+* fix crash in bag migration (`#239 <https://github.com/ros/ros_comm/issues/239>`_)
+
 1.9.45 (2013-06-06)
 -------------------
 * added option '--duration' to 'rosbag play' (`#121 <https://github.com/ros/ros_comm/issues/121>`_)
