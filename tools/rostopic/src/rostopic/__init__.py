@@ -407,7 +407,7 @@ def _sub_str_plot_fields(val, f, field_filter):
     return None
 
 
-def _str_plot(val, time_offset=None, current_time=None, field_filter=None):
+def _str_plot(val, time_offset=None, current_time=None, field_filter=None, type_information=None):
     """
     Convert value to matlab/octave-friendly CSV string representation.
 
@@ -532,7 +532,7 @@ class CallbackEcho(object):
             self.sep = ''
         else:
             #TODOXXX: need to pass in filter function
-            self.str_fn = genpy.message.strify_message
+            self.str_fn = self.custom_strify_message
             if echo_clear:
                 self.prefix = '\033[2J\033[;H'
 
@@ -545,7 +545,13 @@ class CallbackEcho(object):
         self.last_topic = None
         self.last_msg_eval = None
 
-    def callback(self, data, topic, current_time=None):
+    def custom_strify_message(self, val, indent='', time_offset=None, current_time=None, field_filter=None, type_information=None):
+        # ensure to print uint8[] as array of numbers instead of string
+        if type_information and type_information.startswith('uint8['):
+            val = [ord(x) for x in val]
+        return genpy.message.strify_message(val, indent=indent, time_offset=time_offset, current_time=current_time, field_filter=field_filter)
+
+    def callback(self, data, callback_args, current_time=None):
         """
         Callback to pass to rospy.Subscriber or to call
         manually. rospy.Subscriber constructor must also pass in the
@@ -554,6 +560,8 @@ class CallbackEcho(object):
         :param topic: topic name, ``str``
         :param current_time: override calculation of current time, :class:`genpy.Time`
         """
+        topic = callback_args['topic']
+        type_information = callback_args.get('type_information', None)
         if self.filter_fn is not None and not self.filter_fn(data):
             return
 
@@ -579,8 +587,6 @@ class CallbackEcho(object):
 
             if msg_eval is not None:
                 data = msg_eval(data)
-            else:
-                val = data
                 
             # data can be None if msg_eval returns None
             if data is not None:
@@ -596,12 +602,12 @@ class CallbackEcho(object):
                 if self.offset_time:
                     sys.stdout.write(self.prefix+\
                                      self.str_fn(data, time_offset=rospy.get_rostime(),
-                                                 current_time=current_time, field_filter=self.field_filter) + \
+                                                 current_time=current_time, field_filter=self.field_filter, type_information=type_information) + \
                                      self.suffix + '\n')
                 else:
                     sys.stdout.write(self.prefix+\
                                      self.str_fn(data,
-                                                 current_time=current_time, field_filter=self.field_filter) + \
+                                                 current_time=current_time, field_filter=self.field_filter, type_information=type_information) + \
                                      self.suffix + '\n')
 
                 # we have to flush in order before piping to work
@@ -645,7 +651,7 @@ def _rostopic_echo_bag(callback_echo, bag_file):
             # dynamic renaming
             if t[0] != '/':
                 t = rosgraph.names.script_resolve_name('rostopic', t)
-            callback_echo.callback(msg, t, current_time=timestamp)
+            callback_echo.callback(msg, {'topic': t}, current_time=timestamp)
             # done is set if there is a max echo count
             if callback_echo.done:
                 break
@@ -672,8 +678,24 @@ def _rostopic_echo(topic, callback_echo, bag_file=None, echo_all_topics=False):
             return
         callback_echo.msg_eval = msg_eval
 
+        # extract type information for submessages
+        type_information = None
+        if len(topic) > len(real_topic):
+            subtopic = topic[len(real_topic):]
+            subtopic = subtopic.strip('/')
+            if subtopic:
+                fields = subtopic.split('/')
+                submsg_class = msg_class
+                while fields:
+                    field = fields[0]
+                    del fields[0]
+                    index = submsg_class.__slots__.index(field)
+                    type_information = submsg_class._slot_types[index]
+                    if fields:
+                        submsg_class = roslib.message.get_message_class(type_information)
+
         use_sim_time = rospy.get_param('/use_sim_time', False)
-        sub = rospy.Subscriber(real_topic, msg_class, callback_echo.callback, topic)
+        sub = rospy.Subscriber(real_topic, msg_class, callback_echo.callback, {'topic': topic, 'type_information': type_information})
 
         if use_sim_time:
             # #2950: print warning if nothing received for two seconds
