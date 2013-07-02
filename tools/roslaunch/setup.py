@@ -9,7 +9,8 @@ d = generate_distutils_setup(
     scripts=['scripts/roscore',
              'scripts/roslaunch',
              'scripts/roslaunch-deps',
-             'scripts/roslaunch-logs'],
+             'scripts/roslaunch-logs',
+             'scripts/roslaunch-complete'],
     requires=['genmsg', 'genpy', 'roslib', 'rospkg']
 )
 
