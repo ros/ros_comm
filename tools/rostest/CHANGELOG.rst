@@ -2,6 +2,11 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.47 (2013-07-03)
+-------------------
+* update 'rostest' to support CATKIN_ENABLE_TESTING
+* check for CATKIN_ENABLE_TESTING to enable configure without tests
+
 1.9.46 (2013-06-18)
 -------------------
 

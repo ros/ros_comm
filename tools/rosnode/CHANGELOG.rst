@@ -2,6 +2,10 @@
 Changelog for package rosnode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.47 (2013-07-03)
+-------------------
+* check for CATKIN_ENABLE_TESTING to enable configure without tests
+
 1.9.46 (2013-06-18)
 -------------------
 * fix rosnode_ping to check if new node uri is valid before using it (`#235 <https://github.com/ros/ros_comm/issues/235>`_)

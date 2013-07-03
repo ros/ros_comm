@@ -2,6 +2,9 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.47 (2013-07-03)
+-------------------
+
 1.9.46 (2013-06-18)
 -------------------
 * fix crash in bag migration (`#239 <https://github.com/ros/ros_comm/issues/239>`_)

@@ -2,6 +2,11 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.47 (2013-07-03)
+-------------------
+* force CMake policy before setting preprocessor definition to ensure correct escaping (`#245 <https://github.com/ros/ros_comm/issues/245>`_)
+* check for CATKIN_ENABLE_TESTING to enable configure without tests
+
 1.9.46 (2013-06-18)
 -------------------
 

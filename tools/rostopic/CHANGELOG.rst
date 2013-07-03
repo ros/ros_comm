@@ -2,6 +2,11 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.47 (2013-07-03)
+-------------------
+* fix 'rostopic echo' for submessages of type uint8[] (`#242 <https://github.com/ros/ros_comm/issues/242>`_)
+* check for CATKIN_ENABLE_TESTING to enable configure without tests
+
 1.9.46 (2013-06-18)
 -------------------
 
