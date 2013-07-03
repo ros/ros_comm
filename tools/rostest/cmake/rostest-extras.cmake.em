@@ -1,8 +1,12 @@
 find_package(catkin REQUIRED)
 
+_generate_function_if_testing_is_disabled("add_rostest")
+
 include(CMakeParseArguments)
 
 function(add_rostest file)
+  _warn_if_skip_testing("add_rostest")
+
 @[if DEVELSPACE]@
   # find program in develspace
   find_program_required(ROSTEST_EXE rostest 
