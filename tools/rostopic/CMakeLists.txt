@@ -5,7 +5,9 @@ catkin_package()
 
 catkin_python_setup()
 
-add_rostest(test/rostopic.test)
-
 install(PROGRAMS scripts/rostopic
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+if(CATKIN_ENABLE_TESTING)
+  add_rostest(test/rostopic.test)
+endif()

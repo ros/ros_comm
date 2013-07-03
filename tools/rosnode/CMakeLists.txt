@@ -5,4 +5,6 @@ catkin_package()
 
 catkin_python_setup()
 
-add_rostest(test/rosnode.test)
+if(CATKIN_ENABLE_TESTING)
+  add_rostest(test/rosnode.test)
+endif()

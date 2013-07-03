@@ -10,7 +10,7 @@
   <url>http://ros.org/wiki/rosmaster</url>
   <author>Ken Conley</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend version_gte="0.5.68">catkin</buildtool_depend>
 
   <build_depend>genmsg</build_depend>
   <build_depend>rosgraph</build_depend>

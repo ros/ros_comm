@@ -22,4 +22,6 @@ install(DIRECTORY resources
 install(PROGRAMS scripts/roslaunch-check
   DESTINATION  ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts)
 
-catkin_add_nosetests(test/unit)
+if(CATKIN_ENABLE_TESTING)
+  catkin_add_nosetests(test/unit)
+endif()

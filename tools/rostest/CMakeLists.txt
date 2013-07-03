@@ -12,20 +12,22 @@ catkin_package(DEPENDS Boost
   )
 catkin_python_setup()
 
-find_package(catkin COMPONENTS rostest)
-
-catkin_add_gtest(test_permuter test/test_permuter.cpp)
-if(TARGET test_permuter)
-  target_link_libraries(test_permuter ${Boost_LIBRARIES})
-endif()
-
-add_rostest(test/hztest0.test)
-add_rostest(test/hztest.test)
-add_rostest(test/clean_master.test)
-add_rostest(test/distro_version.test)
-
 install(PROGRAMS nodes/hztest
   DESTINATION  ${CATKIN_PACKAGE_SHARE_DESTINATION}/nodes/hztest)
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h")
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(catkin COMPONENTS rostest)
+
+  catkin_add_gtest(test_permuter test/test_permuter.cpp)
+  if(TARGET test_permuter)
+    target_link_libraries(test_permuter ${Boost_LIBRARIES})
+  endif()
+
+  add_rostest(test/hztest0.test)
+  add_rostest(test/hztest.test)
+  add_rostest(test/clean_master.test)
+  add_rostest(test/distro_version.test)
+endif()

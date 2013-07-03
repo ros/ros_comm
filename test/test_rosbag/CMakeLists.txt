@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
+
+if(NOT CATKIN_ENABLE_TESTING)
+  return()
+endif()
+
 project(test_rosbag)
 find_package(catkin REQUIRED COMPONENTS message_generation rosbag rosconsole roscpp rosgraph_msgs rostest rosunit topic_tools xmlrpcpp)
 find_package(Boost REQUIRED COMPONENTS regex program_options)

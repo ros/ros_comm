@@ -4,6 +4,7 @@ find_package(catkin REQUIRED COMPONENTS rostest)
 catkin_package()
 catkin_python_setup()
 
-add_rostest(test/roswtf.test)
-
-catkin_add_nosetests(test)
+if(CATKIN_ENABLE_TESTING)
+  add_rostest(test/roswtf.test)
+  catkin_add_nosetests(test)
+endif()
