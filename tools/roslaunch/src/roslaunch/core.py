@@ -196,6 +196,8 @@ def setup_env(node, machine, master_uri, env=None):
 
     # add node-specific env args last as they have highest precedence
     if node:
+        if rosgraph.ROS_NAMESPACE in d:
+            del d[rosgraph.ROS_NAMESPACE]
         ns = node.namespace 
         if ns[-1] == '/':
             ns = ns[:-1]

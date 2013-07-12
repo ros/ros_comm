@@ -46,7 +46,7 @@ import logging
 from xml.dom.minidom import parse, parseString
 from xml.dom import Node as DomNode #avoid aliasing
 
-from rosgraph.names import make_global_ns, ns_join, is_private, is_legal_name
+from rosgraph.names import make_global_ns, ns_join, is_private, is_legal_name, get_ros_namespace
 
 from .core import Param, Node, Test, Machine, RLException
 from . import loader
@@ -662,7 +662,7 @@ class XmlLoader(loader.Loader):
             argv = sys.argv
 
         self._launch_tag(launch, ros_config, filename)
-        self.root_context = loader.LoaderContext('', filename)
+        self.root_context = loader.LoaderContext(get_ros_namespace(), filename)
         loader.load_sysargs_into_context(self.root_context, argv)
 
         if len(launch.getElementsByTagName('master')) > 0:
