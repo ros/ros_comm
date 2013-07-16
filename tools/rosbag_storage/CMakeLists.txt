@@ -70,6 +70,7 @@ add_definitions(${BZIP2_DEFINITIONS})
 ## Declare a cpp library
 add_library(rosbag_storage
   src/bag.cpp
+  src/bag_player.cpp
   src/buffer.cpp
   src/bz2_stream.cpp
   src/chunked_file.cpp
