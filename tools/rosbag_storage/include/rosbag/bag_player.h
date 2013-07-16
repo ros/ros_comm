@@ -94,9 +94,9 @@ public:
    * Default is the last message */
   void set_end(const ros::Time &end);
 
-  /* Set the time scaling factor.  1.0 is the default. 
+  /* Set the speed to playback.  1.0 is the default. 
    * 2.0 would be twice as fast, 0.5 is half realtime.  */
-  void set_time_scale(double scale);
+  void set_playback_speed(double scale);
 
   /* Start playback of the bag file using the parameters previously
      set */
@@ -119,7 +119,7 @@ private:
     ros::Time bag_start_;
     ros::Time bag_end_;
     ros::Time last_message_time_;
-    double time_scale_;
+    double playback_speed_;
     ros::Time play_start_;
 };
 

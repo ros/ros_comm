@@ -12,7 +12,7 @@ BagPlayer::BagPlayer(const std::string &fname) throw(BagException) {
     bag_start_ = v.getBeginTime();
     bag_end_ = v.getEndTime();
     last_message_time_ = ros::Time(0);
-    time_scale_ = 1.0;
+    playback_speed_ = 1.0;
 }
 
 BagPlayer::~BagPlayer() {
@@ -31,12 +31,13 @@ void BagPlayer::set_end(const ros::Time &end) {
     bag_end_ = end;
 }
 
-void BagPlayer::set_time_scale(double scale) {
-    time_scale_ = scale;
+void BagPlayer::set_playback_speed(double scale) {
+  if (scale > 0.0)
+    playback_speed_ = scale;
 }
 
 ros::Time BagPlayer::real_time(const ros::Time &msg_time) {
-    return play_start_ + (msg_time - bag_start_) * time_scale_;
+  return play_start_ + (msg_time - bag_start_) * (1 / playback_speed_);
 }
 
 void BagPlayer::start_play() {
