@@ -43,11 +43,14 @@
 namespace rosbag
 {
 
+
+// A helper struct
 struct BagCallback
 {
     virtual void call(MessageInstance m) = 0;
 };
 
+// A helper class for the callbacks
 template<class T>
 class BagCallbackT : public BagCallback
 {
@@ -66,23 +69,49 @@ private:
     Callback cb_;
 };
 
+
+/* A class for playing back bag files at an API level. It supports
+   relatime, as well as accelerated and slowed playback. */
 class BagPlayer
 {
 public:
-    BagPlayer(const std::string &filename) throw(BagException);
-    template<class T>
-    void register_callback(const std::string &topic,
-            typename BagCallbackT<T>::Callback f);
-    void unregister_callback(const std::string &topic);
-    void set_start(const ros::Time &start);
-    void set_end(const ros::Time &end);
-    void set_time_scale(double scale);
-    void start_play();
-    ros::Time get_time();
-    virtual ~BagPlayer();
+  /* Constructor expecting the filename of a bag */
+  BagPlayer(const std::string &filename) throw(BagException);
 
-    Bag bag;
+  /* Register a callback for a specific topic and type */
+  template<class T>
+  void register_callback(const std::string &topic,
+                         typename BagCallbackT<T>::Callback f);
 
+  /* Unregister a callback for a topic already registered */
+  void unregister_callback(const std::string &topic);
+
+  /* Set the time in the bag to start.  
+   * Default is the first message */
+  void set_start(const ros::Time &start);
+
+  /* Set the time in the bag to stop. 
+   * Default is the last message */
+  void set_end(const ros::Time &end);
+
+  /* Set the time scaling factor.  1.0 is the default. 
+   * 2.0 would be twice as fast, 0.5 is half realtime.  */
+  void set_time_scale(double scale);
+
+  /* Start playback of the bag file using the parameters previously
+     set */
+  void start_play();
+  
+  /* Get the current time of the playback */
+  ros::Time get_time();
+
+  // Destructor
+  virtual ~BagPlayer();
+  
+
+  // The bag file interface loaded in the constructor. 
+  Bag bag;
+  
 private:
     ros::Time real_time(const ros::Time &msg_time);
 
