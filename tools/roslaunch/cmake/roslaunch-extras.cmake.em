@@ -5,7 +5,7 @@
 set(roslaunch_check_script @(CMAKE_CURRENT_SOURCE_DIR)/scripts/roslaunch-check)
 @[else]@
 # set path to roslaunch-check.py installspace
-set(roslaunch_check_script @(CMAKE_INSTALL_PREFIX)/${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts/roslaunch-check)
+set(roslaunch_check_script @(CMAKE_INSTALL_PREFIX)/@(CATKIN_PACKAGE_SHARE_DESTINATION)/scripts/roslaunch-check)
 @[end if]@
 
 #
