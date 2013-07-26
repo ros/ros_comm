@@ -8,15 +8,11 @@ function(add_rostest file)
   _warn_if_skip_testing("add_rostest")
 
 @[if DEVELSPACE]@
-  # find program in develspace
-  find_program_required(ROSTEST_EXE rostest 
-    PATHS @(PROJECT_SOURCE_DIR)/scripts
-    NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
+  # bin in develspace
+  set(ROSTEST_EXE "@(PROJECT_SOURCE_DIR)/scripts/rostest")
 @[else]@
-  # find program in installspace
-  find_program_required(ROSTEST_EXE rostest 
-    PATHS @(CMAKE_INSTALL_PREFIX)/bin
-    NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
+  # bin in installspace
+  set(ROSTEST_EXE "${rostest_DIR}/../../../@(CATKIN_GLOBAL_BIN_DESTINATION)/rostest")
 @[end if]@
 
   cmake_parse_arguments(_rostest "" "WORKING_DIRECTORY" "ARGS" ${ARGN})
