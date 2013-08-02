@@ -252,7 +252,10 @@ def _rosparam_cmd_get_param(param, pretty=False, verbose=False):
     # yaml.dump has a \n at the end, so use stdout.write instead of print
     if verbose:
         print("getting parameter [%s]"%param)
-    val = get_param(param)
+    try:
+        val = get_param(param)
+    except rosgraph.masterapi.Error as e:
+        raise RosParamException(str(e))
     if pretty and type(val) in [dict, str]:
         if type(val) == dict:
             _pretty_print(val)
@@ -570,7 +573,10 @@ def _rosparam_cmd_delete(argv):
     else:
         parser.error("too many arguments")
 
-    delete_param(script_resolve_name(NAME, arg), verbose=options.verbose)
+    try:
+        delete_param(script_resolve_name(NAME, arg), verbose=options.verbose)
+    except rosgraph.masterapi.Error as e:
+        raise RosParamException(str(e))
 
 def _fullusage():
     """
