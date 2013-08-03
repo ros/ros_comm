@@ -1,11 +1,11 @@
 # generated from ros_comm/tools/roslaunch/cmake/roslaunch-extras.cmake.em
 
 @[if DEVELSPACE]@
-# set path to roslaunch-check.py in develspace
+# set path to roslaunch-check script in develspace
 set(roslaunch_check_script @(CMAKE_CURRENT_SOURCE_DIR)/scripts/roslaunch-check)
 @[else]@
-# set path to roslaunch-check.py installspace
-set(roslaunch_check_script @(CMAKE_INSTALL_PREFIX)/@(CATKIN_PACKAGE_SHARE_DESTINATION)/scripts/roslaunch-check)
+# set path to roslaunch-check script installspace
+set(roslaunch_check_script ${roslaunch_DIR}/../scripts/roslaunch-check)
 @[end if]@
 
 #
