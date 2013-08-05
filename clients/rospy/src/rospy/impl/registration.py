@@ -51,7 +51,7 @@ try:
 except ImportError:
     import xmlrpclib as xmlrpcclient
 
-from rospy.core import is_shutdown, xmlrpcapi, \
+from rospy.core import is_shutdown, is_shutdown_requested, xmlrpcapi, \
     logfatal, logwarn, loginfo, logerr, logdebug, \
     signal_shutdown, add_preshutdown_hook
 from rospy.names import get_caller_id, get_namespace
@@ -162,8 +162,17 @@ class RegistrationListeners(object):
         """
         Remove all registration listeners
         """
-        with self.lock:
+        if not is_shutdown_requested():
+            with self.lock:
+                del self.listeners[:]
+        else:
+            # when being in shutdown phase the lock might not be lockable
+            # if a notify_added/removed is currently ongoing
+            locked = self.lock.acquire(False)
+            # remove all listeners anyway
             del self.listeners[:]
+            if locked:
+                self.lock.release()
             
 _registration_listeners = RegistrationListeners()
 def get_registration_listeners():
