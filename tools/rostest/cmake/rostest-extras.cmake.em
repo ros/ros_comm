@@ -43,6 +43,35 @@ function(add_rostest file)
   catkin_run_tests_target("rostest" ${_testname} "rostest-${_output_name}" COMMAND ${cmd} WORKING_DIRECTORY ${_rostest_WORKING_DIRECTORY})
 endfunction()
 
+#
+# Register the launch file with add_rostest() and compile all
+# passed files into a GTest binary.
+#
+# .. note:: The function does nothing if GTest was not found.  The
+#   target is only compiled when tests are build and linked against
+#   the GTest libraries.
+#
+# :param target: target name of the GTest executable
+# :type target: string
+# :param launch_file: the relative path to the roslaunch file
+# :type launch_file: string
+# :param ARGN: the files to compile into a GTest executable
+# :type ARGN: list of files
+#
+function(add_rostest_gtest target launch_file)
+  if("${ARGN}" STREQUAL "")
+    message(FATAL_ERROR "add_rostest_gtest() needs at least one file argument to compile a GTest executable")
+  endif()
+  if(GTEST_FOUND)
+    add_executable(${target} EXCLUDE_FROM_ALL ${ARGN})
+    target_link_libraries(${target} ${GTEST_LIBRARIES})
+    if(TARGET tests)
+      add_dependencies(tests ${target})
+    endif()
+    add_rostest(${launch_file})
+  endif()
+endfunction()
+
 macro(rostest__strip_prefix var prefix)
   string(LENGTH ${prefix} prefix_length)
   string(LENGTH ${${var}} var_length)
