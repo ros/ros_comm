@@ -99,6 +99,7 @@ RecorderOptions::RecorderOptions() :
     append_date(true),
     snapshot(false),
     verbose(false),
+    rolling_buffer(false),
     compression(compression::Uncompressed),
     prefix(""),
     name(""),
@@ -108,6 +109,7 @@ RecorderOptions::RecorderOptions() :
     split(false),
     max_size(0),
     max_duration(-1.0),
+    rolling_buffer_duration(-1.0),
     node("")
 {
 }
@@ -169,6 +171,7 @@ int Recorder::run() {
         return 0;
 
     ros::Subscriber trigger_sub;
+    ros::Subscriber dump_sub;
 
     // Spin up a thread for writing to the file
     boost::thread record_thread;
@@ -178,6 +181,12 @@ int Recorder::run() {
 
         // Subscribe to the snapshot trigger
         trigger_sub = nh.subscribe<std_msgs::Empty>("snapshot_trigger", 100, boost::bind(&Recorder::snapshotTrigger, this, _1));
+    }
+    else if (options_.rolling_buffer)
+    {
+        record_thread = boost::thread(boost::bind(&Recorder::doRecordSnapshotter, this));
+        //start listening to the dump topic
+        dump_sub = nh.subscribe<std_msgs::Empty>("buffer_dump", 100, boost::bind(&Recorder::dumpTrigger, this, _1));
     }
     else
         record_thread = boost::thread(boost::bind(&Recorder::doRecord, this));
@@ -293,6 +302,16 @@ void Recorder::doQueue(ros::MessageEvent<topic_tools::ShapeShifter const> msg_ev
                 }
             }
         }
+        if (options_.rolling_buffer){
+          //delete messages that are too old
+          OutgoingMessage drop = queue_->front();
+          while (drop.time < rectime - options_.rolling_buffer_duration)
+          {
+              queue_->pop();
+              queue_size_ -= drop.msg->size();
+              drop = queue_->front();
+          }
+        }
     }
   
     if (!options_.snapshot)
@@ -350,6 +369,19 @@ void Recorder::snapshotTrigger(std_msgs::Empty::ConstPtr trigger) {
         queue_queue_.push(OutgoingQueue(target_filename_, queue_, Time::now()));
         queue_      = new std::queue<OutgoingMessage>;
         queue_size_ = 0;
+    }
+
+    queue_condition_.notify_all();
+}
+
+//does the same thing as the snapshotTrigger except for it doesn't clear the queue
+void Recorder::dumpTrigger(std_msgs::Empty::ConstPtr trigger) {
+    updateFilenames();
+    
+    ROS_INFO("Triggered rolling buffer dump with name %s.", target_filename_.c_str());
+    {
+	boost::mutex::scoped_lock lock(queue_mutex_);
+	queue_queue_.push(OutgoingQueue(target_filename_, queue_, Time::now()));
     }
 
     queue_condition_.notify_all();

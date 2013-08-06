@@ -62,8 +62,8 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       ("topic", po::value< std::vector<std::string> >(), "topic to record")
       ("size", po::value<int>(), "The maximum size of the bag to record in MB.")
       ("duration", po::value<std::string>(), "Record a bag of maximum duration in seconds, unless 'm', or 'h' is appended.")
-      ("node", po::value<std::string>(), "Record all topics subscribed to by a specific node.");
-
+      ("node", po::value<std::string>(), "Record all topics subscribed to by a specific node.")
+      ("rolling-buffer", po::value<std::string>(), "Keeps a rolling buffer of messages of the specified number of seconds and dumps it upon recieving a message to the buffer_dump topic");
   
     po::positional_options_description p;
     p.add("topic", -1);
@@ -188,6 +188,41 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
            i++)
         opts.topics.push_back(*i);
     }
+
+    if (vm.count("rolling-buffer"))
+    {
+      opts.rolling_buffer = true;
+      std::string duration_str = vm["rolling-buffer"].as<std::string>();
+
+      double duration;
+      double multiplier = 1.0;
+      std::string unit("");
+
+      std::istringstream iss(duration_str);
+      if ((iss >> duration).fail())
+        throw ros::Exception("Duration must start with a floating point number.");
+
+      if ( (!iss.eof() && ((iss >> unit).fail())) )
+      {
+        throw ros::Exception("Duration unit must be s, m, or h");
+      }
+      if (unit == std::string(""))
+        multiplier = 1.0;
+      else if (unit == std::string("s"))
+        multiplier = 1.0;
+      else if (unit == std::string("m"))
+        multiplier = 60.0;
+      else if (unit == std::string("h"))
+        multiplier = 3600.0;
+      else
+        throw ros::Exception("Duration unit must be s, m, or h");
+
+      opts.rolling_buffer_duration = ros::Duration(duration * multiplier);
+      if (opts.rolling_buffer_duration <= ros::Duration(0))
+        throw ros::Exception("Duration must be positive.");
+    }
+    else
+	ROS_ERROR("no rolling buffer");
 
 
     // check that argument combinations make sense

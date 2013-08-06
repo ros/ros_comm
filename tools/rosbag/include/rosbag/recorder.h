@@ -95,6 +95,7 @@ struct ROSBAG_DECL RecorderOptions
     bool            append_date;
     bool            snapshot;
     bool            verbose;
+    bool            rolling_buffer;
     CompressionType compression;
     std::string     prefix;
     std::string     name;
@@ -104,6 +105,7 @@ struct ROSBAG_DECL RecorderOptions
     bool            split;
     uint32_t        max_size;
     ros::Duration   max_duration;
+    ros::Duration   rolling_buffer_duration;
     std::string     node;
 
     std::vector<std::string> topics;
@@ -134,6 +136,7 @@ private:
     bool checkDisk();
 
     void snapshotTrigger(std_msgs::Empty::ConstPtr trigger);
+    void dumpTrigger(std_msgs::Empty::ConstPtr trigger);
     //    void doQueue(topic_tools::ShapeShifter::ConstPtr msg, std::string const& topic, boost::shared_ptr<ros::Subscriber> subscriber, boost::shared_ptr<int> count);
     void doQueue(ros::MessageEvent<topic_tools::ShapeShifter const> msg_event, std::string const& topic, boost::shared_ptr<ros::Subscriber> subscriber, boost::shared_ptr<int> count);
     void doRecord();
