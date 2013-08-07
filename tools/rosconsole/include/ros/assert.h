@@ -137,7 +137,7 @@
 
 #define ROS_ASSERT_CMD(cond, cmd) \
   do { \
-    if (!cond) { \
+    if (!(cond)) { \
       cmd; \
     } \
   } while (0)
