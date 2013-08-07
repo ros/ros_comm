@@ -85,24 +85,26 @@ def resolve_launch_arguments(args):
     if not args:
         return args
     resolved_args = None
-    top = args[0]
-    if os.path.isfile(top):
-        resolved_args = [top] + args[1:]
-    elif len(args) == 1:
-        raise roslaunch.core.RLException("[%s] does not exist. please specify a package and launch file"%(top))
-    else:
+
+    # try to resolve launch file in package first
+    if len(args) >= 2:
         try:
-            resolved = roslib.packages.find_resource(top, args[1])
+            resolved = roslib.packages.find_resource(args[0], args[1])
+            if len(resolved) > 1:
+                raise roslaunch.core.RLException("multiple files named [%s] in package [%s]:%s\nPlease specify full path instead" % (args[1], args[0], ''.join(['\n- %s' % r for r in resolved])))
             if len(resolved) == 1:
-                resolved = resolved[0]
-            elif len(resolved) > 1:
-                raise roslaunch.core.RLException("multiple files named [%s] in package [%s]:%s\nPlease specify full path instead" % (args[1], top, ''.join(['\n- %s' % r for r in resolved])))
-        except rospkg.ResourceNotFound as e:
-            raise roslaunch.core.RLException("[%s] is not a package or launch file name"%top)
-        if not resolved:
-            raise roslaunch.core.RLException("cannot locate [%s] in package [%s]"%(args[1], top))
+                resolved_args = [resolved[0]] + args[2:]
+        except rospkg.ResourceNotFound:
+            pass
+    # try to resolve launch file
+    if resolved_args is None and os.path.isfile(args[0]):
+        resolved_args = [args[0]] + args[1:]
+    # raise if unable to resolve
+    if resolved_args is None:
+        if len(args) >= 2:
+            raise roslaunch.core.RLException("[%s] is neither a launch file in package [%s] nor is [%s] a launch file name" % (args[1], args[0], args[0]))
         else:
-            resolved_args = [resolved] + args[2:]
+            raise roslaunch.core.RLException("[%s] is not a launch file name" % args[0])
     return resolved_args
 
 def _wait_for_master():
