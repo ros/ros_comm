@@ -535,8 +535,6 @@ void Recorder::doRecordSnapshotter() {
         string target_filename = out_queue.filename;
         string write_filename  = target_filename + string(".active");
 
-        
-	checkDisk();
         try {
             bag_.open(write_filename, bagmode::Write);
         }
