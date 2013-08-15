@@ -687,7 +687,7 @@ def _rostopic_echo(topic, callback_echo, bag_file=None, echo_all_topics=False):
                 fields = subtopic.split('/')
                 submsg_class = msg_class
                 while fields:
-                    field = fields[0]
+                    field = fields[0].split('[')[0]
                     del fields[0]
                     index = submsg_class.__slots__.index(field)
                     type_information = submsg_class._slot_types[index]
