@@ -523,7 +523,7 @@ class MessageMigrator(object):
         # from the migration ruleset export flag.
         if plugins:
             rospack = rospkg.RosPack()
-            for dep,export in [('rosbagmigration','rule_file'),('rosbag','migration_rule_file')]:
+            for dep,export in [('rosbagmigration','rule_file'),('rosbag','migration_rule_file'),('rosbag_migration_rule','rule_file')]:
                 for pkg in rospack.get_depends_on(dep, implicit=False):
                     m = rospack.get_manifest(pkg)
                     p_rules = m.get_export(dep,export)
