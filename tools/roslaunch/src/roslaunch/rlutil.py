@@ -195,7 +195,12 @@ def check_roslaunch(f):
     
     errors = []
     # check for missing deps
-    base_pkg, file_deps, missing = roslaunch.depends.roslaunch_deps([f])
+    try:
+        base_pkg, file_deps, missing = roslaunch.depends.roslaunch_deps([f])
+    except Exception as e:
+        errors.append("Error resolving dependencies in %s: %s"%(f, str(e)))
+        missing = {}
+        file_deps = {}
     for pkg, miss in missing.iteritems():
         if miss:
             errors.append("Missing manifest dependencies: %s/manifest.xml: %s"%(pkg, ', '.join(miss)))
