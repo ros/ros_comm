@@ -2,6 +2,10 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.48 (2013-08-21)
+-------------------
+* make rospy nodes killable while waiting for master (`#262 <https://github.com/ros/ros_comm/issues/262>`_)
+
 1.9.47 (2013-07-03)
 -------------------
 

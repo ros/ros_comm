@@ -2,6 +2,9 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.48 (2013-08-21)
+-------------------
+
 1.9.47 (2013-07-03)
 -------------------
 * check for CATKIN_ENABLE_TESTING to enable configure without tests

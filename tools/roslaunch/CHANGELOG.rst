@@ -2,6 +2,13 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.48 (2013-08-21)
+-------------------
+* update roslaunch to support ROS_NAMESPACE (`#58 <https://github.com/ros/ros_comm/issues/58>`_)
+* make roslaunch relocatable (`ros/catkin#490 <https://github.com/ros/catkin/issues/490>`_)
+* change roslaunch resolve order (`#256 <https://github.com/ros/ros_comm/issues/256>`_)
+* fix roslaunch check script in install space (`#257 <https://github.com/ros/ros_comm/issues/257>`_)
+
 1.9.47 (2013-07-03)
 -------------------
 * improve roslaunch completion to include launch file arguments (`#230 <https://github.com/ros/ros_comm/issues/230>`_)

@@ -2,6 +2,11 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.48 (2013-08-21)
+-------------------
+* add convenience function for rostest with gtests (`#258 <https://github.com/ros/ros_comm/issues/258>`_)
+* make rostest relocatable (`ros/catkin#490 <https://github.com/ros/catkin/issues/490>`_)
+
 1.9.47 (2013-07-03)
 -------------------
 * update 'rostest' to support CATKIN_ENABLE_TESTING
