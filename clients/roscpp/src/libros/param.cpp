@@ -36,6 +36,9 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <vector>
+#include <map>
+
 namespace ros
 {
 
@@ -47,7 +50,7 @@ M_Param g_params;
 boost::mutex g_params_mutex;
 S_string g_subscribed_params;
 
-void set(const std::string &key, const XmlRpc::XmlRpcValue &v)
+void set(const std::string& key, const XmlRpc::XmlRpcValue& v)
 {
   std::string mapped_key = ros::names::resolve(key);
 
@@ -73,7 +76,7 @@ void set(const std::string &key, const XmlRpc::XmlRpcValue &v)
   }
 }
 
-void set(const std::string &key, const std::string &s)
+void set(const std::string& key, const std::string& s)
 {
   // construct xmlrpc_c::value object of the std::string and
   // call param::set(key, xmlvalue);
@@ -81,7 +84,7 @@ void set(const std::string &key, const std::string &s)
   ros::param::set(key, v);
 }
 
-void set(const std::string &key, const char* s)
+void set(const std::string& key, const char* s)
 {
   // construct xmlrpc_c::value object of the std::string and
   // call param::set(key, xmlvalue);
@@ -90,13 +93,13 @@ void set(const std::string &key, const char* s)
   ros::param::set(key, v);
 }
 
-void set(const std::string &key, double d)
+void set(const std::string& key, double d)
 {
   XmlRpc::XmlRpcValue v(d);
   ros::param::set(key, v);
 }
 
-void set(const std::string &key, int i)
+void set(const std::string& key, int i)
 {
   XmlRpc::XmlRpcValue v(i);
   ros::param::set(key, v);
@@ -108,7 +111,89 @@ void set(const std::string& key, bool b)
   ros::param::set(key, v);
 }
 
-bool has(const std::string &key)
+template <class T>
+  void setImpl(const std::string& key, const std::vector<T>& vec)
+{
+  // Note: the XmlRpcValue starts off as "invalid" and assertArray turns it
+  // into an array type with the given size
+  XmlRpc::XmlRpcValue xml_vec;
+  xml_vec.setSize(vec.size());
+
+  // Copy the contents into the XmlRpcValue
+  for(size_t i=0; i < vec.size(); i++) {
+    xml_vec[i] = vec.at(i);
+  }
+
+  set(key, xml_vec);
+}
+
+void set(const std::string& key, const std::vector<std::string>& vec)
+{
+  setImpl(key, vec);
+}
+
+void set(const std::string& key, const std::vector<double>& vec)
+{
+  setImpl(key, vec);
+}
+
+void set(const std::string& key, const std::vector<float>& vec)
+{
+  setImpl(key, vec);
+}
+
+void set(const std::string& key, const std::vector<int>& vec)
+{
+  setImpl(key, vec);
+}
+
+void set(const std::string& key, const std::vector<bool>& vec)
+{
+  setImpl(key, vec);
+}
+
+template <class T>
+  void setImpl(const std::string& key, const std::map<std::string, T>& map)
+{
+  // Note: the XmlRpcValue starts off as "invalid" and assertArray turns it
+  // into an array type with the given size
+  XmlRpc::XmlRpcValue xml_value;
+  const XmlRpc::XmlRpcValue::ValueStruct& xml_map = (const XmlRpc::XmlRpcValue::ValueStruct &)(xml_value);
+
+  // Copy the contents into the XmlRpcValue
+  for(typename std::map<std::string, T>::const_iterator it = map.begin(); it != map.end(); ++it) {
+    xml_value[it->first] = it->second;
+  }
+
+  set(key, xml_value);
+}
+
+void set(const std::string& key, const std::map<std::string, std::string>& map)
+{
+  setImpl(key, map);
+}
+
+void set(const std::string& key, const std::map<std::string, double>& map)
+{
+  setImpl(key, map);
+}
+
+void set(const std::string& key, const std::map<std::string, float>& map)
+{
+  setImpl(key, map);
+}
+
+void set(const std::string& key, const std::map<std::string, int>& map)
+{
+  setImpl(key, map);
+}
+
+void set(const std::string& key, const std::map<std::string, bool>& map)
+{
+  setImpl(key, map);
+}
+
+bool has(const std::string& key)
 {
   XmlRpc::XmlRpcValue params, result, payload;
   params[0] = this_node::getName();
@@ -125,7 +210,7 @@ bool has(const std::string &key)
   return payload;
 }
 
-bool del(const std::string &key)
+bool del(const std::string& key)
 {
   std::string mapped_key = ros::names::resolve(key);
 
@@ -159,7 +244,7 @@ bool del(const std::string &key)
   return true;
 }
 
-bool getImpl(const std::string &key, XmlRpc::XmlRpcValue &v, bool use_cache)
+bool getImpl(const std::string& key, XmlRpc::XmlRpcValue& v, bool use_cache)
 {
   std::string mapped_key = ros::names::resolve(key);
 
@@ -230,7 +315,7 @@ bool getImpl(const std::string &key, XmlRpc::XmlRpcValue &v, bool use_cache)
   return ret;
 }
 
-bool getImpl(const std::string &key, std::string &s, bool use_cache)
+bool getImpl(const std::string& key, std::string& s, bool use_cache)
 {
   XmlRpc::XmlRpcValue v;
   if (!getImpl(key, v, use_cache))
@@ -241,7 +326,7 @@ bool getImpl(const std::string &key, std::string &s, bool use_cache)
   return true;
 }
 
-bool getImpl(const std::string &key, double &d, bool use_cache)
+bool getImpl(const std::string& key, double& d, bool use_cache)
 {
   XmlRpc::XmlRpcValue v;
   if (!getImpl(key, v, use_cache))
@@ -265,7 +350,7 @@ bool getImpl(const std::string &key, double &d, bool use_cache)
   return true;
 }
 
-bool getImpl(const std::string &key, float &f, bool use_cache)
+bool getImpl(const std::string& key, float& f, bool use_cache)
 {
   double d = static_cast<double>(f);
   bool result = getImpl(key, d, use_cache);
@@ -274,7 +359,7 @@ bool getImpl(const std::string &key, float &f, bool use_cache)
   return result;
 }
 
-bool getImpl(const std::string &key, int &i, bool use_cache)
+bool getImpl(const std::string& key, int& i, bool use_cache)
 {
   XmlRpc::XmlRpcValue v;
   if (!getImpl(key, v, use_cache))
@@ -309,7 +394,7 @@ bool getImpl(const std::string &key, int &i, bool use_cache)
   return true;
 }
 
-bool getImpl(const std::string &key, bool &b, bool use_cache)
+bool getImpl(const std::string& key, bool& b, bool use_cache)
 {
   XmlRpc::XmlRpcValue v;
   if (!getImpl(key, v, use_cache))
@@ -360,6 +445,11 @@ bool getCached(const std::string& key, double& d)
 	return getImpl(key, d, true);
 }
 
+bool getCached(const std::string& key, float& f)
+{
+	return getImpl(key, f, true);
+}
+
 bool getCached(const std::string& key, int& i)
 {
 	return getImpl(key, i, true);
@@ -374,6 +464,247 @@ bool getCached(const std::string& key, XmlRpc::XmlRpcValue& v)
 {
 	return getImpl(key, v, true);
 }
+
+template <class T> T xml_cast(XmlRpc::XmlRpcValue xml_value) 
+{
+  return static_cast<T>(xml_value);
+}
+
+template <class T> bool xml_castable(int XmlType) 
+{
+  return false;
+}
+
+template<> bool xml_castable<std::string>(int XmlType)
+{
+  return XmlType == XmlRpc::XmlRpcValue::TypeString;
+}
+
+template<> bool xml_castable<double>(int XmlType)
+{
+  return ( 
+      XmlType == XmlRpc::XmlRpcValue::TypeDouble ||
+      XmlType == XmlRpc::XmlRpcValue::TypeInt ||
+      XmlType == XmlRpc::XmlRpcValue::TypeBoolean );
+}
+
+template<> bool xml_castable<float>(int XmlType)
+{
+  return ( 
+      XmlType == XmlRpc::XmlRpcValue::TypeDouble ||
+      XmlType == XmlRpc::XmlRpcValue::TypeInt ||
+      XmlType == XmlRpc::XmlRpcValue::TypeBoolean );
+}
+
+template<> bool xml_castable<int>(int XmlType)
+{
+  return ( 
+      XmlType == XmlRpc::XmlRpcValue::TypeDouble ||
+      XmlType == XmlRpc::XmlRpcValue::TypeInt ||
+      XmlType == XmlRpc::XmlRpcValue::TypeBoolean );
+}
+
+template<> bool xml_castable<bool>(int XmlType)
+{
+  return ( 
+      XmlType == XmlRpc::XmlRpcValue::TypeDouble ||
+      XmlType == XmlRpc::XmlRpcValue::TypeInt ||
+      XmlType == XmlRpc::XmlRpcValue::TypeBoolean );
+}
+
+template<> double xml_cast(XmlRpc::XmlRpcValue xml_value)
+{
+  using namespace XmlRpc;
+  switch(xml_value.getType()) {
+    case XmlRpcValue::TypeDouble:
+      return static_cast<double>(xml_value);
+    case XmlRpcValue::TypeInt:
+      return static_cast<double>(static_cast<int>(xml_value));
+    case XmlRpcValue::TypeBoolean:
+      return static_cast<double>(static_cast<bool>(xml_value));
+  };
+}
+
+template<> float xml_cast(XmlRpc::XmlRpcValue xml_value)
+{
+  using namespace XmlRpc;
+  switch(xml_value.getType()) {
+    case XmlRpcValue::TypeDouble:
+      return static_cast<float>(static_cast<double>(xml_value));
+    case XmlRpcValue::TypeInt:
+      return static_cast<float>(static_cast<int>(xml_value));
+    case XmlRpcValue::TypeBoolean:
+      return static_cast<float>(static_cast<bool>(xml_value));
+  };
+}
+
+template<> int xml_cast(XmlRpc::XmlRpcValue xml_value)
+{
+  using namespace XmlRpc;
+  switch(xml_value.getType()) {
+    case XmlRpcValue::TypeDouble:
+      return static_cast<int>(static_cast<double>(xml_value));
+    case XmlRpcValue::TypeInt:
+      return static_cast<int>(xml_value);
+    case XmlRpcValue::TypeBoolean:
+      return static_cast<int>(static_cast<bool>(xml_value));
+  };
+}
+
+template<> bool xml_cast(XmlRpc::XmlRpcValue xml_value)
+{
+  using namespace XmlRpc;
+  switch(xml_value.getType()) {
+    case XmlRpcValue::TypeDouble:
+      return static_cast<bool>(static_cast<double>(xml_value));
+    case XmlRpcValue::TypeInt:
+      return static_cast<bool>(static_cast<int>(xml_value));
+    case XmlRpcValue::TypeBoolean:
+      return static_cast<bool>(xml_value);
+  };
+}
+  
+template <class T>
+  bool getImpl(const std::string& key, std::vector<T>& vec, bool cached)
+{
+  XmlRpc::XmlRpcValue xml_array;
+  if(!getImpl(key, xml_array, cached)) {
+    return false;
+  }
+
+  // Make sure it's an array type
+  if(xml_array.getType() != XmlRpc::XmlRpcValue::TypeArray) {
+    return false;
+  }
+
+  // Resize the target vector (destructive)
+  vec.resize(xml_array.size());
+
+  // Fill the vector with stuff
+  for (int i = 0; i < xml_array.size(); i++) {
+    if(!xml_castable<T>(xml_array[i].getType())) {
+      return false;
+    }
+
+    vec[i] = xml_cast<T>(xml_array[i]);
+  }
+
+  return true;
+}
+
+bool get(const std::string& key, std::vector<std::string>& vec)
+{
+  return getImpl(key, vec, false);
+}
+bool get(const std::string& key, std::vector<double>& vec)
+{
+  return getImpl(key, vec, false);
+}
+bool get(const std::string& key, std::vector<float>& vec)
+{
+  return getImpl(key, vec, false);
+}
+bool get(const std::string& key, std::vector<int>& vec)
+{
+  return getImpl(key, vec, false);
+}
+bool get(const std::string& key, std::vector<bool>& vec)
+{
+  return getImpl(key, vec, false);
+}
+
+bool getCached(const std::string& key, std::vector<std::string>& vec)
+{
+  return getImpl(key, vec, true);
+}
+bool getCached(const std::string& key, std::vector<double>& vec)
+{
+  return getImpl(key, vec, true);
+}
+bool getCached(const std::string& key, std::vector<float>& vec)
+{
+  return getImpl(key, vec, true);
+}
+bool getCached(const std::string& key, std::vector<int>& vec)
+{
+  return getImpl(key, vec, true);
+}
+bool getCached(const std::string& key, std::vector<bool>& vec)
+{
+  return getImpl(key, vec, true);
+}
+
+template <class T>
+  bool getImpl(const std::string& key, std::map<std::string, T>& map, bool cached)
+{
+  XmlRpc::XmlRpcValue xml_value;
+  if(!getImpl(key, xml_value, cached)) {
+    return false;
+  }
+
+  // Make sure it's a struct type
+  if(xml_value.getType() != XmlRpc::XmlRpcValue::TypeStruct) {
+    return false;
+  }
+
+  // Fill the map with stuff
+  for (XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = xml_value.begin();
+      it != xml_value.end();
+      ++it)
+  {
+    // Make sure this element is the right type
+    if(!xml_castable<T>(it->second.getType())) {
+      return false;
+    }
+    // Store the element
+    map[it->first] = xml_cast<T>(it->second);
+  }
+
+  return true;
+}
+
+bool get(const std::string& key, std::map<std::string, std::string>& map)
+{
+  return getImpl(key, map, false);
+}
+bool get(const std::string& key, std::map<std::string, double>& map)
+{
+  return getImpl(key, map, false);
+}
+bool get(const std::string& key, std::map<std::string, float>& map)
+{
+  return getImpl(key, map, false);
+}
+bool get(const std::string& key, std::map<std::string, int>& map)
+{
+  return getImpl(key, map, false);
+}
+bool get(const std::string& key, std::map<std::string, bool>& map)
+{
+  return getImpl(key, map, false);
+}
+
+bool getCached(const std::string& key, std::map<std::string, std::string>& map)
+{
+  return getImpl(key, map, true);
+}
+bool getCached(const std::string& key, std::map<std::string, double>& map)
+{
+  return getImpl(key, map, true);
+}
+bool getCached(const std::string& key, std::map<std::string, float>& map)
+{
+  return getImpl(key, map, true);
+}
+bool getCached(const std::string& key, std::map<std::string, int>& map)
+{
+  return getImpl(key, map, true);
+}
+bool getCached(const std::string& key, std::map<std::string, bool>& map)
+{
+  return getImpl(key, map, true);
+}
+
 
 bool search(const std::string& key, std::string& result_out)
 {
