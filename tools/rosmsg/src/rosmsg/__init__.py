@@ -447,30 +447,34 @@ def rosmsg_debug(rospack, mode, type_, raw=False):
     else:
         raise ROSMsgException("Invalid mode for debug: %s"%mode)
     
-def list_srvs(package):
+def list_srvs(package, rospack=None):
     """
     List srvs contained in package
     :param package: package name, ``str``
+    :param rospack: an optional rospack instance to be reused, ``rospkg.RosPack``
     :returns: list of srvs in package, ``[str]``
     """
-    return list_types(package, mode=MODE_SRV)
+    return list_types(package, mode=MODE_SRV, rospack=rospack)
 
-def list_msgs(package):
+def list_msgs(package, rospack=None):
     """
     List msgs contained in package
     :param package: package name, ``str``
+    :param rospack: an optional rospack instance to be reused, ``rospkg.RosPack``
     :returns: list of msgs in package, ``[str]``
     """
-    return list_types(package)
+    return list_types(package, rospack=rospack)
     
-def list_types(package, mode=MODE_MSG):
+def list_types(package, mode=MODE_MSG, rospack=None):
     """
     Lists msg/srvs contained in package
     :param package: package name, ``str``
     :param mode: MODE_MSG or MODE_SRV. Defaults to msgs, ``str``
+    :param rospack: an optional rospack instance to be reused, ``rospkg.RosPack``
     :returns: list of msgs/srv in package, ``[str]``
     """
-    rospack = rospkg.RosPack()
+    if rospack is None:
+        rospack = rospkg.RosPack()
     if mode == MODE_MSG:
         subdir = 'msg'
     elif mode == MODE_SRV:
