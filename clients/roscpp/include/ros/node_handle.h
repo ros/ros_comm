@@ -1384,20 +1384,92 @@ if (handle)
    * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
    */
   void setParam(const std::string& key, double d) const;
-  /** \brief Set a integer value on the parameter server.
+  /** \brief Set an integer value on the parameter server.
    *
    * \param key The key to be used in the parameter server's dictionary
    * \param i The value to be inserted.
    * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
    */
   void setParam(const std::string& key, int i) const;
-  /** \brief Set a integer value on the parameter server.
+  /** \brief Set a boolean value on the parameter server.
    *
    * \param key The key to be used in the parameter server's dictionary
    * \param b The value to be inserted.
    * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
    */
   void setParam(const std::string& key, bool b) const;
+
+  /** \brief Set a string vector value on the parameter server.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param vec The value to be inserted.
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  void setParam(const std::string& key, const std::vector<std::string>& vec) const;
+  /** \brief Set a double vector value on the parameter server.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param vec The value to be inserted.
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  void setParam(const std::string& key, const std::vector<double>& vec) const;
+  /** \brief Set a float vector value on the parameter server.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param vec The value to be inserted.
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  void setParam(const std::string& key, const std::vector<float>& vec) const;
+  /** \brief Set a int vector value on the parameter server.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param vec The value to be inserted.
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  void setParam(const std::string& key, const std::vector<int>& vec) const;
+  /** \brief Set a bool vector value on the parameter server.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param vec The value to be inserted.
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  void setParam(const std::string& key, const std::vector<bool>& vec) const;
+
+  /** \brief Set a string vector value on the parameter server.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param map The value to be inserted.
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  void setParam(const std::string& key, const std::map<std::string, std::string>& map) const;
+  /** \brief Set a double vector value on the parameter server.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param map The value to be inserted.
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  void setParam(const std::string& key, const std::map<std::string, double>& map) const;
+  /** \brief Set a float vector value on the parameter server.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param map The value to be inserted.
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  void setParam(const std::string& key, const std::map<std::string, float>& map) const;
+  /** \brief Set a int vector value on the parameter server.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param map The value to be inserted.
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  void setParam(const std::string& key, const std::map<std::string, int>& map) const;
+  /** \brief Set a bool vector value on the parameter server.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param map The value to be inserted.
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  void setParam(const std::string& key, const std::map<std::string, bool>& map) const;
 
   /** \brief Get a string value from the parameter server.
    *
@@ -1419,7 +1491,7 @@ if (handle)
    * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
    */
   bool getParam(const std::string& key, double& d) const;
-  /** \brief Get a integer value from the parameter server.
+  /** \brief Get an integer value from the parameter server.
    *
    * If you want to provide a default value in case the key does not exist use param().
    *
@@ -1453,6 +1525,118 @@ if (handle)
    */
   bool getParam(const std::string& key, XmlRpc::XmlRpcValue& v) const;
 
+  /** \brief Get a string vector value from the parameter server.
+   *
+   * If you want to provide a default value in case the key does not exist use param().
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] vec Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParam(const std::string& key, std::vector<std::string>& vec) const;
+  /** \brief Get a double vector value from the parameter server.
+   *
+   * If you want to provide a default value in case the key does not exist use param().
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] vec Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParam(const std::string& key, std::vector<double>& vec) const;
+  /** \brief Get a float vector value from the parameter server.
+   *
+   * If you want to provide a default value in case the key does not exist use param().
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] vec Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParam(const std::string& key, std::vector<float>& vec) const;
+  /** \brief Get an int vector value from the parameter server.
+   *
+   * If you want to provide a default value in case the key does not exist use param().
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] vec Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParam(const std::string& key, std::vector<int>& vec) const;
+  /** \brief Get a boolean vector value from the parameter server.
+   *
+   * If you want to provide a default value in case the key does not exist use param().
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] vec Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParam(const std::string& key, std::vector<bool>& vec) const;
+
+  /** \brief Get a string map value from the parameter server.
+   *
+   * If you want to provide a default value in case the key does not exist use param().
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] map Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParam(const std::string& key, std::map<std::string, std::string>& map) const;
+  /** \brief Get a double map value from the parameter server.
+   *
+   * If you want to provide a default value in case the key does not exist use param().
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] map Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParam(const std::string& key, std::map<std::string, double>& map) const;
+  /** \brief Get a float map value from the parameter server.
+   *
+   * If you want to provide a default value in case the key does not exist use param().
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] map Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParam(const std::string& key, std::map<std::string, float>& map) const;
+  /** \brief Get an int map value from the parameter server.
+   *
+   * If you want to provide a default value in case the key does not exist use param().
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] map Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParam(const std::string& key, std::map<std::string, int>& map) const;
+  /** \brief Get a boolean map value from the parameter server.
+   *
+   * If you want to provide a default value in case the key does not exist use param().
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] map Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParam(const std::string& key, std::map<std::string, bool>& map) const;
+
   /** \brief Get a string value from the parameter server, with local caching
    *
    * If you want to provide a default value in case the key does not exist use param().
@@ -1483,7 +1667,21 @@ if (handle)
    * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
    */
   bool getParamCached(const std::string& key, double& d) const;
-  /** \brief Get a integer value from the parameter server, with local caching
+  /** \brief Get a float value from the parameter server, with local caching
+   *
+   * This method will cache parameters locally, and subscribe for updates from
+   * the parameter server.  Once the parameter is retrieved for the first time
+   * no subsequent getCached() calls with the same key will query the master --
+   * they will instead look up in the local cache.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] f Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParamCached(const std::string& key, float& f) const;
+  /** \brief Get an integer value from the parameter server, with local caching
    *
    * This method will cache parameters locally, and subscribe for updates from
    * the parameter server.  Once the parameter is retrieved for the first time
@@ -1525,6 +1723,148 @@ if (handle)
    * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
    */
   bool getParamCached(const std::string& key, XmlRpc::XmlRpcValue& v) const;
+
+  /** \brief Get a std::string vector value from the parameter server, with local caching
+   *
+   * This method will cache parameters locally, and subscribe for updates from
+   * the parameter server.  Once the parameter is retrieved for the first time
+   * no subsequent getCached() calls with the same key will query the master --
+   * they will instead look up in the local cache.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] vec Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParamCached(const std::string& key, std::vector<std::string>& vec) const;
+  /** \brief Get a double vector value from the parameter server, with local caching
+   *
+   * This method will cache parameters locally, and subscribe for updates from
+   * the parameter server.  Once the parameter is retrieved for the first time
+   * no subsequent getCached() calls with the same key will query the master --
+   * they will instead look up in the local cache.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] vec Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParamCached(const std::string& key, std::vector<double>& vec) const;
+  /** \brief Get a float vector value from the parameter server, with local caching
+   *
+   * This method will cache parameters locally, and subscribe for updates from
+   * the parameter server.  Once the parameter is retrieved for the first time
+   * no subsequent getCached() calls with the same key will query the master --
+   * they will instead look up in the local cache.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] vec Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParamCached(const std::string& key, std::vector<float>& vec) const;
+  /** \brief Get a int vector value from the parameter server, with local caching
+   *
+   * This method will cache parameters locally, and subscribe for updates from
+   * the parameter server.  Once the parameter is retrieved for the first time
+   * no subsequent getCached() calls with the same key will query the master --
+   * they will instead look up in the local cache.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] vec Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParamCached(const std::string& key, std::vector<int>& vec) const;
+  /** \brief Get a bool vector value from the parameter server, with local caching
+   *
+   * This method will cache parameters locally, and subscribe for updates from
+   * the parameter server.  Once the parameter is retrieved for the first time
+   * no subsequent getCached() calls with the same key will query the master --
+   * they will instead look up in the local cache.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] vec Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParamCached(const std::string& key, std::vector<bool>& vec) const;
+
+  /** \brief Get a string->std::string map value from the parameter server, with local caching
+   *
+   * This method will cache parameters locally, and subscribe for updates from
+   * the parameter server.  Once the parameter is retrieved for the first time
+   * no subsequent getCached() calls with the same key will query the master --
+   * they will instead look up in the local cache.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] map Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParamCached(const std::string& key, std::map<std::string, std::string>& map) const;
+  /** \brief Get a string->double map value from the parameter server, with local caching
+   *
+   * This method will cache parameters locally, and subscribe for updates from
+   * the parameter server.  Once the parameter is retrieved for the first time
+   * no subsequent getCached() calls with the same key will query the master --
+   * they will instead look up in the local cache.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] map Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParamCached(const std::string& key, std::map<std::string, double>& map) const;
+  /** \brief Get a string->float map value from the parameter server, with local caching
+   *
+   * This method will cache parameters locally, and subscribe for updates from
+   * the parameter server.  Once the parameter is retrieved for the first time
+   * no subsequent getCached() calls with the same key will query the master --
+   * they will instead look up in the local cache.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] map Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParamCached(const std::string& key, std::map<std::string, float>& map) const;
+  /** \brief Get a string->int map value from the parameter server, with local caching
+   *
+   * This method will cache parameters locally, and subscribe for updates from
+   * the parameter server.  Once the parameter is retrieved for the first time
+   * no subsequent getCached() calls with the same key will query the master --
+   * they will instead look up in the local cache.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] map Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParamCached(const std::string& key, std::map<std::string, int>& map) const;
+  /** \brief Get a string->bool map value from the parameter server, with local caching
+   *
+   * This method will cache parameters locally, and subscribe for updates from
+   * the parameter server.  Once the parameter is retrieved for the first time
+   * no subsequent getCached() calls with the same key will query the master --
+   * they will instead look up in the local cache.
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] map Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParamCached(const std::string& key, std::map<std::string, bool>& map) const;
 
   /** \brief Check whether a parameter exists on the parameter server.
    *

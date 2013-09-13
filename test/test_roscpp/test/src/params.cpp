@@ -255,6 +255,260 @@ TEST(Params, doublePrecision)
   EXPECT_DOUBLE_EQ(d, 0.12345678912345678);
 }
 
+std::vector<std::string> vec_s, vec_s2;
+std::vector<double> vec_d, vec_d2;
+std::vector<float> vec_f, vec_f2;
+std::vector<int> vec_i, vec_i2;
+std::vector<bool> vec_b, vec_b2;
+
+TEST(Params, vectorStringParam)
+{
+  const std::string param_name = "vec_str_param";
+
+  vec_s.clear();
+  vec_s.push_back("foo");
+  vec_s.push_back("bar");
+  vec_s.push_back("baz");
+
+  ros::param::set(param_name, vec_s);
+
+  ASSERT_FALSE(ros::param::get(param_name, vec_d));
+  ASSERT_FALSE(ros::param::get(param_name, vec_f));
+  ASSERT_FALSE(ros::param::get(param_name, vec_i));
+  ASSERT_FALSE(ros::param::get(param_name, vec_b));
+
+  ASSERT_TRUE(ros::param::get(param_name, vec_s2));
+
+  ASSERT_EQ(vec_s.size(), vec_s2.size());
+  ASSERT_TRUE(std::equal(vec_s.begin(), vec_s.end(), vec_s2.begin()));
+
+  // Test empty vector
+  vec_s.clear();
+  ros::param::set(param_name, vec_s);
+  ASSERT_TRUE(ros::param::get(param_name, vec_s2));
+  ASSERT_EQ(vec_s.size(), vec_s2.size());
+}
+
+TEST(Params, vectorDoubleParam)
+{
+  const std::string param_name = "vec_double_param";
+
+  vec_d.clear();
+  vec_d.push_back(-0.123456789);
+  vec_d.push_back(3);
+  vec_d.push_back(3.01);
+  vec_d.push_back(7.01);
+
+  ros::param::set(param_name, vec_d);
+
+  ASSERT_FALSE(ros::param::get(param_name, vec_s));
+  ASSERT_TRUE(ros::param::get(param_name, vec_i));
+  ASSERT_TRUE(ros::param::get(param_name, vec_b));
+  ASSERT_TRUE(ros::param::get(param_name, vec_f));
+
+  ASSERT_TRUE(ros::param::get(param_name, vec_d2));
+
+  ASSERT_EQ(vec_d.size(), vec_d2.size());
+  ASSERT_TRUE(std::equal(vec_d.begin(), vec_d.end(), vec_d2.begin()));
+}
+
+TEST(Params, vectorFloatParam)
+{
+  const std::string param_name = "vec_float_param";
+
+  vec_f.clear();
+  vec_f.push_back(-0.123456789);
+  vec_f.push_back(0.0);
+  vec_f.push_back(3);
+  vec_f.push_back(3.01);
+
+  ros::param::set(param_name, vec_f);
+
+  ASSERT_FALSE(ros::param::get(param_name, vec_s));
+  ASSERT_TRUE(ros::param::get(param_name, vec_i));
+  ASSERT_TRUE(ros::param::get(param_name, vec_b));
+  ASSERT_TRUE(ros::param::get(param_name, vec_d));
+
+  ASSERT_EQ(vec_b[0],true);
+  ASSERT_EQ(vec_b[1],false);
+
+  ASSERT_TRUE(ros::param::get(param_name, vec_f2));
+
+  ASSERT_EQ(vec_f.size(), vec_f2.size());
+  ASSERT_TRUE(std::equal(vec_f.begin(), vec_f.end(), vec_f2.begin()));
+}
+
+TEST(Params, vectorIntParam)
+{
+  const std::string param_name = "vec_int_param";
+
+  vec_i.clear();
+  vec_i.push_back(-1);
+  vec_i.push_back(0);
+  vec_i.push_back(1337);
+  vec_i.push_back(2);
+
+  ros::param::set(param_name, vec_i);
+
+  ASSERT_FALSE(ros::param::get(param_name, vec_s));
+  ASSERT_TRUE(ros::param::get(param_name, vec_d));
+  ASSERT_TRUE(ros::param::get(param_name, vec_f));
+  ASSERT_TRUE(ros::param::get(param_name, vec_b));
+
+  ASSERT_EQ(vec_b[0],true);
+  ASSERT_EQ(vec_b[1],false);
+
+  ASSERT_TRUE(ros::param::get(param_name, vec_i2));
+
+  ASSERT_EQ(vec_i.size(), vec_i2.size());
+  ASSERT_TRUE(std::equal(vec_i.begin(), vec_i.end(), vec_i2.begin()));
+}
+
+TEST(Params, vectorBoolParam)
+{
+  const std::string param_name = "vec_bool_param";
+
+  vec_b.clear();
+  vec_b.push_back(true);
+  vec_b.push_back(false);
+  vec_b.push_back(true);
+  vec_b.push_back(true);
+
+  ros::param::set(param_name, vec_b);
+
+  ASSERT_FALSE(ros::param::get(param_name, vec_s));
+  ASSERT_TRUE(ros::param::get(param_name, vec_d));
+  ASSERT_TRUE(ros::param::get(param_name, vec_f));
+  ASSERT_TRUE(ros::param::get(param_name, vec_i));
+
+  ASSERT_EQ(vec_i[0],1);
+  ASSERT_EQ(vec_i[1],0);
+
+  ASSERT_TRUE(ros::param::get(param_name, vec_b2));
+
+  ASSERT_EQ(vec_b.size(), vec_b2.size());
+  ASSERT_TRUE(std::equal(vec_b.begin(), vec_b.end(), vec_b2.begin()));
+}
+
+std::map<std::string,std::string> map_s, map_s2;
+std::map<std::string,double> map_d, map_d2;
+std::map<std::string,float> map_f, map_f2;
+std::map<std::string,int> map_i, map_i2;
+std::map<std::string,bool> map_b, map_b2;
+
+TEST(Params, mapStringParam)
+{
+  const std::string param_name = "map_str_param";
+
+  map_s.clear();
+  map_s["a"] = "apple";
+  map_s["b"] = "blueberry";
+  map_s["c"] = "carrot";
+
+  ros::param::set(param_name, map_s);
+
+  ASSERT_FALSE(ros::param::get(param_name, map_d));
+  ASSERT_FALSE(ros::param::get(param_name, map_f));
+  ASSERT_FALSE(ros::param::get(param_name, map_i));
+  ASSERT_FALSE(ros::param::get(param_name, map_b));
+
+  ASSERT_TRUE(ros::param::get(param_name, map_s2));
+
+  ASSERT_EQ(map_s.size(), map_s2.size());
+  ASSERT_TRUE(std::equal(map_s.begin(), map_s.end(), map_s2.begin()));
+}
+
+TEST(Params, mapDoubleParam)
+{
+  const std::string param_name = "map_double_param";
+
+  map_d.clear();
+  map_d["a"] = 0.0;
+  map_d["b"] = -0.123456789;
+  map_d["c"] = 123456789;
+
+  ros::param::set(param_name, map_d);
+
+  ASSERT_FALSE(ros::param::get(param_name, map_s));
+  ASSERT_TRUE(ros::param::get(param_name, map_f));
+  ASSERT_TRUE(ros::param::get(param_name, map_i));
+  ASSERT_TRUE(ros::param::get(param_name, map_b));
+
+  ASSERT_TRUE(ros::param::get(param_name, map_d2));
+
+  ASSERT_EQ(map_d.size(), map_d2.size());
+  ASSERT_TRUE(std::equal(map_d.begin(), map_d.end(), map_d2.begin()));
+}
+
+TEST(Params, mapFloatParam)
+{
+  const std::string param_name = "map_float_param";
+
+  map_f.clear();
+  map_f["a"] = 0.0;
+  map_f["b"] = -0.123456789;
+  map_f["c"] = 123456789;
+
+  ros::param::set(param_name, map_f);
+
+  ASSERT_FALSE(ros::param::get(param_name, map_s));
+  ASSERT_TRUE(ros::param::get(param_name, map_d));
+  ASSERT_TRUE(ros::param::get(param_name, map_i));
+  ASSERT_TRUE(ros::param::get(param_name, map_b));
+
+  ASSERT_TRUE(ros::param::get(param_name, map_f2));
+
+  ASSERT_EQ(map_f.size(), map_f2.size());
+  ASSERT_TRUE(std::equal(map_f.begin(), map_f.end(), map_f2.begin()));
+}
+
+TEST(Params, mapIntParam)
+{
+  const std::string param_name = "map_int_param";
+
+  map_i.clear();
+  map_i["a"] = 0;
+  map_i["b"] = -1;
+  map_i["c"] = 1337;
+
+  ros::param::set(param_name, map_i);
+
+  ASSERT_FALSE(ros::param::get(param_name, map_s));
+  ASSERT_TRUE(ros::param::get(param_name, map_d));
+  ASSERT_TRUE(ros::param::get(param_name, map_f));
+  ASSERT_TRUE(ros::param::get(param_name, map_b));
+
+  ASSERT_TRUE(ros::param::get(param_name, map_i2));
+
+  ASSERT_EQ(map_i.size(), map_i2.size());
+  ASSERT_TRUE(std::equal(map_i.begin(), map_i.end(), map_i2.begin()));
+}
+
+TEST(Params, mapBoolParam)
+{
+  const std::string param_name = "map_bool_param";
+
+  map_b.clear();
+  map_b["a"] = true;
+  map_b["b"] = false;
+  map_b["c"] = true;
+
+  ros::param::set(param_name, map_b);
+
+  ASSERT_FALSE(ros::param::get(param_name, map_s));
+  ASSERT_TRUE(ros::param::get(param_name, map_d));
+  ASSERT_TRUE(ros::param::get(param_name, map_f));
+  ASSERT_TRUE(ros::param::get(param_name, map_i));
+
+  ASSERT_EQ(map_i["a"],1);
+  ASSERT_EQ(map_i["b"],0);
+
+  ASSERT_TRUE(ros::param::get(param_name, map_b2));
+
+  ASSERT_EQ(map_b.size(), map_b2.size());
+  ASSERT_TRUE(std::equal(map_b.begin(), map_b.end(), map_b2.begin()));
+}
+
 int
 main(int argc, char** argv)
 {
