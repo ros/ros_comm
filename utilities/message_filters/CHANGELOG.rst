@@ -2,6 +2,9 @@
 Changelog for package message_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.9.48 (2013-08-21)
 -------------------
 

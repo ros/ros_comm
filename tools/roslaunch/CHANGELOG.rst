@@ -2,6 +2,9 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.9.48 (2013-08-21)
 -------------------
 * update roslaunch to support ROS_NAMESPACE (`#58 <https://github.com/ros/ros_comm/issues/58>`_)

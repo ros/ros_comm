@@ -2,6 +2,9 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.9.48 (2013-08-21)
 -------------------
 * add convenience function for rostest with gtests (`#258 <https://github.com/ros/ros_comm/issues/258>`_)

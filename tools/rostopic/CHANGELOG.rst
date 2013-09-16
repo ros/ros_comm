@@ -2,6 +2,9 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.9.48 (2013-08-21)
 -------------------
 * fix access to array fields by index (regression of `#242 <https://github.com/ros/ros_comm/issues/242>`_ in 1.9.47)

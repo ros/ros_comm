@@ -2,6 +2,9 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.9.48 (2013-08-21)
 -------------------
 * wrap condition in ROS_ASSERT_CMD in parenthesis (`#271 <https://github.com/ros/ros_comm/issues/271>`_)

@@ -2,6 +2,9 @@
 Changelog for package rosparam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.9.48 (2013-08-21)
 -------------------
 * prevent stack trace for 'rosparam get/delete' when parameter does not exist (`#265 <https://github.com/ros/ros_comm/issues/265>`_)
