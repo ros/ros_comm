@@ -68,17 +68,15 @@ import struct
 import select
 try:
     from cStringIO import StringIO #Python 2.x
-    import thread as _thread # Python 2
     python3 = 0
     def isstring(s):
         return isinstance(s, basestring) #Python 2.x
 except ImportError:
     python3 = 1
     from io import StringIO, BytesIO #Python 3.x
-    import _thread 
     def isstring(s):
         return isinstance(s, str) #Python 3.x
-    		
+
 import threading
 import logging
 import time

@@ -44,11 +44,6 @@ except ImportError:
 import socket
 import logging
 
-try:
-    import _thread
-except ImportError:
-    import thread as _thread
-    
 import threading
 import time
 import traceback
@@ -141,8 +136,10 @@ class TCPServer(object):
 
     def start(self):
         """Runs the run() loop in a separate thread"""
-        _thread.start_new_thread(self.run, ())
-        
+        t = threading.Thread(target=self.run, args=())
+        t.setDaemon(True)
+        t.start()
+
     def run(self):
         """
         Main TCP receive loop. Should be run in a separate thread -- use start()
