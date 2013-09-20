@@ -62,10 +62,7 @@ import rospy.names
 
 import rospy.impl.validators
 
-try:
-	import _thread #py3k
-except ImportError:
-    import thread as _thread
+import threading
 
 if sys.hexversion > 0x03000000: #Python3
     def isstring(s):
@@ -247,7 +244,7 @@ def service_connection_handler(sock, client_addr, header):
             transport.write_header()
             # using threadpool reduced performance by an order of
             # magnitude, need to investigate better
-            _thread.start_new_thread(service.handle, (transport, header))
+            threading.Thread(target=service.handle, args=(transport, header)).start()
                 
         
 class TCPService(TCPROSTransportProtocol):

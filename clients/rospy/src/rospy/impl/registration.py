@@ -39,10 +39,6 @@
 import socket
 import sys
 import logging
-try:
-	import _thread
-except ImportError:
-    import thread as _thread
 import threading
 import time
 import traceback
@@ -315,7 +311,7 @@ class RegManager(RegistrationListener):
             if uris and not self.handler.done:
                 for uri in uris:
                     # #1141: have to multithread this to prevent a bad publisher from hanging us
-                    _thread.start_new_thread(self._connect_topic_thread, (topic, uri))
+                    threading.Thread(target=self._connect_topic_thread, args=(topic, uri)).start()
 
     def _connect_topic_thread(self, topic, uri):
         try:
