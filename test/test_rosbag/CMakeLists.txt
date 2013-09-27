@@ -15,11 +15,11 @@ catkin_package()
 if(CATKIN_ENABLE_TESTING)
   include_directories(${catkin_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
 
-  catkin_download_test_data(download_data_test_indexed_1.2.bag http://pr.willowgarage.com/data/rosbag/test_indexed_1.2.bag
+  catkin_download_test_data(download_data_test_indexed_1.2.bag http://download.ros.org/data/rosbag/test_indexed_1.2.bag
     FILENAME test/test_indexed_1.2.bag MD5 523cc0deb66269c84be4a7c605ff5eb3)
-  catkin_download_test_data(download_data_test_chatter_50hz.bag http://pr.willowgarage.com/data/rosbag/chatter_50hz.bag
+  catkin_download_test_data(download_data_test_chatter_50hz.bag http://download.ros.org/data/rosbag/chatter_50hz.bag
     FILENAME test/chatter_50hz.bag MD5 00844db3729b1b5f34e767dc691bd531)
-  catkin_download_test_data(download_data_test_future_version_2.1.bag http://pr.willowgarage.com/data/rosbag/test_future_version_2.1.bag
+  catkin_download_test_data(download_data_test_future_version_2.1.bag http://download.ros.org/data/rosbag/test_future_version_2.1.bag
     FILENAME test/test_future_version_2.1.bag MD5 ddcb5e8711b16514eb640330ed93c332)
 
   catkin_add_nosetests(test/test_bag.py)
