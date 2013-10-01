@@ -56,6 +56,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       ("output-prefix,o", po::value<std::string>(), "prepend PREFIX to beginning of bag name")
       ("output-name,O", po::value<std::string>(), "record bagnamed NAME.bag")
       ("buffsize,b", po::value<int>()->default_value(256), "Use an internal buffer of SIZE MB (Default: 256)")
+      ("chunksize", po::value<int>()->default_value(768), "Set chunk size of message data, in KB (Default: 768. Advanced)")
       ("limit,l", po::value<int>()->default_value(0), "Only record NUM messages on each topic")
       ("bz2,j", "use BZ2 compression")
       ("split", po::value<int>()->implicit_value(0), "Split the bag file and continue recording when maximum size or maximum duration reached.")
@@ -126,6 +127,13 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       if (m < 0)
         throw ros::Exception("Buffer size must be 0 or positive");
       opts.buffer_size = 1048576 * m;
+    }
+    if (vm.count("chunksize"))
+    {
+      int chnk_sz = vm["chunksize"].as<int>();
+      if (chnk_sz < 0)
+        throw ros::Exception("Chunk size must be 0 or positive");
+      opts.chunk_size = 1024 * chnk_sz;
     }
     if (vm.count("limit"))
     {
