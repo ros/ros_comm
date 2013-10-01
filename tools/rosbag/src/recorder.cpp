@@ -104,6 +104,7 @@ RecorderOptions::RecorderOptions() :
     name(""),
     exclude_regex(),
     buffer_size(1048576 * 256),
+    chunk_size(1024 * 768),
     limit(0),
     split(false),
     max_size(0),
@@ -357,6 +358,7 @@ void Recorder::snapshotTrigger(std_msgs::Empty::ConstPtr trigger) {
 
 void Recorder::startWriting() {
     bag_.setCompression(options_.compression);
+    bag_.setChunkThreshold(options_.chunk_size);
 
     updateFilenames();
     try {

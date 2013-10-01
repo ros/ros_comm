@@ -100,6 +100,7 @@ struct ROSBAG_DECL RecorderOptions
     std::string     name;
     boost::regex    exclude_regex;
     uint32_t        buffer_size;
+    uint32_t        chunk_size;
     uint32_t        limit;
     bool            split;
     uint32_t        max_size;
