@@ -164,6 +164,9 @@ def _get_optparse():
     parser.add_option("--ros-args", default=False, action="store_true",
                       dest="ros_args",
                       help="Display command-line arguments for this launch file")
+    parser.add_option("--disable-title", default=False, action="store_true",
+                      dest="disable_title",
+                      help="Disable setting of terminal title")
 
     return parser
     
@@ -262,7 +265,8 @@ def main(argv=sys.argv):
             logger.info('starting in server mode')
 
             # #1491 change terminal name
-            rlutil.change_terminal_name(args, options.core)
+            if not options.disable_title:
+                rlutil.change_terminal_name(args, options.core)
             
             # This is a roslaunch parent, spin up parent server and launch processes.
             # args are the roslaunch files to load
