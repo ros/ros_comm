@@ -125,7 +125,12 @@ def rostestmain():
         r = rospkg.RosPack()
         pkg_dir = r.get_path(pkg)
 
-    outname = rostest_name_from_path(pkg_dir, options.results_filename if options.results_filename else test_file)
+    if options.results_filename:
+        outname = options.results_filename
+        if '.' in outname:
+            outname = outname[:outname.rfind('.')]
+    else:
+        outname = rostest_name_from_path(pkg_dir, test_file)
 
     # #1140
     if not os.path.isfile(test_file):
