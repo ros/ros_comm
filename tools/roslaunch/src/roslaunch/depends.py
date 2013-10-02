@@ -83,7 +83,43 @@ class RoslaunchDeps(object):
     def __str__(self):
         return "nodes: %s\nincludes: %s\npkgs: %s"%(str(self.nodes), str(self.includes), str(self.pkgs))
 
-def _parse_launch(tags, launch_file, file_deps, verbose):
+def _get_arg_value(tag, context):
+    name = tag.attributes['name'].value
+    if tag.attributes.has_key('value'):
+        return resolve_args(tag.attributes['value'].value, context)
+    elif name in context['arg']:
+        return context['arg'][name]
+    elif tag.attributes.has_key('default'):
+        return resolve_args(tag.attributes['default'].value, context)
+    else:
+        raise RoslaunchDepsException("No value for arg %s"%(name))
+
+def _parse_arg(tag, context):
+    name = tag.attributes['name'].value
+    if tag.attributes.has_key('if'):
+        val = resolve_args(tag.attributes['if'].value, context)
+        if val == '1' or val == 'true':
+            return (name, _get_arg_value(tag, context))
+    elif tag.attributes.has_key('unless'):
+        val = resolve_args(tag.attributes['unless'].value, context)
+        if val == '0' or val == 'false':
+            return (name, _get_arg_value(tag, context))
+    else:
+        return (name, _get_arg_value(tag, context))
+
+def _parse_subcontext(tags, context):
+    subcontext = {'arg': {}}
+
+    if tags == None:
+       return subcontext
+    
+    for tag in [t for t in tags if t.nodeType == DomNode.ELEMENT_NODE]:
+        if tag.tagName == 'arg':
+            (name, val) = _parse_arg(tag, context)
+            subcontext['arg'][name] = val
+    return subcontext
+
+def _parse_launch(tags, launch_file, file_deps, verbose, context):
     dir_path = os.path.dirname(os.path.abspath(launch_file))
     launch_file_pkg = rospkg.get_package_name(dir_path)
             
@@ -93,11 +129,16 @@ def _parse_launch(tags, launch_file, file_deps, verbose):
         if tag.tagName == 'group':
             
             #descend group tags as they can contain node tags
-            _parse_launch(tag.childNodes, launch_file, file_deps, verbose)
+            _parse_launch(tag.childNodes, launch_file, file_deps, verbose, context)
 
+        elif tag.tagName == 'arg':
+            v = _parse_arg(tag, context)
+            if v:
+                (name, val) = v
+                context['arg'][name] = val
         elif tag.tagName == 'include':
             try:
-                sub_launch_file = resolve_args(tag.attributes['file'].value)
+                sub_launch_file = resolve_args(tag.attributes['file'].value, context)
             except KeyError as e:
                 raise RoslaunchDepsException("Cannot load roslaunch <%s> tag: missing required attribute %s.\nXML is %s"%(tag.tagName, str(e), tag.toxml()))
                 
@@ -122,13 +163,14 @@ def _parse_launch(tags, launch_file, file_deps, verbose):
                     print("ERROR: %s is not a valid roslaunch file"%sub_launch_file, file=sys.stderr)
                 else:
                     launch_tag = dom[0]
-                    _parse_launch(launch_tag.childNodes, sub_launch_file, file_deps, verbose)
+                    sub_context = _parse_subcontext(tag.childNodes, context)
+                    _parse_launch(launch_tag.childNodes, sub_launch_file, file_deps, verbose, sub_context)
             except IOError as e:
                 raise RoslaunchDepsException("Cannot load roslaunch include '%s' in '%s'"%(sub_launch_file, launch_file))
 
         elif tag.tagName in ['node', 'test']:
             try:
-                pkg, type = [resolve_args(tag.attributes[a].value) for a in ['pkg', 'type']]
+                pkg, type = [resolve_args(tag.attributes[a].value, context) for a in ['pkg', 'type']]
             except KeyError as e:
                 raise RoslaunchDepsException("Cannot load roslaunch <%s> tag: missing required attribute %s.\nXML is %s"%(tag.tagName, str(e), tag.toxml()))
             if (pkg, type) not in file_deps[launch_file].nodes:
@@ -151,7 +193,8 @@ def parse_launch(launch_file, file_deps, verbose):
 
     file_deps[launch_file] = RoslaunchDeps()
     launch_tag = dom[0]
-    _parse_launch(launch_tag.childNodes, launch_file, file_deps, verbose)
+    context = { 'arg': {}}
+    _parse_launch(launch_tag.childNodes, launch_file, file_deps, verbose, context)
 
 def rl_file_deps(file_deps, launch_file, verbose=False):
     """
