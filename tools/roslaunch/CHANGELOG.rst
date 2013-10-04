@@ -2,6 +2,11 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add option to disable terminal title setting
+* fix roslaunch-check to handle more complex launch files
+
 1.9.49 (2013-09-16)
 -------------------
 

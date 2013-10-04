@@ -2,6 +2,10 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix result file naming for wet rostests when being built in-source (`ros/catkin#512 <https://github.com/ros/catkin/issues/512>`_)
+
 1.9.49 (2013-09-16)
 -------------------
 
