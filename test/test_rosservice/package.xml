@@ -1,6 +1,6 @@
 <package>
   <name>test_rosservice</name>
-  <version>1.9.49</version>
+  <version>1.9.50</version>
   <description>
     Tests for the rosservice tool.
   </description>
