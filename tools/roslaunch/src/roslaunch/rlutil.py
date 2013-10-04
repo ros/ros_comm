@@ -195,7 +195,16 @@ def check_roslaunch(f):
     
     errors = []
     # check for missing deps
-    base_pkg, file_deps, missing = roslaunch.depends.roslaunch_deps([f])
+    try:
+        base_pkg, file_deps, missing = roslaunch.depends.roslaunch_deps([f])
+    except rospkg.common.ResourceNotFound as r:
+        errors.append("Could not find package [%s] included from [%s]"%(str(r), f))
+        missing = {}
+        file_deps = {}
+    except roslaunch.substitution_args.ArgException as e:
+        errors.append("Could not resolve arg [%s] in [%s]"%(str(e), f))
+        missing = {}
+        file_deps = {}
     for pkg, miss in missing.iteritems():
         if miss:
             errors.append("Missing manifest dependencies: %s/manifest.xml: %s"%(pkg, ', '.join(miss)))
