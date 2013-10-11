@@ -601,13 +601,17 @@ class XmlLoader(loader.Loader):
                         self._recurse_load(ros_config, tag.childNodes, child_ns, \
                                                default_machine, is_core, verbose)
             elif name == 'node':
-                # clone the context so that nodes' env does not pollute global env
-                n = self._node_tag(tag, context.child(''), ros_config, default_machine, verbose=verbose)
+                # backup the contexts env_vars and revert them afterwards so that nodes' env does not pollute global env
+                env_vars_backup = context.env_args[:]
+                n = self._node_tag(tag, context, ros_config, default_machine, verbose=verbose)
+                context.env_args = env_vars_backup
                 if n is not None:
                     ros_config.add_node(n, core=is_core, verbose=verbose)
             elif name == 'test':
-                # clone the context so that nodes' env does not pollute global env                
-                t = self._node_tag(tag, context.child(''), ros_config, default_machine, is_test=True, verbose=verbose)
+                # backup the contexts env_vars and revert them afterwards so that nodes' env does not pollute global env
+                env_vars_backup = context.env_args[:]
+                t = self._node_tag(tag, context, ros_config, default_machine, is_test=True, verbose=verbose)
+                context.env_args = env_vars_backup
                 if t is not None:
                     ros_config.add_test(t, verbose=verbose)
             elif name == 'param':
