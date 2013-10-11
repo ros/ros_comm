@@ -66,11 +66,11 @@ def _get_text(tag):
             buff += t.data
     return buff
 
-def ifunless_test(obj, tag, context):
+def ifunless_test(obj, tag, context, ros_config): 
     """
     @return True: if tag should be processed according to its if/unless attributes
     """
-    if_val, unless_val = obj.opt_attrs(tag, context, ['if', 'unless'])
+    if_val, unless_val = obj.opt_attrs(tag, context, ros_config, ['if', 'unless'])
     if if_val is not None and unless_val is not None:
         raise XmlParseException("cannot set both 'if' and 'unless' on the same tag")
     if if_val is not None:
@@ -91,7 +91,7 @@ def ifunless(f):
     """
     def call(*args, **kwds):
         #TODO: logging, as well as check for verbose in kwds
-        if ifunless_test(args[0], args[1], args[2]):
+        if ifunless_test(args[0], args[1], args[2], args[3]):
             return f(*args, **kwds)
     return call
 
@@ -150,17 +150,17 @@ class XmlLoader(loader.Loader):
         self.root_context = None
         self.resolve_anon = resolve_anon
 
-    def resolve_args(self, args, context):
+    def resolve_args(self, args, context, ros_config):
         """
         Wrapper around substitution_args.resolve_args to set common parameters
         """
         # resolve_args gets called a lot, so we optimize by testing for dollar sign before resolving
         if args and '$' in args:
-            return substitution_args.resolve_args(args, context=context.resolve_dict, resolve_anon=self.resolve_anon)
+            return substitution_args.resolve_args(args, context=context.resolve_dict, resolve_anon=self.resolve_anon, ros_config=ros_config)
         else:
             return args
 
-    def opt_attrs(self, tag, context, attrs):
+    def opt_attrs(self, tag, context, ros_config, attrs):   
         """
         Helper routine for fetching and resolving optional tag attributes
         @param tag DOM tag
@@ -175,9 +175,9 @@ class XmlLoader(loader.Loader):
                 return tag.getAttribute(a)
             else:
                 return None
-        return [self.resolve_args(tag_value(tag,a), context) for a in attrs]
+        return [self.resolve_args(tag_value(tag,a), context, ros_config) for a in attrs]
 
-    def reqd_attrs(self, tag, context, attrs):
+    def reqd_attrs(self, tag, context, ros_config, attrs): 
         """
         Helper routine for fetching and resolving required tag attributes
         @param tag: DOM tag
@@ -185,7 +185,7 @@ class XmlLoader(loader.Loader):
         @type  attrs: (str)
         @raise KeyError: if required attribute is missing
         """            
-        return [self.resolve_args(tag.attributes[a].value, context) for a in attrs]
+        return [self.resolve_args(tag.attributes[a].value, context, ros_config) for a in attrs]
 
     def _check_attrs(self, tag, context, ros_config, attrs):
         tag_attrs = tag.attributes.keys()
@@ -201,7 +201,7 @@ class XmlLoader(loader.Loader):
     def _rosparam_tag(self, tag, context, ros_config, verbose=True):
         try:
             self._check_attrs(tag, context, ros_config, XmlLoader.ROSPARAM_OPT_ATTRS)
-            cmd, ns, file, param, subst_value = self.opt_attrs(tag, context, (XmlLoader.ROSPARAM_OPT_ATTRS))
+            cmd, ns, file, param, subst_value = self.opt_attrs(tag, context, ros_config, (XmlLoader.ROSPARAM_OPT_ATTRS))
             subst_value = _bool_attr(subst_value, False, 'subst_value')
             # ns atribute is a bit out-moded and is only left in for backwards compatibility
             param = ns_join(ns or '', param or '')
@@ -210,7 +210,7 @@ class XmlLoader(loader.Loader):
             cmd = cmd or 'load'
             value = _get_text(tag)
             if subst_value:
-                value = self.resolve_args(value, context)
+                value = self.resolve_args(value, context, ros_config)
             self.load_rosparam(context, ros_config, cmd, param, file, value, verbose=verbose)
 
         except ValueError as e:
@@ -229,14 +229,14 @@ class XmlLoader(loader.Loader):
             # compute name and value
             ptype = (tag.getAttribute('type') or 'auto').lower().strip()
             
-            vals = self.opt_attrs(tag, context, ('value', 'textfile', 'binfile', 'command'))
+            vals = self.opt_attrs(tag, context, ros_config, ('value', 'textfile', 'binfile', 'command'))
             if len([v for v in vals if v is not None]) != 1:
                 raise XmlParseException(
                     "<param> tag must have one and only one of value/textfile/binfile.")
 
             # compute name. if name is a tilde name, it is placed in
             # the context. otherwise it is placed in the ros config.
-            name = self.resolve_args(tag.attributes['name'].value.strip(), context)
+            name = self.resolve_args(tag.attributes['name'].value.strip(), context, ros_config)
             value = self.param_value(verbose, name, ptype, *vals)
 
             if is_private(name) or force_local:
@@ -262,8 +262,8 @@ class XmlLoader(loader.Loader):
         """
         try:
             self._check_attrs(tag, context, ros_config, XmlLoader.ARG_ATTRS)
-            (name,) = self.reqd_attrs(tag, context, ('name',))
-            value, default = self.opt_attrs(tag, context, ('value', 'default'))
+            (name,) = self.reqd_attrs(tag, context, ros_config, ('name',))
+            value, default = self.opt_attrs(tag, context, ros_config, ('value', 'default'))
             
             if value is not None and default is not None:
                 raise XmlParseException(
@@ -278,7 +278,7 @@ class XmlLoader(loader.Loader):
             raise XmlParseException(
                 "Invalid <arg> tag: %s. \n\nArg xml is %s"%(e, tag.toxml()))
 
-    def _test_attrs(self, tag, context):
+    def _test_attrs(self, tag, context, ros_config):
         """
         Process attributes of <test> tag not present in <node>
         @return: test_name, time_limit
@@ -288,9 +288,9 @@ class XmlLoader(loader.Loader):
             if tag.hasAttribute(attr):
                 raise XmlParseException("<test> tags cannot have '%s' attribute"%attr)
 
-        test_name = self.resolve_args(tag.attributes['test-name'].value, context)
-        time_limit = self.resolve_args(tag.getAttribute('time-limit'), context)
-        retry = self.resolve_args(tag.getAttribute('retry'), context)        
+        test_name = self.resolve_args(tag.attributes['test-name'].value, context, ros_config)
+        time_limit = self.resolve_args(tag.getAttribute('time-limit'), context, ros_config)
+        retry = self.resolve_args(tag.getAttribute('retry'), context, ros_config)        
         if time_limit:
             try:
                 time_limit = float(time_limit)
@@ -329,13 +329,13 @@ class XmlLoader(loader.Loader):
         try:
             if is_test:
                 self._check_attrs(tag, context, ros_config, XmlLoader.TEST_ATTRS)
-                (name,) = self.opt_attrs(tag, context, ('name',)) 
-                test_name, time_limit, retry = self._test_attrs(tag, context)
+                (name,) = self.opt_attrs(tag, context, ros_config, ('name',)) 
+                test_name, time_limit, retry = self._test_attrs(tag, context, ros_config)
                 if not name:
                     name = test_name
             else:
                 self._check_attrs(tag, context, ros_config, XmlLoader.NODE_ATTRS)
-                (name,) = self.reqd_attrs(tag, context, ('name',))
+                (name,) = self.reqd_attrs(tag, context, ros_config, ('name',))
 
             if not is_legal_name(name):
                 ros_config.add_config_error("WARN: illegal <node> name '%s'.\nhttp://ros.org/wiki/Names\nThis will likely cause problems with other ROS tools.\nNode xml is %s"%(name, tag.toxml()))
@@ -344,11 +344,11 @@ class XmlLoader(loader.Loader):
             param_ns = child_ns.child(name)
                 
             # required attributes
-            pkg, node_type = self.reqd_attrs(tag, context, ('pkg', 'type'))
+            pkg, node_type = self.reqd_attrs(tag, context, ros_config, ('pkg', 'type'))
             
             # optional attributes
             machine, args, output, respawn, cwd, launch_prefix, required = \
-                     self.opt_attrs(tag, context, ('machine', 'args', 'output', 'respawn', 'cwd', 'launch-prefix', 'required'))
+                     self.opt_attrs(tag, context, ros_config, ('machine', 'args', 'output', 'respawn', 'cwd', 'launch-prefix', 'required'))
             if tag.hasAttribute('machine') and not len(machine.strip()):
                 raise XmlParseException("<node> 'machine' must be non-empty: [%s]"%machine)
             if not machine and default_machine:
@@ -419,17 +419,17 @@ class XmlLoader(loader.Loader):
             context = context.child(None)
             
             # pre-fuerte warning attributes
-            attrs = self.opt_attrs(tag, context,
+            attrs = self.opt_attrs(tag, context, ros_config, 
                                    ('ros-root', 'ros-package-path', 'ros-ip', 'ros-hostname'))
             if any(attrs):
                 raise XmlParseException("<machine>: ros-* attributes are not supported since ROS Fuerte.\nPlease use env-loader instead")
 
             self._check_attrs(tag, context, ros_config, XmlLoader.MACHINE_ATTRS)
             # required attributes
-            name, address = self.reqd_attrs(tag, context, ('name', 'address'))
+            name, address = self.reqd_attrs(tag, context, ros_config, ('name', 'address'))
             
             # optional attributes
-            attrs = self.opt_attrs(tag, context,
+            attrs = self.opt_attrs(tag, context, ros_config, 
                                    ('env-loader', 
                                     'ssh-port', 'user', 'password', 'default', 'timeout'))
             env_loader, ssh_port, user, password, default, timeout = attrs
@@ -479,7 +479,7 @@ class XmlLoader(loader.Loader):
     def _remap_tag(self, tag, context, ros_config):
         try:
             self._check_attrs(tag, context, ros_config, XmlLoader.REMAP_ATTRS)
-            return self.reqd_attrs(tag, context, XmlLoader.REMAP_ATTRS)
+            return self.reqd_attrs(tag, context, ros_config, XmlLoader.REMAP_ATTRS)
         except KeyError as e:
             raise XmlParseException("<remap> tag is missing required from/to attributes: %s"%tag.toxml())
         
@@ -488,7 +488,7 @@ class XmlLoader(loader.Loader):
     def _env_tag(self, tag, context, ros_config):
         try:
             self._check_attrs(tag, context, ros_config, XmlLoader.ENV_ATTRS)
-            self.load_env(context, ros_config, *self.reqd_attrs(tag, context, XmlLoader.ENV_ATTRS))
+            self.load_env(context, ros_config, *self.reqd_attrs(tag, context, ros_config, XmlLoader.ENV_ATTRS))
         except ValueError as e:
             raise XmlParseException("Invalid <env> tag: %s. \nXML is %s"%(str(e), tag.toxml()))
         except KeyError as e:
@@ -512,7 +512,7 @@ class XmlLoader(loader.Loader):
         @rtype:  L{LoaderContext}
         """
         if tag.hasAttribute(NS):
-            ns = self.resolve_args(tag.getAttribute(NS), context)
+            ns = self.resolve_args(tag.getAttribute(NS), context, ros_config)
             if not ns:
                 raise XmlParseException("<%s> tag has an empty '%s' attribute"%(tag_name, NS))
         else:
@@ -521,7 +521,7 @@ class XmlLoader(loader.Loader):
             child_ns = context.include_child(ns, include_filename)
         else:
             child_ns = context.child(ns)
-        clear_p = self.resolve_args(tag.getAttribute(CLEAR_PARAMS), context)
+        clear_p = self.resolve_args(tag.getAttribute(CLEAR_PARAMS), context, ros_config)
         if clear_p:
             clear_p = _bool_attr(clear_p, False, 'clear_params')
             if clear_p:
@@ -537,7 +537,7 @@ class XmlLoader(loader.Loader):
         return child_ns
         
     @ifunless
-    def _launch_tag(self, tag, ros_config, filename=None):
+    def _launch_tag(self, tag, ros_config, filename=None):  # TODO context should be provided for @ifunless
         # #2499
         deprecated = tag.getAttribute('deprecated')
         if deprecated:
@@ -550,7 +550,7 @@ class XmlLoader(loader.Loader):
     @ifunless
     def _include_tag(self, tag, context, ros_config, default_machine, is_core, verbose):
         self._check_attrs(tag, context, ros_config, XmlLoader.INCLUDE_ATTRS)
-        inc_filename = self.resolve_args(tag.attributes['file'].value, context)
+        inc_filename = self.resolve_args(tag.attributes['file'].value, context, ros_config)
 
         child_ns = self._ns_clear_params_attr(tag.tagName, tag, context, ros_config, include_filename=inc_filename)
 
@@ -594,7 +594,7 @@ class XmlLoader(loader.Loader):
         for tag in [t for t in tags if t.nodeType == DomNode.ELEMENT_NODE]:
             name = tag.tagName
             if name == 'group':
-                if ifunless_test(self, tag, context):
+                if ifunless_test(self, tag, context, ros_config):
                     self._check_attrs(tag, context, ros_config, XmlLoader.GROUP_ATTRS)
                     child_ns = self._ns_clear_params_attr(name, tag, context, ros_config)
                     default_machine = \

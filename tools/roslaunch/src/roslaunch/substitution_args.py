@@ -45,9 +45,13 @@ except ImportError:
     from io import StringIO # Python 3.x
 
 import rosgraph.names
+import rosparam 
+
 import rospkg
 
 _rospack = None
+
+from rosgraph.masterapi import MasterError
 
 class SubstitutionException(Exception):
     """
@@ -60,7 +64,7 @@ class ArgException(SubstitutionException):
     """
     pass
 
-def _env(resolved, a, args, context):
+def _env(resolved, a, args, context, ros_config):
     """
     process $(env) arg
     @return: updated resolved argument
@@ -74,7 +78,7 @@ def _env(resolved, a, args, context):
     except KeyError as e:
         raise SubstitutionException("environment variable %s is not set"%str(e))
 
-def _optenv(resolved, a, args, context):
+def _optenv(resolved, a, args, context, ros_config):
     """
     process $(optenv) arg
     @return: updated resolved argument
@@ -90,7 +94,7 @@ def _optenv(resolved, a, args, context):
     else:
         return resolved.replace("$(%s)"%a, '')
     
-def _anon(resolved, a, args, context):
+def _anon(resolved, a, args, context, ros_config):
     """
     process $(anon) arg
     @return: updated resolved argument
@@ -114,7 +118,7 @@ def _anon(resolved, a, args, context):
         return resolved.replace("$(%s)"%a, resolve_to)
 
 
-def _find(resolved, a, args, context):
+def _find(resolved, a, args, context, ros_config):
     """
     process $(find PKG)
     Resolves the path while considering the path following the command to provide backward compatible results.
@@ -232,7 +236,7 @@ def _get_rospack():
     return _rospack
 
 
-def _arg(resolved, a, args, context):
+def _arg(resolved, a, args, context, ros_config):
     """
     process $(arg) arg
     
@@ -255,8 +259,39 @@ def _arg(resolved, a, args, context):
     else:
         raise ArgException(arg_name)
 
+def _param(resolved, a, args, context, ros_config):
+    """
+    process $(param param_name)
+    
+    :returns: updated resolved argument, ``str``
+    :raises: :exc:`SubstitutionException` If param_name invalidly specified
+    :raises: :exc:`SubstitutionException`: if param_name does not exist
+    :raises: :exc:`RosParamIOException`: if unable to communicate with master
+    """
+    # traceback.print_stack()
+    if len(args) == 0:
+        raise SubstitutionException("$(param param_name) must specify an ros parameter [%s]"%(a))
+    elif len(args) > 1:
+        raise SubstitutionException("$(param param_name) may only specify one ros parameter [%s]"%(a))
 
-def resolve_args(arg_str, context=None, resolve_anon=True):
+    def try_master(): # try to get param from master parameter server
+        try:
+            param_value = rosparam.get_param(args[0])    
+        except MasterError as e:
+            raise SubstitutionException("ros parameter %s not found"%str(args[0]))
+
+    if ros_config is None: 
+        try_master()
+    else:
+        try:
+            param_value = ros_config.params[args[0]].value
+        except KeyError as e: 
+            try_master()
+    
+    return resolved.replace("$(%s)"%a, str(param_value))
+
+
+def resolve_args(arg_str, context=None, resolve_anon=True, ros_config=None):
     """
     Resolves substitution args (see wiki spec U{http://ros.org/wiki/roslaunch}).
 
@@ -274,6 +309,10 @@ def resolve_args(arg_str, context=None, resolve_anon=True):
     @param resolve_anon bool: If True (default), will resolve $(anon
         foo). If false, will leave these args as-is.
     @type  resolve_anon: bool
+    @param ros_config ROSLaunchConfig: (optional) state of
+        the roslaunch file. If no ros_config is provided, substitutions 
+        that use this may raise exceptions or try to do their job without it.
+    @type  ros_config: ROSLaunchConfig
 
     @return str: arg_str with substitution args resolved
     @rtype:  str
@@ -287,20 +326,21 @@ def resolve_args(arg_str, context=None, resolve_anon=True):
     # first resolve variables like 'env' and 'arg'
     commands = {
         'env': _env,
-        'optenv': _optenv,
-        'anon': _anon,
-        'arg': _arg,
+        'optenv': _optenv,  
+        'anon': _anon,      
+        'arg': _arg,        
+        'param': _param,    
     }
-    resolved = _resolve_args(arg_str, context, resolve_anon, commands)
+    resolved = _resolve_args(arg_str, context, ros_config, resolve_anon, commands)
     # than resolve 'find' as it requires the subsequent path to be expanded already
     commands = {
         'find': _find,
     }
-    resolved = _resolve_args(resolved, context, resolve_anon, commands)
+    resolved = _resolve_args(resolved, context, ros_config, resolve_anon, commands)
     return resolved
 
-def _resolve_args(arg_str, context, resolve_anon, commands):
-    valid = ['find', 'env', 'optenv', 'anon', 'arg']
+def _resolve_args(arg_str, context, ros_config, resolve_anon, commands):
+    valid = ['find', 'env', 'optenv', 'anon', 'arg', 'param']
     resolved = arg_str
     for a in _collect_args(arg_str):
         splits = [s for s in a.split(' ') if s]
@@ -309,7 +349,7 @@ def _resolve_args(arg_str, context, resolve_anon, commands):
         command = splits[0]
         args = splits[1:]
         if command in commands:
-            resolved = commands[command](resolved, a, args, context)
+            resolved = commands[command](resolved, a, args, context, ros_config)
     return resolved
 
 _OUT  = 0
