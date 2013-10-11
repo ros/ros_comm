@@ -51,7 +51,7 @@
 #include "rosbag/bag.h"
 
 #include "rosbag/time_translator.h"
-#include "macros.h"
+#include "rosbag/macros.h"
 
 namespace rosbag {
 
