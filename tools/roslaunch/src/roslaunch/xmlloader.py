@@ -537,7 +537,7 @@ class XmlLoader(loader.Loader):
         return child_ns
         
     @ifunless
-    def _launch_tag(self, tag, ros_config, filename=None):  # TODO context should be provided for @ifunless
+    def _launch_tag(self, tag, context, ros_config, filename=None):
         # #2499
         deprecated = tag.getAttribute('deprecated')
         if deprecated:
@@ -569,7 +569,7 @@ class XmlLoader(loader.Loader):
         try:
             launch = self._parse_launch(inc_filename, verbose=verbose)
             ros_config.add_roslaunch_file(inc_filename)
-            self._launch_tag(launch, ros_config, filename=inc_filename)
+            self._launch_tag(launch, context, ros_config, filename=inc_filename)
             default_machine = \
                 self._recurse_load(ros_config, launch.childNodes, child_ns, \
                                        default_machine, is_core, verbose)
@@ -661,8 +661,8 @@ class XmlLoader(loader.Loader):
         if argv is None:
             argv = sys.argv
 
-        self._launch_tag(launch, ros_config, filename)
         self.root_context = loader.LoaderContext(get_ros_namespace(), filename)
+        self._launch_tag(launch, self.root_context, ros_config, filename)
         loader.load_sysargs_into_context(self.root_context, argv)
 
         if len(launch.getElementsByTagName('master')) > 0:
