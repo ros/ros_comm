@@ -276,17 +276,18 @@ def _param(resolved, a, args, context, ros_config):
 
     def try_master(): # try to get param from master parameter server
         try:
-            param_value = rosparam.get_param(args[0])    
+            return rosparam.get_param(args[0])    
         except MasterError as e:
             raise SubstitutionException("ros parameter %s not found"%str(args[0]))
 
+
     if ros_config is None: 
-        try_master()
+        param_value = try_master()
     else:
         try:
             param_value = ros_config.params[args[0]].value
         except KeyError as e: 
-            try_master()
+            param_value = try_master()
     
     return resolved.replace("$(%s)"%a, str(param_value))
 
