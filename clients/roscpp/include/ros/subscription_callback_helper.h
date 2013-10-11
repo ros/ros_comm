@@ -49,9 +49,6 @@
 namespace ros
 {
 
-namespace serialization
-{
-
 struct SubscriptionCallbackHelperDeserializeParams
 {
   uint8_t* buffer;
