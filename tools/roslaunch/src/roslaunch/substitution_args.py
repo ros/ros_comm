@@ -264,11 +264,10 @@ def _param(resolved, a, args, context, ros_config):
     process $(param param_name)
     
     :returns: updated resolved argument, ``str``
-    :raises: :exc:`SubstitutionException` If param_name invalidly specified
-    :raises: :exc:`SubstitutionException`: if param_name does not exist
+    :raises: :exc:`SubstitutionException` : if param_name invalidly specified
+    :raises: :exc:`SubstitutionException` : if param_name does not exist
     :raises: :exc:`RosParamIOException`: if unable to communicate with master
     """
-    # traceback.print_stack()
     if len(args) == 0:
         raise SubstitutionException("$(param param_name) must specify an ros parameter [%s]"%(a))
     elif len(args) > 1:
@@ -290,6 +289,39 @@ def _param(resolved, a, args, context, ros_config):
             param_value = try_master()
     
     return resolved.replace("$(%s)"%a, str(param_value))
+
+def _has_param(resolved, a, args, context, ros_config):
+    """
+    process $(has_param param_name)
+    
+    :returns: updated resolved argument, ``str``
+    :raises: :exc:`SubstitutionException` : if param_name invalidly specified
+    :raises: :exc:`RosParamIOException`: if unable to communicate with master
+    """
+    if len(args) == 0:
+        raise SubstitutionException("$(has_param param_name) must specify an ros parameter [%s]"%(a))
+    elif len(args) > 1:
+        raise SubstitutionException("$(has_param param_name) may only specify one ros parameter [%s]"%(a))
+
+    def try_master(): # try to get param from master parameter server, if it fails it is not there
+        try:
+            rosparam.get_param(args[0])
+            return True
+        except MasterError as e:
+            return False
+
+
+    if ros_config is None: 
+        has = try_master()
+    else:
+        try:
+            has = args[0] in ros_config.params
+            if not has:
+                has = try_master()
+        except KeyError as e: 
+            has = try_master()
+
+    return resolved.replace("$(%s)"%a, str(has))
 
 
 def resolve_args(arg_str, context=None, resolve_anon=True, ros_config=None):
@@ -331,6 +363,7 @@ def resolve_args(arg_str, context=None, resolve_anon=True, ros_config=None):
         'anon': _anon,      
         'arg': _arg,        
         'param': _param,    
+        'has_param': _has_param,    
     }
     resolved = _resolve_args(arg_str, context, ros_config, resolve_anon, commands)
     # than resolve 'find' as it requires the subsequent path to be expanded already
@@ -341,7 +374,7 @@ def resolve_args(arg_str, context=None, resolve_anon=True, ros_config=None):
     return resolved
 
 def _resolve_args(arg_str, context, ros_config, resolve_anon, commands):
-    valid = ['find', 'env', 'optenv', 'anon', 'arg', 'param']
+    valid = ['find', 'env', 'optenv', 'anon', 'arg', 'param', 'has_param']
     resolved = arg_str
     for a in _collect_args(arg_str):
         splits = [s for s in a.split(' ') if s]
