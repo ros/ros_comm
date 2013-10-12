@@ -83,6 +83,7 @@ def record_cmd(argv):
     parser.add_option("--chunksize",           dest="chunksize",     default=768,   type='int',   action="store", help="Advanced. Record to chunks of SIZE KB (Default: %default)", metavar="SIZE")
     parser.add_option("-l", "--limit",         dest="num",           default=0,     type='int',   action="store", help="only record NUM messages on each topic")
     parser.add_option(      "--node",          dest="node",          default=None,  type='string',action="store", help="record all topics subscribed to by a specific node")
+    parser.add_option(      "--rolling-buffer",dest="rolling_buffer",default=None,  type='string',action="store", help="Keeps a rolling buffer of messages of the specified number of seconds and dumps it upon recieving a message to the buffer_dump topic")
     parser.add_option("-j", "--bz2",           dest="bz2",           default=False, action="store_true",          help="use BZ2 compression")
 
     (options, args) = parser.parse_args(argv)
@@ -117,9 +118,11 @@ def record_cmd(argv):
     if options.size:        cmd.extend(["--size", str(options.size)])
     if options.node:
         cmd.extend(["--node", options.node])
+    if options.rolling_buffer:
+        cmd.extend(["--rolling-buffer", options.rolling_buffer])
 
     cmd.extend(args)
-
+   
     # Better way of handling it than os.execv
     # This makes sure stdin handles are passed to the process.
     subprocess.call(cmd)
