@@ -361,6 +361,10 @@ class XmlLoader(loader.Loader):
             # it inherits from its parent
             remap_context = context.child('')
 
+            # each node gets its own copy of <env> arguments, which
+            # it inherits from its parent
+            env_context = context.child('')
+
             # nodes can have individual env args set in addition to
             # the ROS-specific ones.  
             for t in [c for c in tag.childNodes if c.nodeType == DomNode.ELEMENT_NODE]:
@@ -374,7 +378,7 @@ class XmlLoader(loader.Loader):
                 elif tag_name == 'rosparam':
                     self._rosparam_tag(t, param_ns, ros_config, verbose=verbose)
                 elif tag_name == 'env':
-                    self._env_tag(t, context, ros_config)
+                    self._env_tag(t, env_context, ros_config)
                 else:
                     ros_config.add_config_error("WARN: unrecognized '%s' tag in <node> tag. Node xml is %s"%(t.tagName, tag.toxml()))
 
@@ -391,13 +395,13 @@ class XmlLoader(loader.Loader):
             if not is_test:
                 return Node(pkg, node_type, name=name, namespace=child_ns.ns, machine_name=machine, 
                             args=args, respawn=respawn, 
-                            remap_args=remap_context.remap_args(), env_args=context.env_args,
+                            remap_args=remap_context.remap_args(), env_args=env_context.env_args,
                             output=output, cwd=cwd, launch_prefix=launch_prefix,
                             required=required, filename=context.filename)
             else:
                 return Test(test_name, pkg, node_type, name=name, namespace=child_ns.ns, 
                             machine_name=machine, args=args,
-                            remap_args=remap_context.remap_args(), env_args=context.env_args,
+                            remap_args=remap_context.remap_args(), env_args=env_context.env_args,
                             time_limit=time_limit, cwd=cwd, launch_prefix=launch_prefix,
                             retry=retry, filename=context.filename)
         except KeyError as e:
@@ -601,13 +605,11 @@ class XmlLoader(loader.Loader):
                         self._recurse_load(ros_config, tag.childNodes, child_ns, \
                                                default_machine, is_core, verbose)
             elif name == 'node':
-                # clone the context so that nodes' env does not pollute global env
-                n = self._node_tag(tag, context.child(''), ros_config, default_machine, verbose=verbose)
+                n = self._node_tag(tag, context, ros_config, default_machine, verbose=verbose)
                 if n is not None:
                     ros_config.add_node(n, core=is_core, verbose=verbose)
             elif name == 'test':
-                # clone the context so that nodes' env does not pollute global env                
-                t = self._node_tag(tag, context.child(''), ros_config, default_machine, is_test=True, verbose=verbose)
+                t = self._node_tag(tag, context, ros_config, default_machine, is_test=True, verbose=verbose)
                 if t is not None:
                     ros_config.add_test(t, verbose=verbose)
             elif name == 'param':

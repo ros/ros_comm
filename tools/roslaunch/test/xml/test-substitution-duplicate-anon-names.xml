@@ -1,0 +1,4 @@
+<launch>
+  <node name="$(anon foo)" pkg="pkg" type="type" />
+  <node name="$(anon foo)" pkg="pkg" type="type" />
+</launch>

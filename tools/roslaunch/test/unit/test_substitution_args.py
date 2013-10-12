@@ -161,3 +161,17 @@ def test_resolve_args():
             resolve_args(f)
             assert False, "resolve_args(%s) should have failed"%f
         except SubstitutionException: pass
+
+
+def test_resolve_duplicate_anon():
+    from roslaunch.config import ROSLaunchConfig
+    from roslaunch.core import RLException
+    from roslaunch.xmlloader import XmlLoader
+    loader = XmlLoader()
+    config = ROSLaunchConfig()
+    test_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'xml'))
+    try:
+        loader.load(os.path.join(test_path, 'test-substitution-duplicate-anon-names.xml'), config)
+        assert False, 'loading a launch file with duplicate anon node names should have raised an exception'
+    except RLException:
+        pass
