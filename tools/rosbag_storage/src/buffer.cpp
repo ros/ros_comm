@@ -32,9 +32,12 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
 
+#include <stdlib.h>
+#include <assert.h>
+
 #include "rosbag/buffer.h"
 
-#include <ros/ros.h>
+//#include <ros/ros.h>
 
 namespace rosbag {
 
@@ -65,7 +68,7 @@ void Buffer::ensureCapacity(uint32_t capacity) {
     }
 
     buffer_ = (uint8_t*) realloc(buffer_, capacity_);
-    ROS_ASSERT(buffer_);
+    assert(buffer_);
 }
 
 } // namespace rosbag

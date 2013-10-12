@@ -36,11 +36,12 @@
 #define ROSBAG_MESSAGE_INSTANCE_H
 
 #include <ros/message_traits.h>
-#include <ros/ros.h>
+#include <ros/serialization.h>
+//#include <ros/ros.h>
 #include <ros/time.h>
 
 #include "rosbag/structures.h"
-#include "macros.h"
+#include "rosbag/macros.h"
 
 namespace rosbag {
 
@@ -100,13 +101,6 @@ private:
     Bag const*            bag_;
 };
 
-
-//! Helper function to create AdvertiseOptions from a MessageInstance
-/*!
- *  param msg         The Message instance for which to generate adveritse options
- *  param queue_size  The size of the outgoing queue
- */
-ros::AdvertiseOptions createAdvertiseOptions(MessageInstance const& msg, uint32_t queue_size);
 
 } // namespace rosbag
 

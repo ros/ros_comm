@@ -41,6 +41,7 @@
 #include <ros/time.h>
 #include <ros/macros.h>
 #include "exceptions.h"
+#include "ros/datatypes.h"
 
 namespace ros
 {
@@ -88,11 +89,6 @@ typedef boost::shared_ptr<Transport> TransportPtr;
 class NodeHandle;
 typedef boost::shared_ptr<NodeHandle> NodeHandlePtr;
 
-typedef std::vector<std::pair<std::string, std::string> > VP_string;
-typedef std::vector<std::string> V_string;
-typedef std::set<std::string> S_string;
-typedef std::map<std::string, std::string> M_string;
-typedef std::pair<std::string, std::string> StringPair;
 
 class SingleSubscriberPublisher;
 typedef boost::function<void(const SingleSubscriberPublisher&)> SubscriberStatusCallback;

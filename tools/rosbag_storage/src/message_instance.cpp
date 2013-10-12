@@ -27,6 +27,8 @@
 
 #include "rosbag/message_instance.h"
 
+#include "ros/message_event.h"
+
 using std::string;
 using ros::Time;
 using boost::shared_ptr;
@@ -58,10 +60,6 @@ bool MessageInstance::isLatching() const {
 
 uint32_t MessageInstance::size() const {
     return bag_->readMessageDataSize(index_entry_);
-}
-
-ros::AdvertiseOptions createAdvertiseOptions(MessageInstance const& m, uint32_t queue_size) {
-    return ros::AdvertiseOptions(m.getTopic(), queue_size, m.getMD5Sum(), m.getDataType(), m.getMessageDefinition());
 }
 
 } // namespace rosbag
