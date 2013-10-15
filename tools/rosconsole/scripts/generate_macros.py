@@ -31,11 +31,8 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import os
 import sys
-import rospkg
-
-rospack = rospkg.RosPack()
-base_path = rospack.get_path('rosconsole')
 
 def add_macro(f, caps_name, enum_name):
     f.write('#if (ROSCONSOLE_MIN_SEVERITY > ROSCONSOLE_SEVERITY_%s)\n' %(caps_name))
@@ -87,7 +84,7 @@ def add_macro(f, caps_name, enum_name):
     f.write('#define ROS_%s_STREAM_FILTER_NAMED(filter, name, args) ROS_LOG_STREAM_FILTER(filter, ::ros::console::levels::%s, std::string(ROSCONSOLE_NAME_PREFIX) + "." + name, args)\n' %(caps_name, enum_name))
     f.write('#endif\n\n')
 
-f = open('%s/include/rosconsole/macros_generated.h' %(base_path), 'w')
+f = open('%s/../include/rosconsole/macros_generated.h' %(os.path.dirname(__file__)), 'w')
 
 f.write("// !!!!!!!!!!!!!!!!!!!!!!! This is a generated file, do not edit manually\n\n")
 
