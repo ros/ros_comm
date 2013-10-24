@@ -42,14 +42,6 @@
 #endif
 #include "rosgraph_msgs/Log.h"
 
-#include "log4cxx/logger.h"
-#include "log4cxx/rollingfileappender.h"
-#include "log4cxx/patternlayout.h"
-#include "log4cxx/helpers/pool.h"
-#ifdef _MSC_VER
-  #include "log4cxx/helpers/transcoder.h" // to decode std::string -> LogStrings on windows
-#endif
-
 /**
  * @mainpage
  *
@@ -65,7 +57,12 @@
 class Rosout
 {
 public:
-  log4cxx::LoggerPtr logger_;
+  std::string log_file_name_;
+  FILE* handle_;
+  size_t max_file_size_;
+  size_t current_file_size_;
+  size_t max_backup_index_;
+  size_t current_backup_index_;
   ros::NodeHandle node_;
   ros::Subscriber rosout_sub_;
   ros::Publisher agg_pub_;
@@ -78,28 +75,20 @@ public:
   void init()
   {
     //calculate log directory
-#ifdef _MSC_VER
-    std::string log_file_name_str = ros::file_log::getLogDirectory() + "/rosout.log";
-    LOG4CXX_DECODE_CHAR(log_file_name, log_file_name_str); // this instantiates log_file_name as type LogString as well
-    std::string empty_str = "";
-    LOG4CXX_DECODE_CHAR(log_empty, empty_str);
-#else
-    std::string log_file_name = ros::file_log::getLogDirectory() + "/rosout.log";
-    std::string log_empty = "";
-#endif
+    log_file_name_ = ros::file_log::getLogDirectory() + "/rosout.log";
+    handle_ = fopen(log_file_name_.c_str(), "w");
+    max_file_size_ = 100*1024*1024;
+    current_file_size_ = 0;
+    max_backup_index_ = 10;
+    current_backup_index_ = 0;
 
-    logger_ = log4cxx::Logger::getRootLogger();
-    log4cxx::LayoutPtr layout = new log4cxx::PatternLayout(log_empty);
-    log4cxx::RollingFileAppenderPtr appender = new log4cxx::RollingFileAppender(layout, log_file_name, true);
-    logger_->addAppender( appender );
-    appender->setMaximumFileSize(100*1024*1024);
-    appender->setMaxBackupIndex(10);
-    log4cxx::helpers::Pool pool;
-    appender->activateOptions(pool);
+    std::cout << "logging to " << log_file_name_.c_str() << std::endl;
 
-    std::cout << "logging to " << log_file_name.c_str() << std::endl;
-
-    LOG4CXX_INFO(logger_, "\n\n" << ros::Time::now() << "  Node Startup\n");
+    std::stringstream ss;
+    ss <<  "\n\n" << ros::Time::now() << "  Node Startup\n";
+    fprintf(handle_, "%s", ss.str().c_str());
+    current_file_size_ += ss.tellp();
+    fflush(handle_);
 
     agg_pub_ = node_.advertise<rosgraph_msgs::Log>("/rosout_agg", 0);
     std::cout << "re-publishing aggregated messages to /rosout_agg" << std::endl;
@@ -154,7 +143,45 @@ public:
     ss << "] ";
 
     ss << msg->msg;
-    LOG4CXX_INFO(logger_, ss.str());
+    ss << "\n";
+    fprintf(handle_, "%s", ss.str().c_str());
+    current_file_size_ += ss.tellp();
+    fflush(handle_);
+
+    // check for rolling
+    if (current_file_size_ > max_file_size_)
+    {
+      fclose(handle_);
+      current_backup_index_++;
+      if (current_backup_index_ <= max_backup_index_)
+      {
+        std::stringstream backup_file_name;
+        backup_file_name << log_file_name_ << "." << current_backup_index_;
+        int rc = rename(log_file_name_.c_str(), backup_file_name.str().c_str());
+        if (rc != 0)
+        {
+          rc = remove(backup_file_name.str().c_str());
+          if (rc == 0)
+          {
+            rc = rename(log_file_name_.c_str(), backup_file_name.str().c_str());
+          }
+        }
+        if (rc == 0)
+        {
+          std::cout << "rosout log file " << log_file_name_.c_str() << " reached max size, backup data to " << backup_file_name.str().c_str() << std::endl;
+        }
+        else
+        {
+          std::cerr << "could not roll logging from " << log_file_name_.c_str() << " to " << backup_file_name.str().c_str() << std::endl;
+        }
+        if (current_backup_index_ == max_backup_index_)
+        {
+          current_backup_index_ = 0;
+        }
+      }
+      handle_ = fopen(log_file_name_.c_str(), "w");;
+      current_file_size_ = 0;
+    }
   }
 };
 
