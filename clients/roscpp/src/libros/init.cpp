@@ -64,10 +64,6 @@
 
 #include <cstdlib>
 
-#ifdef _MSC_VER
-  #include "log4cxx/helpers/transcoder.h" // Have to be able to encode wchar LogStrings on windows.
-#endif
-
 namespace ros
 {
 
@@ -97,7 +93,7 @@ void init(const M_string& remappings);
 }
 
 CallbackQueuePtr g_global_queue;
-ROSOutAppenderPtr g_rosout_appender;
+ROSOutAppender* g_rosout_appender;
 static CallbackQueuePtr g_internal_callback_queue;
 
 static bool g_initialized = false;
@@ -174,72 +170,78 @@ void shutdownCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
 
 bool getLoggers(roscpp::GetLoggers::Request&, roscpp::GetLoggers::Response& resp)
 {
-  log4cxx::spi::LoggerRepositoryPtr repo = log4cxx::Logger::getLogger(ROSCONSOLE_ROOT_LOGGER_NAME)->getLoggerRepository();
-
-  log4cxx::LoggerList loggers = repo->getCurrentLoggers();
-  log4cxx::LoggerList::iterator it = loggers.begin();
-  log4cxx::LoggerList::iterator end = loggers.end();
-  for (; it != end; ++it)
+  std::list<std::pair<std::string, ros::console::levels::Level> > loggers;
+  bool success = ::ros::console::get_loggers(loggers);
+  if (success)
   {
-    roscpp::Logger logger;
-    #ifdef _MSC_VER
-      LOG4CXX_ENCODE_CHAR(tmp_name_str, (*it)->getName()); // has to handle LogString with wchar types.
-      logger.name = tmp_name_str; // tmpstr gets instantiated inside the LOG4CXX_ENCODE_CHAR macro
-    #else
-    logger.name = (*it)->getName();
-    #endif
-    const log4cxx::LevelPtr& level = (*it)->getEffectiveLevel();
-    if (level)
+    for (std::list<std::pair<std::string, ros::console::levels::Level> >::const_iterator it = loggers.begin(); it != loggers.end(); it++)
     {
-	  #ifdef _MSC_VER
-	    LOG4CXX_ENCODE_CHAR(tmp_level_str, level->toString()); // has to handle LogString with wchar types.
-	    logger.level = tmp_level_str;   // tmpstr gets instantiated inside the LOG4CXX_ENCODE_CHAR macro
-	  #else
-      logger.level = level->toString();
-      #endif
+      roscpp::Logger logger;
+      logger.name = it->first;
+      ros::console::levels::Level level = it->second;
+      if (level == ros::console::levels::Debug)
+      {
+        logger.level = "debug";
+      }
+      else if (level == ros::console::levels::Info)
+      {
+        logger.level = "info";
+      }
+      else if (level == ros::console::levels::Warn)
+      {
+        logger.level = "warn";
+      }
+      else if (level == ros::console::levels::Error)
+      {
+        logger.level = "error";
+      }
+      else if (level == ros::console::levels::Fatal)
+      {
+        logger.level = "fatal";
+      }
+      resp.loggers.push_back(logger);
     }
-    resp.loggers.push_back(logger);
   }
-
-  return true;
+  return success;
 }
 
 bool setLoggerLevel(roscpp::SetLoggerLevel::Request& req, roscpp::SetLoggerLevel::Response&)
 {
-  log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger(req.logger);
-  log4cxx::LevelPtr level;
-
   std::transform(req.level.begin(), req.level.end(), req.level.begin(), (int(*)(int))std::toupper);
 
+  ros::console::levels::Level level;
   if (req.level == "DEBUG")
   {
-    level = log4cxx::Level::getDebug();
+    level = ros::console::levels::Debug;
   }
   else if (req.level == "INFO")
   {
-    level = log4cxx::Level::getInfo();
+    level = ros::console::levels::Info;
   }
   else if (req.level == "WARN")
   {
-    level = log4cxx::Level::getWarn();
+    level = ros::console::levels::Warn;
   }
   else if (req.level == "ERROR")
   {
-    level = log4cxx::Level::getError();
+    level = ros::console::levels::Error;
   }
   else if (req.level == "FATAL")
   {
-    level = log4cxx::Level::getFatal();
+    level = ros::console::levels::Fatal;
   }
-
-  if (level)
+  else
   {
-    logger->setLevel(level);
-    console::notifyLoggerLevelsChanged();
-    return true;
+    return false;
   }
 
-  return false;
+  bool success = ::ros::console::set_logger_level(req.logger, level);
+  if (success)
+  {
+    console::notifyLoggerLevelsChanged();
+  }
+
+  return success;
 }
 
 bool closeAllConnections(roscpp::Empty::Request&, roscpp::Empty::Response&)
@@ -353,8 +355,7 @@ void start()
   if (!(g_init_options & init_options::NoRosout))
   {
     g_rosout_appender = new ROSOutAppender;
-    const log4cxx::LoggerPtr& logger = log4cxx::Logger::getLogger(ROSCONSOLE_ROOT_LOGGER_NAME);
-    logger->addAppender(g_rosout_appender);
+    ros::console::register_appender(g_rosout_appender);
   }
 
   if (g_shutting_down) goto end;
@@ -573,17 +574,8 @@ void shutdown()
     g_internal_queue_thread.join();
   }
 
-  const log4cxx::LoggerPtr& logger = log4cxx::Logger::getLogger(ROSCONSOLE_ROOT_LOGGER_NAME);
-  logger->removeAppender(g_rosout_appender);
   g_rosout_appender = 0;
 
-  // reset this so that the logger doesn't get crashily destroyed
-  // again during global destruction.  
-  //
-  // See https://code.ros.org/trac/ros/ticket/3271
-  //
-  log4cxx::Logger::getRootLogger()->getLoggerRepository()->shutdown();
-  
   if (g_started)
   {
     TopicManager::instance()->shutdown();

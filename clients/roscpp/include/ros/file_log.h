@@ -32,19 +32,6 @@
 #include <ros/console.h>
 #include "common.h"
 
-namespace log4cxx
-{
-namespace helpers
-{
-template <class T> class ObjectPtrT;
-}
-
-class Logger;
-typedef helpers::ObjectPtrT<Logger> LoggerPtr;
-class Level;
-typedef helpers::ObjectPtrT<Level> LevelPtr;
-}
-
 #define ROSCPP_LOG_DEBUG(...) ROS_DEBUG_NAMED("roscpp_internal", __VA_ARGS__)
 
 namespace ros
