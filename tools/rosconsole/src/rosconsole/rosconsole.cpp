@@ -36,14 +36,6 @@
 #include "ros/console.h"
 #include "ros/assert.h"
 #include <ros/time.h>
-#include "log4cxx/appenderskeleton.h"
-#include "log4cxx/spi/loggingevent.h"
-#include "log4cxx/level.h"
-#include "log4cxx/propertyconfigurator.h"
-#ifdef _MSC_VER
-  // Have to be able to encode wchar LogStrings on windows.
-  #include "log4cxx/helpers/transcoder.h"
-#endif
 
 #include <boost/thread.hpp>
 #include <boost/shared_array.hpp>
@@ -56,43 +48,54 @@
 #include <cstring>
 #include <stdexcept>
 
+
+// declare interface for rosconsole implementations
 namespace ros
 {
 namespace console
 {
+namespace impl
+{
+
+void initialize();
+
+void shutdown();
+
+void register_appender(LogAppender* appender);
+
+void print(void* handle, ::ros::console::Level level, const char* str, const char* file, const char* function, int line);
+
+bool isEnabledFor(void* handle, ::ros::console::Level level);
+
+void* getHandle(const std::string& name);
+
+std::string getName(void* handle);
+
+bool get_loggers(std::list<std::pair<std::string, levels::Level> >& loggers);
+
+bool set_logger_level(const std::string& name, levels::Level level);
+
+} // namespace impl
+
 
 bool g_initialized = false;
 bool g_shutting_down = false;
 boost::mutex g_init_mutex;
 
-log4cxx::LevelPtr g_level_lookup[ levels::Count ] =
-{
-  log4cxx::Level::getDebug(),
-  log4cxx::Level::getInfo(),
-  log4cxx::Level::getWarn(),
-  log4cxx::Level::getError(),
-  log4cxx::Level::getFatal(),
-};
+std::string g_last_error_message = "Unknown Error";
 
 #ifdef WIN32
-	#define COLOR_NORMAL ""
-	#define COLOR_RED ""
-	#define COLOR_GREEN ""
-	#define COLOR_YELLOW ""
+  #define COLOR_NORMAL ""
+  #define COLOR_RED ""
+  #define COLOR_GREEN ""
+  #define COLOR_YELLOW ""
 #else
-	#define COLOR_NORMAL "\033[0m"
-	#define COLOR_RED "\033[31m"
-	#define COLOR_GREEN "\033[32m"
-	#define COLOR_YELLOW "\033[33m"
+  #define COLOR_NORMAL "\033[0m"
+  #define COLOR_RED "\033[31m"
+  #define COLOR_GREEN "\033[32m"
+  #define COLOR_YELLOW "\033[33m"
 #endif
 const char* g_format_string = "[${severity}] [${time}]: ${message}";
-
-struct Token
-{
-  virtual std::string getString(const log4cxx::spi::LoggingEventPtr& event) = 0;
-};
-typedef boost::shared_ptr<Token> TokenPtr;
-typedef std::vector<TokenPtr> V_Token;
 
 typedef std::map<std::string, std::string> M_string;
 M_string g_extra_fixed_tokens;
@@ -108,7 +111,7 @@ struct FixedToken : public Token
   : str_(str)
   {}
 
-  virtual std::string getString(const log4cxx::spi::LoggingEventPtr&)
+  virtual std::string getString(void*, ::ros::console::Level, const char*, const char*, const char*, int)
   {
     return str_.c_str();
   }
@@ -122,7 +125,7 @@ struct FixedMapToken : public Token
   : str_(str)
   {}
 
-  virtual std::string getString(const log4cxx::spi::LoggingEventPtr&)
+  virtual std::string getString(void*, ::ros::console::Level, const char*, const char*, const char*, int)
   {
     M_string::iterator it = g_extra_fixed_tokens.find(str_);
     if (it == g_extra_fixed_tokens.end())
@@ -138,7 +141,7 @@ struct FixedMapToken : public Token
 
 struct PlaceHolderToken : public Token
 {
-  virtual std::string getString(const log4cxx::spi::LoggingEventPtr&)
+  virtual std::string getString(void*, ::ros::console::Level, const char*, const char*, const char*, int)
   {
     return "PLACEHOLDER";
   }
@@ -146,25 +149,25 @@ struct PlaceHolderToken : public Token
 
 struct SeverityToken : public Token
 {
-  virtual std::string getString(const log4cxx::spi::LoggingEventPtr& event)
+  virtual std::string getString(void*, ::ros::console::Level level, const char* str, const char* file, const char* function, int line)
   {
-    if (event->getLevel() == log4cxx::Level::getFatal())
+    if (level == levels::Fatal)
     {
       return "FATAL";
     }
-    else if (event->getLevel() == log4cxx::Level::getError())
+    else if (level == levels::Error)
     {
       return "ERROR";
     }
-    else if (event->getLevel() == log4cxx::Level::getWarn())
+    else if (level == levels::Warn)
     {
       return " WARN";
     }
-    else if (event->getLevel() == log4cxx::Level::getInfo())
+    else if (level == levels::Info)
     {
       return " INFO";
     }
-    else if (event->getLevel() == log4cxx::Level::getDebug())
+    else if (level == levels::Debug)
     {
       return "DEBUG";
     }
@@ -175,21 +178,15 @@ struct SeverityToken : public Token
 
 struct MessageToken : public Token
 {
-  virtual std::string getString(const log4cxx::spi::LoggingEventPtr& event)
+  virtual std::string getString(void*, ::ros::console::Level, const char* str, const char*, const char*, int)
   {
-	#ifdef _MSC_VER
-	  // has to handle LogString with wchar types.
-	  LOG4CXX_ENCODE_CHAR(ret, event->getMessage());
-	  return ret;
-	#else
-	  return event->getMessage();
-	#endif
+    return str;
   }
 };
 
 struct TimeToken : public Token
 {
-  virtual std::string getString(const log4cxx::spi::LoggingEventPtr&)
+  virtual std::string getString(void*, ::ros::console::Level, const char*, const char*, const char*, int)
   {
     std::stringstream ss;
     if (ros::Time::isValid() && ros::Time::isSimTime())
@@ -206,7 +203,7 @@ struct TimeToken : public Token
 
 struct ThreadToken : public Token
 {
-  virtual std::string getString(const log4cxx::spi::LoggingEventPtr&)
+  virtual std::string getString(void*, ::ros::console::Level, const char*, const char*, const char*, int)
   {
     std::stringstream ss;
     ss << boost::this_thread::get_id();
@@ -216,40 +213,34 @@ struct ThreadToken : public Token
 
 struct LoggerToken : public Token
 {
-  virtual std::string getString(const log4cxx::spi::LoggingEventPtr& event)
+  virtual std::string getString(void* logger_handle, ::ros::console::Level level, const char* str, const char* file, const char* function, int line)
   {
-	#ifdef _MSC_VER
-	  // has to handle LogString with wchar types.
-	  LOG4CXX_ENCODE_CHAR(ret, event->getLoggerName());
-	  return ret;
-	#else
-	  return event->getLoggerName();
-	#endif
+    return ::ros::console::impl::getName(logger_handle);
   }
 };
 
 struct FileToken : public Token
 {
-  virtual std::string getString(const log4cxx::spi::LoggingEventPtr& event)
+  virtual std::string getString(void*, ::ros::console::Level, const char*, const char* file, const char*, int)
   {
-    return event->getLocationInformation().getFileName();
+    return file;
   }
 };
 
 struct FunctionToken : public Token
 {
-  virtual std::string getString(const log4cxx::spi::LoggingEventPtr& event)
+  virtual std::string getString(void*, ::ros::console::Level, const char*, const char*, const char* function, int)
   {
-    return event->getLocationInformation().getMethodName();
+    return function;
   }
 };
 
 struct LineToken : public Token
 {
-  virtual std::string getString(const log4cxx::spi::LoggingEventPtr& event)
+  virtual std::string getString(void*, ::ros::console::Level, const char*, const char*, const char*, int line)
   {
     std::stringstream ss;
-    ss << event->getLocationInformation().getLineNumber();
+    ss << line;
     return ss.str();
   }
 };
@@ -292,189 +283,90 @@ TokenPtr createTokenFromType(const std::string& type)
   return TokenPtr(new FixedMapToken(type));
 }
 
-struct Formatter
+void Formatter::init(const char* fmt)
 {
-  void init(const char* fmt)
-  {
-    format_ = fmt;
+  format_ = fmt;
 
-    boost::regex e("\\$\\{([a-z|A-Z]+)\\}");
-    boost::match_results<std::string::const_iterator> results;
-    std::string::const_iterator start, end;
-    start = format_.begin();
-    end = format_.end();
-    bool matched_once = false;
-    std::string last_suffix;
-    while (boost::regex_search(start, end, results, e))
-    {
+  boost::regex e("\\$\\{([a-z|A-Z]+)\\}");
+  boost::match_results<std::string::const_iterator> results;
+  std::string::const_iterator start, end;
+  start = format_.begin();
+  end = format_.end();
+  bool matched_once = false;
+  std::string last_suffix;
+  while (boost::regex_search(start, end, results, e))
+  {
 #if 0
-      for (size_t i = 0; i < results.size(); ++i)
-      {
-        std::cout << i << "|" << results.prefix() << "|" <<  results[i] << "|" << results.suffix() << std::endl;
-      }
+    for (size_t i = 0; i < results.size(); ++i)
+    {
+      std::cout << i << "|" << results.prefix() << "|" <<  results[i] << "|" << results.suffix() << std::endl;
+    }
 #endif
 
-      std::string token = results[1];
-      last_suffix = results.suffix();
-      tokens_.push_back(TokenPtr(new FixedToken(results.prefix())));
-      tokens_.push_back(createTokenFromType(token));
+    std::string token = results[1];
+    last_suffix = results.suffix();
+    tokens_.push_back(TokenPtr(new FixedToken(results.prefix())));
+    tokens_.push_back(createTokenFromType(token));
 
-      start = results[0].second;
-      matched_once = true;
-    }
-
-    if (matched_once)
-    {
-      tokens_.push_back(TokenPtr(new FixedToken(last_suffix)));
-    }
-    else
-    {
-      tokens_.push_back(TokenPtr(new FixedToken(format_)));
-    }
+    start = results[0].second;
+    matched_once = true;
   }
 
-  void print(const log4cxx::spi::LoggingEventPtr& event)
+  if (matched_once)
   {
-    const char* color = NULL;
-    FILE* f = stdout;
+    tokens_.push_back(TokenPtr(new FixedToken(last_suffix)));
+  }
+  else
+  {
+    tokens_.push_back(TokenPtr(new FixedToken(format_)));
+  }
+}
 
-    if (event->getLevel() == log4cxx::Level::getFatal())
-    {
-      color = COLOR_RED;
-      f = stderr;
-    }
-    else if (event->getLevel() == log4cxx::Level::getError())
-    {
-      color = COLOR_RED;
-      f = stderr;
-    }
-    else if (event->getLevel() == log4cxx::Level::getWarn())
-    {
-      color = COLOR_YELLOW;
-    }
-    else if (event->getLevel() == log4cxx::Level::getInfo())
-    {
-      color = COLOR_NORMAL;
-    }
-    else if (event->getLevel() == log4cxx::Level::getDebug())
-    {
-      color = COLOR_GREEN;
-    }
+void Formatter::print(void* logger_handle, ::ros::console::Level level, const char* str, const char* file, const char* function, int line)
+{
+  const char* color = NULL;
+  FILE* f = stdout;
 
-    ROS_ASSERT(color != NULL);
-
-    std::stringstream ss;
-    ss << color;
-    V_Token::iterator it = tokens_.begin();
-    V_Token::iterator end = tokens_.end();
-    for (; it != end; ++it)
-    {
-      ss << (*it)->getString(event);
-    }
-    ss << COLOR_NORMAL;
-
-    fprintf(f, "%s\n", ss.str().c_str());
+  if (level == levels::Fatal)
+  {
+    color = COLOR_RED;
+    f = stderr;
+  }
+  else if (level == levels::Error)
+  {
+    color = COLOR_RED;
+    f = stderr;
+  }
+  else if (level == levels::Warn)
+  {
+    color = COLOR_YELLOW;
+  }
+  else if (level == levels::Info)
+  {
+    color = COLOR_NORMAL;
+  }
+  else if (level == levels::Debug)
+  {
+    color = COLOR_GREEN;
   }
 
-  std::string format_;
-  V_Token tokens_;
+  ROS_ASSERT(color != NULL);
 
-};
+  std::stringstream ss;
+  ss << color;
+  V_Token::iterator it = tokens_.begin();
+  V_Token::iterator end = tokens_.end();
+  for (; it != end; ++it)
+  {
+    ss << (*it)->getString(logger_handle, level, str, file, function, line);
+  }
+  ss << COLOR_NORMAL;
+
+  fprintf(f, "%s\n", ss.str().c_str());
+}
+
 Formatter g_formatter;
 
-class ROSConsoleStdioAppender : public log4cxx::AppenderSkeleton
-{
-public:
-  ~ROSConsoleStdioAppender()
-  {
-  }
-
-protected:
-  virtual void append(const log4cxx::spi::LoggingEventPtr& event, 
-                      log4cxx::helpers::Pool&)
-  {
-    g_formatter.print(event);
-  }
-
-  virtual void close()
-  {
-  }
-  virtual bool requiresLayout() const
-  {
-    return false;
-  }
-};
-
-/**
- * \brief For internal use only. Does the actual initialization of the rosconsole system.  Should only be called once.
- */
-void do_initialize()
-{
-  // First set up some sane defaults programmatically.
-  log4cxx::LoggerPtr ros_logger = log4cxx::Logger::getLogger(ROSCONSOLE_ROOT_LOGGER_NAME);
-  ros_logger->setLevel(log4cxx::Level::getInfo());
-
-  log4cxx::LoggerPtr roscpp_superdebug = log4cxx::Logger::getLogger("ros.roscpp.superdebug");
-  roscpp_superdebug->setLevel(log4cxx::Level::getWarn());
-
-  // Next try to load the default config file from ROS_ROOT/config/rosconsole.config
-  char* ros_root_cstr = NULL;
-#ifdef _MSC_VER
-  _dupenv_s(&ros_root_cstr, NULL, "ROS_ROOT");
-#else
-  ros_root_cstr = getenv("ROS_ROOT");
-#endif
-  if (ros_root_cstr)
-  {
-    std::string config_file = std::string(ros_root_cstr) + "/config/rosconsole.config";
-    FILE* config_file_ptr = fopen( config_file.c_str(), "r" );
-    if( config_file_ptr ) // only load it if the file exists, to avoid a warning message getting printed.
-    {
-      fclose( config_file_ptr );
-      log4cxx::PropertyConfigurator::configure(config_file);
-    }
-  }
-  char* config_file_cstr = NULL;
-#ifdef _MSC_VER
-  _dupenv_s(&config_file_cstr, NULL, "ROSCONSOLE_CONFIG_FILE");
-#else
-  config_file_cstr = getenv("ROSCONSOLE_CONFIG_FILE");
-#endif
-  if ( config_file_cstr )
-  {
-    std::string config_file = config_file_cstr;
-    log4cxx::PropertyConfigurator::configure(config_file);
-  }
-
-  // Check for the format string environment variable
-  char* format_string = NULL;
-#ifdef _MSC_VER
-  _dupenv_s(&format_string, NULL, "ROSCONSOLE_FORMAT");
-#else
-  format_string =  getenv("ROSCONSOLE_FORMAT");
-#endif
-  if (format_string)
-  {
-    g_format_string = format_string;
-  }
-
-  g_formatter.init(g_format_string);
-
-  log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger(ROSCONSOLE_ROOT_LOGGER_NAME);
-  logger->addAppender(new ROSConsoleStdioAppender);
-#ifdef _MSC_VER
-  if ( ros_root_cstr != NULL ) {
-	  free(ros_root_cstr);
-  }
-  if ( config_file_cstr != NULL ) {
-	  free(config_file_cstr);
-  }
-  if ( format_string != NULL ) {
-	  free(format_string);
-  }
-  // getenv implementations don't need free'ing.
-#endif
-}
 
 void initialize()
 {
@@ -482,7 +374,21 @@ void initialize()
 
   if (!g_initialized)
   {
-    do_initialize();
+    // Check for the format string environment variable
+    char* format_string = NULL;
+#ifdef _MSC_VER
+    _dupenv_s(&format_string, NULL, "ROSCONSOLE_FORMAT");
+#else
+    format_string =  getenv("ROSCONSOLE_FORMAT");
+#endif
+    if (format_string)
+    {
+      g_format_string = format_string;
+    }
+
+    g_formatter.init(g_format_string);
+
+    ::ros::console::impl::initialize();
     g_initialized = true;
   }
 }
@@ -544,7 +450,7 @@ static boost::mutex g_print_mutex;
 static boost::shared_array<char> g_print_buffer(new char[INITIAL_BUFFER_SIZE]);
 static size_t g_print_buffer_size = INITIAL_BUFFER_SIZE;
 static boost::thread::id g_printing_thread_id;
-void print(FilterBase* filter, log4cxx::Logger* logger, Level level, 
+void print(FilterBase* filter, void* logger_handle, Level level, 
 	   const char* file, int line, const char* function, const char* fmt, ...)
 {
   if (g_shutting_down)
@@ -567,7 +473,6 @@ void print(FilterBase* filter, log4cxx::Logger* logger, Level level,
 
   va_end(args);
 
-  log4cxx::LoggerPtr logger_ptr(logger);
   bool enabled = true;
 
   if (filter)
@@ -577,10 +482,9 @@ void print(FilterBase* filter, log4cxx::Logger* logger, Level level,
     params.function = function;
     params.line = line;
     params.level = level;
-    params.logger = logger_ptr;
+    params.logger = logger_handle;
     params.message = g_print_buffer.get();
     enabled = filter->isEnabled(params);
-    logger_ptr = params.logger;
     level = params.level;
 
     if (!params.out_message.empty())
@@ -598,9 +502,13 @@ void print(FilterBase* filter, log4cxx::Logger* logger, Level level,
 
   if (enabled)
   {
+    if (level == levels::Error)
+    {
+      g_last_error_message = g_print_buffer.get();
+    }
     try
     {
-      logger_ptr->forcedLog(g_level_lookup[level], g_print_buffer.get(), log4cxx::spi::LocationInfo(file, function, line));
+      ::ros::console::impl::print(logger_handle, level, g_print_buffer.get(), file, function, line);
     }
     catch (std::exception& e)
     {
@@ -611,7 +519,7 @@ void print(FilterBase* filter, log4cxx::Logger* logger, Level level,
   g_printing_thread_id = boost::thread::id();
 }
 
-void print(FilterBase* filter, log4cxx::Logger* logger, Level level, 
+void print(FilterBase* filter, void* logger_handle, Level level, 
 	   const std::stringstream& ss, const char* file, int line, const char* function)
 {
   if (g_shutting_down)
@@ -627,7 +535,6 @@ void print(FilterBase* filter, log4cxx::Logger* logger, Level level,
 
   g_printing_thread_id = boost::this_thread::get_id();
 
-  log4cxx::LoggerPtr logger_ptr(logger);
   bool enabled = true;
   std::string str = ss.str();
 
@@ -638,10 +545,9 @@ void print(FilterBase* filter, log4cxx::Logger* logger, Level level,
     params.function = function;
     params.line = line;
     params.level = level;
-    params.logger = logger_ptr;
+    params.logger = logger_handle;
     params.message = g_print_buffer.get();
     enabled = filter->isEnabled(params);
-    logger_ptr = params.logger;
     level = params.level;
 
     if (!params.out_message.empty())
@@ -652,9 +558,13 @@ void print(FilterBase* filter, log4cxx::Logger* logger, Level level,
 
   if (enabled)
   {
+    if (level == levels::Error)
+    {
+      g_last_error_message = str;
+    }
     try
     {
-      logger->forcedLog(g_level_lookup[level], str, log4cxx::spi::LocationInfo(file, function, line));
+      ::ros::console::impl::print(logger_handle, level, str.c_str(), file, function, line);
     }
     catch (std::exception& e)
     {
@@ -677,7 +587,7 @@ void registerLogLocation(LogLocation* loc)
 
 void checkLogLocationEnabledNoLock(LogLocation* loc)
 {
-  loc->logger_enabled_ = loc->logger_->isEnabledFor(g_level_lookup[loc->level_]);
+  loc->logger_enabled_ = ::ros::console::impl::isEnabledFor(loc->logger_, loc->level_);
 }
 
 void initializeLogLocation(LogLocation* loc, const std::string& name, Level level)
@@ -689,7 +599,7 @@ void initializeLogLocation(LogLocation* loc, const std::string& name, Level leve
     return;
   }
 
-  loc->logger_ = &(*log4cxx::Logger::getLogger(name));
+  loc->logger_ = ::ros::console::impl::getHandle(name);
   loc->level_ = level;
 
   g_log_locations.push_back(loc);
@@ -735,12 +645,26 @@ public:
 StaticInit g_static_init;
 
 
+void register_appender(LogAppender* appender)
+{
+  ros::console::impl::register_appender(appender);
+}
+
 void shutdown() 
 {
   g_shutting_down = true;
+  ros::console::impl::shutdown();
 }
 
+bool get_loggers(std::list<std::pair<std::string, levels::Level> >& loggers)
+{
+  return ros::console::impl::get_loggers(loggers);
+}
 
+bool set_logger_level(const std::string& name, levels::Level level)
+{
+  return ros::console::impl::set_logger_level(name, level);
+}
 
 } // namespace console
 } // namespace ros

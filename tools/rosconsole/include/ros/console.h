@@ -37,6 +37,7 @@
 #include <ros/time.h>
 #include <cstdarg>
 #include <ros/macros.h>
+#include <list>
 
 // Import/export for windows dll's and visibility for gcc shared libraries.
 
@@ -50,10 +51,6 @@
   #define ROSCONSOLE_DECL
 #endif
 
-// TODO: this header is no longer needed to be included here, but removing it will break various code that incorrectly does not itself include log4cxx/logger.h
-// We should vet all the code using log4cxx directly and make sure the includes/link flags are used in those packages, and then we can remove this include
-#include <log4cxx/logger.h>
-
 #ifdef __GNUC__
 #if __GNUC__ >= 3
 #define ROSCONSOLE_PRINTF_ATTRIBUTE(a, b) __attribute__ ((__format__ (__printf__, a, b)));
@@ -63,21 +60,6 @@
 #ifndef ROSCONSOLE_PRINTF_ATTRIBUTE
 #define ROSCONSOLE_PRINTF_ATTRIBUTE(a, b)
 #endif
-
-// log4cxx forward declarations
-namespace log4cxx
-{
-namespace helpers
-{
-template<typename T> class ObjectPtrT;
-} // namespace helpers
-
-class Level;
-typedef helpers::ObjectPtrT<Level> LevelPtr;
-
-class Logger;
-typedef helpers::ObjectPtrT<Logger> LoggerPtr;
-} // namespace log4cxx
 
 namespace boost
 {
@@ -106,12 +88,55 @@ enum Level
 }
 typedef levels::Level Level;
 
-extern ROSCONSOLE_DECL log4cxx::LevelPtr g_level_lookup[];
+extern ROSCONSOLE_DECL bool get_loggers(std::list<std::pair<std::string, levels::Level> >& loggers);
+extern ROSCONSOLE_DECL bool set_logger_level(const std::string& name, levels::Level level);
 
 /**
  * \brief Only exported because the macros need it.  Do not use directly.
  */
 extern ROSCONSOLE_DECL bool g_initialized;
+
+/**
+ * \brief Only exported because the TopicManager need it.  Do not use directly.
+ */
+extern ROSCONSOLE_DECL std::string g_last_error_message;
+
+class LogAppender
+{
+public:
+
+  virtual void log(::ros::console::Level level, const char* str, const char* file, const char* function, int line) = 0;
+
+};
+
+ROSCONSOLE_DECL void register_appender(LogAppender* appender);
+
+struct Token
+{
+  /*
+   * @param level
+   * @param message
+   * @param file
+   * @param function
+   * @param  line
+   */
+  virtual std::string getString(void*, ::ros::console::Level, const char*, const char*, const char*, int) = 0;
+};
+typedef boost::shared_ptr<Token> TokenPtr;
+typedef std::vector<TokenPtr> V_Token;
+
+struct Formatter
+{
+  void init(const char* fmt);
+  void print(void* logger_handle, ::ros::console::Level level, const char* str, const char* file, const char* function, int line);
+  std::string format_;
+  V_Token tokens_;
+};
+
+/**
+ * \brief Only exported because the implementation need it.  Do not use directly.
+ */
+extern ROSCONSOLE_DECL Formatter g_formatter;
 
 /**
  * \brief Don't call this directly.  Performs any required initialization/configuration.  Happens automatically when using the macro API.
@@ -129,11 +154,11 @@ class FilterBase;
  * @param line Line of code this logging statement is from (usually generated with __LINE__)
  * @param fmt Format string
  */
-ROSCONSOLE_DECL void print(FilterBase* filter, log4cxx::Logger* logger, Level level,
+ROSCONSOLE_DECL void print(FilterBase* filter, void* logger, Level level,
 	   const char* file, int line, 
 	   const char* function, const char* fmt, ...) ROSCONSOLE_PRINTF_ATTRIBUTE(7, 8);
 
-ROSCONSOLE_DECL void print(FilterBase* filter, log4cxx::Logger* logger, Level level,
+ROSCONSOLE_DECL void print(FilterBase* filter, void* logger, Level level,
 	   const std::stringstream& str, const char* file, int line, const char* function);
 
 struct ROSCONSOLE_DECL LogLocation;
@@ -171,7 +196,7 @@ struct FilterParams
   const char* message;                      ///< [input] The formatted message that will be output
 
   // input/output parameters
-  log4cxx::LoggerPtr logger;                ///< [input/output] Logger that this message will be output to.  If changed, uses the new logger
+  void* logger;                ///< [input/output] Handle identifying  ;ogger that this message will be output to.  If changed, uses the new logger
   Level level;                              ///< [input/output] Severity level.  If changed, uses the new level
 
   // output parameters
@@ -237,7 +262,7 @@ struct LogLocation
   bool initialized_;
   bool logger_enabled_;
   ::ros::console::Level level_;
-  log4cxx::Logger* logger_;
+  void* logger_;
 };
 
 ROSCONSOLE_DECL void vformatToBuffer(boost::shared_array<char>& buffer, size_t& buffer_size, const char* fmt, va_list args);
