@@ -28,27 +28,6 @@
  */
 
 #include "ros/console.h"
-#include "ros/assert.h"
-#include <ros/time.h>
-#include "log4cxx/appenderskeleton.h"
-#include "log4cxx/spi/loggingevent.h"
-#include "log4cxx/level.h"
-#include "log4cxx/propertyconfigurator.h"
-#ifdef _MSC_VER
-  // Have to be able to encode wchar LogStrings on windows.
-  #include "log4cxx/helpers/transcoder.h"
-#endif
-
-#include <boost/thread.hpp>
-#include <boost/shared_array.hpp>
-#include <boost/regex.hpp>
-
-#include <cstdarg>
-#include <cstdlib>
-#include <cstdio>
-#include <memory>
-#include <cstring>
-#include <stdexcept>
 
 namespace ros
 {
@@ -57,16 +36,23 @@ namespace console
 namespace impl
 {
 
+LogAppender* rosconsole_print_appender = 0;
+
 void initialize()
 {}
 
-
 void print(void* handle, ::ros::console::Level level, const char* str, const char* file, const char* function, int line)
-{}
+{
+  g_formatter.print(0, level, str, file, function, line);
+  if(rosconsole_print_appender)
+  {
+    rosconsole_print_appender->log(level, str, file, function, line);
+  }
+}
 
 bool isEnabledFor(void* handle, ::ros::console::Level level)
 {
-  return false;
+  return level != ::ros::console::levels::Debug;
 }
 
 void* getHandle(const std::string& name)
@@ -80,7 +66,9 @@ std::string getName(void* handle)
 }
 
 void register_appender(LogAppender* appender)
-{}
+{
+  rosconsole_print_appender = appender;
+}
 
 void shutdown()
 {}
