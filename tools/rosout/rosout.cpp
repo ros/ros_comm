@@ -86,9 +86,16 @@ public:
 
     std::stringstream ss;
     ss <<  "\n\n" << ros::Time::now() << "  Node Startup\n";
-    fprintf(handle_, "%s", ss.str().c_str());
-    current_file_size_ += ss.tellp();
-    fflush(handle_);
+    int written = fprintf(handle_, "%s", ss.str().c_str());
+    if (written < 0)
+    {
+      std::cerr << "Could not write to log file '" << log_file_name_ << "'" << std::endl;
+    }
+    else
+    {
+      current_file_size_ += written;
+      fflush(handle_);
+    }
 
     agg_pub_ = node_.advertise<rosgraph_msgs::Log>("/rosout_agg", 0);
     std::cout << "re-publishing aggregated messages to /rosout_agg" << std::endl;
@@ -144,43 +151,46 @@ public:
 
     ss << msg->msg;
     ss << "\n";
-    fprintf(handle_, "%s", ss.str().c_str());
-    current_file_size_ += ss.tellp();
-    fflush(handle_);
-
-    // check for rolling
-    if (current_file_size_ > max_file_size_)
+    int written = fprintf(handle_, "%s", ss.str().c_str());
+    if (written > 0)
     {
-      fclose(handle_);
-      current_backup_index_++;
-      if (current_backup_index_ <= max_backup_index_)
+      current_file_size_ += written;
+      fflush(handle_);
+
+      // check for rolling
+      if (current_file_size_ > max_file_size_)
       {
-        std::stringstream backup_file_name;
-        backup_file_name << log_file_name_ << "." << current_backup_index_;
-        int rc = rename(log_file_name_.c_str(), backup_file_name.str().c_str());
-        if (rc != 0)
+        fclose(handle_);
+        current_backup_index_++;
+        if (current_backup_index_ <= max_backup_index_)
         {
-          rc = remove(backup_file_name.str().c_str());
+          std::stringstream backup_file_name;
+          backup_file_name << log_file_name_ << "." << current_backup_index_;
+          int rc = rename(log_file_name_.c_str(), backup_file_name.str().c_str());
+          if (rc != 0)
+          {
+            rc = remove(backup_file_name.str().c_str());
+            if (rc == 0)
+            {
+              rc = rename(log_file_name_.c_str(), backup_file_name.str().c_str());
+            }
+          }
           if (rc == 0)
           {
-            rc = rename(log_file_name_.c_str(), backup_file_name.str().c_str());
+            std::cout << "rosout log file " << log_file_name_.c_str() << " reached max size, backup data to " << backup_file_name.str().c_str() << std::endl;
+          }
+          else
+          {
+            std::cerr << "could not roll logging from " << log_file_name_.c_str() << " to " << backup_file_name.str().c_str() << std::endl;
+          }
+          if (current_backup_index_ == max_backup_index_)
+          {
+            current_backup_index_ = 0;
           }
         }
-        if (rc == 0)
-        {
-          std::cout << "rosout log file " << log_file_name_.c_str() << " reached max size, backup data to " << backup_file_name.str().c_str() << std::endl;
-        }
-        else
-        {
-          std::cerr << "could not roll logging from " << log_file_name_.c_str() << " to " << backup_file_name.str().c_str() << std::endl;
-        }
-        if (current_backup_index_ == max_backup_index_)
-        {
-          current_backup_index_ = 0;
-        }
+        handle_ = fopen(log_file_name_.c_str(), "w");
+        current_file_size_ = 0;
       }
-      handle_ = fopen(log_file_name_.c_str(), "w");;
-      current_file_size_ = 0;
     }
   }
 };

@@ -196,7 +196,7 @@ struct FilterParams
   const char* message;                      ///< [input] The formatted message that will be output
 
   // input/output parameters
-  void* logger;                ///< [input/output] Handle identifying  ;ogger that this message will be output to.  If changed, uses the new logger
+  void* logger;                             ///< [input/output] Handle identifying logger that this message will be output to.  If changed, uses the new logger
   Level level;                              ///< [input/output] Severity level.  If changed, uses the new level
 
   // output parameters
