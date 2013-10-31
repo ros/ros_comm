@@ -170,11 +170,11 @@ void shutdownCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
 
 bool getLoggers(roscpp::GetLoggers::Request&, roscpp::GetLoggers::Response& resp)
 {
-  std::list<std::pair<std::string, ros::console::levels::Level> > loggers;
+  std::map<std::string, ros::console::levels::Level> loggers;
   bool success = ::ros::console::get_loggers(loggers);
   if (success)
   {
-    for (std::list<std::pair<std::string, ros::console::levels::Level> >::const_iterator it = loggers.begin(); it != loggers.end(); it++)
+    for (std::map<std::string, ros::console::levels::Level>::const_iterator it = loggers.begin(); it != loggers.end(); it++)
     {
       roscpp::Logger logger;
       logger.name = it->first;

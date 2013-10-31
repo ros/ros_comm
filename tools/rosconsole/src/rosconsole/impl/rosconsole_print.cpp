@@ -73,7 +73,7 @@ void register_appender(LogAppender* appender)
 void shutdown()
 {}
 
-bool get_loggers(std::list<std::pair<std::string, levels::Level> >& loggers)
+bool get_loggers(std::map<std::string, levels::Level>& loggers)
 {
   return true;
 }

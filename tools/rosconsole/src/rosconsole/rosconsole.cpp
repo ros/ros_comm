@@ -71,7 +71,7 @@ void* getHandle(const std::string& name);
 
 std::string getName(void* handle);
 
-bool get_loggers(std::list<std::pair<std::string, levels::Level> >& loggers);
+bool get_loggers(std::map<std::string, levels::Level>& loggers);
 
 bool set_logger_level(const std::string& name, levels::Level level);
 
@@ -656,7 +656,7 @@ void shutdown()
   ros::console::impl::shutdown();
 }
 
-bool get_loggers(std::list<std::pair<std::string, levels::Level> >& loggers)
+bool get_loggers(std::map<std::string, levels::Level>& loggers)
 {
   return ros::console::impl::get_loggers(loggers);
 }

@@ -100,11 +100,11 @@ void register_appender(LogAppender* appender)
 void shutdown()
 {}
 
-bool get_loggers(std::list<std::pair<std::string, levels::Level> >& loggers)
+bool get_loggers(std::map<std::string, levels::Level> >& loggers)
 {
   for(std::vector<std::pair<std::string, levels::Level> >::const_iterator it = rosconsole_glog_log_levels.begin(); it != rosconsole_glog_log_levels.end(); it++)
   {
-    loggers.push_back(*it);
+    loggers[it->first] = it->second;
   }
   return true;
 }

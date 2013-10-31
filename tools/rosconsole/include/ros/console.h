@@ -37,7 +37,7 @@
 #include <ros/time.h>
 #include <cstdarg>
 #include <ros/macros.h>
-#include <list>
+#include <map>
 
 // Import/export for windows dll's and visibility for gcc shared libraries.
 
@@ -88,7 +88,7 @@ enum Level
 }
 typedef levels::Level Level;
 
-extern ROSCONSOLE_DECL bool get_loggers(std::list<std::pair<std::string, levels::Level> >& loggers);
+extern ROSCONSOLE_DECL bool get_loggers(std::map<std::string, levels::Level>& loggers);
 extern ROSCONSOLE_DECL bool set_logger_level(const std::string& name, levels::Level level);
 
 /**

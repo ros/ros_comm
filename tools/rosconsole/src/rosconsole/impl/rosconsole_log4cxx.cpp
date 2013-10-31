@@ -214,7 +214,7 @@ std::string getName(void* handle)
 #endif
 }
 
-bool get_loggers(std::list<std::pair<std::string, levels::Level> >& loggers)
+bool get_loggers(std::map<std::string, levels::Level>& loggers)
 {
   log4cxx::spi::LoggerRepositoryPtr repo = log4cxx::Logger::getLogger(ROSCONSOLE_ROOT_LOGGER_NAME)->getLoggerRepository();
 
@@ -252,7 +252,7 @@ bool get_loggers(std::list<std::pair<std::string, levels::Level> >& loggers)
     {
       level = levels::Fatal;
     }
-    loggers.push_back(std::pair<std::string, levels::Level>(name, level));
+    loggers[name] = level;
   }
 
   return true;
