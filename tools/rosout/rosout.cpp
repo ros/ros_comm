@@ -74,27 +74,37 @@ public:
 
   void init()
   {
-    //calculate log directory
-    log_file_name_ = ros::file_log::getLogDirectory() + "/rosout.log";
-    handle_ = fopen(log_file_name_.c_str(), "w");
     max_file_size_ = 100*1024*1024;
     current_file_size_ = 0;
     max_backup_index_ = 10;
     current_backup_index_ = 0;
 
-    std::cout << "logging to " << log_file_name_.c_str() << std::endl;
+    log_file_name_ = ros::file_log::getLogDirectory() + "/rosout.log";
+    handle_ = fopen(log_file_name_.c_str(), "w");
 
-    std::stringstream ss;
-    ss <<  "\n\n" << ros::Time::now() << "  Node Startup\n";
-    int written = fprintf(handle_, "%s", ss.str().c_str());
-    if (written < 0)
+    if (handle_ == 0)
     {
-      std::cerr << "Could not write to log file '" << log_file_name_ << "'" << std::endl;
+      std::cerr << "Error opening rosout log file '" << log_file_name_.c_str() << "': " << strerror(errno);
     }
     else
     {
-      current_file_size_ += written;
-      fflush(handle_);
+      std::cout << "logging to " << log_file_name_.c_str() << std::endl;
+
+      std::stringstream ss;
+      ss <<  "\n\n" << ros::Time::now() << "  Node Startup\n";
+      int written = fprintf(handle_, "%s", ss.str().c_str());
+      if (written < 0)
+      {
+        std::cerr << "Error writting to rosout log file '" << log_file_name_.c_str() << "': " << strerror(ferror(handle_)) << std::endl;
+      }
+      else if (written > 0)
+      {
+        current_file_size_ += written;
+        if (fflush(handle_))
+        {
+          std::cerr << "Error flushing rosout log file '" << log_file_name_.c_str() << "': " << strerror(ferror(handle_));
+        }
+      }
     }
 
     agg_pub_ = node_.advertise<rosgraph_msgs::Log>("/rosout_agg", 0);
@@ -152,15 +162,25 @@ public:
     ss << msg->msg;
     ss << "\n";
     int written = fprintf(handle_, "%s", ss.str().c_str());
-    if (written > 0)
+    if (written < 0)
+    {
+      std::cerr << "Error writting to rosout log file '" << log_file_name_.c_str() << "': " << strerror(ferror(handle_)) << std::endl;
+    }
+    else if (written > 0)
     {
       current_file_size_ += written;
-      fflush(handle_);
+      if (fflush(handle_))
+      {
+        std::cerr << "Error flushing rosout log file '" << log_file_name_.c_str() << "': " << strerror(ferror(handle_));
+      }
 
       // check for rolling
       if (current_file_size_ > max_file_size_)
       {
-        fclose(handle_);
+        if (fclose(handle_))
+        {
+          std::cerr << "Error closing rosout log file '" << log_file_name_.c_str() << "': " << strerror(ferror(handle_)) << std::endl;
+        }
         current_backup_index_++;
         if (current_backup_index_ <= max_backup_index_)
         {
@@ -173,15 +193,19 @@ public:
             if (rc == 0)
             {
               rc = rename(log_file_name_.c_str(), backup_file_name.str().c_str());
+              if (rc)
+              {
+                std::cerr << "Error rotating rosout log file '" << log_file_name_.c_str() << "' to '" << backup_file_name.str().c_str() << "': " << strerror(errno);
+              }
             }
           }
-          if (rc == 0)
+          if (rc)
           {
-            std::cout << "rosout log file " << log_file_name_.c_str() << " reached max size, backup data to " << backup_file_name.str().c_str() << std::endl;
+            std::cerr << "Error rotating rosout log file '" << log_file_name_.c_str() << "'' to '" << backup_file_name.str().c_str() << "'" << std::endl;
           }
           else
           {
-            std::cerr << "could not roll logging from " << log_file_name_.c_str() << " to " << backup_file_name.str().c_str() << std::endl;
+            std::cout << "rosout log file " << log_file_name_.c_str() << " reached max size, back up data to " << backup_file_name.str().c_str() << std::endl;
           }
           if (current_backup_index_ == max_backup_index_)
           {
@@ -189,6 +213,10 @@ public:
           }
         }
         handle_ = fopen(log_file_name_.c_str(), "w");
+        if (handle_ == 0)
+        {
+          std::cerr << "Error opening rosout log file '" << log_file_name_.c_str() << "': " << strerror(errno);
+        }
         current_file_size_ = 0;
       }
     }
