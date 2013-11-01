@@ -124,7 +124,7 @@ template <class T>
     xml_vec[i] = vec.at(i);
   }
 
-  set(key, xml_vec);
+  ros::param::set(key, xml_vec);
 }
 
 void set(const std::string& key, const std::vector<std::string>& vec)
@@ -165,7 +165,7 @@ template <class T>
     xml_value[it->first] = it->second;
   }
 
-  set(key, xml_value);
+  ros::param::set(key, xml_value);
 }
 
 void set(const std::string& key, const std::map<std::string, std::string>& map)
