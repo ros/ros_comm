@@ -708,7 +708,7 @@ class RosbagCmds(UserDict):
             print("A bag is a file format in ROS for storing ROS message data. The rosbag command can record, replay and manipulate bags.")
             print()
             print(self.get_valid_cmds())
-            print('For additional information, see http://code.ros.org/wiki/rosbag/')
+            print('For additional information, see http://wiki.ros.org/rosbag')
             print()
             return
 
