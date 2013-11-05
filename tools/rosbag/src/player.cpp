@@ -462,7 +462,7 @@ void Player::restoreTerminal() {
     terminal_modified_ = false;
 }
 
-char Player::readCharFromStdin() {
+int Player::readCharFromStdin() {
 #ifdef __APPLE__
     fd_set testfd;
     FD_COPY(&stdin_fdset_, &testfd);
