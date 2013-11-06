@@ -163,7 +163,7 @@ public:
     void publish();
 
 private:
-    char readCharFromStdin();
+    int readCharFromStdin();
     void setupTerminal();
     void restoreTerminal();
 
