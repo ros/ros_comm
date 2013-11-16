@@ -188,7 +188,7 @@ environment_errors = [
     # ROS_PACKAGE_PATH
     (lambda ctx: [d for d in paths(ctx.ros_package_path) if d and isfile(d)],
      "Path(s) in ROS_PACKAGE_PATH [%(ros_package_path)s] points to a file instead of a directory: "),
-    (lambda ctx: [d for d in paths(ctx.ros_package_path) if d and not isdir(d)  ],
+    (lambda ctx: [d for d in paths(ctx.ros_package_path) if d and not isdir(d) and not (os.path.basename(d) == 'stacks' and os.path.exists(os.path.join(os.path.dirname(d), '.catkin')))],
      "Not all paths in ROS_PACKAGE_PATH [%(ros_package_path)s] point to an existing directory: "),
     
     # PYTHONPATH
