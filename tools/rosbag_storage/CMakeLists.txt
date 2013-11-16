@@ -13,7 +13,7 @@ catkin_package(
   DEPENDS console_bridge Boost
 )
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${BZIP2_INCLUDE_DIR} ${console_bridge__INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} ${console_bridge_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${BZIP2_INCLUDE_DIR})
 add_definitions(${BZIP2_DEFINITIONS})
 
 add_library(rosbag_storage
