@@ -1,6 +1,6 @@
 find_package(Boost REQUIRED COMPONENTS thread)
 
-include_directories(include ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 # Can't call add_message_files() here because CMake context is lost when we leave this subdir.
 # add_message_files(

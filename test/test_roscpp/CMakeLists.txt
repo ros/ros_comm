@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
 if(CATKIN_ENABLE_TESTING)
   find_package(Boost REQUIRED COMPONENTS signals filesystem system)
 
-  include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
+  include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
   # Testing message and service files.  See comment below about subdirectory support.
   add_message_files(
