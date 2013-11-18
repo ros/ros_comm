@@ -254,6 +254,8 @@ def get_bind_address(address=None):
         #localhost or 127/8
         if use_ipv6():
             return '::1'
+        elif address.startswith('127.'):
+            return address
         else:
             return '127.0.0.1' #loopback
     else:
