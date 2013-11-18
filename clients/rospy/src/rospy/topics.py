@@ -92,6 +92,7 @@ from rospy.msg import serialize_message, args_kwds_to_message
 
 from rospy.impl.registration import get_topic_manager, set_topic_manager, Registration, get_registration_listeners
 from rospy.impl.tcpros import get_tcpros_handler, DEFAULT_BUFF_SIZE
+from rospy.impl.tcpros_pubsub import QueuedConnection
 
 _logger = logging.getLogger('rospy.topics')
 
@@ -738,7 +739,7 @@ class Publisher(Topic):
     Class for registering as a publisher of a ROS topic.
     """
 
-    def __init__(self, name, data_class, subscriber_listener=None, tcp_nodelay=False, latch=False, headers=None):
+    def __init__(self, name, data_class, subscriber_listener=None, tcp_nodelay=False, latch=False, headers=None, queue_size=None):
         """
         Constructor
         @param name: resource name of topic, e.g. 'laser'. 
@@ -768,6 +769,8 @@ class Publisher(Topic):
             self.impl.enable_latch()
         if headers:
             self.impl.add_headers(headers)
+        if queue_size is not None:
+            self.impl.set_queue_size(queue_size)
             
     def publish(self, *args, **kwds):
         """
@@ -827,6 +830,9 @@ class _PublisherImpl(_TopicImpl):
         self.is_latch = False
         self.latch = None
         
+        # maximum queue size for publishing messages
+        self.queue_size = None
+
         #STATS
         self.message_data_sent = 0
 
@@ -858,6 +864,9 @@ class _PublisherImpl(_TopicImpl):
         """
         self.is_latch = True
         
+    def set_queue_size(self, queue_size):
+        self.queue_size = queue_size
+
     def get_stats(self): # STATS
         """
         Get the stats for this topic publisher
@@ -900,6 +909,8 @@ class _PublisherImpl(_TopicImpl):
         @return: True if connection was added
         @rtype: bool
         """
+        if self.queue_size is not None:
+            c = QueuedConnection(c, self.queue_size)
         super(_PublisherImpl, self).add_connection(c)
         def publish_single(data):
             self.publish(data, connection_override=c)
