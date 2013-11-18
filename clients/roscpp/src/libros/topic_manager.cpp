@@ -1002,7 +1002,7 @@ void TopicManager::getPublications(XmlRpcValue &pubs)
   }
 }
 
-extern ROSOutAppenderPtr g_rosout_appender;
+extern std::string console::g_last_error_message;
 
 void TopicManager::pubUpdateCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
 {
@@ -1017,13 +1017,7 @@ void TopicManager::pubUpdateCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpc
   }
   else
   {
-    std::string last_error = "Unknown Error";
-    if ( g_rosout_appender != 0 )
-    {
-      last_error = g_rosout_appender->getLastError();
-    }
-
-    result = xmlrpc::responseInt(0, last_error, 0);
+    result = xmlrpc::responseInt(0, console::g_last_error_message, 0);
   }
 }
 
@@ -1031,13 +1025,7 @@ void TopicManager::requestTopicCallback(XmlRpc::XmlRpcValue& params, XmlRpc::Xml
 {
   if (!requestTopic(params[1], params[2], result))
   {
-    std::string last_error = "Unknown Error";
-    if ( g_rosout_appender != 0 )
-    {
-      last_error = g_rosout_appender->getLastError();
-    }
-
-    result = xmlrpc::responseInt(0, last_error, 0);
+    result = xmlrpc::responseInt(0, console::g_last_error_message, 0);
   }
 }
 

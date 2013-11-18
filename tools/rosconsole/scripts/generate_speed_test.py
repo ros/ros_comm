@@ -31,13 +31,10 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import os
 import sys
-import rospkg
 
-rospack = rospkg.RosPack()
-base_path = rospack.get_path('rosconsole')
-
-f = open('%s/test/speed_test.cpp' % (base_path), 'w')
+f = open('%s/../test/speed_test.cpp' % (os.path.dirname(__file__)), 'w')
 
 f.write("// !!!!!!!!!!!!!!!!!!!!!!! This is a generated file, do not edit manually\n\n")
 
