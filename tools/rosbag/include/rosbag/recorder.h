@@ -121,7 +121,7 @@ public:
 
     boost::shared_ptr<ros::Subscriber> subscribe(std::string const& topic);
 
-    int run();
+    int run(bool* stop_recording = NULL);
 
 private:
     void printUsage();
@@ -179,6 +179,8 @@ private:
     boost::mutex                  check_disk_mutex_;
     ros::WallTime                 check_disk_next_;
     ros::WallTime                 warn_next_;
+
+    bool*                         stop_recording_;       //!< used to end recording via a parent application
 };
 
 } // namespace rosbag
