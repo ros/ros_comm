@@ -41,7 +41,7 @@
   typedef unsigned __int16 uint16_t;
   typedef          __int8    int8_t;
   typedef unsigned __int8   uint8_t;
-#elseif defined(_MSC_VER)
+#elif defined(_MSC_VER)
   #include <stdint.h> // only on v2010 and later -> is this enough for msvc and linux?
 #else
   #include <inttypes.h>
