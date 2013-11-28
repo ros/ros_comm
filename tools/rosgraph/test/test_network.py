@@ -177,7 +177,7 @@ class NetworkTest(unittest.TestCase):
         from rosgraph.network import get_bind_address
         assert '0.0.0.0' == get_bind_address('foo')
         assert '127.0.0.1' == get_bind_address('localhost')
-        assert '127.0.0.1' == get_bind_address('127.0.1.1')
+        assert '127.0.1.1' == get_bind_address('127.0.1.1')
     
         # now test address override
         os.environ['ROS_IP'] = 'bar'

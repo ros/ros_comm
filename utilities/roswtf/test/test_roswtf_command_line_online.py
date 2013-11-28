@@ -82,7 +82,8 @@ class TestRostopicOnline(unittest.TestCase):
             'rosbag', 'rosconsole', 'roscpp', 'rosgraph_msgs', 'roslang', 'rosmaster', 'rosmsg', 'rosout', 'rosparam', 'rospy', 'rostest', 'rostopic', 'topic_tools', 'xmlrpcpp',
             'cpp_common', 'roscpp_serialization', 'roscpp_traits', 'rostime',  # roscpp_core
             'rosclean', 'rosunit',  # ros
-            'rospack', 'std_msgs', 'message_runtime', 'message_generation', 'gencpp', 'genlisp', 'genpy', 'genmsg', 'catkin'
+            'rospack', 'std_msgs', 'message_runtime', 'message_generation', 'gencpp', 'genlisp', 'genpy', 'genmsg', 'catkin',
+            'console_bridge'
         ]
         env['ROS_PACKAGE_PATH'] = os.pathsep.join([rospack.get_path(pkg) for pkg in pkgs])
 
