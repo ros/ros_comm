@@ -163,6 +163,6 @@ class RosStreamHandler(logging.Handler):
             self._write(sys.stderr, msg, color)
 
     def _write(self, fd, msg, color):
-        if self._colorize and color and fd.isatty():
+        if self._colorize and color and hasattr(fd, 'isatty') and fd.isatty():
             msg = color + msg + _color_reset
         fd.write(msg)
