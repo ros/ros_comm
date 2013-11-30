@@ -80,13 +80,11 @@ class TestRospyTransport(unittest.TestCase):
         try:
             t.send_message('msg', 1)
             self.fail("send_message() should be abstract")
-        except:
-            traceback.print_exc()
+        except: pass
         try:
             t.write_data('data')
             self.fail("write_data() should be abstract")
-        except:
-            traceback.print_exc()            
+        except: pass
         t = Transport(INBOUND)
         try:
             t.receive_once()
