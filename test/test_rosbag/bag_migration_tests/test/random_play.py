@@ -92,65 +92,76 @@ class RandomPlay(unittest.TestCase):
 
     cmd += [bagpath]
 
-    f1 = subprocess.Popen(cmd)
+    try:
+      f1 = subprocess.Popen(cmd)
 
-    while (len(self.input) < rmg.message_count()):
-#      print "\n%d/%d\n"%(len(self.input), rmg.message_count())
-      time.sleep(.1)
+      last_input_count = 0
+      while (len(self.input) < rmg.message_count()):
+#        print "\n%d/%d\n"%(len(self.input), rmg.message_count())
+        time.sleep(1.0)
+        # abort loop if no input is coming in anymore and process has finished
+        if len(self.input) == last_input_count:
+          rc = f1.poll()
+          if rc is not None:
+            self.assertEqual(rc, 0)
+            break
+        last_input_count = len(self.input)
 
-    self.assertEqual(len(self.input), rmg.message_count())
+      self.assertEqual(len(self.input), rmg.message_count())
 
-    max_late = 0
-    max_early = 0
-    avg_off = 0
-    power = 0
+      max_late = 0
+      max_early = 0
+      avg_off = 0
+      power = 0
 
-    for (expect_topic, expect_msg, expect_time) in rmg.messages():
+      for (expect_topic, expect_msg, expect_time) in rmg.messages():
 
-      if (not self.use_clock):
-        expect_time /= scale
+        if (not self.use_clock):
+          expect_time /= scale
 
-      buff = StringIO()
-      expect_msg.serialize(buff)
-      expect_msg.deserialize(buff.getvalue())
+        buff = StringIO()
+        expect_msg.serialize(buff)
+        expect_msg.deserialize(buff.getvalue())
 
-      msg_match = False
+        msg_match = False
 
-      for ind in xrange(0,100):
-        (input_topic, input_msg, input_time) = self.input[ind]
+        for ind in xrange(0,100):
+          (input_topic, input_msg, input_time) = self.input[ind]
 
-        if (genpy.message.strify_message(expect_msg) == genpy.message.strify_message(input_msg)):
-          msg_match = True
-          del self.input[ind]
+          if (genpy.message.strify_message(expect_msg) == genpy.message.strify_message(input_msg)):
+            msg_match = True
+            del self.input[ind]
 
-          # stats
-          diff = input_time - expect_time
+            # stats
+            diff = input_time - expect_time
 
-          if (diff < max_early):
-            max_early = diff
+            if (diff < max_early):
+              max_early = diff
 
-          if (diff > max_late):
-            max_late = diff
+            if (diff > max_late):
+              max_late = diff
 
-          avg_off += diff / rmg.message_count()
+            avg_off += diff / rmg.message_count()
 
-          power += (diff**2) / rmg.message_count()
+            power += (diff**2) / rmg.message_count()
 
-          # Messages can arrive late, but never very early Both of
-          # these bounds are much larger than they ought to be, but
-          # you never know with a heavily loaded system.
-          self.assertTrue(input_time - expect_time > -.5)
-          self.assertTrue(abs(input_time - expect_time) < .5)
-          break
+            # Messages can arrive late, but never very early Both of
+            # these bounds are much larger than they ought to be, but
+            # you never know with a heavily loaded system.
+            self.assertTrue(input_time - expect_time > -.5)
+            self.assertTrue(abs(input_time - expect_time) < .5)
+            break
 
-      if not msg_match:
-        print "No match at time: %f"%expect_time
+        if not msg_match:
+          print "No match at time: %f"%expect_time
 
-      self.assertTrue(msg_match)
+        self.assertTrue(msg_match)
 
-    print "%f %f %f %f"%(max_early, max_late, avg_off, power)
+      print "%f %f %f %f"%(max_early, max_late, avg_off, power)
 
-    (o1,e1) = f1.communicate()    
+    finally:
+      f1.communicate()
+
     self.assertEqual(f1.returncode, 0)
 
 if __name__ == '__main__':
