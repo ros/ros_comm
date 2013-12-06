@@ -85,7 +85,7 @@ def roswtf_main():
     from roswtf.context import WtfException
     try:
         _roswtf_main()
-    except WtfException, e:
+    except WtfException as e:
         print >> sys.stderr, e
         
 def _roswtf_main():
@@ -226,11 +226,11 @@ def _roswtf_main():
             print "\nOnline checks summary:\n"
             print_results(ctx)
             
-    except roswtf.context.WtfException, e:
+    except roswtf.context.WtfException as e:
         print >> sys.stderr, str(e)
         print "\nAborting checks, partial results summary:\n"
         print_results(ctx)
-    except Exception, e:
+    except Exception as e:
         traceback.print_exc()
         print >> sys.stderr, str(e)
         print "\nAborting checks, partial results summary:\n"

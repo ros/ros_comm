@@ -36,7 +36,6 @@
 import os
 import sys 
 import unittest
-import cStringIO
 import time
         
 from subprocess import Popen, PIPE, check_call, call

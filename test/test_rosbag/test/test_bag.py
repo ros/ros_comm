@@ -240,7 +240,7 @@ class TestRosbag(unittest.TestCase):
                 msg.data = i
                 b.write('/int', msg)
 
-                header = { 'op': bag._pack_uint8(max(bag._OP_CODES.iterkeys()) + 1) }
+                header = { 'op': bag._pack_uint8(max(bag._OP_CODES.keys()) + 1) }
                 data = 'ABCDEFGHI123456789'
                 bag._write_record(b._file, header, data)
 
@@ -259,14 +259,14 @@ class TestRosbag(unittest.TestCase):
             f.seek(0)
 
             version_line = f.readline().rstrip()
-            print version_line
+            print(version_line)
 
             while f.tell() < size:
                 header = bag._read_header(f)
                 op = bag._read_uint8_field(header, 'op')
                 data = bag._read_record_data(f)
 
-                print bag._OP_CODES.get(op, op)
+                print(bag._OP_CODES.get(op, op))
 
 if __name__ == '__main__':
     import rostest

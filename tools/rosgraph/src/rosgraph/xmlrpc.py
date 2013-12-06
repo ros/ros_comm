@@ -260,11 +260,10 @@ class XmlRpcNode(object):
             self.server.register_instance(self.handler)
 
         except socket.error as e:
-            (n, errstr) = e
-            if n == 98:
+            if e.errno == 98:
                 msg = "ERROR: Unable to start XML-RPC server, port %s is already in use"%self.port
             else:
-                msg = "ERROR: Unable to start XML-RPC server: %s"%errstr                
+                msg = "ERROR: Unable to start XML-RPC server: %s" % e.strerror
             logger.error(msg)
             print(msg)
             raise #let higher level catch this

@@ -33,7 +33,6 @@
 
 import os, sys, unittest
 import time
-from xmlrpclib import ServerProxy
 
 import rosgraph
 

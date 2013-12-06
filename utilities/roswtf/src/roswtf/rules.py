@@ -53,11 +53,20 @@ def _check_rule(rule, ret, ctx, ctx_list, level):
     if ret:
         d = ctx.as_dictionary()
 
+        def isstring(s):
+            """Small helper version to check an object is a string in
+            a way that works for both Python 2 and 3
+            """
+            try:
+                return isinstance(s, basestring)
+            except NameError:
+                return isinstance(s, str)
+
         if type(ret) in (tuple, list):
             f_msg = rule[1]
             ret_str = '\n'.join([" * %s"%r for r in ret])
             ctx_list.append(level(f_msg%d + "\n" + ret_str+'\n', f_msg, ret))
-        elif isinstance(ret, basestring):
+        elif isstring(ret):
             f_msg = rule[1]
             ctx_list.append(level(f_msg%d + ret%d, f_msg, ret))
         else:

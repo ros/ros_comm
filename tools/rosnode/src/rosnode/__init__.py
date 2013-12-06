@@ -45,7 +45,10 @@ import errno
 import sys
 import socket
 import time
-import xmlrpclib
+try:
+    from xmlrpc.client import ServerProxy
+except ImportError:
+    from xmlrpclib import ServerProxy
 
 try: #py3k
     import urllib.parse as urlparse
@@ -245,7 +248,7 @@ def kill_nodes(node_names):
         # the shutdown call can sometimes fail to succeed if the node
         # tears down during the request handling, so we assume success
         try:
-            p = xmlrpclib.ServerProxy(uri)
+            p = ServerProxy(uri)
             _succeed(p.shutdown(ID, 'user request'))
         except:
             pass
@@ -313,7 +316,7 @@ def rosnode_ping(node_name, max_count=None, verbose=False):
     if verbose:
         print("pinging %s with a timeout of %ss"%(node_name, timeout))
     socket.setdefaulttimeout(timeout)
-    node = xmlrpclib.ServerProxy(node_api)
+    node = ServerProxy(node_api)
     lastcall = 0.
     count = 0
     acc = 0.
@@ -349,7 +352,7 @@ def rosnode_ping(node_name, max_count=None, verbose=False):
                             if verbose:
                                 print("node url has changed from [%s] to [%s], retrying to ping"%(node_api, new_node_api))
                             node_api = new_node_api
-                            node = xmlrpclib.ServerProxy(node_api)
+                            node = ServerProxy(node_api)
                             continue
                         print("ERROR: connection refused to [%s]"%(node_api), file=sys.stderr)
                     else:
@@ -515,7 +518,7 @@ def get_node_info_description(node_name):
 def get_node_connection_info_description(node_api, master):
     #turn down timeout on socket library
     socket.setdefaulttimeout(5.0)
-    node = xmlrpclib.ServerProxy(node_api)
+    node = ServerProxy(node_api)
     system_state = master.getSystemState()
 
     try:

@@ -400,7 +400,7 @@ class MessageUpdateRule(object):
         if (tmp_msg_from, tmp_msg_to) not in self.migrated_types:
             raise BagMigrationException("Rule [%s] tried to perform a migration from old [%s] to new [%s] not listed in migrated_types"%(self.location, tmp_msg_from, tmp_msg_to))
 
-        msg_to_array.extend( [msg_to_class() for i in xrange(len(msg_from_array))] )
+        msg_to_array.extend( [msg_to_class() for i in range(len(msg_from_array))] )
 
         self.migrator.migrate_array(msg_from_array, msg_to_array)
 
@@ -543,7 +543,7 @@ class MessageMigrator(object):
 
 
         for (rule_dict, location_base) in rule_dicts:
-            for (n,c) in rule_dict.iteritems():
+            for (n,c) in rule_dict.items():
                 if inspect.isclass(c):
                     if (not c == MessageUpdateRule) and issubclass(c, MessageUpdateRule):
                         self.add_update_rule(c(self, location_base + ':' + n))
@@ -561,7 +561,7 @@ class MessageMigrator(object):
 
 
         # For Each rulechain
-        for (type,rulechain) in self.rulechains.iteritems():
+        for (type,rulechain) in self.rulechains.items():
             first = True
             sn = None
             prev_sn = None
@@ -1105,13 +1105,13 @@ class MessageMigrator(object):
 
         # Short cut to speed up case of matching md5sum:
         if path == []:
-            for i in xrange(len(msg_from_array)):
+            for i in range(len(msg_from_array)):
                 buff = StringIO()
                 msg_from_array[i].serialize(buff)
                 msg_to_array[i].deserialize(buff.getvalue())
             return
 
-        for i in xrange(len(msg_from_array)):
+        for i in range(len(msg_from_array)):
             buff = StringIO()
             tmp_msg = path[0].old_class()
             msg_from_array[i].serialize(buff)

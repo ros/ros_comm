@@ -38,7 +38,10 @@
 
 import sys
 import unittest
-import xmlrpclib
+try:
+    from xmlrpc.client import DateTime
+except ImportError:
+    from xmlrpclib import DateTime
 import math
 import datetime
 import random
@@ -70,22 +73,22 @@ class ParamServerTestCase(TestRosClient):
                     trueKey = ns_join(ctx, key)
                     myState[trueKey] = val
                     count += 1
-            except Exception, e:
+            except Exception:
                 assert "getParam failed on type[%s], val[%s]"%(type,val)
         #self._checkParamState(myState)
 
     def _checkParamState(self, myState):
         master = self.master
         callerId = 'master' #validate from root 
-        for (k, v) in myState.iteritems():
+        for (k, v) in myState.items():
             assert self.apiSuccess(master.hasParam(callerId, k))
             #print "verifying parameter %s"%k
             try:
                 v2 = self.apiSuccess(master.getParam(callerId, k))
             except:
                 raise Exception("Exception raised while calling master.getParam(%s,%s): %s"%(callerId, k, traceback.format_exc()))
-            if isinstance(v2, xmlrpclib.DateTime):
-                self.assertEquals(xmlrpclib.DateTime(v), v2, "[%s]: %s != %s, %s"%(k, v, v2, v2.__class__))
+            if isinstance(v2, DateTime):
+                self.assertEquals(DateTime(v), v2, "[%s]: %s != %s, %s"%(k, v, v2, v2.__class__))
             elif type(v2) == float:
                 self.assertAlmostEqual(v, v2, 3, "[%s]: %s != %s, %s"%(k, v, v2, v2.__class__))
             else:
@@ -374,23 +377,26 @@ class ParamServerTestCase(TestRosClient):
 
     # testParamValues: test storage of all XML-RPC compatible types"""
     def _testParamValues(self):
-        from xmlrpclib import Binary
+        try:
+            from xmlrpc.client import Bianry
+        except ImportError:
+            from xmlrpclib import Binary
         testVals = [
             ['int', [0, 1024, 2147483647, -2147483647]],
             ['boolean', [True, False]],
             #no longer testing null char
-            #['string', ['', '\0', 'x', 'hello', ''.join([chr(n) for n in xrange(0, 255)])]],
+            #['string', ['', '\0', 'x', 'hello', ''.join([chr(n) for n in range(0, 255)])]],
             ['unicode-string', [u'', u'hello', unicode('Andr\302\202', 'utf-8'), unicode('\377\376A\000n\000d\000r\000\202\000', 'utf-16')]],
-            ['string-easy-ascii', [chr(n) for n in xrange(32, 128)]],
+            ['string-easy-ascii', [chr(n) for n in range(32, 128)]],
 
-            #['string-mean-ascii-low', [chr(n) for n in xrange(9, 10)]], #separate for easier book-keeping
-            #['string-mean-ascii-low', [chr(n) for n in xrange(1, 31)]], #separate for easier book-keeping
-            #['string-mean-signed', [chr(n) for n in xrange(129, 256)]],
+            #['string-mean-ascii-low', [chr(n) for n in range(9, 10)]], #separate for easier book-keeping
+            #['string-mean-ascii-low', [chr(n) for n in range(1, 31)]], #separate for easier book-keeping
+            #['string-mean-signed', [chr(n) for n in range(129, 256)]],
             ['string', ['', 'x', 'hello-there', 'new\nline', 'tab\t']],
             ['double', [0.0, math.pi, -math.pi, 3.4028235e+38, -3.4028235e+38]],
             #TODO: microseconds?
             ['datetime', [datetime.datetime(2005, 12, 6, 12, 13, 14), datetime.datetime(1492, 12, 6, 12, 13, 14)]],
-            ['base64', [Binary(''), Binary('\0'), Binary(''.join([chr(n) for n in xrange(0, 255)]))]],
+            ['base64', [Binary(''), Binary('\0'), Binary(''.join([chr(n) for n in range(0, 255)]))]],
             ['array', [[], [1, 2, 3], ['a', 'b', 'c'], [0.0, 0.1, 0.2, 2.0, 2.1, -4.0],
                        [1, 'a', True], [[1, 2, 3], ['a', 'b', 'c'], [1.0, 2.1, 3.2]]]
              ],

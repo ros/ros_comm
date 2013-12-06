@@ -53,7 +53,10 @@ import os
 import re
 import sys
 import socket
-import xmlrpclib
+try:
+    from xmlrpc.client import Binary
+except ImportError:
+    from xmlrpclib import Binary
 
 from optparse import OptionParser
 
@@ -91,10 +94,10 @@ def construct_yaml_binary(loader, node):
     xmlrpclib.Binary container instead of straight string
     representation.
     """
-    return xmlrpclib.Binary(loader.construct_yaml_binary(node))
+    return Binary(loader.construct_yaml_binary(node))
         
 # register the (de)serializers with pyyaml
-yaml.add_representer(xmlrpclib.Binary,represent_xml_binary)
+yaml.add_representer(Binary,represent_xml_binary)
 yaml.add_constructor(u'tag:yaml.org,2002:binary', construct_yaml_binary)
 
 def construct_angle_radians(loader, node):
@@ -137,7 +140,7 @@ def print_params(params, ns):
     Print contents of param dictionary to screen
     """
     if type(params) == dict:
-        for k, v in params.iteritems():
+        for k, v in params.items():
             if type(v) == dict:
                 print_params(v, ns_join(ns, k))
             else:
@@ -332,7 +335,7 @@ def set_param_raw(param, value, verbose=False):
     if type(value) == dict:
         # #1098 changing dictionary behavior to be an update, rather
         # than replace behavior.
-        for k, v in value.iteritems():
+        for k, v in value.items():
             # dictionary keys must be non-unicode strings
             if isinstance(k, str):
                 set_param_raw(ns_join(param, k), v, verbose=verbose)
@@ -514,9 +517,8 @@ def _rosparam_cmd_set_load(cmd, argv):
                 arg2 = f.read()
             set_param_raw(name, arg2, verbose=options.verbose) 
         elif options.bin_file:
-            import xmlrpclib
             with open(options.bin_file, 'rb') as f:
-                arg2 = xmlrpclib.Binary(f.read())
+                arg2 = Binary(f.read())
             set_param_raw(name, arg2, verbose=options.verbose)                
         else:
             # #2237: the empty string is really hard to specify on the

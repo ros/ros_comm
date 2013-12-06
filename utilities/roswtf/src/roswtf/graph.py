@@ -39,7 +39,10 @@ import itertools
 import socket
 import sys
 import time
-import xmlrpclib
+try:
+    from xmlrpc.client import ServerProxy
+except ImportError:
+    from xmlrpclib import ServerProxy
 
 import rospkg.environment
 
@@ -143,13 +146,13 @@ def unconnected_subscriptions(ctx):
     ret = ''
     whitelist = ['/reset_time']
     if ctx.use_sim_time:
-        for sub, l in ctx.unconnected_subscriptions.iteritems():
+        for sub, l in ctx.unconnected_subscriptions.items():
             l = [t for t in l if t not in whitelist]
             if l:
                 ret += ' * %s:\n'%sub
                 ret += ''.join(["   * %s\n"%t for t in l])
     else:
-        for sub, l in ctx.unconnected_subscriptions.iteritems():
+        for sub, l in ctx.unconnected_subscriptions.items():
             l = [t for t in l if t not in ['/time', '/clock']]
             if l:
                 ret += ' * %s:\n'%sub
@@ -287,7 +290,7 @@ class NodeInfoThread(threading.Thread):
                     ctx.errors.append(WtfError("Master does not have lookup information for node [%s]"%n))
                 return
                 
-            node = xmlrpclib.ServerProxy(node_api)
+            node = ServerProxy(node_api)
             start = time.time()
             socket.setdefaulttimeout(3.0)            
             code, msg, bus_info = node.getBusInfo('/roswtf')
@@ -303,9 +306,9 @@ class NodeInfoThread(threading.Thread):
                 else:
                     edges = _businfo(ctx, n, bus_info)
                     actual_edges.extend(edges)
-        except socket.error, e:
+        except socket.error:
             pass #ignore as we have rules to catch this
-        except Exception, e:
+        except Exception as e:
             ctx.errors.append(WtfError("Communication with [%s] raised an error: %s"%(n, str(e))))
         finally:
             self.done = True

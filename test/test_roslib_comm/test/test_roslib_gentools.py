@@ -35,7 +35,6 @@ import os
 import string 
 import sys 
 import unittest
-import cStringIO
         
 import roslib.names
 import roslib.packages
@@ -97,7 +96,7 @@ class TestGentools(unittest.TestCase):
 
         tests = self._load_md5_tests('md5text')
         # text file #1 is the reference
-        for k, files in tests.iteritems():
+        for k, files in tests.items():
             print "running tests", k
             ref_file = [f for f in files if f.endswith('%s1.txt'%k)]
             if not ref_file:
@@ -112,7 +111,7 @@ class TestGentools(unittest.TestCase):
         
     def test_md5_equals(self):
         tests = self._load_md5_tests('same')
-        for k, files in tests.iteritems():
+        for k, files in tests.items():
             print "running tests", k
             md5sum = self._compute_md5(files[0])
             for f in files[1:]:
@@ -120,7 +119,7 @@ class TestGentools(unittest.TestCase):
     
     def test_md5_not_equals(self):
         tests = self._load_md5_tests('different')
-        for k, files in tests.iteritems():
+        for k, files in tests.items():
             print "running tests", k
             md5s = set()
             md6md5sum = self._compute_md5(files[0])

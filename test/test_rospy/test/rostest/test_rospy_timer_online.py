@@ -79,7 +79,7 @@ class TestRospyTimerOnline(unittest.TestCase):
         t = time.time()
         count = 0
         r = rospy.Rate(10)
-        for x in xrange(10):
+        for x in range(10):
             r.sleep()
         dur = time.time() - t
         # make sure sleep is approximately right

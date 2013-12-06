@@ -116,7 +116,7 @@ class NetworkTest(unittest.TestCase):
                   ]
         for t in tests:
             s = ''
-            for k, v in t.iteritems():
+            for k, v in t.items():
                 f = "%s=%s"%(k, v)
                 s += struct.pack('<I', len(f)) + f
             s = struct.pack('<I', len(s)) + s

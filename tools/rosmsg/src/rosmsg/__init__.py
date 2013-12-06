@@ -339,7 +339,7 @@ def rosmsg_cmd_prototype(args):
     #     if not options.silent:
     #         print(file=sys.stderr, "Invalid package: '%s'"%e)
     #         sys.exit(getattr(os, 'EX_USAGE', 1))
-    except ValueError, e:
+    except ValueError as e:
         if not options.silent:
             sys.stderr.write("Invalid type: '%s'"%e)
             sys.exit(getattr(os, 'EX_USAGE', 1))

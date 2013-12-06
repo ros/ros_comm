@@ -36,7 +36,10 @@ import sys
 import struct
 import unittest
 import time
-import cStringIO
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
         
 import rospy
 
@@ -76,7 +79,7 @@ class TestRospyTcprosBase(unittest.TestCase):
         from rospy.impl.tcpros_base import recv_buff
 
 
-        buff = cStringIO.StringIO()
+        buff = StringIO()
         try:
             recv_buff(MockEmptySock(), buff, 1)
             self.fail("recv_buff should have raised TransportTerminated")
@@ -85,7 +88,7 @@ class TestRospyTcprosBase(unittest.TestCase):
 
         self.assertEquals(5, recv_buff(MockSock('1234567890'), buff, 5))
         self.assertEquals('12345', buff.getvalue())
-        buff = cStringIO.StringIO()
+        buff = StringIO()
         
         self.assertEquals(10, recv_buff(MockSock('1234567890'), buff, 100))
         self.assertEquals('1234567890', buff.getvalue())

@@ -45,7 +45,10 @@ import socket
 import time
 import traceback
 import yaml
-import xmlrpclib
+try:
+    from xmlrpc.client import Fault
+except ImportError:
+    from xmlrpclib import Fault
 
 from operator import itemgetter
 from urlparse import urlparse
@@ -81,7 +84,7 @@ def _check_master():
 def _master_get_topic_types(master):
     try:
         val = master.getTopicTypes()
-    except xmlrpclib.Fault:
+    except Fault:
         #TODO: remove, this is for 1.1
         sys.stderr.write("WARNING: rostopic is being used against an older version of ROS/roscore\n")
         val = master.getPublishedTopics('/')
@@ -251,6 +254,14 @@ class ROSTopicBandwidth(object):
             
         print("average: %s/s\n\tmean: %s min: %s max: %s window: %s"%(bw, mean, min_s, max_s, n))
 
+def _isstring_type(t):
+    valid_types = [str]
+    try:
+        valid_type.append(unicode)
+    except NameError:
+        pass
+    return t in valid_types
+
 def _rostopic_bw(topic, window_size=-1):
     """
     periodically print the received bandwidth of a topic to console until
@@ -385,7 +396,7 @@ def _sub_str_plot_fields(val, f, field_filter):
         sub = [s for s in sub if s is not None]
         if sub:
             return ','.join([s for s in sub])
-    elif type_ in (str, unicode):
+    elif _isstring_type(type_):
         return f
     elif type_ in (list, tuple):
         if len(val) == 0:
@@ -395,12 +406,12 @@ def _sub_str_plot_fields(val, f, field_filter):
         # no arrays of arrays
         if type0 in (bool, int, float) or \
                isinstance(val0, genpy.TVal):
-            return ','.join(["%s%s"%(f,x) for x in xrange(0,len(val))])
-        elif type0 in (str, unicode):
+            return ','.join(["%s%s"%(f,x) for x in range(0,len(val))])
+        elif _isstring_type(type0):
             
-            return ','.join(["%s%s"%(f,x) for x in xrange(0,len(val))])
+            return ','.join(["%s%s"%(f,x) for x in range(0,len(val))])
         elif hasattr(val0, "_slot_types"):
-            labels = ["%s%s"%(f,x) for x in xrange(0,len(val))]
+            labels = ["%s%s"%(f,x) for x in range(0,len(val))]
             sub = [s for s in [_sub_str_plot_fields(v, sf, field_filter) for v,sf in zip(val, labels)] if s]
             if sub:
                 return ','.join([s for s in sub])
@@ -457,7 +468,7 @@ def _sub_str_plot(val, time_offset, field_filter):
         sub = [s for s in sub if s is not None]
         if sub:
             return ','.join(sub)
-    elif type_ in (str, unicode):
+    elif _isstring_type(type_):
         return val
     elif type_ in (list, tuple):
         if len(val) == 0:
@@ -470,7 +481,7 @@ def _sub_str_plot(val, time_offset, field_filter):
         elif type0 in (int, float) or \
                isinstance(val0, genpy.TVal):
             return ','.join([str(v) for v in val])
-        elif type0 in (str, unicode):
+        elif _isstring_type(type0):
             return ','.join([v for v in val])            
         elif hasattr(val0, "_slot_types"):
             sub = [s for s in [_sub_str_plot(v, time_offset, field_filter) for v in val] if s is not None]
@@ -485,7 +496,7 @@ def _convert_getattr(val, f, t):
     to convert uint8[] fields back to an array type.
     """
     attr = getattr(val, f)
-    if type(attr) in (str, unicode) and 'uint8[' in t:
+    if _isstring_type(type(attr)) and 'uint8[' in t:
         return [ord(x) for x in attr]
     else:
         return attr
@@ -892,8 +903,12 @@ def get_info_text(topic):
     
     :param topic: topic name, ``str``
     """
-    import cStringIO, itertools
-    buff = cStringIO.StringIO()
+    try:
+        from cStringIO import StringIO
+    except ImportError:
+        from io import StringIO
+    import itertools
+    buff = StringIO()
     def topic_type(t, topic_types):
         matches = [t_type for t_name, t_type in topic_types if t_name == t]
         if matches:

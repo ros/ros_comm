@@ -83,7 +83,7 @@ class HzTest(unittest.TestCase):
             topic = rospy.get_param('~topic')
             # time to wait before
             wait_time = rospy.get_param('~wait_time', 20.)            
-        except KeyError, e:
+        except KeyError as e:
             self.fail('hztest not initialized properly. Parameter [%s] not set. debug[%s] debug[%s]'%(str(e), rospy.get_caller_id(), rospy.resolve_name(e.args[0])))
 
         # We only require hzerror if hz is non-zero
@@ -92,19 +92,19 @@ class HzTest(unittest.TestCase):
             try:
                 # margin of error allowed
                 hzerror = float(rospy.get_param('~hzerror'))
-            except KeyError, e:
+            except KeyError as e:
                 self.fail('hztest not initialized properly. Parameter [%s] not set. debug[%s] debug[%s]'%(str(e), rospy.get_caller_id(), rospy.resolve_name(e.args[0])))
 
         # We optionally check each inter-message interval
         try:
             self.check_intervals = bool(rospy.get_param('~check_intervals'))
-        except KeyError, e:
+        except KeyError:
             self.check_intervals = False
 
         # We optionally measure wall clock time
         try:
             self.wall_clock = bool(rospy.get_param('~wall_clock'))
-        except KeyError, e:
+        except KeyError:
             self.wall_clock = False
 
         print """Hz: %s
@@ -243,7 +243,7 @@ if __name__ == '__main__':
     time.sleep(0.75)
     try:
         rostest.run('rostest', NAME, HzTest, sys.argv)
-    except KeyboardInterrupt, e:
+    except KeyboardInterrupt:
         pass
     print "exiting"
 

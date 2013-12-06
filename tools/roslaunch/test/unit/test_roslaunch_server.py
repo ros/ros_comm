@@ -39,7 +39,10 @@ import roslaunch.pmon
 import roslaunch.server
 from roslaunch.server import ProcessListener
 
-from xmlrpclib import ServerProxy
+try:
+    from xmlrpc.client import ServerProxy
+except ImportError:
+    from xmlrpclib import ServerProxy
 
 import rosgraph
 master = rosgraph.Master('test_roslaunch_server')

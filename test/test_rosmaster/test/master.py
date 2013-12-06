@@ -36,7 +36,10 @@ import os
 import sys
 import string
 import time
-import xmlrpclib
+try:
+    from xmlrpc.client import ServerProxy
+except ImportError:
+    from xmlrpclib import ServerProxy
 
 import rospy
 import rosgraph
@@ -72,7 +75,7 @@ class _MasterTestCase(TestRosClient):
         super(_MasterTestCase, self).setUp()
         self.master_uri = os.environ.get(rosgraph.ROS_MASTER_URI, None)
         self._checkUri(self.master_uri)
-        self.master = xmlrpclib.ServerProxy(self.master_uri)
+        self.master = ServerProxy(self.master_uri)
 
     ## validates a URI as being http(s)
     def _checkUri(self, uri):
@@ -126,7 +129,7 @@ class MasterApiTestCase(_MasterTestCase):
         service_base = '/service'
         
         # test success        
-        for i in xrange(0, 10):
+        for i in range(0, 10):
             service_name = "%s-%s"%(service_base, i)
             service_api = 'rosrpc://localhost:123%s/'%i
             # register the service
@@ -138,7 +141,7 @@ class MasterApiTestCase(_MasterTestCase):
             self.assertEquals(caller_api, val)
 
             _, _, srvs = self.apiSuccess(master.getSystemState(self.caller_id))
-            for j in xrange(0, i+1):
+            for j in range(0, i+1):
                 jservice_name = "%s-%s"%(service_base, j)
                 jentry = [jservice_name, [caller_id]]
                 self.assert_(jentry in srvs, "master service list %s is missing %s"%(srvs, jentry))
@@ -157,7 +160,7 @@ class MasterApiTestCase(_MasterTestCase):
         caller_api = 'http://localhost:4567/'                
         service_base = '/service'
 
-        for i in xrange(0, 10):
+        for i in range(0, 10):
             service_name = "%s-%s"%(service_base, i)
             service_api = 'rosrpc://localhost:123%s/'%i
 
@@ -173,11 +176,11 @@ class MasterApiTestCase(_MasterTestCase):
                 self.assertEquals(caller_api, val, "master prematurely invalidated node entry for [%s] (lookupNode)"%caller_id)
             
             _, _, srvs = self.apiSuccess(master.getSystemState(self.caller_id))
-            for j in xrange(0, i+1):
+            for j in range(0, i+1):
                 jservice_name = "%s-%s"%(service_base, j)
                 jentry = [jservice_name, [caller_id]]
                 self.assert_(jentry not in srvs, "master service list %s should not have %s"%(srvs, jentry))
-            for j in xrange(i+1, 10):
+            for j in range(i+1, 10):
                 jservice_name = "%s-%s"%(service_base, j)
                 jentry = [jservice_name, [caller_id]]
                 self.assert_(jentry in srvs, "master service list %s is missing %s"%(srvs, jentry))
@@ -295,7 +298,7 @@ class MasterApiTestCase(_MasterTestCase):
         topic_type = 'test_rosmaster/String'  
         
         # test success        
-        for i in xrange(0, 10):
+        for i in range(0, 10):
             topic_name = "%s-%s"%(topic_base, i)
             # register the topic
             self.apiSuccess(master.registerPublisher(caller_id, topic_name, topic_type, caller_api))
@@ -311,7 +314,7 @@ class MasterApiTestCase(_MasterTestCase):
             self.assert_([topic_name, topic_type] in val, "master does not know topic type: %s"%val)
 
             pubs, _, _ = self.apiSuccess(master.getSystemState(self.caller_id))
-            for j in xrange(0, i+1):
+            for j in range(0, i+1):
                 jtopic_name = "%s-%s"%(topic_base, j)
                 jentry = [jtopic_name, [caller_id]]
                 self.assert_(jentry in pubs, "master pub/sub list %s is missing %s"%(pubs, jentry))
@@ -355,7 +358,7 @@ class MasterApiTestCase(_MasterTestCase):
         pub_caller_api = 'http://localhost:4567/'
         
         subs = []
-        for i in xrange(5678, 5685):
+        for i in range(5678, 5685):
             api = 'http://localhost:%s'%i
             subs.append(api)
             self.apiSuccess(master.registerSubscriber('/sub_node-%i'%i, topic, type, api))
@@ -369,7 +372,7 @@ class MasterApiTestCase(_MasterTestCase):
         caller_api = 'http://localhost:4567/' 
         topic_base = '/pub_topic'
 
-        for i in xrange(0, 10):
+        for i in range(0, 10):
             topic_name = "%s-%s"%(topic_base, i)
 
             # unregister the topic
@@ -382,11 +385,11 @@ class MasterApiTestCase(_MasterTestCase):
                 self.assertEquals(caller_api, val, "master prematurely invalidated node entry for [%s] (lookupNode)"%caller_id)
 
             pubs, _, _ = self.apiSuccess(master.getSystemState(self.caller_id))
-            for j in xrange(0, i+1):
+            for j in range(0, i+1):
                 jtopic_name = "%s-%s"%(topic_base, j)
                 jentry = [jtopic_name, [caller_id]]
                 self.assert_(jentry not in pubs, "master pub/sub list %s should not have %s"%(pubs, jentry))
-            for j in xrange(i+1, 10):
+            for j in range(i+1, 10):
                 jtopic_name = "%s-%s"%(topic_base, j)
                 jentry = [jtopic_name, [caller_id]]
                 self.assert_(jentry in pubs, "master pub/sub list %s is missing %s"%(pubs, jentry))
@@ -407,7 +410,7 @@ class MasterApiTestCase(_MasterTestCase):
         topic_type = 'test_rosmaster/String'  
         
         # test success        
-        for i in xrange(0, 10):
+        for i in range(0, 10):
             topic_name = "%s-%s"%(topic_base, i)
             # register the topic
             self.apiSuccess(master.registerSubscriber(caller_id, topic_name, topic_type, caller_api))
@@ -421,7 +424,7 @@ class MasterApiTestCase(_MasterTestCase):
             self.assert_([topic_name, topic_type] in val, "master does not know topic type: %s"%val)
             
             _, subs, _ = self.apiSuccess(master.getSystemState(self.caller_id))
-            for j in xrange(0, i+1):
+            for j in range(0, i+1):
                 jtopic_name = "%s-%s"%(topic_base, j)
                 jentry = [jtopic_name, [caller_id]]
                 self.assert_(jentry in subs, "master pub/sub list %s is missing %s"%(subs, jentry))
@@ -437,7 +440,7 @@ class MasterApiTestCase(_MasterTestCase):
         caller_api = 'http://localhost:4567/' 
         topic_base = '/sub_topic'
 
-        for i in xrange(0, 10):
+        for i in range(0, 10):
             topic_name = "%s-%s"%(topic_base, i)
 
             # unregister the topic
@@ -450,11 +453,11 @@ class MasterApiTestCase(_MasterTestCase):
                 self.assertEquals(caller_api, val, "master prematurely invalidated node entry for [%s] (lookupNode)"%caller_id)
 
             _, subs, _ = self.apiSuccess(master.getSystemState(self.caller_id))
-            for j in xrange(0, i+1):
+            for j in range(0, i+1):
                 jtopic_name = "%s-%s"%(topic_base, j)
                 jentry = [jtopic_name, [caller_id]]
                 self.assert_(jentry not in subs, "master pub/sub list %s should not have %s"%(subs, jentry))
-            for j in xrange(i+1, 10):
+            for j in range(i+1, 10):
                 jtopic_name = "%s-%s"%(topic_base, j)
                 jentry = [jtopic_name, [caller_id]]
                 self.assert_(jentry in subs, "master pub/sub list %s is missing %s"%(subs, jentry))
