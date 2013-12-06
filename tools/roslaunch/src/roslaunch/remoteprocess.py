@@ -39,7 +39,10 @@ Process handler for launching ssh-based roslaunch child processes.
 import os
 import socket
 import traceback
-import xmlrpclib
+try:
+    from xmlrpc.client import ServerProxy
+except ImportError:
+    from xmlrpclib import ServerProxy
 
 import rosgraph
 from roslaunch.core import printlog, printerrlog
@@ -237,7 +240,7 @@ class SSHChildROSLaunchProcess(roslaunch.server.ChildROSLaunchProcess):
         :returns: ServerProxy to remote client XMLRPC server, `ServerProxy`
         """
         if self.uri:
-            return xmlrpclib.ServerProxy(self.uri)
+            return ServerProxy(self.uri)
         else:
             return None
     

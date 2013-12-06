@@ -36,21 +36,27 @@
 Utility routines for rosmaster.
 """
 
-import urlparse
-import xmlrpclib
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+try:
+    from xmlrpc.client import ServerProxy
+except ImportError:
+    from xmlrpclib import ServerProxy
 
 _proxies = {} #cache ServerProxys
 def xmlrpcapi(uri):
     """
     @return: instance for calling remote server or None if not a valid URI
-    @rtype: xmlrpclib.ServerProxy
+    @rtype: xmlrpc.client.ServerProxy
     """
     if uri is None:
         return None
-    uriValidate = urlparse.urlparse(uri)
+    uriValidate = urlparse(uri)
     if not uriValidate[0] or not uriValidate[1]:
         return None
     if not _proxies.has_key(uri):
-        _proxies[uri] = xmlrpclib.ServerProxy(uri)
+        _proxies[uri] = ServerProxy(uri)
     return _proxies[uri]
 

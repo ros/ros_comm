@@ -419,8 +419,8 @@ class Bag(object):
                     start_stamp = self._chunks[ 0].start_time.to_sec()
                     end_stamp   = self._chunks[-1].end_time.to_sec()
                 else:
-                    start_stamp = min([index[ 0].time.to_sec() for index in self._connection_indexes.itervalues()])
-                    end_stamp   = max([index[-1].time.to_sec() for index in self._connection_indexes.itervalues()])
+                    start_stamp = min([index[ 0].time.to_sec() for index in self._connection_indexes.values()])
+                    end_stamp   = max([index[-1].time.to_sec() for index in self._connection_indexes.values()])
     
                 # Show duration
                 duration = end_stamp - start_stamp
@@ -446,10 +446,10 @@ class Bag(object):
                 if self._chunks:
                     num_messages = 0
                     for c in self._chunks:
-                        for counts in c.connection_counts.itervalues():
+                        for counts in c.connection_counts.values():
                             num_messages += counts
                 else:
-                    num_messages = sum([len(index) for index in self._connection_indexes.itervalues()])
+                    num_messages = sum([len(index) for index in self._connection_indexes.values()])
                 rows.append(('messages', str(num_messages)))
 
                 # Show compression information
@@ -459,7 +459,7 @@ class Bag(object):
                     compression_counts       = {}
                     compression_uncompressed = {}
                     compression_compressed   = {}
-                    for chunk_header in self._chunk_headers.itervalues():
+                    for chunk_header in self._chunk_headers.values():
                         if chunk_header.compression not in compression_counts:
                             compression_counts[chunk_header.compression] = 1
                             compression_uncompressed[chunk_header.compression] = chunk_header.uncompressed_size
@@ -482,8 +482,8 @@ class Bag(object):
     
                     all_uncompressed = (sum([count for c, count in compression_counts.items() if c != Compression.NONE]) == 0)
                     if not all_uncompressed:    
-                        total_uncompressed_size = sum((h.uncompressed_size for h in self._chunk_headers.itervalues()))
-                        total_compressed_size   = sum((h.compressed_size   for h in self._chunk_headers.itervalues()))
+                        total_uncompressed_size = sum((h.uncompressed_size for h in self._chunk_headers.values()))
+                        total_compressed_size   = sum((h.compressed_size   for h in self._chunk_headers.values()))
                         
                         total_uncompressed_size_str = _human_readable_size(total_uncompressed_size)
                         total_compressed_size_str   = _human_readable_size(total_compressed_size)
@@ -504,7 +504,7 @@ class Bag(object):
 
                 datatypes = set()
                 datatype_infos = []
-                for connection in self._connections.itervalues():
+                for connection in self._connections.values():
                     if connection.datatype in datatypes:
                         continue
                     datatype_infos.append((connection.datatype, connection.md5sum, connection.msg_def))
@@ -535,11 +535,11 @@ class Bag(object):
                             if med_period > 0.0:
                                 topic_freqs_median[topic] = 1.0 / med_period
 
-                topics = sorted(topic_datatypes.iterkeys())
+                topics = sorted(topic_datatypes.keys())
                 max_topic_len       = max([len(topic) for topic in topics])
                 max_datatype_len    = max([len(datatype) for datatype in datatypes])
-                max_msg_count_len   = max([len('%d' % msg_count) for msg_count in topic_msg_counts.itervalues()])
-                max_freq_median_len = max([len(_human_readable_frequency(freq)) for freq in topic_freqs_median.itervalues()]) if len(topic_freqs_median) > 0 else 0
+                max_msg_count_len   = max([len('%d' % msg_count) for msg_count in topic_msg_counts.values()])
+                max_freq_median_len = max([len(_human_readable_frequency(freq)) for freq in topic_freqs_median.values()]) if len(topic_freqs_median) > 0 else 0
 
                 # Show datatypes       
                 for i, (datatype, md5sum, msg_def) in enumerate(sorted(datatype_infos)):
@@ -602,8 +602,8 @@ class Bag(object):
                     start_stamp = self._chunks[ 0].start_time.to_sec()
                     end_stamp   = self._chunks[-1].end_time.to_sec()
                 else:
-                    start_stamp = min([index[ 0].time.to_sec() for index in self._connection_indexes.itervalues()])
-                    end_stamp   = max([index[-1].time.to_sec() for index in self._connection_indexes.itervalues()])
+                    start_stamp = min([index[ 0].time.to_sec() for index in self._connection_indexes.values()])
+                    end_stamp   = max([index[-1].time.to_sec() for index in self._connection_indexes.values()])
                 
                 duration = end_stamp - start_stamp
                 s += 'duration: %.6f\n' % duration
@@ -613,10 +613,10 @@ class Bag(object):
                 if self._chunks:
                     num_messages = 0
                     for c in self._chunks:
-                        for counts in c.connection_counts.itervalues():
+                        for counts in c.connection_counts.values():
                             num_messages += counts
                 else:
-                    num_messages = sum([len(index) for index in self._connection_indexes.itervalues()])
+                    num_messages = sum([len(index) for index in self._connection_indexes.values()])
                 s += 'messages: %d\n' % num_messages
                 s += 'indexed: True\n'
 
@@ -627,7 +627,7 @@ class Bag(object):
                     compression_counts       = {}
                     compression_uncompressed = {}
                     compression_compressed   = {}
-                    for chunk_header in self._chunk_headers.itervalues():
+                    for chunk_header in self._chunk_headers.values():
                         if chunk_header.compression not in compression_counts:
                             compression_counts[chunk_header.compression] = 1
                             compression_uncompressed[chunk_header.compression] = chunk_header.uncompressed_size
@@ -644,12 +644,12 @@ class Bag(object):
     
                     all_uncompressed = (sum([count for c, count in compression_counts.items() if c != Compression.NONE]) == 0)
                     if not all_uncompressed:    
-                        s += 'uncompressed: %d\n' % sum((h.uncompressed_size for h in self._chunk_headers.itervalues()))
-                        s += 'compressed: %d\n' % sum((h.compressed_size for h in self._chunk_headers.itervalues()))
+                        s += 'uncompressed: %d\n' % sum((h.uncompressed_size for h in self._chunk_headers.values()))
+                        s += 'compressed: %d\n' % sum((h.compressed_size for h in self._chunk_headers.values()))
 
                 datatypes = set()
                 datatype_infos = []
-                for connection in self._connections.itervalues():
+                for connection in self._connections.values():
                     if connection.datatype in datatypes:
                         continue
                     datatype_infos.append((connection.datatype, connection.md5sum, connection.msg_def))
@@ -680,11 +680,11 @@ class Bag(object):
                             if med_period > 0.0:
                                 topic_freqs_median[topic] = 1.0 / med_period
 
-                topics = sorted(topic_datatypes.iterkeys())
+                topics = sorted(topic_datatypes.keys())
                 max_topic_len       = max([len(topic) for topic in topics])
                 max_datatype_len    = max([len(datatype) for datatype in datatypes])
-                max_msg_count_len   = max([len('%d' % msg_count) for msg_count in topic_msg_counts.itervalues()])
-                max_freq_median_len = max([len(_human_readable_frequency(freq)) for freq in topic_freqs_median.itervalues()]) if len(topic_freqs_median) > 0 else 0
+                max_msg_count_len   = max([len('%d' % msg_count) for msg_count in topic_msg_counts.values()])
+                max_freq_median_len = max([len(_human_readable_frequency(freq)) for freq in topic_freqs_median.values()]) if len(topic_freqs_median) > 0 else 0
 
                 # Show datatypes       
                 s += 'types:\n'
@@ -757,14 +757,14 @@ class Bag(object):
         if not self._chunk_headers:
             return False
 
-        return any((h.compression != Compression.NONE for h in self._chunk_headers.itervalues()))
+        return any((h.compression != Compression.NONE for h in self._chunk_headers.values()))
 
     @property
     def _uncompressed_size(self):
         if not self._chunk_headers:
             return self.size
 
-        return sum((h.uncompressed_size for h in self._chunk_headers.itervalues()))
+        return sum((h.uncompressed_size for h in self._chunk_headers.values()))
 
     def _read_message(self, position, raw=False):
         """
@@ -785,7 +785,7 @@ class Bag(object):
             else:
                 topics = set([roslib.names.canonicalize_name(t) for t in topics])
 
-        for c in self._connections.itervalues():
+        for c in self._connections.values():
             if topics and c.topic not in topics and roslib.names.canonicalize_name(c.topic) not in topics:
                 continue
             if connection_filter and not connection_filter(c.topic, c.datatype, c.md5sum, c.msg_def, c.header):
@@ -860,7 +860,7 @@ class Bag(object):
             self._reader._read_connection_index_records()
 
         if connections is None:
-            return self._connection_indexes.itervalues()
+            return self._connection_indexes.values()
         else:
             return (self._connection_indexes[c.id] for c in connections)
 
@@ -1041,7 +1041,7 @@ class Bag(object):
         self._index_data_pos = self._file.tell()
 
         # Write connection infos
-        for connection_info in self._connections.itervalues():
+        for connection_info in self._connections.values():
             self._write_connection_record(connection_info)
 
         # Write chunk infos
@@ -1582,7 +1582,7 @@ class _BagReader102_Unindexed(_BagReader):
         self.bag._connection_indexes_read = True
 
     def _create_connection_info_for_datatype(self, topic, datatype):
-        for c in self.bag._connections.itervalues():
+        for c in self.bag._connections.values():
             if c.datatype == datatype:
                 connection_id     = len(self.bag._connections)
                 connection_header = { 'topic' : topic, 'type' : c.header['type'], 'md5sum' : c.header['md5sum'], 'message_definition' : c.header['message_definition'] }
@@ -2049,7 +2049,7 @@ class _BagReader200(_BagReader):
         # Remove any connections with no entries
         # This is a workaround for a bug where connection records were being written for
         # connections which had no messages in the bag
-        orphan_connection_ids = [id for id, index in self.bag._connection_indexes.iteritems() if not index]
+        orphan_connection_ids = [id for id, index in self.bag._connection_indexes.items() if not index]
         for id in orphan_connection_ids:
             del self.bag._connections[id]
             del self.bag._connection_indexes[id]

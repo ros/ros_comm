@@ -84,7 +84,7 @@ class TestEmbedMsg(unittest.TestCase):
         import random
         val = random.randint(0, 109812312)
         msg = "hi [%s]"%val
-        for i in xrange(0, 10):
+        for i in range(0, 10):
             # The test message could be better in terms of the values
             # it assigns to leaf fields, but the main focus is trying
             # to dig up edge conditions in the embeds, especially with
@@ -94,8 +94,8 @@ class TestEmbedMsg(unittest.TestCase):
                     [Int32(val+1), Int32(val+2), Int32(val+3)],
                     Val(msg+msg),
                     [Val(msg), Val("two")],
-                    [ArrayVal([Val("av1"), Val("av2")]), #[Val("%s"%i) for i in xrange(0, 10)]),
-                     ArrayVal([]) #,[Val("%s"%i) for i in xrange(0, 10)]),
+                    [ArrayVal([Val("av1"), Val("av2")]), #[Val("%s"%i) for i in range(0, 10)]),
+                     ArrayVal([]) #,[Val("%s"%i) for i in range(0, 10)]),
                      ]
                     ))
             time.sleep(0.1)
@@ -109,7 +109,7 @@ class TestEmbedMsg(unittest.TestCase):
                           errorstr%"str1.data")
         self.assertEquals(val, self.callback_data.int1.data,
                           errorstr%"int1.data")
-        for i in xrange(1, 4):
+        for i in range(1, 4):
             self.assertEquals(val+i, self.callback_data.ints[i-1].data,
                               errorstr%"ints[i-1].data")
         self.assertEquals(msg+msg, self.callback_data.val.val,

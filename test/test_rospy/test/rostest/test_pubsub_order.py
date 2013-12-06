@@ -84,7 +84,7 @@ class TestPubSubOrder(unittest.TestCase):
         import random
         val = random.randint(0, 109812312)
         msg = "hi [%s]"%val
-        for i in xrange(0, 10):
+        for i in range(0, 10):
             pub.publish(MSG(msg))
             time.sleep(0.1)
 

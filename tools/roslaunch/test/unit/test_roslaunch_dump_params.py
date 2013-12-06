@@ -93,7 +93,7 @@ class TestDumpParams(unittest.TestCase):
             }
         output_val = yaml.load(o)
         if not val == output_val:
-            for k, v in val.iteritems():
+            for k, v in val.items():
                 if k not in output_val:
                     self.fail("key [%s] not in output: %s"%(k, output_val))
                 elif v != output_val[k]:

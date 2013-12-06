@@ -204,11 +204,11 @@ class LocalProcess(Process):
         if not os.path.exists(log_dir):
             try:
                 os.makedirs(log_dir)
-            except OSError, (errno, msg):
-                if errno == 13:
+            except OSError as e:
+                if e.errno == 13:
                     raise RLException("unable to create directory for log file [%s].\nPlease check permissions."%log_dir)
                 else:
-                    raise RLException("unable to create directory for log file [%s]: %s"%(log_dir, msg))
+                    raise RLException("unable to create directory for log file [%s]: %s"%(log_dir, e.msg))
         # #973: save log dir for error messages
         self.log_dir = log_dir
 
@@ -259,7 +259,7 @@ class LocalProcess(Process):
             # _configure_logging() can mutate self.args
             try:
                 logfileout, logfileerr = self._configure_logging()
-            except Exception, e:
+            except Exception as e:
                 _logger.error(traceback.format_exc())
                 printerrlog("[%s] ERROR: unable to configure logging [%s]"%(self.name, str(e)))
                 # it's not safe to inherit from this process as
@@ -281,9 +281,9 @@ class LocalProcess(Process):
 
             try:
                 self.popen = subprocess.Popen(self.args, cwd=cwd, stdout=logfileout, stderr=logfileerr, env=full_env, close_fds=True, preexec_fn=os.setsid)
-            except OSError, (errno, msg):
+            except OSError as e:
                 self.started = True # must set so is_alive state is correct
-                _logger.error("OSError(%d, %s)", errno, msg)
+                _logger.error("OSError(%d, %s)", e.errno, e.msg)
                 if errno == 8: #Exec format error
                     raise FatalProcessLaunch("Unable to launch [%s]. \nIf it is a script, you may be missing a '#!' declaration at the top."%self.name)
                 elif errno == 2: #no such file or directory
@@ -395,7 +395,7 @@ executable permission. This is often caused by a bad launch-prefix."""%(msg, ' '
                         #self.popen.wait()
                         #os.wait()
                         _logger.info("process[%s]: sent SIGKILL", self.name)
-                    except OSError, e:
+                    except OSError as e:
                         if e.args[0] == 3:
                             printerrlog("no [%s] process with pid [%s]"%(self.name, pid))
                         else:
@@ -463,7 +463,7 @@ executable permission. This is often caused by a bad launch-prefix."""%(msg, ' '
                         #self.popen.wait()
                         #os.wait()
                         _logger.info("process[%s]: sent SIGKILL", self.name)
-                    except OSError, e:
+                    except OSError as e:
                         if e.args[0] == 3:
                             printerrlog("no [%s] process with pid [%s]"%(self.name, pid))
                         else:

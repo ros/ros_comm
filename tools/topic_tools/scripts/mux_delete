@@ -50,7 +50,7 @@ def call_srv(m, t):
     try:
         srv = rospy.ServiceProxy(s, MuxDelete)
 	return srv(t)
-    except rospy.ServiceException, e:
+    except rospy.ServiceException as e:
         print "Service call failed: %s"%e
 
 def usage():

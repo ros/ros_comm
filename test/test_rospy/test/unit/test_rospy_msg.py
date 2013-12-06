@@ -35,7 +35,10 @@ import os
 import sys
 import struct
 import unittest
-from cStringIO import StringIO
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 import time
 import random
 
@@ -130,7 +133,7 @@ class TestRospyMsg(unittest.TestCase):
         import rospy.msg
         from test_rospy.msg import Val
         num_tests = 10
-        teststrs = ['foostr-%s'%random.randint(0, 10000) for i in xrange(0, num_tests)]
+        teststrs = ['foostr-%s'%random.randint(0, 10000) for i in range(0, num_tests)]
         valids = []
         for t in teststrs:
             fmt = "<II%ss"%len(t)

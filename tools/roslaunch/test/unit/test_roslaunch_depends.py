@@ -50,12 +50,15 @@ def test_RoslaunchDeps():
     assert 'talker.py' in repr(min_deps)
     assert 'talker.py' in str(min_deps)
     
-import cStringIO
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 from contextlib import contextmanager
 @contextmanager
 def fakestdout():
     realstdout = sys.stdout
-    fakestdout = cStringIO.StringIO()
+    fakestdout = StringIO()
     sys.stdout = fakestdout
     yield fakestdout
     sys.stdout = realstdout

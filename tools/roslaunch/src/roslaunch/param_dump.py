@@ -63,7 +63,7 @@ def dump_params(files):
 
     # Now print params in YAML format.
     params_dict = {}
-    for k, v in config.params.iteritems():
+    for k, v in config.params.items():
         params_dict[str(k)] = v.value
     sys.stdout.write(yaml.safe_dump(params_dict)+'\n')
     return True

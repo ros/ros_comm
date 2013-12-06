@@ -32,6 +32,8 @@
 #
 # Revision $Id$
 
+from __future__ import print_function
+
 import os
 import logging
 import sys
@@ -77,14 +79,14 @@ def configure_logging(uuid):
         # additional: names of python packages we depend on that may also be logging
         logfile_name = rosgraph.roslogging.configure_logging(NAME, filename=logfile_basename)
         if logfile_name:
-            print "... logging to %s"%logfile_name
+            print("... logging to %s"%logfile_name)
 
         # add logger to internal roslaunch logging infrastructure
         logger = logging.getLogger('roslaunch')
         roslaunch_core.add_printlog_handler(logger.info)
         roslaunch_core.add_printerrlog_handler(logger.error)
     except:
-        print >> sys.stderr, "WARNING: unable to configure logging. No log files will be generated"
+        print("WARNING: unable to configure logging. No log files will be generated", file=sys.stderr)
         
 def write_pid_file(options_pid_fn, options_core, port):
     if options_pid_fn or options_core:
@@ -282,7 +284,7 @@ def main(argv=sys.argv):
                 # remove the pid file
                 if options.pid_fn:
                     try: os.unlink(options.pid_fn)
-                    except os.error, reason: pass
+                    except os.error as reason: pass
 
     except RLException as e:
         roslaunch_core.printerrlog(str(e))

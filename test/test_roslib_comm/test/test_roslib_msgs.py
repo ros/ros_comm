@@ -92,12 +92,12 @@ class MsgSpecTest(unittest.TestCase):
       try:
         roslib.msgs.parse_type(f)
         self.fail("should have failed on " +f)
-      except roslib.msgs.MsgSpecException, e: pass
+      except roslib.msgs.MsgSpecException: pass
 
   def test_Constant(self):
     import random
     import roslib.msgs    
-    vals = [random.randint(0, 1000) for i in xrange(0, 3)]
+    vals = [random.randint(0, 1000) for i in range(0, 3)]
     type_, name, val = [str(x) for x in vals]
     x = roslib.msgs.Constant(type_, name, val, str(val))
     self.assertEquals(type_, x.type)

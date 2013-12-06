@@ -158,7 +158,7 @@ def ros_master_uri_hostname(ctx):
         #TODO IPV6: only check for IPv6 when IPv6 is enabled
         socket.getaddrinfo(splits[0], 0, 0, 0, socket.SOL_TCP)
 
-    except socket.gaierror, e:
+    except socket.gaierror:
         return "Unknown host %s"%splits[0]
     
 # Error/Warning Rules

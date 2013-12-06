@@ -36,8 +36,6 @@ import unittest
 import thread
 import time
 
-from xmlrpclib import ServerProxy
-
 import rospkg
 import rosgraph.network
 import roslaunch.parent
