@@ -47,7 +47,7 @@ import traceback
 try:
     from xmlrpc.client import ServerProxy
 except ImportError:
-    from xmlrpclib ServerProxy
+    from xmlrpclib import ServerProxy
 import socket
 
 import rosgraph.masterapi
