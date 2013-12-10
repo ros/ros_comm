@@ -3,7 +3,7 @@ project(rosconsole)
 
 find_package(catkin REQUIRED COMPONENTS cpp_common rostime rosunit)
 
-find_package(Boost COMPONENTS regex thread)
+find_package(Boost COMPONENTS regex thread system)
 
 # select rosconsole backend
 set(ROSCONSOLE_BACKEND "" CACHE STRING "Type of rosconsole backend, one of 'log4cxx', 'glog', 'print'")
@@ -17,7 +17,7 @@ if(ROSCONSOLE_BACKEND STREQUAL "" OR ROSCONSOLE_BACKEND STREQUAL "log4cxx")
   endif()
   if(LOG4CXX_LIBRARIES)
     list(APPEND rosconsole_backend_INCLUDE_DIRS ${LOG4CXX_INCLUDE_DIRS})
-    list(APPEND rosconsole_backend_LIBRARIES rosconsole_log4cxx ${LOG4CXX_LIBRARIES})
+    list(APPEND rosconsole_backend_LIBRARIES ${LOG4CXX_LIBRARIES})
     set(ROSCONSOLE_BACKEND "log4cxx")
   elseif(ROSCONSOLE_BACKEND STREQUAL "log4cxx")
     message(FATAL_ERROR "Couldn't find log4cxx library")
@@ -28,14 +28,13 @@ if(ROSCONSOLE_BACKEND STREQUAL "" OR ROSCONSOLE_BACKEND STREQUAL "glog")
   pkg_check_modules(GLOG QUIET libglog)
   if(GLOG_FOUND)
     list(APPEND rosconsole_backend_INCLUDE_DIRS ${GLOG_INCLUDE_DIRS})
-    list(APPEND rosconsole_backend_LIBRARIES rosconsole_glog ${GLOG_LIBRARIES})
+    list(APPEND rosconsole_backend_LIBRARIES ${GLOG_LIBRARIES})
     set(ROSCONSOLE_BACKEND "glog")
   elseif(ROSCONSOLE_BACKEND STREQUAL "glog")
     message(FATAL_ERROR "Couldn't find glog library")
   endif()
 endif()
 if(ROSCONSOLE_BACKEND STREQUAL "" OR ROSCONSOLE_BACKEND STREQUAL "print")
-  list(APPEND rosconsole_backend_LIBRARIES rosconsole_print)
   set(ROSCONSOLE_BACKEND "print")
 endif()
 message(STATUS "rosconsole backend: ${ROSCONSOLE_BACKEND}")
@@ -62,23 +61,23 @@ ENDIF(${CMAKE_SYSTEM} MATCHES "Darwin-11.*")
 
 include_directories(include ${catkin_INCLUDE_DIRS} ${rosconsole_backend_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
-add_library(rosconsole src/rosconsole/rosconsole.cpp)
-target_link_libraries(rosconsole ${rosconsole_backend_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 if(ROSCONSOLE_BACKEND STREQUAL "log4cxx")
-  add_library(rosconsole_log4cxx src/rosconsole/impl/rosconsole_log4cxx.cpp)
+  add_library(rosconsole src/rosconsole/rosconsole.cpp src/rosconsole/impl/rosconsole_log4cxx.cpp)
 
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test/speed_test.cpp")
     add_executable(rosconsole_speed_test test/speed_test.cpp)
     target_link_libraries(rosconsole_speed_test rosconsole ${rosconsole_backend_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
   endif()
 elseif(ROSCONSOLE_BACKEND STREQUAL "glog")
-  add_library(rosconsole_glog src/rosconsole/impl/rosconsole_glog.cpp)
+  add_library(rosconsole src/rosconsole/rosconsole.cpp src/rosconsole/impl/rosconsole_glog.cpp)
 elseif(ROSCONSOLE_BACKEND STREQUAL "print")
-  add_library(rosconsole_print src/rosconsole/impl/rosconsole_print.cpp)
+  add_library(rosconsole src/rosconsole/rosconsole.cpp src/rosconsole/impl/rosconsole_print.cpp)
 else()
   message(FATAL_ERROR "Unknown rosconsole backend '${ROSCONSOLE_BACKEND}'")
 endif()
+
+target_link_libraries(rosconsole ${rosconsole_backend_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 if(CMAKE_HOST_UNIX)
   catkin_add_env_hooks(10.rosconsole SHELLS sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
@@ -86,7 +85,7 @@ else()
   catkin_add_env_hooks(10.rosconsole SHELLS bat DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
 endif()
 
-install(TARGETS rosconsole rosconsole_${ROSCONSOLE_BACKEND}
+install(TARGETS rosconsole
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
