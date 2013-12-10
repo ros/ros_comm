@@ -283,13 +283,12 @@ class XmlRpcNode(object):
             try:
                 self.server.serve_forever()
             except (IOError, select.error) as e:
-                (errno, errstr) = e
                 # check for interrupted call, which can occur if we're
                 # embedded in a program using signals.  All other
                 # exceptions break _run.
                 if self.is_shutdown:
                     pass
-                elif errno != 4:
+                elif e.errno != 4:
                     self.is_shutdown = True
-                    logging.getLogger('xmlrpc').error("serve forever IOError: %s, %s"%(errno, errstr))
+                    logging.getLogger('xmlrpc').error("serve forever IOError: %s, %s"%(e.errno, e.strerror))
                     

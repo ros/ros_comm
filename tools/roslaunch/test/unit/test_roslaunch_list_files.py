@@ -61,7 +61,7 @@ class TestListFiles(unittest.TestCase):
         self.assert_(p.returncode == 0, "Return code nonzero for list files! Code: %d" % (p.returncode))
         self.assertEquals(os.path.realpath(os.path.join(d, 'test-valid.xml')), os.path.realpath(o.strip()))
 
-        print "check 1", o
+        print("check 1", o)
         
         p = Popen([cmd, '--files', 'roslaunch', 'test-env.xml'], stdout = PIPE)
         o, e = p.communicate()
@@ -69,4 +69,4 @@ class TestListFiles(unittest.TestCase):
         self.assertEquals(set([os.path.realpath(os.path.join(d, 'test-env.xml')), os.path.realpath(os.path.join(d, 'test-env-include.xml'))]),
                           set([os.path.realpath(x.strip()) for x in o.split() if x.strip()]))
 
-        print "check 2", o
+        print ("check 2", o)
