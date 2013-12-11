@@ -47,6 +47,7 @@ class ThreadPoolMock(object):
 class TestRospyParamServer(unittest.TestCase):
     
     def test_compute_param_updates(self):
+        from rosmaster.registrations import Registrations
         from rosmaster.paramserver import compute_param_updates
         # spec requires that subscriptions always have a trailing slash
         tests = [
@@ -82,7 +83,13 @@ class TestRospyParamServer(unittest.TestCase):
 
             ]
         for correct, args in tests:
-            val = compute_param_updates(*args)
+            reg = Registrations(Registrations.PARAM_SUBSCRIPTIONS)
+            subscribers = args[0]
+            param_key = args[1]
+            param_val = args[2]
+            reg.map[param_key] = [(None, None)]
+
+            val = compute_param_updates(reg, param_key, param_val)
             self.assertEquals(len(correct), len(val), "Failed: \n%s \nreturned \n%s\nvs correct\n%s"%(str(args), str(val), str(correct)))
             for c in correct:
                 self.assert_(c in val, "Failed: \n%s \ndid not include \n%s. \nIt returned \n%s"%(str(args), c, val))
@@ -699,7 +706,7 @@ class TestRospyParamServer(unittest.TestCase):
              ],
             ]
 
-        print "Putting parameters onto the server"
+        print("Putting parameters onto the server")
         # put our params into the parameter server
         contexts = ['', 'scope1', 'scope/subscope1', 'scope/sub1/sub2']
         my_state = {}
@@ -708,7 +715,7 @@ class TestRospyParamServer(unittest.TestCase):
             self._set_param(ctx, my_state, test_vals, param_server)
         self._check_param_state(param_server, my_state)
         
-        print "Deleting all of our parameters"
+        print("Deleting all of our parameters")
         # delete all of our parameters
         param_keys = my_state.keys()
         count = 0
