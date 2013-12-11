@@ -112,7 +112,7 @@ def process_include_args(context):
             raise LoadException("include args must have declared values")
         
     # save args that were passed so we can check for unused args in post-processing
-    context.args_passed = arg_dict.keys()[:]
+    context.args_passed = list(arg_dict.keys())
     # clear arg declarations so included file can re-declare
     context.arg_names = []
 
