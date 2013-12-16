@@ -540,55 +540,79 @@ private:
     namespace mt = ros::message_traits;
 
     M0Event& m0 = boost::get<0>(deques_).front();
-    M1Event& m1 = boost::get<1>(deques_).front();
-    M2Event& m2 = boost::get<2>(deques_).front();
-    M3Event& m3 = boost::get<3>(deques_).front();
-    M4Event& m4 = boost::get<4>(deques_).front();
-    M5Event& m5 = boost::get<5>(deques_).front();
-    M6Event& m6 = boost::get<6>(deques_).front();
-    M7Event& m7 = boost::get<7>(deques_).front();
-    M8Event& m8 = boost::get<8>(deques_).front();
     time = mt::TimeStamp<M0>::value(*m0.getMessage());
     index = 0;
-    if ((RealTypeCount::value > 1) && ((mt::TimeStamp<M1>::value(*m1.getMessage()) < time) ^ end))
+    if (RealTypeCount::value > 1)
     {
-      time = mt::TimeStamp<M1>::value(*m1.getMessage());
-      index = 1;
+      M1Event& m1 = boost::get<1>(deques_).front();
+      if ((mt::TimeStamp<M1>::value(*m1.getMessage()) < time) ^ end)
+      {
+        time = mt::TimeStamp<M1>::value(*m1.getMessage());
+        index = 1;
+      }
     }
-    if ((RealTypeCount::value > 2) && ((mt::TimeStamp<M2>::value(*m2.getMessage()) < time) ^ end))
+    if (RealTypeCount::value > 2)
     {
-      time = mt::TimeStamp<M2>::value(*m2.getMessage());
-      index = 2;
+      M2Event& m2 = boost::get<2>(deques_).front();
+      if ((mt::TimeStamp<M2>::value(*m2.getMessage()) < time) ^ end)
+      {
+        time = mt::TimeStamp<M2>::value(*m2.getMessage());
+        index = 2;
+      }
     }
-    if ((RealTypeCount::value > 3) && ((mt::TimeStamp<M3>::value(*m3.getMessage()) < time) ^ end))
+    if (RealTypeCount::value > 3)
     {
-      time = mt::TimeStamp<M3>::value(*m3.getMessage());
-      index = 3;
+      M3Event& m3 = boost::get<3>(deques_).front();
+      if ((mt::TimeStamp<M3>::value(*m3.getMessage()) < time) ^ end)
+      {
+        time = mt::TimeStamp<M3>::value(*m3.getMessage());
+        index = 3;
+      }
     }
-    if ((RealTypeCount::value > 4) && ((mt::TimeStamp<M4>::value(*m4.getMessage()) < time) ^ end))
+    if (RealTypeCount::value > 4)
     {
-      time = mt::TimeStamp<M4>::value(*m4.getMessage());
-      index = 4;
+      M4Event& m4 = boost::get<4>(deques_).front();
+      if ((mt::TimeStamp<M4>::value(*m4.getMessage()) < time) ^ end)
+      {
+        time = mt::TimeStamp<M4>::value(*m4.getMessage());
+        index = 4;
+      }
     }
-    if ((RealTypeCount::value > 5) && ((mt::TimeStamp<M5>::value(*m5.getMessage()) < time) ^ end))
+    if (RealTypeCount::value > 5)
     {
-      time = mt::TimeStamp<M5>::value(*m5.getMessage());
-      index = 5;
+      M5Event& m5 = boost::get<5>(deques_).front();
+      if ((mt::TimeStamp<M5>::value(*m5.getMessage()) < time) ^ end)
+      {
+        time = mt::TimeStamp<M5>::value(*m5.getMessage());
+        index = 5;
+      }
     }
-    if ((RealTypeCount::value > 6) && ((mt::TimeStamp<M6>::value(*m6.getMessage()) < time) ^ end))
+    if (RealTypeCount::value > 6)
     {
-      time = mt::TimeStamp<M6>::value(*m6.getMessage());
-      index = 6;
+      M6Event& m6 = boost::get<6>(deques_).front();
+      if ((mt::TimeStamp<M6>::value(*m6.getMessage()) < time) ^ end)
+      {
+        time = mt::TimeStamp<M6>::value(*m6.getMessage());
+        index = 6;
+      }
     }
-    if ((RealTypeCount::value > 7) && ((mt::TimeStamp<M7>::value(*m7.getMessage()) < time) ^ end))
+    if (RealTypeCount::value > 7)
     {
-      time = mt::TimeStamp<M7>::value(*m7.getMessage());
-      index = 7;
+      M7Event& m7 = boost::get<7>(deques_).front();
+      if ((mt::TimeStamp<M7>::value(*m7.getMessage()) < time) ^ end)
+      {
+        time = mt::TimeStamp<M7>::value(*m7.getMessage());
+        index = 7;
+      }
     }
-    if ((RealTypeCount::value > 8) && ((mt::TimeStamp<M8>::value(*m8.getMessage()) < time) ^ end))
+    if (RealTypeCount::value > 8)
     {
-      time = mt::TimeStamp<M8>::value(*m8.getMessage());
-      index = 8;
+      M8Event& m8 = boost::get<8>(deques_).front();
+      if ((mt::TimeStamp<M8>::value(*m8.getMessage()) < time) ^ end)
+      {
+        time = mt::TimeStamp<M8>::value(*m8.getMessage());
+        index = 8;
+      }
     }
   }
 
