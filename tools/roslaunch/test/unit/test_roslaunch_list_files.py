@@ -69,4 +69,4 @@ class TestListFiles(unittest.TestCase):
         self.assertEquals(set([os.path.realpath(os.path.join(d, 'test-env.xml')), os.path.realpath(os.path.join(d, 'test-env-include.xml'))]),
                           set([os.path.realpath(x.strip().decode('utf8')) for x in o.split() if x.strip()]))
 
-        print ("check 2", o)
+        print("check 2", o)

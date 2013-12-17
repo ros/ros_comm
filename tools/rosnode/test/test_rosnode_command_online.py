@@ -101,7 +101,6 @@ class TestRosnodeOnline(unittest.TestCase):
         output = Popen([cmd, 'list', '-u'], stdout=PIPE).communicate()[0]
         output = output.decode() 
         l = set(output.split())
-
         self.assert_(len(l), "list -u is empty")
         for e in l:
             self.assert_(e.startswith('http://'))
