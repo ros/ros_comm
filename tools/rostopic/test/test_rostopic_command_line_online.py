@@ -136,7 +136,6 @@ class TestRostopicOnline(unittest.TestCase):
             while time.time() < timeout_t and self.vals != all:
                 time.sleep(0.1)
             # - check published value
-            print("mas debug key = ", key, "self.msgs = ", self.msgs)
             msg = self.msgs[key]
             self.assertEquals(s, msg.data)
             
