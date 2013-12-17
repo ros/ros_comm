@@ -57,7 +57,6 @@ try:
 except ImportError:
     from urlparse import urlparse
 
-
 import genpy
 
 import roslib.message
