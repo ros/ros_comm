@@ -379,9 +379,9 @@ def wtf_check_graph(ctx, names=None):
         return
             
     # fill in ctx info so we only have to compute once
-    print "analyzing graph..."
+    print("analyzing graph...")
     _compute_online_context(ctx)
-    print "... done analyzing graph"
+    print("... done analyzing graph")
     
     if names:
         check_topics = [t for t in names if t in ctx.topics]
@@ -408,9 +408,9 @@ def wtf_check_graph(ctx, names=None):
                 error_rule(r, r[0](ctx, n), ctx)            
 
 
-    print "running graph rules..."
+    print("running graph rules...")
     for r in graph_warnings:
         warning_rule(r, r[0](ctx), ctx)
     for r in graph_errors:
         error_rule(r, r[0](ctx), ctx)
-    print "... done running graph rules"        
+    print("... done running graph rules")

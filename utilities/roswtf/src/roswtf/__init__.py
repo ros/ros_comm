@@ -36,7 +36,7 @@
 roswtf command-line tool.
 """
 
-from __future__ import print_statement
+from __future__ import print_function
 
 import os
 import socket
@@ -65,7 +65,7 @@ def print_results(ctx):
         print("No errors or warnings")
     else:
         if ctx.warnings:
-            print("Found %s warning(s).\nWarnings are things that may be just fine, but are sometimes at fault\n"%len(ctx.warnings))
+            print("Found %s warning(s).\nWarnings are things that may be just fine, but are sometimes at fault\n" % len(ctx.warnings))
             for warn in ctx.warnings:
                 print('\033[1mWARNING\033[0m', warn.msg)
             print('')
@@ -162,7 +162,7 @@ def _roswtf_main():
             print("Stack:", curr_stack)
             ctx = WtfContext.from_stack(curr_stack)
         else:
-            print("No package or stack in context"
+            print("No package or stack in context")
             ctx = WtfContext.from_env()
         if options.all_packages:
             print("roswtf will run against all packages")
