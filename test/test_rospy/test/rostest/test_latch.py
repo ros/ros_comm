@@ -65,7 +65,7 @@ class TestLatch(unittest.TestCase):
         s0 = rospy.Subscriber('s', String, self.callback)
         # 20 seconds to receive first latched message
         timeout_t = time.time() + 20.
-        print "waiting for 20 seconds"
+        print("waiting for 20 seconds")
         while not self.callback_invoked[0] and \
                 not rospy.is_shutdown() and \
                 timeout_t > time.time():

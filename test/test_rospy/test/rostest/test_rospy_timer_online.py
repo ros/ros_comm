@@ -90,14 +90,14 @@ class TestRospyTimerOnline(unittest.TestCase):
         self.timer_event = event
 
     def callback(event):
-        print 'last_expected:        ', event.last_expected
-        print 'last_real:            ', event.last_real
-        print 'current_expected:     ', event.current_expected
-        print 'current_real:         ', event.current_real
-        print 'current_error:        ', (event.current_real - event.current_expected).to_sec()
-        print 'profile.last_duration:', event.last_duration
+        print('last_expected:        ', event.last_expected)
+        print('last_real:            ', event.last_real)
+        print('current_expected:     ', event.current_expected)
+        print('current_real:         ', event.current_real)
+        print('current_error:        ', (event.current_real - event.current_expected).to_sec())
+        print('profile.last_duration:', event.last_duration)
         if event.last_real:
-            print 'last_error:           ', (event.last_real - event.last_expected).to_sec(), 'secs'
+            print('last_error:           ', (event.last_real - event.last_expected).to_sec(), 'secs')
 
     def test_Timer(self):
         import rospy

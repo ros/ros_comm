@@ -46,13 +46,13 @@ def start_publishing():
     global _pub
     if _pub is not None:
         return
-    print "registering onto listenerpublisher"
+    print("registering onto listenerpublisher")
     _pub = rospy.Publisher("listenerpublisher", EmbedTest)
     
 def callback(data):
-    print rospy.get_caller_id(), "I heard %s, %s, %s"%(data.str1.data, data.int1.data, data.val.val)
+    print("%s I heard %s, %s, %s" % (rospy.get_caller_id(), data.str1.data, data.int1.data, data.val.val))
     start_publishing()
-    print "re-publishing"
+    print("re-publishing")
     _pub.publish(data)
     
 def listener():
