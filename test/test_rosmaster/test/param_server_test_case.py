@@ -67,7 +67,7 @@ class ParamServerTestCase(TestRosClient):
                 count = 0
                 for val in vals:
                     key = "%s-%s"%(type,count)
-                    #print "master.setParam(%s,%s)"%(callerId, key)
+                    #print("master.setParam(%s,%s)"%(callerId, key))
                     master.setParam(callerId, key, val)
                     self.assert_(self.apiSuccess(master.hasParam(callerId, key)))
                     trueKey = ns_join(ctx, key)
@@ -79,10 +79,10 @@ class ParamServerTestCase(TestRosClient):
 
     def _checkParamState(self, myState):
         master = self.master
-        callerId = 'master' #validate from root 
+        callerId = 'master' #validate from root
         for (k, v) in myState.items():
             assert self.apiSuccess(master.hasParam(callerId, k))
-            #print "verifying parameter %s"%k
+            #print("verifying parameter %s"%k)
             try:
                 v2 = self.apiSuccess(master.getParam(callerId, k))
             except:
@@ -378,7 +378,7 @@ class ParamServerTestCase(TestRosClient):
     # testParamValues: test storage of all XML-RPC compatible types"""
     def _testParamValues(self):
         try:
-            from xmlrpc.client import Bianry
+            from xmlrpc.client import Binary
         except ImportError:
             from xmlrpclib import Binary
         testVals = [
@@ -386,7 +386,7 @@ class ParamServerTestCase(TestRosClient):
             ['boolean', [True, False]],
             #no longer testing null char
             #['string', ['', '\0', 'x', 'hello', ''.join([chr(n) for n in range(0, 255)])]],
-            ['unicode-string', [u'', u'hello', unicode('Andr\302\202', 'utf-8'), unicode('\377\376A\000n\000d\000r\000\202\000', 'utf-16')]],
+            ['unicode-string', [u'', u'hello', b'Andr\302\202'.decode('utf-8'), b'\377\376A\000n\000d\000r\000\202\000'.decode('utf-16')]],
             ['string-easy-ascii', [chr(n) for n in range(32, 128)]],
 
             #['string-mean-ascii-low', [chr(n) for n in range(9, 10)]], #separate for easier book-keeping
@@ -396,14 +396,14 @@ class ParamServerTestCase(TestRosClient):
             ['double', [0.0, math.pi, -math.pi, 3.4028235e+38, -3.4028235e+38]],
             #TODO: microseconds?
             ['datetime', [datetime.datetime(2005, 12, 6, 12, 13, 14), datetime.datetime(1492, 12, 6, 12, 13, 14)]],
-            ['base64', [Binary(''), Binary('\0'), Binary(''.join([chr(n) for n in range(0, 255)]))]],
+            ['base64', [Binary(b''), Binary(b'\0'), Binary((''.join([chr(n) for n in range(0, 255)])).encode('utf-8'))]],
             ['array', [[], [1, 2, 3], ['a', 'b', 'c'], [0.0, 0.1, 0.2, 2.0, 2.1, -4.0],
                        [1, 'a', True], [[1, 2, 3], ['a', 'b', 'c'], [1.0, 2.1, 3.2]]]
              ],
             ]
         master = self.master
 
-        print "Putting parameters onto the server"
+        print("Putting parameters onto the server")
         # put our params into the parameter server
         contexts = ['', 'scope1', 'scope/sub1/sub2']
         myState = {}
@@ -412,14 +412,14 @@ class ParamServerTestCase(TestRosClient):
             self._setParam(ctx, myState, testVals, master)
         self._checkParamState(myState)
         
-        print "Deleting all of our parameters"
+        print("Deleting all of our parameters")
         # delete all of our parameters
         paramKeys = myState.keys()
         ctx = ''
         count = 0
-        for key in paramKeys:
+        for key in list(paramKeys):
             count += 1
-            print "deleting [%s], [%s]"%(ctx, key)
+            print("deleting [%s], [%s]" % (ctx, key))
             self.apiSuccess(master.deleteParam(ctx, key))
             del myState[key]
             # far too intensive to check every time
@@ -468,7 +468,7 @@ class ParamServerTestCase(TestRosClient):
             trueKey = ns_join(callerId, keyStub)
             myState[trueKey] = testVal
 
-            print "checking", trueKey
+            print("checking", trueKey)
             v1 = self.apiSuccess(master.getParam('/', trueKey))
             v2 = self.apiSuccess(master.getParam(callerId, testKey))
             assert v1 == v2, "[%s]: %s vs. [%s,%s]: %s"%(trueKey, v1, callerId, testKey, v2)

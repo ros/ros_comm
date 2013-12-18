@@ -107,6 +107,7 @@ class TestParamsBasic(unittest.TestCase):
         dir = rospkg.RosPack().get_path('roslaunch')
         with open(os.path.join(dir, 'resources', 'example.launch'), 'r') as f:
             data = f.read()
+
         test_file = data
         self.assertEquals(get_param("commandoutput"),test_file)
         self.assertEquals(get_param("textfile"),test_file)
