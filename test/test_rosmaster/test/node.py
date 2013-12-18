@@ -112,7 +112,7 @@ class _NodeTestCase(TestRosClient):
                 self.node_api = node_api
         if not self.node_api:
             self.fail("master did not return XML-RPC API for [%s, %s]"%(self.caller_id, self.test_node))
-        print "[%s] API  = %s"%(self.test_node, self.node_api)
+        print("[%s] API  = %s" %(self.test_node, self.node_api))
         self.assert_(self.node_api.startswith('http'))
         self.node = ServerProxy(self.node_api)
 

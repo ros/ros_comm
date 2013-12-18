@@ -51,7 +51,7 @@ class TestOnShutdown(unittest.TestCase):
         self.success = False
         
     def callback(self, data):
-        print rospy.get_caller_id(), "I heard %s"%data.data
+        print("%s I heard %s" % (rospy.get_caller_id(), data.data))
         #greetings is only sent over peer_publish callback, so hearing it is a success condition
         if "I'm dead" in data.data:
             self.success = True

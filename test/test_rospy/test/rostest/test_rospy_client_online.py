@@ -51,9 +51,9 @@ class TestTask(Thread):
         
     def run(self):
         try:
-            print "STARTING TASK"
+            print("STARTING TASK")
             self.value = self.task()
-            print "TASK HAS COMPLETED"
+            print("TASK HAS COMPLETED")
             self.success = True
         except:
             import traceback
