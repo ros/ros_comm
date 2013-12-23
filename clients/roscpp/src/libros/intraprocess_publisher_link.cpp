@@ -127,6 +127,12 @@ std::string IntraProcessPublisherLink::getTransportType()
   return std::string("INTRAPROCESS");
 }
 
+std::string IntraProcessPublisherLink::getTransportInfo()
+{
+  // TODO: Check if we can dump more useful information here
+  return getTransportType();
+}
+
 void IntraProcessPublisherLink::getPublishTypes(bool& ser, bool& nocopy, const std::type_info& ti)
 {
   boost::recursive_mutex::scoped_lock lock(drop_mutex_);

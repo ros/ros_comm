@@ -298,5 +298,10 @@ std::string TransportPublisherLink::getTransportType()
   return connection_->getTransport()->getType();
 }
 
+std::string TransportPublisherLink::getTransportInfo()
+{
+  return connection_->getTransport()->getTransportInfo();
+}
+
 } // namespace ros
 

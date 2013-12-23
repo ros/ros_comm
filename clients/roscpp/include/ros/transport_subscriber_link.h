@@ -53,6 +53,7 @@ public:
   virtual void enqueueMessage(const SerializedMessage& m, bool ser, bool nocopy);
   virtual void drop();
   virtual std::string getTransportType();
+  virtual std::string getTransportInfo();
 
 private:
   void onConnectionDropped(const ConnectionPtr& conn);
