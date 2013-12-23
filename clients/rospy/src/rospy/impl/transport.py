@@ -79,6 +79,10 @@ class Transport(object):
         # Number of messages that have passed through this transport
         self.stat_num_msg = 0         
     
+        # Endpoint Details (IP, Port)
+        self.local_endpoint = (0, 0)
+        self.remote_endpoint = (0, 0)
+
     def fileno(self):
         """
         Get a file descriptor for select() if available
@@ -105,6 +109,11 @@ class Transport(object):
     def write_data(self, data):
         raise Exception("not implemented")
 
+    ## Implements the getTransportInfo() from roscpp
+    ## Similar to getTransportInfo() in 'libros/transport/transport_tcp.cpp'
+    def get_transport_info(self):
+        raise NotImplementedError
+
 ## Shell class to hold stats about transport that is being killed off.
 ## This allows the information to stick around but the original Tranport to be gc'd
 class DeadTransport(Transport):
@@ -120,6 +129,12 @@ class DeadTransport(Transport):
         self.stat_num_msg = transport.stat_num_msg
         self.done         = True
         self.endpoint_id  = transport.endpoint_id
+        self.local_endpoint = transport.local_endpoint
+        self.remote_endpoint = transport.remote_endpoint
+
+    ## @param self
+    def get_transport_info(self):
+        return "Closed %s connection on port %s to [%s:%s]" % (self.transport_type, self.local_endpoint[1], self.remote_endpoint[0], self.remote_endpoint[1])
 
 ## ProtocolHandler interface: implements topic communication for a
 ## particular protocol(s).  In order to understand the methods of this

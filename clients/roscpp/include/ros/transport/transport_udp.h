@@ -145,7 +145,9 @@ private:
 
   bool is_server_;
   sockaddr_in server_address_;
+  sockaddr_in local_address_;
   int server_port_;
+  int local_port_;
 
   std::string cached_remote_host_;
 

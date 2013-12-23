@@ -81,6 +81,7 @@ public:
    */
   virtual void handleMessage(const SerializedMessage& m, bool ser, bool nocopy) = 0;
   virtual std::string getTransportType() = 0;
+  virtual std::string getTransportInfo() = 0;
   virtual void drop() = 0;
 
   const std::string& getMD5Sum();
