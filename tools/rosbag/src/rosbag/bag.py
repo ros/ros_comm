@@ -49,10 +49,12 @@ import threading
 import time
 import yaml
 
+
 try:
     from cStringIO import StringIO  # Python 2.x
 except ImportError:
     from io import StringIO  # Python 3.x
+
 
 import genmsg
 import genpy
@@ -895,8 +897,15 @@ class Bag(object):
         except struct.error:
             raise ROSBagFormatException('error with bag')
 
+    def _is_file(self, f):
+        try:
+            return isinstance(f, file) #Python 2
+        except NameError:
+            import io
+            return isinstance(f, io.IOBase) #Python 3...this will return false in Python 2 always
+
     def _open_read(self, f, allow_unindexed):
-        if isinstance(f, file):
+        if self._is_file(f):
             self._file     = f
             self._filename = None
         else:
@@ -924,7 +933,7 @@ class Bag(object):
             raise
 
     def _open_write(self, f):
-        if isinstance(f, file):
+        if self._is_file(f):
             self._file     = f
             self._filename = None
         else:
@@ -943,7 +952,7 @@ class Bag(object):
             raise
 
     def _open_append(self, f, allow_unindexed):
-        if isinstance(f, file):
+        if self._is_file(f):
             self._file     = f
             self._filename = None
         else:        
@@ -1029,7 +1038,7 @@ class Bag(object):
         return version
 
     def _start_writing(self):        
-        self._file.write(_VERSION + '\n')
+        self._file.write((_VERSION + '\n').encode())
         self._file_header_pos = self._file.tell()
         self._write_file_header_record(0, 0, 0)
 
@@ -1357,7 +1366,10 @@ def _read_sized(f):
 
 def _write_sized(f, v):
     f.write(_pack_uint32(len(v)))
-    f.write(v)
+    if(isinstance(v, str)):
+        f.write(v.encode())
+    else:
+        f.write(v)
 
 def _read_field(header, field, unpack_fn):
     if field not in header:
@@ -1389,7 +1401,14 @@ def _write_record(f, header, data='', padded_size=None):
     _write_sized(f, data)
 
 def _write_header(f, header):
-    header_str = ''.join([_pack_uint32(len(k) + 1 + len(v)) + k + '=' + v for k, v in header.items()])
+    items = []
+    for k,v in header.items():
+        if(isinstance(k, str)):
+            k = k.encode()
+        if(isinstance(v, str)):
+            v = v.encode()
+        items.append(_pack_uint32(len(k) + 1 + len(v)) + k+ b'=' + v)
+    header_str = b''.join(items)
     _write_sized(f, header_str)
     return header_str
 
