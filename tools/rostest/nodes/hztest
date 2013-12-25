@@ -107,10 +107,10 @@ class HzTest(unittest.TestCase):
         except KeyError:
             self.wall_clock = False
 
-        print """Hz: %s
+        print("""Hz: %s
 Hz Error: %s
 Topic: %s
-Test Duration: %s"""%(hz, hzerror, topic, test_duration)
+Test Duration: %s"""%(hz, hzerror, topic, test_duration))
         
         self._test_hz(hz, hzerror, topic, test_duration, wait_time)        
             
@@ -138,7 +138,7 @@ Test Duration: %s"""%(hz, hzerror, topic, test_duration)
         sub = rospy.Subscriber(topic, rospy.AnyMsg, self.callback)
         self.assert_(not self.errors, "bad initialization state (errors)")
         
-        print "Waiting for messages"
+        print("Waiting for messages")
         # we have to wait until the first message is received before measuring the rate
         # as time can advance too much before publisher is up
         
@@ -151,7 +151,7 @@ Test Duration: %s"""%(hz, hzerror, topic, test_duration)
         else:
             self.failIf(self.message_received, "message received")
             
-        print "Starting rate measurement"
+        print("Starting rate measurement")
         if self.wall_clock:
             timeout_t = time.time() + test_duration
             while time.time() < timeout_t:
@@ -160,7 +160,7 @@ Test Duration: %s"""%(hz, hzerror, topic, test_duration)
             timeout_t = rospy.get_time() + test_duration
             while rospy.get_time() < timeout_t:
                 rospy.sleep(0.1)
-        print "Done waiting, validating results"
+        print("Done waiting, validating results")
         sub.unregister()
 
         # Check that we got at least one message
@@ -245,6 +245,6 @@ if __name__ == '__main__':
         rostest.run('rostest', NAME, HzTest, sys.argv)
     except KeyboardInterrupt:
         pass
-    print "exiting"
+    print("exiting")
 
         
