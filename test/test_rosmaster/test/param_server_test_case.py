@@ -414,10 +414,9 @@ class ParamServerTestCase(TestRosClient):
         
         print("Deleting all of our parameters")
         # delete all of our parameters
-        paramKeys = myState.keys()
         ctx = ''
         count = 0
-        for key in list(paramKeys):
+        for key in list(myState.keys()):
             count += 1
             print("deleting [%s], [%s]" % (ctx, key))
             self.apiSuccess(master.deleteParam(ctx, key))
