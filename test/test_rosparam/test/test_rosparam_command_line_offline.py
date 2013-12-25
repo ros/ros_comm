@@ -83,26 +83,25 @@ class TestRosparamOffline(unittest.TestCase):
         env['ROS_MASTER_URI'] = 'http://localhost:11312'
         kwds = { 'env': env, 'stdout': PIPE, 'stderr': PIPE}
 
-        msg = b'ERROR: Unable to communicate with master!\n'
+        msg = 'ERROR: Unable to communicate with master!\n'
 
         output = Popen([cmd, 'list'], **kwds).communicate()
-
-        self.assert_(output[1].endswith(msg))
+        self.assert_(output[1].decode().endswith(msg))
         output = Popen([cmd, 'set', 'foo', '1.0'], **kwds).communicate()
-        self.assert_(output[1].endswith(msg))
+        self.assert_(output[1].decode().endswith(msg))
         output = Popen([cmd, 'get', 'foo'], **kwds).communicate()
-        self.assert_(output[1].endswith(msg))
+        self.assert_(output[1].decode().endswith(msg))
         # have to test with actual file to avoid error
         path = os.path.join(get_test_path(), 'test.yaml')
         output = Popen([cmd, 'load', path], **kwds).communicate()
-        self.assert_(output[1].endswith(msg))
+        self.assert_(output[1].decode().endswith(msg))
 
         # test with file that does not exist
         output = Popen([cmd, 'load', 'fake.yaml'], **kwds).communicate()
         self.assertEquals('ERROR: file [fake.yaml] does not exist\n', output[1])
         
         output = Popen([cmd, 'dump', 'foo.yaml'], **kwds).communicate()
-        self.assert_(output[1].endswith(msg))
+        self.assert_(output[1].decode().endswith(msg))
         output = Popen([cmd, 'delete', 'foo'], **kwds).communicate()
-        self.assert_(output[1].endswith(msg))
+        self.assert_(output[1].decode().endswith(msg))
         
