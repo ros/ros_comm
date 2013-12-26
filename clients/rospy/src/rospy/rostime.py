@@ -89,6 +89,9 @@ class Duration(genpy.Duration):
         """
         genpy.Duration.__init__(self, secs, nsecs)
 
+    def __repr__(self):
+        return 'rospy.Duration[%d]' % self.to_nsec()
+
 class Time(genpy.Time):
     """
     Time represents the ROS 'time' primitive type, which consists of two
@@ -134,6 +137,9 @@ class Time(genpy.Time):
         """
         genpy.Time.__init__(self, secs, nsecs)
         
+    def __repr__(self):
+        return 'rospy.Time[%d]' % self.to_nsec()
+
     @staticmethod
     def now():
         """
