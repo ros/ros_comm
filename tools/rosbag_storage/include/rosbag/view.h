@@ -41,11 +41,11 @@
 #include "rosbag/message_instance.h"
 #include "rosbag/query.h"
 #include "rosbag/macros.h"
+#include "rosbag/structures.h"
 
 namespace rosbag {
 
 struct MessageRange;
-struct IndexEntry;
 struct ViewIterHelper;
 
 class ROSBAG_DECL View
