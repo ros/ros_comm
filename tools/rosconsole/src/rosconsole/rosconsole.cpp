@@ -368,6 +368,11 @@ void Formatter::print(void* logger_handle, ::ros::console::Level level, const ch
 Formatter g_formatter;
 
 
+void _print(void* logger_handle, ::ros::console::Level level, const char* str, const char* file, const char* function, int line)
+{
+  g_formatter.print(logger_handle, level, str, file, function, line);
+}
+
 void initialize()
 {
   boost::mutex::scoped_lock lock(g_init_mutex);
@@ -387,6 +392,8 @@ void initialize()
     }
 
     g_formatter.init(g_format_string);
+    backend::function_notifyLoggerLevelsChanged = notifyLoggerLevelsChanged;
+    backend::function_print = _print;
 
     ::ros::console::impl::initialize();
     g_initialized = true;

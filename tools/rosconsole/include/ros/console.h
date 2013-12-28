@@ -32,6 +32,8 @@
 #ifndef ROSCONSOLE_ROSCONSOLE_H
 #define ROSCONSOLE_ROSCONSOLE_H
 
+#include "console_backend.h"
+
 #include <cstdio>
 #include <sstream>
 #include <ros/time.h>
@@ -72,21 +74,6 @@ namespace console
 {
 
 ROSCONSOLE_DECL void shutdown();
-
-namespace levels
-{
-enum Level
-{
-  Debug,
-  Info,
-  Warn,
-  Error,
-  Fatal,
-
-  Count
-};
-}
-typedef levels::Level Level;
 
 extern ROSCONSOLE_DECL bool get_loggers(std::map<std::string, levels::Level>& loggers);
 extern ROSCONSOLE_DECL bool set_logger_level(const std::string& name, levels::Level level);

@@ -27,62 +27,42 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "ros/console.h"
+#ifndef ROSCONSOLE_CONSOLE_BACKEND_H
+#define ROSCONSOLE_CONSOLE_BACKEND_H
 
 namespace ros
 {
 namespace console
 {
-namespace impl
+
+namespace levels
 {
-
-LogAppender* rosconsole_print_appender = 0;
-
-void initialize()
-{}
-
-void print(void* handle, ::ros::console::Level level, const char* str, const char* file, const char* function, int line)
+enum Level
 {
-  ::ros::console::backend::print(0, level, str, file, function, line);
-  if(rosconsole_print_appender)
-  {
-    rosconsole_print_appender->log(level, str, file, function, line);
-  }
+  Debug,
+  Info,
+  Warn,
+  Error,
+  Fatal,
+
+  Count
+};
 }
+typedef levels::Level Level;
 
-bool isEnabledFor(void* handle, ::ros::console::Level level)
+namespace backend
 {
-  return level != ::ros::console::levels::Debug;
-}
 
-void* getHandle(const std::string& name)
-{
-  return 0;
-}
+void notifyLoggerLevelsChanged();
 
-std::string getName(void* handle)
-{
-  return "";
-}
+extern void (*function_notifyLoggerLevelsChanged)();
 
-void register_appender(LogAppender* appender)
-{
-  rosconsole_print_appender = appender;
-}
+void print(void* logger_handle, ::ros::console::Level level, const char* str, const char* file, const char* function, int line);
 
-void shutdown()
-{}
+extern void (*function_print)(void*, ::ros::console::Level, const char*, const char*, const char*, int);
 
-bool get_loggers(std::map<std::string, levels::Level>& loggers)
-{
-  return true;
-}
-
-bool set_logger_level(const std::string& name, levels::Level level)
-{
-  return false;
-}
-
-} // namespace impl
+} // namespace backend
 } // namespace console
 } // namespace ros
+
+#endif // ROSCONSOLE_CONSOLE_BACKEND_H

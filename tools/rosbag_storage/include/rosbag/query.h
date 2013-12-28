@@ -42,13 +42,12 @@
 #include <set>
 
 #include <boost/function.hpp>
-#include "macros.h"
+#include "rosbag/macros.h"
+#include "rosbag/structures.h"
 
 namespace rosbag {
 
 class Bag;
-struct ConnectionInfo;
-struct IndexEntry;
 
 class ROSBAG_DECL Query
 {

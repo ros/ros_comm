@@ -47,6 +47,7 @@ namespace rosbag
 // A helper struct
 struct BagCallback
 {
+    virtual ~BagCallback() {};
     virtual void call(MessageInstance m) = 0;
 };
 

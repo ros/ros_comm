@@ -112,7 +112,7 @@ protected:
     std::string msg = event->getMessage();
 #endif
     const log4cxx::spi::LocationInfo& location_info = event->getLocationInformation();
-    g_formatter.print(this, level, msg.c_str(), location_info.getFileName(), location_info.getMethodName().c_str(), location_info.getLineNumber());
+    ::ros::console::backend::print(this, level, msg.c_str(), location_info.getFileName(), location_info.getMethodName().c_str(), location_info.getLineNumber());
   }
 
   virtual void close()
@@ -288,7 +288,7 @@ bool set_logger_level(const std::string& name, levels::Level level)
 
   log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger(name);
   logger->setLevel(log4cxx_level);
-  console::notifyLoggerLevelsChanged();
+  ::ros::console::backend::notifyLoggerLevelsChanged();
   return true;
 }
 
