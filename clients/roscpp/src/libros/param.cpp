@@ -522,6 +522,8 @@ template<> double xml_cast(XmlRpc::XmlRpcValue xml_value)
       return static_cast<double>(static_cast<int>(xml_value));
     case XmlRpcValue::TypeBoolean:
       return static_cast<double>(static_cast<bool>(xml_value));
+    default:
+     return 0.0;
   };
 }
 
@@ -535,6 +537,8 @@ template<> float xml_cast(XmlRpc::XmlRpcValue xml_value)
       return static_cast<float>(static_cast<int>(xml_value));
     case XmlRpcValue::TypeBoolean:
       return static_cast<float>(static_cast<bool>(xml_value));
+    default:
+      return 0.0f;
   };
 }
 
@@ -548,6 +552,8 @@ template<> int xml_cast(XmlRpc::XmlRpcValue xml_value)
       return static_cast<int>(xml_value);
     case XmlRpcValue::TypeBoolean:
       return static_cast<int>(static_cast<bool>(xml_value));
+    default:
+      return 0;
   };
 }
 
@@ -561,6 +567,8 @@ template<> bool xml_cast(XmlRpc::XmlRpcValue xml_value)
       return static_cast<bool>(static_cast<int>(xml_value));
     case XmlRpcValue::TypeBoolean:
       return static_cast<bool>(xml_value);
+    default:
+      return false;
   };
 }
   
