@@ -22,7 +22,7 @@ std::string getName(void* handle);
 void print(void* handle, ::ros::console::Level level, const char* str, const char* file, const char* function, int line)
 {
   // still printing to console
-  g_formatter.print(0, level, str, file, function, line);
+  ::ros::console::backend::print(0, level, str, file, function, line);
 
   // pass log message to appender
   if(rosconsole_glog_appender)
@@ -100,7 +100,7 @@ void register_appender(LogAppender* appender)
 void shutdown()
 {}
 
-bool get_loggers(std::map<std::string, levels::Level> >& loggers)
+bool get_loggers(std::map<std::string, levels::Level>& loggers)
 {
   for(std::vector<std::pair<std::string, levels::Level> >::const_iterator it = rosconsole_glog_log_levels.begin(); it != rosconsole_glog_log_levels.end(); it++)
   {
