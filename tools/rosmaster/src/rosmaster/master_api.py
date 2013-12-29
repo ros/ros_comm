@@ -53,6 +53,8 @@ Current status codes:
 Individual methods may assign additional meaning/semantics to statusCode.
 """
 
+from __future__ import print_function
+
 import os
 import sys
 import logging
