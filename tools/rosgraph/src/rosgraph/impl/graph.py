@@ -368,7 +368,7 @@ class Graph(object):
         @param node: node name
         @type  node: str
         @param api: XML-RPC proxy
-        @type  ServerProxy
+        @type  api: ServerProxy
         @param bad_node: If True, node has connectivity issues and
         should be treated differently
         @type  bad_node: bool
