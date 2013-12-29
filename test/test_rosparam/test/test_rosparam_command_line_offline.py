@@ -83,7 +83,7 @@ class TestRosparamOffline(unittest.TestCase):
         env['ROS_MASTER_URI'] = 'http://localhost:11312'
         kwds = { 'env': env, 'stdout': PIPE, 'stderr': PIPE}
 
-        msg = 'ERROR: Unable to communicate with master!\n'
+        msg = "ERROR: Unable to communicate with master!\n"
 
         output = Popen([cmd, 'list'], **kwds).communicate()
         self.assert_(output[1].decode().endswith(msg))

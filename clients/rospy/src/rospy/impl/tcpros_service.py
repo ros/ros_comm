@@ -603,9 +603,7 @@ class ServiceImpl(_Service):
         @param err_msg: error message to send to client
         @type  err_msg: str
         """
-        unpacked = '<BI%ss' % len(err_msg)
-        packed = struct.pack(unpacked, 0, len(err_msg), err_msg)
-        transport.write_data(packed)
+        transport.write_data(struct.pack('<BI%ss'%len(err_msg), 0, len(err_msg), err_msg))
 
     def _handle_request(self, transport, request):
         """

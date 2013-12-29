@@ -53,7 +53,7 @@ class TestRoswtfOffline(unittest.TestCase):
     ## test that the rosmsg command works
     def test_cmd_help(self):
         cmd = 'roswtf'
-        output = (Popen([cmd, '-h'], stdout=PIPE).communicate())[0]
+        output = Popen([cmd, '-h'], stdout=PIPE).communicate()[0]
         output = output.decode()
         self.assert_('Options' in output)
             
@@ -81,15 +81,14 @@ class TestRoswtfOffline(unittest.TestCase):
 
         # run roswtf nakedly
         output = Popen([cmd], **kwds).communicate()
+        output = [o.decode() for o in output]
         # - due both a positive and negative test
-        output0 = output[0].decode()
-        output1 = output[1].decode()
-        self.assert_('No errors or warnings' in output0, "OUTPUT[%s], stderr = %s" % (output0, output1))
-        self.assert_('ERROR' not in output0, "OUTPUT[%s] , stderr = %s" % (output0, output1))
+        self.assert_('No errors or warnings' in output[0], "OUTPUT[%s]"%str(output))
+        self.assert_('ERROR' not in output[0], "OUTPUT[%s]"%str(output))
 
         # run roswtf on a simple launch file offline
         p = os.path.join(get_test_path(), 'min.launch')
         output = Popen([cmd, p], **kwds).communicate()[0]
         output = output.decode()
-        self.assert_('No errors or warnings' in output, "OUTPUT[%s]" % output)
-        self.assert_('ERROR' not in output, "OUTPUT[%s]"  % output) 
+        self.assert_('No errors or warnings' in output, "OUTPUT[%s]"%output)
+        self.assert_('ERROR' not in output, "OUTPUT[%s]"%output)        
