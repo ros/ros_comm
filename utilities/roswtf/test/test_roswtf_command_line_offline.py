@@ -81,7 +81,6 @@ class TestRoswtfOffline(unittest.TestCase):
 
         # run roswtf nakedly
         output = Popen([cmd], **kwds).communicate()
-
         # - due both a positive and negative test
         output0 = output[0].decode();
         output1 = output[1].decode();
@@ -94,4 +93,3 @@ class TestRoswtfOffline(unittest.TestCase):
         output = output.decode()
         self.assert_('No errors or warnings' in output, "OUTPUT[%s]" % output)
         self.assert_('ERROR' not in output, "OUTPUT[%s]"  % output) 
-

@@ -49,12 +49,10 @@ import threading
 import time
 import yaml
 
-
 try:
     from cStringIO import StringIO  # Python 2.x
 except ImportError:
     from io import StringIO  # Python 3.x
-
 
 import genmsg
 import genpy
@@ -1367,9 +1365,8 @@ def _read_sized(f):
 def _write_sized(f, v):
     f.write(_pack_uint32(len(v)))
     if(isinstance(v, str)):
-        f.write(v.encode())
-    else:
-        f.write(v)
+        v = v.encode()
+    f.write(v)
 
 def _read_field(header, field, unpack_fn):
     if field not in header:
@@ -1401,14 +1398,8 @@ def _write_record(f, header, data='', padded_size=None):
     _write_sized(f, data)
 
 def _write_header(f, header):
-    items = []
-    for k,v in header.items():
-        if(isinstance(k, str)):
-            k = k.encode()
-        if(isinstance(v, str)):
-            v = v.encode()
-        items.append(_pack_uint32(len(k) + 1 + len(v)) + k+ b'=' + v)
-    header_str = b''.join(items)
+    header = dict([(k.encode() if isinstance(k, str) else k, v.encode() if isinstance(v, str) else v) for k, v in header.items()])
+    header_str = b''.join([_pack_uint32(len(k) + 1 + len(v)) + k + b'=' + v for k, v in header.items()])
     _write_sized(f, header_str)
     return header_str
 
