@@ -51,7 +51,6 @@ except ImportError:
     from xmlrpclib import Fault
 
 from operator import itemgetter
-
 try:
     from urllib.parse import urlparse
 except ImportError:

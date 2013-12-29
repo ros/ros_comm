@@ -370,7 +370,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         t = threading.Thread(target=kill_pmon, args=(pmon, marker, 10.))
         t.setDaemon(True)
         t.start()
-
+        
         pmon.run()
         
         self.failIf(marker.marked, "pmon had to be externally killed")
@@ -419,6 +419,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         
         # and run it -- but setup a safety timer to kill it if it doesn't exit
         marker = Marker()
+        
         t = threading.Thread(target=kill_pmon, args=(self.pmon, marker, 10.))
         t.setDaemon(True)
         t.start()
