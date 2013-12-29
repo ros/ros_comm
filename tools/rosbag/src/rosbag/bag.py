@@ -1364,7 +1364,7 @@ def _read_sized(f):
 
 def _write_sized(f, v):
     f.write(_pack_uint32(len(v)))
-    if(isinstance(v, str)):
+    if isinstance(v, str):
         v = v.encode()
     f.write(v)
 
