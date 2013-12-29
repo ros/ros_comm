@@ -76,7 +76,7 @@ class TestEmbedMsg(unittest.TestCase):
             rospy.resolve_name(PUBTOPIC),
             rospy.resolve_name(LPNODE)), "%s is not up"%LPNODE)
         
-        print "Publishing to ", PUBTOPIC
+        print("Publishing to %s" % PUBTOPIC)
         pub = rospy.Publisher(PUBTOPIC, MSG)
         rospy.Subscriber(LPTOPIC, MSG, self._test_embed_msg_callback) 
 
@@ -103,7 +103,7 @@ class TestEmbedMsg(unittest.TestCase):
         # listenerpublisher is supposed to repeat our messages back onto /listenerpublisher,
         # make sure we got it
         self.assert_(self.callback_data is not None, "no callback data from listenerpublisher")
-        print "Got ", self.callback_data.str1.data, self.callback_data.int1.data
+        print("Got %s %s", self.callback_data.str1.data, self.callback_data.int1.data)
         errorstr = "callback msg field [%s] from listenerpublisher does not match"
         self.assertEquals(msg, self.callback_data.str1.data,
                           errorstr%"str1.data")

@@ -76,7 +76,7 @@ class TestPubSubOrder(unittest.TestCase):
             rospy.resolve_name(PUBTOPIC),
             rospy.resolve_name(LPNODE)), "%s is not up"%LPNODE)
         
-        print "Publishing to ", PUBTOPIC
+        print("Publishing to %s" % PUBTOPIC)
         pub = rospy.Publisher(PUBTOPIC, MSG)
         rospy.Subscriber(LPTOPIC, MSG, self._test_subscriber_first_callback) 
 

@@ -37,7 +37,7 @@ from test_rosservice.srv import *
 import rospy 
 
 def header_echo(req):
-    print "Returning %s"%(req)
+    print("Returning %s" % (req))
     return req.header
 
 def header_echo_server():

@@ -223,7 +223,7 @@ class TestRosbag(unittest.TestCase):
        
             try:
                 b = rosbag.Bag(reindex_filename, 'a', allow_unindexed=True)
-            except Exception, ex:
+            except Exception as ex:
                 pass
             for done in b.reindex():
                 pass

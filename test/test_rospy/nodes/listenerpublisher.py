@@ -45,13 +45,13 @@ def start_publishing():
     global _pub
     if _pub is not None:
         return
-    print "registering onto listenerpublisher"
+    print("registering onto listenerpublisher")
     _pub = rospy.Publisher("listenerpublisher", String)
     
 def callback(data):
-    print rospy.get_caller_id(), "I heard %s"%data.data
+    print("%s I heard %s" % (rospy.get_caller_id(), data.data))
     start_publishing()
-    print "publishing", data.data
+    print("publishing %s" % data.data)
     _pub.publish(String(data.data))
     
 def listener():

@@ -140,7 +140,7 @@ class MsgSpecTest(unittest.TestCase):
       self.assertEquals(m.text, text)
       self.assertEquals(has_header, m.has_header())
       self.assertEquals(m.constants, constants)
-      self.assertEquals(zip(types, names), m.fields())
+      self.assertEquals(list(zip(types, names)), m.fields())
       self.assertEquals(m, MsgSpec(types, names, constants, text))
       return m
     
