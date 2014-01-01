@@ -1364,8 +1364,6 @@ def _read_sized(f):
 
 def _write_sized(f, v):
     f.write(_pack_uint32(len(v)))
-    if isinstance(v, str):
-        v = v.encode()
     f.write(v)
 
 def _read_field(header, field, unpack_fn):
@@ -1398,8 +1396,7 @@ def _write_record(f, header, data='', padded_size=None):
     _write_sized(f, data)
 
 def _write_header(f, header):
-    header = dict([(k.encode() if isinstance(k, str) else k, v.encode() if isinstance(v, str) else v) for k, v in header.items()])
-    header_str = b''.join([_pack_uint32(len(k) + 1 + len(v)) + k + b'=' + v for k, v in header.items()])
+    header_str = ''.join([_pack_uint32(len(k) + 1 + len(v)) + k + '=' + v for k, v in header.items()])
     _write_sized(f, header_str)
     return header_str
 
