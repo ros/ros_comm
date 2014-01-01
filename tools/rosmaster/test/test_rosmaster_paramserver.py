@@ -84,10 +84,9 @@ class TestRospyParamServer(unittest.TestCase):
             ]
         for correct, args in tests:
             reg = Registrations(Registrations.PARAM_SUBSCRIPTIONS)
-            subscribers = args[0]
+            reg.map = args[0]
             param_key = args[1]
             param_val = args[2]
-            reg.map[param_key] = [(None, None)]
 
             val = compute_param_updates(reg, param_key, param_val)
             self.assertEquals(len(correct), len(val), "Failed: \n%s \nreturned \n%s\nvs correct\n%s"%(str(args), str(val), str(correct)))

@@ -396,7 +396,7 @@ class ParamServerTestCase(TestRosClient):
             ['double', [0.0, math.pi, -math.pi, 3.4028235e+38, -3.4028235e+38]],
             #TODO: microseconds?
             ['datetime', [datetime.datetime(2005, 12, 6, 12, 13, 14), datetime.datetime(1492, 12, 6, 12, 13, 14)]],
-            ['base64', [Binary(b''), Binary(b'\0'), Binary((''.join([chr(n) for n in range(0, 255)])).encode('utf-8'))]],
+            ['base64', [Binary(''), Binary('\0'), Binary((''.join([chr(n) for n in range(0, 255)])))]],
             ['array', [[], [1, 2, 3], ['a', 'b', 'c'], [0.0, 0.1, 0.2, 2.0, 2.1, -4.0],
                        [1, 'a', True], [[1, 2, 3], ['a', 'b', 'c'], [1.0, 2.1, 3.2]]]
              ],
