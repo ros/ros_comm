@@ -88,7 +88,7 @@ def roswtf_main():
     try:
         _roswtf_main()
     except WtfException as e:
-        print >> sys.stderr, e
+        print(str(e), file=sys.stderr)
         
 def _roswtf_main():
     launch_files = names = None
@@ -229,12 +229,12 @@ def _roswtf_main():
             print_results(ctx)
             
     except roswtf.context.WtfException as e:
-        print >> sys.stderr, str(e)
+        print(str(e), file=sys.stderr)
         print("\nAborting checks, partial results summary:\n")
         print_results(ctx)
     except Exception as e:
         traceback.print_exc()
-        print >> sys.stderr, str(e)
+        print(str(e), file=sys.stderr)
         print("\nAborting checks, partial results summary:\n")
         print_results(ctx)
 

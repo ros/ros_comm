@@ -42,6 +42,8 @@
 ##  * ~/test_duration: time (in secs) to run test
 ## 
 
+from __future__ import print_function
+
 import sys
 import threading
 import time
@@ -219,10 +221,10 @@ Test Duration: %s"""%(hz, hzerror, topic, test_duration))
             if self.check_intervals and last > 0:
                 interval = curr - last
                 if interval < self.min_interval:
-                    print >> sys.stderr, "CURR", curr
-                    print >> sys.stderr, "LAST", last
-                    print >> sys.stderr, "msg_count", self.msg_count
-                    print >> sys.stderr, "msg_tn", self.msg_tn
+                    print("CURR %s" % str(curr), file=sys.stderr)
+                    print("LAST %s" % str(last), file=sys.stderr)
+                    print("msg_count %d" % self.msg_count, file=sys.stderr)
+                    print("msg_tn %s" % str(self.msg_tn), file=sys.stderr)
                     self.errors.append(
                         'min_interval exceeded: %s [actual] vs. %s [min]'%\
                         (interval, self.min_interval))
