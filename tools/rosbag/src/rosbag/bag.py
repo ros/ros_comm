@@ -1021,7 +1021,7 @@ class Bag(object):
         """
         @raise ROSBagException: if the file is empty, or the version line can't be parsed
         """
-        version_line = self._file.readline().rstrip()
+        version_line = self._file.readline().rstrip().decode()
         if len(version_line) == 0:
             raise ROSBagException('empty file')
         
@@ -1036,7 +1036,7 @@ class Bag(object):
         return version
 
     def _start_writing(self):        
-        self._file.write((_VERSION + '\n').encode())
+        self._file.write(_VERSION + '\n')
         self._file_header_pos = self._file.tell()
         self._write_file_header_record(0, 0, 0)
 
