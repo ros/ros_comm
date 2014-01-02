@@ -30,6 +30,8 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import print_function
+
 import collections
 import copy
 try:
@@ -310,13 +312,13 @@ class MessageUpdateRule(object):
             try:
                 tmp_old_class = self.get_old_class(t1)
             except KeyError:
-                print >> sys.stderr, "WARNING: Within rule [%s], specified migrated type [%s] not found in old message types"%(self.location,t1)
+                print("WARNING: Within rule [%s], specified migrated type [%s] not found in old message types" % (self.location, t1), file=sys.stderr)
                 self.sub_rules_valid = False
                 continue
             try:
                 tmp_new_class = self.get_new_class(t2)
             except KeyError:
-                print >> sys.stderr, "WARNING: Within rule [%s], specified migrated type [%s] not found in new message types"%(self.location,t2)
+                print("WARNING: Within rule [%s], specified migrated type [%s] not found in new message types" % (self.location, t2), file=sys.stderr)
                 self.sub_rules_valid = False
                 continue
 
@@ -517,7 +519,7 @@ class MessageMigrator(object):
                 execfile(r,scratch_locals)
                 rule_dicts.append((scratch_locals, r))
             except:
-                print >> sys.stderr, "Cannot load rule file [%s] in local package"%r
+                print("Cannot load rule file [%s] in local package" % r, file=sys.stderr)
 
         # Alternatively the preferred method is to load definitions
         # from the migration ruleset export flag.
