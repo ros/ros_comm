@@ -32,6 +32,8 @@
 #
 # Revision $Id$
 
+from __future__ import print_function
+
 """
 Utility module of roslaunch that computes the command-line arguments
 for a launch file.
@@ -59,5 +61,5 @@ def dump_args(roslaunch_files):
         for arg in sorted(get_args(roslaunch_files).items()):
         	print arg[0]
     except RLException as e:
-        print >> sys.stderr, str(e)
+        print(str(e), file=sys.stderr)
         sys.exit(1)

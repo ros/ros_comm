@@ -83,7 +83,7 @@ def _businfo(ctx, node, bus_info):
             elif direction == 'o':
                 edges.append((topic, node, dest_id))
             elif direction == 'b':
-                print >> sys.stderr, "cannot handle bidirectional edges"
+                print("cannot handle bidirectional edges", file=sys.stderr)
             else:
                 raise Exception()
 

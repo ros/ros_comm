@@ -331,8 +331,7 @@ class MessageUpdateRule(object):
                 self.sub_rules.extend(rules)
 
             if False in [r.valid for r in self.sub_rules]:
-                print >> sys.stderr, "WARNING: Within rule [%s] cannot migrate from subtype [%s] to [%s].."%(
-                    self.location, t1, t2)
+                print("WARNING: Within rule [%s] cannot migrate from subtype [%s] to [%s].." % (self.location, t1, t2), file=sys.stderr)
                 self.sub_rules_valid = False
                 continue
         self.sub_rules = self.migrator.filter_rules_unique(self.sub_rules)
@@ -532,16 +531,16 @@ class MessageMigrator(object):
                     pkg_dir = rospack.get_path(pkg)
                     for r in p_rules:
                         if dep == 'rosbagmigration':
-                            print >> sys.stderr, """WARNING: The package: [%s] is using a deprecated rosbagmigration export.
+                            print("""WARNING: The package: [%s] is using a deprecated rosbagmigration export.
     The export in the manifest should be changed to:
     <rosbag migration_rule_file="%s"/>
-"""%(pkg, r)
+""" % (pkg, r), file=sys.stderr)
                         try:
                             scratch_locals = {'MessageUpdateRule':MessageUpdateRule}
                             execfile(pkg_dir + "/" + r,scratch_locals)
                             rule_dicts.append((scratch_locals, r))
                         except ImportError:
-                            print >> sys.stderr, "Cannot load rule file [%s] in package [%s]"%(r, pkg)
+                            print("Cannot load rule file [%s] in package [%s]" % (r, pkg), file=sys.stderr)
 
 
         for (rule_dict, location_base) in rule_dicts:
@@ -724,7 +723,7 @@ class MessageMigrator(object):
     # Add an update rule to our set of rule chains
     def add_update_rule(self, r):
         if r.valid == False:
-            print >> sys.stderr, "ERROR: Update rule [%s] has valid set to False."%(r.location)
+            print("ERROR: Update rule [%s] has valid set to False." % (r.location), file=sys.stderr)
             self.false_rule_loaded = True
             return
 
@@ -732,8 +731,7 @@ class MessageMigrator(object):
 
         if r.rename_rule:
             if (rulechain.rename != None):
-                print >> sys.stderr, "WARNING: Update rules [%s] and [%s] both attempting to rename type [%s]. Ignoring [%s]"%(
-                    rulechain.rename.location, r.location, r.old_type, r.location)
+                print("WARNING: Update rules [%s] and [%s] both attempting to rename type [%s]. Ignoring [%s]" % (rulechain.rename.location, r.location, r.old_type, r.location), file=sys.stderr)
                 return
 
             # Search forward to make sure we havn't created a cycle
@@ -742,8 +740,7 @@ class MessageMigrator(object):
             while tmp:
                 cycle.append(tmp)
                 if (tmp.new_type == r.old_type):
-                    print >> sys.stderr, "WARNING: Update rules %s introduce a renaming cycle. Ignoring [%s]"%(
-                        [x.location for x in cycle],r.location)
+                    print("WARNING: Update rules %s introduce a renaming cycle. Ignoring [%s]" % ([x.location for x in cycle], r.location), file=sys.stderr)
                     return
                 if (self.rulechains.has_key(tmp.new_type)):
                     tmp = self.rulechains[tmp.new_type].rename
@@ -752,8 +749,7 @@ class MessageMigrator(object):
 
 
             if rulechain.chain and (r.order <= rulechain.chain[-1].order):
-                print >> sys.stderr, "WARNING: Update rule [%s] which performs rename does not have largest order number. Ignoring"%(
-                    r.location)
+                print("WARNING: Update rule [%s] which performs rename does not have largest order number. Ignoring" % r.location, file=sys.stderr)
                 return
 
             rulechain.rename = r
@@ -761,13 +757,11 @@ class MessageMigrator(object):
         else:
             if r.order in rulechain.order_keys:
                 otherind = [x.order for x in rulechain.chain].index(r.order)
-                print >> sys.stderr, "WARNING: Update rules [%s] and [%s] for type [%s] have the same order number. Ignoring [%s]"%(
-                    rulechain.chain[otherind].location, r.location, r.old_type, r.location)
+                print("WARNING: Update rules [%s] and [%s] for type [%s] have the same order number. Ignoring [%s]" % (rulechain.chain[otherind].location, r.location, r.old_type, r.location), file=sys.stderr)
                 return
             else:
                 if rulechain.rename and (r.order >= rulechain.rename.order):
-                    print >> sys.stderr, "WARNING: Update rule [%s] has order number larger than rename rule [%s]. Ignoring"%(
-                        r.location, rulechain.rename.location)
+                    print("WARNING: Update rule [%s] has order number larger than rename rule [%s]. Ignoring" % (r.location, rulechain.rename.location), file=sys.stderr)
                     return
                 # Insert the rule into a rule chain
                 rulechain.order_keys.add(r.order)
