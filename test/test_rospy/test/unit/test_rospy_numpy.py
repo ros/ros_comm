@@ -45,7 +45,7 @@ try:
     import numpy
     disable = False
 except ImportError:
-    print "cannot import numpy, test is disabled"
+    print("cannot import numpy, test is disabled")
     disable = True
 
 # this is partially a teste of the rospy/Tutorials/numpy

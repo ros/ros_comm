@@ -227,11 +227,11 @@ called = None
 called2 = None
 def shutdown_hook1(reason):
     global called
-    print "HOOK", reason
+    print("HOOK", reason)
     called = reason
 def shutdown_hook2(reason):
     global called2
-    print "HOOK2", reason
+    print("HOOK2", reason)
     called2 = reason
 def shutdown_hook_exception(reason):
     raise Exception("gotcha")
