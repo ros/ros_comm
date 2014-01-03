@@ -47,6 +47,7 @@ class TestRosgraphOffline(unittest.TestCase):
     def test_cmd_help(self):
         cmd = 'rosgraph'
         output = Popen([cmd, '-h'], stdout=PIPE).communicate()[0]
+        output = output.decode()
         self.assert_('Usage' in output)
             
     def test_offline(self):
@@ -59,5 +60,6 @@ class TestRosgraphOffline(unittest.TestCase):
 
         msg = "ERROR: Unable to communicate with master!\n"
 
-        output = Popen([cmd], **kwds).communicate()
-        self.assertEquals(msg, output[1])
+        output = Popen([cmd], **kwds).communicate()[1]
+        output = output.decode()
+        self.assertEquals(msg, output)
