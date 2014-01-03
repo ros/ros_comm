@@ -52,7 +52,7 @@ import yaml
 try:
     from cStringIO import StringIO  # Python 2.x
 except ImportError:
-    from io import StringIO  # Python 3.x
+    from io import BytesIO as StringIO  # Python 3.x
 
 import genmsg
 import genpy
@@ -410,7 +410,7 @@ class Bag(object):
             if self._version == 102 and type(self._reader) == _BagReader102_Unindexed:
                 rows.append(('version', '1.2 (unindexed)'))
             else:
-                rows.append(('version', '%d.%d' % (self._version / 100, self._version % 100)))
+                rows.append(('version', '%d.%d' % (int(self._version / 100), self._version % 100)))
 
             if not self._connection_indexes and not self._chunks:
                 rows.append(('size', _human_readable_size(self.size)))
@@ -892,6 +892,8 @@ class Bag(object):
             elif mode == 'a': self._open_append(f, allow_unindexed)
             else:
                 raise ValueError('mode "%s" is invalid' % mode)
+            if 'b' not in self._file.mode and not isinstance('', bytes):
+                raise ROSBagException('In Python 3 the bag file must be opened in binary mode')
         except struct.error:
             raise ROSBagFormatException('error with bag')
 
@@ -997,7 +999,7 @@ class Bag(object):
         """
         @raise ROSBagException: if the bag version is unsupported
         """
-        major_version, minor_version = self._version / 100, self._version % 100
+        major_version, minor_version = int(self._version / 100), self._version % 100
         if major_version == 2:
             self._reader = _BagReader200(self)
         elif major_version == 1:
@@ -1036,7 +1038,9 @@ class Bag(object):
         return version
 
     def _start_writing(self):        
-        self._file.write(_VERSION + '\n')
+        version = _VERSION + '\n'
+        version = version.encode()
+        self._file.write(version)
         self._file_header_pos = self._file.tell()
         self._write_file_header_record(0, 0, 0)
 
@@ -1233,7 +1237,9 @@ _CHUNK_INDEX_VERSION = 1
 class _ConnectionInfo(object):
     def __init__(self, id, topic, header):
         try:
-            datatype, md5sum, msg_def = header['type'], header['md5sum'], header['message_definition']
+            datatype = _read_str_field(header, 'type')
+            md5sum   = _read_str_field(header, 'md5sum')
+            msg_def  = _read_str_field(header, 'message_definition')
         except KeyError as ex:
             raise ROSBagFormatException('connection header field %s not found' % str(ex))
 
@@ -1277,12 +1283,39 @@ class _ChunkHeader(object):
         else:
             return 'compression: %s, size: %d, uncompressed: %d' % (self.compression, self.compressed_size, self.uncompressed_size)
 
-class _IndexEntry(object):
+class ComparableMixin(object):
+    def _compare(self, other, method):
+        try:
+            return method(self._cmpkey(), other._cmpkey())
+        except (AttributeError, TypeError):
+            # _cmpkey not implemented or return different type
+            # so can not compare with other
+            return NotImplemented
+
+    def __lt__(self, other):
+        return self._compare(other, lambda s, o: s < o)
+
+    def __le__(self, other):
+        return self._compare(other, lambda s, o: s <= o)
+
+    def __eq__(self, other):
+        return self._compare(other, lambda s, o: s == o)
+
+    def __ge__(self, other):
+        return self._compare(other, lambda s, o: s >= o)
+
+    def __gt__(self, other):
+        return self._compare(other, lambda s, o: s > o)
+
+    def __ne__(self, other):
+        return self._compare(other, lambda s, o: s != o)
+
+class _IndexEntry(ComparableMixin):
     def __init__(self, time):
         self.time = time
 
-    def __cmp__(self, other):
-        return self.time.__cmp__(other.time)
+    def _cmpkey(self):
+        return self.time
 
 class _IndexEntry102(_IndexEntry):
     def __init__(self, time, offset):
@@ -1364,6 +1397,8 @@ def _read_sized(f):
 
 def _write_sized(f, v):
     f.write(_pack_uint32(len(v)))
+    if not isinstance(v, bytes):
+        v = v.encode()
     f.write(v)
 
 def _read_field(header, field, unpack_fn):
@@ -1377,7 +1412,13 @@ def _read_field(header, field, unpack_fn):
     
     return value
 
-def _read_str_field   (header, field): return _read_field(header, field, lambda v: v)
+def _read_str_field   (header, field):
+    value = _read_field(header, field, lambda v: v)
+    try:
+        value = value.decode()
+    except AttributeError:
+        pass
+    return value
 def _read_uint8_field (header, field): return _read_field(header, field, _unpack_uint8)
 def _read_uint32_field(header, field): return _read_field(header, field, _unpack_uint32)
 def _read_uint64_field(header, field): return _read_field(header, field, _unpack_uint64)
@@ -1396,7 +1437,14 @@ def _write_record(f, header, data='', padded_size=None):
     _write_sized(f, data)
 
 def _write_header(f, header):
-    header_str = ''.join([_pack_uint32(len(k) + 1 + len(v)) + k + '=' + v for k, v in header.items()])
+    header_str = b''
+    equal = b'='
+    for k, v in header.items():
+        if not isinstance(k, bytes):
+            k = k.encode()
+        if not isinstance(v, bytes):
+            v = v.encode()
+        header_str += _pack_uint32(len(k) + 1 + len(v)) + k + equal + v
     _write_sized(f, header_str)
     return header_str
 
@@ -1411,7 +1459,7 @@ def _read_header(f, req_op=None):
 
     # Parse header into a dict
     header_dict = {}
-    while header != '':
+    while header != b'':
         # Read size
         if len(header) < 4:
             raise ROSBagFormatException('Error reading header field')           
@@ -1421,10 +1469,11 @@ def _read_header(f, req_op=None):
         # Read bytes
         if len(header) < size:
             raise ROSBagFormatException('Error reading header field: expected %d bytes, read %d' % (size, len(header)))
-        (name, sep, value) = header[:size].partition('=')
-        if sep == '':
+        (name, sep, value) = header[:size].partition(b'=')
+        if sep == b'':
             raise ROSBagFormatException('Error reading header field')
 
+        name = name.decode()
         header_dict[name] = value                                          # @todo reindex: raise exception on empty name
         
         header = header[size:]
@@ -2281,7 +2330,7 @@ def _mergesort(list_of_lists, key=None):
     heap = []
     for i, itr in enumerate(iter(pl) for pl in list_of_lists):
         try:
-            item = itr.next()
+            item = next(itr)
             toadd = (key(item), i, item, itr) if key else (item, i, itr)
             heap.append(toadd)
         except StopIteration:
@@ -2293,7 +2342,7 @@ def _mergesort(list_of_lists, key=None):
             _, idx, item, itr = heap[0]
             yield item, itr
             try:
-                item = itr.next()
+                item = next(itr)
                 heapq.heapreplace(heap, (key(item), idx, item, itr) )
             except StopIteration:
                 heapq.heappop(heap)
@@ -2303,7 +2352,7 @@ def _mergesort(list_of_lists, key=None):
             item, idx, itr = heap[0]
             yield item, itr
             try:
-                heapq.heapreplace(heap, (itr.next(), idx, itr))
+                heapq.heapreplace(heap, (next(itr), idx, itr))
             except StopIteration:
                 heapq.heappop(heap)
 
@@ -2334,9 +2383,9 @@ def _median(values):
 
     sorted_values = sorted(values)
     if values_len % 2 == 1:
-        return sorted_values[(values_len + 1) / 2 - 1]
+        return sorted_values[int((values_len + 1) / 2) - 1]
 
-    lower = sorted_values[values_len / 2 - 1]
-    upper = sorted_values[values_len / 2]
+    lower = sorted_values[int(values_len / 2) - 1]
+    upper = sorted_values[int(values_len / 2)]
 
     return float(lower + upper) / 2

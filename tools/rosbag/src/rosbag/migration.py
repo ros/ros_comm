@@ -37,7 +37,7 @@ import copy
 try:
     from cStringIO import StringIO  # Python 2.x
 except ImportError:
-    from io import StringIO  # Python 3.x
+    from io import BytesIO as StringIO  # Python 3.x
 import inspect
 import itertools
 import os
@@ -192,7 +192,7 @@ def clean_name(name, top_name):
         name_split.remove(top_name.split('/')[0])
     except ValueError:
         pass
-    new_name = string.join(name_split,'/')
+    new_name = '/'.join(name_split)
     return new_name
 
 ## Helper function to ensure we end up with a qualified name
@@ -515,7 +515,7 @@ class MessageMigrator(object):
         for r in input_rule_files:
             try:
                 scratch_locals = {'MessageUpdateRule':MessageUpdateRule}
-                execfile(r,scratch_locals)
+                exec(open(r).read(), scratch_locals)
                 rule_dicts.append((scratch_locals, r))
             except:
                 print("Cannot load rule file [%s] in local package" % r, file=sys.stderr)
@@ -537,7 +537,7 @@ class MessageMigrator(object):
 """ % (pkg, r), file=sys.stderr)
                         try:
                             scratch_locals = {'MessageUpdateRule':MessageUpdateRule}
-                            execfile(pkg_dir + "/" + r,scratch_locals)
+                            exec(open(pkg_dir + "/" + r).read(), scratch_locals)
                             rule_dicts.append((scratch_locals, r))
                         except ImportError:
                             print("Cannot load rule file [%s] in package [%s]" % (r, pkg), file=sys.stderr)
@@ -572,7 +572,7 @@ class MessageMigrator(object):
             tmp = rulechain.rename
             while tmp:
                 rename_set.add(tmp.new_type)
-                if (self.rulechains.has_key(tmp.new_type)):
+                if tmp.new_type in self.rulechains:
                     tmp = self.rulechains[tmp.new_type].rename
                 else:
                     break
@@ -742,7 +742,7 @@ class MessageMigrator(object):
                 if (tmp.new_type == r.old_type):
                     print("WARNING: Update rules %s introduce a renaming cycle. Ignoring [%s]" % ([x.location for x in cycle], r.location), file=sys.stderr)
                     return
-                if (self.rulechains.has_key(tmp.new_type)):
+                if tmp.new_type in self.rulechains:
                     tmp = self.rulechains[tmp.new_type].rename
                 else:
                     break
@@ -898,7 +898,7 @@ class MessageMigrator(object):
 
             found_start = False
 
-            for (ind, tmp_sn) in reversed(zip(range(len(sn_range)), sn_range)):
+            for (ind, tmp_sn) in reversed(list(zip(range(len(sn_range)), sn_range))):
                 # Skip until we find the class we're trying to match
                 if (tmp_sn.old_class._type != old_class._type):
                     continue
@@ -909,7 +909,7 @@ class MessageMigrator(object):
 
             # Next see if we can create a valid rule
             if not found_start:
-                for (ind, tmp_sn) in reversed(zip(range(len(sn_range)), sn_range)):
+                for (ind, tmp_sn) in reversed(list(zip(range(len(sn_range)), sn_range))):
                     if (tmp_sn.old_class._type != old_class._type):
                         continue
                     new_rule = self.make_update_rule(old_class, tmp_sn.old_class)
@@ -958,7 +958,7 @@ class MessageMigrator(object):
         found_stop = False
 
         # First look for a trivial match
-        for (ind, tmp_sn) in reversed(zip(range(len(sn_range)), sn_range)):
+        for (ind, tmp_sn) in reversed(list(zip(range(len(sn_range)), sn_range))):
             # Stop looking early if the classes don't match
             if (tmp_sn.new_class._type != new_class._type):
                 break
@@ -969,7 +969,7 @@ class MessageMigrator(object):
 
         # Next see if we can create a valid rule
         if not found_stop:
-            for (ind, tmp_sn) in reversed(zip(range(len(sn_range)), sn_range)):
+            for (ind, tmp_sn) in reversed(list(zip(range(len(sn_range)), sn_range))):
                 if (tmp_sn.new_class._type != new_class._type):
                     break
                 new_rule = self.make_update_rule(tmp_sn.new_class, new_class)
@@ -996,7 +996,7 @@ class MessageMigrator(object):
         found_start = False
 
         # First look for a trivial match
-        for (ind, tmp_sn) in reversed(zip(range(len(sn_range)), sn_range)):
+        for (ind, tmp_sn) in reversed(list(zip(range(len(sn_range)), sn_range))):
             # Skip until we find the class we're trying to match
             if (tmp_sn.old_class._type != old_class._type):
                 continue
@@ -1007,7 +1007,7 @@ class MessageMigrator(object):
 
         # Next see if we can create a valid rule
         if not found_start:
-            for (ind, tmp_sn) in reversed(zip(range(len(sn_range)), sn_range)):
+            for (ind, tmp_sn) in reversed(list(zip(range(len(sn_range)), sn_range))):
                 if (tmp_sn.old_class._type != old_class._type):
                     continue
                 new_rule = self.make_update_rule(old_class, tmp_sn.old_class)
@@ -1187,7 +1187,7 @@ class MessageMigrator(object):
 
                     # Verify the type can theoretically be migrated
                     if (tmp_qualified_old_type == tmp_qualified_new_type) or \
-                            (self.rename_map.has_key(tmp_qualified_old_type) and 
+                            (tmp_qualified_old_type in self.rename_map and
                              tmp_qualified_new_type in self.rename_map[tmp_qualified_old_type]):
 
                         if (tmp_old_type, tmp_new_type) not in migrations_seen:
