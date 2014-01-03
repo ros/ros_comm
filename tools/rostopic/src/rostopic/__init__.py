@@ -426,10 +426,11 @@ def _str_plot(val, time_offset=None, current_time=None, field_filter=None, type_
         time_offset = time_offset.to_nsec()
     else:
         time_offset = 0            
-    if getattr(val, "_has_header", False):
-        return "%s,%s"%(val.header.stamp.to_nsec()-time_offset, s)
-    elif current_time is not None:
+        
+    if current_time is not None:
         return "%s,%s"%(current_time.to_nsec()-time_offset, s)
+    elif getattr(val, "_has_header", False):
+        return "%s,%s"%(val.header.stamp.to_nsec()-time_offset, s)
     else:
         return "%s,%s"%(rospy.get_rostime().to_nsec()-time_offset, s)
     
