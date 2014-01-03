@@ -52,7 +52,7 @@ import yaml
 try:
     from cStringIO import StringIO  # Python 2.x
 except ImportError:
-    from io import StringIO  # Python 3.x
+    from io import BytesIO as StringIO  # Python 3.x
 
 import genmsg
 import genpy
@@ -410,7 +410,7 @@ class Bag(object):
             if self._version == 102 and type(self._reader) == _BagReader102_Unindexed:
                 rows.append(('version', '1.2 (unindexed)'))
             else:
-                rows.append(('version', '%d.%d' % (self._version / 100, self._version % 100)))
+                rows.append(('version', '%d.%d' % (int(self._version / 100), self._version % 100)))
 
             if not self._connection_indexes and not self._chunks:
                 rows.append(('size', _human_readable_size(self.size)))
@@ -997,7 +997,7 @@ class Bag(object):
         """
         @raise ROSBagException: if the bag version is unsupported
         """
-        major_version, minor_version = self._version / 100, self._version % 100
+        major_version, minor_version = int(self._version / 100), self._version % 100
         if major_version == 2:
             self._reader = _BagReader200(self)
         elif major_version == 1:
@@ -1036,7 +1036,9 @@ class Bag(object):
         return version
 
     def _start_writing(self):        
-        self._file.write(_VERSION + '\n')
+        version = _VERSION + '\n'
+        version = version.encode()
+        self._file.write(version)
         self._file_header_pos = self._file.tell()
         self._write_file_header_record(0, 0, 0)
 
@@ -1277,12 +1279,39 @@ class _ChunkHeader(object):
         else:
             return 'compression: %s, size: %d, uncompressed: %d' % (self.compression, self.compressed_size, self.uncompressed_size)
 
-class _IndexEntry(object):
+class ComparableMixin(object):
+    def _compare(self, other, method):
+        try:
+            return method(self._cmpkey(), other._cmpkey())
+        except (AttributeError, TypeError):
+            # _cmpkey not implemented or return different type
+            # so can not compare with other
+            return NotImplemented
+
+    def __lt__(self, other):
+        return self._compare(other, lambda s, o: s < o)
+
+    def __le__(self, other):
+        return self._compare(other, lambda s, o: s <= o)
+
+    def __eq__(self, other):
+        return self._compare(other, lambda s, o: s == o)
+
+    def __ge__(self, other):
+        return self._compare(other, lambda s, o: s >= o)
+
+    def __gt__(self, other):
+        return self._compare(other, lambda s, o: s > o)
+
+    def __ne__(self, other):
+        return self._compare(other, lambda s, o: s != o)
+
+class _IndexEntry(ComparableMixin):
     def __init__(self, time):
         self.time = time
 
-    def __cmp__(self, other):
-        return self.time.__cmp__(other.time)
+    def _cmpkey(self):
+        return self.time
 
 class _IndexEntry102(_IndexEntry):
     def __init__(self, time, offset):
@@ -1364,6 +1393,8 @@ def _read_sized(f):
 
 def _write_sized(f, v):
     f.write(_pack_uint32(len(v)))
+    if not isinstance(v, bytes):
+        v = v.encode()
     f.write(v)
 
 def _read_field(header, field, unpack_fn):
@@ -1396,7 +1427,14 @@ def _write_record(f, header, data='', padded_size=None):
     _write_sized(f, data)
 
 def _write_header(f, header):
-    header_str = ''.join([_pack_uint32(len(k) + 1 + len(v)) + k + '=' + v for k, v in header.items()])
+    header_str = b''
+    equal = b'='
+    for k, v in header.items():
+        if not isinstance(k, bytes):
+            k = k.encode()
+        if not isinstance(v, bytes):
+            v = v.encode()
+        header_str += _pack_uint32(len(k) + 1 + len(v)) + k + equal + v
     _write_sized(f, header_str)
     return header_str
 
@@ -1421,7 +1459,7 @@ def _read_header(f, req_op=None):
         # Read bytes
         if len(header) < size:
             raise ROSBagFormatException('Error reading header field: expected %d bytes, read %d' % (size, len(header)))
-        (name, sep, value) = header[:size].partition('=')
+        (name, sep, value) = header[:size].partition(b'=')
         if sep == '':
             raise ROSBagFormatException('Error reading header field')
 
@@ -2334,9 +2372,9 @@ def _median(values):
 
     sorted_values = sorted(values)
     if values_len % 2 == 1:
-        return sorted_values[(values_len + 1) / 2 - 1]
+        return sorted_values[int((values_len + 1) / 2) - 1]
 
-    lower = sorted_values[values_len / 2 - 1]
-    upper = sorted_values[values_len / 2]
+    lower = sorted_values[int(values_len / 2) - 1]
+    upper = sorted_values[int(values_len / 2)]
 
     return float(lower + upper) / 2
