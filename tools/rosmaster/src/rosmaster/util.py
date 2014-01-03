@@ -56,7 +56,7 @@ def xmlrpcapi(uri):
     uriValidate = urlparse(uri)
     if not uriValidate[0] or not uriValidate[1]:
         return None
-    if not _proxies.has_key(uri):
+    if not uri in _proxies:
         _proxies[uri] = ServerProxy(uri)
     return _proxies[uri]
 
