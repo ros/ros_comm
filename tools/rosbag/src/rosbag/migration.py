@@ -192,7 +192,7 @@ def clean_name(name, top_name):
         name_split.remove(top_name.split('/')[0])
     except ValueError:
         pass
-    new_name = string.join(name_split,'/')
+    new_name = '/'.join(name_split)
     return new_name
 
 ## Helper function to ensure we end up with a qualified name
