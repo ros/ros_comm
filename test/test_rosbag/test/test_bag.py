@@ -245,7 +245,7 @@ class TestRosbag(unittest.TestCase):
                 bag._write_record(b._file, header, data)
 
             b._file.seek(0)
-            data = '#ROSBAG V%d.%d\n' % (b._version / 100, (b._version % 100) + 1)  # increment the minor version
+            data = '#ROSBAG V%d.%d\n' % (int(b._version / 100), (b._version % 100) + 1)  # increment the minor version
             data = data.encode()
             b._file.write(data)
             b._file.seek(0, os.SEEK_END)
