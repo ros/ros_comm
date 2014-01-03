@@ -44,6 +44,11 @@ import random
 
 import rospy.rostime
 
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle    
+
 # currently tests rospy.rostime, rospy.simtime, and some parts of rospy.client
 
 class TestRospyTime(unittest.TestCase):
@@ -68,11 +73,10 @@ class TestRospyTime(unittest.TestCase):
         self.assertEquals(a.secs, b.secs)
         self.assertEquals(a.nsecs, b.nsecs)
 
-        import cPickle, cStringIO
-        buff = cStringIO.StringIO()
-        cPickle.dump(a, buff)
+        buff = StringIO()
+        pickle.dump(a, buff)
         buff.seek(0)
-        c = cPickle.load(buff)    
+        c = pickle.load(buff)    
         self.assertEquals(a.secs, c.secs)
         self.assertEquals(a.nsecs, c.nsecs)
                                  
@@ -83,12 +87,11 @@ class TestRospyTime(unittest.TestCase):
         b = copy.deepcopy(a)
         self.assertEquals(a.secs, b.secs)
         self.assertEquals(a.nsecs, b.nsecs)
-
-        import cPickle, cStringIO
-        buff = cStringIO.StringIO()
-        cPickle.dump(a, buff)
+        
+        buff = StringIO()
+        pickle.dump(a, buff)
         buff.seek(0)
-        c = cPickle.load(buff)    
+        c = pickle.load(buff)    
         self.assertEquals(a.secs, c.secs)
         self.assertEquals(a.nsecs, c.nsecs)
 
