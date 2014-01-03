@@ -75,7 +75,7 @@ class RandomMsgGen(object):
             
             for j in range(self.rand.randint(3,5)):
                 field_name = self.randstr()
-                field_type = self.rand.choice(genmsg.msgs.BUILTIN_TYPES + self.message_defs.keys())
+                field_type = self.rand.choice(genmsg.msgs.BUILTIN_TYPES + list(self.message_defs.keys()))
                 field_array = self.rand.choice(5*[""]+["[]","[%d]"%self.rand.randint(1,10)])
 
                 if (field_type not in genmsg.msgs.BUILTIN_TYPES):
@@ -99,7 +99,7 @@ class RandomMsgGen(object):
 
         time = 0.0
         while time < duration:
-            topic = self.rand.choice(self.topic_dict.keys())
+            topic = self.rand.choice(list(self.topic_dict.keys()))
             msg_inst = self.rand_value(self.topic_dict[topic]._type)
             self.output.append((topic, msg_inst, time))
             time = time + self.rand.random()*.01
