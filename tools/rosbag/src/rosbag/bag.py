@@ -892,6 +892,8 @@ class Bag(object):
             elif mode == 'a': self._open_append(f, allow_unindexed)
             else:
                 raise ValueError('mode "%s" is invalid' % mode)
+            if 'b' not in self._file.mode and not isinstance('', bytes):
+                raise ROSBagException('In Python 3 the bag file must be opened in binary mode')
         except struct.error:
             raise ROSBagFormatException('error with bag')
 
