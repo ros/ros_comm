@@ -898,7 +898,7 @@ class MessageMigrator(object):
 
             found_start = False
 
-            for (ind, tmp_sn) in reversed(zip(range(len(sn_range)), sn_range)):
+            for (ind, tmp_sn) in reversed(list(zip(range(len(sn_range)), sn_range))):
                 # Skip until we find the class we're trying to match
                 if (tmp_sn.old_class._type != old_class._type):
                     continue
@@ -909,7 +909,7 @@ class MessageMigrator(object):
 
             # Next see if we can create a valid rule
             if not found_start:
-                for (ind, tmp_sn) in reversed(zip(range(len(sn_range)), sn_range)):
+                for (ind, tmp_sn) in reversed(list(zip(range(len(sn_range)), sn_range))):
                     if (tmp_sn.old_class._type != old_class._type):
                         continue
                     new_rule = self.make_update_rule(old_class, tmp_sn.old_class)
@@ -958,7 +958,7 @@ class MessageMigrator(object):
         found_stop = False
 
         # First look for a trivial match
-        for (ind, tmp_sn) in reversed(zip(range(len(sn_range)), sn_range)):
+        for (ind, tmp_sn) in reversed(list(zip(range(len(sn_range)), sn_range))):
             # Stop looking early if the classes don't match
             if (tmp_sn.new_class._type != new_class._type):
                 break
@@ -969,7 +969,7 @@ class MessageMigrator(object):
 
         # Next see if we can create a valid rule
         if not found_stop:
-            for (ind, tmp_sn) in reversed(zip(range(len(sn_range)), sn_range)):
+            for (ind, tmp_sn) in reversed(list(zip(range(len(sn_range)), sn_range))):
                 if (tmp_sn.new_class._type != new_class._type):
                     break
                 new_rule = self.make_update_rule(tmp_sn.new_class, new_class)
@@ -996,7 +996,7 @@ class MessageMigrator(object):
         found_start = False
 
         # First look for a trivial match
-        for (ind, tmp_sn) in reversed(zip(range(len(sn_range)), sn_range)):
+        for (ind, tmp_sn) in reversed(list(zip(range(len(sn_range)), sn_range))):
             # Skip until we find the class we're trying to match
             if (tmp_sn.old_class._type != old_class._type):
                 continue
@@ -1007,7 +1007,7 @@ class MessageMigrator(object):
 
         # Next see if we can create a valid rule
         if not found_start:
-            for (ind, tmp_sn) in reversed(zip(range(len(sn_range)), sn_range)):
+            for (ind, tmp_sn) in reversed(list(zip(range(len(sn_range)), sn_range))):
                 if (tmp_sn.old_class._type != old_class._type):
                     continue
                 new_rule = self.make_update_rule(old_class, tmp_sn.old_class)
