@@ -118,7 +118,7 @@ class NetworkTest(unittest.TestCase):
             s = b''
             for k, v in t.items():
                 f = "%s=%s"%(k, v)
-                f.encode()
+                f = f.encode()
                 s += struct.pack('<I', len(f)) + f
             s = struct.pack('<I', len(s)) + s
             assert t == decode_ros_handshake_header(s)
