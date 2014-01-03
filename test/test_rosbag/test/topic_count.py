@@ -55,7 +55,7 @@ class TopicCount(unittest.TestCase):
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out,err = p.communicate()
     topic_count = 0
-    for l in out.split('\n'):
+    for l in out.decode().split('\n'):
         f = l.strip().split(': ')
         if len(f) == 2 and f[0] == '- topic':
             topic_count += 1
