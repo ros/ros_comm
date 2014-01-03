@@ -1237,7 +1237,9 @@ _CHUNK_INDEX_VERSION = 1
 class _ConnectionInfo(object):
     def __init__(self, id, topic, header):
         try:
-            datatype, md5sum, msg_def = header['type'], header['md5sum'], header['message_definition']
+            datatype = _read_str_field(header, 'type')
+            md5sum   = _read_str_field(header, 'md5sum')
+            msg_def  = _read_str_field(header, 'message_definition')
         except KeyError as ex:
             raise ROSBagFormatException('connection header field %s not found' % str(ex))
 
@@ -1410,7 +1412,13 @@ def _read_field(header, field, unpack_fn):
     
     return value
 
-def _read_str_field   (header, field): return _read_field(header, field, lambda v: v)
+def _read_str_field   (header, field):
+    value = _read_field(header, field, lambda v: v)
+    try:
+        value = value.decode()
+    except AttributeError:
+        pass
+    return value
 def _read_uint8_field (header, field): return _read_field(header, field, _unpack_uint8)
 def _read_uint32_field(header, field): return _read_field(header, field, _unpack_uint32)
 def _read_uint64_field(header, field): return _read_field(header, field, _unpack_uint64)
@@ -1451,7 +1459,7 @@ def _read_header(f, req_op=None):
 
     # Parse header into a dict
     header_dict = {}
-    while header != '':
+    while header != b'':
         # Read size
         if len(header) < 4:
             raise ROSBagFormatException('Error reading header field')           
@@ -1462,9 +1470,10 @@ def _read_header(f, req_op=None):
         if len(header) < size:
             raise ROSBagFormatException('Error reading header field: expected %d bytes, read %d' % (size, len(header)))
         (name, sep, value) = header[:size].partition(b'=')
-        if sep == '':
+        if sep == b'':
             raise ROSBagFormatException('Error reading header field')
 
+        name = name.decode()
         header_dict[name] = value                                          # @todo reindex: raise exception on empty name
         
         header = header[size:]
@@ -2321,7 +2330,7 @@ def _mergesort(list_of_lists, key=None):
     heap = []
     for i, itr in enumerate(iter(pl) for pl in list_of_lists):
         try:
-            item = itr.next()
+            item = next(itr)
             toadd = (key(item), i, item, itr) if key else (item, i, itr)
             heap.append(toadd)
         except StopIteration:
@@ -2333,7 +2342,7 @@ def _mergesort(list_of_lists, key=None):
             _, idx, item, itr = heap[0]
             yield item, itr
             try:
-                item = itr.next()
+                item = next(itr)
                 heapq.heapreplace(heap, (key(item), idx, item, itr) )
             except StopIteration:
                 heapq.heappop(heap)
@@ -2343,7 +2352,7 @@ def _mergesort(list_of_lists, key=None):
             item, idx, itr = heap[0]
             yield item, itr
             try:
-                heapq.heapreplace(heap, (itr.next(), idx, itr))
+                heapq.heapreplace(heap, (next(itr), idx, itr))
             except StopIteration:
                 heapq.heappop(heap)
 
