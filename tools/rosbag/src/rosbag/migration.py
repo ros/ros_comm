@@ -37,7 +37,7 @@ import copy
 try:
     from cStringIO import StringIO  # Python 2.x
 except ImportError:
-    from io import StringIO  # Python 3.x
+    from io import BytesIO as StringIO  # Python 3.x
 import inspect
 import itertools
 import os
@@ -515,7 +515,7 @@ class MessageMigrator(object):
         for r in input_rule_files:
             try:
                 scratch_locals = {'MessageUpdateRule':MessageUpdateRule}
-                execfile(r,scratch_locals)
+                exec(open(r).read(), scratch_locals)
                 rule_dicts.append((scratch_locals, r))
             except:
                 print("Cannot load rule file [%s] in local package" % r, file=sys.stderr)
@@ -537,7 +537,7 @@ class MessageMigrator(object):
 """ % (pkg, r), file=sys.stderr)
                         try:
                             scratch_locals = {'MessageUpdateRule':MessageUpdateRule}
-                            execfile(pkg_dir + "/" + r,scratch_locals)
+                            exec(open(pkg_dir + "/" + r).read(), scratch_locals)
                             rule_dicts.append((scratch_locals, r))
                         except ImportError:
                             print("Cannot load rule file [%s] in package [%s]" % (r, pkg), file=sys.stderr)
@@ -572,7 +572,7 @@ class MessageMigrator(object):
             tmp = rulechain.rename
             while tmp:
                 rename_set.add(tmp.new_type)
-                if (self.rulechains.has_key(tmp.new_type)):
+                if tmp.new_type in self.rulechains:
                     tmp = self.rulechains[tmp.new_type].rename
                 else:
                     break
@@ -742,7 +742,7 @@ class MessageMigrator(object):
                 if (tmp.new_type == r.old_type):
                     print("WARNING: Update rules %s introduce a renaming cycle. Ignoring [%s]" % ([x.location for x in cycle], r.location), file=sys.stderr)
                     return
-                if (self.rulechains.has_key(tmp.new_type)):
+                if tmp.new_type in self.rulechains:
                     tmp = self.rulechains[tmp.new_type].rename
                 else:
                     break
@@ -1187,7 +1187,7 @@ class MessageMigrator(object):
 
                     # Verify the type can theoretically be migrated
                     if (tmp_qualified_old_type == tmp_qualified_new_type) or \
-                            (self.rename_map.has_key(tmp_qualified_old_type) and 
+                            (tmp_qualified_old_type in self.rename_map and
                              tmp_qualified_new_type in self.rename_map[tmp_qualified_old_type]):
 
                         if (tmp_old_type, tmp_new_type) not in migrations_seen:
