@@ -2,8 +2,8 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.51 (2014-01-07)
+-------------------
 * implement optional queueing for rospy publications (`#169 <https://github.com/ros/ros_comm/issues/169>`_)
 * overwrite __repr__ for rospy.Duration and Time (`ros/genpy#24 <https://github.com/ros/genpy/issues/24>`_)
 * add missing dependency on roscpp

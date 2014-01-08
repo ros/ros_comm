@@ -2,8 +2,8 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.51 (2014-01-07)
+-------------------
 * allow different 127. addresses than 127.0.0.1 (`#315 <https://github.com/ros/ros_comm/issues/315>`_)
 * work around for nose 1.3.0 bug (`#323 <https://github.com/ros/ros_comm/issues/323>`_)
 
