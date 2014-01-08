@@ -2,6 +2,10 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix compilation and warnings with clang (`#291 <https://github.com/ros/ros_comm/issues/291>`_)
+
 1.9.50 (2013-10-04)
 -------------------
 

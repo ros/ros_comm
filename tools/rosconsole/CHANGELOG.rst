@@ -2,6 +2,10 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* refactor rosconsole to not expose log4cxx, implement empty and log4cxx backends
+
 1.9.50 (2013-10-04)
 -------------------
 

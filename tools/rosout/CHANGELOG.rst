@@ -2,6 +2,10 @@
 Changelog for package rosout
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* remove log4cxx dependency from rosout, implementing custom rolling log file
+
 1.9.50 (2013-10-04)
 -------------------
 

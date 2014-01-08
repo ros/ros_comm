@@ -2,6 +2,10 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix roslaunch-check for unreleased wet dependencies (`#332 <https://github.com/ros/ros_comm/issues/332>`_)
+
 1.9.50 (2013-10-04)
 -------------------
 * add option to disable terminal title setting
