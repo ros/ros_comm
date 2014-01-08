@@ -91,7 +91,7 @@ else()
   catkin_add_env_hooks(10.rosconsole SHELLS bat DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
 endif()
 
-install(TARGETS rosconsole rosconsole_${ROSCONSOLE_BACKEND}
+install(TARGETS rosconsole rosconsole_${ROSCONSOLE_BACKEND} rosconsole_backend_interface
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
