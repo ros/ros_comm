@@ -2,8 +2,8 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.52 (2014-01-08)
+-------------------
 * fix missing export of rosconsole backend interface library
 
 1.9.51 (2014-01-07)
