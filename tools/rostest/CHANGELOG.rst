@@ -2,6 +2,9 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.9.51 (2014-01-07)
 -------------------
 * add missing boost component

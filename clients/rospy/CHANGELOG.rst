@@ -2,6 +2,9 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.9.51 (2014-01-07)
 -------------------
 * implement optional queueing for rospy publications (`#169 <https://github.com/ros/ros_comm/issues/169>`_)
