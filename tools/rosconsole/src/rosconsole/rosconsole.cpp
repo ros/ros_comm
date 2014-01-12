@@ -48,7 +48,6 @@
 #include <cstring>
 #include <stdexcept>
 
-
 // declare interface for rosconsole implementations
 namespace ros
 {
@@ -82,6 +81,16 @@ bool g_initialized = false;
 bool g_shutting_down = false;
 boost::mutex g_init_mutex;
 
+#ifdef ROSCONSOLE_BACKEND_LOG4CXX
+log4cxx::LevelPtr g_level_lookup[levels::Count] =
+{
+  log4cxx::Level::getDebug(),
+  log4cxx::Level::getInfo(),
+  log4cxx::Level::getWarn(),
+  log4cxx::Level::getError(),
+  log4cxx::Level::getFatal(),
+};
+#endif
 std::string g_last_error_message = "Unknown Error";
 
 #ifdef WIN32
