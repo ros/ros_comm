@@ -2,6 +2,10 @@
 Changelog for package message_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add kwargs for message_filters.Subscriber
+
 1.9.52 (2014-01-08)
 -------------------
 
