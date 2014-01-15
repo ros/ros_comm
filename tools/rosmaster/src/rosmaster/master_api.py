@@ -844,7 +844,7 @@ class ROSMasterHandler(object):
         """
         try: 
             self.ps_lock.acquire()
-            retval = self.topics_types.items()
+            retval = list(self.topics_types.items())
         finally:
             self.ps_lock.release()
         return 1, "current system state", retval
