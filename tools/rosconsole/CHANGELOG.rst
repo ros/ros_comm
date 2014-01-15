@@ -2,8 +2,8 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.53 (2014-01-14)
+-------------------
 * readd g_level_lockup symbol for backward compatibility when log4cxx is being used
 
 1.9.52 (2014-01-08)
