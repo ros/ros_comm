@@ -47,7 +47,7 @@ catkin_package(
   CFG_EXTRAS rosconsole-extras.cmake
 )
 
-include(cmake/rosconsole-extras.cmake)
+include(${CATKIN_DEVEL_PREFIX}/share/${PROJECT_NAME}/cmake/rosconsole-extras.cmake)
 
 # See ticket: https://code.ros.org/trac/ros/ticket/3626
 # On mac use g++-4.2
