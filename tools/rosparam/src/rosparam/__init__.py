@@ -219,7 +219,7 @@ def _pretty_print(value, indent=''):
     :param value: value to print
     :param indent: indent level, used for recursive calls, ``str``
     """
-    keys = value.keys()
+    keys = list(value.keys())
     keys.sort()
     for k in keys:
         v = value[k]
@@ -342,9 +342,16 @@ def set_param_raw(param, value, verbose=False):
             else:
                 raise RosParamException("YAML dictionaries must have string keys. Invalid dictionary is:\n%s"%value)
     else:
+        import sys
+        if sys.version > '3':
+            long = int
+            maxint = pow(2, 32)
+        else:
+            maxint = sys.maxint
+      
         if type(value) == long:
-            if value > sys.maxint:
-                raise RosParamException("Overflow: Parameter Server integers must be 32-bit signed integers:\n\t-%s <= value <= %s"%(sys.maxint-1, sys.maxint))
+            if value > maxint:
+                raise RosParamException("Overflow: Parameter Server integers must be 32-bit signed integers:\n\t-%s <= value <= %s"%(maxint - 1, maxint))
             
         try:
             get_param_server().setParam(param, value)
