@@ -98,7 +98,7 @@ class TestRosparamOffline(unittest.TestCase):
 
         # test with file that does not exist
         output = Popen([cmd, 'load', 'fake.yaml'], **kwds).communicate()
-        self.assertEquals('ERROR: file [fake.yaml] does not exist\n', output[1])
+        self.assertEquals('ERROR: file [fake.yaml] does not exist\n', output[1].decode())
         
         output = Popen([cmd, 'dump', 'foo.yaml'], **kwds).communicate()
         self.assert_(output[1].decode().endswith(msg))
