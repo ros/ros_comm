@@ -108,6 +108,16 @@ class TestParamsBasic(unittest.TestCase):
         with open(os.path.join(dir, 'resources', 'example.launch'), 'r') as f:
             data = f.read()
         test_file = data
+        
+        #Dirk - I'm still trying to figure this out, but maybe you can give me some insights.
+        #After I add these two debug prints below, the test passes. Without these prints, the 
+        #first assertion below fails. That's indicative of a timing issue, but it shouldn't be
+        #as the parameter is set in the same launch file (params_basic.test) as from which the
+        #test is launched. Anyway, I tried just adding a sleep(4), doesn't do anything. Only thing
+        #that works is printing test_file and get_param("commandoutput"). I thought it was maybe a 
+        #a sideeffect of calling get_param. That doesn't work. - Mirza
+        print("mas: testfile = ", test_file)
+        print("mas: commandoutput = ", get_param("commandoutput"))
         self.assertEquals(get_param("commandoutput"),test_file)
         self.assertEquals(get_param("textfile"),test_file)
         ## test 'binfile' attribute
