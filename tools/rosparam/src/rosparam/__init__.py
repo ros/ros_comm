@@ -342,12 +342,11 @@ def set_param_raw(param, value, verbose=False):
             else:
                 raise RosParamException("YAML dictionaries must have string keys. Invalid dictionary is:\n%s"%value)
     else:
-        import sys
-        if sys.version > '3':
-            long = int
-            maxint = pow(2, 32)
-        else:
+        try:
             maxint = sys.maxint
+        except AttributeError:
+            maxint = pow(2, 32)
+            long = int
       
         if type(value) == long:
             if value > maxint:
