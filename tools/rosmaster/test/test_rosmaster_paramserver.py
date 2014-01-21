@@ -701,7 +701,7 @@ class TestRospyParamServer(unittest.TestCase):
             ['boolean', [True, False]],
             #no longer testing null char
             #['string', ['', '\0', 'x', 'hello', ''.join([chr(n) for n in range(0, 255)])]],
-            ['unicode-string', [u'', u'hello', 'Andr\302\202'.encode('utf-8'), '\377\376A\000n\000d\000r\000\202\000'.encode('utf-16')]],
+            ['unicode-string', [u'', u'hello', u'Andr\302\202'.encode('utf-8'), u'\377\376A\000n\000d\000r\000\202\000'.encode('utf-16')]],
             ['string-easy-ascii', [chr(n) for n in range(32, 128)]],
 
             #['string-mean-ascii-low', [chr(n) for n in range(9, 10)]], #separate for easier book-keeping
