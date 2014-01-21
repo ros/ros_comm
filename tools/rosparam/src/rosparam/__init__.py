@@ -343,12 +343,15 @@ def set_param_raw(param, value, verbose=False):
                 raise RosParamException("YAML dictionaries must have string keys. Invalid dictionary is:\n%s"%value)
     else:
         try:
+            expected_type = long
+        except NameError :
+            expected_type = int
+        try:
             maxint = sys.maxint
         except AttributeError:
             maxint = pow(2, 32)
-            long = int
       
-        if type(value) == long:
+        if type(value) == expected_type:
             if value > maxint:
                 raise RosParamException("Overflow: Parameter Server integers must be 32-bit signed integers:\n\t-%s <= value <= %s"%(maxint - 1, maxint))
             
