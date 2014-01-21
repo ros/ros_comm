@@ -20,5 +20,6 @@
   <run_depend>apr</run_depend>
   <run_depend>cpp_common</run_depend>
   <run_depend>log4cxx</run_depend>
+  <run_depend>rosbuild</run_depend>
   <run_depend>rostime</run_depend>
 </package>

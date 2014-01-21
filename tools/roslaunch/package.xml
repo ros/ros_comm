@@ -29,6 +29,8 @@
   <run_depend>rosout</run_depend>
   <run_depend>rosparam</run_depend>
 
+  <test_depend>rosbuild</test_depend>
+
   <export>
     <rosdoc config="rosdoc.yaml"/>
   </export>

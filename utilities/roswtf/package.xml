@@ -16,6 +16,7 @@
 
   <run_depend>python-paramiko</run_depend>
   <run_depend>python-rospkg</run_depend>
+  <run_depend>rosbuild</run_depend>
   <run_depend>rosgraph</run_depend>
   <run_depend>roslaunch</run_depend>
   <run_depend>roslib</run_depend>
