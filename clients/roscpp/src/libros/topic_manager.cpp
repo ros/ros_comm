@@ -580,7 +580,7 @@ bool TopicManager::pubUpdate(const string &topic, const vector<string> &pubs)
 
   if (sub)
   {
-    sub->pubUpdate(pubs);
+    return sub->pubUpdate(pubs);
   }
   else
   {
