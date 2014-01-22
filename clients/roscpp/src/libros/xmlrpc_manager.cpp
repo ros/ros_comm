@@ -203,9 +203,9 @@ bool XMLRPCManager::validateXmlrpcResponse(const std::string& method, XmlRpcValu
         method.c_str());
     return false;
   }
-  if (response.size() != 3)
+  if (response.size() != 2 && response.size() != 3)
   {
-    ROSCPP_LOG_DEBUG("XML-RPC call [%s] didn't return a 3-element array",
+    ROSCPP_LOG_DEBUG("XML-RPC call [%s] didn't return a 2 or 3-element array",
         method.c_str());
     return false;
   }
@@ -229,7 +229,16 @@ bool XMLRPCManager::validateXmlrpcResponse(const std::string& method, XmlRpcValu
         method.c_str(), status_code, status_string.c_str());
     return false;
   }
-  payload = response[2];
+  if (response.size() > 2)
+  {
+    payload = response[2];
+  }
+  else
+  {
+    std::string empty_array = "<value><array><data></data></array></value>";
+    int offset = 0;
+    payload = XmlRpcValue(empty_array, &offset);
+  }
   return true;
 }
 
