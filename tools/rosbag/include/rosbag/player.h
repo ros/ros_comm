@@ -62,6 +62,7 @@ namespace rosbag {
  */
 ros::AdvertiseOptions createAdvertiseOptions(MessageInstance const& msg, uint32_t queue_size);
 
+ROSBAG_DECL ros::AdvertiseOptions createAdvertiseOptions(const ConnectionInfo* c, uint32_t queue_size);
 
 
 struct ROSBAG_DECL PlayerOptions
