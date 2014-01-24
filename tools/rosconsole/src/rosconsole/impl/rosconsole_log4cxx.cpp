@@ -112,7 +112,7 @@ protected:
     std::string msg = event->getMessage();
 #endif
     const log4cxx::spi::LocationInfo& location_info = event->getLocationInformation();
-    ::ros::console::backend::print(this, level, msg.c_str(), location_info.getFileName(), location_info.getMethodName().c_str(), location_info.getLineNumber());
+    ::ros::console::backend::print(event.operator->(), level, msg.c_str(), location_info.getFileName(), location_info.getMethodName().c_str(), location_info.getLineNumber());
   }
 
   virtual void close()
@@ -205,12 +205,12 @@ void* getHandle(const std::string& name)
 
 std::string getName(void* handle)
 {
-  log4cxx::Logger* logger  = (log4cxx::Logger*)handle;
+  const log4cxx::spi::LoggingEvent* event = (const log4cxx::spi::LoggingEvent*)handle;
 #ifdef _MSC_VER
-  LOG4CXX_ENCODE_CHAR(tmpstr, event->getName());  // has to handle LogString with wchar types.
+  LOG4CXX_ENCODE_CHAR(tmpstr, event->getLoggerName());  // has to handle LogString with wchar types.
   return tmpstr  // tmpstr gets instantiated inside the LOG4CXX_ENCODE_CHAR macro
 #else
-  return logger->getName();
+  return event->getLoggerName();
 #endif
 }
 
