@@ -2,6 +2,10 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix wrong time in csv export when using 'rostopic echo -p -b' (`#330 <https://github.com/ros/ros_comm/issues/330>`_)
+
 1.9.53 (2014-01-14)
 -------------------
 

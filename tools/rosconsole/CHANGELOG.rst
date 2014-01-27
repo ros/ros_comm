@@ -2,6 +2,11 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix rosconsole segfault when using ROSCONSOLE_FORMAT with  (`#342 <https://github.com/ros/ros_comm/issues/342>`_)
+* add missing run/test dependencies on rosbuild to get ROS_ROOT environment variable
+
 1.9.53 (2014-01-14)
 -------------------
 * readd g_level_lockup symbol for backward compatibility when log4cxx is being used

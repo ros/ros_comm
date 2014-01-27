@@ -2,6 +2,10 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add missing run/test dependencies on rosbuild to get ROS_ROOT environment variable
+
 1.9.53 (2014-01-14)
 -------------------
 
