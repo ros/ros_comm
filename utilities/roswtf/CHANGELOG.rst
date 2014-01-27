@@ -2,8 +2,8 @@
 Changelog for package roswtf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.54 (2014-01-27)
+-------------------
 * fix roswtf checks to not require release-only python packages to be installed
 * add missing run/test dependencies on rosbuild to get ROS_ROOT environment variable
 
