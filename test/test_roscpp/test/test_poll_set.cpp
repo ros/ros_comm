@@ -379,6 +379,9 @@ TEST_F(Poller, signal)
 
   boost::thread t(boost::bind(&Poller::waitThenSignal, this));
   poll_set_.update(-1);
+
+  // wait for poll_set_.signal_mutex_ to be unlocked after invoking signal()
+  usleep(50000);
 }
 
 
