@@ -5,5 +5,5 @@ catkin_package()
 
 catkin_python_setup()
 
-install(PROGRAMS scripts/rosservice
+catkin_install_python(PROGRAMS scripts/rosservice
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

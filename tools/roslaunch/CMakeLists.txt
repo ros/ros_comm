@@ -19,7 +19,7 @@ install(DIRECTORY resources
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 # required for old rosbuild macro to be under PKGNAME/scripts
-install(PROGRAMS scripts/roslaunch-check
+catkin_install_python(PROGRAMS scripts/roslaunch-check
   DESTINATION  ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts)
 
 if(CATKIN_ENABLE_TESTING)

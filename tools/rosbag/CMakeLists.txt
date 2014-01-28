@@ -40,7 +40,7 @@ install(TARGETS record play
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-install(PROGRAMS
+catkin_install_python(PROGRAMS
   scripts/bag2png.py
   scripts/bagsort.py
   scripts/fastrebag.py

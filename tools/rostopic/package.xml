@@ -19,7 +19,7 @@
   <url>http://ros.org/wiki/rostopic</url>
   <author>Ken Conley</author>
 
-  <buildtool_depend version_gte="0.5.68">catkin</buildtool_depend>
+  <buildtool_depend version_gte="0.5.78">catkin</buildtool_depend>
 
   <build_depend>rostest</build_depend>
 

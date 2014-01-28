@@ -53,7 +53,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h")
 
-install(PROGRAMS
+catkin_install_python(PROGRAMS
   scripts/mux_add
   scripts/mux_delete
   scripts/mux_list
