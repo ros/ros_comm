@@ -59,9 +59,9 @@ TEST(LoadsOfPublishers, waitForAll)
 
 struct Helper
 {
-  void callback(const test_roscpp::TestArrayConstPtr& msg)
+  void callback(const ros::MessageEvent<test_roscpp::TestArray>& msg_evt)
   {
-    alive[(*msg->__connection_header)["callerid"]] = true;
+    alive[msg_evt.getPublisherName()] = true;
   }
 
   std::map<std::string, bool> alive;
