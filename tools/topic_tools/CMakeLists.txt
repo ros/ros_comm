@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(topic_tools)
-find_package(catkin COMPONENTS cpp_common message_generation rosconsole roscpp rostest rostime rosunit std_msgs xmlrpcpp)
+find_package(catkin COMPONENTS cpp_common message_generation rosconsole roscpp rostime std_msgs xmlrpcpp)
 
 include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})
@@ -62,6 +62,7 @@ install(PROGRAMS
 
 #Testing
 if(CATKIN_ENABLE_TESTING)
+  find_package(rostest rosunit)
   catkin_add_gtest(${PROJECT_NAME}-utest test/utest.cpp)
   if(TARGET ${PROJECT_NAME}-utest)
     target_link_libraries(${PROJECT_NAME}-utest topic_tools)
