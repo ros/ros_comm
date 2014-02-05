@@ -53,7 +53,7 @@ FAKE_SECRET = 123456
 WAIT_TIMEOUT = 10.0 #s
 
 def handle_empty(req):
-    print "Returning empty"
+    print("Returning empty")
     return EmptySrvResponse()
 
 def handle_return_empty(req):
@@ -62,15 +62,15 @@ def handle_return_empty(req):
 
 ## handle empty request 
 def handle_empty_req(req):
-    print "Returning fake_secret"
+    print("Returning fake_secret")
     return EmptyReqSrvResponse(FAKE_SECRET)
 ## handle empty response 
 def handle_empty_resp(req):
     if req.fake_secret == FAKE_SECRET:
-        print "Request validated, returning empty"        
+        print("Request validated, returning empty")     
         return EmptyRespSrvResponse()
     else:
-        print "Request did not validate, returning None"
+        print("Request did not validate, returning None")
 
 def empty_service():
     rospy.init_node(NAME)

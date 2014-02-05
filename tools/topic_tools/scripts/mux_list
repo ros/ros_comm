@@ -54,7 +54,7 @@ def call_srv(m):
 	if resp:
 	    print resp.topics
         return resp
-    except rospy.ServiceException, e:
+    except rospy.ServiceException as e:
         print "Service call failed: %s"%e
 
 def usage():

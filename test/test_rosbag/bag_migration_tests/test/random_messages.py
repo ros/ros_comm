@@ -53,7 +53,7 @@ class RandomMsgGen(object):
     def randstr(self, length=0):
         if length == 0:
             length = self.rand.randint(3,10)
-        return ''.join([chr(self.rand.randint(ord('a'), ord('z'))) for i in xrange(length)])
+        return ''.join([chr(self.rand.randint(ord('a'), ord('z'))) for i in range(length)])
 
     def __init__(self, seed, num_topics, duration):
         self.message_defs = {}
@@ -64,7 +64,7 @@ class RandomMsgGen(object):
 
         self.rand = random.Random(seed)
 
-        for i in xrange(num_topics):
+        for i in range(num_topics):
             msg_pkg = self.randstr()
             msg_name = self.randstr()
             msg_fqn = "%s/%s"%(msg_pkg,msg_name)
@@ -73,19 +73,19 @@ class RandomMsgGen(object):
             msg_def = ""
             msg_sub_defs = {}
             
-            for j in xrange(self.rand.randint(3,5)):
+            for j in range(self.rand.randint(3,5)):
                 field_name = self.randstr()
-                field_type = self.rand.choice(genmsg.msgs.BUILTIN_TYPES + self.message_defs.keys())
+                field_type = self.rand.choice(genmsg.msgs.BUILTIN_TYPES + list(self.message_defs.keys()))
                 field_array = self.rand.choice(5*[""]+["[]","[%d]"%self.rand.randint(1,10)])
 
                 if (field_type not in genmsg.msgs.BUILTIN_TYPES):
                     tmp = get_sub_defs(field_type, self.message_defs[field_type])
-                    for (sm_type, sm_def) in tmp.iteritems():
+                    for (sm_type, sm_def) in tmp.items():
                         msg_sub_defs[sm_type] = sm_def
 
                 msg_def = msg_def + "%s%s %s\n"%(field_type, field_array, field_name)
 
-            for (t,d) in msg_sub_defs.iteritems():
+            for (t,d) in msg_sub_defs.items():
                 msg_def = msg_def + "\n" + "="*80 + "\n"
                 msg_def = msg_def + "MSG: %s\n"%(t)
                 msg_def = msg_def + d
@@ -99,13 +99,13 @@ class RandomMsgGen(object):
 
         time = 0.0
         while time < duration:
-            topic = self.rand.choice(self.topic_dict.keys())
+            topic = self.rand.choice(list(self.topic_dict.keys()))
             msg_inst = self.rand_value(self.topic_dict[topic]._type)
             self.output.append((topic, msg_inst, time))
             time = time + self.rand.random()*.01
 
     def topics(self):
-        return self.topic_dict.iteritems()
+        return self.topic_dict.items()
 
     def messages(self):
         for m in self.output:
@@ -155,39 +155,39 @@ class RandomMsgGen(object):
 
             # Make this more efficient rather than depend on recursion inside the array check
             if field_type == 'bool':
-                return [ self.rand.randint(0,1) for i in xrange(0,array_len) ]
+                return [ self.rand.randint(0,1) for i in range(0,array_len) ]
             elif field_type == 'byte':
-                return [ self.rand.randint(-2**7,2**7-1) for i in xrange(0,array_len) ]
+                return [ self.rand.randint(-2**7,2**7-1) for i in range(0,array_len) ]
             elif field_type == 'int8':
-                return [ self.rand.randint(-2**7,2**7-1) for i in xrange(0,array_len) ]
+                return [ self.rand.randint(-2**7,2**7-1) for i in range(0,array_len) ]
             elif field_type == 'int16':
-                return [ self.rand.randint(-2**15,2**15-1) for i in xrange(0,array_len) ]
+                return [ self.rand.randint(-2**15,2**15-1) for i in range(0,array_len) ]
             elif field_type == 'int32':
-                return [ self.rand.randint(-2**31,2**31-1) for i in xrange(0,array_len) ]
+                return [ self.rand.randint(-2**31,2**31-1) for i in range(0,array_len) ]
             elif field_type == 'int64':
-                return [ self.rand.randint(-2**63,2**63-1) for i in xrange(0,array_len) ]
+                return [ self.rand.randint(-2**63,2**63-1) for i in range(0,array_len) ]
             elif field_type == 'char':
-                return [ self.rand.randint(0,2**8-1) for i in xrange(0,array_len) ]
+                return [ self.rand.randint(0,2**8-1) for i in range(0,array_len) ]
             elif field_type == 'uint8':
-                return [ self.rand.randint(0,2**8-1) for i in xrange(0,array_len) ]
+                return [ self.rand.randint(0,2**8-1) for i in range(0,array_len) ]
             elif field_type == 'uint16':
-                return [ self.rand.randint(0,2**16-1) for i in xrange(0,array_len) ]
+                return [ self.rand.randint(0,2**16-1) for i in range(0,array_len) ]
             elif field_type == 'uint32':
-                return [ self.rand.randint(0,2**32-1) for i in xrange(0,array_len) ]
+                return [ self.rand.randint(0,2**32-1) for i in range(0,array_len) ]
             elif field_type == 'uint64':
-                return [ self.rand.randint(0,2**64-1) for i in xrange(0,array_len) ]
+                return [ self.rand.randint(0,2**64-1) for i in range(0,array_len) ]
             elif field_type == 'float32':
-                return [ self.rand.random() for i in xrange(0,array_len) ]
+                return [ self.rand.random() for i in range(0,array_len) ]
             elif field_type == 'float64':
-                return [ self.rand.random() for i in xrange(0,array_len) ]
+                return [ self.rand.random() for i in range(0,array_len) ]
             elif field_type == 'string':
-                return [ self.randstr(100) for i in xrange(0,array_len) ]
+                return [ self.randstr(100) for i in range(0,array_len) ]
             elif field_type == 'duration':
-                return [ rospy.Duration.from_sec(self.rand.random()) for i in xrange(0,array_len) ]
+                return [ rospy.Duration.from_sec(self.rand.random()) for i in range(0,array_len) ]
             elif field_type == 'time':
-                return [ rospy.Time.from_sec(self.rand.random()*1000) for i in xrange(0,array_len) ]
+                return [ rospy.Time.from_sec(self.rand.random()*1000) for i in range(0,array_len) ]
             else:
-                return [ self.rand_value(base_type) for i in xrange(0,array_len) ]
+                return [ self.rand_value(base_type) for i in range(0,array_len) ]
 
         else:
             msg_class = self.message_dict[field_type]

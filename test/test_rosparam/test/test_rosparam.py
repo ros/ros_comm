@@ -36,7 +36,10 @@ import sys
 import unittest
 import rostest
 
-import cStringIO
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 from subprocess import Popen, PIPE, check_call, call
 
 import rosgraph
@@ -49,7 +52,7 @@ from contextlib import contextmanager
 @contextmanager
 def fakestdout():
     realstdout = sys.stdout
-    fakestdout = cStringIO.StringIO()
+    fakestdout = StringIO()
     sys.stdout = fakestdout
     yield fakestdout
     sys.stdout = realstdout
@@ -120,12 +123,12 @@ class TestRosparam(unittest.TestCase):
         try:
             rosparam.yamlmain([cmd, 'load'])
             self.fail("command-line arg should have failed")
-        except SystemExit, e:
+        except SystemExit as e:
             self.assertNotEquals(0, e.code)
         try:
             rosparam.yamlmain([cmd, 'load', 'fake-file.yaml'])
             self.fail("command-line arg should have failed")
-        except SystemExit, e:
+        except SystemExit as e:
             self.assertNotEquals(0, e.code)
 
         ps = get_param_server()
@@ -286,11 +289,11 @@ class TestRosparam(unittest.TestCase):
 
         try:
             rosparam.yamlmain([cmd, 'delete'])
-        except SystemExit, e:
+        except SystemExit as e:
             self.assertNotEquals(0, e.code)
         try:
             rosparam.yamlmain([cmd, 'delete', 'one', 'two'])
-        except SystemExit, e:
+        except SystemExit as e:
             self.assertNotEquals(0, e.code)
 
         # delete
@@ -314,11 +317,11 @@ class TestRosparam(unittest.TestCase):
 
         try:
             rosparam.yamlmain([cmd, 'dump'])
-        except SystemExit, e:
+        except SystemExit as e:
             self.assertNotEquals(0, e.code)
         try:
             rosparam.yamlmain([cmd, 'dump', f_out, 'rosparam_dump', 'rosparam_dump2'])
-        except SystemExit, e:
+        except SystemExit as e:
             self.assertNotEquals(0, e.code)
 
         rosparam.yamlmain([cmd, 'load', f, 'rosparam_dump'])

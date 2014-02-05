@@ -51,7 +51,7 @@ class MuxServiceTestCase(unittest.TestCase):
             rospy.wait_for_service('mux/delete', 5)
             rospy.wait_for_service('mux/list', 5)
             rospy.wait_for_service('mux/select', 5)
-        except rospy.ROSException, e:
+        except rospy.ROSException as e:
             self.fail('failed to find a required service: ' + `e`)
 
         add_srv = rospy.ServiceProxy('mux/add', MuxAdd)
@@ -74,7 +74,7 @@ class MuxServiceTestCase(unittest.TestCase):
 	# nothing changes.
 	try:
             add_srv('/new_input')
-	except rospy.ServiceException, e:
+	except rospy.ServiceException:
 	    pass
 	else:
 	    self.fail('service call should have thrown an exception')
@@ -85,7 +85,7 @@ class MuxServiceTestCase(unittest.TestCase):
 	select_srv('/input')
 	try:
             delete_srv('/input')
-	except rospy.ServiceException, e:
+	except rospy.ServiceException:
 	    pass
 	else:
 	    self.fail('service call should have thrown an exception')

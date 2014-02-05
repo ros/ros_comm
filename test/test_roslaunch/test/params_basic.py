@@ -35,7 +35,10 @@ PKG = 'test_roslaunch'
 
 import os, sys, unittest
 
-import xmlrpclib
+try:
+    from xmlrpc.client import Binary
+except ImportError:
+    from xmlrpclib import Binary
 import rostest
 import rospkg
 
@@ -51,7 +54,7 @@ class TestParamsBasic(unittest.TestCase):
     def test_values(self):
         ## Test roslaunch string params
         self.assertEquals(get_param('stringempty'), '')
-        print get_param('stringbar')
+        print(get_param('stringbar'))
         self.assertEquals(get_param('stringbar'), 'bar')
         self.assertEquals(get_param('str10'), '10')
         self.assertEquals(get_param('string10'), '10')        
@@ -105,11 +108,21 @@ class TestParamsBasic(unittest.TestCase):
         with open(os.path.join(dir, 'resources', 'example.launch'), 'r') as f:
             data = f.read()
         test_file = data
+        
+        #Dirk - I'm still trying to figure this out, but maybe you can give me some insights.
+        #After I add these two debug prints below, the test passes. Without these prints, the 
+        #first assertion below fails. That's indicative of a timing issue, but it shouldn't be
+        #as the parameter is set in the same launch file (params_basic.test) as from which the
+        #test is launched. Anyway, I tried just adding a sleep(4), doesn't do anything. Only thing
+        #that works is printing test_file and get_param("commandoutput"). I thought it was maybe a 
+        #a sideeffect of calling get_param. That doesn't work. - Mirza
+        print("mas: testfile = ", test_file)
+        print("mas: commandoutput = ", get_param("commandoutput"))
         self.assertEquals(get_param("commandoutput"),test_file)
         self.assertEquals(get_param("textfile"),test_file)
         ## test 'binfile' attribute
         bindata = get_param("binaryfile")
-        self.assertTrue(isinstance(bindata, xmlrpclib.Binary))
+        self.assertTrue(isinstance(bindata, Binary))
         self.assertEquals(bindata.data,test_file)
     
 if __name__ == '__main__':

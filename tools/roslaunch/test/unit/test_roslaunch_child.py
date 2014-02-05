@@ -33,7 +33,6 @@
 
 import os, sys, unittest
 import time
-from xmlrpclib import ServerProxy
 
 import rosgraph
 
@@ -186,6 +185,6 @@ def kill_parent(p, delay=1.0):
     # delay execution so that whatever pmon method we're calling has time to enter
     import time
     time.sleep(delay)
-    print "stopping parent"
+    print("stopping parent")
     p.shutdown()
         
