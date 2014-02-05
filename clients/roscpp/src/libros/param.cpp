@@ -221,12 +221,7 @@ bool del(const std::string& key)
     if (sub_it != g_subscribed_params.end())
     {
       g_subscribed_params.erase(sub_it);
-
-      M_Param::iterator param_it = g_params.find(mapped_key);
-      if (param_it != g_params.end())
-      {
-        g_params.erase(param_it);
-      }
+      g_params.erase(mapped_key);
     }
   }
 
