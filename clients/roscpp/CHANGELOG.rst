@@ -2,6 +2,10 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* remove use of __connection header
+
 1.9.54 (2014-01-27)
 -------------------
 * fix return value of pubUpdate() (`#334 <https://github.com/ros/ros_comm/issues/334>`_)

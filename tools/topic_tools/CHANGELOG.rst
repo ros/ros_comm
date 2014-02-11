@@ -2,6 +2,10 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* remove use of __connection header
+
 1.9.54 (2014-01-27)
 -------------------
 

@@ -2,6 +2,10 @@
 Changelog for package rosbag_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* remove use of __connection header
+
 1.9.54 (2014-01-27)
 -------------------
 
