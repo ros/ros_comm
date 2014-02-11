@@ -207,7 +207,19 @@ shared_ptr<ros::Subscriber> Recorder::subscribe(string const& topic) {
     ros::NodeHandle nh;
     shared_ptr<int> count(new int(options_.limit));
     shared_ptr<ros::Subscriber> sub(new ros::Subscriber);
-    *sub = nh.subscribe<topic_tools::ShapeShifter>(topic, 100, boost::bind(&Recorder::doQueue, this, _1, topic, sub, count));
+
+    ros::SubscribeOptions ops;
+    ops.topic = topic;
+    ops.queue_size = 100;
+    ops.md5sum = ros::message_traits::md5sum<topic_tools::ShapeShifter>();
+    ops.datatype = ros::message_traits::datatype<topic_tools::ShapeShifter>();
+    ops.helper = ros::SubscriptionCallbackHelperPtr(
+        new ros::SubscriptionCallbackHelperT<const ros::MessageEvent<topic_tools::ShapeShifter const>& >(
+            boost::bind(&Recorder::doQueue, this, _1, topic, sub, count)
+        )
+    );
+    *sub = nh.subscribe(ops);
+
     currently_recording_.insert(topic);
     num_subscribers_++;
 
@@ -265,7 +277,7 @@ std::string Recorder::timeToStr(T ros_t)
 }
 
 //! Callback to be invoked to save messages into a queue
-void Recorder::doQueue(ros::MessageEvent<topic_tools::ShapeShifter const> msg_event, string const& topic, shared_ptr<ros::Subscriber> subscriber, shared_ptr<int> count) {
+void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>& msg_event, string const& topic, shared_ptr<ros::Subscriber> subscriber, shared_ptr<int> count) {
     //void Recorder::doQueue(topic_tools::ShapeShifter::ConstPtr msg, string const& topic, shared_ptr<ros::Subscriber> subscriber, shared_ptr<int> count) {
     Time rectime = Time::now();
     
