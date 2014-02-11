@@ -94,8 +94,6 @@ public:
   //! Return the size of the serialized message
   uint32_t size() const;
 
-  boost::shared_ptr<std::map<std::string, std::string> > __connection_header;
-
 private:
 
   std::string md5, datatype, msg_def, latching;
@@ -178,8 +176,6 @@ struct PreDeserialize<topic_tools::ShapeShifter>
     std::string latching  = (*params.connection_header)["latching"];
 
     typedef std::map<std::string, std::string> map_t;
-    boost::shared_ptr<map_t> shmap(new map_t(*params.connection_header));
-    params.message->__connection_header = shmap;
     params.message->morph(md5, datatype, msg_def, latching);
   }
 };
@@ -211,8 +207,6 @@ boost::shared_ptr<M> ShapeShifter::instantiate() const
     throw ShapeShifterException("Tried to instantiate message without matching md5sum.");
   
   boost::shared_ptr<M> p(new M());
-
-  ros::assignSubscriptionConnectionHeader<M>(p.get(), __connection_header);
 
   ros::serialization::IStream s(msgBuf, msgBufUsed);
   ros::serialization::deserialize(s, *p);

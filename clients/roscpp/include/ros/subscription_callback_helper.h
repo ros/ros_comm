@@ -121,8 +121,6 @@ public:
       return VoidConstPtr();
     }
 
-    assignSubscriptionConnectionHeader(msg.get(), params.connection_header);
-
     ser::PreDeserializeParams<NonConstType> predes_params;
     predes_params.message = msg;
     predes_params.connection_header = params.connection_header;

@@ -53,14 +53,14 @@ public:
   : count_(0)
   {}
 
-  void cb(const TestArray::ConstPtr& msg)
+  void cb(const ros::MessageEvent<TestArray>& msg_event)
   {
     ++count_;
-    last_msg_ = msg;
+    last_msg_event_ = msg_event;
   }
 
   int32_t count_;
-  TestArray::ConstPtr last_msg_;
+  ros::MessageEvent<TestArray> last_msg_event_;
 };
 
 TEST(RoscppLatchingPublisher, nonLatching)
@@ -92,7 +92,7 @@ TEST(RoscppLatchingPublisher, latching)
 
   ASSERT_EQ(h.count_, 1);
 
-  ASSERT_STREQ((*h.last_msg_->__connection_header)["latching"].c_str(), "1");
+  ASSERT_STREQ(h.last_msg_event_.getConnectionHeader()["latching"].c_str(), "1");
 }
 
 TEST(RoscppLatchingPublisher, latchingMultipleSubscriptions)
