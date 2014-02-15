@@ -106,14 +106,15 @@ class TestParamsBasic(unittest.TestCase):
     def test_commandandfile(self):
         dir = rospkg.RosPack().get_path('roslaunch')
         with open(os.path.join(dir, 'resources', 'example.launch'), 'r') as f:
-            data = f.read()
-        test_file = data
-        self.assertEquals(get_param("commandoutput"),test_file)
-        self.assertEquals(get_param("textfile"),test_file)
+            text_data = f.read()
+        with open(os.path.join(dir, 'resources', 'example.launch'), 'rb') as f:
+            binary_data = f.read()
+        self.assertEquals(get_param("commandoutput"), binary_data)
+        self.assertEquals(get_param("textfile"), text_data)
         ## test 'binfile' attribute
         bindata = get_param("binaryfile")
         self.assertTrue(isinstance(bindata, Binary))
-        self.assertEquals(bindata.data,test_file)
+        self.assertEquals(bindata.data, binary_data)
     
 if __name__ == '__main__':
     rostest.rosrun(PKG, sys.argv[0], TestParamsBasic, sys.argv)
