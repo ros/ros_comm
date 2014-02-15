@@ -277,8 +277,7 @@ class TestRosmasterRegistrations(unittest.TestCase):
         for t in types:
             r = Registrations(t)
             self.assertEquals(t, r.type)
-            #Dirk - Before the assert was assert_(not r). That always returns false
-            #and fails for a valid r object. Not sure how this was passing before. -Mirza
+            self.assert_(not r) #test nonzero
             self.assert_(r != None) #test nonzero
             self.failIf('topic1' in r) #test contains            
             self.failIf(r.has_key('topic1')) #test has_key

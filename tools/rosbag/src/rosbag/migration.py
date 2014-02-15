@@ -515,7 +515,8 @@ class MessageMigrator(object):
         for r in input_rule_files:
             try:
                 scratch_locals = {'MessageUpdateRule':MessageUpdateRule}
-                exec(open(r).read(), scratch_locals)
+                with open(r, 'r') as f:
+                    exec(f.read(), scratch_locals)
                 rule_dicts.append((scratch_locals, r))
             except:
                 print("Cannot load rule file [%s] in local package" % r, file=sys.stderr)

@@ -899,10 +899,10 @@ class Bag(object):
 
     def _is_file(self, f):
         try:
-            return isinstance(f, file) #Python 2
+            return isinstance(f, file)  # Python 2
         except NameError:
             import io
-            return isinstance(f, io.IOBase) #Python 3...this will return false in Python 2 always
+            return isinstance(f, io.IOBase)  # Python 3...this will return false in Python 2 always
 
     def _open_read(self, f, allow_unindexed):
         if self._is_file(f):

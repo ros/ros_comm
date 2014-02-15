@@ -175,19 +175,9 @@ class TestRospyParamServer(unittest.TestCase):
         param_server.set_param('/gains/p', 'P3', notify_task=self.notify_task)
         # - this is a bit overtuned as a more optimal ps could use one update
 
-        #Dirk - This assertion fails, self.last_update is correct but the list is out
-        #of order. I don't think that makes it invalid. - Mirza
-        def are_sets_equal(l1, l2):
-            for i in l1:
-                if i not in l2:
-                    return False
-            return True            
-        #self.assertEquals([([('ptnode2', 'http://ptnode2:2')], '/gains/p/', 'P3'), \
-        #                   ([('ptnode', 'http://ptnode:1')], '/gains/p/', 'P3'), \
-        #                   ], self.last_update)
-        self.assertTrue(are_sets_equal([([('ptnode2', 'http://ptnode2:2')], '/gains/p/', 'P3'), \
-                           ([('ptnode', 'http://ptnode:1')], '/gains/p/', 'P3'), \
-                           ], self.last_update))
+        self.assertEquals(set([([('ptnode2', 'http://ptnode2:2')], '/gains/p/', 'P3'), \
+                              ([('ptnode', 'http://ptnode:1')], '/gains/p/', 'P3'), \
+                              ]), set(self.last_update))
 
         # virtual deletion: subscribe to subparam, parameter tree reset
         self.last_update = None

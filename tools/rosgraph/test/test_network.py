@@ -70,15 +70,6 @@ class NetworkTest(unittest.TestCase):
         s = b"rawtype=#line 1\nline 2\nline 3\nline\t4\r\r\n"
         encoded = encoded+struct.pack('<I', len(s))+s        
 
-        #Dirk - This assertion fails. The reason seems to be the assumption in 
-        #encode_ros_handshake_header (see network.py, line 404) that the dictionary
-        #that holdes the key/value pairs in 'd' will be iterated over in the same order as we 
-        #insert keys into them. This does not seem to be the case and the 'rawtype' key precedes
-        #the 'c' key. The encoded message is not technically incorrect, it's just that
-        #the fields are not in the same order as the hand encoded one (variable 'encoded').
-        #The fix for this test is not obvious to me, so please suggest an approach when 
-        #you see this comment. One approach could be to force the encode function to sort the keys alphabetically.
-        #-Mirza        
         assert struct.pack('<I', len(encoded))+encoded == \
             encode_ros_handshake_header(d)
       
