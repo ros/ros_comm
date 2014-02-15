@@ -277,8 +277,8 @@ class TestRosmasterRegistrations(unittest.TestCase):
         for t in types:
             r = Registrations(t)
             self.assertEquals(t, r.type)
-            self.assert_(not r) #test nonzero
             self.assert_(r != None) #test nonzero
+            self.assert_(not r.map) #test nonzero
             self.failIf('topic1' in r) #test contains            
             self.failIf(r.has_key('topic1')) #test has_key
             self.failIf([k for k in r.iterkeys()]) #no keys

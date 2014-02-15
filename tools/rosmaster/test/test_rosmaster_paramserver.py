@@ -175,9 +175,11 @@ class TestRospyParamServer(unittest.TestCase):
         param_server.set_param('/gains/p', 'P3', notify_task=self.notify_task)
         # - this is a bit overtuned as a more optimal ps could use one update
 
-        self.assertEquals(set([([('ptnode2', 'http://ptnode2:2')], '/gains/p/', 'P3'), \
-                              ([('ptnode', 'http://ptnode:1')], '/gains/p/', 'P3'), \
-                              ]), set(self.last_update))
+        one = ([('ptnode2', 'http://ptnode2:2')], '/gains/p/', 'P3')
+        two = ([('ptnode', 'http://ptnode:1')], '/gains/p/', 'P3')
+        self.assertTrue(len(self.last_update) == 2)
+        self.assertTrue(one in self.last_update)
+        self.assertTrue(two in self.last_update)
 
         # virtual deletion: subscribe to subparam, parameter tree reset
         self.last_update = None
