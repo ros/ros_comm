@@ -5,7 +5,7 @@ catkin_package()
 
 catkin_python_setup()
 
-install(PROGRAMS scripts/rostopic
+catkin_install_python(PROGRAMS scripts/rostopic
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 if(CATKIN_ENABLE_TESTING)

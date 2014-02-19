@@ -14,7 +14,7 @@
   <author>Jeremy Leibs</author>
   <author>James Bowman</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend version_gte="0.5.78">catkin</buildtool_depend>
 
   <build_depend>boost</build_depend>
   <build_depend>cpp_common</build_depend>

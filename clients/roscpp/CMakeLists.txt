@@ -134,10 +134,8 @@ install(FILES ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/ros/co
 # install legacy infrastructure needed by rosbuild
 install(FILES rosbuild/roscpp.cmake
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/rosbuild)
-install(PROGRAMS
+catkin_install_python(PROGRAMS
   rosbuild/scripts/genmsg_cpp.py
   rosbuild/scripts/gensrv_cpp.py
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/rosbuild/scripts)
-install(FILES
   rosbuild/scripts/msg_gen.py
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/rosbuild/scripts)

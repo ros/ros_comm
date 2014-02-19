@@ -15,7 +15,7 @@
   <url>http://ros.org/wiki/rosservice</url>
   <author>Ken Conley</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend version_gte="0.5.78">catkin</buildtool_depend>
 
   <run_depend>genpy</run_depend>
   <run_depend>rosgraph</run_depend>

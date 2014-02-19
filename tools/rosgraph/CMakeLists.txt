@@ -12,7 +12,7 @@ install(FILES conf/python_logging.conf
   DESTINATION ${CATKIN_GLOBAL_ETC_DESTINATION}/ros)
 install(FILES conf/python_logging.conf
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/conf)
-install(PROGRAMS scripts/rosgraph
+catkin_install_python(PROGRAMS scripts/rosgraph
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 if(CATKIN_ENABLE_TESTING)
