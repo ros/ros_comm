@@ -49,7 +49,7 @@ typedef std::map<std::string, XmlRpc::XmlRpcValue> M_Param;
 M_Param g_params;
 boost::mutex g_params_mutex;
 S_string g_subscribed_params;
-S_string g_nonexistant_params;
+S_string g_nonexistent_params;
 
 void set(const std::string& key, const XmlRpc::XmlRpcValue& v)
 {
@@ -72,7 +72,7 @@ void set(const std::string& key, const XmlRpc::XmlRpcValue& v)
       if (g_subscribed_params.find(mapped_key) != g_subscribed_params.end())
       {
         g_params[mapped_key] = v;
-        g_nonexistant_params.erase(mapped_key);
+        g_nonexistent_params.erase(mapped_key);
       }
     }
   }
@@ -220,7 +220,7 @@ bool del(const std::string& key)
     // If there is a cached value, remove it.
     boost::mutex::scoped_lock lock(g_params_mutex);
     g_params.erase(mapped_key);
-    g_nonexistant_params.insert(mapped_key);
+    g_nonexistent_params.insert(mapped_key);
   }
 
   XmlRpc::XmlRpcValue params, result, payload;
@@ -263,7 +263,7 @@ bool getImpl(const std::string& key, XmlRpc::XmlRpcValue& v, bool use_cache)
           return false;
         }
       }
-      else if (g_nonexistant_params.find(mapped_key) != g_nonexistant_params.end())
+      else if (g_nonexistent_params.find(mapped_key) != g_nonexistent_params.end())
       {
         ROS_DEBUG_NAMED("cached_parameters", "Cache indicates key [%s] doesn't exist.", mapped_key.c_str());
         return false;
@@ -314,8 +314,8 @@ bool getImpl(const std::string& key, XmlRpc::XmlRpcValue& v, bool use_cache)
     }
     else
     {
-      ROS_DEBUG_NAMED("cached_parameters", "Caching parameter [%s] as non-existant", mapped_key.c_str());
-      g_nonexistant_params.insert(mapped_key);
+      ROS_DEBUG_NAMED("cached_parameters", "Caching parameter [%s] as non-existent", mapped_key.c_str());
+      g_nonexistent_params.insert(mapped_key);
     }
   }
 
@@ -770,9 +770,9 @@ void update(const std::string& key, /*const*/ XmlRpc::XmlRpcValue& v)
     if (isempty)
     {
       g_params.erase(clean_key);
-      g_nonexistant_params.erase(clean_key);
+      g_nonexistent_params.erase(clean_key);
 
-      // We don't add the key to g_nonexistant_params here since we can't know
+      // We don't add the key to g_nonexistent_params here since we can't know
       // whether the key doesn't exist or it is just empty.
       // Since we deleted it from g_params, the next time it is requested it
       // will be queried and we will figure that out.
@@ -780,7 +780,7 @@ void update(const std::string& key, /*const*/ XmlRpc::XmlRpcValue& v)
     else
     {
       g_params[clean_key] = v;
-      g_nonexistant_params.erase(clean_key);
+      g_nonexistent_params.erase(clean_key);
     }
   }
 
@@ -792,7 +792,7 @@ void update(const std::string& key, /*const*/ XmlRpc::XmlRpcValue& v)
     {
       // By erasing the key we mark if for re-querying.
       g_params.erase(ns_key);
-      g_nonexistant_params.erase(ns_key);
+      g_nonexistent_params.erase(ns_key);
     }
     ns_key = names::parentNamespace(ns_key);
   }
