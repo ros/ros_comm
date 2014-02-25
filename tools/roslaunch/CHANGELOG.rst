@@ -2,6 +2,11 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add optional DEPENDENCIES argument to roslaunch_add_file_check()
+* add explicit run dependency (`#347 <https://github.com/ros/ros_comm/issues/347>`_)
+
 1.9.54 (2014-01-27)
 -------------------
 * add missing run/test dependencies on rosbuild to get ROS_ROOT environment variable
