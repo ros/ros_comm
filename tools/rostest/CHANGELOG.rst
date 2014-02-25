@@ -2,8 +2,8 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.10.1 (2014-02-25)
+-------------------
 * modify rostest to wait when other instances are running
 
 1.9.54 (2014-01-27)
