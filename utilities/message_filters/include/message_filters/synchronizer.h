@@ -39,7 +39,17 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 #include <boost/thread/mutex.hpp>
+
+#ifndef BOOST_SIGNALS_NO_DEPRECATION_WARNING
+#define BOOST_SIGNALS_NO_DEPRECATION_WARNING
+#define ros_BOOST_SIGNALS_NO_DEPRECATION_WARNING
+#endif
 #include <boost/signals.hpp>
+#ifdef ros_BOOST_SIGNALS_NO_DEPRECATION_WARNING
+#undef ros_BOOST_SIGNALS_NO_DEPRECATION_WARNING
+#undef BOOST_SIGNALS_NO_DEPRECATION_WARNING
+#endif
+
 #include <boost/bind.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/noncopyable.hpp>

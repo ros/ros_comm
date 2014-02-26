@@ -31,7 +31,17 @@
 #include "forwards.h"
 #include "poll_set.h"
 #include "common.h"
+
+#ifndef BOOST_SIGNALS_NO_DEPRECATION_WARNING
+#define BOOST_SIGNALS_NO_DEPRECATION_WARNING
+#define ros_BOOST_SIGNALS_NO_DEPRECATION_WARNING
+#endif
 #include <boost/signals.hpp>
+#ifdef ros_BOOST_SIGNALS_NO_DEPRECATION_WARNING
+#undef ros_BOOST_SIGNALS_NO_DEPRECATION_WARNING
+#undef BOOST_SIGNALS_NO_DEPRECATION_WARNING
+#endif
+
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/thread.hpp>
 
