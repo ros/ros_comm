@@ -247,6 +247,7 @@ bool del(const std::string& key)
 bool getImpl(const std::string& key, XmlRpc::XmlRpcValue& v, bool use_cache)
 {
   std::string mapped_key = ros::names::resolve(key);
+  if (mapped_key.empty()) mapped_key = "/";
 
   if (use_cache)
   {
