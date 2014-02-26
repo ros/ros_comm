@@ -401,7 +401,7 @@ void start()
     if (use_sim_time)
     {
       ros::SubscribeOptions ops;
-      ops.init<rosgraph_msgs::Clock>("/clock", 1, clockCallback);
+      ops.init<rosgraph_msgs::Clock>(names::resolve("/clock"), 1, clockCallback);
       ops.callback_queue = getInternalCallbackQueue().get();
       TopicManager::instance()->subscribe(ops);
     }
