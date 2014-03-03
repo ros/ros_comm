@@ -428,5 +428,5 @@ class QueuedConnection(object):
                 try:
                     self._connection.write_data(data)
                 except Exception as e:
-                    with self._cond:
+                    with self._lock:
                         self._error = e
