@@ -2,8 +2,8 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.10.2 (2014-03-03)
+-------------------
 * fix exception handling for queued connections (`#369 <https://github.com/ros/ros_comm/issues/369>`_)
 
 1.10.1 (2014-02-25)
