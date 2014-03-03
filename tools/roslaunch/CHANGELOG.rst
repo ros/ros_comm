@@ -2,6 +2,9 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.10.1 (2014-02-25)
 -------------------
 * add optional DEPENDENCIES argument to roslaunch_add_file_check()
