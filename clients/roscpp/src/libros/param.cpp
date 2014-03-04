@@ -51,6 +51,21 @@ boost::mutex g_params_mutex;
 S_string g_subscribed_params;
 S_string g_nonexistent_params;
 
+void updateNamespaceImpl(const std::string& key)
+{
+  std::string ns_key = names::parentNamespace(key);
+  while (ns_key != "" && ns_key != "/")
+  {
+    if (g_subscribed_params.find(ns_key) != g_subscribed_params.end())
+    {
+      // By erasing the key we mark if for re-querying.
+      g_params.erase(ns_key);
+      g_nonexistent_params.erase(ns_key);
+    }
+    ns_key = names::parentNamespace(ns_key);
+  }
+}
+
 void set(const std::string& key, const XmlRpc::XmlRpcValue& v)
 {
   std::string mapped_key = ros::names::resolve(key);
@@ -74,6 +89,8 @@ void set(const std::string& key, const XmlRpc::XmlRpcValue& v)
         g_params[mapped_key] = v;
         g_nonexistent_params.erase(mapped_key);
       }
+      // We also need to check if this change affects any cached namespaces...
+      updateNamespaceImpl(mapped_key);
     }
   }
 }
@@ -785,17 +802,7 @@ void update(const std::string& key, /*const*/ XmlRpc::XmlRpcValue& v)
   }
 
   // We also need to check if this change affects any namespaces...
-  std::string ns_key = names::parentNamespace(clean_key);
-  while (ns_key != "" && ns_key != "/")
-  {
-    if (g_subscribed_params.find(ns_key) != g_subscribed_params.end())
-    {
-      // By erasing the key we mark if for re-querying.
-      g_params.erase(ns_key);
-      g_nonexistent_params.erase(ns_key);
-    }
-    ns_key = names::parentNamespace(ns_key);
-  }
+  updateNamespaceImpl(key);
 }
 
 void paramUpdateCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
