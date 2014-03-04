@@ -91,7 +91,7 @@ TEST(Params, setThenGetStringCached)
 
 TEST(Params, setThenGetStringCachedNodeHandle)
 {
-	NodeHandle nh;
+  NodeHandle nh;
   std::string param;
   ASSERT_FALSE( nh.getParamCached( "test_set_param_setThenGetStringCachedNodeHandle", param) );
 
