@@ -2,8 +2,8 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2014-03-04)
+-------------------
 * allow getting parameters with name '/' (`#313 <https://github.com/ros/ros_comm/issues/313>`_)
 * support for /clock remapping (`#359 <https://github.com/ros/ros_comm/issues/359>`_)
 * suppress boost::signals deprecation warning (`#362 <https://github.com/ros/ros_comm/issues/362>`_)
