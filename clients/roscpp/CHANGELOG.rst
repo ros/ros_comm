@@ -2,6 +2,13 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* allow getting parameters with name '/' (`#313 <https://github.com/ros/ros_comm/issues/313>`_)
+* support for /clock remapping (`#359 <https://github.com/ros/ros_comm/issues/359>`_)
+* suppress boost::signals deprecation warning (`#362 <https://github.com/ros/ros_comm/issues/362>`_)
+* use catkin_install_python() to install Python scripts (`#361 <https://github.com/ros/ros_comm/issues/361>`_)
+
 1.10.0 (2014-02-11)
 -------------------
 * remove use of __connection header
