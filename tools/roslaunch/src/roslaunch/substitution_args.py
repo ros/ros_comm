@@ -38,6 +38,7 @@ by roslaunch and xacro, but it is not yet a top-level ROS feature.
 """
 
 import os
+import subprocess
 
 try:
     from cStringIO import StringIO # Python 2.x
@@ -256,6 +257,15 @@ def _arg(resolved, a, args, context):
         raise ArgException(arg_name)
 
 
+def _shell(resolved, a, args, context):
+    """
+    process $(shell) arg
+    :return: updated resolved argument, ``str``
+    """
+    value = subprocess.check_output(' '.join(args), shell=True, universal_newlines=True)
+    return resolved.replace("$(%s)"%a, value)
+
+
 def resolve_args(arg_str, context=None, resolve_anon=True):
     """
     Resolves substitution args (see wiki spec U{http://ros.org/wiki/roslaunch}).
@@ -290,6 +300,7 @@ def resolve_args(arg_str, context=None, resolve_anon=True):
         'optenv': _optenv,
         'anon': _anon,
         'arg': _arg,
+        'shell': _shell,
     }
     resolved = _resolve_args(arg_str, context, resolve_anon, commands)
     # than resolve 'find' as it requires the subsequent path to be expanded already
@@ -300,7 +311,7 @@ def resolve_args(arg_str, context=None, resolve_anon=True):
     return resolved
 
 def _resolve_args(arg_str, context, resolve_anon, commands):
-    valid = ['find', 'env', 'optenv', 'anon', 'arg']
+    valid = ['find', 'env', 'optenv', 'anon', 'arg', 'shell']
     resolved = arg_str
     for a in _collect_args(arg_str):
         splits = [s for s in a.split(' ') if s]
