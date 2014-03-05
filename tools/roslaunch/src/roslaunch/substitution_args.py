@@ -263,7 +263,7 @@ def _shell(resolved, a, args, context):
     :return: updated resolved argument, ``str``
     """
     value = subprocess.check_output(' '.join(args), shell=True, universal_newlines=True)
-    return resolved.replace("$(%s)"%a, value)
+    return resolved.replace("$(%s)"%a, value, 1)
 
 
 def resolve_args(arg_str, context=None, resolve_anon=True):
