@@ -376,9 +376,7 @@ class QueuedConnection(object):
 
         self._lock = threading.Lock()
         self._cond_data_available = threading.Condition(self._lock)
-        self._cond_queue_swapped = threading.Condition(self._lock)
         self._queue = []
-        self._waiting = False
         self._error = None
 
         self._thread = threading.Thread(target=self._run)
@@ -401,11 +399,8 @@ class QueuedConnection(object):
                 del self._queue[0]
             self._queue.append(data)
             self._cond_data_available.notify()
-            # ensure that thread has actually swapped the queues and is processig them
-            # if it was waiting for being notified
-            # to enforce behavior to be as close as possible to blocking
-            if self._waiting:
-                self._cond_queue_swapped.wait()
+        # effectively yields the rest of the thread quantum
+        time.sleep(0)
         return True
 
     def _run(self):
@@ -414,11 +409,7 @@ class QueuedConnection(object):
             with self._lock:
                 # wait for available data
                 while not self._queue and not self._connection.done:
-                    self._waiting = True
                     self._cond_data_available.wait(1.0)
-                    self._waiting = False
-                    if self._queue:
-                        self._cond_queue_swapped.notify()
                 # take all data from queue for processing outside of the lock
                 if self._queue:
                     queue = self._queue
