@@ -109,6 +109,11 @@ public:
 
 
   /**
+   * \brief Check if the spinner can be started. A spinner can't be started if
+   * another spinner is already running.
+   */
+  bool canStart();
+  /**
    * \brief Start this spinner spinning asynchronously
    */
   void start();
