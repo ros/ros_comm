@@ -88,6 +88,8 @@ class AsyncSpinnerImpl
 public:
   AsyncSpinnerImpl(uint32_t thread_count, CallbackQueue* queue);
   ~AsyncSpinnerImpl();
+
+  bool canStart();
   void start();
   void stop();
 
@@ -132,6 +134,13 @@ AsyncSpinnerImpl::~AsyncSpinnerImpl()
   stop();
 }
 
+bool AsyncSpinnerImpl::canStart()
+{
+  boost::recursive_mutex::scoped_try_lock spinlock(spinmutex);
+  return spinlock.owns_lock();
+}
+
+
 void AsyncSpinnerImpl::start()
 {
   boost::mutex::scoped_lock lock(mutex_);
@@ -141,8 +150,11 @@ void AsyncSpinnerImpl::start()
 
   boost::recursive_mutex::scoped_try_lock spinlock(spinmutex);
   if (!spinlock.owns_lock()) {
-    ROS_ERROR("AsyncSpinnerImpl: Attempt to call spin from multiple "
-              "threads.  We already spin multithreaded.");
+    ROS_WARN("AsyncSpinnerImpl: Attempt to start() an AsyncSpinner failed "
+             "because another AsyncSpinner is already running. Note that the "
+             "other AsyncSpinner might not be using the same callback queue "
+             "as this AsyncSpinner, in which case no callbacks in your "
+             "callback queue will be serviced.");
     return;
   }
   spinlock.swap(member_spinlock);
@@ -200,6 +212,11 @@ AsyncSpinner::AsyncSpinner(uint32_t thread_count)
 AsyncSpinner::AsyncSpinner(uint32_t thread_count, CallbackQueue* queue)
 : impl_(new AsyncSpinnerImpl(thread_count, queue))
 {
+}
+
+bool AsyncSpinner::canStart()
+{
+  return impl_->canStart();
 }
 
 void AsyncSpinner::start()
