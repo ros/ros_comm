@@ -307,6 +307,27 @@ def _get_topic_type(topic):
         matches = [(t, t_type) for t, t_type in val if topic.startswith(t+'/')]
         # choose longest match
         matches.sort(key=itemgetter(0), reverse=True)
+
+        # try to ignore messages which don't have the field specified as part of the topic name
+        while matches:
+            t, t_type = matches[0]
+            msg_class = roslib.message.get_message_class(t_type)
+            if not msg_class:
+                # if any class is not fetchable skip ignoring any message types
+                break
+            msg = msg_class()
+            pattern = topic[len(t):].rstrip('/')
+            if pattern == '':
+                break
+            try:
+                eval('msg'+'.'.join(pattern.split('/')))
+            except AttributeError:
+                # ignore this type since it does not have the requested field
+                matches.pop(0)
+                continue
+            matches = [(t, t_type)]
+            break
+
     if matches:
         t, t_type = matches[0]
         if t_type == rosgraph.names.ANYTYPE:
