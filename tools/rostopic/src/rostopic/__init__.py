@@ -281,15 +281,22 @@ def msgevalgen(pattern):
     """
     if not pattern or pattern == '/':
         return None
+    assert pattern[0] == '/'
     def msgeval(msg):
         # I will probably replace this with some less beautiful but more efficient
         try:
-            return eval('msg'+'.'.join(pattern.split('/')))
+            return _get_nested_attribute(msg, pattern[1:].split('/'))
         except AttributeError as e:
             sys.stdout.write("no field named [%s]"%pattern+"\n")
             return None
     return msgeval
-    
+
+def _get_nested_attribute(msg, nested_attributes):
+    value = msg
+    for attr in nested_attributes.split('/'):
+        value = getattr(value, attr)
+    return value
+
 def _get_topic_type(topic):
     """
     subroutine for getting the topic type
@@ -316,11 +323,11 @@ def _get_topic_type(topic):
                 # if any class is not fetchable skip ignoring any message types
                 break
             msg = msg_class()
-            pattern = topic[len(t):].rstrip('/')
-            if pattern == '':
+            nested_attributes = topic[len(t) + 1:].rstrip('/')
+            if nested_attributes == '':
                 break
             try:
-                eval('msg'+'.'.join(pattern.split('/')))
+                _get_nested_attribute(msg, nested_attributes)
             except AttributeError:
                 # ignore this type since it does not have the requested field
                 matches.pop(0)
