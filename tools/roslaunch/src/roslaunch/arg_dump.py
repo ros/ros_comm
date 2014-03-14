@@ -45,7 +45,7 @@ from roslaunch.config import load_config_default
 def get_args(roslaunch_files):
     loader = roslaunch.xmlloader.XmlLoader(resolve_anon=False)
     config = load_config_default(roslaunch_files, None, loader=loader, verbose=False, assign_machines=False)
-    return loader.root_context.resolve_dict['arg']
+    return loader.root_context.resolve_dict.get('arg_doc', {})
 
 def dump_args(roslaunch_files):
     """
@@ -55,9 +55,26 @@ def dump_args(roslaunch_files):
     @param roslaunch_files: list of launch files to load
     @type  roslaunch_files: str
     """
+
     try:
-        for arg in sorted(get_args(roslaunch_files).items()):
-        	print arg[0]
+        args = get_args(roslaunch_files)
+
+        if len(args) == 0:
+            print("No arguments.")
+        else:
+            required_args = [(name, (doc or 'undocumented', default)) for (name, (doc, default)) in args.items() if not default]
+            optional_args = [(name, (doc or 'undocumented', default)) for (name, (doc, default)) in args.items() if default]
+
+            if len(required_args) > 0:
+                print("Required Arguments:")
+                for (name, (doc, _)) in sorted(required_args):
+                    print("  %s: %s" % (name, doc))
+
+            if len(optional_args) > 0:
+                print("Optional Arguments:")
+                for (name, (doc, default)) in sorted(optional_args):
+                    print("  %s (default \"%s\"): %s" % (name, default, doc))
+
     except RLException as e:
         print >> sys.stderr, str(e)
         sys.exit(1)

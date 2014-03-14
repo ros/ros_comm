@@ -1,0 +1,7 @@
+<launch>
+  <arg name="foo" default="true" doc="I pity the foo'."/>
+  <arg name="bar" doc="Someone walks into this."/>
+  <arg name="baz" default="false"/>
+  <arg name="nop"/>
+  <arg name="fix" value="true"/>
+</launch>
