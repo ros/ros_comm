@@ -209,7 +209,7 @@ class LoaderContext(object):
             self._remap_args.remove(m)
         self._remap_args.append(remap)
         
-    def add_arg(self, name, default=None, value=None):
+    def add_arg(self, name, default=None, value=None, doc=None):
         """
         Add 'arg' to existing context. Args are only valid for their immediate context.
         """
@@ -239,6 +239,16 @@ class LoaderContext(object):
             # no value or default: appending to arg_names is all we
             # need to do as it declares the existence of the arg.
             pass
+
+        # add arg documentation string dict if it doesn't exist yet and if it can be used
+        if not 'arg_doc' in resolve_dict:
+            resolve_dict['arg_doc'] = {}
+        arg_doc_dict = resolve_dict['arg_doc']
+
+        if not value:
+            # store the documentation for this argument
+            arg_doc_dict[name] = (doc, default)
+
         
     def remap_args(self):
         """
