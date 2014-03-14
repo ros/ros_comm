@@ -67,7 +67,7 @@ def init_rosout():
         global _rosout_pub
         if _rosout_pub is None:
             logger.info("initializing %s core topic"%_ROSOUT)
-            _rosout_pub = Publisher(_ROSOUT, Log, latch=True)
+            _rosout_pub = Publisher(_ROSOUT, Log, latch=True, queue_size=100)
             logger.info("connected to core topic %s"%_ROSOUT)
         return True
     except Exception as e:
