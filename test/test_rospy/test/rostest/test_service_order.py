@@ -50,7 +50,7 @@ FAKE_SECRET = 123456
 WAIT_TIMEOUT = 10.0 #s
 
 def handle_empty_req(req):
-    print "Returning fake_secret"
+    print("Returning fake_secret")
     return EmptyReqSrvResponse(FAKE_SECRET)
 
 def service_before():

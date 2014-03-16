@@ -53,6 +53,8 @@ Current status codes:
 Individual methods may assign additional meaning/semantics to statusCode.
 """
 
+from __future__ import print_function
+
 import os
 import sys
 import logging
@@ -104,9 +106,9 @@ def mlogwarn(msg, *args):
     #mloginfo is in core so that it is accessible to master and masterdata
     _logger.warn(msg, *args)
     if args:
-        print "WARN: "+msg%args
+        print("WARN: " + msg % args)
     else:
-        print "WARN: "+str(msg)
+        print("WARN: " + str(msg))
 
 
 def apivalidate(error_return_value, validators=()):
@@ -124,21 +126,35 @@ def apivalidate(error_return_value, validators=()):
     @type  validators: sequence
     """
     def check_validates(f):
-        assert len(validators) == f.func_code.co_argcount - 2, "%s failed arg check"%f #ignore self and caller_id
+        try:
+            func_code = f.__code__
+            func_name = f.__name__
+        except AttributeError:
+            func_code = f.func_code
+            func_name = f.func_name
+        assert len(validators) == func_code.co_argcount - 2, "%s failed arg check"%f #ignore self and caller_id
         def validated_f(*args, **kwds):
             if LOG_API:
-                _logger.debug("%s%s", f.func_name, str(args[1:]))
-                #print "%s%s"%(f.func_name, str(args[1:]))
+                _logger.debug("%s%s", func_name, str(args[1:]))
+                #print "%s%s"%(func_name, str(args[1:]))
             if len(args) == 1:
-                _logger.error("%s invoked without caller_id paramter"%f.func_name)
+                _logger.error("%s invoked without caller_id paramter" % func_name)
                 return -1, "missing required caller_id parameter", error_return_value
-            elif len(args) != f.func_code.co_argcount:
+            elif len(args) != func_code.co_argcount:
                 return -1, "Error: bad call arity", error_return_value
 
             instance = args[0]
             caller_id = args[1]
-            if not isinstance(caller_id, basestring):
-                _logger.error("%s: invalid caller_id param type", f.func_name)
+            def isstring(s):
+                """Small helper version to check an object is a string in
+                a way that works for both Python 2 and 3
+                """
+                try:
+                    return isinstance(s, basestring)
+                except NameError:
+                    return isinstance(s, str)
+            if not isstring(caller_id):
+                _logger.error("%s: invalid caller_id param type", func_name)
                 return -1, "caller_id must be a string", error_return_value
             
             newArgs = [instance, caller_id] #canonicalized args
@@ -147,28 +163,31 @@ def apivalidate(error_return_value, validators=()):
                     if v:
                         try:
                             newArgs.append(v(a, caller_id)) 
-                        except ParameterInvalid, e:
-                            _logger.error("%s: invalid parameter: %s", f.func_name, str(e) or 'error')
+                        except ParameterInvalid as e:
+                            _logger.error("%s: invalid parameter: %s", func_name, str(e) or 'error')
                             return -1, str(e) or 'error', error_return_value
                     else:
                         newArgs.append(a)
 
                 if LOG_API:
                     retval = f(*newArgs, **kwds)
-                    _logger.debug("%s%s returns %s", f.func_name, args[1:], retval)
+                    _logger.debug("%s%s returns %s", func_name, args[1:], retval)
                     return retval
                 else:
                     code, msg, val = f(*newArgs, **kwds)
                     if val is None:
                         return -1, "Internal error (None value returned)", error_return_value
                     return code, msg, val
-            except TypeError, te: #most likely wrong arg number
+            except TypeError as te: #most likely wrong arg number
                 _logger.error(traceback.format_exc())
                 return -1, "Error: invalid arguments: %s"%te, error_return_value
-            except Exception, e: #internal failure
+            except Exception as e: #internal failure
                 _logger.error(traceback.format_exc())
                 return 0, "Internal failure: %s"%e, error_return_value
-        validated_f.func_name = f.func_name
+        try:
+            validated_f.__name__ = func_name
+        except AttributeError:
+            validated_f.func_name = func_name
         validated_f.__doc__ = f.__doc__ #preserve doc
         return validated_f
     return check_validates
@@ -273,9 +292,9 @@ class ROSMasterHandler(object):
         @rtype: [int, str, int]
         """
         if msg:
-            print >> sys.stdout, "shutdown request: %s"%msg
+            print("shutdown request: %s" % msg, file=sys.stdout)
         else:
-            print >> sys.stdout, "shutdown requst"
+            print("shutdown requst", file=sys.stdout)
         self._shutdown('external shutdown request from [%s]: %s'%(caller_id, msg))
         return 1, "shutdown", 0
         
@@ -320,7 +339,7 @@ class ROSMasterHandler(object):
             self.param_server.delete_param(key, self._notify_param_subscribers)
             mloginfo("-PARAM [%s] by %s",key, caller_id)            
             return  1, "parameter %s deleted"%key, 0                
-        except KeyError, e:
+        except KeyError as e:
             return -1, "parameter [%s] is not set"%key, 0
         
     @apivalidate(0, (non_empty_str('key'), not_none('value')))
@@ -371,7 +390,7 @@ class ROSMasterHandler(object):
         try:
             key = resolve_name(key, caller_id)
             return 1, "Parameter [%s]"%key, self.param_server.get_param(key)
-        except KeyError, e: 
+        except KeyError as e: 
             return -1, "Parameter [%s] is not set"%key, 0
 
     @apivalidate(0, (non_empty_str('key'),))
@@ -825,7 +844,7 @@ class ROSMasterHandler(object):
         """
         try: 
             self.ps_lock.acquire()
-            retval = self.topics_types.items()
+            retval = list(self.topics_types.items())
         finally:
             self.ps_lock.release()
         return 1, "current system state", retval

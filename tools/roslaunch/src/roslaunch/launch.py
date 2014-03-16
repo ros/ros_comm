@@ -32,6 +32,8 @@
 #
 # Revision $Id$
 
+from __future__ import print_function
+
 """
 Top-level implementation of launching processes. Coordinates
 lower-level libraries.
@@ -321,7 +323,7 @@ class ROSLaunchRunner(object):
 
             # multi-call objects are not reusable
             param_server_multi = config.master.get_multi()            
-            for p in config.params.itervalues():
+            for p in config.params.values():
                 # suppressing this as it causes too much spam
                 #printlog("setting parameter [%s]"%p.key)
                 param_server_multi.setParam(_ID, p.key, p.value)
@@ -452,7 +454,7 @@ class ROSLaunchRunner(object):
             #kwc: I'm still debating whether shell=True is proper
             cmd = e.command
             cmd = "%s %s"%(cmd, ' '.join(e.args))
-            print "running %s"%cmd
+            print("running %s" % cmd)
             local_machine = self.config.machines['']
             env = setup_env(None, local_machine, self.config.master.uri)
             retcode = subprocess.call(cmd, shell=True, env=env)
@@ -486,16 +488,16 @@ class ROSLaunchRunner(object):
             if code == -1:
                 tolaunch.append(node)
             elif code == 1:
-                print "core service [%s] found"%node_name
+                print("core service [%s] found" % node_name)
             else:
-                print >> sys.stderr, "WARN: master is not behaving well (unexpected return value when looking up node)"
+                print("WARN: master is not behaving well (unexpected return value when looking up node)", file=sys.stderr)
                 self.logger.error("ERROR: master return [%s][%s] on lookupNode call"%(code,msg))
                 
         for node in tolaunch:
             node_name = rosgraph.names.ns_join(node.namespace, node.name)
             name, success = self.launch_node(node, core=True)
             if success:
-                print "started core service [%s]"%node_name
+                print("started core service [%s]" % node_name)
             else:
                 raise RLException("failed to start core service [%s]"%node_name)
 

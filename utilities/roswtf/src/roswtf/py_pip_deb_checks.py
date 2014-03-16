@@ -42,19 +42,24 @@ from __future__ import print_function
 import subprocess
 import importlib
 import os
+import sys
+
+python_prefix = 'python'
+if sys.version_info[0] == 3:
+    python_prefix += '3'
 
 #A dictionary of core ROS python packages and their corresponding .deb packages
 py_to_deb_core_packages = {
-    'catkin_pkg': 'python-catkin-pkg',
-    'rospkg': 'python-rospkg',
-    'rosinstall': 'python-rosinstall',
-    'rosdep2': 'python-rosdep',
+    'catkin_pkg': '%s-catkin-pkg' % python_prefix,
+    'rospkg': '%s-rospkg' % python_prefix,
+    'rosinstall': '%s-rosinstall' % python_prefix,
+    'rosdep2': '%s-rosdep' % python_prefix,
 }
 
 #A dictionary of release ROS python packages and their corresponding .deb packages
 py_to_deb_release_packages = {
-    'bloom': 'python-bloom',
-    'rosrelease': 'python-rosrelease',
+    'bloom': '%s-bloom' % python_prefix,
+    'rosrelease': '%s-rosrelease' % python_prefix,
 }
 
 
@@ -132,7 +137,8 @@ def pip_install_check_on_ubuntu(ctx):
     """Make sure on Ubuntu, Python packages are install with apt and not pip"""
     if (is_host_os_ubuntu()):
         warn_str = ''
-        for py_pkg in dict(py_to_deb_core_packages.items() + py_to_deb_core_packages.items()):
+        pt_to_deb_package_names = list(py_to_deb_core_packages.keys()) + list(py_to_deb_release_packages.keys())
+        for py_pkg in pt_to_deb_package_names:
             if is_python_package_installed_via_pip_on_ubuntu(py_pkg):
                 warn_str = warn_str + py_pkg + ' -- '
         if (warn_str != ''):

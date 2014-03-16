@@ -34,7 +34,6 @@
 import os
 import sys 
 import unittest
-import cStringIO
 import time
         
 from subprocess import Popen, PIPE, check_call, call
@@ -55,6 +54,7 @@ class TestRoswtfOffline(unittest.TestCase):
     def test_cmd_help(self):
         cmd = 'roswtf'
         output = Popen([cmd, '-h'], stdout=PIPE).communicate()[0]
+        output = output.decode()
         self.assert_('Options' in output)
             
     def test_offline(self):
@@ -81,6 +81,7 @@ class TestRoswtfOffline(unittest.TestCase):
 
         # run roswtf nakedly
         output = Popen([cmd], **kwds).communicate()
+        output = [o.decode() for o in output]
         # - due both a positive and negative test
         self.assert_('No errors or warnings' in output[0], "OUTPUT[%s]"%str(output))
         self.assert_('ERROR' not in output[0], "OUTPUT[%s]"%str(output))
@@ -88,5 +89,6 @@ class TestRoswtfOffline(unittest.TestCase):
         # run roswtf on a simple launch file offline
         p = os.path.join(get_test_path(), 'min.launch')
         output = Popen([cmd, p], **kwds).communicate()[0]
+        output = output.decode()
         self.assert_('No errors or warnings' in output, "OUTPUT[%s]"%output)
         self.assert_('ERROR' not in output, "OUTPUT[%s]"%output)        

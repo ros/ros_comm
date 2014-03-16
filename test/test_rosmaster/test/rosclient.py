@@ -34,7 +34,10 @@
 # Revision $Id: test_embed_msg.py 1986 2008-08-26 23:57:56Z sfkwc $
 
 import unittest
-import xmlrpclib
+try:
+    from xmlrpc.client import ServerProxy
+except ImportError:
+    from xmlrpclib import ServerProxy
 
 import rosgraph
 
@@ -44,7 +47,7 @@ class TestRosClient(unittest.TestCase):
         self.last_code = None
         self.last_msg = None
         self.last_val = None
-        self.master = xmlrpclib.ServerProxy(rosgraph.get_master_uri())
+        self.master = ServerProxy(rosgraph.get_master_uri())
     
     def tearDown(self):
         self.master = None

@@ -32,6 +32,8 @@
 #
 # Revision $Id$
 
+from __future__ import print_function
+
 """
 rostest helper routines.
 """
@@ -40,19 +42,18 @@ rostest helper routines.
 
 import os
 import sys
-import cStringIO
 import logging
 
 def printlog(msg, *args):
     if args:
         msg = msg%args
     logging.getLogger('rostest').info(msg)
-    print "[ROSTEST]"+msg
+    print("[ROSTEST]" + msg)
 def printlogerr(msg, *args):
     if args:
         msg = msg%args
     logging.getLogger('rostest').error(msg)
-    print >> sys.stderr, "[ROSTEST]"+msg
+    print("[ROSTEST]" + msg, file=sys.stderr)
 
 _errors = None
 def getErrors():

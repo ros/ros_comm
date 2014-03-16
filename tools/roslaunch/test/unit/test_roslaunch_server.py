@@ -39,7 +39,10 @@ import roslaunch.pmon
 import roslaunch.server
 from roslaunch.server import ProcessListener
 
-from xmlrpclib import ServerProxy
+try:
+    from xmlrpc.client import ServerProxy
+except ImportError:
+    from xmlrpclib import ServerProxy
 
 import rosgraph
 master = rosgraph.Master('test_roslaunch_server')
@@ -457,23 +460,23 @@ class TestRoslaunchServer(unittest.TestCase):
             self.assert_(server.uri, "server URI did not initialize")
             s = ServerProxy(server.uri)
 
-            print "SERVER STARTED"
+            print("SERVER STARTED")
             
             # start the child
             n = ROSLaunchChildNode(run_id, name, server.uri, pmon)            
             n.start()
-            print "CHILD STARTED"            
+            print("CHILD STARTED")            
             self.assert_(n.uri, "child URI did not initialize")            
 
             # verify registration
-            print "VERIFYING REGISTRATION"                        
+            print("VERIFYING REGISTRATION")                        
             self.assertEquals(child_proc.uri, n.uri)
             child_uri = 'http://fake-unroutable:1324'
             # - list children
             val = self._succeed(s.list_children())
             self.assertEquals([n.uri], val)
         finally:
-            print "SHUTTING DOWN"                                    
+            print("SHUTTING DOWN")                                    
             n.shutdown('test done')
             server.shutdown('test done')
         

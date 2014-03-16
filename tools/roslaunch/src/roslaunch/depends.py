@@ -222,7 +222,7 @@ def print_deps(base_pkg, file_deps, verbose):
 
     # for verbose output we print extra source information
     if verbose:
-        for f, deps in file_deps.iteritems():
+        for f, deps in file_deps.items():
             for p, t in deps.nodes:
                 print("%s [%s/%s]"%(p, p, t))
 
@@ -235,7 +235,7 @@ def print_deps(base_pkg, file_deps, verbose):
 
     # print out list of package dependencies
     pkgs = [] 
-    for deps in file_deps.itervalues():
+    for deps in file_deps.values():
         pkgs.extend(deps.pkgs)
     # print space-separated to be friendly to rosmake
     print(' '.join([p for p in set(pkgs)]))
@@ -255,7 +255,7 @@ def calculate_missing(base_pkg, missing, file_deps):
     @rtype: { str: set(str) }
     """
     rospack = rospkg.RosPack()
-    for launch_file in file_deps.iterkeys():
+    for launch_file in file_deps.keys():
         pkg = rospkg.get_package_name(os.path.dirname(os.path.abspath(launch_file)))
 
         if pkg is None: #cannot determine package
@@ -344,7 +344,7 @@ def roslaunch_deps_main(argv=sys.argv):
     
     if options.warn:
         print('\nMissing declarations:')
-        for pkg, miss in missing.iteritems():
+        for pkg, miss in missing.items():
             if miss:
                 print("%s/manifest.xml:"%pkg)
                 for m in miss:

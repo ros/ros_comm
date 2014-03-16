@@ -46,7 +46,7 @@ def _get_param_names(names, key, d):
     """
     
     #TODOXXX
-    for k,v in d.iteritems():
+    for k,v in d.items():
         if type(v) == dict:
             _get_param_names(names, ns_join(key, k), v)
         else:
@@ -135,7 +135,7 @@ class ParamDictionary(object):
             return ns_join(ns, key) 
         
         namespaces = [x for x in ns.split(SEP) if x]
-        for i in xrange(1, len(namespaces)+1):
+        for i in range(1, len(namespaces)+1):
             search_key = SEP + SEP.join(namespaces[0:-i] + [key_ns])
             if self.has_param(search_key):
                 # we have a match on the namespace of the key, so
@@ -325,7 +325,7 @@ def _compute_all_keys(param_key, param_value, all_keys=None):
     """
     if all_keys is None:
         all_keys = []
-    for k, v in param_value.iteritems():
+    for k, v in param_value.items():
         new_k = ns_join(param_key, k) + SEP 
         all_keys.append(new_k)
         if type(v) == dict:

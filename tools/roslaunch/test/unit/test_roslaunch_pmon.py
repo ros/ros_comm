@@ -34,7 +34,7 @@ import os
 import sys
 import unittest
 import time
-import thread
+import threading
 
 import roslaunch.server
 
@@ -367,7 +367,9 @@ class TestRoslaunchPmon(unittest.TestCase):
 
         # and run it -- but setup a safety timer to kill it if it doesn't exit
         marker = Marker()
-        thread.start_new_thread(kill_pmon, (self.pmon,marker, 10.))
+        t = threading.Thread(target=kill_pmon, args=(pmon, marker, 10.))
+        t.setDaemon(True)
+        t.start()
         
         pmon.run()
         
@@ -417,8 +419,10 @@ class TestRoslaunchPmon(unittest.TestCase):
         
         # and run it -- but setup a safety timer to kill it if it doesn't exit
         marker = Marker()
-        thread.start_new_thread(kill_pmon, (self.pmon,marker, 10.))
         
+        t = threading.Thread(target=kill_pmon, args=(self.pmon, marker, 10.))
+        t.setDaemon(True)
+        t.start()
         pmon.run()
         
         self.failIf(marker.marked, "pmon had to be externally killed")        
@@ -519,7 +523,9 @@ class TestRoslaunchPmon(unittest.TestCase):
     def test_mainthread_spin(self):
         # can't test actual spin as that would go forever
         self.pmon.done = False
-        thread.start_new_thread(kill_pmon, (self.pmon,Marker()))
+        t = threading.Thread(target=kill_pmon, args=(self.pmon, Marker()))
+        t.setDaemon(True)
+        t.start()
         self.pmon.mainthread_spin()
 
 def kill_pmon(pmon, marker, delay=1.0):
@@ -527,7 +533,7 @@ def kill_pmon(pmon, marker, delay=1.0):
     time.sleep(delay)
     if not pmon.is_shutdown:
         marker.mark()
-    print "stopping pmon"
+    print("stopping pmon")
     # pmon has two states that need to be set, as many of the tests do not start the actual process monitor
     pmon.shutdown()
     pmon.done = True

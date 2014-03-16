@@ -257,7 +257,7 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.assertEquals(1, code)
         self.assertEquals(1, val)
         self.failIf('topic2' in r) # test contains
-        self.assert_(not r)
+        self.assert_(r != None)
         self.assertEquals([], r.get_state())        
         
     def test_Registrations(self):
@@ -272,12 +272,13 @@ class TestRosmasterRegistrations(unittest.TestCase):
         try:
             r = Registrations(-1)
             self.fail("Registrations accepted invalid type")
-        except rosmaster.exceptions.InternalException, e: pass
+        except rosmaster.exceptions.InternalException: pass
         
         for t in types:
             r = Registrations(t)
             self.assertEquals(t, r.type)
-            self.assert_(not r) #test nonzero
+            self.assert_(r != None) #test nonzero
+            self.assert_(not r.map) #test nonzero
             self.failIf('topic1' in r) #test contains            
             self.failIf(r.has_key('topic1')) #test has_key
             self.failIf([k for k in r.iterkeys()]) #no keys
@@ -674,6 +675,6 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.assertEquals([], [k for k in r.iterkeys()])
         self.assertEquals([], r.get_apis('service1'))
         self.assertEquals([], r['service1'])
-        self.assert_(not r) #test nonzero
+        self.assert_(r != None) #test nonzero
         self.assertEquals([], r.get_state())
         

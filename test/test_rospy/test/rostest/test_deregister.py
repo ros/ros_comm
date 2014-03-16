@@ -54,21 +54,24 @@ TIMEOUT = 10.0 #seconds
 _last_callback = None
 def callback(data):
     global _last_callback
-    print "message received", data.data
+    print("message received %s" % data.data)
     _last_callback = data
 
-import xmlrpclib
+try:
+    from xmlrpc.client import ServerProxy
+except ImportError:
+    from xmlrpclib import ServerProxy
 
 class TestDeregister(unittest.TestCase):
         
     def test_unpublish(self):
-        node_proxy = xmlrpclib.ServerProxy(rospy.get_node_uri())
+        node_proxy = ServerProxy(rospy.get_node_uri())
         
         _, _, pubs = node_proxy.getPublications('/foo')
         pubs = [p for p in pubs if p[0] != '/rosout']
         self.assert_(not pubs, pubs)
         
-        print "Publishing ", PUBTOPIC
+        print("Publishing %s" % PUBTOPIC)
         pub = rospy.Publisher(PUBTOPIC, String)
         topic = rospy.resolve_name(PUBTOPIC)
         _, _, pubs = node_proxy.getPublications('/foo')
@@ -76,7 +79,7 @@ class TestDeregister(unittest.TestCase):
         self.assertEquals([[topic, String._type]], pubs, "Pubs were %s"%pubs)
 
         # publish about 10 messages for fun
-        for i in xrange(0, 10):
+        for i in range(0, 10):
             pub.publish(String("hi [%s]"%i))
             time.sleep(0.1)
         
@@ -101,11 +104,11 @@ class TestDeregister(unittest.TestCase):
         global _last_callback
 
         uri = rospy.get_node_uri()
-        node_proxy = xmlrpclib.ServerProxy(uri)
+        node_proxy = ServerProxy(uri)
         _, _, subscriptions = node_proxy.getSubscriptions('/foo')
         self.assert_(not subscriptions, 'subscriptions present: %s'%str(subscriptions))
         
-        print "Subscribing to ", SUBTOPIC
+        print("Subscribing to %s" % SUBTOPIC)
         sub = rospy.Subscriber(SUBTOPIC, String, callback)
         topic = rospy.resolve_name(SUBTOPIC)
         _, _, subscriptions = node_proxy.getSubscriptions('/foo')
@@ -147,7 +150,7 @@ class TestDeregister(unittest.TestCase):
         srv = [s for s in srv if not s[0].startswith('/rosout/') and not s[0].endswith('/get_loggers') and not s[0].endswith('/set_logger_level')]
         self.failIf(srv, srv)
 
-        print "Creating service ", SERVICE
+        print("Creating service %s" % SERVICE)
         service = rospy.Service(SERVICE, EmptySrv, callback)
         # we currently cannot interrogate a node's services, have to rely on master
 
