@@ -540,7 +540,7 @@ class ServiceImpl(_Service):
     Implementation of ROS Service. This intermediary class allows for more configuration of behavior than the Service class.
     """
     
-    def __init__(self, name, service_class, handler, buff_size=DEFAULT_BUFF_SIZE):
+    def __init__(self, name, service_class, handler, buff_size=DEFAULT_BUFF_SIZE, error_handler=None):
         super(ServiceImpl, self).__init__(name, service_class)
 
         if not name or not isstring(name):
@@ -552,6 +552,8 @@ class ServiceImpl(_Service):
 
         
         self.handler = handler
+        if error_handler is not None:
+            self.error_handler = error_handler
         self.registered = False
         self.seq = 0
         self.done = False
@@ -567,7 +569,10 @@ class ServiceImpl(_Service):
         logdebug("[%s]: new Service instance"%self.resolved_name)
 
     # TODO: should consider renaming to unregister
-    
+
+    def error_handler(self, e, exc_type, exc_value, tb):
+        logerr("Error processing request: %s\n%s" % (e, traceback.format_exception(exc_type, exc_value, tb))
+
     def shutdown(self, reason=''):
         """
         Stop this service
@@ -624,9 +629,10 @@ class ServiceImpl(_Service):
             rospy.core.rospydebug("handler raised ServiceException: %s"%(e))
             self._write_service_error(transport, "service cannot process request: %s"%e)
         except Exception as e:
-            logerr("Error processing request: %s\n%s"%(e,traceback.print_exc()))
+            (exc_type, exc_value, tb) = sys.exc_info()
+            self.error_handler(e, exc_type, exc_value, tb)
             self._write_service_error(transport, "error processing request: %s"%e)
-    
+
     def handle(self, transport, header):
         """
         Process incoming request. This method should be run in its
@@ -671,7 +677,8 @@ class Service(ServiceImpl):
       s = Service('getmapservice', GetMap, get_map_handler)
     """
     
-    def __init__(self, name, service_class, handler, buff_size=DEFAULT_BUFF_SIZE):
+    def __init__(self, name, service_class, handler,
+                 buff_size=DEFAULT_BUFF_SIZE, error_handler=None):
         """
         ctor.
 
@@ -690,10 +697,16 @@ class Service(ServiceImpl):
         is always considered a failure.
         
         @type  handler: fn(req)->resp
+
         @param buff_size: size of buffer for reading incoming requests. Should be at least size of request message
         @type  buff_size: int
+
+        @param error_handler: callback function for handling errors
+        raised in the service code.
+        @type  error_handler: fn(exception, exception_type, exception_value, traceback)->None
         """
-        super(Service, self).__init__(name, service_class, handler, buff_size)
+        super(Service, self).__init__(name, service_class, handler, buff_size,
+                                      error_handler)
 
         #TODO: make service manager configurable
         get_service_manager().register(self.resolved_name, self)
