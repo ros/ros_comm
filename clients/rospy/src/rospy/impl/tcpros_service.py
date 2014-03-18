@@ -571,7 +571,7 @@ class ServiceImpl(_Service):
     # TODO: should consider renaming to unregister
 
     def error_handler(self, e, exc_type, exc_value, tb):
-        logerr("Error processing request: %s\n%s" % (e, traceback.format_exception(exc_type, exc_value, tb))
+        logerr("Error processing request: %s\n%s" % (e, traceback.format_exception(exc_type, exc_value, tb)))
 
     def shutdown(self, reason=''):
         """
