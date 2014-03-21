@@ -21,6 +21,8 @@ if(CATKIN_ENABLE_TESTING)
     FILENAME test/chatter_50hz.bag MD5 00844db3729b1b5f34e767dc691bd531)
   catkin_download_test_data(download_data_test_future_version_2.1.bag http://download.ros.org/data/rosbag/test_future_version_2.1.bag
     FILENAME test/test_future_version_2.1.bag MD5 ddcb5e8711b16514eb640330ed93c332)
+  catkin_download_test_data(download_data_test_rosbag_latched_pub.bag http://download.ros.org/data/rosbag/test_rosbag_latched_pub.bag
+    FILENAME test/test_rosbag_latched_pub.bag MD5 ed70b8cbb8a53220434aeb24bccf7342)
 
   catkin_add_nosetests(test/test_bag.py)
 
@@ -39,7 +41,8 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(${PROJECT_BINARY_DIR}/test/rosbag_play.test)
 
   add_rostest(test/latched_pub.test)
-  add_rostest(test/latched_sub.test)
+  configure_file(test/latched_sub.test.in ${PROJECT_BINARY_DIR}/test/latched_sub.test)
+  add_rostest(${PROJECT_BINARY_DIR}/test/latched_sub.test)
   add_rostest(test/record_two_publishers.test)
   add_rostest(test/record_one_publisher_two_topics.test)
 
