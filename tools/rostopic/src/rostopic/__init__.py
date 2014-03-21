@@ -285,7 +285,7 @@ def msgevalgen(pattern):
     def msgeval(msg):
         # I will probably replace this with some less beautiful but more efficient
         try:
-            return _get_nested_attribute(msg, pattern[1:].split('/'))
+            return _get_nested_attribute(msg, pattern[1:])
         except AttributeError as e:
             sys.stdout.write("no field named [%s]"%pattern+"\n")
             return None
