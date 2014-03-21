@@ -57,6 +57,7 @@ STRING_CAT_SERVICE_NAKED = 'string_lower_naked'
 STRING_CAT_SERVICE_WRAPPED = 'string_lower_wrapped'
 
 FAULTY_SERVICE = 'faulty_service'
+FAULTY_SERVICE_RESULT = 'faulty_service_result'
 
 #TODO:
 
@@ -114,11 +115,16 @@ class FaultyHandler(object):
     def __init__(self):
         self.test_call = False
 
-    def custom_error_handler(e, exc_type, exc_value, tb):
+    def custom_error_handler(self, e, exc_type, exc_value, tb):
         self.test_call = True
 
-    def call_handler(req):
+    def call_handler(self, req):
         raise UnexpectedException('Call raised an exception')
+
+    def result_handler(self, req):
+        resp = EmptyReqSrvResponse()
+        resp.fake_secret = 1 if self.test_call else 0
+        return resp
 
 
 def services():
@@ -132,7 +138,11 @@ def services():
 
     s5 = rospy.Service(STRING_CAT_SERVICE_NAKED, StringString, string_cat_naked)
     s6 = rospy.Service(STRING_CAT_SERVICE_WRAPPED, StringString, string_cat_wrapped)
-    
+
+    faulty_handler = FaultyHandler()
+    s7 = rospy.Service(FAULTY_SERVICE, EmptySrv, faulty_handler.call_handler, error_handler=faulty_handler.custom_error_handler)
+    s8 = rospy.Service(FAULTY_SERVICE_RESULT, EmptyReqSrv, faulty_handler.result_handler)
+
     rospy.spin()
 
 class TestBasicServicesClient(unittest.TestCase):
@@ -241,13 +251,21 @@ class TestBasicServicesClient(unittest.TestCase):
             self.assert_(math.fabs(Req.FLOAT32_Z - resp.ret_float32) < 0.001)
 
     def test_faulty_service(self):
-        s = rospy.Service(FAULTY_SERVICE, FaultyService, faulty_handler.call_handler,
-                          faulty_handler.custom_error_handler)
         rospy.wait_for_service(FAULTY_SERVICE, WAIT_TIMEOUT)
-        sproxy = ServiceProxy(FAULTY_SERVICE, FaultyService)
-        self.assertFalse(faulty_handler.test_call)
-        resp = sproxy.call(req)
-        self.assertTrue(faulty_handler.test_call)
+        sproxy = rospy.ServiceProxy(FAULTY_SERVICE, EmptySrv)
+
+        rospy.wait_for_service(FAULTY_SERVICE_RESULT, WAIT_TIMEOUT)
+        sproxy_result = rospy.ServiceProxy(FAULTY_SERVICE_RESULT, EmptyReqSrv)
+
+        resp = sproxy_result.call(EmptyReqSrvRequest())
+        self.assertEquals(resp.fake_secret, 0)
+        try:
+            resp = sproxy.call(EmptySrvRequest())
+            self.assert_(False)
+        except rospy.ServiceException:
+            pass
+        resp = sproxy_result.call(EmptyReqSrvRequest())
+        self.assertEquals(resp.fake_secret, 1)
 
 if __name__ == '__main__':
     if '--service' in sys.argv:
