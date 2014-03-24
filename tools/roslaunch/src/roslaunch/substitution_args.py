@@ -240,7 +240,7 @@ def _arg(resolved, a, args, context):
     :raises: :exc:`ArgException` If arg invalidly specified
     """
     if len(args) == 0:
-        raise SubstitutionException("$(arg var) must specify an environment variable [%s]"%(a))
+        raise SubstitutionException("$(arg var) must specify an <arg> tag name [%s]"%(a))
     elif len(args) > 1:
         raise SubstitutionException("$(arg var) may only specify one arg [%s]"%(a))
     
