@@ -87,6 +87,7 @@ add_library(roscpp
   src/libros/topic_manager.cpp
   src/libros/poll_manager.cpp
   src/libros/publication.cpp
+  src/libros/statistics.cpp
   src/libros/intraprocess_subscriber_link.cpp
   src/libros/intraprocess_publisher_link.cpp
   src/libros/callback_queue.cpp
