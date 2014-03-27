@@ -56,6 +56,8 @@ class FakeSocket(object):
         self.data = self.data+d
     def close(self):
         pass
+    def getsockname(self):
+        return (None, None)
 
 # test rospy API verifies that the rospy module exports the required symbols
 class TestRospyTcprosPubsub(unittest.TestCase):

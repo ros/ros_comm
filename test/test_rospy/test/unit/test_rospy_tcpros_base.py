@@ -54,6 +54,8 @@ class MockSock:
         return self.buff[:buff_size]
     def close(self):
         self.buff = None
+    def getsockname(self):
+        return (None, None)
 class MockEmptySock:
     def __init__(self):
         global g_fileno

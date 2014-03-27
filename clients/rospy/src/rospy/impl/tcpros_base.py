@@ -460,7 +460,11 @@ class TCPROSTransport(Transport):
         # without knowing the actual field name
         self.md5sum = None
         self.type = None 
-            
+
+        # Endpoint Details (IP, Port)
+        self.local_endpoint = (None, None)
+        self.remote_endpoint = (None, None)
+
     def get_transport_info(self):
         """
         Get detailed connection information.
