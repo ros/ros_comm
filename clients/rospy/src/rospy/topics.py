@@ -90,6 +90,8 @@ from rospy.core import *
 from rospy.exceptions import ROSSerializationException, TransportTerminated
 from rospy.msg import serialize_message, args_kwds_to_message
 
+from rospy.impl.statistics import SubscriberStatisticsLogger
+
 from rospy.impl.registration import get_topic_manager, set_topic_manager, Registration, get_registration_listeners
 from rospy.impl.tcpros import get_tcpros_handler, DEFAULT_BUFF_SIZE
 from rospy.impl.tcpros_pubsub import QueuedConnection
@@ -555,6 +557,7 @@ class _SubscriberImpl(_TopicImpl):
         self.queue_size = None
         self.buff_size = DEFAULT_BUFF_SIZE
         self.tcp_nodelay = False
+        self.statistics_logger = SubscriberStatisticsLogger(self);
 
     def close(self):
         """close I/O and release resources"""
@@ -686,7 +689,7 @@ class _SubscriberImpl(_TopicImpl):
             else:
                 _logger.warn("during shutdown, bad callback: %s\n%s"%(cb, traceback.format_exc()))
         
-    def receive_callback(self, msgs):
+    def receive_callback(self, msgs, connection):
         """
         Called by underlying connection transport for each new message received
         @param msgs: message data
@@ -695,6 +698,7 @@ class _SubscriberImpl(_TopicImpl):
         # save reference to avoid lock
         callbacks = self.callbacks
         for msg in msgs:
+            self.statistics_logger.callback(msg, connection.callerid_pub, connection.stat_bytes)
             for cb, cb_args in callbacks:
                 self._invoke_callback(msg, cb, cb_args)
 
