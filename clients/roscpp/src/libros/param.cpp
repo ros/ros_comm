@@ -49,6 +49,22 @@ typedef std::map<std::string, XmlRpc::XmlRpcValue> M_Param;
 M_Param g_params;
 boost::mutex g_params_mutex;
 S_string g_subscribed_params;
+S_string g_nonexistent_params;
+
+void updateNamespaceImpl(const std::string& key)
+{
+  std::string ns_key = names::parentNamespace(key);
+  while (ns_key != "" && ns_key != "/")
+  {
+    if (g_subscribed_params.find(ns_key) != g_subscribed_params.end())
+    {
+      // By erasing the key we mark if for re-querying.
+      g_params.erase(ns_key);
+      g_nonexistent_params.erase(ns_key);
+    }
+    ns_key = names::parentNamespace(ns_key);
+  }
+}
 
 void set(const std::string& key, const XmlRpc::XmlRpcValue& v)
 {
@@ -71,7 +87,10 @@ void set(const std::string& key, const XmlRpc::XmlRpcValue& v)
       if (g_subscribed_params.find(mapped_key) != g_subscribed_params.end())
       {
         g_params[mapped_key] = v;
+        g_nonexistent_params.erase(mapped_key);
       }
+      // We also need to check if this change affects any cached namespaces...
+      updateNamespaceImpl(mapped_key);
     }
   }
 }
@@ -215,19 +234,10 @@ bool del(const std::string& key)
   std::string mapped_key = ros::names::resolve(key);
 
   {
+    // If there is a cached value, remove it.
     boost::mutex::scoped_lock lock(g_params_mutex);
-
-    S_string::iterator sub_it = g_subscribed_params.find(mapped_key);
-    if (sub_it != g_subscribed_params.end())
-    {
-      g_subscribed_params.erase(sub_it);
-
-      M_Param::iterator param_it = g_params.find(mapped_key);
-      if (param_it != g_params.end())
-      {
-        g_params.erase(param_it);
-      }
-    }
+    g_params.erase(mapped_key);
+    g_nonexistent_params.insert(mapped_key);
   }
 
   XmlRpc::XmlRpcValue params, result, payload;
@@ -270,6 +280,12 @@ bool getImpl(const std::string& key, XmlRpc::XmlRpcValue& v, bool use_cache)
           return false;
         }
       }
+      else if (g_nonexistent_params.find(mapped_key) != g_nonexistent_params.end())
+      {
+        ROS_DEBUG_NAMED("cached_parameters", "Cache indicates key [%s] doesn't exist.", mapped_key.c_str());
+        return false;
+      }
+      // else, we don't have the newest value in cache and will query it below
     }
     else
     {
@@ -308,8 +324,16 @@ bool getImpl(const std::string& key, XmlRpc::XmlRpcValue& v, bool use_cache)
   {
     boost::mutex::scoped_lock lock(g_params_mutex);
 
-    ROS_DEBUG_NAMED("cached_parameters", "Caching parameter [%s] with value type [%d]", mapped_key.c_str(), v.getType());
-    g_params[mapped_key] = v;
+    if (ret)
+    {
+      ROS_DEBUG_NAMED("cached_parameters", "Caching parameter [%s] with value type [%d]", mapped_key.c_str(), v.getType());
+      g_params[mapped_key] = v;
+    }
+    else
+    {
+      ROS_DEBUG_NAMED("cached_parameters", "Caching parameter [%s] as non-existent", mapped_key.c_str());
+      g_nonexistent_params.insert(mapped_key);
+    }
   }
 
   return ret;
@@ -748,14 +772,37 @@ bool search(const std::string& ns, const std::string& key, std::string& result_o
   return true;
 }
 
-void update(const std::string& key, const XmlRpc::XmlRpcValue& v)
+void update(const std::string& key, /*const*/ XmlRpc::XmlRpcValue& v)
 {
-  std::string clean_key = names::clean(key);
+  const std::string clean_key = names::clean(key);
   ROS_DEBUG_NAMED("cached_parameters", "Received parameter update for key [%s]", clean_key.c_str());
+
+  const bool isempty = v.getType() == XmlRpc::XmlRpcValue::TypeStruct && v.begin() == v.end();
 
   boost::mutex::scoped_lock lock(g_params_mutex);
 
-  g_params[clean_key] = v;
+  // We update the parameter, if we are interested in it by itself.
+  if (g_subscribed_params.find(clean_key) != g_subscribed_params.end())
+  {
+    if (isempty)
+    {
+      g_params.erase(clean_key);
+      g_nonexistent_params.erase(clean_key);
+
+      // We don't add the key to g_nonexistent_params here since we can't know
+      // whether the key doesn't exist or it is just empty.
+      // Since we deleted it from g_params, the next time it is requested it
+      // will be queried and we will figure that out.
+    }
+    else
+    {
+      g_params[clean_key] = v;
+      g_nonexistent_params.erase(clean_key);
+    }
+  }
+
+  // We also need to check if this change affects any namespaces...
+  updateNamespaceImpl(key);
 }
 
 void paramUpdateCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)

@@ -91,7 +91,7 @@ TEST(Params, setThenGetStringCached)
 
 TEST(Params, setThenGetStringCachedNodeHandle)
 {
-	NodeHandle nh;
+  NodeHandle nh;
   std::string param;
   ASSERT_FALSE( nh.getParamCached( "test_set_param_setThenGetStringCachedNodeHandle", param) );
 
@@ -99,6 +99,25 @@ TEST(Params, setThenGetStringCachedNodeHandle)
 
   ASSERT_TRUE( nh.getParamCached( "test_set_param_setThenGetStringCachedNodeHandle", param) );
   ASSERT_STREQ( "asdf", param.c_str() );
+}
+
+TEST(Params, setThenGetNamespaceCached)
+{
+  std::string stringParam;
+  XmlRpc::XmlRpcValue structParam;
+  const std::string ns = "test_set_param_setThenGetStringCached2";
+  ASSERT_FALSE(param::getCached(ns, stringParam));
+
+  param::set(ns, std::string("a"));
+  ASSERT_TRUE(param::getCached(ns, stringParam));
+  ASSERT_STREQ("a", stringParam.c_str());
+
+  param::set(ns + "/foo", std::string("b"));
+  ASSERT_TRUE(param::getCached(ns + "/foo", stringParam));
+  ASSERT_STREQ("b", stringParam.c_str());
+  ASSERT_TRUE(param::getCached(ns, structParam));
+  ASSERT_TRUE(structParam.hasMember("foo"));
+  ASSERT_STREQ("b", static_cast<std::string>(structParam["foo"]).c_str());
 }
 
 TEST(Params, setThenGetCString)
