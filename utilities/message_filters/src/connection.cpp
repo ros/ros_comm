@@ -43,7 +43,7 @@ Connection::Connection(const VoidDisconnectFunction& func)
 {
 }
 
-Connection::Connection(const WithConnectionDisconnectFunction& func, boost::signals::connection c)
+Connection::Connection(const WithConnectionDisconnectFunction& func, boost::signals2::connection c)
 : connection_disconnect_(func)
 , connection_(c)
 {

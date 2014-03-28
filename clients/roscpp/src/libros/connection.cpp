@@ -84,13 +84,13 @@ void Connection::initialize(const TransportPtr& transport, bool is_server, const
   }
 }
 
-boost::signals::connection Connection::addDropListener(const DropFunc& slot)
+boost::signals2::connection Connection::addDropListener(const DropFunc& slot)
 {
   boost::recursive_mutex::scoped_lock lock(drop_mutex_);
   return drop_signal_.connect(slot);
 }
 
-void Connection::removeDropListener(const boost::signals::connection& c)
+void Connection::removeDropListener(const boost::signals2::connection& c)
 {
   boost::recursive_mutex::scoped_lock lock(drop_mutex_);
   c.disconnect();

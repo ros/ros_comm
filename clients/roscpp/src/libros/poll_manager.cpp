@@ -98,13 +98,13 @@ void PollManager::threadFunc()
   }
 }
 
-boost::signals::connection PollManager::addPollThreadListener(const VoidFunc& func)
+boost::signals2::connection PollManager::addPollThreadListener(const VoidFunc& func)
 {
   boost::recursive_mutex::scoped_lock lock(signal_mutex_);
   return poll_signal_.connect(func);
 }
 
-void PollManager::removePollThreadListener(boost::signals::connection c)
+void PollManager::removePollThreadListener(boost::signals2::connection c)
 {
   boost::recursive_mutex::scoped_lock lock(signal_mutex_);
   c.disconnect();

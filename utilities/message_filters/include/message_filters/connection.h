@@ -36,7 +36,7 @@
 #define MESSAGE_FILTERS_CONNECTION_H
 
 #include <boost/function.hpp>
-#include <boost/signals/connection.hpp>
+#include <boost/signals2/connection.hpp>
 #include "macros.h"
 
 namespace message_filters
@@ -52,19 +52,19 @@ public:
   typedef boost::function<void(const Connection&)> WithConnectionDisconnectFunction;
   Connection() {}
   Connection(const VoidDisconnectFunction& func);
-  Connection(const WithConnectionDisconnectFunction& func, boost::signals::connection conn);
+  Connection(const WithConnectionDisconnectFunction& func, boost::signals2::connection conn);
 
   /**
    * \brief disconnects this connection
    */
   void disconnect();
 
-  boost::signals::connection getBoostConnection() const { return connection_; }
+  boost::signals2::connection getBoostConnection() const { return connection_; }
 
 private:
   VoidDisconnectFunction void_disconnect_;
   WithConnectionDisconnectFunction connection_disconnect_;
-  boost::signals::connection connection_;
+  boost::signals2::connection connection_;
 };
 
 }
