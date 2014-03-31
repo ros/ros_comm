@@ -309,7 +309,7 @@ def resolve_args(arg_str, context=None, resolve_anon=True):
 
     return string
 
-_FIND_REGEX = re.compile(r'\$\(find .*?\)');
+_FIND_REGEX = re.compile(r'\$\(\s*find .*?\)');
 def _find_hack(cmd, args, context):
     """
     _find() requires the full string (including stuff outside the "$(...)"), so it is handled
@@ -359,7 +359,7 @@ class _ParseTree:
         """
         if child:
             if len(self.childs) == 0 and not self.is_root():
-                cmd = child.split(' ', 1)[0]
+                cmd = child.strip().split(' ', 1)[0]
                 if cmd not in self.valid_commands:
                     raise SubstitutionException(
                         "Unknown substitution command [%s]. Valid commands are %s" % (
@@ -425,7 +425,7 @@ def _parse_args(arg_str):
     j = 0  # pointer to the character being evaluated
     t = _ParseTree()
     while j < len(arg_str):
-        if arg_str[j] == '$' and arg_str[j+1] == '(':
+        if arg_str[j:j+2] == '$(':
             t._add_child(arg_str[i:j])
             # Starting a new substitution
             t = t._add_child(_ParseTree(t))
