@@ -69,7 +69,7 @@ def _env(cmd, args, context):
     @raise SubstitutionException: if arg invalidly specified
     """
     if len(args) != 1:
-        raise SubstitutionException("$(env var) command only accepts one argument [%s]"%a)
+        raise SubstitutionException("$(env var) command only accepts one argument [%s]"%cmd)
     try:
         return os.environ[args[0]]
     except KeyError as e:
@@ -124,9 +124,9 @@ def _find(resolved, a, args, context):
 
     :param resolved: full string
     :type resolved: str
-    :param a: subtitution string
+    :param a: substitution string
     :type a: str
-    :param args: subtitution arguments
+    :param args: substitution arguments
     :type a: dict
     :param context: see resolve_args()
     :type context: dict
@@ -432,7 +432,7 @@ def _parse_args(arg_str):
             i = j = j + 2
         elif arg_str[j] == ')' and not t.is_root():
             t._add_child(arg_str[i:j])
-            # End of the current substituion
+            # End of the current substitution
             t = t.parent
             i = j = j + 1
         else:
