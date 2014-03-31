@@ -39,8 +39,6 @@
 #include "boost/thread.hpp"
 #include "boost/shared_ptr.hpp"
 
-#include <boost/signals2.hpp>
-
 #include "ros/time.h"
 
 #include "connection.h"
