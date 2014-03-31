@@ -63,7 +63,7 @@ def fakestdout():
 def test_roslaunch_deps_main():
     from roslaunch.depends import roslaunch_deps_main
     roslaunch_d = rospkg.RosPack().get_path('roslaunch')
-    rosmaster_d = rospkg.RosPack().get_path('rosmaster')
+    rosmaster_d = rospkg.RosPack().get_path('test_rosmaster')
     f = os.path.join(roslaunch_d, 'resources', 'example.launch')
     rosmaster_f = os.path.join(rosmaster_d, 'test', 'rosmaster.test')
     invalid_f = os.path.join(roslaunch_d, 'test', 'xml', 'invalid-xml.xml')
@@ -117,13 +117,13 @@ roslaunch/manifest.xml:
         except SystemExit:
             pass
 
-    # try with files from different pacakges
+    # try with files from different packages
     with fakestdout() as b:
         try:
             roslaunch_deps_main(['roslaunch-deps', f, rosmaster_f, '--verbose'])
             assert False, "should have failed"
-        except SystemExit:
-            pass
+        except SystemExit as e:
+            assert e.code == 1
     
 def test_roslaunch_deps():
     from roslaunch.depends import roslaunch_deps, RoslaunchDeps
