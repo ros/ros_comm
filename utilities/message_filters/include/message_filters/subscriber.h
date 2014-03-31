@@ -37,16 +37,6 @@
 
 #include <ros/ros.h>
 
-#ifndef BOOST_SIGNALS_NO_DEPRECATION_WARNING
-#define BOOST_SIGNALS_NO_DEPRECATION_WARNING
-#define ros_BOOST_SIGNALS_NO_DEPRECATION_WARNING
-#endif
-#include <boost/signals.hpp>
-#ifdef ros_BOOST_SIGNALS_NO_DEPRECATION_WARNING
-#undef ros_BOOST_SIGNALS_NO_DEPRECATION_WARNING
-#undef BOOST_SIGNALS_NO_DEPRECATION_WARNING
-#endif
-
 #include <boost/thread/mutex.hpp>
 
 #include "connection.h"

@@ -39,16 +39,6 @@
 #include "boost/thread.hpp"
 #include "boost/shared_ptr.hpp"
 
-#ifndef BOOST_SIGNALS_NO_DEPRECATION_WARNING
-#define BOOST_SIGNALS_NO_DEPRECATION_WARNING
-#define ros_BOOST_SIGNALS_NO_DEPRECATION_WARNING
-#endif
-#include <boost/signals.hpp>
-#ifdef ros_BOOST_SIGNALS_NO_DEPRECATION_WARNING
-#undef ros_BOOST_SIGNALS_NO_DEPRECATION_WARNING
-#undef BOOST_SIGNALS_NO_DEPRECATION_WARNING
-#endif
-
 #include "ros/time.h"
 
 #include "connection.h"

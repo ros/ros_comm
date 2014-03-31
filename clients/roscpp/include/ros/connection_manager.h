@@ -30,7 +30,7 @@
 #include "common.h"
 
 #include <boost/thread/mutex.hpp>
-#include <boost/signals/connection.hpp>
+#include <boost/signals2/connection.hpp>
 
 namespace ros
 {
@@ -94,7 +94,7 @@ private:
   uint32_t connection_id_counter_;
   boost::mutex connection_id_counter_mutex_;
 
-  boost::signals::connection poll_conn_;
+  boost::signals2::connection poll_conn_;
 
   TransportTCPPtr tcpserver_transport_;
   TransportUDPPtr udpserver_transport_;
