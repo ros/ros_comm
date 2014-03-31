@@ -742,7 +742,23 @@ class TestXmlLoader(unittest.TestCase):
                 self.assert_('$' not in r[1])
             for a in n.args:
                 self.assert_('$' not in a)                        
-    
+
+    def test_substitution_nesting(self):
+        loader = roslaunch.xmlloader.XmlLoader()
+        filename = os.path.join(self.xml_dir, 'test-substitution-nesting.xml')
+
+        mock = RosLaunchMock()
+        loader.load(filename, mock, argv=[])
+
+        param_d = {}
+        for p in mock.params:
+            param_d[p.key] = p.value
+
+        self.assertEquals(param_d['/param1'], 'bar')
+        self.assertEquals(param_d['/ifgroup/iftest'], 'ok')
+        self.assertEquals(param_d['/anontxt1'], param_d['/anontxt1'])
+        self.assertNotEquals(param_d['/anontxt1'], param_d['/anontxt3'])
+
     def test_node_invalid(self):
         tests = ['test-node-invalid-type.xml','test-node-invalid-type-2.xml',
                  'test-node-invalid-pkg.xml','test-node-invalid-pkg-2.xml',

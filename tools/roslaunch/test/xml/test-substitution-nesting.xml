@@ -1,0 +1,23 @@
+<launch>
+
+  <arg name="text_1" default="foo" />
+  <arg name="text_2" default="bar" />
+  <arg name="text_3" default="true" />
+
+  <group>
+    <arg name="sel_arg" value="2" />
+    <param name="param1" value="$(arg text_$(arg sel_arg))" />
+  </group>
+
+  <group ns="ifgroup">
+    <arg name="sel_arg" value="3" />
+    <group if="$(arg text_$(arg sel_arg))">
+      <param name="iftest" value="ok" />
+    </group>
+  </group>
+
+  <param name="anontxt1" value="$(anon $(arg text_1))" />
+  <param name="anontxt2" value="$(anon foo)" />
+  <param name="anontxt3" value="$(anon $(arg text_2))" />
+
+</launch>
