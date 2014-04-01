@@ -50,6 +50,20 @@ M_Param g_params;
 boost::mutex g_params_mutex;
 S_string g_subscribed_params;
 
+void invalidateParentParams(const std::string& key)
+{
+  std::string ns_key = names::parentNamespace(key);
+  while (ns_key != "" && ns_key != "/")
+  {
+    if (g_subscribed_params.find(ns_key) != g_subscribed_params.end())
+    {
+      // by erasing the key the parameter will be re-queried
+      g_params.erase(ns_key);
+    }
+    ns_key = names::parentNamespace(ns_key);
+  }
+}
+
 void set(const std::string& key, const XmlRpc::XmlRpcValue& v)
 {
   std::string mapped_key = ros::names::resolve(key);
@@ -72,6 +86,7 @@ void set(const std::string& key, const XmlRpc::XmlRpcValue& v)
       {
         g_params[mapped_key] = v;
       }
+      invalidateParentParams(mapped_key);
     }
   }
 }
@@ -757,6 +772,7 @@ void update(const std::string& key, const XmlRpc::XmlRpcValue& v)
   boost::mutex::scoped_lock lock(g_params_mutex);
 
   g_params[clean_key] = v;
+  invalidateParentParams(clean_key);
 }
 
 void paramUpdateCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
