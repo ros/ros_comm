@@ -32,39 +32,8 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-
-import struct
-import select
-
-try:
-    from cStringIO import StringIO #Python 2.x
-    import thread as _thread # Python 2
-    python3 = 0
-    def isstring(s):
-        return isinstance(s, basestring) #Python 2.x
-except ImportError:
-    python3 = 1
-    from io import StringIO, BytesIO #Python 3.x
-    import _thread 
-    def isstring(s):
-        return isinstance(s, str) #Python 3.x
-    		
-import threading
-import logging
-import time
-
-from itertools import chain
-import traceback
-
-import rosgraph.names
-
 from rospy.core import *
-from rospy.exceptions import ROSSerializationException, TransportTerminated
-from rospy.msg import serialize_message, args_kwds_to_message
 from rosgraph_msgs.msg import TopicStatistics
-
-from rospy.impl.registration import get_topic_manager, set_topic_manager, Registration, get_registration_listeners
-from rospy.impl.tcpros import get_tcpros_handler, DEFAULT_BUFF_SIZE
 
 _logger = logging.getLogger('rospy.impl.statistics')
 
@@ -77,10 +46,6 @@ MIN_WINDOW = 4
 # outside this range.
 MAX_ELEMENTS = 100
 MIN_ELEMENTS = 10
-
-# wrap genpy implementation and map it to rospy namespace
-import genpy
-Message = genpy.Message
 
 _STATISTICS_TOPIC = "/statistics"
 _ENABLE_STATISTICS = "/enable_statistics"
