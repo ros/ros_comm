@@ -232,17 +232,8 @@ bool del(const std::string& key)
   {
     boost::mutex::scoped_lock lock(g_params_mutex);
 
-    S_string::iterator sub_it = g_subscribed_params.find(mapped_key);
-    if (sub_it != g_subscribed_params.end())
-    {
-      g_subscribed_params.erase(sub_it);
-
-      M_Param::iterator param_it = g_params.find(mapped_key);
-      if (param_it != g_params.end())
-      {
-        g_params.erase(param_it);
-      }
-    }
+    g_subscribed_params.erase(mapped_key);
+    g_params.erase(mapped_key);
   }
 
   XmlRpc::XmlRpcValue params, result, payload;
