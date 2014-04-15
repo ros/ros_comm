@@ -507,9 +507,9 @@ class ROSLaunchChildNode(ROSLaunchNode):
             if code != 1:
                 raise RLException("unable to register with roslaunch server: %s"%msg)
         except Exception as e:
-            self.logger.error("Exception while registering with roslaunch parent [%s]: %s"%(self.server_uri, traceback.format_exc(e)))
+            self.logger.error("Exception while registering with roslaunch parent [%s]: %s"%(self.server_uri, traceback.format_exc()))
             # fail
-            raise RLException("Exception while registering with roslaunch parent [%s]: %s"%(self.server_uri, traceback.format_exc(e)))
+            raise RLException("Exception while registering with roslaunch parent [%s]: %s"%(self.server_uri, traceback.format_exc()))
         
         self.logger.debug("child registered with server")
         

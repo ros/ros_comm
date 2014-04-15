@@ -33,12 +33,11 @@
 # Revision $Id$
 
 from __future__ import print_function
+from __future__ import with_statement
 
 """
 Process monitoring implementation for roslaunch.
 """
-
-from __future__ import with_statement
 
 import os
 import sys

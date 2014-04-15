@@ -118,8 +118,11 @@ class _NodeTestCase(TestRosClient):
 
     ## validates a URI as being http(s)
     def _checkUri(self, uri):
-        import urlparse
-        parsed = urlparse.urlparse(uri)
+        try:
+            from urllib.parse import urlparse
+        except ImportError:
+            from urlparse import urlparse
+        parsed = urlparse(uri)
         self.assert_(parsed[0] in ['http', 'https'], 'protocol [%s] in [%s] invalid'%(parsed[0], uri))
         self.assert_(parsed[1], 'host missing [%s]'%uri)
         if not sys.version.startswith('2.4'): #check not available on py24
