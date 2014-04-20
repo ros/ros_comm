@@ -92,7 +92,7 @@ private:
     // arrival times of all messages within the current window
     std::list<ros::Time> arrival_time_list;
     // delays all messages within the current window (if available)
-    std::list<double> delay_list;
+    std::list<ros::Duration> delay_list;
     // number of dropped messages
     uint64_t dropped_msgs;
     // latest sequence number observered (if available)

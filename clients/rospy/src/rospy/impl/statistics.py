@@ -34,6 +34,7 @@
 
 from rospy.core import *
 from rosgraph_msgs.msg import TopicStatistics
+from math import sqrt
 
 _logger = logging.getLogger('rospy.impl.statistics')
 
@@ -112,7 +113,6 @@ class SubscriberStatisticsLogger():
 	    ROS_ERROR("Unexpected error during statistics measurement: ", sys.exc_info()[0])
 	    pass
 
-
 class ConnectionStatisticsLogger():
     """
     Class that monitors lots of stuff for each connection
@@ -187,30 +187,34 @@ class ConnectionStatisticsLogger():
 
 	delta_t = curtime - window_start
 
-	msg.traffic = self.stat_bytes_window_ / delta_t.to_sec()
+	msg.traffic = self.stat_bytes_window_
 
         msg.dropped_msgs = self.dropped_msgs_
 
 	# we can only calculate message delay if the messages did contain Header fields.
 	if len(self.delay_list_)>0:
-            msg.stamp_delay_mean = sum(self.delay_list_) / len(self.delay_list_)
-	    msg.stamp_delay_variance = sum((msg.stamp_delay_mean - value) ** 2 for value in self.delay_list_) / len(self.delay_list_)
-    	    msg.stamp_delay_max = max(self.delay_list_)
+            msg.stamp_delay_mean = sum(self.delay_list_, rospy.Duration(0)) / len(self.delay_list_)
+	    variance = sum((rospy.Duration((msg.stamp_delay_mean - value)
+		.to_sec()**2) for value in self.delay_list_), rospy.Duration(0)) / len(self.delay_list_)
+	    msg.stamp_delay_stddev = rospy.Duration(sqrt(variance.to_sec()))
+   	    msg.stamp_delay_max = max(self.delay_list_)
 	else:
-            msg.stamp_delay_mean = float('NaN')
-	    msg.stamp_delay_variance = float('NaN')
-	    msg.stamp_delay_max = float('NaN')
+            msg.stamp_delay_mean = rospy.Duration(0)
+	    msg.stamp_delay_stddev = rospy.Duration(0)
+	    msg.stamp_delay_max = rospy.Duration(0)
 
 	# computer period/frequency. we need at least two messages within the window to do this.
 	if len(self.arrival_time_list_)>1:
 	    periods = [j-i for i, j in zip(self.arrival_time_list_[:-1], self.arrival_time_list_[1:])]
-            msg.period_mean = sum(periods)/len(periods)
-	    msg.period_variance = sum((msg.period_mean - value) ** 2 for value in periods) / len(periods)
+            msg.period_mean = sum(periods, rospy.Duration(0)) / len(periods)
+	    variance = sum((rospy.Duration((msg.period_mean - value)
+		.to_sec()**2) for value in periods), rospy.Duration(0)) / len(periods)
+	    msg.period_stddev = rospy.Duration(sqrt(variance.to_sec()))
             msg.period_max = max(periods)
 	else:
-            msg.period_mean = float('NaN')
-	    msg.period_variance = float('NaN')
-            msg.period_max = float('NaN')
+            msg.period_mean = rospy.Duration(0)
+	    msg.period_stddev = rospy.Duration(0)
+            msg.period_max = rospy.Duration(0)
 
         self.pub.publish(msg)
 
@@ -244,7 +248,9 @@ class ConnectionStatisticsLogger():
 	callback has to return before the message is delivered to the user.
         """
 
-	self.arrival_time_list_.append(rospy.Time.now().to_sec())
+	arrival_time = rospy.Time.now()
+
+	self.arrival_time_list_.append(arrival_time)
 
 	# Calculate how many bytes of traffic did this message need?
 	self.stat_bytes_window_ = stat_bytes - self.stat_bytes_last_
@@ -254,15 +260,14 @@ class ConnectionStatisticsLogger():
 	# Those subscribers won't have a header. But as these subscribers are rather rare
 	# ("rostopic hz" is the only one I know of), I'm gonna ignore them.
 	if msg._has_header:
-	    self.delay_list_.append((rospy.Time.now() - msg.header.stamp).to_sec())
+	    self.delay_list_.append(arrival_time - msg.header.stamp)
 
     	    if self.last_seq_ + 1 != msg.header.seq:
                 self.dropped_msgs_ = self.dropped_msgs_ + 1
     	    self.last_seq_ = msg.header.seq
 
 	# send out statistics with a certain frequency
-        if self.last_pub_time + self.pub_frequency < rospy.Time.now():
-            self.last_pub_time = rospy.Time.now()
+        if self.last_pub_time + self.pub_frequency < arrival_time:
+            self.last_pub_time = arrival_time
             self.sendStatistics()
-
 

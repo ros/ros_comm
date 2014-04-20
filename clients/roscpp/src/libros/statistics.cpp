@@ -83,7 +83,7 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
       std_msgs::Header header;
       ros::serialization::IStream stream(m.message_start, m.num_bytes - (m.message_start - m.buf.get()));
       ros::serialization::deserialize(stream, header);
-      stats.delay_list.push_back((received_time-header.stamp).toSec());
+      stats.delay_list.push_back(received_time-header.stamp);
     } catch (ros::serialization::StreamOverrunException& e) {
       ROS_DEBUG("Error during header extraction for statistics (topic=%s, message_length=%li)", topic.c_str(), m.num_bytes - (m.message_start - m.buf.get()));
       hasHeader_ = false;
@@ -103,39 +103,39 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
     msg.window_start = window_start;
     msg.window_stop = received_time;
     msg.dropped_msgs = stats.dropped_msgs;
-    msg.traffic = (bytes_sent - stats.stat_bytes_last) / (received_time-window_start).toSec();
+    msg.traffic = bytes_sent - stats.stat_bytes_last;
 
     // not all message types have this
     if (stats.delay_list.size()>0) {
-      msg.stamp_delay_mean = 0;
-      msg.stamp_delay_max = 0;
-      for(std::list<double>::iterator it = stats.delay_list.begin(); it != stats.delay_list.end(); it++) {
-	double delay = *it;
+      msg.stamp_delay_mean = ros::Duration(0);
+      msg.stamp_delay_max = ros::Duration(0);
+      for(std::list<ros::Duration>::iterator it = stats.delay_list.begin(); it != stats.delay_list.end(); it++) {
+	ros::Duration delay = *it;
 	msg.stamp_delay_mean += delay;
 	if (delay > msg.stamp_delay_max)
 	    msg.stamp_delay_max = delay;
       }
-      msg.stamp_delay_mean /= stats.delay_list.size();
+      msg.stamp_delay_mean *= 1.0/stats.delay_list.size();
 
-      msg.stamp_delay_variance = 0;
-      for(std::list<double>::iterator it = stats.delay_list.begin(); it != stats.delay_list.end(); it++) {
-	double t = msg.stamp_delay_mean - *it;
-	msg.stamp_delay_variance += t*t;
+      msg.stamp_delay_stddev = ros::Duration(0);
+      for(std::list<ros::Duration>::iterator it = stats.delay_list.begin(); it != stats.delay_list.end(); it++) {
+	ros::Duration t = msg.stamp_delay_mean - *it;
+	msg.stamp_delay_stddev += ros::Duration(t.toSec()*t.toSec());
       }
-      msg.stamp_delay_variance /= stats.delay_list.size();
+      msg.stamp_delay_stddev = ros::Duration(sqrt(msg.stamp_delay_stddev.toSec()/stats.delay_list.size()));
 
     } else {
         // in that case, set to NaN
-        msg.stamp_delay_mean = nan("char-sequence");
-        msg.stamp_delay_variance = nan("char-sequence");
-        msg.stamp_delay_max = nan("char-sequence");
+        msg.stamp_delay_mean = ros::Duration(0);
+        msg.stamp_delay_stddev = ros::Duration(0);
+        msg.stamp_delay_max = ros::Duration(0);
     }
 
     // first, calculate the mean period between messages in this connection
     // we need at least two messages in the window for this.
     if (stats.arrival_time_list.size()>1) {
-      msg.period_mean = 0;
-      msg.period_max = 0;
+      msg.period_mean = ros::Duration(0);
+      msg.period_max = ros::Duration(0);
 
       ros::Time prev;
       for(std::list<ros::Time>::iterator it = stats.arrival_time_list.begin(); it != stats.arrival_time_list.end(); it++) {
@@ -143,34 +143,34 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
 	  prev = *it;
 	  continue;
 	}
-	double period = (*it-prev).toSec();
+	ros::Duration period = (*it-prev);
 	msg.period_mean += period;
 	if (period > msg.period_max)
 	    msg.period_max = period;
 	prev = *it;
       }
-      msg.period_mean /= (stats.arrival_time_list.size()-1);
+      msg.period_mean *= 1.0/(stats.arrival_time_list.size()-1);
 
-      // then, calc the variance
-      msg.period_variance = 0;
+      // then, calc the stddev
+      msg.period_stddev = ros::Duration(0);
       for(std::list<ros::Time>::iterator it = stats.arrival_time_list.begin(); it != stats.arrival_time_list.end(); it++) {
 	if (it==stats.arrival_time_list.begin()) {
 	  prev = *it;
 	  continue;
 	}
-	double period = (*it-prev).toSec();
-	double t = msg.period_mean - period;
-	msg.period_variance += t*t;
+	ros::Duration period = *it-prev;
+	ros::Duration t = msg.period_mean - period;
+	msg.period_stddev += ros::Duration(t.toSec()*t.toSec());
 	prev = *it;
 	
       }
-      msg.period_variance /= (stats.arrival_time_list.size()-1);
+      msg.period_stddev = ros::Duration(sqrt(msg.period_stddev.toSec()/(stats.arrival_time_list.size()-1)));
 
     } else {
         // in that case, set to NaN
-        msg.period_mean = nan("char-sequence");
-        msg.period_variance = nan("char-sequence");
-        msg.period_max = nan("char-sequence");
+        msg.period_mean = ros::Duration(0);
+        msg.period_stddev = ros::Duration(0);
+        msg.period_max = ros::Duration(0);
     }
  
       if (!pub_.getTopic().length()) {
