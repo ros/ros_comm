@@ -761,7 +761,10 @@ void update(const std::string& key, const XmlRpc::XmlRpcValue& v)
 
   boost::mutex::scoped_lock lock(g_params_mutex);
 
-  g_params[clean_key] = v;
+  if (g_subscribed_params.find(clean_key) != g_subscribed_params.end())
+  {
+    g_params[clean_key] = v;
+  }
   invalidateParentParams(clean_key);
 }
 
