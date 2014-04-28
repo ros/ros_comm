@@ -51,6 +51,7 @@ MIN_ELEMENTS = 10
 _STATISTICS_TOPIC = "/statistics"
 _ENABLE_STATISTICS = "/enable_statistics"
 
+
 class SubscriberStatisticsLogger():
     """
     Class that monitors each subscriber.
@@ -60,213 +61,201 @@ class SubscriberStatisticsLogger():
 
     def __init__(self, subscriber):
         self.subscriber = subscriber
-	self.connections = dict()
+        self.connections = dict()
 
-	# only start statistics if the global param _ENABLE_STATISTICS is enabled.
-	self.enabled = self.is_enable_statistics()
-        pass
+        # only start statistics if the global param _ENABLE_STATISTICS is enabled.
+        self.enabled = self.is_enable_statistics()
 
     def is_enable_statistics(self):
-	"""
-	Check whether the user has enabled statistics using the parameter.
-	"""
+        """
+        Check whether the user has enabled statistics using the parameter.
+        """
 
-	master_uri = rosgraph.get_master_uri()
-	m = rospy.core.xmlrpcapi(master_uri)
-	code, msg, val = m.getParam(rospy.names.get_caller_id(), _ENABLE_STATISTICS)
-	if code == 1 and val:
-    	    return True
-	return False
+        master_uri = rosgraph.get_master_uri()
+        m = rospy.core.xmlrpcapi(master_uri)
+        code, msg, val = m.getParam(rospy.names.get_caller_id(), _ENABLE_STATISTICS)
+        if code == 1 and val:
+            return True
+        return False
 
     def callback(self,msg,publisher, stat_bytes):
-	"""
-	This method is called for every message that has been received.
-	
-	@param msg: The message received.
-	@param publisher: The name of the publisher node that sent the msg
-	@param stat_bytes: A counter, how many bytes have been moved across
-		this connection since it exists.
-	
-	This method just looks up the ConnectionStatisticsLogger for the specific connection
-	between publisher and subscriber and delegates to statistics logging to that
-	instance.
-	"""
+        """
+        This method is called for every message that has been received.
+        
+        @param msg: The message received.
+        @param publisher: The name of the publisher node that sent the msg
+        @param stat_bytes: A counter, how many bytes have been moved across
+        this connection since it exists.
+        
+        This method just looks up the ConnectionStatisticsLogger for the specific connection
+        between publisher and subscriber and delegates to statistics logging to that
+        instance.
+        """
 
         if not self.enabled:
-    	    return
+            return
 
-	# /clock is special, as it is subscribed very early
-	# also exclude /statistics to reduce noise.
-	if self.subscriber.name == "/clock" or self.subscriber.name == "/statistics":
-	    return
+        # /clock is special, as it is subscribed very early
+        # also exclude /statistics to reduce noise.
+        if self.subscriber.name == "/clock" or self.subscriber.name == "/statistics":
+            return
 
-	try:
-	    # create ConnectionStatisticsLogger for new connections
-	    logger = self.connections.get(publisher)
-	    if logger == None:
-		logger = ConnectionStatisticsLogger(self.subscriber.name, rospy.get_name(), publisher)
-		self.connections[publisher] = logger
+        try:
+            # create ConnectionStatisticsLogger for new connections
+            logger = self.connections.get(publisher)
+            if logger == None:
+                logger = ConnectionStatisticsLogger(self.subscriber.name, rospy.get_name(), publisher)
+                self.connections[publisher] = logger
 
-	    # delegate stuff to that instance
-    	    logger.callback(msg, stat_bytes)
-	except:
-	    ROS_ERROR("Unexpected error during statistics measurement: ", sys.exc_info()[0])
-	    pass
+            # delegate stuff to that instance
+            logger.callback(msg, stat_bytes)
+        except:
+            ROS_ERROR("Unexpected error during statistics measurement: ", sys.exc_info()[0])
+
 
 class ConnectionStatisticsLogger():
     """
-    Class that monitors lots of stuff for each connection
-    
+    Class that monitors lots of stuff for each connection.
+
     is created whenever a subscriber is created.
     is destroyed whenever its parent subscriber is destroyed.
     its lifecycle is therefore bound to its parent subscriber.
-    
-    XXX: the are threading/concurrent access issues meantioned at different
-    places. what do i have to keep in mind?
-    - may there be callbacks called in parallel? sounds unlikely
-    - may additional methods (which i don't have any a.t.m., be called in
-      parallel? probably.
-
     """
 
     def __init__(self, topic, subscriber, publisher):
         """
         Constructor.
 
-	@param topic: Name of the topic
-	@param subscriber: Name of the subscriber
-	@param publisher: Name of the publisher
+        @param topic: Name of the topic
+        @param subscriber: Name of the subscriber
+        @param publisher: Name of the publisher
 
-	These three should uniquely identify the connection.
+        These three should uniquely identify the connection.
         """
 
-	self.topic = topic
+        self.topic = topic
         self.subscriber = subscriber
-	self.publisher = publisher
+        self.publisher = publisher
 
-	self.pub = rospy.Publisher(_STATISTICS_TOPIC, TopicStatistics)
+        self.pub = rospy.Publisher(_STATISTICS_TOPIC, TopicStatistics)
 
-	# reset window
-	self.last_pub_time = rospy.Time(0)
-	self.pub_frequency = rospy.Duration(4.0)
+        # reset window
+        self.last_pub_time = rospy.Time(0)
+        self.pub_frequency = rospy.Duration(4.0)
 
         # timestamp delay
-	self.delay_list_ = []
+        self.delay_list_ = []
 
-	# period calculations
-	self.arrival_time_list_ = []
+        # period calculations
+        self.arrival_time_list_ = []
 
         self.last_seq_ = 0
         self.dropped_msgs_ = 0
-	self.window_start = rospy.Time.now()
+        self.window_start = rospy.Time.now()
 
-	# temporary variables
-	self.stat_bytes_last_ = 0
-	self.stat_bytes_window_ = 0
-        pass
+        # temporary variables
+        self.stat_bytes_last_ = 0
+        self.stat_bytes_window_ = 0
 
     def sendStatistics(self):
-	"""
-	Send out statistics. Aggregate collected stats information.
+        """
+        Send out statistics. Aggregate collected stats information.
 
-	Currently done blocking. Might be moved to own thread later. But at the moment
-	any computation done here should be rather quick.
-	"""
-	curtime = rospy.Time.now()
+        Currently done blocking. Might be moved to own thread later. But at the moment
+        any computation done here should be rather quick.
+        """
+        curtime = rospy.Time.now()
 
-	window_start = self.window_start
-	self.window_start = curtime
+        window_start = self.window_start
+        self.window_start = curtime
 
-	msg = TopicStatistics()
-	msg.topic = self.topic
-	msg.node_sub = self.subscriber
-	msg.node_pub = self.publisher
+        msg = TopicStatistics()
+        msg.topic = self.topic
+        msg.node_sub = self.subscriber
+        msg.node_pub = self.publisher
 
-	msg.window_start = window_start
-	msg.window_stop  = curtime
+        msg.window_start = window_start
+        msg.window_stop  = curtime
 
-	delta_t = curtime - window_start
+        delta_t = curtime - window_start
 
-	msg.traffic = self.stat_bytes_window_
+        msg.traffic = self.stat_bytes_window_
 
         msg.dropped_msgs = self.dropped_msgs_
 
-	# we can only calculate message delay if the messages did contain Header fields.
-	if len(self.delay_list_)>0:
+        # we can only calculate message delay if the messages did contain Header fields.
+        if len(self.delay_list_)>0:
             msg.stamp_delay_mean = sum(self.delay_list_, rospy.Duration(0)) / len(self.delay_list_)
-	    variance = sum((rospy.Duration((msg.stamp_delay_mean - value)
-		.to_sec()**2) for value in self.delay_list_), rospy.Duration(0)) / len(self.delay_list_)
-	    msg.stamp_delay_stddev = rospy.Duration(sqrt(variance.to_sec()))
-   	    msg.stamp_delay_max = max(self.delay_list_)
-	else:
+            variance = sum((rospy.Duration((msg.stamp_delay_mean - value).to_sec()**2) for value in self.delay_list_), rospy.Duration(0)) / len(self.delay_list_)
+            msg.stamp_delay_stddev = rospy.Duration(sqrt(variance.to_sec()))
+            msg.stamp_delay_max = max(self.delay_list_)
+        else:
             msg.stamp_delay_mean = rospy.Duration(0)
-	    msg.stamp_delay_stddev = rospy.Duration(0)
-	    msg.stamp_delay_max = rospy.Duration(0)
+            msg.stamp_delay_stddev = rospy.Duration(0)
+            msg.stamp_delay_max = rospy.Duration(0)
 
-	# computer period/frequency. we need at least two messages within the window to do this.
-	if len(self.arrival_time_list_)>1:
-	    periods = [j-i for i, j in zip(self.arrival_time_list_[:-1], self.arrival_time_list_[1:])]
+        # computer period/frequency. we need at least two messages within the window to do this.
+        if len(self.arrival_time_list_)>1:
+            periods = [j-i for i, j in zip(self.arrival_time_list_[:-1], self.arrival_time_list_[1:])]
             msg.period_mean = sum(periods, rospy.Duration(0)) / len(periods)
-	    variance = sum((rospy.Duration((msg.period_mean - value)
-		.to_sec()**2) for value in periods), rospy.Duration(0)) / len(periods)
-	    msg.period_stddev = rospy.Duration(sqrt(variance.to_sec()))
+            variance = sum((rospy.Duration((msg.period_mean - value).to_sec()**2) for value in periods), rospy.Duration(0)) / len(periods)
+            msg.period_stddev = rospy.Duration(sqrt(variance.to_sec()))
             msg.period_max = max(periods)
-	else:
+        else:
             msg.period_mean = rospy.Duration(0)
-	    msg.period_stddev = rospy.Duration(0)
+            msg.period_stddev = rospy.Duration(0)
             msg.period_max = rospy.Duration(0)
 
         self.pub.publish(msg)
 
-	# adjust window, if message count is not appropriate.
-	if len(self.arrival_time_list_) < MIN_ELEMENTS and self.pub_frequency*2 <= MAX_WINDOW:
-	    self.pub_frequency *= 2
-	if len(self.arrival_time_list_) > MAX_ELEMENTS and self.pub_frequency/2 >= MIN_WINDOW:
-	    self.pub_frequency /= 2
+        # adjust window, if message count is not appropriate.
+        if len(self.arrival_time_list_) < MIN_ELEMENTS and self.pub_frequency*2 <= MAX_WINDOW:
+            self.pub_frequency *= 2
+        if len(self.arrival_time_list_) > MAX_ELEMENTS and self.pub_frequency/2 >= MIN_WINDOW:
+            self.pub_frequency /= 2
 
-	# clear collected stats, start new window.
-	self.delay_list_ = []
-	self.arrival_time_list_ = []
+        # clear collected stats, start new window.
+        self.delay_list_ = []
+        self.arrival_time_list_ = []
         self.dropped_msgs_ = 0
 
     def callback(self,msg, stat_bytes):
         """
-	This method is called for every message, that is received on this
-	subscriber.
-	
+        This method is called for every message, that is received on this
+        subscriber.
+
         this callback will keep some statistics and publish the results
         periodically on a topic. the publishing should probably be done
         asynchronically in another thread.
 
-	@param msg: The message, that has been received. The message has usually
-		been already deserialized. However this is not always the
-		case. (AnyMsg)
-	@param stat_bytes: A counter, how many bytes have been moved across
-		this connection since it exists.
+        @param msg: The message, that has been received. The message has usually
+        been already deserialized. However this is not always the case. (AnyMsg)
+        @param stat_bytes: A counter, how many bytes have been moved across
+        this connection since it exists.
 
         Any computing-heavy stuff should be done somewhere else, as this
-	callback has to return before the message is delivered to the user.
+        callback has to return before the message is delivered to the user.
         """
 
-	arrival_time = rospy.Time.now()
+        arrival_time = rospy.Time.now()
 
-	self.arrival_time_list_.append(arrival_time)
+        self.arrival_time_list_.append(arrival_time)
 
-	# Calculate how many bytes of traffic did this message need?
-	self.stat_bytes_window_ = stat_bytes - self.stat_bytes_last_
-	self.stat_bytes_last_ = stat_bytes
+        # Calculate how many bytes of traffic did this message need?
+        self.stat_bytes_window_ = stat_bytes - self.stat_bytes_last_
+        self.stat_bytes_last_ = stat_bytes
 
-	# rospy has the feature to subscribe a topic with AnyMsg which aren't deserialized.
-	# Those subscribers won't have a header. But as these subscribers are rather rare
-	# ("rostopic hz" is the only one I know of), I'm gonna ignore them.
-	if msg._has_header:
-	    self.delay_list_.append(arrival_time - msg.header.stamp)
+        # rospy has the feature to subscribe a topic with AnyMsg which aren't deserialized.
+        # Those subscribers won't have a header. But as these subscribers are rather rare
+        # ("rostopic hz" is the only one I know of), I'm gonna ignore them.
+        if msg._has_header:
+            self.delay_list_.append(arrival_time - msg.header.stamp)
 
-    	    if self.last_seq_ + 1 != msg.header.seq:
+            if self.last_seq_ + 1 != msg.header.seq:
                 self.dropped_msgs_ = self.dropped_msgs_ + 1
-    	    self.last_seq_ = msg.header.seq
+            self.last_seq_ = msg.header.seq
 
-	# send out statistics with a certain frequency
+        # send out statistics with a certain frequency
         if self.last_pub_time + self.pub_frequency < arrival_time:
             self.last_pub_time = arrival_time
             self.sendStatistics()
