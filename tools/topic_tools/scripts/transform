@@ -1,0 +1,87 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+@author: enriquefernandez
+@todo: support non-scalar output types (requires defining a syntax for the expression, maybe YAML)
+
+Allows to take a topic or one of it fields and output it on another topic
+after performing a valid python operation (including numpy).
+
+The operations are done on the message, which is taken in the variable 'm'.
+
+* Some examples:
+$ rosrun topic_tools transform /imu/orientation/x /x_in_degrees std_msgs/Float64 '-rad2deg(m)'
+$ rosrun topic_tools transform /imu/orientation /norm std_msgs/Float64 'sqrt(sum(array([m.x, m.y, m.z, m.w])))'
+"""
+
+from __future__ import print_function
+
+import roslib
+import rospy
+import rostopic
+
+import argparse
+import sys
+
+# Allow for numpy operations in the given expression
+from numpy import *
+
+
+class TopicOp:
+
+    def __init__(self):
+        parser = argparse.ArgumentParser(
+            formatter_class=argparse.RawTextHelpFormatter,
+            description='Apply a Python operation to a topic.\n\n'
+                        'A node is created that subscribes to a topic,\n'
+                        'applies a Python expression to the topic (or topic\n'
+                        'field) message \'m\', and publishes the result\n'
+                        'through another topic.\n\n'
+                        'Usage:\n\trosrun topic_tools transform '
+                        '<input> <output topic> <output type> '
+                        '[<expression on m>]\n\n'
+                        'Example:\n\trosrun topic_tools transform /imu/orientation '
+                        '/norm std_msgs/Float64 '
+                        '\'sqrt(sum(array([m.x, m.y, m.z, m.w])))\'')
+        parser.add_argument('input', help='Input topic or topic field.')
+        parser.add_argument('output_topic', help='Output topic.')
+        parser.add_argument('output_type', help='Output topic type.')
+        parser.add_argument(
+            'expression', default='m',
+            help='Python expression to apply on the input message \'m\'.'
+        )
+
+        args = parser.parse_args()
+
+        self.expression = args.expression
+
+        input_class, input_topic, self.input_fn = rostopic.get_topic_class(args.input)
+        if input_topic is None:
+            print('ERROR: Wrong input topic (or topic field):', args.input)
+            sys.exit(1)
+
+        output_class = roslib.message.get_message_class(args.output_type)
+
+        self.sub = rospy.Subscriber(input_topic, input_class, self.callback)
+        self.pub = rospy.Publisher(args.output_topic, output_class, queue_size=1)
+
+    def callback(self, m):
+        if self.input_fn is not None:
+            m = self.input_fn(m)
+
+        try:
+            res = eval(self.expression, {}, {'m': m})
+            self.pub.publish(res)
+        except NameError as e:
+            print("Expression using variables other than 'm':", e.message)
+        except UnboundLocalError as e:
+            print('Wrong expression:', e.message)
+        except Exception:
+            raise
+
+
+if __name__ == '__main__':
+    rospy.init_node('transform', anonymous=True)
+    app = TopicOp()
+    rospy.spin()
