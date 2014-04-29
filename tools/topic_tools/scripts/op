@@ -13,11 +13,11 @@ after performing a valid python operation (including numpy).
 The operations are done on the message, which is taken in the variable 'm'.
 
 * Some examples:
-$ rosrun pal_topic_tools op /imu/orientation/x /x std_msgs/Float64 '-rad2deg(m)'
-$ rosrun pal_topic_tools op /imu/orientation /norm std_msgs/Float64 'sqrt(sum(array([m.x, m.y, m.z, m.w])))'
+$ rosrun topic_tools op /imu/orientation/x /x std_msgs/Float64 '-rad2deg(m)'
+$ rosrun topic_tools op /imu/orientation /norm std_msgs/Float64 'sqrt(sum(array([m.x, m.y, m.z, m.w])))'
 
 * Interactive mode:
-$ rosrun pal_topic_tools op <in> <out> <type> <exp> True
+$ rosrun topic_tools op <in> <out> <type> <exp> True
 
 This goes into an ipdb debugger session inside the callback for the input (in)
 topic, so you can redefine the self.expression (exp) to use, or create new logic.
@@ -40,7 +40,6 @@ before hitting 'c' to continue.
 """
 
 import roslib
-roslib.load_manifest('pal_topic_tools')
 
 import rospy
 import rostopic
