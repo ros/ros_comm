@@ -185,7 +185,7 @@ class ConnectionStatisticsLogger():
 
         # we can only calculate message delay if the messages did contain Header fields.
         if len(self.delay_list_)>0:
-            msg.stamp_delay_mean = sum(self.delay_list_, rospy.Duration(0)) / len(self.delay_list_)
+            msg.stamp_delay_mean = rospy.Duration(sum(self.delay_list_, rospy.Duration(0)).to_sec() / len(self.delay_list_))
             variance = sum((rospy.Duration((msg.stamp_delay_mean - value).to_sec()**2) for value in self.delay_list_), rospy.Duration(0)) / len(self.delay_list_)
             msg.stamp_delay_stddev = rospy.Duration(sqrt(variance.to_sec()))
             msg.stamp_delay_max = max(self.delay_list_)
@@ -197,7 +197,7 @@ class ConnectionStatisticsLogger():
         # computer period/frequency. we need at least two messages within the window to do this.
         if len(self.arrival_time_list_)>1:
             periods = [j-i for i, j in zip(self.arrival_time_list_[:-1], self.arrival_time_list_[1:])]
-            msg.period_mean = sum(periods, rospy.Duration(0)) / len(periods)
+            msg.period_mean = rospy.Duration(sum(periods, rospy.Duration(0)).to_sec() / len(periods))
             variance = sum((rospy.Duration((msg.period_mean - value).to_sec()**2) for value in periods), rospy.Duration(0)) / len(periods)
             msg.period_stddev = rospy.Duration(sqrt(variance.to_sec()))
             msg.period_max = max(periods)
