@@ -1,0 +1,100 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+Created on Fri Aug  9 12:13:00 2013
+
+@author: enriquefernandez
+@todo: support non-scalar output types (requires defining a syntax for the expression, maybe YAML)
+
+Allows to take a topic or one of it fields and output it on another topic
+after performing a valid python operation (including numpy).
+
+The operations are done on the message, which is taken in the variable 'm'.
+
+* Some examples:
+$ rosrun pal_topic_tools op /imu/orientation/x /x std_msgs/Float64 '-rad2deg(m)'
+$ rosrun pal_topic_tools op /imu/orientation /norm std_msgs/Float64 'sqrt(sum(array([m.x, m.y, m.z, m.w])))'
+
+* Interactive mode:
+$ rosrun pal_topic_tools op <in> <out> <type> <exp> True
+
+This goes into an ipdb debugger session inside the callback for the input (in)
+topic, so you can redefine the self.expression (exp) to use, or create new logic.
+Indeed you can create new attributes and def functions. However, you cannot:
+- self.expression cannot use an assignment
+- cannot create local variables
+
+In order to create a new function and variable, you can follow this example,
+which computes a weighted mean:
+ipdb> import types
+ipdb> self.mean = 0
+ipdb> def compute_mean(self, x): self.mean = 0.9 * self.mean + 0.1 * x; return self.mean
+ipdb> self.compute_mean = types.MethodType( compute_mean, self )
+ipdb> self.expression = 'self.compute_mean( m.data )'
+
+Once you are done, to avoid entering again in the callback, just do:
+ipdb> self.interactive = False
+before hitting 'c' to continue.
+
+"""
+
+import roslib
+roslib.load_manifest('pal_topic_tools')
+
+import rospy
+import rostopic
+import sys
+
+import ipdb
+
+from numpy import *
+
+def set_trace():
+    ip = ipapi.get()
+    def_colors = ip.options.colors
+    Pdb(def_colors).set_trace(sys._getframe().f_back)
+
+
+class TopicOp:
+
+    def __init__( self ):
+        if len( sys.argv ) < 4:
+            sys.exit( 'Usage: %s <input> <output topic> <output type> [<expression on m>] [<interactive mode>]' % sys.argv[0] )
+
+        self.input        = sys.argv[1]
+        self.output_topic = sys.argv[2]
+        self.output_type  = sys.argv[3]
+        self.expression   = sys.argv[4] if len( sys.argv ) > 4 else 'm'
+        self.interactive  = sys.argv[5] == 'True' if len( sys.argv ) > 5 else False
+
+        # We need the class, rather than the type,
+        # so we use get_topic_class instead of get_topic_type.
+        self.input_class, self.input_topic, self.input_fn = rostopic.get_topic_class( self.input )
+        self.output_class = roslib.message.get_message_class( self.output_type )
+
+        self.sub = rospy.Subscriber( self.input_topic, self.input_class, self.callback )
+        self.pub = rospy.Publisher( self.output_topic, self.output_class )
+
+    def callback( self, msg ):
+        if self.input_fn is not None:
+            m = self.input_fn( msg )
+        else:
+            m = msg
+
+        if self.interactive:
+            ipdb.set_trace()
+
+        res = eval( self.expression )
+        self.pub.publish( res )
+
+
+if __name__ == '__main__':
+
+    rospy.init_node('op', anonymous=True)
+
+    x = TopicOp()
+
+    while not rospy.is_shutdown():
+        rospy.spin()
+
