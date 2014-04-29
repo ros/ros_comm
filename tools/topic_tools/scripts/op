@@ -43,8 +43,6 @@ class TopicOp:
 
         self.expression = args.expression
 
-        # We need the class, rather than the type,
-        # so we use get_topic_class instead of get_topic_type.
         input_class, input_topic, self.input_fn = rostopic.get_topic_class(args.input)
         output_class = roslib.message.get_message_class(args.output_type)
 
@@ -65,7 +63,7 @@ if __name__ == '__main__':
 
     rospy.init_node('op', anonymous=True)
 
-    x = TopicOp()
+    app = TopicOp()
 
     while not rospy.is_shutdown():
         rospy.spin()
