@@ -21,37 +21,44 @@ import roslib
 import rospy
 import rostopic
 
-import sys
+import argparse
 
+# Allow for numpy operations in the given expression
 from numpy import *
 
 class TopicOp:
 
-    def __init__( self ):
-        if len( sys.argv ) < 4:
-            sys.exit( 'Usage: %s <input> <output topic> <output type> [<expression on m>]' % sys.argv[0] )
+    def __init__(self):
+        parser = argparse.ArgumentParser(
+            formatter_class=argparse.RawTextHelpFormatter,
+            description='Make a python operation on a topic.\n\n'
+                        'Usage:\n\t<input> <output topic> <output type> [<expression on m>]\n\n'
+                        'Example:\n\trosrun topic_tools op /imu/orientation /norm std_msgs/Float64 \'sqrt(sum(array([m.x, m.y, m.z, m.w])))\'')
+        parser.add_argument('input')
+        parser.add_argument('output_topic')
+        parser.add_argument('output_type')
+        parser.add_argument('expression', default='m')
 
-        self.input        = sys.argv[1]
-        self.output_topic = sys.argv[2]
-        self.output_type  = sys.argv[3]
-        self.expression   = sys.argv[4] if len( sys.argv ) > 4 else 'm'
+        args = parser.parse_args()
+
+        self.expression = args.expression
 
         # We need the class, rather than the type,
         # so we use get_topic_class instead of get_topic_type.
-        self.input_class, self.input_topic, self.input_fn = rostopic.get_topic_class( self.input )
-        self.output_class = roslib.message.get_message_class( self.output_type )
+        input_class, input_topic, self.input_fn = rostopic.get_topic_class(args.input)
+        output_class = roslib.message.get_message_class(args.output_type)
 
-        self.sub = rospy.Subscriber( self.input_topic, self.input_class, self.callback )
-        self.pub = rospy.Publisher( self.output_topic, self.output_class )
+        self.sub = rospy.Subscriber(input_topic, input_class, self.callback)
+        self.pub = rospy.Publisher(args.output_topic, output_class)
 
-    def callback( self, msg ):
+    def callback(self, msg):
         if self.input_fn is not None:
-            m = self.input_fn( msg )
+            m = self.input_fn(msg)
         else:
             m = msg
 
-        res = eval( self.expression )
-        self.pub.publish( res )
+        res = eval(self.expression)
+        self.pub.publish(res)
 
 
 if __name__ == '__main__':
