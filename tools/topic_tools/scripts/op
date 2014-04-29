@@ -31,7 +31,7 @@ class TopicOp:
     def __init__(self):
         parser = argparse.ArgumentParser(
             formatter_class=argparse.RawTextHelpFormatter,
-            description='Make a python operation on a topic.\n\n'
+            description='Apply a Python operation to a topic.\n\n'
                         'Usage:\n\t<input> <output topic> <output type> [<expression on m>]\n\n'
                         'Example:\n\trosrun topic_tools op /imu/orientation /norm std_msgs/Float64 \'sqrt(sum(array([m.x, m.y, m.z, m.w])))\'')
         parser.add_argument('input')
