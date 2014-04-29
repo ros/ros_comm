@@ -38,19 +38,6 @@ from math import sqrt
 
 _logger = logging.getLogger('rospy.impl.statistics')
 
-# Range of window length, in seconds
-MAX_WINDOW = 64
-MIN_WINDOW = 4
-
-# Range of acceptable messages in window.
-# Window size will be adjusted if number of observed is
-# outside this range.
-MAX_ELEMENTS = 100
-MIN_ELEMENTS = 10
-
-_STATISTICS_TOPIC = "/statistics"
-_ENABLE_STATISTICS = "/enable_statistics"
-
 
 class SubscriberStatisticsLogger():
     """
@@ -62,21 +49,27 @@ class SubscriberStatisticsLogger():
     def __init__(self, subscriber):
         self.subscriber = subscriber
         self.connections = dict()
+        self.read_parameters()
 
-        # only start statistics if the global param _ENABLE_STATISTICS is enabled.
-        self.enabled = self.is_enable_statistics()
+    def read_parameters(self):
+        """
+        Fetch window parameters from parameter server
+        """
+
+        self.enabled = rospy.get_param("/enable_statistics", False)
+
+        # Range of window length, in seconds
+        self.min_elements = rospy.get_param("/statistics_window_min_elements", 10)
+        self.max_elements = rospy.get_param("/statistics_window_max_elements", 100)
+
+        # Range of acceptable messages in window.
+        # Window size will be adjusted if number of observed is
+        # outside this range.
+        self.max_window = rospy.get_param("/statistics_window_max_length", 64)
+        self.min_window = rospy.get_param("/statistics_window_min_length", 1)
 
     def is_enable_statistics(self):
-        """
-        Check whether the user has enabled statistics using the parameter.
-        """
-
-        master_uri = rosgraph.get_master_uri()
-        m = rospy.core.xmlrpcapi(master_uri)
-        code, msg, val = m.getParam(rospy.names.get_caller_id(), _ENABLE_STATISTICS)
-        if code == 1 and val:
-            return True
-        return False
+        return self.enabled
 
     def callback(self,msg,publisher, stat_bytes):
         """
@@ -137,7 +130,7 @@ class ConnectionStatisticsLogger():
         self.subscriber = subscriber
         self.publisher = publisher
 
-        self.pub = rospy.Publisher(_STATISTICS_TOPIC, TopicStatistics)
+        self.pub = rospy.Publisher("/statistics", TopicStatistics)
 
         # reset window
         self.last_pub_time = rospy.Time(0)
@@ -184,9 +177,9 @@ class ConnectionStatisticsLogger():
         msg.dropped_msgs = self.dropped_msgs_
 
         # we can only calculate message delay if the messages did contain Header fields.
-        if len(self.delay_list_)>0:
+        if len(self.delay_list_) > 0:
             msg.stamp_delay_mean = rospy.Duration(sum(self.delay_list_, rospy.Duration(0)).to_sec() / len(self.delay_list_))
-            variance = sum((rospy.Duration((msg.stamp_delay_mean - value).to_sec()**2) for value in self.delay_list_), rospy.Duration(0)) / len(self.delay_list_)
+            variance = sum((rospy.Duration((msg.stamp_delay_mean - value).to_sec() ** 2) for value in self.delay_list_), rospy.Duration(0)) / len(self.delay_list_)
             msg.stamp_delay_stddev = rospy.Duration(sqrt(variance.to_sec()))
             msg.stamp_delay_max = max(self.delay_list_)
         else:
@@ -195,10 +188,10 @@ class ConnectionStatisticsLogger():
             msg.stamp_delay_max = rospy.Duration(0)
 
         # computer period/frequency. we need at least two messages within the window to do this.
-        if len(self.arrival_time_list_)>1:
-            periods = [j-i for i, j in zip(self.arrival_time_list_[:-1], self.arrival_time_list_[1:])]
+        if len(self.arrival_time_list_) > 1:
+            periods = [j - i for i, j in zip(self.arrival_time_list_[:-1], self.arrival_time_list_[1:])]
             msg.period_mean = rospy.Duration(sum(periods, rospy.Duration(0)).to_sec() / len(periods))
-            variance = sum((rospy.Duration((msg.period_mean - value).to_sec()**2) for value in periods), rospy.Duration(0)) / len(periods)
+            variance = sum((rospy.Duration((msg.period_mean - value).to_sec() ** 2) for value in periods), rospy.Duration(0)) / len(periods)
             msg.period_stddev = rospy.Duration(sqrt(variance.to_sec()))
             msg.period_max = max(periods)
         else:
@@ -209,9 +202,9 @@ class ConnectionStatisticsLogger():
         self.pub.publish(msg)
 
         # adjust window, if message count is not appropriate.
-        if len(self.arrival_time_list_) < MIN_ELEMENTS and self.pub_frequency*2 <= MAX_WINDOW:
+        if len(self.arrival_time_list_) < self.min_elements and self.pub_frequency * 2 <= self.max_window:
             self.pub_frequency *= 2
-        if len(self.arrival_time_list_) > MAX_ELEMENTS and self.pub_frequency/2 >= MIN_WINDOW:
+        if len(self.arrival_time_list_) > self.max_elements and self.pub_frequency / 2 >= self.min_windowW:
             self.pub_frequency /= 2
 
         # clear collected stats, start new window.
