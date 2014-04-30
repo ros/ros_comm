@@ -30,12 +30,17 @@ class TopicOp:
         parser = argparse.ArgumentParser(
             formatter_class=argparse.RawTextHelpFormatter,
             description='Apply a Python operation to a topic.\n\n'
-                        'Usage:\n\t<input> <output topic> <output type> [<expression on m>]\n\n'
-                        'Example:\n\trosrun topic_tools op /imu/orientation /norm std_msgs/Float64 \'sqrt(sum(array([m.x, m.y, m.z, m.w])))\'')
-        parser.add_argument('input')
-        parser.add_argument('output_topic')
-        parser.add_argument('output_type')
-        parser.add_argument('expression', default='m')
+                        'Usage:\n\trosrun topic_tools op '
+                        '<input> <output topic> <output type> '
+                        '[<expression on m>]\n\n'
+                        'Example:\n\trosrun topic_tools op /imu/orientation '
+                        '/norm std_msgs/Float64 '
+                        '\'sqrt(sum(array([m.x, m.y, m.z, m.w])))\'')
+        parser.add_argument('input', help='Input topic or topic field.')
+        parser.add_argument('output_topic', help='Output topic.')
+        parser.add_argument('output_type', help='Output topic type.')
+        parser.add_argument('expression', default='m',
+                help='Python expression to apply on the input message \'m\'.')
 
         args = parser.parse_args()
 
