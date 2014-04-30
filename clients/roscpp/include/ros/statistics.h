@@ -68,12 +68,12 @@ public:
 private:
 
   // these are hard constrains
-  static const int MAX_WINDOW = 64;
-  static const int MIN_WINDOW = 4;
+  int max_window;
+  int min_window;
 
   // these are soft constrains 
-  static const int MAX_ELEMENTS = 100;
-  static const int MIN_ELEMENTS = 10;
+  int max_elements;
+  int min_elements;
 
   bool enable_statistics;
 

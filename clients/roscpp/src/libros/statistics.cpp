@@ -37,13 +37,17 @@ namespace ros
 {
 
 StatisticsLogger::StatisticsLogger()
-: enable_statistics(false),pub_frequency_(4.0)
+: pub_frequency_(1.0)
 {
 }
 
 void StatisticsLogger::init(const SubscriptionCallbackHelperPtr& helper) {
   hasHeader_ = helper->hasHeader();
-  param::param("/enable_statistics", enable_statistics, enable_statistics);
+  param::param("/enable_statistics", enable_statistics, false);
+  param::param("/statistics_window_min_elements", min_elements, 10);
+  param::param("/statistics_window_max_elements", min_elements, 100);
+  param::param("/statistics_window_min_size", min_elements, 4);
+  param::param("/statistics_window_max_size", max_elements, 64);
 }
 
 void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_header,
@@ -184,9 +188,9 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
     pub_.publish(msg);
 
     // dynamic window resizing
-    if (stats.arrival_time_list.size() < MIN_ELEMENTS && pub_frequency_*2 <= MAX_WINDOW)
+    if (stats.arrival_time_list.size() > max_elements && pub_frequency_ * 2 <= max_window)
       pub_frequency_ *= 2;
-    if (stats.arrival_time_list.size() > MAX_ELEMENTS && pub_frequency_/2 >= MIN_WINDOW)
+    if (stats.arrival_time_list.size() < min_elements && pub_frequency_ / 2 >= min_window)
       pub_frequency_ /= 2;
 
     // clear the window
