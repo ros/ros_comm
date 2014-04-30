@@ -30,6 +30,10 @@ class TopicOp:
         parser = argparse.ArgumentParser(
             formatter_class=argparse.RawTextHelpFormatter,
             description='Apply a Python operation to a topic.\n\n'
+                        'A node is created that subscribes to a topic,\n'
+                        'applies a Python expression to the topic (or topic\n'
+                        'field) message \'m\', and publishes the result\n'
+                        'through another topic.\n\n'
                         'Usage:\n\trosrun topic_tools op '
                         '<input> <output topic> <output type> '
                         '[<expression on m>]\n\n'
