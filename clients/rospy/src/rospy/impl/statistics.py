@@ -65,8 +65,8 @@ class SubscriberStatisticsLogger():
         # Range of acceptable messages in window.
         # Window size will be adjusted if number of observed is
         # outside this range.
-        self.max_window = rospy.get_param("/statistics_window_max_length", 64)
-        self.min_window = rospy.get_param("/statistics_window_min_length", 1)
+        self.max_window = rospy.get_param("/statistics_window_max_size", 64)
+        self.min_window = rospy.get_param("/statistics_window_min_size", 4)
 
     def is_enable_statistics(self):
         return self.enabled
@@ -134,7 +134,7 @@ class ConnectionStatisticsLogger():
 
         # reset window
         self.last_pub_time = rospy.Time(0)
-        self.pub_frequency = rospy.Duration(4.0)
+        self.pub_frequency = rospy.Duration(1.0)
 
         # timestamp delay
         self.delay_list_ = []
@@ -202,9 +202,9 @@ class ConnectionStatisticsLogger():
         self.pub.publish(msg)
 
         # adjust window, if message count is not appropriate.
-        if len(self.arrival_time_list_) < self.min_elements and self.pub_frequency * 2 <= self.max_window:
+        if len(self.arrival_time_list_) > self.max_elements and self.pub_frequency * 2 <= self.max_window:
             self.pub_frequency *= 2
-        if len(self.arrival_time_list_) > self.max_elements and self.pub_frequency / 2 >= self.min_windowW:
+        if len(self.arrival_time_list_) < self.min_elements and self.pub_frequency / 2 >= self.min_windowW:
             self.pub_frequency /= 2
 
         # clear collected stats, start new window.
