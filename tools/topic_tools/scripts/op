@@ -51,6 +51,10 @@ class TopicOp:
         self.expression = args.expression
 
         input_class, input_topic, self.input_fn = rostopic.get_topic_class(args.input)
+        if input_topic == None:
+            print 'ERROR: Wrong input topic (or topic field): %s'%args.input
+            exit()
+
         output_class = roslib.message.get_message_class(args.output_type)
 
         self.sub = rospy.Subscriber(input_topic, input_class, self.callback)
