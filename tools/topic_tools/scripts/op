@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 """
-Created on Fri Aug  9 12:13:00 2013
-
 @author: enriquefernandez
 @todo: support non-scalar output types (requires defining a syntax for the expression, maybe YAML)
 
