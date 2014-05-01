@@ -21,5 +21,6 @@
 
   <export>
     <rosdoc config="rosdoc.yaml"/>
+    <architecture_independent/>
   </export>
 </package>
