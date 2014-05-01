@@ -37,8 +37,4 @@
   <run_depend>rospy</run_depend>
   <run_depend>topic_tools</run_depend>
   <run_depend>xmlrpcpp</run_depend>
-
-  <export>
-    <rosdoc config="${prefix}/rosdoc.yaml"/>
-  </export>
 </package>
