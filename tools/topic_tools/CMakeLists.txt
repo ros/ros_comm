@@ -20,6 +20,8 @@ catkin_package(
   CATKIN_DEPENDS message_runtime rosconsole roscpp std_msgs xmlrpcpp
  )
 
+catkin_add_env_hooks(20.transform SHELLS bash DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
+
 add_library(topic_tools src/shape_shifter.cpp src/parse.cpp)
 target_link_libraries(topic_tools ${catkin_LIBRARIES})
 
