@@ -228,6 +228,7 @@ private:
     void     decompressChunk(uint64_t chunk_pos) const;
     void     decompressRawChunk(ChunkHeader const& chunk_header) const;
     void     decompressBz2Chunk(ChunkHeader const& chunk_header) const;
+    void     decompressLz4Chunk(ChunkHeader const& chunk_header) const;
     uint32_t getChunkOffset() const;
 
     // Record header I/O

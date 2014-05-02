@@ -59,6 +59,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       ("chunksize", po::value<int>()->default_value(768), "Set chunk size of message data, in KB (Default: 768. Advanced)")
       ("limit,l", po::value<int>()->default_value(0), "Only record NUM messages on each topic")
       ("bz2,j", "use BZ2 compression")
+      ("lz4", "use LZ4 compression")
       ("split", po::value<int>()->implicit_value(0), "Split the bag file and continue recording when maximum size or maximum duration reached.")
       ("topic", po::value< std::vector<std::string> >(), "topic to record")
       ("size", po::value<int>(), "The maximum size of the bag to record in MB.")
@@ -139,9 +140,17 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     {
       opts.limit = vm["limit"].as<int>();
     }
+    if (vm.count("bz2") && vm.count("lz4"))
+    {
+      throw ros::Exception("Can only use one type of compression");
+    }
     if (vm.count("bz2"))
     {
       opts.compression = rosbag::compression::BZ2;
+    }
+    if (vm.count("lz4"))
+    {
+      opts.compression = rosbag::compression::LZ4;
     }
     if (vm.count("duration"))
     {
