@@ -3,13 +3,14 @@ cmake_minimum_required(VERSION 2.8.3)
 project(rosbag_storage)
 
 find_package(console_bridge REQUIRED)
-find_package(catkin REQUIRED COMPONENTS cpp_common roscpp_serialization roscpp_traits rostime)
+find_package(catkin REQUIRED COMPONENTS cpp_common roscpp_serialization roscpp_traits rostime roslz4)
 find_package(Boost REQUIRED COMPONENTS date_time filesystem program_options regex)
 find_package(BZip2 REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES rosbag_storage
+  CATKIN_DEPENDS roslz4
   DEPENDS console_bridge Boost
 )
 
@@ -21,6 +22,7 @@ add_library(rosbag_storage
   src/bag_player.cpp
   src/buffer.cpp
   src/bz2_stream.cpp
+  src/lz4_stream.cpp
   src/chunked_file.cpp
   src/message_instance.cpp
   src/query.cpp

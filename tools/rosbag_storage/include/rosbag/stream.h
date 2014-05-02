@@ -43,6 +43,8 @@
 
 #include <bzlib.h>
 
+#include <roslz4/lz4s.h>
+
 #include "rosbag/exceptions.h"
 #include "rosbag/macros.h"
 
@@ -54,6 +56,7 @@ namespace compression
     {
         Uncompressed = 0,
         BZ2          = 1,
+        LZ4          = 2,
     };
 }
 typedef compression::CompressionType CompressionType;
@@ -104,6 +107,7 @@ public:
 private:
     boost::shared_ptr<Stream> uncompressed_stream_;
     boost::shared_ptr<Stream> bz2_stream_;
+    boost::shared_ptr<Stream> lz4_stream_;
 };
 
 class ROSBAG_DECL UncompressedStream : public Stream
@@ -147,6 +151,37 @@ private:
     BZFILE* bzfile_;           //!< bzlib compressed file stream
     int     bzerror_;          //!< last error from bzlib
 };
+
+// LZ4Stream reads/writes compressed datat in the LZ4 format
+// https://code.google.com/p/lz4/
+class ROSBAG_DECL LZ4Stream : public Stream
+{
+public:
+    LZ4Stream(ChunkedFile* file);
+    ~LZ4Stream();
+
+    CompressionType getCompressionType() const;
+
+    void startWrite();
+    void write(void* ptr, size_t size);
+    void stopWrite();
+
+    void startRead();
+    void read(void* ptr, size_t size);
+    void stopRead();
+
+    void decompress(uint8_t* dest, unsigned int dest_len, uint8_t* source, unsigned int source_len);
+
+private:
+    void writeStream(int action);
+
+    char *buff_;
+    int buff_size_;
+    int block_size_id_;
+    roslz4_stream lz4s_;
+};
+
+
 
 } // namespace rosbag
 

@@ -194,6 +194,13 @@ void Bag::setCompression(CompressionType compression) {
     if (file_.isOpen() && chunk_open_)
         stopWritingChunk();
 
+    if (!(compression == compression::Uncompressed ||
+          compression == compression::BZ2 ||
+          compression == compression::LZ4)) {
+        throw BagException(
+            (format("Unknown compression type: %i")  % compression).str());
+    }
+
     compression_ = compression;
 }
 
@@ -443,6 +450,7 @@ void Bag::writeChunkHeader(CompressionType compression, uint32_t compressed_size
     switch (compression) {
     case compression::Uncompressed: chunk_header.compression = COMPRESSION_NONE; break;
     case compression::BZ2:          chunk_header.compression = COMPRESSION_BZ2;  break;
+    case compression::LZ4:          chunk_header.compression = COMPRESSION_LZ4;
     //case compression::ZLIB:         chunk_header.compression = COMPRESSION_ZLIB; break;
     }
     chunk_header.compressed_size   = compressed_size;
@@ -752,6 +760,8 @@ void Bag::decompressChunk(uint64_t chunk_pos) const {
         decompressRawChunk(chunk_header);
     else if (chunk_header.compression == COMPRESSION_BZ2)
         decompressBz2Chunk(chunk_header);
+    else if (chunk_header.compression == COMPRESSION_LZ4)
+        decompressLz4Chunk(chunk_header);
     else
         throw BagFormatException("Unknown compression: " + chunk_header.compression);
     
@@ -799,6 +809,23 @@ void Bag::decompressBz2Chunk(ChunkHeader const& chunk_header) const {
     CompressionType compression = compression::BZ2;
 
     logDebug("compressed_size: %d uncompressed_size: %d", chunk_header.compressed_size, chunk_header.uncompressed_size);
+
+    chunk_buffer_.setSize(chunk_header.compressed_size);
+    file_.read((char*) chunk_buffer_.getData(), chunk_header.compressed_size);
+
+    decompress_buffer_.setSize(chunk_header.uncompressed_size);
+    file_.decompress(compression, decompress_buffer_.getData(), decompress_buffer_.getSize(), chunk_buffer_.getData(), chunk_buffer_.getSize());
+
+    // todo check read was successful
+}
+
+void Bag::decompressLz4Chunk(ChunkHeader const& chunk_header) const {
+    assert(chunk_header.compression == COMPRESSION_LZ4);
+
+    CompressionType compression = compression::LZ4;
+
+    logDebug("lz4 compressed_size: %d uncompressed_size: %d",
+             chunk_header.compressed_size, chunk_header.uncompressed_size);
 
     chunk_buffer_.setSize(chunk_header.compressed_size);
     file_.read((char*) chunk_buffer_.getData(), chunk_header.compressed_size);
