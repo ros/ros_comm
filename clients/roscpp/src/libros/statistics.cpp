@@ -64,7 +64,7 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
     return;
 
   // callerid identifies the connection
-  std::map<std::string,struct StatData>::iterator stats_it = map_.find(callerid);
+  std::map<std::string, struct StatData>::iterator stats_it = map_.find(callerid);
   if (stats_it == map_.end()) {
     // this is the first time, we received something on this connection
     stats.stat_bytes_last = 0;
@@ -110,7 +110,7 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
     msg.traffic = bytes_sent - stats.stat_bytes_last;
 
     // not all message types have this
-    if (stats.delay_list.size()>0) {
+    if (stats.delay_list.size() > 0) {
       msg.stamp_delay_mean = ros::Duration(0);
       msg.stamp_delay_max = ros::Duration(0);
 
@@ -122,14 +122,14 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
             msg.stamp_delay_max = delay;
       }
 
-      msg.stamp_delay_mean *= 1.0/stats.delay_list.size();
+      msg.stamp_delay_mean *= 1.0 / stats.delay_list.size();
 
       msg.stamp_delay_stddev = ros::Duration(0);
       for(std::list<ros::Duration>::iterator it = stats.delay_list.begin(); it != stats.delay_list.end(); it++) {
         ros::Duration t = msg.stamp_delay_mean - *it;
-        msg.stamp_delay_stddev += ros::Duration(t.toSec()*t.toSec());
+        msg.stamp_delay_stddev += ros::Duration(t.toSec() * t.toSec());
       }
-      msg.stamp_delay_stddev = ros::Duration(sqrt(msg.stamp_delay_stddev.toSec()/stats.delay_list.size()));
+      msg.stamp_delay_stddev = ros::Duration(sqrt(msg.stamp_delay_stddev.toSec() / stats.delay_list.size()));
 
     } else {
         // in that case, set to NaN
@@ -146,31 +146,33 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
 
       ros::Time prev;
       for(std::list<ros::Time>::iterator it = stats.arrival_time_list.begin(); it != stats.arrival_time_list.end(); it++) {
-        if (it==stats.arrival_time_list.begin()) {
+
+        if (it == stats.arrival_time_list.begin()) {
           prev = *it;
           continue;
         }
-        ros::Duration period = (*it-prev);
+
+        ros::Duration period = *it - prev;
         msg.period_mean += period;
         if (period > msg.period_max)
             msg.period_max = period;
         prev = *it;
       }
-      msg.period_mean *= 1.0/(stats.arrival_time_list.size()-1);
+      msg.period_mean *= 1.0 / (stats.arrival_time_list.size() - 1);
 
       // then, calc the stddev
       msg.period_stddev = ros::Duration(0);
       for(std::list<ros::Time>::iterator it = stats.arrival_time_list.begin(); it != stats.arrival_time_list.end(); it++) {
-        if (it==stats.arrival_time_list.begin()) {
+        if (it == stats.arrival_time_list.begin()) {
           prev = *it;
           continue;
         }
-        ros::Duration period = *it-prev;
+        ros::Duration period = *it - prev;
         ros::Duration t = msg.period_mean - period;
-        msg.period_stddev += ros::Duration(t.toSec()*t.toSec());
+        msg.period_stddev += ros::Duration(t.toSec() * t.toSec());
         prev = *it;
       }
-      msg.period_stddev = ros::Duration(sqrt(msg.period_stddev.toSec()/(stats.arrival_time_list.size()-1)));
+      msg.period_stddev = ros::Duration(sqrt(msg.period_stddev.toSec() / (stats.arrival_time_list.size() - 1)));
 
     } else {
         // in that case, set to NaN
@@ -179,11 +181,11 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
         msg.period_max = ros::Duration(0);
     }
 
-      if (!pub_.getTopic().length()) {
-        ros::NodeHandle n("~");
-        // creating the publisher in the constructor results in a deadlock. so do it here.
-        pub_ = n.advertise<rosgraph_msgs::TopicStatistics>("/statistics",1);
-      }
+    if (!pub_.getTopic().length()) {
+      ros::NodeHandle n("~");
+      // creating the publisher in the constructor results in a deadlock. so do it here.
+      pub_ = n.advertise<rosgraph_msgs::TopicStatistics>("/statistics", 1);
+    }
 
     pub_.publish(msg);
 
