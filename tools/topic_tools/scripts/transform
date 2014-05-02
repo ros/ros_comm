@@ -11,8 +11,8 @@ after performing a valid python operation (including numpy).
 The operations are done on the message, which is taken in the variable 'm'.
 
 * Some examples:
-$ rosrun topic_tools op /imu/orientation/x /x_in_degrees std_msgs/Float64 '-rad2deg(m)'
-$ rosrun topic_tools op /imu/orientation /norm std_msgs/Float64 'sqrt(sum(array([m.x, m.y, m.z, m.w])))'
+$ rosrun topic_tools transform /imu/orientation/x /x_in_degrees std_msgs/Float64 '-rad2deg(m)'
+$ rosrun topic_tools transform /imu/orientation /norm std_msgs/Float64 'sqrt(sum(array([m.x, m.y, m.z, m.w])))'
 """
 
 import roslib
@@ -34,10 +34,10 @@ class TopicOp:
                         'applies a Python expression to the topic (or topic\n'
                         'field) message \'m\', and publishes the result\n'
                         'through another topic.\n\n'
-                        'Usage:\n\trosrun topic_tools op '
+                        'Usage:\n\trosrun topic_tools transform '
                         '<input> <output topic> <output type> '
                         '[<expression on m>]\n\n'
-                        'Example:\n\trosrun topic_tools op /imu/orientation '
+                        'Example:\n\trosrun topic_tools transform /imu/orientation '
                         '/norm std_msgs/Float64 '
                         '\'sqrt(sum(array([m.x, m.y, m.z, m.w])))\'')
         parser.add_argument('input', help='Input topic or topic field.')
@@ -72,7 +72,7 @@ class TopicOp:
 
 if __name__ == '__main__':
 
-    rospy.init_node('op', anonymous=True)
+    rospy.init_node('transform', anonymous=True)
 
     app = TopicOp()
 

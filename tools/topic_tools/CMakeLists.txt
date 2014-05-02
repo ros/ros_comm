@@ -58,7 +58,7 @@ catkin_install_python(PROGRAMS
   scripts/mux_delete
   scripts/mux_list
   scripts/mux_select
-  scripts/op
+  scripts/transform
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #Testing
