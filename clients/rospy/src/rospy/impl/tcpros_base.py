@@ -731,7 +731,7 @@ class TCPROSTransport(Transport):
                     if self.socket is not None:
                         msgs = self.receive_once()
                         if not self.done and not is_shutdown():
-                            msgs_callback(msgs,self)
+                            msgs_callback(msgs, self)
                     else:
                         self._reconnect()
 
