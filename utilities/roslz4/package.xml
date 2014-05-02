@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package>
+  <name>roslz4</name>
+  <version>0.0.0</version>
+  <description>
+    A Python and C++ implementation of the LZ4 streaming format.  Large data
+    streams are split into blocks which are compressed using the very fast LZ4
+    compression algorithm.
+  </description>
+
+  <maintainer email="bcharrow@seas.upenn.edu">Ben Charrow</maintainer>
+  <license>BSD</license>
+  <author email="bcharrow@seas.upenn.edu">Ben Charrow</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>lz4</build_depend>
+
+  <run_depend>lz4</run_depend>
+
+  <test_depend>rosunit</test_depend>
+</package>
