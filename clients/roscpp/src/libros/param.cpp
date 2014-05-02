@@ -50,6 +50,20 @@ M_Param g_params;
 boost::mutex g_params_mutex;
 S_string g_subscribed_params;
 
+void invalidateParentParams(const std::string& key)
+{
+  std::string ns_key = names::parentNamespace(key);
+  while (ns_key != "" && ns_key != "/")
+  {
+    if (g_subscribed_params.find(ns_key) != g_subscribed_params.end())
+    {
+      // by erasing the key the parameter will be re-queried
+      g_params.erase(ns_key);
+    }
+    ns_key = names::parentNamespace(ns_key);
+  }
+}
+
 void set(const std::string& key, const XmlRpc::XmlRpcValue& v)
 {
   std::string mapped_key = ros::names::resolve(key);
@@ -72,6 +86,7 @@ void set(const std::string& key, const XmlRpc::XmlRpcValue& v)
       {
         g_params[mapped_key] = v;
       }
+      invalidateParentParams(mapped_key);
     }
   }
 }
@@ -217,17 +232,8 @@ bool del(const std::string& key)
   {
     boost::mutex::scoped_lock lock(g_params_mutex);
 
-    S_string::iterator sub_it = g_subscribed_params.find(mapped_key);
-    if (sub_it != g_subscribed_params.end())
-    {
-      g_subscribed_params.erase(sub_it);
-
-      M_Param::iterator param_it = g_params.find(mapped_key);
-      if (param_it != g_params.end())
-      {
-        g_params.erase(param_it);
-      }
-    }
+    g_subscribed_params.erase(mapped_key);
+    g_params.erase(mapped_key);
   }
 
   XmlRpc::XmlRpcValue params, result, payload;
@@ -756,7 +762,11 @@ void update(const std::string& key, const XmlRpc::XmlRpcValue& v)
 
   boost::mutex::scoped_lock lock(g_params_mutex);
 
-  g_params[clean_key] = v;
+  if (g_subscribed_params.find(clean_key) != g_subscribed_params.end())
+  {
+    g_params[clean_key] = v;
+  }
+  invalidateParentParams(clean_key);
 }
 
 void paramUpdateCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
