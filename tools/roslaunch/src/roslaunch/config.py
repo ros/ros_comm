@@ -229,7 +229,17 @@ class ROSLaunchConfig(object):
         if self.clear_params:
             summary += '\n\nCLEAR PARAMETERS\n' + '\n'.join(sorted([' * %s'%p for p in self.clear_params]))
         if self.params:
-            summary += '\n\nPARAMETERS\n' + '\n'.join(sorted([' * %s'%k for k in self.params]))
+            def strip_string(value):
+                max_length = 20
+                if len(value) > max_length:
+                    value = value[:max_length - 3] + '...'
+                # if non printable characters are present return replacement
+                for char in value:
+                    i = ord(char)
+                    if i < 32 or i > 126:
+                        return '<...>'
+                return value
+            summary += '\n\nPARAMETERS\n' + '\n'.join(sorted([' * %s: %s' % (k, strip_string(str(v.value))) for k, v in self.params.items()]))
         if not local:
             summary += '\n\nMACHINES\n' + '\n'.join(sorted([' * %s'%k for k in self.machines if k]))
         summary += '\n\nNODES\n'
