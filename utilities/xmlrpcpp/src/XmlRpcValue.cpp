@@ -143,7 +143,7 @@ namespace XmlRpc {
   // Predicate for tm equality
   static bool tmEq(struct tm const& t1, struct tm const& t2) {
     return t1.tm_sec == t2.tm_sec && t1.tm_min == t2.tm_min &&
-            t1.tm_hour == t2.tm_hour && t1.tm_mday == t1.tm_mday &&
+            t1.tm_hour == t2.tm_hour && t1.tm_mday == t2.tm_mday &&
             t1.tm_mon == t2.tm_mon && t1.tm_year == t2.tm_year;
   }
 
