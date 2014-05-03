@@ -74,6 +74,7 @@ public:
   virtual void call(SubscriptionCallbackHelperCallParams& params) = 0;
   virtual const std::type_info& getTypeInfo() = 0;
   virtual bool isConst() = 0;
+  virtual bool hasHeader() = 0;
 };
 typedef boost::shared_ptr<SubscriptionCallbackHelper> SubscriptionCallbackHelperPtr;
 
@@ -107,6 +108,11 @@ public:
   void setCreateFunction(const CreateFunction& create)
   {
     create_ = create;
+  }
+
+  virtual bool hasHeader()
+  {
+     return message_traits::hasHeader<typename ParameterAdapter<P>::Message>();
   }
 
   virtual VoidConstPtr deserialize(const SubscriptionCallbackHelperDeserializeParams& params)
