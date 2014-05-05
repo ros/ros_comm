@@ -87,6 +87,7 @@ public:
 
   virtual const std::type_info& getTypeInfo() { return typeid(FakeMessage); }
   virtual bool isConst() { return true; }
+  virtual bool hasHeader() { return false; }
 
   boost::mutex mutex_;
   int32_t calls_;
