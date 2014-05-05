@@ -562,17 +562,17 @@ void Recorder::doCheckMaster(ros::TimerEvent const& e, ros::NodeHandle& node_han
         } else {
 
           XmlRpc::XmlRpcClient c(peer_host.c_str(), peer_port, "/");
-          XmlRpc::XmlRpcValue req;
-          XmlRpc::XmlRpcValue resp;
-          req[0] = ros::this_node::getName();
-          c.execute("getSubscriptions", req, resp);
+          XmlRpc::XmlRpcValue req2;
+          XmlRpc::XmlRpcValue resp2;
+          req2[0] = ros::this_node::getName();
+          c.execute("getSubscriptions", req2, resp2);
           
-          if (!c.isFault() && resp.size() > 0 && static_cast<int>(resp[0]) == 1)
+          if (!c.isFault() && resp2.valid() && resp2.size() > 0 && static_cast<int>(resp2[0]) == 1)
           {
-            for(int i = 0; i < resp[2].size(); i++)
+            for(int i = 0; i < resp2[2].size(); i++)
             {
-              if (shouldSubscribeToTopic(resp[2][i][0], true))
-                subscribe(resp[2][i][0]);
+              if (shouldSubscribeToTopic(resp2[2][i][0], true))
+                subscribe(resp2[2][i][0]);
             }
           } else {
             ROS_ERROR("Node at: [%s] failed to return subscriptions.", static_cast<std::string>(resp[2]).c_str());
