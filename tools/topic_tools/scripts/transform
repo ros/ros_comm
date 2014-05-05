@@ -60,14 +60,19 @@ class TopicOp:
         self.sub = rospy.Subscriber(input_topic, input_class, self.callback)
         self.pub = rospy.Publisher(args.output_topic, output_class)
 
-    def callback(self, msg):
+    def callback(self, m):
         if self.input_fn is not None:
-            m = self.input_fn(msg)
-        else:
-            m = msg
+            m = self.input_fn(m)
 
-        res = eval(self.expression)
-        self.pub.publish(res)
+        try:
+            res = eval(self.expression, {}, {"m":m})
+            self.pub.publish(res)
+        except NameError as e:
+            print "Expression using variables other than 'm': %s"%e.message
+        except UnboundLocalError as e:
+            print "Wrong expression: %s"%e.message
+        except:
+            print "Wrong expression"
 
 
 if __name__ == '__main__':
