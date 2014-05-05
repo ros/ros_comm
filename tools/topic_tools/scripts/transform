@@ -15,6 +15,8 @@ $ rosrun topic_tools transform /imu/orientation/x /x_in_degrees std_msgs/Float64
 $ rosrun topic_tools transform /imu/orientation /norm std_msgs/Float64 'sqrt(sum(array([m.x, m.y, m.z, m.w])))'
 """
 
+from __future__ import print_function
+
 import roslib
 import rospy
 import rostopic
@@ -52,7 +54,7 @@ class TopicOp:
 
         input_class, input_topic, self.input_fn = rostopic.get_topic_class(args.input)
         if input_topic == None:
-            print 'ERROR: Wrong input topic (or topic field): %s'%args.input
+            print('ERROR: Wrong input topic (or topic field):', args.input)
             exit()
 
         output_class = roslib.message.get_message_class(args.output_type)
@@ -65,14 +67,14 @@ class TopicOp:
             m = self.input_fn(m)
 
         try:
-            res = eval(self.expression, {}, {"m":m})
+            res = eval(self.expression, {}, {'m':m})
             self.pub.publish(res)
         except NameError as e:
-            print "Expression using variables other than 'm': %s"%e.message
+            print('Expression using variables other than ''m'':', e.message)
         except UnboundLocalError as e:
-            print "Wrong expression: %s"%e.message
+            print('Wrong expression:' , e.message)
         except:
-            print "Wrong expression"
+            print('Wrong expression')
 
 
 if __name__ == '__main__':
