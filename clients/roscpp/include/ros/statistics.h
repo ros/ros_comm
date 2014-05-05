@@ -25,8 +25,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef STATISTICS_H
-#define STATISTICS_H
+#ifndef ROSCPP_STATISTICS_H
+#define ROSCPP_STATISTICS_H
 
 #include "forwards.h"
 #include "poll_set.h"
@@ -63,7 +63,7 @@ public:
   /**
    * Callback function. Must be called for every message received.
    */
-  void callback(const boost::shared_ptr<M_string>& connection_header, const std::string& topic, const std::string& callerid, const SerializedMessage& m, const uint64_t& bytes_sent, const ros::Time& received_time, const bool dropped);
+  void callback(const boost::shared_ptr<M_string>& connection_header, const std::string& topic, const std::string& callerid, const SerializedMessage& m, const uint64_t& bytes_sent, const ros::Time& received_time, bool dropped);
 
 private:
 
@@ -71,7 +71,7 @@ private:
   int max_window;
   int min_window;
 
-  // these are soft constrains 
+  // these are soft constrains
   int max_elements;
   int min_elements;
 
@@ -91,7 +91,7 @@ private:
     ros::Time last_publish;
     // arrival times of all messages within the current window
     std::list<ros::Time> arrival_time_list;
-    // delays all messages within the current window (if available)
+    // delays of all messages within the current window (if available)
     std::list<ros::Duration> delay_list;
     // number of dropped messages
     uint64_t dropped_msgs;

@@ -52,50 +52,64 @@ void StatisticsLogger::init(const SubscriptionCallbackHelperPtr& helper) {
 
 void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_header,
                                 const std::string& topic, const std::string& callerid, const SerializedMessage& m, const uint64_t& bytes_sent,
-                                const ros::Time& received_time, const bool dropped)
+                                const ros::Time& received_time, bool dropped)
 {
   struct StatData stats;
 
   if (!enable_statistics)
+  {
     return;
+  }
 
   // ignore /clock for safety and /statistics to reduce noise
   if (topic == "/statistics" || topic == "/clock")
+  {
     return;
+  }
 
   // callerid identifies the connection
   std::map<std::string, struct StatData>::iterator stats_it = map_.find(callerid);
-  if (stats_it == map_.end()) {
+  if (stats_it == map_.end())
+  {
     // this is the first time, we received something on this connection
     stats.stat_bytes_last = 0;
     stats.dropped_msgs = 0;
     stats.last_publish = ros::Time::now();
     map_[callerid] = stats;
-  } else {
+  }
+  else
+  {
     stats = map_[callerid];
   }
 
   stats.arrival_time_list.push_back(received_time);
 
   if (dropped)
+  {
     stats.dropped_msgs++;
+  }
 
   // try to extract header, if the message has one. this fails sometimes,
   // therefore the try-catch
-  if (hasHeader_) {
-    try {
+  if (hasHeader_)
+  {
+    try
+    {
       std_msgs::Header header;
       ros::serialization::IStream stream(m.message_start, m.num_bytes - (m.message_start - m.buf.get()));
       ros::serialization::deserialize(stream, header);
-      stats.delay_list.push_back(received_time-header.stamp);
-    } catch (ros::serialization::StreamOverrunException& e) {
+      stats.delay_list.push_back(received_time - header.stamp);
+    }
+    catch (ros::serialization::StreamOverrunException& e)
+    {
       ROS_DEBUG("Error during header extraction for statistics (topic=%s, message_length=%li)", topic.c_str(), m.num_bytes - (m.message_start - m.buf.get()));
       hasHeader_ = false;
     }
   }
 
   // should publish new statistics?
-  if (stats.last_publish + ros::Duration(pub_frequency_) < received_time) {
+  if (stats.last_publish + ros::Duration(pub_frequency_) < received_time)
+  {
     ros::Time window_start = stats.last_publish;
     stats.last_publish = received_time;
 
@@ -110,37 +124,45 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
     msg.traffic = bytes_sent - stats.stat_bytes_last;
 
     // not all message types have this
-    if (stats.delay_list.size() > 0) {
+    if (stats.delay_list.size() > 0)
+    {
       msg.stamp_delay_mean = ros::Duration(0);
       msg.stamp_delay_max = ros::Duration(0);
 
-      for(std::list<ros::Duration>::iterator it = stats.delay_list.begin(); it != stats.delay_list.end(); it++) {
+      for(std::list<ros::Duration>::iterator it = stats.delay_list.begin(); it != stats.delay_list.end(); it++)
+      {
         ros::Duration delay = *it;
         msg.stamp_delay_mean += delay;
 
         if (delay > msg.stamp_delay_max)
+        {
             msg.stamp_delay_max = delay;
+        }
       }
 
       msg.stamp_delay_mean *= 1.0 / stats.delay_list.size();
 
       msg.stamp_delay_stddev = ros::Duration(0);
-      for(std::list<ros::Duration>::iterator it = stats.delay_list.begin(); it != stats.delay_list.end(); it++) {
+      for(std::list<ros::Duration>::iterator it = stats.delay_list.begin(); it != stats.delay_list.end(); it++)
+      {
         ros::Duration t = msg.stamp_delay_mean - *it;
         msg.stamp_delay_stddev += ros::Duration(t.toSec() * t.toSec());
       }
       msg.stamp_delay_stddev = ros::Duration(sqrt(msg.stamp_delay_stddev.toSec() / stats.delay_list.size()));
 
-    } else {
-        // in that case, set to NaN
-        msg.stamp_delay_mean = ros::Duration(0);
-        msg.stamp_delay_stddev = ros::Duration(0);
-        msg.stamp_delay_max = ros::Duration(0);
+    }
+    else
+    {
+      // in that case, set to NaN
+      msg.stamp_delay_mean = ros::Duration(0);
+      msg.stamp_delay_stddev = ros::Duration(0);
+      msg.stamp_delay_max = ros::Duration(0);
     }
 
     // first, calculate the mean period between messages in this connection
     // we need at least two messages in the window for this.
-    if (stats.arrival_time_list.size()>1) {
+    if (stats.arrival_time_list.size() > 1)
+    {
       msg.period_mean = ros::Duration(0);
       msg.period_max = ros::Duration(0);
 
@@ -162,8 +184,10 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
 
       // then, calc the stddev
       msg.period_stddev = ros::Duration(0);
-      for(std::list<ros::Time>::iterator it = stats.arrival_time_list.begin(); it != stats.arrival_time_list.end(); it++) {
-        if (it == stats.arrival_time_list.begin()) {
+      for(std::list<ros::Time>::iterator it = stats.arrival_time_list.begin(); it != stats.arrival_time_list.end(); it++)
+      {
+        if (it == stats.arrival_time_list.begin())
+        {
           prev = *it;
           continue;
         }
@@ -174,14 +198,17 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
       }
       msg.period_stddev = ros::Duration(sqrt(msg.period_stddev.toSec() / (stats.arrival_time_list.size() - 1)));
 
-    } else {
-        // in that case, set to NaN
-        msg.period_mean = ros::Duration(0);
-        msg.period_stddev = ros::Duration(0);
-        msg.period_max = ros::Duration(0);
+    }
+    else
+    {
+      // in that case, set to NaN
+      msg.period_mean = ros::Duration(0);
+      msg.period_stddev = ros::Duration(0);
+      msg.period_max = ros::Duration(0);
     }
 
-    if (!pub_.getTopic().length()) {
+    if (!pub_.getTopic().length())
+    {
       ros::NodeHandle n("~");
       // creating the publisher in the constructor results in a deadlock. so do it here.
       pub_ = n.advertise<rosgraph_msgs::TopicStatistics>("/statistics", 1);
@@ -191,9 +218,13 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
 
     // dynamic window resizing
     if (stats.arrival_time_list.size() > max_elements && pub_frequency_ * 2 <= max_window)
+    {
       pub_frequency_ *= 2;
+    }
     if (stats.arrival_time_list.size() < min_elements && pub_frequency_ / 2 >= min_window)
+    {
       pub_frequency_ /= 2;
+    }
 
     // clear the window
     stats.delay_list.clear();

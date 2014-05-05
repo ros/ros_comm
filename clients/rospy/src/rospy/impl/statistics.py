@@ -32,9 +32,12 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from rospy.core import *
-from rosgraph_msgs.msg import TopicStatistics
 from math import sqrt
+import logging
+import sys
+
+from rosgraph_msgs.msg import TopicStatistics
+import rospy
 
 _logger = logging.getLogger('rospy.impl.statistics')
 
@@ -71,15 +74,15 @@ class SubscriberStatisticsLogger():
     def is_enable_statistics(self):
         return self.enabled
 
-    def callback(self,msg,publisher, stat_bytes):
+    def callback(self, msg, publisher, stat_bytes):
         """
         This method is called for every message that has been received.
-        
+
         @param msg: The message received.
         @param publisher: The name of the publisher node that sent the msg
         @param stat_bytes: A counter, how many bytes have been moved across
         this connection since it exists.
-        
+
         This method just looks up the ConnectionStatisticsLogger for the specific connection
         between publisher and subscriber and delegates to statistics logging to that
         instance.
@@ -96,14 +99,14 @@ class SubscriberStatisticsLogger():
         try:
             # create ConnectionStatisticsLogger for new connections
             logger = self.connections.get(publisher)
-            if logger == None:
+            if logger is None:
                 logger = ConnectionStatisticsLogger(self.subscriber.name, rospy.get_name(), publisher)
                 self.connections[publisher] = logger
 
             # delegate stuff to that instance
             logger.callback(msg, stat_bytes)
-        except:
-            ROS_ERROR("Unexpected error during statistics measurement: ", sys.exc_info()[0])
+        except Exception:
+            rospy.ROS_ERROR("Unexpected error during statistics measurement: ", sys.exc_info()[0])
 
 
 class ConnectionStatisticsLogger():
@@ -159,18 +162,13 @@ class ConnectionStatisticsLogger():
         """
         curtime = rospy.Time.now()
 
-        window_start = self.window_start
-        self.window_start = curtime
-
         msg = TopicStatistics()
         msg.topic = self.topic
         msg.node_sub = self.subscriber
         msg.node_pub = self.publisher
 
-        msg.window_start = window_start
-        msg.window_stop  = curtime
-
-        delta_t = curtime - window_start
+        msg.window_start = self.window_start
+        msg.window_stop = curtime
 
         msg.traffic = self.stat_bytes_window_
 
@@ -212,7 +210,9 @@ class ConnectionStatisticsLogger():
         self.arrival_time_list_ = []
         self.dropped_msgs_ = 0
 
-    def callback(self,msg, stat_bytes):
+        self.window_start = curtime
+
+    def callback(self, msg, stat_bytes):
         """
         This method is called for every message, that is received on this
         subscriber.
@@ -252,4 +252,3 @@ class ConnectionStatisticsLogger():
         if self.last_pub_time + self.pub_frequency < arrival_time:
             self.last_pub_time = arrival_time
             self.sendStatistics()
-
