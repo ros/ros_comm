@@ -72,13 +72,14 @@ class TopicOp:
 
         try:
             res = eval(self.expression, {}, {'m': m})
-            self.pub.publish(res)
         except NameError as e:
             print("Expression using variables other than 'm':", e.message)
         except UnboundLocalError as e:
             print('Wrong expression:', e.message)
         except Exception:
             raise
+        else:
+            self.pub.publish(res)
 
 
 if __name__ == '__main__':
