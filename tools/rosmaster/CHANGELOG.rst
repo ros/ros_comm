@@ -2,6 +2,10 @@
 Changelog for package rosmaster
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add architecture_independent flag in package.xml (`#391 <https://github.com/ros/ros_comm/issues/391>`_)
+
 1.11.0 (2014-03-04)
 -------------------
 

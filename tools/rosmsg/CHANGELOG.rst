@@ -2,6 +2,11 @@
 Changelog for package rosmsg
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix rosmsg to find messages existing only in devel space (e.g. messages generated for actions) (`#385 <https://github.com/ros/ros_comm/issues/385>`_)
+* add architecture_independent flag in package.xml (`#391 <https://github.com/ros/ros_comm/issues/391>`_)
+
 1.11.0 (2014-03-04)
 -------------------
 

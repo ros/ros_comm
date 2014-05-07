@@ -2,6 +2,10 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add check for message fields when determining message type (`#376 <https://github.com/ros/ros_comm/issues/376>`_)
+
 1.11.0 (2014-03-04)
 -------------------
 * make rostest in CMakeLists optional (`ros/rosdistro#3010 <https://github.com/ros/rosdistro/issues/3010>`_)

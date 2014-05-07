@@ -2,6 +2,16 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* update API to use boost::signals2 (`#267 <https://github.com/ros/ros_comm/issues/267>`_)
+* only update param cache when being subscribed (`#351 <https://github.com/ros/ros_comm/issues/351>`_)
+* ensure to remove delete parameters completely
+* invalidate cached parent parameters when namespace parameter is set / changes (`#352 <https://github.com/ros/ros_comm/issues/352>`_)
+* add optional topic/connection statistics (`#398 <https://github.com/ros/ros_comm/issues/398>`_)
+* add transport information in SlaveAPI::getBusInfo() for roscpp & rospy (`#328 <https://github.com/ros/ros_comm/issues/328>`_)
+* add AsyncSpinner::canStart() to check if a spinner can be started
+
 1.11.0 (2014-03-04)
 -------------------
 * allow getting parameters with name '/' (`#313 <https://github.com/ros/ros_comm/issues/313>`_)

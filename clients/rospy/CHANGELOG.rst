@@ -2,6 +2,15 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* improve asynchonous publishing performance (`#373 <https://github.com/ros/ros_comm/issues/373>`_)
+* add warning when queue_size is omitted for rospy publisher (`#346 <https://github.com/ros/ros_comm/issues/346>`_)
+* add optional topic/connection statistics (`#398 <https://github.com/ros/ros_comm/issues/398>`_)
+* add transport information in SlaveAPI::getBusInfo() for roscpp & rospy (`#328 <https://github.com/ros/ros_comm/issues/328>`_)
+* allow custom error handlers for services (`#375 <https://github.com/ros/ros_comm/issues/375>`_)
+* add architecture_independent flag in package.xml (`#391 <https://github.com/ros/ros_comm/issues/391>`_)
+
 1.11.0 (2014-03-04)
 -------------------
 * fix exception handling for queued connections (`#369 <https://github.com/ros/ros_comm/issues/369>`_)

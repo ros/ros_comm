@@ -2,6 +2,13 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix roslaunch anonymous function to generate the same output for the same input (`#297 <https://github.com/ros/ros_comm/issues/297>`_)
+* add doc attribute to roslaunch arg tags (`#379 <https://github.com/ros/ros_comm/issues/379>`_)
+* print parameter values in roslaunch (`#89 <https://github.com/ros/ros_comm/issues/89>`_)
+* add architecture_independent flag in package.xml (`#391 <https://github.com/ros/ros_comm/issues/391>`_)
+
 1.11.0 (2014-03-04)
 -------------------
 * use catkin_install_python() to install Python scripts (`#361 <https://github.com/ros/ros_comm/issues/361>`_)

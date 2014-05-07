@@ -2,6 +2,10 @@
 Changelog for package rosservice
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add architecture_independent flag in package.xml (`#391 <https://github.com/ros/ros_comm/issues/391>`_)
+
 1.11.0 (2014-03-04)
 -------------------
 * use catkin_install_python() to install Python scripts (`#361 <https://github.com/ros/ros_comm/issues/361>`_)

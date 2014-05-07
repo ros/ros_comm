@@ -2,6 +2,10 @@
 Changelog for package message_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* update API to use boost::signals2 (`#267 <https://github.com/ros/ros_comm/issues/267>`_)
+
 1.11.0 (2014-03-04)
 -------------------
 * suppress boost::signals deprecation warning (`#362 <https://github.com/ros/ros_comm/issues/362>`_)
