@@ -27,6 +27,7 @@ import sys
 # Allow for numpy operations in the given expression
 from numpy import *
 
+from collections import Iterable
 
 class TopicOp:
 
@@ -61,17 +62,17 @@ class TopicOp:
             print('ERROR: Wrong input topic (or topic field):', args.input)
             sys.exit(1)
 
-        output_class = roslib.message.get_message_class(args.output_type)
+        self.output_class = roslib.message.get_message_class(args.output_type)
 
         self.sub = rospy.Subscriber(input_topic, input_class, self.callback)
-        self.pub = rospy.Publisher(args.output_topic, output_class, queue_size=1)
+        self.pub = rospy.Publisher(args.output_topic, self.output_class, queue_size=1)
 
     def callback(self, m):
         if self.input_fn is not None:
             m = self.input_fn(m)
 
         try:
-            res = eval(self.expression, {}, {'m': m})
+            res = eval("{}".format(self.expression), {}, {'m': m})
         except NameError as e:
             print("Expression using variables other than 'm':", e.message)
         except UnboundLocalError as e:
@@ -79,7 +80,8 @@ class TopicOp:
         except Exception:
             raise
         else:
-            self.pub.publish(res)
+            res = [res] if not isinstance(res, Iterable) else res
+            self.pub.publish(*res)
 
 
 if __name__ == '__main__':
