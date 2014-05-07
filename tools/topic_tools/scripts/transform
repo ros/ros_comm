@@ -3,16 +3,17 @@
 
 """
 @author: enriquefernandez
-@todo: support non-scalar output types (requires defining a syntax for the expression, maybe YAML)
 
 Allows to take a topic or one of it fields and output it on another topic
-after performing a valid python operation (including numpy).
+after performing a valid python operation.
 
 The operations are done on the message, which is taken in the variable 'm'.
 
-* Some examples:
-$ rosrun topic_tools transform /imu/orientation/x /x_in_degrees std_msgs/Float64 '-rad2deg(m)'
+* Examples:
+$ rosrun topic_tools transform /imu/orientation/x /x_in_degrees std_msgs/Float64 -- '-numpy.rad2deg(m)'
 $ rosrun topic_tools transform /imu/orientation /norm std_msgs/Float64 'sqrt(sum(array([m.x, m.y, m.z, m.w])))'
+$ rosrun topic_tools transform /imu/orientation /norm std_msgs/Float64 'numpy.linalg.norm([m.x, m.y, m.z, m.w])' --import numpy
+$ rosrun topic_tools transform /imu/orientation /euler geometry_msgs/Vector3 'tf.transformations.euler_from_quaternion([m.x, m.y, m.z, m.w])' --import tf
 """
 
 from __future__ import print_function
@@ -22,10 +23,8 @@ import rospy
 import rostopic
 
 import argparse
+import importlib
 import sys
-
-# Allow for numpy operations in the given expression
-from numpy import *
 
 from collections import Iterable
 
@@ -41,7 +40,7 @@ class TopicOp:
                         'through another topic.\n\n'
                         'Usage:\n\trosrun topic_tools transform '
                         '<input> <output topic> <output type> '
-                        '[<expression on m>]\n\n'
+                        '[<expression on m>] [--import numpy tf]\n\n'
                         'Example:\n\trosrun topic_tools transform /imu/orientation '
                         '/norm std_msgs/Float64 '
                         '\'sqrt(sum(array([m.x, m.y, m.z, m.w])))\'')
@@ -52,8 +51,21 @@ class TopicOp:
             'expression', default='m',
             help='Python expression to apply on the input message \'m\'.'
         )
+        parser.add_argument(
+            '-i', '--import', dest='modules', nargs='+', default=['numpy'],
+            help='List of Python modules to import.'
+        )
 
         args = parser.parse_args()
+
+        self.modules = {}
+        for module in args.modules:
+            try:
+                mod = importlib.import_module(module)
+            except ImportError:
+                print('Failed to import module:', module)
+            else:
+                self.modules[module] = mod
 
         self.expression = args.expression
 
@@ -72,7 +84,7 @@ class TopicOp:
             m = self.input_fn(m)
 
         try:
-            res = eval("{}".format(self.expression), {}, {'m': m})
+            res = eval("{}".format(self.expression), self.modules, {'m': m})
         except NameError as e:
             print("Expression using variables other than 'm':", e.message)
         except UnboundLocalError as e:
