@@ -2,8 +2,8 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.1 (2014-05-07)
+-------------------
 * add transform tool allowing to perform Python operations between message fields taken from several topics (`ros/rosdistro#398 <https://github.com/ros/ros_comm/issues/398>`_)
 
 1.11.0 (2014-03-04)

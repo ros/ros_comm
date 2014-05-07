@@ -2,8 +2,8 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.1 (2014-05-07)
+-------------------
 * improve asynchonous publishing performance (`#373 <https://github.com/ros/ros_comm/issues/373>`_)
 * add warning when queue_size is omitted for rospy publisher (`#346 <https://github.com/ros/ros_comm/issues/346>`_)
 * add optional topic/connection statistics (`#398 <https://github.com/ros/ros_comm/issues/398>`_)

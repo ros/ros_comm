@@ -2,8 +2,8 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.1 (2014-05-07)
+-------------------
 * add check for message fields when determining message type (`#376 <https://github.com/ros/ros_comm/issues/376>`_)
 
 1.11.0 (2014-03-04)

@@ -2,8 +2,8 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.1 (2014-05-07)
+-------------------
 * update API to use boost::signals2 (`#267 <https://github.com/ros/ros_comm/issues/267>`_)
 * only update param cache when being subscribed (`#351 <https://github.com/ros/ros_comm/issues/351>`_)
 * ensure to remove delete parameters completely

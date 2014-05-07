@@ -2,8 +2,8 @@
 Changelog for package roswtf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.1 (2014-05-07)
+-------------------
 * update roswtf test for upcoming rospack 2.2.3
 * add architecture_independent flag in package.xml (`#391 <https://github.com/ros/ros_comm/issues/391>`_)
 
