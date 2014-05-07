@@ -91,8 +91,8 @@ private:
     ros::Time last_publish;
     // arrival times of all messages within the current window
     std::list<ros::Time> arrival_time_list;
-    // delays of all messages within the current window (if available)
-    std::list<ros::Duration> delay_list;
+    // age of all messages within the current window (if available)
+    std::list<ros::Duration> age_list;
     // number of dropped messages
     uint64_t dropped_msgs;
     // latest sequence number observered (if available)

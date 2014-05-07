@@ -139,8 +139,8 @@ class ConnectionStatisticsLogger():
         self.last_pub_time = rospy.Time(0)
         self.pub_frequency = rospy.Duration(1.0)
 
-        # timestamp delay
-        self.delay_list_ = []
+        # timestamp age
+        self.age_list_ = []
 
         # period calculations
         self.arrival_time_list_ = []
@@ -174,16 +174,16 @@ class ConnectionStatisticsLogger():
 
         msg.dropped_msgs = self.dropped_msgs_
 
-        # we can only calculate message delay if the messages did contain Header fields.
-        if len(self.delay_list_) > 0:
-            msg.stamp_delay_mean = rospy.Duration(sum(self.delay_list_, rospy.Duration(0)).to_sec() / len(self.delay_list_))
-            variance = sum((rospy.Duration((msg.stamp_delay_mean - value).to_sec() ** 2) for value in self.delay_list_), rospy.Duration(0)) / len(self.delay_list_)
-            msg.stamp_delay_stddev = rospy.Duration(sqrt(variance.to_sec()))
-            msg.stamp_delay_max = max(self.delay_list_)
+        # we can only calculate message age if the messages did contain Header fields.
+        if len(self.age_list_) > 0:
+            msg.stamp_age_mean = rospy.Duration(sum(self.age_list_, rospy.Duration(0)).to_sec() / len(self.age_list_))
+            variance = sum((rospy.Duration((msg.stamp_age_mean - value).to_sec() ** 2) for value in self.age_list_), rospy.Duration(0)) / len(self.age_list_)
+            msg.stamp_age_stddev = rospy.Duration(sqrt(variance.to_sec()))
+            msg.stamp_age_max = max(self.age_list_)
         else:
-            msg.stamp_delay_mean = rospy.Duration(0)
-            msg.stamp_delay_stddev = rospy.Duration(0)
-            msg.stamp_delay_max = rospy.Duration(0)
+            msg.stamp_age_mean = rospy.Duration(0)
+            msg.stamp_age_stddev = rospy.Duration(0)
+            msg.stamp_age_max = rospy.Duration(0)
 
         # computer period/frequency. we need at least two messages within the window to do this.
         if len(self.arrival_time_list_) > 1:
@@ -206,7 +206,7 @@ class ConnectionStatisticsLogger():
             self.pub_frequency /= 2
 
         # clear collected stats, start new window.
-        self.delay_list_ = []
+        self.age_list_ = []
         self.arrival_time_list_ = []
         self.dropped_msgs_ = 0
 
@@ -242,7 +242,7 @@ class ConnectionStatisticsLogger():
         # Those subscribers won't have a header. But as these subscribers are rather rare
         # ("rostopic hz" is the only one I know of), I'm gonna ignore them.
         if msg._has_header:
-            self.delay_list_.append(arrival_time - msg.header.stamp)
+            self.age_list_.append(arrival_time - msg.header.stamp)
 
             if self.last_seq_ + 1 != msg.header.seq:
                 self.dropped_msgs_ = self.dropped_msgs_ + 1

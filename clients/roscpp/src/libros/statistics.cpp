@@ -98,7 +98,7 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
       std_msgs::Header header;
       ros::serialization::IStream stream(m.message_start, m.num_bytes - (m.message_start - m.buf.get()));
       ros::serialization::deserialize(stream, header);
-      stats.delay_list.push_back(received_time - header.stamp);
+      stats.age_list.push_back(received_time - header.stamp);
     }
     catch (ros::serialization::StreamOverrunException& e)
     {
@@ -124,39 +124,39 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
     msg.traffic = bytes_sent - stats.stat_bytes_last;
 
     // not all message types have this
-    if (stats.delay_list.size() > 0)
+    if (stats.age_list.size() > 0)
     {
-      msg.stamp_delay_mean = ros::Duration(0);
-      msg.stamp_delay_max = ros::Duration(0);
+      msg.stamp_age_mean = ros::Duration(0);
+      msg.stamp_age_max = ros::Duration(0);
 
-      for(std::list<ros::Duration>::iterator it = stats.delay_list.begin(); it != stats.delay_list.end(); it++)
+      for(std::list<ros::Duration>::iterator it = stats.age_list.begin(); it != stats.age_list.end(); it++)
       {
-        ros::Duration delay = *it;
-        msg.stamp_delay_mean += delay;
+        ros::Duration age = *it;
+        msg.stamp_age_mean += age;
 
-        if (delay > msg.stamp_delay_max)
+        if (age > msg.stamp_age_max)
         {
-            msg.stamp_delay_max = delay;
+            msg.stamp_age_max = age;
         }
       }
 
-      msg.stamp_delay_mean *= 1.0 / stats.delay_list.size();
+      msg.stamp_age_mean *= 1.0 / stats.age_list.size();
 
-      msg.stamp_delay_stddev = ros::Duration(0);
-      for(std::list<ros::Duration>::iterator it = stats.delay_list.begin(); it != stats.delay_list.end(); it++)
+      msg.stamp_age_stddev = ros::Duration(0);
+      for(std::list<ros::Duration>::iterator it = stats.age_list.begin(); it != stats.age_list.end(); it++)
       {
-        ros::Duration t = msg.stamp_delay_mean - *it;
-        msg.stamp_delay_stddev += ros::Duration(t.toSec() * t.toSec());
+        ros::Duration t = msg.stamp_age_mean - *it;
+        msg.stamp_age_stddev += ros::Duration(t.toSec() * t.toSec());
       }
-      msg.stamp_delay_stddev = ros::Duration(sqrt(msg.stamp_delay_stddev.toSec() / stats.delay_list.size()));
+      msg.stamp_age_stddev = ros::Duration(sqrt(msg.stamp_age_stddev.toSec() / stats.age_list.size()));
 
     }
     else
     {
       // in that case, set to NaN
-      msg.stamp_delay_mean = ros::Duration(0);
-      msg.stamp_delay_stddev = ros::Duration(0);
-      msg.stamp_delay_max = ros::Duration(0);
+      msg.stamp_age_mean = ros::Duration(0);
+      msg.stamp_age_stddev = ros::Duration(0);
+      msg.stamp_age_max = ros::Duration(0);
     }
 
     // first, calculate the mean period between messages in this connection
@@ -227,7 +227,7 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
     }
 
     // clear the window
-    stats.delay_list.clear();
+    stats.age_list.clear();
     stats.arrival_time_list.clear();
     stats.dropped_msgs = 0;
     stats.stat_bytes_last = bytes_sent;
