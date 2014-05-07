@@ -9,10 +9,11 @@ after performing a valid python operation.
 
 The operations are done on the message, which is taken in the variable 'm'.
 
-* Examples:
+* Examples (note that numpy is imported by default):
+$ rosrun topic_tools transform /imu/orientation/x /x_str std_msgs/String 'str(m)'
 $ rosrun topic_tools transform /imu/orientation/x /x_in_degrees std_msgs/Float64 -- '-numpy.rad2deg(m)'
-$ rosrun topic_tools transform /imu/orientation /norm std_msgs/Float64 'sqrt(sum(array([m.x, m.y, m.z, m.w])))'
-$ rosrun topic_tools transform /imu/orientation /norm std_msgs/Float64 'numpy.linalg.norm([m.x, m.y, m.z, m.w])' --import numpy
+$ rosrun topic_tools transform /imu/orientation /norm std_msgs/Float64 'numpy.sqrt(numpy.sum(numpy.array([m.x, m.y, m.z, m.w])))'
+$ rosrun topic_tools transform /imu/orientation /norm std_msgs/Float64 'numpy.linalg.norm([m.x, m.y, m.z, m.w])'
 $ rosrun topic_tools transform /imu/orientation /euler geometry_msgs/Vector3 'tf.transformations.euler_from_quaternion([m.x, m.y, m.z, m.w])' --import tf
 """
 
@@ -25,8 +26,6 @@ import rostopic
 import argparse
 import importlib
 import sys
-
-from collections import Iterable
 
 class TopicOp:
 
@@ -92,7 +91,7 @@ class TopicOp:
         except Exception:
             raise
         else:
-            res = [res] if not isinstance(res, Iterable) else res
+            res = [res] if not isinstance(res, (list, tuple)) else res
             self.pub.publish(*res)
 
 
