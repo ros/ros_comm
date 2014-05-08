@@ -71,9 +71,7 @@ typedef struct {
 } roslz4_stream;
 
 // Low level functions
-inline int roslz4_blockSizeFromIndex(int block_id) {
-  return (1 << (8 + (2 * block_id)));
-}
+int roslz4_blockSizeFromIndex(int block_id);
 
 int roslz4_compressStart(roslz4_stream *stream, int block_size_id);
 int roslz4_compress(roslz4_stream *stream, int action);

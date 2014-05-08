@@ -296,6 +296,10 @@ void streamStateFree(roslz4_stream *str) {
   }
 }
 
+int roslz4_blockSizeFromIndex(int block_id) {
+  return (1 << (8 + (2 * block_id)));
+}
+
 int roslz4_compressStart(roslz4_stream *str, int block_size_id) {
   int ret = streamStateAlloc(str);
   if (ret < 0) { return ret; }
