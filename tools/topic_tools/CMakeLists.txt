@@ -10,7 +10,11 @@ add_service_files(DIRECTORY srv
   MuxAdd.srv
   MuxDelete.srv
   MuxList.srv
-  MuxSelect.srv)
+  MuxSelect.srv
+  DemuxAdd.srv
+  DemuxDelete.srv
+  DemuxList.srv
+  DemuxSelect.srv)
 
 generate_messages(DEPENDENCIES std_msgs)
 
@@ -32,6 +36,10 @@ add_executable(mux src/mux.cpp)
 target_link_libraries(mux topic_tools ${catkin_LIBRARIES})
 add_dependencies(topic_tools topic_tools_gencpp)
 
+add_executable(demux src/demux.cpp)
+target_link_libraries(demux topic_tools ${catkin_LIBRARIES})
+add_dependencies(topic_tools topic_tools_gencpp)
+
 add_executable(relay src/relay.cpp)
 target_link_libraries(relay topic_tools ${catkin_LIBRARIES})
 
@@ -46,7 +54,7 @@ install(TARGETS topic_tools
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
 
-install(TARGETS switch_mux mux relay drop throttle
+install(TARGETS switch_mux mux demux relay drop throttle
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
