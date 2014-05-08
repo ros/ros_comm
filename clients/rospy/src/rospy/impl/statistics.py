@@ -59,7 +59,12 @@ class SubscriberStatisticsLogger():
         Fetch window parameters from parameter server
         """
 
-        self.enabled = rospy.get_param("/enable_statistics", False)
+        # disable statistics if node can't talk to parameter server which is the case in unit tests
+        try:
+            self.enabled = rospy.get_param("/enable_statistics", False)
+        except:
+            self.enabled = False
+            return
 
         # Range of window length, in seconds
         self.min_elements = rospy.get_param("/statistics_window_min_elements", 10)
