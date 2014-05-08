@@ -2,8 +2,8 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.2 (2014-05-08)
+-------------------
 * use publisher queue_size for statistics (`#398 <https://github.com/ros/ros_comm/issues/398>`_)
 
 1.11.1 (2014-05-07)
