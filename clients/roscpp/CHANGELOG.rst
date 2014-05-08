@@ -2,6 +2,9 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.11.1 (2014-05-07)
 -------------------
 * update API to use boost::signals2 (`#267 <https://github.com/ros/ros_comm/issues/267>`_)

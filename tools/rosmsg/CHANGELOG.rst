@@ -2,6 +2,9 @@
 Changelog for package rosmsg
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.11.1 (2014-05-07)
 -------------------
 * fix rosmsg to find messages existing only in devel space (e.g. messages generated for actions) (`#385 <https://github.com/ros/ros_comm/issues/385>`_)

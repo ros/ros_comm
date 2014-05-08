@@ -2,6 +2,10 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* use publisher queue_size for statistics (`#398 <https://github.com/ros/ros_comm/issues/398>`_)
+
 1.11.1 (2014-05-07)
 -------------------
 * improve asynchonous publishing performance (`#373 <https://github.com/ros/ros_comm/issues/373>`_)

@@ -2,6 +2,9 @@
 Changelog for package roswtf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.11.1 (2014-05-07)
 -------------------
 * update roswtf test for upcoming rospack 2.2.3
