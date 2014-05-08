@@ -444,7 +444,7 @@ init_roslz4(void)
   Py_INCREF(&LZ4Decompressor_Type);
   PyModule_AddObject(m, "LZ4Decompressor", (PyObject *)&LZ4Decompressor_Type);
 
-#if PY_MAJOR_VERSION
+#if PY_MAJOR_VERSION >= 3
   return m;
 #endif
 }
