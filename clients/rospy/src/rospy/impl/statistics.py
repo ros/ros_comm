@@ -133,7 +133,7 @@ class ConnectionStatisticsLogger():
         self.subscriber = subscriber
         self.publisher = publisher
 
-        self.pub = rospy.Publisher("/statistics", TopicStatistics)
+        self.pub = rospy.Publisher("/statistics", TopicStatistics, queue_size=10)
 
         # reset window
         self.last_pub_time = rospy.Time(0)
