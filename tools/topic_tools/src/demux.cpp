@@ -2,8 +2,8 @@
 // demux is a generic ROS topic demultiplexer: one input topic is fanned out
 // to 1 of N output topics. A service is provided to select between the outputs
 //
+// Copyright (C) 2009, Morgan Quigley
 // Copyright (C) 2014, Andreas Hermann
-// Code copied and adapted from the "toppic mux" by Morgan Quigley
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -124,7 +124,7 @@ bool sel_srv_cb( topic_tools::DemuxSelect::Request  &req,
 
 void in_cb(const boost::shared_ptr<ShapeShifter const>& msg)
 {
-  ROS_INFO("Received an incoming msg ...");
+  ROS_DEBUG("Received an incoming msg ...");
   // when a message is incoming, check, if the requested publisher is already existing.
   // if not, create it with the information available from the incoming message.
   if(!g_selected->pub)
@@ -141,12 +141,13 @@ void in_cb(const boost::shared_ptr<ShapeShifter const>& msg)
 	  }
 
 	  ROS_INFO("Added publisher %s to demux! Sleeping for 0.5 secs.", g_selected->topic_name.c_str());
-	  ros::Duration(0.5).sleep(); // sleep for half a second
+	  // This is needed, because it takes some time before publisher is registered and can send out messages.
+	  ros::Duration(0.5).sleep();
   }
 
   // finally: send out the message over the active publisher
   g_selected->pub->publish(msg);
-  ROS_INFO("... and sent it out again!");
+  ROS_DEBUG("... and sent it out again!");
 }
 
 bool list_topic_cb(topic_tools::DemuxList::Request& req,
@@ -252,10 +253,10 @@ int main(int argc, char **argv)
   g_node = &n;
   g_input_topic = args[1];
   // Put our API into the "demux" namespace, which the user should usually remap
-  ros::NodeHandle pnh("~");
+  ros::NodeHandle demux_nh("demux"), pnh("~");
 
   // Latched publisher for selected output topic name
-  g_pub_selected = pnh.advertise<std_msgs::String>(string("selected"), 1, true);
+  g_pub_selected = demux_nh.advertise<std_msgs::String>(string("selected"), 1, true);
 
   for (size_t i = 0; i < topics.size(); i++)
   {
@@ -271,14 +272,14 @@ int main(int argc, char **argv)
   g_pub_selected.publish(t);
 
   // Create the one subscriber
-  g_sub = ros::Subscriber(g_node->subscribe<ShapeShifter>(g_input_topic, 10, boost::bind(in_cb, _1)));
+  g_sub = ros::Subscriber(n.subscribe<ShapeShifter>(g_input_topic, 10, boost::bind(in_cb, _1)));
 
 
   // New service
-  ros::ServiceServer ss_select = pnh.advertiseService(string("select"), sel_srv_cb);
-  ros::ServiceServer ss_add = pnh.advertiseService(string("add"), add_topic_cb);
-  ros::ServiceServer ss_list = pnh.advertiseService(string("list"), list_topic_cb);
-  ros::ServiceServer ss_del = pnh.advertiseService(string("delete"), del_topic_cb);
+  ros::ServiceServer ss_select = demux_nh.advertiseService(string("select"), sel_srv_cb);
+  ros::ServiceServer ss_add = demux_nh.advertiseService(string("add"), add_topic_cb);
+  ros::ServiceServer ss_list = demux_nh.advertiseService(string("list"), list_topic_cb);
+  ros::ServiceServer ss_del = demux_nh.advertiseService(string("delete"), del_topic_cb);
 
   // Run
   ros::spin();
