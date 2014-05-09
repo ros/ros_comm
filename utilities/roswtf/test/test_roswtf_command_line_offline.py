@@ -71,10 +71,17 @@ class TestRoswtfOffline(unittest.TestCase):
             'rosbag', 'rosbag_storage', 'roslz4', 'rosconsole', 'roscpp', 'rosgraph_msgs', 'roslang', 'rosmaster', 'rosmsg', 'rosout', 'rosparam', 'rospy', 'rostest', 'rostopic', 'topic_tools', 'xmlrpcpp',
             'cpp_common', 'roscpp_serialization', 'roscpp_traits', 'rostime',  # roscpp_core
             'rosbuild', 'rosclean', 'rosunit',  # ros
-            'rospack', 'cmake_modules', 'std_msgs', 'message_runtime', 'message_generation', 'gencpp', 'genlisp', 'genpy', 'genmsg', 'catkin',
+            'rospack', 'std_msgs', 'message_runtime', 'message_generation', 'gencpp', 'genlisp', 'genpy', 'genmsg', 'catkin',
             'console_bridge'
         ]
-        env['ROS_PACKAGE_PATH'] = os.pathsep.join([rospack.get_path(pkg) for pkg in pkgs])
+        paths = [rospack.get_path(pkg) for pkg in pkgs]
+        try:
+            path = rospack.get_path('cmake_modules')
+        except rospkg.ResourceNotFound:
+            pass
+        else:
+            paths.append(path)
+        env['ROS_PACKAGE_PATH'] = os.pathsep.join(paths)
 
         cwd  = get_roswtf_path()
         kwds = { 'env': env, 'stdout': PIPE, 'stderr': PIPE, 'cwd': cwd}
