@@ -299,18 +299,18 @@ int main(int argc, char **argv)
   g_node = &n;
   g_output_topic = args[1];
   // Put our API into the "mux" namespace, which the user should usually remap
-  ros::NodeHandle pnh("~");
+  ros::NodeHandle mux_nh("mux"), pnh("~");
   pnh.getParam("lazy", g_lazy);
 
   // Latched publisher for selected input topic name
-  g_pub_selected = pnh.advertise<std_msgs::String>(string("selected"), 1, true);
+  g_pub_selected = mux_nh.advertise<std_msgs::String>(string("selected"), 1, true);
 
   for (size_t i = 0; i < topics.size(); i++)
   {
     struct sub_info_t sub_info;
     sub_info.msg = new ShapeShifter;
     sub_info.topic_name = ros::names::resolve(topics[i]);
-    sub_info.sub = new ros::Subscriber(g_node->subscribe<ShapeShifter>(sub_info.topic_name, 10, boost::bind(in_cb, _1, sub_info.msg)));
+    sub_info.sub = new ros::Subscriber(n.subscribe<ShapeShifter>(sub_info.topic_name, 10, boost::bind(in_cb, _1, sub_info.msg)));
 
     g_subs.push_back(sub_info);
   }
@@ -320,12 +320,12 @@ int main(int argc, char **argv)
   g_pub_selected.publish(t);
 
   // Backward compatibility
-  ros::ServiceServer ss = pnh.advertiseService(g_output_topic + string("_select"), sel_srv_cb_dep);
+  ros::ServiceServer ss = n.advertiseService(g_output_topic + string("_select"), sel_srv_cb_dep);
   // New service
-  ros::ServiceServer ss_select = pnh.advertiseService(string("select"), sel_srv_cb);
-  ros::ServiceServer ss_add = pnh.advertiseService(string("add"), add_topic_cb);
-  ros::ServiceServer ss_list = pnh.advertiseService(string("list"), list_topic_cb);
-  ros::ServiceServer ss_del = pnh.advertiseService(string("delete"), del_topic_cb);
+  ros::ServiceServer ss_select = mux_nh.advertiseService(string("select"), sel_srv_cb);
+  ros::ServiceServer ss_add = mux_nh.advertiseService(string("add"), add_topic_cb);
+  ros::ServiceServer ss_list = mux_nh.advertiseService(string("list"), list_topic_cb);
+  ros::ServiceServer ss_del = mux_nh.advertiseService(string("delete"), del_topic_cb);
   ros::spin();
   for (list<struct sub_info_t>::iterator it = g_subs.begin();
        it != g_subs.end();
