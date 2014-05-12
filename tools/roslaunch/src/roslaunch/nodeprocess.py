@@ -42,6 +42,9 @@ import subprocess
 import time
 import traceback
 
+import sys
+from threading  import Thread
+
 import rospkg
 
 from roslaunch.core import *
@@ -134,6 +137,7 @@ def create_node_process(run_id, node, master_uri):
 
     # default for node.output not set is 'log'
     log_output = node.output != 'screen'
+#     log_output = True
     _logger.debug('process[%s]: returning LocalProcess wrapper')
     return LocalProcess(run_id, node.package, name, args, env, log_output, respawn=node.respawn, required=node.required, cwd=node.cwd)
 
@@ -236,6 +240,9 @@ class LocalProcess(Process):
             self.args = _cleanup_remappings(self.args, '__log:=')
             self.args.append("__log:=%s"%os.path.join(log_dir, "%s.log"%(logfname)))
 
+        print "logfileout:", logfileout
+        print "logfileerr:", logfileerr
+
         return logfileout, logfileerr
 
     def start(self):
@@ -280,7 +287,18 @@ class LocalProcess(Process):
             _logger.info("process[%s]: cwd will be [%s]", self.name, cwd)
 
             try:
-                self.popen = subprocess.Popen(self.args, cwd=cwd, stdout=logfileout, stderr=logfileerr, env=full_env, close_fds=True, preexec_fn=os.setsid)
+                self.popen = subprocess.Popen(self.args, cwd=cwd, stdout=subprocess.PIPE, stderr=logfileerr, env=full_env, close_fds=True, preexec_fn=os.setsid)
+#                 self.popen = subprocess.Popen(self.args, cwd=cwd, stdout=logfileout, stderr=logfileerr, env=full_env, close_fds=True, preexec_fn=os.setsid)
+                
+                self.threads = []
+                self.threads.append(tee(self.popen.stdout, logfileout, sys.stdout)) 
+#                 if logfileerr is not None: threads.append(tee(self.popen.stderr, sys.stderr))
+#                 for t in threads: t.join() # wait for IO completion
+#                 self.popen = subprocess.Popen(self.args, cwd=cwd, stdout=subprocess.PIPE, stderr=logfileerr, env=full_env, close_fds=True, preexec_fn=os.setsid)
+#                 for line in self.popen.stdout:
+#                     sys.stdout.write(line)
+#                     logfile.write(line)
+
             except OSError, (errno, msg):
                 self.started = True # must set so is_alive state is correct
                 _logger.error("OSError(%d, %s)", errno, msg)
@@ -516,3 +534,15 @@ def _cleanup_remappings(args, prefix):
     for a in existing_args:
         args.remove(a)
     return args
+
+def tee(infile, *files):
+    """Print `infile` to `files` in a separate thread."""
+    def fanout(infile, *files):
+        for line in iter(infile.readline, ''):
+            for f in files:
+                f.write(line)
+        infile.close()
+    t = Thread(target=fanout, args=(infile,)+files)
+    t.daemon = True
+    t.start()
+    return t

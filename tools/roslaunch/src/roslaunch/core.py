@@ -471,7 +471,7 @@ class Node(object):
             raise ValueError("package must be non-empty")
         if not len(self.type.strip()):
             raise ValueError("type must be non-empty")
-        if not self.output in ['log', 'screen', None]:
+        if not self.output in ['log', 'screen', 'both', None]:
             raise ValueError("output must be one of 'log', 'screen'")
         if not self.cwd in ['ROS_HOME', 'node', None]:
             raise ValueError("cwd must be one of 'ROS_HOME', 'node'")
