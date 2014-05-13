@@ -48,7 +48,7 @@ Publisher example::
     from rospy.numpy_msg import numpy_msg
     import numpy
     
-    pub = rospy.Publisher('mytopic', numpy_msg(TopicType))
+    pub = rospy.Publisher('mytopic', numpy_msg(TopicType), queue_size=10)
     rospy.init_node('mynode')
     a = numpy.array([1.0, 2.1, 3.2, 4.3, 5.4, 6.5], dtype=numpy.float32)
     pub.publish(a)

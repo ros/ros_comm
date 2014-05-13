@@ -1204,7 +1204,7 @@ def create_publisher(topic_name, topic_type, latch):
         raise ROSTopicException("invalid message type: %s.\nIf this is a valid message type, perhaps you need to type 'rosmake %s'"%(topic_type, pkg))
     # disable /rosout and /rostime as this causes blips in the pubsub network due to rostopic pub often exiting quickly
     rospy.init_node('rostopic', anonymous=True, disable_rosout=True, disable_rostime=True)
-    pub = rospy.Publisher(topic_name, msg_class, latch=latch)
+    pub = rospy.Publisher(topic_name, msg_class, latch=latch, queue_size=100)
     return pub, msg_class
 
 def _publish_at_rate(pub, msg, rate, verbose=False):
