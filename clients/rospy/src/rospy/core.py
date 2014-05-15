@@ -309,8 +309,8 @@ def _add_shutdown_hook(h, hooks):
     """
     shared implementation of add_shutdown_hook and add_preshutdown_hook
     """
-    if type(h) not in [types.FunctionType, types.MethodType]:
-        raise TypeError("shutdown hook [%s] must be a function: %s"%(h, type(h)))
+    if not callable(h):
+        raise TypeError("shutdown hook [%s] must be a function or callable object: %s"%(h, type(h)))
     if _shutdown_flag:
         _logger.warn("add_shutdown_hook called after shutdown")
         h("already shutdown")
