@@ -89,7 +89,6 @@ def create_master_process(run_id, type_, ros_root, port):
         raise RLException("unknown master typ_: %s"%type_)
 
     _logger.info("process[master]: launching with args [%s]"%args)
-    # log_output = False
     log_output = 'screen'
     return LocalProcess(run_id, package, 'master', args, os.environ, log_output, None)
 
@@ -137,7 +136,6 @@ def create_node_process(run_id, node, master_uri):
     _logger.info('process[%s]: args[%s]', name, args)        
 
     # default for node.output not set is 'log'
-    # log_output = node.output != 'screen'
     log_output = node.output
     _logger.debug('process[%s]: returning LocalProcess wrapper')
     return LocalProcess(run_id, node.package, name, args, env, log_output, respawn=node.respawn, required=node.required, cwd=node.cwd)
@@ -285,16 +283,23 @@ class LocalProcess(Process):
             _logger.info("process[%s]: cwd will be [%s]", self.name, cwd)
 
             try:
+                # the two arguments 'stdbuf' and '-oL' are necessary to have real time logging, 
+                # instead of all at once. only necessary if stdout is not a tty
                 if self.log_output == 'both':
+                    # stderr is redirected to stdout
                     self.popen = subprocess.Popen(['stdbuf', '-oL'] + self.args, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=full_env, close_fds=True, preexec_fn=os.setsid)
+                    # stdout (and stderr) are written to file and screen
                     tee(self.popen.stdout, logfileout, sys.stdout)
                 elif self.log_output == 'log':
                     self.popen = subprocess.Popen(['stdbuf', '-oL'] + self.args, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=full_env, close_fds=True, preexec_fn=os.setsid)
+                    # stdout is written to file
                     tee(self.popen.stdout, logfileout)
+                    # stderr is written to file and screen
                     tee(self.popen.stderr, logfileout, sys.stdout)
                 else:
-                    self.popen = subprocess.Popen(self.args, cwd=cwd, stdout=logfileout, stderr=logfileerr, env=full_env, close_fds=True, preexec_fn=os.setsid)
-                
+                    # use default stdout and stderr (screen)
+                    self.popen = subprocess.Popen(self.args, cwd=cwd, env=full_env, close_fds=True, preexec_fn=os.setsid)
+            
             except OSError, (errno, msg):
                 self.started = True # must set so is_alive state is correct
                 _logger.error("OSError(%d, %s)", errno, msg)
@@ -302,7 +307,7 @@ class LocalProcess(Process):
                     raise FatalProcessLaunch("Unable to launch [%s]. \nIf it is a script, you may be missing a '#!' declaration at the top."%self.name)
                 elif errno == 2: #no such file or directory
                     raise FatalProcessLaunch("""Roslaunch got a '%s' error while attempting to run:
- 
+
 %s
 
 Please make sure that all the executables in this command exist and have
@@ -333,7 +338,6 @@ executable permission. This is often caused by a bad launch-prefix."""%(msg, ' '
         @return: True if process is still running
         @rtype: bool
         """
-
         if not self.started: #not started yet
             return True
         if self.stopped or self.popen is None:
