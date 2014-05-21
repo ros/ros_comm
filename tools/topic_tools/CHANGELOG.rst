@@ -2,6 +2,10 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add demux program and related scripts (`#407 <https://github.com/ros/ros_comm/issues/407>`_)
+
 1.11.2 (2014-05-08)
 -------------------
 

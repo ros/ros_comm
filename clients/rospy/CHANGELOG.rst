@@ -2,6 +2,12 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* allow shutdown hooks to be any callable object (`#410 <https://github.com/ros/ros_comm/issues/410>`_)
+* add demux program and related scripts (`#407 <https://github.com/ros/ros_comm/issues/407>`_)
+* add publisher queue_size to rostopic
+
 1.11.2 (2014-05-08)
 -------------------
 * use publisher queue_size for statistics (`#398 <https://github.com/ros/ros_comm/issues/398>`_)
