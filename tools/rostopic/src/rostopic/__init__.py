@@ -719,7 +719,15 @@ def _rostopic_echo(topic, callback_echo, bag_file=None, echo_all_topics=False):
                     field = fields[0].split('[')[0]
                     del fields[0]
                     index = submsg_class.__slots__.index(field)
-                    type_information = submsg_class._slot_types[index]
+                    try:
+                        type_information = submsg_class._slot_types[index]
+                    except AttributeError:
+                        # since the genpy Time and Duration classes do not
+                        # provide the slot types we set the type manually
+                        if issubclass(submsg_class, genpy.TVal):
+                            type_information = 'int32'
+                        else:
+                            raise
                     if fields:
                         submsg_class = roslib.message.get_message_class(type_information)
 
