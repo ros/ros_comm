@@ -2,8 +2,8 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.3 (2014-05-21)
+-------------------
 * add publisher queue_size to rostopic
 
 1.11.2 (2014-05-08)
