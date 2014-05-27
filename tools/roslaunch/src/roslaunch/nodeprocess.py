@@ -294,21 +294,23 @@ class LocalProcess(Process):
                         # instead of all at once. only necessary if stdout is not a tty
                         self.args = ['stdbuf', '-oL'] + self.args
 
-                    self.popen = subprocess.Popen(self.args, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=full_env, close_fds=True, preexec_fn=os.setsid)
-
                     if self.screen_output:
-                        # if log_output and screen_output:
-                        # stdout is sent to file and screen
+                        # if log_output and screen_output (output = 'both')
+                        # stdout is sent to screen and logfileout
+                        # stderr is redirected to stdout to keep temporal order between out and err intact 
+                        #   and will be written to the same file as stdout (logfileout)
+                        self.popen = subprocess.Popen(self.args, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=full_env, close_fds=True, preexec_fn=os.setsid)
                         _tee(self.popen.stdout, logfileout, sys.stdout)
                     else:
-                        # if log_output:
-                        # stdout is written only to file
+                        # if log_output (output = 'log')
+                        # stdout is written only to logfileout
+                        self.popen = subprocess.Popen(self.args, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=full_env, close_fds=True, preexec_fn=os.setsid)
                         _tee(self.popen.stdout, logfileout)
+                        # stderr is written to both screen and logfileerr
+                        _tee(self.popen.stderr, logfileerr, sys.stderr)
                     
-                    # stderr always written to both screen and file
-                    _tee(self.popen.stderr, logfileerr, sys.stderr)
                 else:
-                    # if screen_output:
+                    # if screen_output (output = 'screen')
                     # use default stdout and stderr (screen)
                     self.popen = subprocess.Popen(self.args, cwd=cwd, env=full_env, close_fds=True, preexec_fn=os.setsid)
             
