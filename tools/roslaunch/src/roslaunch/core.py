@@ -434,7 +434,7 @@ class Node(object):
         :param remap_args: list of [(from, to)] remapping arguments, ``[(str, str)]``
         :param env_args: list of [(key, value)] of
         additional environment vars to set for node, ``[(str, str)]``
-        :param output: where to log output to, either Node, 'screen' or 'log', ``str``
+        :param output: where to log output to, 'screen', 'log' or both, ``str``
         :param cwd: current working directory of node, either 'node', 'ROS_HOME'. Default: ROS_HOME, ``str``
         :param launch_prefix: launch command/arguments to prepend to node executable arguments, ``str``
         :param required: node is required to stay running (launch fails if node dies), ``bool``
@@ -471,8 +471,8 @@ class Node(object):
             raise ValueError("package must be non-empty")
         if not len(self.type.strip()):
             raise ValueError("type must be non-empty")
-        if not self.output in ['log', 'screen', None]:
-            raise ValueError("output must be one of 'log', 'screen'")
+        if not self.output in ['log', 'screen', 'both', None]:
+            raise ValueError("output must be one of 'log', 'screen' or 'both'")
         if not self.cwd in ['ROS_HOME', 'node', None]:
             raise ValueError("cwd must be one of 'ROS_HOME', 'node'")
         
