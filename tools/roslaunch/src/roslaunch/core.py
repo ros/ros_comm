@@ -434,7 +434,7 @@ class Node(object):
         :param remap_args: list of [(from, to)] remapping arguments, ``[(str, str)]``
         :param env_args: list of [(key, value)] of
         additional environment vars to set for node, ``[(str, str)]``
-        :param output: where to log output to, 'screen', 'log' or both, ``str``
+        :param output: where to log output to, 'screen', 'log' or 'both', ``str``
         :param cwd: current working directory of node, either 'node', 'ROS_HOME'. Default: ROS_HOME, ``str``
         :param launch_prefix: launch command/arguments to prepend to node executable arguments, ``str``
         :param required: node is required to stay running (launch fails if node dies), ``bool``
