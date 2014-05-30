@@ -39,6 +39,8 @@ Local process implementation for running and monitoring nodes.
 import os
 import signal
 import subprocess 
+import sys
+import threading
 import time
 import traceback
 
@@ -87,7 +89,8 @@ def create_master_process(run_id, type_, ros_root, port):
 
     _logger.info("process[master]: launching with args [%s]"%args)
     log_output = False
-    return LocalProcess(run_id, package, 'master', args, os.environ, log_output, None)
+    screen_output = True
+    return LocalProcess(run_id, package, 'master', args, os.environ, log_output, None, screen_output=screen_output)
 
 def create_node_process(run_id, node, master_uri):
     """
@@ -134,8 +137,9 @@ def create_node_process(run_id, node, master_uri):
 
     # default for node.output not set is 'log'
     log_output = node.output != 'screen'
+    screen_output = node.output != 'log'
     _logger.debug('process[%s]: returning LocalProcess wrapper')
-    return LocalProcess(run_id, node.package, name, args, env, log_output, respawn=node.respawn, required=node.required, cwd=node.cwd)
+    return LocalProcess(run_id, node.package, name, args, env, log_output, respawn=node.respawn, required=node.required, cwd=node.cwd, screen_output=screen_output)
 
 
 class LocalProcess(Process):
@@ -143,7 +147,7 @@ class LocalProcess(Process):
     Process launched on local machine
     """
     
-    def __init__(self, run_id, package, name, args, env, log_output, respawn=False, required=False, cwd=None, is_node=True):
+    def __init__(self, run_id, package, name, args, env, log_output, respawn=False, required=False, cwd=None, is_node=True, screen_output=False):
         """
         @param run_id: unique run ID for this roslaunch. Used to
           generate log directory location. run_id may be None if this
@@ -165,11 +169,14 @@ class LocalProcess(Process):
         @type  cwd: str
         @param is_node: (optional) if True, process is ROS node and accepts ROS node command-line arguments. Default: True
         @type  is_node: False
+        @param screen_output: if True, show process output on screen
+        @type  screen_output: bool
         """    
         super(LocalProcess, self).__init__(package, name, args, env, respawn, required)
         self.run_id = run_id
         self.popen = None
         self.log_output = log_output
+        self.screen_output = screen_output
         self.started = False
         self.stopped = False
         self.cwd = cwd
@@ -187,6 +194,7 @@ class LocalProcess(Process):
         if self.run_id:
             info['run_id'] = self.run_id
         info['log_output'] = self.log_output
+        info['screen_output'] = self.screen_output
         if self.cwd is not None:
             info['cwd'] = self.cwd
         return info
@@ -226,8 +234,7 @@ class LocalProcess(Process):
             else:
                 mode = 'w'
             logfileout = open(outf, mode)
-            if is_child_mode():
-                logfileerr = open(errf, mode)
+            logfileerr = open(errf, mode)
 
         # #986: pass in logfile name to node
         node_log_file = log_dir
@@ -280,7 +287,33 @@ class LocalProcess(Process):
             _logger.info("process[%s]: cwd will be [%s]", self.name, cwd)
 
             try:
-                self.popen = subprocess.Popen(self.args, cwd=cwd, stdout=logfileout, stderr=logfileerr, env=full_env, close_fds=True, preexec_fn=os.setsid)
+                if self.log_output:
+
+                    if sys.platform.startswith('linux'):
+                        # the two arguments 'stdbuf' and '-oL' are necessary to have real time logging, 
+                        # instead of all at once. only necessary if stdout is not a tty
+                        self.args = ['stdbuf', '-oL'] + self.args
+
+                    if self.screen_output:
+                        # if log_output and screen_output (output = 'both')
+                        # stdout is sent to screen and logfileout
+                        # stderr is redirected to stdout to keep temporal order between out and err intact 
+                        #   and will be written to the same file as stdout (logfileout)
+                        self.popen = subprocess.Popen(self.args, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=full_env, close_fds=True, preexec_fn=os.setsid)
+                        _tee(self.popen.stdout, logfileout, sys.stdout)
+                    else:
+                        # if log_output (output = 'log')
+                        # stdout is written only to logfileout
+                        self.popen = subprocess.Popen(self.args, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=full_env, close_fds=True, preexec_fn=os.setsid)
+                        _tee(self.popen.stdout, logfileout)
+                        # stderr is written to both screen and logfileerr
+                        _tee(self.popen.stderr, logfileerr, sys.stderr)
+                    
+                else:
+                    # if screen_output (output = 'screen')
+                    # use default stdout and stderr (screen)
+                    self.popen = subprocess.Popen(self.args, cwd=cwd, env=full_env, close_fds=True, preexec_fn=os.setsid)
+            
             except OSError, (errno, msg):
                 self.started = True # must set so is_alive state is correct
                 _logger.error("OSError(%d, %s)", errno, msg)
@@ -516,3 +549,18 @@ def _cleanup_remappings(args, prefix):
     for a in existing_args:
         args.remove(a)
     return args
+
+def _tee(infile, *files):
+    """Print `infile` to `files` in a separate thread."""
+    def fanout(infile, *files):
+        for line in iter(infile.readline, ''):
+            if not line: break
+            for f in files:
+                if not f is None:
+                    f.write(line)
+                    f.flush()
+        infile.close()
+    t = threading.Thread(target=fanout, args=(infile,)+files)
+    t.daemon = True
+    t.start()
+    return t
