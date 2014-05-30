@@ -559,8 +559,7 @@ def _tee(infile, *files):
                 if not f is None:
                     f.write(line)
                     f.flush()
-        if not f is None:
-            infile.close()
+        infile.close()
     t = threading.Thread(target=fanout, args=(infile,)+files)
     t.daemon = True
     t.start()
