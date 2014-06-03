@@ -2,6 +2,11 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* improve asynchonous publishing performance (`#373 <https://github.com/ros/ros_comm/issues/373>`_)
+* allow custom error handlers for services (`#375 <https://github.com/ros/ros_comm/issues/375>`_)
+
 1.10.2 (2014-03-03)
 -------------------
 * fix exception handling for queued connections (`#369 <https://github.com/ros/ros_comm/issues/369>`_)
