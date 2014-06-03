@@ -1,6 +1,6 @@
 <package>
   <name>test_rosmaster</name>
-  <version>1.10.2</version>
+  <version>1.10.3</version>
   <description>
     Tests for rosmaster which depend on rostest.
   </description>

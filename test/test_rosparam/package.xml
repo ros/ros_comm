@@ -1,6 +1,6 @@
 <package>
   <name>test_rosparam</name>
-  <version>1.10.2</version>
+  <version>1.10.3</version>
   <description>
     A package containing the unit tests for rosparam.
   </description>
