@@ -34,7 +34,6 @@
 import os
 import sys 
 import unittest
-import cStringIO
 import time
         
 from subprocess import Popen, PIPE, check_call, call
@@ -48,7 +47,7 @@ class TestRosgraphOffline(unittest.TestCase):
     def test_cmd_help(self):
         cmd = 'rosgraph'
         output = Popen([cmd, '-h'], stdout=PIPE).communicate()[0]
-        self.assert_('Usage' in output)
+        self.assert_('Usage' in output.decode())
             
     def test_offline(self):
         cmd = 'rosgraph'
@@ -61,4 +60,4 @@ class TestRosgraphOffline(unittest.TestCase):
         msg = "ERROR: Unable to communicate with master!\n"
 
         output = Popen([cmd], **kwds).communicate()
-        self.assertEquals(msg, output[1])
+        self.assertEquals(msg, output[1].decode())

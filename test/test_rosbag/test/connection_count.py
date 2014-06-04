@@ -53,7 +53,7 @@ class ConnectionCount(unittest.TestCase):
     self.assertEqual(p.returncode, 0, 'Failed to check bag\ncmd=%s\nstdout=%s\nstderr=%s'%(cmd,out,err))
 
     conns = False
-    for l in out.split('\n'):
+    for l in out.decode().split('\n'):
         f = l.strip().split(': ')
         if len(f) == 2 and f[0] == 'connections':
             conns = int(f[1])

@@ -83,11 +83,13 @@ class TestRosnodeOnline(unittest.TestCase):
         # list
         # - we aren't matching against the core services as those can make the test suites brittle
         output = Popen([cmd, 'list'], stdout=PIPE).communicate()[0]
+        output = output.decode()
         l = set(output.split())
         for t in nodes:
             self.assert_(t in l, "%s not in %s"%(t, l))
 
         output = Popen([cmd, 'list', '-a'], stdout=PIPE).communicate()[0]
+        output = output.decode()
         l = set(output.split())
         for t in nodes:
             for e in l:
@@ -97,6 +99,7 @@ class TestRosnodeOnline(unittest.TestCase):
                 self.fail("did not find [%s] in list [%s]"%(t, l))
 
         output = Popen([cmd, 'list', '-u'], stdout=PIPE).communicate()[0]
+        output = output.decode() 
         l = set(output.split())
         self.assert_(len(l), "list -u is empty")
         for e in l:
@@ -105,6 +108,7 @@ class TestRosnodeOnline(unittest.TestCase):
         for name in nodes:
             # type
             output = Popen([cmd, 'info', name], stdout=PIPE).communicate()[0]
+            output = output.decode()
             # not really validating output as much as making sure it's not broken
             self.assert_(name in output)
             self.assert_('chatter' in output)

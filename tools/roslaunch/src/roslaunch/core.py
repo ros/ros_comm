@@ -30,6 +30,8 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import print_function
+
 """
 Core roslaunch model and lower-level utility routines.
 """
@@ -39,7 +41,10 @@ import logging
 
 import socket
 import sys
-import xmlrpclib
+try:
+    from xmlrpc.client import MultiCall, ServerProxy
+except ImportError:
+    from xmlrpclib import MultiCall, ServerProxy
 
 import rospkg
 
@@ -111,7 +116,7 @@ def printlog(msg):
         except:
             pass
     try: # don't let this bomb out the actual code        
-        print msg
+        print(msg)
     except:
         pass
 
@@ -127,9 +132,9 @@ def printlog_bold(msg):
             pass
     try: # don't let this bomb out the actual code        
         if sys.platform in ['win32']:
-            print '%s'%msg  #windows console is terrifically boring 
+            print('%s' % msg)  # windows console is terrifically boring 
         else:
-            print '\033[1m%s\033[0m'%msg
+            print('\033[1m%s\033[0m' % msg)
     except:
         pass
 
@@ -146,7 +151,7 @@ def printerrlog(msg):
     # #1003: this has raised IOError (errno 104) in robot use. Better to
     # trap than let a debugging routine fault code.
     try: # don't let this bomb out the actual code
-        print >> sys.stderr, '\033[31m%s\033[0m'%msg
+        print('\033[31m%s\033[0m' % msg, file=sys.stderr)
     except:
         pass
 
@@ -282,15 +287,15 @@ class Master:
 
     def get(self):
         """
-        :returns:: XMLRPC proxy for communicating with master, ``xmlrpclib.ServerProxy``
+        :returns:: XMLRPC proxy for communicating with master, ``xmlrpc.client.ServerProxy``
         """
-        return xmlrpclib.ServerProxy(self.uri)
+        return ServerProxy(self.uri)
     
     def get_multi(self):
         """
-        :returns:: multicall XMLRPC proxy for communicating with master, ``xmlrpclib.MultiCall``
+        :returns:: multicall XMLRPC proxy for communicating with master, ``xmlrpc.client.MultiCall``
         """
-        return xmlrpclib.MultiCall(self.get())
+        return MultiCall(self.get())
     
     def is_running(self):
         """
@@ -589,7 +594,12 @@ class Test(Node):
 
         self.retry = retry or 0
         time_limit = time_limit or TEST_TIME_LIMIT_DEFAULT
-        if not type(time_limit) in (float, int, long):
+        number_types = [float, int]
+        try:
+            number_types.append(long)
+        except NameError:
+            pass
+        if not type(time_limit) in number_types:
             raise ValueError("'time-limit' must be a number")
         time_limit = float(time_limit) #force to floating point
         if time_limit <= 0:
