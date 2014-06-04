@@ -54,9 +54,9 @@ class TestTask(Thread):
         
     def run(self):
         try:
-            print "STARTING TASK"
+            print("STARTING TASK")
             self.value = self.task()
-            print "TASK HAS COMPLETED"
+            print("TASK HAS COMPLETED")
             self.success = True
         except:
             import traceback
@@ -80,6 +80,7 @@ class TestRosserviceOnline(unittest.TestCase):
         # list
         # - hard to exact match as we are still adding builtin services to nodes (e.g. set_logger_level)
         output = Popen([cmd, 'list'], stdout=PIPE).communicate()[0]
+        output = output.decode()
         l = set(output.split())
         for s in services:
             self.assert_(s in l)

@@ -716,11 +716,14 @@ class XmlLoader(loader.Loader):
         try:
             if verbose:
                 print("... loading XML")
-            if hasattr(xml_text,'encode') and isinstance(xml_text, unicode):
-                # #3799: xml_text comes in a unicode object, which
-                # #fails since XML text is expected to be encoded.
-                # that's why force encoding to utf-8 here (make sure XML header is utf-8)
-                xml_text = xml_text.encode('utf-8')
+            try:
+                if hasattr(xml_text,'encode') and isinstance(xml_text, unicode):
+                    # #3799: xml_text comes in a unicode object, which
+                    # #fails since XML text is expected to be encoded.
+                    # that's why force encoding to utf-8 here (make sure XML header is utf-8)
+                    xml_text = xml_text.encode('utf-8')
+            except NameError:
+                pass
             root = parseString(xml_text).getElementsByTagName('launch')
         except Exception as e:
             logging.getLogger('roslaunch').error("Invalid roslaunch XML syntax:\nstring[%s]\ntraceback[%s]"%(xml_text, traceback.format_exc()))
