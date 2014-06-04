@@ -31,11 +31,12 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import print_function
+
 import os
 import string 
 import sys 
 import unittest
-import cStringIO
         
 import roslib.names
 import roslib.packages
@@ -97,14 +98,14 @@ class TestGentools(unittest.TestCase):
 
         tests = self._load_md5_tests('md5text')
         # text file #1 is the reference
-        for k, files in tests.iteritems():
-            print "running tests", k
+        for k, files in tests.items():
+            print("running tests", k)
             ref_file = [f for f in files if f.endswith('%s1.txt'%k)]
             if not ref_file:
                 self.fail("failed to load %s"%k)
             ref_file = ref_file[0]
             ref_text = open(ref_file, 'r').read().strip()
-            print "KEY", k
+            print("KEY", k)
             files = [f for f in files if not f.endswith('%s1.txt'%k)]
             for f in files[1:]:
                 f_text = self._compute_md5_text(f)
@@ -112,16 +113,16 @@ class TestGentools(unittest.TestCase):
         
     def test_md5_equals(self):
         tests = self._load_md5_tests('same')
-        for k, files in tests.iteritems():
-            print "running tests", k
+        for k, files in tests.items():
+            print("running tests", k)
             md5sum = self._compute_md5(files[0])
             for f in files[1:]:
                 self.assertEquals(md5sum, self._compute_md5(f), "failed on %s: \n[%s]\nvs.\n[%s]\n"%(k, self._compute_md5_text(files[0]), self._compute_md5_text(f)))
     
     def test_md5_not_equals(self):
         tests = self._load_md5_tests('different')
-        for k, files in tests.iteritems():
-            print "running tests", k
+        for k, files in tests.items():
+            print("running tests", k)
             md5s = set()
             md6md5sum = self._compute_md5(files[0])
             for f in files:

@@ -1,6 +1,6 @@
 class update_test_rosbag_PartiallyMigrated_e6d73341e7b3f15f987c0cf194f97350(MessageUpdateRule):
-	old_type = "test_rosbag/PartiallyMigrated"
-	old_full_text = """
+    old_type = "test_rosbag/PartiallyMigrated"
+    old_full_text = """
 int32            field1 # 40
 MigratedExplicit field2 # (17, 58.2, "aldfkja", 82)
 
@@ -14,7 +14,7 @@ int32   field4 #82
 ================================================================================
 MSG: roslib/Header
 #Standard metadata for higher-level flow data types
-#sequence ID: consecutively increasing ID 
+#sequence ID: consecutively increasing ID
 uint32 seq
 #Two-integer timestamp that is expressed as:
 # * stamp.secs: seconds (stamp_secs) since epoch
@@ -27,8 +27,8 @@ time stamp
 string frame_id
 """
 
-	new_type = "test_rosbag/PartiallyMigrated"
-	new_full_text = """
+    new_type = "test_rosbag/PartiallyMigrated"
+    new_full_text = """
 int32            field1 # 40
 MigratedExplicit field2 # (17, 58.2, "aldfkja", 82)
 string           field3 # "radasdk"
@@ -43,7 +43,7 @@ int32   afield4 #82
 ================================================================================
 MSG: roslib/Header
 #Standard metadata for higher-level flow data types
-#sequence ID: consecutively increasing ID 
+#sequence ID: consecutively increasing ID
 uint32 seq
 #Two-integer timestamp that is expressed as:
 # * stamp.secs: seconds (stamp_secs) since epoch
@@ -56,12 +56,12 @@ time stamp
 string frame_id
 """
 
-	order = 0
-	migrated_types = [("MigratedExplicit","MigratedExplicit"),]
+    order = 0
+    migrated_types = [("MigratedExplicit","MigratedExplicit"),]
 
-	valid = True
+    valid = True
 
-	def update(self, old_msg, new_msg):
-		new_msg.field1 = old_msg.field1
-		self.migrate(old_msg.field2, new_msg.field2)
-		new_msg.field3 = 'radasdk'
+    def update(self, old_msg, new_msg):
+        new_msg.field1 = old_msg.field1
+        self.migrate(old_msg.field2, new_msg.field2)
+        new_msg.field3 = 'radasdk'

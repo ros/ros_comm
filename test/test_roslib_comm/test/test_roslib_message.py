@@ -30,6 +30,8 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import print_function
+
 import os
 import sys
 import time
@@ -58,9 +60,9 @@ class MessageTest(unittest.TestCase):
         from genpy.message import Message, strify_message, fill_message_args
         def roundtrip(m):
             yaml_text = strify_message(m)
-            print yaml_text
+            print(yaml_text)
             loaded = yaml.load(yaml_text) 
-            print "loaded", loaded
+            print("loaded", loaded)
             new_inst = m.__class__()
             if loaded is not None:
                 fill_message_args(new_inst, [loaded])

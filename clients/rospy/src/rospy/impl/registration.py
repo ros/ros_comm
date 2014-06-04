@@ -136,7 +136,7 @@ class RegistrationListeners(object):
                 try:
                     l.reg_removed(resolved_name, data_type_or_uri, reg_type)
                 except Exception as e:
-                    logerr("error notifying listener of removal: %s"%traceback.format_exc(e))
+                    logerr("error notifying listener of removal: %s"%traceback.format_exc())
             
     def notify_added(self, resolved_name, data_type, reg_type):
         """
@@ -152,7 +152,7 @@ class RegistrationListeners(object):
                 try:
                     l.reg_added(resolved_name, data_type, reg_type)
                 except Exception as e:
-                    logerr(traceback.format_exc(e))
+                    logerr(traceback.format_exc())
                     
     def clear(self):
         """

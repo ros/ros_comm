@@ -32,6 +32,8 @@
 #
 # Revision $Id$
 
+from __future__ import print_function
+
 """
 XML-RPC servers for parent and children
 
@@ -52,8 +54,14 @@ import socket
 import sys
 import time
 import traceback
-import urlparse
-import xmlrpclib
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+try:
+    from xmlrpc.client import ServerProxy
+except ImportError:
+    from xmlrpclib import ServerProxy
 
 import rosgraph.network as network
 import rosgraph.xmlrpc as xmlrpc
@@ -184,7 +192,7 @@ class ROSLaunchParentHandler(ROSLaunchBaseHandler):
         List the roslaunch child processes.
         @return int, str, [str]: code, msg, list of the roslaunch children URIS
         """        
-        return 1, 'roslaunch children', [v.uri for v in self.child_processes.itervalues() if v.uri is not None]
+        return 1, 'roslaunch children', [v.uri for v in self.child_processes.values() if v.uri is not None]
             
     def process_died(self, process_name, exit_code):
         """
@@ -255,7 +263,7 @@ class ROSLaunchChildHandler(ROSLaunchBaseHandler):
         self.name = name
         self.pm = pm
         self.server_uri = server_uri
-        self.server = xmlrpclib.ServerProxy(server_uri)
+        self.server = ServerProxy(server_uri)
 
     def _shutdown(self, reason):
         """
@@ -308,7 +316,7 @@ class ROSLaunchChildHandler(ROSLaunchBaseHandler):
         rosconfig = roslaunch.config.ROSLaunchConfig()
         try:
             roslaunch.xmlloader.XmlLoader().load_string(launch_xml, rosconfig)
-        except roslaunch.xmlloader.XmlParseException, e:
+        except roslaunch.xmlloader.XmlParseException as e:
             return -1, "ERROR: %s"%e, [[], []]
         
         # won't actually do anything other than local, but still required
@@ -365,7 +373,7 @@ class ROSLaunchNode(xmlrpc.XmlRpcNode):
         server_up = False
         while not server_up and time.time() < timeout_t:
             try:
-                code, msg, val = xmlrpclib.ServerProxy(self.uri).get_pid()
+                code, msg, val = ServerProxy(self.uri).get_pid()
                 if val != os.getpid():
                     raise RLException("Server at [%s] did not respond with correct PID. There appears to be something wrong with the networking configuration"%self.uri)
                 server_up = True
@@ -375,14 +383,14 @@ class ROSLaunchNode(xmlrpc.XmlRpcNode):
                 # assigned and the XMLRPC server initializing, but it
                 # is highly unlikely and unconfirmed
                 time.sleep(0.1)
-            except socket.error, (errno, msg):
-                if errno == 113:
-                    p = urlparse.urlparse(self.uri)
+            except socket.error as e:
+                if e.errno == 113:
+                    p = urlparse(self.uri)
                     raise RLException("Unable to contact the address [%s], which should be local.\nThis is generally caused by:\n * bad local network configuration\n * bad ROS_IP environment variable\n * bad ROS_HOSTNAME environment variable\nCan you ping %s?"%(self.uri, p.hostname))
                 else:
                     time.sleep(0.1)                    
         if not server_up:
-            p = urlparse.urlparse(self.uri)
+            p = urlparse(self.uri)
             raise RLException("""Unable to contact my own server at [%s].
 This usually means that the network is not configured properly.
 
@@ -407,7 +415,7 @@ For more tips, please see
             super(ROSLaunchNode, self).run()
         except:
             logging.getLogger("roslaunch.remote").error(traceback.format_exc())
-            print >> sys.stderr, "ERROR: failed to launch XML-RPC server for roslaunch"
+            print("ERROR: failed to launch XML-RPC server for roslaunch", file=sys.stderr)
 
 class ROSLaunchParentNode(ROSLaunchNode):
     """
@@ -494,14 +502,14 @@ class ROSLaunchChildNode(ROSLaunchNode):
         name = self.name
         self.logger.info("attempting to register with roslaunch parent [%s]"%self.server_uri)
         try:
-            server = xmlrpclib.ServerProxy(self.server_uri)
+            server = ServerProxy(self.server_uri)
             code, msg, _ = server.register(name, self.uri)
             if code != 1:
                 raise RLException("unable to register with roslaunch server: %s"%msg)
         except Exception as e:
-            self.logger.error("Exception while registering with roslaunch parent [%s]: %s"%(self.server_uri, traceback.format_exc(e)))
+            self.logger.error("Exception while registering with roslaunch parent [%s]: %s"%(self.server_uri, traceback.format_exc()))
             # fail
-            raise RLException("Exception while registering with roslaunch parent [%s]: %s"%(self.server_uri, traceback.format_exc(e)))
+            raise RLException("Exception while registering with roslaunch parent [%s]: %s"%(self.server_uri, traceback.format_exc()))
         
         self.logger.debug("child registered with server")
         

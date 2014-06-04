@@ -65,7 +65,11 @@ def is_executable(path):
     mode = os.stat(path)[stat.ST_MODE]
     return mode & (stat.S_IXUSR|stat.S_IXGRP|stat.S_IXOTH)
 
-import urlparse
+try:
+    from urllib.parse import urlparse #Python 3
+except ImportError:
+    from urlparse import urlparse #Python 2
+
 def invalid_url(url):
     """
     @return: error message if \a url is not a valid url. \a url is
@@ -74,7 +78,7 @@ def invalid_url(url):
     """
     if not url:
         return #caught by different rule
-    p = urlparse.urlparse(url)
+    p = urlparse(url)
     if p[0] != 'http':
         return "protocol is not 'http'"
     if not p[1]:
@@ -85,7 +89,7 @@ def invalid_url(url):
         splits = p[1].split(':')
         if len(splits) != 2:
             return "invalid address string [%s]"%p[1]
-        string.atoi(splits[1])
+        int(splits[1])
     except ValueError:
         return "port number [%s] is invalid"%(splits[1])
     
@@ -145,8 +149,8 @@ def path_check(ctx):
         
 def ros_master_uri_hostname(ctx):
     uri = ctx.ros_master_uri
-    parsed = urlparse.urlparse(uri)
-    p = urlparse.urlparse(uri)
+    parsed = urlparse(uri)
+    p = urlparse(uri)
     if not p[1]:
         return #caught by different rule
     if not ':' in p[1]:
@@ -158,7 +162,7 @@ def ros_master_uri_hostname(ctx):
         #TODO IPV6: only check for IPv6 when IPv6 is enabled
         socket.getaddrinfo(splits[0], 0, 0, 0, socket.SOL_TCP)
 
-    except socket.gaierror, e:
+    except socket.gaierror:
         return "Unknown host %s"%splits[0]
     
 # Error/Warning Rules

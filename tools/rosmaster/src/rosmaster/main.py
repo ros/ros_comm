@@ -77,7 +77,7 @@ def rosmaster_main(argv=sys.argv, stdout=sys.stdout, env=os.environ):
         port = int(options.port)
 
     if not options.core:
-        print """
+        print("""
 
 
 ACHTUNG WARNING ACHTUNG WARNING ACHTUNG
@@ -91,7 +91,7 @@ ACHTUNG WARNING ACHTUNG WARNING ACHTUNG
 WARNING ACHTUNG WARNING ACHTUNG WARNING
 
 
-"""
+""")
 
     logger = logging.getLogger("rosmaster.main")
     logger.info("initialization complete, waiting for shutdown")

@@ -51,9 +51,9 @@ class TestTask(Thread):
         
     def run(self):
         try:
-            print "STARTING TASK"
+            print("STARTING TASK")
             self.value = self.task()
-            print "TASK HAS COMPLETED"
+            print("TASK HAS COMPLETED")
             self.success = True
         except:
             import traceback
@@ -76,7 +76,10 @@ class TestRospyClientOnline(unittest.TestCase):
         real_stderr = sys.stderr
 
         try:
-            from cStringIO import StringIO
+            try:
+                from cStringIO import StringIO
+            except ImportError:
+                from io import StringIO
             sys.stdout = StringIO()
             sys.stderr = StringIO()
 
@@ -213,7 +216,7 @@ class TestRospyClientOnline(unittest.TestCase):
         t = time.time()
         count = 0
         r = rospy.Rate(10)
-        for x in xrange(10):
+        for x in range(10):
             r.sleep()
         dur = time.time() - t
         # make sure sleep is approximately right

@@ -42,6 +42,8 @@
 ##  * ~/test_duration: time (in secs) to run test
 ## 
 
+from __future__ import print_function
+
 import sys
 import threading
 import time
@@ -83,7 +85,7 @@ class HzTest(unittest.TestCase):
             topic = rospy.get_param('~topic')
             # time to wait before
             wait_time = rospy.get_param('~wait_time', 20.)            
-        except KeyError, e:
+        except KeyError as e:
             self.fail('hztest not initialized properly. Parameter [%s] not set. debug[%s] debug[%s]'%(str(e), rospy.get_caller_id(), rospy.resolve_name(e.args[0])))
 
         # We only require hzerror if hz is non-zero
@@ -92,25 +94,25 @@ class HzTest(unittest.TestCase):
             try:
                 # margin of error allowed
                 hzerror = float(rospy.get_param('~hzerror'))
-            except KeyError, e:
+            except KeyError as e:
                 self.fail('hztest not initialized properly. Parameter [%s] not set. debug[%s] debug[%s]'%(str(e), rospy.get_caller_id(), rospy.resolve_name(e.args[0])))
 
         # We optionally check each inter-message interval
         try:
             self.check_intervals = bool(rospy.get_param('~check_intervals'))
-        except KeyError, e:
+        except KeyError:
             self.check_intervals = False
 
         # We optionally measure wall clock time
         try:
             self.wall_clock = bool(rospy.get_param('~wall_clock'))
-        except KeyError, e:
+        except KeyError:
             self.wall_clock = False
 
-        print """Hz: %s
+        print("""Hz: %s
 Hz Error: %s
 Topic: %s
-Test Duration: %s"""%(hz, hzerror, topic, test_duration)
+Test Duration: %s"""%(hz, hzerror, topic, test_duration))
         
         self._test_hz(hz, hzerror, topic, test_duration, wait_time)        
             
@@ -138,7 +140,7 @@ Test Duration: %s"""%(hz, hzerror, topic, test_duration)
         sub = rospy.Subscriber(topic, rospy.AnyMsg, self.callback)
         self.assert_(not self.errors, "bad initialization state (errors)")
         
-        print "Waiting for messages"
+        print("Waiting for messages")
         # we have to wait until the first message is received before measuring the rate
         # as time can advance too much before publisher is up
         
@@ -151,7 +153,7 @@ Test Duration: %s"""%(hz, hzerror, topic, test_duration)
         else:
             self.failIf(self.message_received, "message received")
             
-        print "Starting rate measurement"
+        print("Starting rate measurement")
         if self.wall_clock:
             timeout_t = time.time() + test_duration
             while time.time() < timeout_t:
@@ -160,7 +162,7 @@ Test Duration: %s"""%(hz, hzerror, topic, test_duration)
             timeout_t = rospy.get_time() + test_duration
             while rospy.get_time() < timeout_t:
                 rospy.sleep(0.1)
-        print "Done waiting, validating results"
+        print("Done waiting, validating results")
         sub.unregister()
 
         # Check that we got at least one message
@@ -219,10 +221,10 @@ Test Duration: %s"""%(hz, hzerror, topic, test_duration)
             if self.check_intervals and last > 0:
                 interval = curr - last
                 if interval < self.min_interval:
-                    print >> sys.stderr, "CURR", curr
-                    print >> sys.stderr, "LAST", last
-                    print >> sys.stderr, "msg_count", self.msg_count
-                    print >> sys.stderr, "msg_tn", self.msg_tn
+                    print("CURR", str(curr), file=sys.stderr)
+                    print("LAST", str(last), file=sys.stderr)
+                    print("msg_count", str(self.msg_count), file=sys.stderr)
+                    print("msg_tn", str(self.msg_tn), file=sys.stderr)
                     self.errors.append(
                         'min_interval exceeded: %s [actual] vs. %s [min]'%\
                         (interval, self.min_interval))
@@ -243,8 +245,8 @@ if __name__ == '__main__':
     time.sleep(0.75)
     try:
         rostest.run('rostest', NAME, HzTest, sys.argv)
-    except KeyboardInterrupt, e:
+    except KeyboardInterrupt:
         pass
-    print "exiting"
+    print("exiting")
 
         

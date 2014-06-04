@@ -35,7 +35,10 @@ PKG = 'test_roslaunch'
 
 import os, sys, unittest
 
-import xmlrpclib
+try:
+    from xmlrpc.client import Binary
+except ImportError:
+    from xmlrpclib import Binary
 import rostest
 import rospkg
 
@@ -51,7 +54,7 @@ class TestParamsBasic(unittest.TestCase):
     def test_values(self):
         ## Test roslaunch string params
         self.assertEquals(get_param('stringempty'), '')
-        print get_param('stringbar')
+        print(get_param('stringbar'))
         self.assertEquals(get_param('stringbar'), 'bar')
         self.assertEquals(get_param('str10'), '10')
         self.assertEquals(get_param('string10'), '10')        
@@ -103,14 +106,15 @@ class TestParamsBasic(unittest.TestCase):
     def test_commandandfile(self):
         dir = rospkg.RosPack().get_path('roslaunch')
         with open(os.path.join(dir, 'resources', 'example.launch'), 'r') as f:
-            data = f.read()
-        test_file = data
-        self.assertEquals(get_param("commandoutput"),test_file)
-        self.assertEquals(get_param("textfile"),test_file)
+            text_data = f.read()
+        with open(os.path.join(dir, 'resources', 'example.launch'), 'rb') as f:
+            binary_data = f.read()
+        self.assertEquals(get_param("commandoutput"), binary_data)
+        self.assertEquals(get_param("textfile"), text_data)
         ## test 'binfile' attribute
         bindata = get_param("binaryfile")
-        self.assertTrue(isinstance(bindata, xmlrpclib.Binary))
-        self.assertEquals(bindata.data,test_file)
+        self.assertTrue(isinstance(bindata, Binary))
+        self.assertEquals(bindata.data, binary_data)
     
 if __name__ == '__main__':
     rostest.rosrun(PKG, sys.argv[0], TestParamsBasic, sys.argv)

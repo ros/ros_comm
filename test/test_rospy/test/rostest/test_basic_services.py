@@ -94,7 +94,7 @@ def handle_constants_wrapped(req):
         return Resp(req.selection,
             cmr.BYTE_Z, cmr.INT32_Z, cmr.UINT32_Z, cmr.FLOAT32_Z)
     else:
-        print "test failed, req.selection not in (X,Y,Z)", req.selection
+        print("test failed, req.selection not in (X,Y,Z)", req.selection)
 
 def handle_constants_naked(req):
     cmr = ConstantsMultiplexRequest
@@ -105,7 +105,7 @@ def handle_constants_naked(req):
     elif req.selection == cmr.SELECT_Z:
         return req.selection, cmr.BYTE_Z, cmr.INT32_Z, cmr.UINT32_Z, cmr.FLOAT32_Z
     else:
-        print "test failed, req.selection not in (X,Y,Z)", req.selection
+        print("test failed, req.selection not in (X,Y,Z)", req.selection)
 
 class UnexpectedException(Exception):
     pass

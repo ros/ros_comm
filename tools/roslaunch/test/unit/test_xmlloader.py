@@ -128,7 +128,7 @@ class TestXmlLoader(unittest.TestCase):
         try:
             loader.load_string('<foo />', mock)
             self.fail("no root lauch element passed")
-        except Exception, e:
+        except Exception as e:
             self.assertEquals(str(e), "Invalid roslaunch XML syntax: no root <launch> tag")
         
         f = open(os.path.join(self.xml_dir, 'test-node-valid.xml'), 'r')
@@ -183,9 +183,9 @@ class TestXmlLoader(unittest.TestCase):
                 self.assert_(os.path.exists(filename))
                 loader.load(filename, RosLaunchMock())
                 self.fail("xmlloader did not throw an xmlparseexception for [%s]"%filename)
-            except roslaunch.xmlloader.XmlParseException, e:
+            except roslaunch.xmlloader.XmlParseException:
                 pass
-            except roslaunch.loader.LoadException, e:
+            except roslaunch.loader.LoadException:
                 pass
 
     def test_params(self):
@@ -206,7 +206,10 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEquals("a child namespace parameter 2", param_d['/wg2/wg2childparam1'], p.value)
         self.assertEquals("a child namespace parameter 3", param_d['/wg2/wg2childparam2'], p.value)
 
-        import xmlrpclib
+        try:
+            from xmlrpc.client import Binary
+        except ImportError:
+            from xmlrpclib import Binary
         f = open(os.path.join(get_example_path(), 'example.launch'))
         try:
             contents = f.read()
@@ -215,7 +218,7 @@ class TestXmlLoader(unittest.TestCase):
         p = [p for p in mock.params if p.key == '/configfile'][0]
         self.assertEquals(contents, p.value, 1)
         p = [p for p in mock.params if p.key == '/binaryfile'][0]
-        self.assertEquals(xmlrpclib.Binary(contents), p.value, 1)
+        self.assertEquals(Binary(contents), p.value, 1)
 
         f = open(os.path.join(get_example_path(), 'example.launch'))
         try:
@@ -329,7 +332,7 @@ class TestXmlLoader(unittest.TestCase):
                 self.assert_(os.path.exists(filename))
                 loader.load(filename, RosLaunchMock())
                 self.fail("xmlloader did not throw an xmlloadexception for [%s]"%filename)
-            except roslaunch.loader.LoadException, e:
+            except roslaunch.loader.LoadException:
                 pass
         
     def test_node_valid(self):
@@ -347,7 +350,7 @@ class TestXmlLoader(unittest.TestCase):
                 self.assert_(os.path.exists(filename))
                 loader.load(filename, RosLaunchMock())
                 self.fail("xmlloader did not throw an xmlparseexception for [%s]"%filename)
-            except roslaunch.xmlloader.XmlParseException, e:
+            except roslaunch.xmlloader.XmlParseException:
                 pass
 
     def test_node_rosparam(self):
@@ -510,7 +513,7 @@ class TestXmlLoader(unittest.TestCase):
                 self.assert_(os.path.exists(filename))
                 loader.load(filename, RosLaunchMock())
                 self.fail("xmlloader did not throw an xmlparseexception for [%s]"%filename)
-            except roslaunch.xmlloader.XmlParseException, e:
+            except roslaunch.xmlloader.XmlParseException:
                 pass
 
     def _subtest_node_base(self, nodes):
@@ -615,7 +618,7 @@ class TestXmlLoader(unittest.TestCase):
                 self.assert_(os.path.exists(filename))
                 loader.load(filename, RosLaunchMock())
                 self.fail("xmlloader did not throw an xmlparseexception for [%s]"%filename)
-            except roslaunch.xmlloader.XmlParseException, e:
+            except roslaunch.xmlloader.XmlParseException:
                 pass
 
         machines = self._load_valid_machines(['machine1', 'machine6', 'machine7', 'machine8', 'machine9'])
@@ -653,7 +656,7 @@ class TestXmlLoader(unittest.TestCase):
             try:
                 mock = self._load(test_file)
                 self.fail("xml loader should have thrown an exception due to missing environment var")
-            except roslaunch.xmlloader.XmlParseException, e:
+            except roslaunch.xmlloader.XmlParseException:
                 pass
 
         # load the last required env var
@@ -683,7 +686,7 @@ class TestXmlLoader(unittest.TestCase):
             try:
                 mock = self._load(test_file)
                 self.fail("xml loader should have thrown an exception due to missing environment var")
-            except roslaunch.xmlloader.XmlParseException, e:
+            except roslaunch.xmlloader.XmlParseException:
                 pass
 
         os.environ['NAME'] = "name-foo"
@@ -709,7 +712,7 @@ class TestXmlLoader(unittest.TestCase):
         loader = roslaunch.xmlloader.XmlLoader()
         mock = RosLaunchMock()
         loader.load(os.path.join(self.xml_dir, 'test-remap-valid.xml'), mock)
-        names = ["node%s"%i for i in xrange(1, 7)]
+        names = ["node%s"%i for i in range(1, 7)]
         nodes = [n for n in mock.nodes if n.type in names]
         for n in nodes:
             if n.type == 'node1':
@@ -778,7 +781,7 @@ class TestXmlLoader(unittest.TestCase):
                 self.assert_(os.path.exists(filename))
                 loader.load(filename, RosLaunchMock())
                 self.fail("xmlloader did not throw an xmlparseexception for [%s]"%filename)
-            except roslaunch.xmlloader.XmlParseException, e:
+            except roslaunch.xmlloader.XmlParseException:
                 pass
 
     def test_remap_invalid(self):
@@ -796,7 +799,7 @@ class TestXmlLoader(unittest.TestCase):
                 self.assert_(os.path.exists(filename))
                 loader.load(filename, RosLaunchMock())
                 self.fail("xmlloader did not throw an xmlparseexception for [%s]"%filename)
-            except roslaunch.xmlloader.XmlParseException, e:
+            except roslaunch.xmlloader.XmlParseException:
                 pass
 
     def test_if_unless(self):
@@ -827,7 +830,7 @@ class TestXmlLoader(unittest.TestCase):
         try:
             loader.load(filename, mock, argv=[])
             self.fail("should have raised with invalid if and unless spec")
-        except roslaunch.xmlloader.XmlParseException, e:
+        except roslaunch.xmlloader.XmlParseException as e:
             self.assert_('unless' in str(e))
             self.assert_('if' in str(e))
 
@@ -839,7 +842,7 @@ class TestXmlLoader(unittest.TestCase):
         try:
             loader.load(filename, mock, argv=[])
             self.fail("should have raised with missing arg")
-        except roslaunch.xmlloader.XmlParseException, e:
+        except roslaunch.xmlloader.XmlParseException as e:
             self.assert_('required' in str(e))
 
         # test with invalid $(arg unknown)
@@ -847,7 +850,7 @@ class TestXmlLoader(unittest.TestCase):
         try:
             loader.load(filename, mock, argv=[])
             self.fail("should have raised with unknown arg")
-        except roslaunch.xmlloader.XmlParseException, e:
+        except roslaunch.xmlloader.XmlParseException as e:
             self.assert_('missing' in str(e))
 
         # test with invalid $(arg unknown)
@@ -855,7 +858,7 @@ class TestXmlLoader(unittest.TestCase):
         try:
             loader.load(filename, mock, argv=[])
             self.fail("should have raised with multiple decl")
-        except roslaunch.xmlloader.XmlParseException, e:
+        except roslaunch.xmlloader.XmlParseException as e:
             self.assert_('grounded' in str(e))
             
                     

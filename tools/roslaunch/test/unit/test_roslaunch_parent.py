@@ -33,10 +33,7 @@
 import os
 import sys
 import unittest
-import thread
 import time
-
-from xmlrpclib import ServerProxy
 
 import rospkg
 import rosgraph.network
@@ -189,17 +186,6 @@ class TestRoslaunchParent(unittest.TestCase):
             p._load_config()
             self.fail("load config should have failed due to bad rl file")
         except roslaunch.core.RLException: pass
-
-        # run an empty launch
-        if 0:
-            p = ROSLaunchParent(run_id, [], is_core = False, port=None, local_only=True)
-            self.assertEquals(run_id, p.run_id)
-            self.assertEquals(False, p.is_core)
-            self.assertEquals(True, p.local_only)
-
-            thread.start_new_thread(kill_parent, (p,))
-            p.start()
-            p.spin()
         
         # Mess around with internal repr to get code coverage on _init_runner/_init_remote
         p = ROSLaunchParent(run_id, [], is_core = False, port=None, local_only=True)
@@ -253,6 +239,6 @@ class TestRoslaunchParent(unittest.TestCase):
 def kill_parent(p, delay=1.0):
     # delay execution so that whatever pmon method we're calling has time to enter
     time.sleep(delay)
-    print "stopping parent"
+    print("stopping parent")
     p.shutdown()
 

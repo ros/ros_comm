@@ -35,6 +35,8 @@
 ## message it starts rebroadcasting on 'listenerpublisher'.  Unlike
 ## the normal listener, listenerpublisher is NOT anonymous.
 
+from __future__ import print_function
+
 import sys
 import rospy
 from std_msgs.msg import *
@@ -45,13 +47,13 @@ def start_publishing():
     global _pub
     if _pub is not None:
         return
-    print "registering onto listenerpublisher"
+    print("registering onto listenerpublisher")
     _pub = rospy.Publisher("listenerpublisher", String)
     
 def callback(data):
-    print rospy.get_caller_id(), "I heard %s"%data.data
+    print(rospy.get_caller_id(), "I heard %s"%data.data)
     start_publishing()
-    print "publishing", data.data
+    print("publishing", data.data)
     _pub.publish(String(data.data))
     
 def listener():

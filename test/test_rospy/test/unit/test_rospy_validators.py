@@ -56,5 +56,5 @@ class TestRospyValidators(unittest.TestCase):
             for i in invalid:
                 try:
                     non_empty('param-name-foo')(i, context)
-                except ParameterInvalid, e:
+                except ParameterInvalid as e:
                     self.assert_('param-name-foo' in str(e))
