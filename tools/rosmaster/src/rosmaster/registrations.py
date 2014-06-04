@@ -161,9 +161,15 @@ class Registrations(object):
         self.map = {} 
         self.service_api_map = None
 
+    def __bool__(self):
+        """
+        @return: True if there are registrations
+        """
+        return len(self.map) != 0
+
     def __nonzero__(self):
         """
-        @return: True if there are no registrations
+        @return: True if there are registrations
         """
         return len(self.map) != 0
 

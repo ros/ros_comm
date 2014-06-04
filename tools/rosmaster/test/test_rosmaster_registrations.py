@@ -272,7 +272,7 @@ class TestRosmasterRegistrations(unittest.TestCase):
         try:
             r = Registrations(-1)
             self.fail("Registrations accepted invalid type")
-        except rosmaster.exceptions.InternalException, e: pass
+        except rosmaster.exceptions.InternalException: pass
         
         for t in types:
             r = Registrations(t)
