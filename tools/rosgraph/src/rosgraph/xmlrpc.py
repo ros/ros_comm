@@ -260,11 +260,10 @@ class XmlRpcNode(object):
             self.server.register_instance(self.handler)
 
         except socket.error as e:
-            (n, errstr) = e
-            if n == 98:
+            if e.errno == 98:
                 msg = "ERROR: Unable to start XML-RPC server, port %s is already in use"%self.port
             else:
-                msg = "ERROR: Unable to start XML-RPC server: %s"%errstr                
+                msg = "ERROR: Unable to start XML-RPC server: %s" % e.strerror
             logger.error(msg)
             print(msg)
             raise #let higher level catch this
@@ -284,13 +283,12 @@ class XmlRpcNode(object):
             try:
                 self.server.serve_forever()
             except (IOError, select.error) as e:
-                (errno, errstr) = e
                 # check for interrupted call, which can occur if we're
                 # embedded in a program using signals.  All other
                 # exceptions break _run.
                 if self.is_shutdown:
                     pass
-                elif errno != 4:
+                elif e.errno != 4:
                     self.is_shutdown = True
-                    logging.getLogger('xmlrpc').error("serve forever IOError: %s, %s"%(errno, errstr))
+                    logging.getLogger('xmlrpc').error("serve forever IOError: %s, %s"%(e.errno, e.strerror))
                     

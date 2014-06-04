@@ -205,13 +205,13 @@ def check_roslaunch(f):
         errors.append("Could not resolve arg [%s] in [%s]"%(str(e), f))
         missing = {}
         file_deps = {}
-    for pkg, miss in missing.iteritems():
+    for pkg, miss in missing.items():
         if miss:
             errors.append("Missing manifest dependencies: %s/manifest.xml: %s"%(pkg, ', '.join(miss)))
     
     # load all node defs
     nodes = []
-    for filename, rldeps in file_deps.iteritems():
+    for filename, rldeps in file_deps.items():
         nodes.extend(rldeps.nodes)
 
     # check for missing packages

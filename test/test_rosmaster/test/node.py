@@ -36,7 +36,10 @@ import os
 import sys
 import string
 import time
-import xmlrpclib
+try:
+    from xmlrpc.client import ServerProxy
+except ImportError:
+    from xmlrpclib import ServerProxy
 
 import rospy
 import rosgraph
@@ -109,14 +112,17 @@ class _NodeTestCase(TestRosClient):
                 self.node_api = node_api
         if not self.node_api:
             self.fail("master did not return XML-RPC API for [%s, %s]"%(self.caller_id, self.test_node))
-        print "[%s] API  = %s"%(self.test_node, self.node_api)
+        print("[%s] API  = %s" %(self.test_node, self.node_api))
         self.assert_(self.node_api.startswith('http'))
-        self.node = xmlrpclib.ServerProxy(self.node_api)
+        self.node = ServerProxy(self.node_api)
 
     ## validates a URI as being http(s)
     def _checkUri(self, uri):
-        import urlparse
-        parsed = urlparse.urlparse(uri)
+        try:
+            from urllib.parse import urlparse
+        except ImportError:
+            from urlparse import urlparse
+        parsed = urlparse(uri)
         self.assert_(parsed[0] in ['http', 'https'], 'protocol [%s] in [%s] invalid'%(parsed[0], uri))
         self.assert_(parsed[1], 'host missing [%s]'%uri)
         if not sys.version.startswith('2.4'): #check not available on py24
@@ -125,7 +131,7 @@ class _NodeTestCase(TestRosClient):
     ## dynamically create the expected topic->type map based on the current name resolution context
     def _createTopicTypeMap(self):
         new_map = {}
-        for t in _required_publications_map.iterkeys():
+        for t in _required_publications_map.keys():
             new_map[rospy.resolve_name(t)] = _required_publications_map[t]
         return new_map
     

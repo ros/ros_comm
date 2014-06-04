@@ -151,8 +151,11 @@ class TestCore(unittest.TestCase):
             self.assertEquals(m, m)
             self.assertEquals(m, Master(Master.ROSMASTER, 'http://foo:1234'))
 
-            import xmlrpclib
-            self.assert_(isinstance(m.get(), xmlrpclib.ServerProxy))
+            try:
+                from xmlrpc.client import ServerProxy
+            except ImportError:
+                from xmlrpclib import ServerProxy
+            self.assert_(isinstance(m.get(), ServerProxy))
             m.uri = 'http://foo:567'
             self.assertEquals(567, m.get_port())
             self.failIf(m.is_running())

@@ -31,7 +31,7 @@ script:
   # Manually invoke make, catkin_make
   - make run_tests > log.run_tests || cat log.*
   # Check test results
-  - 'python -c "from catkin.test_results import test_results;import sys;sys.exit(sum([v[1] + v[2] for k, v in test_results(\"test_results\").iteritems()]))" || cat log*'
-  - 'python -c "from catkin.test_results import test_results;import sys;sys.exit(sum([v[1] + v[2] for k, v in test_results(\"test_results\").iteritems()]))"'
+  - 'python -c "from catkin.test_results import test_results;import sys;sys.exit(sum([v[1] + v[2] for k, v in test_results(\"test_results\").items()]))" || cat log*'
+  - 'python -c "from catkin.test_results import test_results;import sys;sys.exit(sum([v[1] + v[2] for k, v in test_results(\"test_results\").items()]))"'
 notifications:
   email: false

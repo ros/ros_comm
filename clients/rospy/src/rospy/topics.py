@@ -819,7 +819,7 @@ class Publisher(Topic):
             self.impl.publish(data)
         except genpy.SerializationError as e:
             # can't go to rospy.logerr(), b/c this could potentially recurse
-            _logger.error(traceback.format_exc(e))
+            _logger.error(traceback.format_exc())
             raise ROSSerializationException(str(e))
         finally:
             self.impl.release()            

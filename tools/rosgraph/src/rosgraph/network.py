@@ -392,7 +392,7 @@ def encode_ros_handshake_header(header):
     :param header: header field keys/values, ``dict``
     :returns: header encoded as byte string, ``str``
     """    
-    fields = ["%s=%s"%(k,v) for k,v in header.items()]
+    fields = ["%s=%s" % (k, header[k]) for k in sorted(header.keys())]
     
     # in the usual configuration, the error 'TypeError: can't concat bytes to str' appears:
     if python3 == 0:

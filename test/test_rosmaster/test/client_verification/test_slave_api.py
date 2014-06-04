@@ -40,7 +40,10 @@ import sys
 import string
 import time
 import unittest
-import xmlrpclib
+try:
+    from xmlrpc.client import Fault, ServerProxy
+except ImportError:
+    from xmlrpclib import Fault, ServerProxy
 
 import rosunit
 import rosgraph
@@ -123,7 +126,7 @@ class TestSlaveApi(unittest.TestCase):
             self.fail("master did not return XML-RPC API for [%s, %s]"%(self.caller_id, self.test_node))
         print "[%s] API  = %s"%(self.test_node, self.node_api)
         self.assert_(self.node_api.startswith('http'))
-        self.node = xmlrpclib.ServerProxy(self.node_api)
+        self.node = ServerProxy(self.node_api)
 
         # hack: sleep for a couple seconds just in case the node is
         # still registering with the master.
@@ -187,7 +190,7 @@ class TestSlaveApi(unittest.TestCase):
         # test with bad arity: accept error or fault
         try:
             self.apiError(self.node.getPid())
-        except xmlrpclib.Fault:
+        except Fault:
             pass
 
     def test_rosout(self):
@@ -235,11 +238,11 @@ class TestSlaveApi(unittest.TestCase):
         # test with bad arity: accept error or fault
         try:
             self.apiError(self.node.getPublications())
-        except xmlrpclib.Fault:
+        except Fault:
             pass
         try:
             self.apiError(self.node.getPublications(self.caller_id, 'something extra'))
-        except xmlrpclib.Fault:
+        except Fault:
             pass
         
     def test_getSubscriptions(self):
@@ -257,11 +260,11 @@ class TestSlaveApi(unittest.TestCase):
         # test with bad arity: accept error or fault
         try:
             self.apiError(self.node.getSubscriptions())
-        except xmlrpclib.Fault:
+        except Fault:
             pass
         try:
             self.apiError(self.node.getSubscriptions(self.caller_id, 'something extra'))        
-        except xmlrpclib.Fault:
+        except Fault:
             pass
 
     ## validate node.paramUpdate(caller_id, key, value)
@@ -280,12 +283,12 @@ class TestSlaveApi(unittest.TestCase):
         # test with bad arity: accept error or fault
         try:
             self.apiError(node.paramUpdate(self.caller_id, bad_key))     
-        except xmlrpclib.Fault:
+        except Fault:
             pass
 
         try:
             self.apiError(node.paramUpdate(self.caller_id)) 
-        except xmlrpclib.Fault:
+        except Fault:
             pass
 
         # we can't actually test success cases without forcing node to subscribe
@@ -304,11 +307,11 @@ class TestSlaveApi(unittest.TestCase):
         # test bad arity
         try:
             self.apiError(self.node.getUri(self.caller_id, 'bad'))
-        except xmlrpclib.Fault:
+        except Fault:
             pass
         try:
             self.apiError(self.node.getUri())
-        except xmlrpclib.Fault:
+        except Fault:
             pass
             
     def test_getMasterUri(self):
@@ -329,11 +332,11 @@ class TestSlaveApi(unittest.TestCase):
         # test bad arity
         try:
             self.apiError(self.node.getMasterUri(self.caller_id, 'bad'))
-        except xmlrpclib.Fault:
+        except Fault:
             pass
         try:
             self.apiError(self.node.getMasterUri())
-        except xmlrpclib.Fault:
+        except Fault:
             pass
 
     def test_publisherUpdate(self):
@@ -362,33 +365,33 @@ class TestSlaveApi(unittest.TestCase):
         # test bad args
         try:
             self.apiError(node.publisherUpdate(self.caller_id, '/bad_topic', 'bad'))
-        except xmlrpclib.Fault:
+        except Fault:
             pass
         try:
             self.apiError(node.publisherUpdate(self.caller_id, '/bad_topic', 2))
-        except xmlrpclib.Fault:
+        except Fault:
             pass
         try:
             self.apiError(node.publisherUpdate(self.caller_id, '/bad_topic', False))                
-        except xmlrpclib.Fault:
+        except Fault:
             pass
         try:
             self.apiError(node.publisherUpdate(self.caller_id, '/bad_topic', ['bad']))
-        except xmlrpclib.Fault:
+        except Fault:
             pass
 
         # test bad arity
         try:
             self.apiError(node.publisherUpdate())
-        except xmlrpclib.Fault:
+        except Fault:
             pass
         try:
             self.apiError(node.getBusStats(self.caller_id, 'bad'))
-        except xmlrpclib.Fault:
+        except Fault:
             pass
         try:
             self.apiError(node.getBusStats())
-        except xmlrpclib.Fault:
+        except Fault:
             pass
 
     def check_TCPROS(self, protocol_params):
@@ -422,37 +425,37 @@ class TestSlaveApi(unittest.TestCase):
         if probe_topic:
             try:
                 self.apiError(node.requestTopic(self.caller_id, probe_topic, protocols, 'extra stuff'))
-            except xmlrpclib.Fault:
+            except Fault:
                 pass
             try:
                 self.apiError(node.requestTopic(self.caller_id, probe_topic))
-            except xmlrpclib.Fault:
+            except Fault:
                 pass
             try:
                 self.apiError(node.requestTopic(self.caller_id))
-            except xmlrpclib.Fault:
+            except Fault:
                 pass
             try:
                 self.apiError(node.requestTopic())
-            except xmlrpclib.Fault:
+            except Fault:
                 pass
 
         # test bad args
         try:
             self.apiError(node.requestTopic(self.caller_id, 1, protocols))
-        except xmlrpclib.Fault:
+        except Fault:
             pass
         try:
             self.apiError(node.requestTopic(self.caller_id, '', protocols))
-        except xmlrpclib.Fault:
+        except Fault:
             pass
         try:
             self.apiError(node.requestTopic(self.caller_id, fake_topic, protocols))
-        except xmlrpclib.Fault:
+        except Fault:
             pass
         try:
             self.apiError(node.requestTopic(self.caller_id, probe_topic, 'fake-protocols')) 
-        except xmlrpclib.Fault:
+        except Fault:
             pass
 
         
@@ -463,11 +466,11 @@ class TestSlaveApi(unittest.TestCase):
         # test bad arity
         try:
             self.apiError(self.node.getBusInfo(self.caller_id, 'bad'))
-        except xmlrpclib.Fault:
+        except Fault:
             pass
         try:
             self.apiError(self.node.getBusInfo())
-        except xmlrpclib.Fault:
+        except Fault:
             pass
 
         

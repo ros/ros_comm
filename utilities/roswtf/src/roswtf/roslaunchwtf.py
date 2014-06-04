@@ -37,7 +37,10 @@ import itertools
 import socket
 import stat
 import sys
-import xmlrpclib
+try:
+    from xmlrpc.client import ServerProxy
+except ImportError:
+    from xmlrpclib import ServerProxy
 
 from os.path import isfile, isdir
 
@@ -51,7 +54,7 @@ from roswtf.rules import warning_rule, error_rule
 ## check if node is cannot be located in package
 def roslaunch_missing_node_check(ctx):
     nodes = []
-    for filename, rldeps in ctx.launch_file_deps.iteritems():
+    for filename, rldeps in ctx.launch_file_deps.items():
         nodes.extend(rldeps.nodes)
     errors = []
     for pkg, node_type in nodes:
@@ -63,7 +66,7 @@ def roslaunch_missing_node_check(ctx):
 ## check if two nodes with same name in package
 def roslaunch_duplicate_node_check(ctx):
     nodes = []
-    for filename, rldeps in ctx.launch_file_deps.iteritems():
+    for filename, rldeps in ctx.launch_file_deps.items():
         nodes.extend(rldeps.nodes)
     warnings = []
     for pkg, node_type in nodes:
@@ -189,7 +192,7 @@ def roslaunch_config_errors(ctx):
 
 def roslaunch_missing_deps_check(ctx):
     missing = []
-    for pkg, miss in ctx.launch_file_missing_deps.iteritems():
+    for pkg, miss in ctx.launch_file_missing_deps.items():
         if miss:
             missing.append("%s/manifest.xml: %s"%(pkg, ', '.join(miss)))
     return missing
@@ -198,7 +201,7 @@ def roslaunch_respawn_check(ctx):
     respawn = []
     for uri in ctx.roslaunch_uris:
         try:
-            r = xmlrpclib.ServerProxy(uri)
+            r = ServerProxy(uri)
             code, msg, val = r.list_processes()
             active, _ = val
             respawn.extend([a for a in active if a[1] > 1])
@@ -214,13 +217,13 @@ def roslaunch_uris_check(ctx):
     # uris only contains the parent launches
     for uri in ctx.roslaunch_uris:
         try:
-            r = xmlrpclib.ServerProxy(uri)
+            r = ServerProxy(uri)
             code, msg, val = r.list_children()
             # check the children launches
             if code == 1:
                 for child_uri in val:
                     try:
-                        r = xmlrpclib.ServerProxy(uri)
+                        r = ServerProxy(uri)
                         code, msg, val = r.get_pid()
                     except:
                         bad.append(child_uri)
@@ -232,7 +235,7 @@ def roslaunch_dead_check(ctx):
     dead = []
     for uri in ctx.roslaunch_uris:
         try:
-            r = xmlrpclib.ServerProxy(uri)
+            r = ServerProxy(uri)
             code, msg, val = r.list_processes()
             _, dead_list = val
             dead.extend([d[0] for d in dead_list])
