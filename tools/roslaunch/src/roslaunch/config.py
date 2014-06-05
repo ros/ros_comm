@@ -238,9 +238,13 @@ class ROSLaunchConfig(object):
                 if len(value) > max_length:
                     value = value[:max_length - 3] + '...'
                 # if non printable characters are present return replacement
-                for char in value:
-                    i = ord(char)
-                    if i < 32 or i > 126:
+                for i, char in enumerate(value):
+                    o = ord(char)
+                    if o < 32 or o > 126:
+                        # skip when the special characters are only trailing whitespaces
+                        value = value.rstrip()
+                        if i >= len(value):
+                            break
                         return '<...>'
                 return value
             summary += '\n\nPARAMETERS\n' + '\n'.join(sorted([' * %s: %s' % (k, strip_string(str(v.value))) for k, v in self.params.items()]))
