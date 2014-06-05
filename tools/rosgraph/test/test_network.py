@@ -56,18 +56,18 @@ class NetworkTest(unittest.TestCase):
         from rosgraph.network import encode_ros_handshake_header
         d = {}
         assert struct.pack('<I', 0) == encode_ros_handshake_header(d)
-        s = "a=b"
+        s = b"a=b"
         d['a'] = 'b'
         encoded = struct.pack('<I', len(s))+s
         assert struct.pack('<I', len(encoded))+encoded == \
             encode_ros_handshake_header({'a': 'b'})
         d['c'] = 'd' 
-        s = "c=d"
+        s = b"c=d"
         encoded = encoded+struct.pack('<I', len(s))+s    
         assert struct.pack('<I', len(encoded))+encoded == \
             encode_ros_handshake_header(d)
         d['rawtype'] = '#line 1\nline 2\nline 3\nline\t4\r\r\n'
-        s = "rawtype=#line 1\nline 2\nline 3\nline\t4\r\r\n"
+        s = b"rawtype=#line 1\nline 2\nline 3\nline\t4\r\r\n"
         encoded = encoded+struct.pack('<I', len(s))+s        
         assert struct.pack('<I', len(encoded))+encoded == \
             encode_ros_handshake_header(d)
@@ -75,18 +75,18 @@ class NetworkTest(unittest.TestCase):
     def test_decode_ros_handshake_header(self):
         from rosgraph.network import decode_ros_handshake_header, ROSHandshakeException
     
-        invalids = ["field1","",]
+        invalids = [b"field1",b"",]
         # prepend field length
         invalids = [(struct.pack('<I', len(s)) + s) for s in invalids]
         # prepend message length
         invalids = [(struct.pack('<I', len(s)) + s) for s in invalids]
         
         # invalid message length prefix
-        valid = "a=b"
+        valid = b"a=b"
         valid = struct.pack('<I', len(valid)) + valid
         invalids.append(struct.pack('<I', 123)+valid)
         # invalid field length prefix
-        invalid = struct.pack('<I', 123)+'a=b'
+        invalid = struct.pack('<I', 123) + b'a=b'
         invalids.append(struct.pack("<I", len(invalid)) + invalid)
         
         for i in invalids:
@@ -98,12 +98,12 @@ class NetworkTest(unittest.TestCase):
         assert {} == decode_ros_handshake_header(struct.pack('<I', 0))
         # single-field tests
         tests = [
-            ("a=b", {'a': 'b'}),
+            (b"a=b", {'a': 'b'}),
             # whitespace in keys is ignored
-            (" a =b", {'a': 'b'}),
-            ('newlines=\n\n\n\n', {'newlines': '\n\n\n\n'}),
-            ('equals=foo=bar=car', {'equals': 'foo=bar=car'}),
-            ("spaces=one two three four",{'spaces': 'one two three four'}),
+            (b" a =b", {'a': 'b'}),
+            (b'newlines=\n\n\n\n', {'newlines': '\n\n\n\n'}),
+            (b'equals=foo=bar=car', {'equals': 'foo=bar=car'}),
+            (b"spaces=one two three four",{'spaces': 'one two three four'}),
           ]
         for s, d in tests:
             # add in length fields
@@ -115,9 +115,10 @@ class NetworkTest(unittest.TestCase):
                   {'spaces': '    ', 'tabs': '\t\t\t\t', 'equals': '====='},
                   ]
         for t in tests:
-            s = ''
-            for k, v in t.iteritems():
+            s = b''
+            for k, v in t.items():
                 f = "%s=%s"%(k, v)
+                f = f.encode()
                 s += struct.pack('<I', len(f)) + f
             s = struct.pack('<I', len(s)) + s
             assert t == decode_ros_handshake_header(s)
