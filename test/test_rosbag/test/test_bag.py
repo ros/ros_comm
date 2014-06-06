@@ -53,14 +53,14 @@ class TestRosbag(unittest.TestCase):
         pass
     
     def test_opening_stream_works(self):
-        f = open('/tmp/test_opening_stream_works.bag', 'w')
+        f = open('/tmp/test_opening_stream_works.bag', 'wb')
         with rosbag.Bag(f, 'w') as b:
             for i in range(10):
                 msg = Int32()
                 msg.data = i
                 b.write('/int', msg)
         
-        f = open('/tmp/test_opening_stream_works.bag', 'r')
+        f = open('/tmp/test_opening_stream_works.bag', 'rb')
         b = rosbag.Bag(f, 'r')
         self.assert_(len(list(b.read_messages())) == 10)
         b.close()
@@ -200,7 +200,7 @@ class TestRosbag(unittest.TestCase):
                     b.write('/topic%d' % j, msg)
             file_header_pos = b._file_header_pos
 
-        start_index = 4117 + chunk_threshold * 2 + chunk_threshold / 2
+        start_index = 4117 + chunk_threshold * 2 + int(chunk_threshold / 2)
 
         trunc_filename   = '%s.trunc%s'   % os.path.splitext(fn)
         reindex_filename = '%s.reindex%s' % os.path.splitext(fn)
@@ -223,7 +223,7 @@ class TestRosbag(unittest.TestCase):
        
             try:
                 b = rosbag.Bag(reindex_filename, 'a', allow_unindexed=True)
-            except Exception, ex:
+            except Exception as ex:
                 pass
             for done in b.reindex():
                 pass
@@ -240,12 +240,14 @@ class TestRosbag(unittest.TestCase):
                 msg.data = i
                 b.write('/int', msg)
 
-                header = { 'op': bag._pack_uint8(max(bag._OP_CODES.iterkeys()) + 1) }
+                header = { 'op': bag._pack_uint8(max(bag._OP_CODES.keys()) + 1) }
                 data = 'ABCDEFGHI123456789'
                 bag._write_record(b._file, header, data)
 
             b._file.seek(0)
-            b._file.write('#ROSBAG V%d.%d\n' % (b._version / 100, (b._version % 100) + 1))   # increment the minor version
+            data = '#ROSBAG V%d.%d\n' % (int(b._version / 100), (b._version % 100) + 1)  # increment the minor version
+            data = data.encode()
+            b._file.write(data)
             b._file.seek(0, os.SEEK_END)
 
         with rosbag.Bag(fn) as b:
@@ -259,14 +261,14 @@ class TestRosbag(unittest.TestCase):
             f.seek(0)
 
             version_line = f.readline().rstrip()
-            print version_line
+            print(version_line)
 
             while f.tell() < size:
                 header = bag._read_header(f)
                 op = bag._read_uint8_field(header, 'op')
                 data = bag._read_record_data(f)
 
-                print bag._OP_CODES.get(op, op)
+                print(bag._OP_CODES.get(op, op))
 
 if __name__ == '__main__':
     import rostest
