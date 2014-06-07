@@ -98,6 +98,8 @@ add_rostest(launch/service_exception.xml)
 
 add_rostest(launch/service_call_unadv.xml)
 
+add_rostest(launch/service_call_zombie.xml)
+
 # Repeatedly call ros::init() and ros::fini()
 add_rostest(launch/multiple_init_fini.xml)
 

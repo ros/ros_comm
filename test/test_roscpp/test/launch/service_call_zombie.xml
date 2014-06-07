@@ -1,0 +1,6 @@
+<launch>
+  <node name="dying_service" pkg="test_roscpp" type="test_roscpp-service_adv_zombie"/>
+  <test test-name="service_call_zombie" pkg="test_roscpp" type="test_roscpp-service_call_zombie" time-limit="30"/>
+</launch>
+
+
