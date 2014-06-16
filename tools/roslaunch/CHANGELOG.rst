@@ -2,8 +2,8 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.10.10 (2014-06-16)
+--------------------
 * fix handling of if/unless attributes on args (`#437 <https://github.com/ros/ros_comm/issues/437>`_)
 
 1.10.3 (2014-06-02)
