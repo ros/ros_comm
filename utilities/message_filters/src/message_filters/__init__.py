@@ -30,6 +30,7 @@ Message Filter Objects
 ======================
 """
 
+import itertools
 import threading
 import rospy
 
@@ -142,4 +143,34 @@ class TimeSynchronizer(SimpleFilter):
             self.signalMessage(*msgs)
             for q in self.queues:
                 del q[t]
+        self.lock.release()
+
+class ApproximateTimeSynchronizer(TimeSynchronizer):
+
+    """
+    Approximately synchronizes messages by their timestamps.
+
+    :class:`ApproximateTimeSynchronizer` synchronizes incoming message filters by the
+    timestamps contained in their messages' headers. The API is the same as TimeSynchronizer
+    except for an extra `slop` parameter in the constructor that defines the delay (in seconds)
+    with which messages can be synchronized
+    """
+
+    def __init__(self, fs, queue_size, slop):
+        TimeSynchronizer.__init__(self, fs, queue_size)
+        self.slop = rospy.Duration.from_sec(slop)
+
+    def add(self, msg, my_queue):
+        self.lock.acquire()
+        my_queue[msg.header.stamp] = msg
+        while len(my_queue) > self.queue_size:
+            del my_queue[min(my_queue)]
+        for vv in itertools.product(*[list(q.keys()) for q in self.queues]):
+            qt = list(zip(self.queues, vv))
+            if ( ((max(vv) - min(vv)) < self.slop) and
+                (len([1 for q,t in qt if t not in q]) == 0) ):
+                msgs = [q[t] for q,t in qt]
+                self.signalMessage(*msgs)
+                for q,t in qt:
+                    del q[t]
         self.lock.release()
