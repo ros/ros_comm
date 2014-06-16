@@ -2,6 +2,10 @@
 Changelog for package rosmsg
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Python 3 compatibility (`#426 <https://github.com/ros/ros_comm/issues/426>`_)
+
 1.11.3 (2014-05-21)
 -------------------
 
