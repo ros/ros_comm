@@ -2,6 +2,9 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.10.3 (2014-06-02)
 -------------------
 * fix day comparison for rpc value of type timestamp (`#395 <https://github.com/ros/ros_comm/issues/395>`_)

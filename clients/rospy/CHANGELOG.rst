@@ -2,6 +2,9 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.10.3 (2014-06-02)
 -------------------
 * improve asynchonous publishing performance (`#373 <https://github.com/ros/ros_comm/issues/373>`_)
