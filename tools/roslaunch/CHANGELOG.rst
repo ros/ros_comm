@@ -2,8 +2,8 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.4 (2014-06-16)
+-------------------
 * fix handling of if/unless attributes on args (`#437 <https://github.com/ros/ros_comm/issues/437>`_)
 * improve parameter printing in roslaunch (`#89 <https://github.com/ros/ros_comm/issues/89>`_)
 * Python 3 compatibility (`#426 <https://github.com/ros/ros_comm/issues/426>`_, `#427 <https://github.com/ros/ros_comm/issues/427>`_, `#429 <https://github.com/ros/ros_comm/issues/429>`_)
