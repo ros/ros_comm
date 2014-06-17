@@ -329,13 +329,12 @@ void Connection::drop(DropReason reason)
     {
       dropped_ = true;
       did_drop = true;
-
-      drop_signal_(shared_from_this(), reason);
     }
   }
 
   if (did_drop)
   {
+    drop_signal_(shared_from_this(), reason);
     transport_->close();
   }
 }
