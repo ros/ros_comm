@@ -47,7 +47,7 @@
 TEST(SrvCall, callPhantomService)
 {
   ros::NodeHandle nh;
-  for(int i = 0; i < 1000; ++i)
+  for(int i = 0; i < 200; ++i)
   {
     ros::ServiceClient handle = nh.serviceClient<test_roscpp::TestStringString>("phantom_service");
 
