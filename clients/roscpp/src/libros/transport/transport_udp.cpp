@@ -45,6 +45,9 @@
   #include <sys/types.h>
   #include <sys/uio.h>
   #include <unistd.h>
+#elif defined(__ANDROID__)
+  // For readv() and writev() on ANDROID
+  #include <sys/uio.h>
 #endif
 
 namespace ros
