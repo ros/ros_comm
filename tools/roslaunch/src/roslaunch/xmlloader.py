@@ -127,6 +127,30 @@ def _bool_attr(v, default, label):
     else:
         raise XmlParseException("invalid bool value for %s: %s"%(label, v))
 
+def _float_attr(v, default, label):
+    """
+    Validate float xml attribute.
+    @param v: parameter value or None if no value provided
+    @type v: any
+    @param default: default value
+    @type  default: float
+    @param label: parameter name/label
+    @type  label: str
+    @return: float value for attribute
+    @rtype: float
+    @raise XmlParseException: if v is not in correct range or is empty.
+    """
+    if v is None:
+        return default
+    if not v:
+        raise XmlParseException("bool value for %s must be non-empty"%(label))
+    try:
+        x = float(v)
+    except ValueError:
+        raise XmlParseException("invalid float value for %s: %s"%(label, v))
+    return x
+
+
 # maps machine 'default' attribute to Machine default property
 _is_default = {'true': True, 'false': False, 'never': False }
 # maps machine 'default' attribute to Machine assignable property
@@ -284,7 +308,7 @@ class XmlLoader(loader.Loader):
         @return: test_name, time_limit
         @rtype: str, int
         """
-        for attr in ['respawn', 'output']:
+        for attr in ['respawn', 'respawn_delay', 'output']:
             if tag.hasAttribute(attr):
                 raise XmlParseException("<test> tags cannot have '%s' attribute"%attr)
 
@@ -306,7 +330,7 @@ class XmlLoader(loader.Loader):
 
         return test_name, time_limit, retry
         
-    NODE_ATTRS = ['pkg', 'type', 'machine', 'name', 'args', 'output', 'respawn', 'cwd', NS, CLEAR_PARAMS, 'launch-prefix', 'required']
+    NODE_ATTRS = ['pkg', 'type', 'machine', 'name', 'args', 'output', 'respawn', 'respawn_delay', 'cwd', NS, CLEAR_PARAMS, 'launch-prefix', 'required']
     TEST_ATTRS = NODE_ATTRS + ['test-name','time-limit', 'retry']
     
     @ifunless
@@ -347,15 +371,17 @@ class XmlLoader(loader.Loader):
             pkg, node_type = self.reqd_attrs(tag, context, ('pkg', 'type'))
             
             # optional attributes
-            machine, args, output, respawn, cwd, launch_prefix, required = \
-                     self.opt_attrs(tag, context, ('machine', 'args', 'output', 'respawn', 'cwd', 'launch-prefix', 'required'))
+            machine, args, output, respawn, respawn_delay, cwd, launch_prefix, required = \
+                     self.opt_attrs(tag, context, ('machine', 'args', 'output',
+                         'respawn', 'respawn_delay', 'cwd', 'launch-prefix', 'required'))
             if tag.hasAttribute('machine') and not len(machine.strip()):
                 raise XmlParseException("<node> 'machine' must be non-empty: [%s]"%machine)
             if not machine and default_machine:
                 machine = default_machine.name
             # validate respawn, required
             required, respawn = [_bool_attr(*rr) for rr in ((required, False, 'required'),\
-                                                                (respawn, False, 'respawn'))]
+                                                            (respawn, False, 'respawn'))]
+            respawn_delay = _float_attr(respawn_delay, 0.0, 'respawn_delay')
 
             # each node gets its own copy of <remap> arguments, which
             # it inherits from its parent
@@ -394,7 +420,7 @@ class XmlLoader(loader.Loader):
                     
             if not is_test:
                 return Node(pkg, node_type, name=name, namespace=child_ns.ns, machine_name=machine, 
-                            args=args, respawn=respawn, 
+                            args=args, respawn=respawn, respawn_delay=respawn_delay,
                             remap_args=remap_context.remap_args(), env_args=env_context.env_args,
                             output=output, cwd=cwd, launch_prefix=launch_prefix,
                             required=required, filename=context.filename)

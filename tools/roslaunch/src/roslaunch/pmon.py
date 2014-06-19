@@ -183,12 +183,14 @@ class Process(object):
     for signal handlers to register properly.
     """
 
-    def __init__(self, package, name, args, env, respawn=False, required=False):
+    def __init__(self, package, name, args, env,
+            respawn=False, respawn_delay=0.0, required=False):
         self.package = package
         self.name = name
         self.args = args
         self.env = env
         self.respawn = respawn
+        self.respawn_delay = respawn_delay
         self.required = required
         self.lock = Lock()
         self.exit_code = None
@@ -217,6 +219,7 @@ class Process(object):
             'name': self.name,
             'alive': self.is_alive(),
             'respawn': self.respawn,
+            'respawn_delay': self.respawn_delay,
             'required': self.required,
             }
         if self.exit_code is not None:
@@ -254,7 +257,8 @@ class DeadProcess(Process):
     container allows us to delete the actual Process but still maintain the metadata
     """
     def __init__(self, p):
-        super(DeadProcess, self).__init__(p.package, p.name, p.args, p.env, p.respawn)
+        super(DeadProcess, self).__init__(p.package, p.name, p.args, p.env,
+                p.respawn, p.respawn_delay)
         self.exit_code = p.exit_code
         self.lock = None
         self.spawn_count = p.spawn_count
@@ -538,7 +542,10 @@ class ProcessMonitor(Thread):
             for p in procs:
                 try:
                     if not p.is_alive():
-                        logger.debug("Process[%s] has died, respawn=%s, required=%s, exit_code=%s",p.name, p.respawn, p.required, p.exit_code)
+                        logger.debug("Process[%s] has died, respawn=%s, required=%s, exit_code=%s",
+                                p.name,
+                                "True(%f)"%p.respawn_delay if p.respawn else p.respawn,
+                                p.required, p.exit_code)
                         exit_code_str = p.get_exit_description()
                         if p.respawn:
                             printlog_bold("[%s] %s\nrespawning..."%(p.name, exit_code_str))

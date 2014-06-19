@@ -135,7 +135,7 @@ def create_node_process(run_id, node, master_uri):
     # default for node.output not set is 'log'
     log_output = node.output != 'screen'
     _logger.debug('process[%s]: returning LocalProcess wrapper')
-    return LocalProcess(run_id, node.package, name, args, env, log_output, respawn=node.respawn, required=node.required, cwd=node.cwd)
+    return LocalProcess(run_id, node.package, name, args, env, log_output, respawn=node.respawn, respawn_delay=node.respawn_delay, required=node.required, cwd=node.cwd)
 
 
 class LocalProcess(Process):
@@ -143,7 +143,7 @@ class LocalProcess(Process):
     Process launched on local machine
     """
     
-    def __init__(self, run_id, package, name, args, env, log_output, respawn=False, required=False, cwd=None, is_node=True):
+    def __init__(self, run_id, package, name, args, env, log_output, respawn=False, respawn_delay=0.0, required=False, cwd=None, is_node=True):
         """
         @param run_id: unique run ID for this roslaunch. Used to
           generate log directory location. run_id may be None if this
@@ -161,12 +161,14 @@ class LocalProcess(Process):
         @type  log_output: bool
         @param respawn: respawn process if it dies (default is False)
         @type  respawn: bool
+        @param respawn_delay: respawn process after a delay
+        @type  respawn_delay: float
         @param cwd: working directory of process, or None
         @type  cwd: str
         @param is_node: (optional) if True, process is ROS node and accepts ROS node command-line arguments. Default: True
         @type  is_node: False
         """    
-        super(LocalProcess, self).__init__(package, name, args, env, respawn, required)
+        super(LocalProcess, self).__init__(package, name, args, env, respawn, respawn_delay, required)
         self.run_id = run_id
         self.popen = None
         self.log_output = log_output

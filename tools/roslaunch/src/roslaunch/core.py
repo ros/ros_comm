@@ -419,13 +419,14 @@ class Node(object):
     """
     __slots__ = ['package', 'type', 'name', 'namespace', \
                  'machine_name', 'machine', 'args', 'respawn', \
+                 'respawn_delay', \
                  'remap_args', 'env_args',\
                  'process_name', 'output', 'cwd',
                  'launch_prefix', 'required',
                  'filename']
 
     def __init__(self, package, node_type, name=None, namespace='/', \
-                 machine_name=None, args='', respawn=False, \
+                 machine_name=None, args='', respawn=False, respawn_delay=0.0, \
                  remap_args=None,env_args=None, output=None, cwd=None, \
                  launch_prefix=None, required=False, filename='<unknown>'):
         """
@@ -436,6 +437,7 @@ class Node(object):
         :param machine_name: name of machine to run node on, ``str``
         :param args: argument string to pass to node executable, ``str``
         :param respawn: if True, respawn node if it dies, ``bool``
+        :param respawn: if respawn is True, respawn node after delay, ``float``
         :param remap_args: list of [(from, to)] remapping arguments, ``[(str, str)]``
         :param env_args: list of [(key, value)] of
         additional environment vars to set for node, ``[(str, str)]``
@@ -454,6 +456,7 @@ class Node(object):
         self.namespace = rosgraph.names.make_global_ns(namespace or '/')
         self.machine_name = machine_name or None
         self.respawn = respawn
+        self.respawn_delay = respawn_delay
         self.args = args or ''
         self.remap_args = remap_args or []
         self.env_args = env_args or []        
@@ -514,6 +517,7 @@ class Node(object):
             ('output', self.output),
             ('cwd', cwd_str), 
             ('respawn', self.respawn), #not valid on <test>
+            ('respawn_delay', self.respawn_delay), #not valid on <test>
             ('name', name_str),
             ('launch-prefix', self.launch_prefix),
             ('required', self.required),
@@ -616,7 +620,7 @@ class Test(Node):
         to what it was initialized with, though the properties are the same
         """
         attrs = Node.xmlattrs(self)
-        attrs = [(a, v) for (a, v) in attrs if a != 'respawn']
+        attrs = [(a, v) for (a, v) in attrs if a not in ['respawn', 'respawn_delay']]
         attrs.append(('test-name', self.test_name))
 
         if self.retry:
