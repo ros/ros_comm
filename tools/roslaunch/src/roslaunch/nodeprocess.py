@@ -178,6 +178,7 @@ class LocalProcess(Process):
         self.log_dir = None
         self.pid = -1
         self.is_node = is_node
+        self.time_of_death = None
 
     # NOTE: in the future, info() is going to have to be sufficient for relaunching a process
     def get_info(self):
@@ -299,6 +300,7 @@ executable permission. This is often caused by a bad launch-prefix."""%(msg, ' '
                     raise FatalProcessLaunch("unable to launch [%s]: %s"%(' '.join(self.args), msg))
                 
             self.started = True
+            self.time_of_death = None
             # Check that the process is either still running (poll returns
             # None) or that it completed successfully since when we
             # launched it above (poll returns the return code, 0).
@@ -324,11 +326,27 @@ executable permission. This is often caused by a bad launch-prefix."""%(msg, ' '
         if not self.started: #not started yet
             return True
         if self.stopped or self.popen is None:
+            if self.time_of_death is None:
+                self.time_of_death = time.time()
             return False
         self.exit_code = self.popen.poll()
         if self.exit_code is not None:
+            if self.time_of_death is None:
+                self.time_of_death = time.time()
             return False
         return True
+
+    def should_respawn(self):
+        """
+        @return: False if process should not respawn
+                 floating point seconds until respawn otherwise
+        """
+        if not self.respawn:
+            return False
+        if self.time_of_death is None:
+            if self.is_alive():
+                return False
+        return (self.time_of_death+self.respawn_delay) - time.time()
 
     def get_exit_description(self):
         """
