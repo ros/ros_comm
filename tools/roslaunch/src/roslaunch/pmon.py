@@ -547,13 +547,10 @@ class ProcessMonitor(Thread):
                                 "True(%f)"%p.respawn_delay if p.respawn else p.respawn,
                                 p.required, p.exit_code)
                         exit_code_str = p.get_exit_description()
-                        if p.respawn:
-                            printlog_bold("[%s] %s\nrespawning..."%(p.name, exit_code_str))
-                            respawn.append(p)
-                        elif p.required:
+                        if p.required:
                             printerrlog('='*80+"REQUIRED process [%s] has died!\n%s\nInitiating shutdown!\n"%(p.name, exit_code_str)+'='*80)
                             self.is_shutdown = True
-                        else:
+                        elif not p in respawn:
                             if p.exit_code:
                                 printerrlog("[%s] %s"%(p.name, exit_code_str))
                             else:
@@ -573,13 +570,15 @@ class ProcessMonitor(Thread):
                     break #stop polling
             for d in dead:
                 try:
-                    self.unregister(d)
-                    # stop process, don't accumulate errors
-                    d.stop([])
-
-                    # save process data to dead list 
-                    with plock:
-                        self.dead_list.append(DeadProcess(d))
+                    if d.should_respawn():
+                        respawn.append( d )
+                    else:
+                        self.unregister(d)
+                        # stop process, don't accumulate errors
+                        d.stop([])
+                        # save process data to dead list
+                        with plock:
+                            self.dead_list.append(DeadProcess(d))
                 except:
                     logger.error(traceback.format_exc())
                     
@@ -589,18 +588,23 @@ class ProcessMonitor(Thread):
                 printlog("all processes on machine have died, roslaunch will exit")
                 self.is_shutdown = True
             del dead[:]
+            _respawn=[]
             for r in respawn: 
                 try:
                     if self.is_shutdown:
                         break
-                    printlog("[%s] restarting process"%r.name)
-                    # stop process, don't accumulate errors
-                    r.stop([])
-                    r.start()
+                    if r.should_respawn()<=0.0:
+                        printlog("[%s] restarting process"%r.name)
+                        # stop process, don't accumulate errors
+                        r.stop([])
+                        r.start()
+                    else:
+                        # not ready yet, keep it around
+                        _respawn.append( r )
                 except:
                     traceback.print_exc()
                     logger.error("Restart failed %s",traceback.format_exc())
-            del respawn[:]
+            respawn = _respawn
             time.sleep(0.1) #yield thread
         #moved this to finally block of _post_run
         #self._post_run() #kill all processes
