@@ -116,19 +116,41 @@ class ProcessMock(roslaunch.pmon.Process):
         self.stopped = False
     def stop(self, errors):
         self.stopped = True
-        
+
 class RespawnOnceProcessMock(ProcessMock):
-    def __init__(self, package, name, args, env, respawn=False):
+    def __init__(self, package, name, args, env, respawn=True):
         super(ProcessMock, self).__init__(package, name, args, env, respawn)
         self.spawn_count = 0
 
     def is_alive(self):
+        self.time_of_death = time.time()
         return False
     
     def start(self):
         self.spawn_count += 1
         if self.spawn_count > 1:
             self.respawn = False
+        self.time_of_death = None
+
+class RespawnOnceWithDelayProcessMock(ProcessMock):
+    def __init__(self, package, name, args, env, respawn=True,
+            respawn_delay=1.0):
+        super(ProcessMock, self).__init__(package, name, args, env, respawn,
+                respawn_delay=respawn_delay)
+        self.spawn_count = 0
+        self.respawn_interval = None
+
+    def is_alive(self):
+        if self.time_of_death is None:
+            self.time_of_death = time.time()
+        return False
+
+    def start(self):
+        self.spawn_count += 1
+        if self.spawn_count > 1:
+            self.respawn = False
+            self.respawn_interval = time.time() - self.time_of_death
+        self.time_of_death = None
 
 ## Test roslaunch.server
 class TestRoslaunchPmon(unittest.TestCase):
@@ -137,12 +159,13 @@ class TestRoslaunchPmon(unittest.TestCase):
         self.pmon = roslaunch.pmon.ProcessMonitor()
 
     ## test all apis of Process instance. part coverage/sanity test
-    def _test_Process(self, p, package, name, args, env, respawn):
+    def _test_Process(self, p, package, name, args, env, respawn, respawn_delay):
         self.assertEquals(package, p.package)
         self.assertEquals(name, p.name)
         self.assertEquals(args, p.args)        
         self.assertEquals(env, p.env)  
         self.assertEquals(respawn, p.respawn)
+        self.assertEquals(respawn_delay, p.respawn_delay)
         self.assertEquals(0, p.spawn_count)        
         self.assertEquals(None, p.exit_code)
         self.assert_(p.get_exit_description())
@@ -154,6 +177,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         self.assertEquals(args, info['args'])        
         self.assertEquals(env, info['env'])  
         self.assertEquals(respawn, info['respawn'])
+        self.assertEquals(respawn_delay, info['respawn_delay'])
         self.assertEquals(0, info['spawn_count'])        
         self.failIf('exit_code' in info)
 
@@ -184,14 +208,17 @@ class TestRoslaunchPmon(unittest.TestCase):
         args = [time.time(), time.time(), time.time()]
         env = { 'key': time.time(), 'key2': time.time() } 
 
-        p = Process(package, name, args, env)
-        self._test_Process(p, package, name, args, env, False)
-        p = Process(package, name, args, env, True)
-        self._test_Process(p, package, name, args, env, True) 
-        p = Process(package, name, args, env, False)
-        self._test_Process(p, package, name, args, env, False) 
+        p = Process(package, name, args, env, 0.0)
+        self._test_Process(p, package, name, args, env, False, 0.0)
+        p = Process(package, name, args, env, True, 0.0)
+        self._test_Process(p, package, name, args, env, True, 0.0)
+        p = Process(package, name, args, env, False, 0.0)
+        self._test_Process(p, package, name, args, env, False, 0.0)
+        p = Process(package, name, args, env, True, 1.0)
+        self._test_Process(p, package, name, args, env, True, 1.0)
         
-    def _test_DeadProcess(self, p0, package, name, args, env, respawn):
+    def _test_DeadProcess(self, p0, package, name, args, env, respawn,
+            respawn_delay):
         from roslaunch.pmon import DeadProcess
         p0.exit_code = -1
         dp = DeadProcess(p0)
@@ -200,6 +227,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         self.assertEquals(args, dp.args)        
         self.assertEquals(env, dp.env)  
         self.assertEquals(respawn, dp.respawn)
+        self.assertEquals(respawn_delay, dp.respawn_delay)
         self.assertEquals(0, dp.spawn_count)        
         self.assertEquals(-1, dp.exit_code)
         self.failIf(dp.is_alive())
@@ -211,6 +239,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         self.assertEquals(info0['args'], info['args'])        
         self.assertEquals(info0['env'], info['env'])  
         self.assertEquals(info0['respawn'], info['respawn'])
+        self.assertEquals(info0['respawn_delay'], info['respawn_delay'])
         self.assertEquals(0, info['spawn_count'])        
 
         try:
@@ -245,12 +274,14 @@ class TestRoslaunchPmon(unittest.TestCase):
         args = [time.time(), time.time(), time.time()]
         env = { 'key': time.time(), 'key2': time.time() } 
 
-        p = Process(package, name, args, env)
-        self._test_DeadProcess(p, package, name, args, env, False)
-        p = Process(package, name, args, env, True)
-        self._test_DeadProcess(p, package, name, args, env, True) 
-        p = Process(package, name, args, env, False)
-        self._test_DeadProcess(p, package, name, args, env, False) 
+        p = Process(package, name, args, env, 0.0)
+        self._test_DeadProcess(p, package, name, args, env, False, 0.0)
+        p = Process(package, name, args, env, True, 0.0)
+        self._test_DeadProcess(p, package, name, args, env, True, 0.0)
+        p = Process(package, name, args, env, False, 0.0)
+        self._test_DeadProcess(p, package, name, args, env, False, 0.0)
+        p = Process(package, name, args, env, True, 1.0)
+        self._test_DeadProcess(p, package, name, args, env, True, 1.0)
 
     def test_start_shutdown_process_monitor(self):
         def failer():
@@ -411,6 +442,10 @@ class TestRoslaunchPmon(unittest.TestCase):
         p3 = RespawnOnceProcessMock('bar', 'name3', [], {})        
         pmon.register(p3)
         
+        # give pmon a process that wants to respawn once after a delay
+        p4 = RespawnOnceWithDelayProcessMock('bar', 'name4', [], {})
+        pmon.register(p4)
+
         # test assumptions about pmon's internal data structures
         # before we begin test
         self.assert_(p1 in pmon.procs)
@@ -426,6 +461,12 @@ class TestRoslaunchPmon(unittest.TestCase):
         pmon.run()
         
         self.failIf(marker.marked, "pmon had to be externally killed")        
+
+        self.failIf(p3.spawn_count < 2, "process did not respawn")
+
+        self.failIf(p4.respawn_interval < p4.respawn_delay,
+                "Respawn delay not respected: %s %s" % (p4.respawn_interval,
+                                                        p4.respawn_delay))
 
         # retest assumptions
         self.failIf(pmon.procs)

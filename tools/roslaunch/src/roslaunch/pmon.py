@@ -183,17 +183,20 @@ class Process(object):
     for signal handlers to register properly.
     """
 
-    def __init__(self, package, name, args, env, respawn=False, required=False):
+    def __init__(self, package, name, args, env,
+            respawn=False, respawn_delay=0.0, required=False):
         self.package = package
         self.name = name
         self.args = args
         self.env = env
         self.respawn = respawn
+        self.respawn_delay = respawn_delay
         self.required = required
         self.lock = Lock()
         self.exit_code = None
         # for keeping track of respawning
         self.spawn_count = 0
+        self.time_of_death = None
 
         _init_signal_handlers()
 
@@ -217,6 +220,7 @@ class Process(object):
             'name': self.name,
             'alive': self.is_alive(),
             'respawn': self.respawn,
+            'respawn_delay': self.respawn_delay,
             'required': self.required,
             }
         if self.exit_code is not None:
@@ -224,10 +228,25 @@ class Process(object):
         return info
 
     def start(self):
+        self.time_of_death = None
         self.spawn_count += 1
 
     def is_alive(self):
+        if self.time_of_death is None:
+            self.time_of_death = time.time()
         return False
+
+    def should_respawn(self):
+        """
+        @return: False if process should not respawn
+                 floating point seconds until respawn otherwise
+        """
+        if not self.respawn:
+            return False
+        if self.time_of_death is None:
+            if self.is_alive():
+                return False
+        return (self.time_of_death + self.respawn_delay) - time.time()
 
     def stop(self, errors=None):
         """
@@ -254,7 +273,8 @@ class DeadProcess(Process):
     container allows us to delete the actual Process but still maintain the metadata
     """
     def __init__(self, p):
-        super(DeadProcess, self).__init__(p.package, p.name, p.args, p.env, p.respawn)
+        super(DeadProcess, self).__init__(p.package, p.name, p.args, p.env,
+                p.respawn, p.respawn_delay)
         self.exit_code = p.exit_code
         self.lock = None
         self.spawn_count = p.spawn_count
@@ -538,15 +558,15 @@ class ProcessMonitor(Thread):
             for p in procs:
                 try:
                     if not p.is_alive():
-                        logger.debug("Process[%s] has died, respawn=%s, required=%s, exit_code=%s",p.name, p.respawn, p.required, p.exit_code)
+                        logger.debug("Process[%s] has died, respawn=%s, required=%s, exit_code=%s",
+                                p.name,
+                                "True(%f)" % p.respawn_delay if p.respawn else p.respawn,
+                                p.required, p.exit_code)
                         exit_code_str = p.get_exit_description()
-                        if p.respawn:
-                            printlog_bold("[%s] %s\nrespawning..."%(p.name, exit_code_str))
-                            respawn.append(p)
-                        elif p.required:
+                        if p.required:
                             printerrlog('='*80+"REQUIRED process [%s] has died!\n%s\nInitiating shutdown!\n"%(p.name, exit_code_str)+'='*80)
                             self.is_shutdown = True
-                        else:
+                        elif not p in respawn:
                             if p.exit_code:
                                 printerrlog("[%s] %s"%(p.name, exit_code_str))
                             else:
@@ -566,13 +586,15 @@ class ProcessMonitor(Thread):
                     break #stop polling
             for d in dead:
                 try:
-                    self.unregister(d)
-                    # stop process, don't accumulate errors
-                    d.stop([])
-
-                    # save process data to dead list 
-                    with plock:
-                        self.dead_list.append(DeadProcess(d))
+                    if d.should_respawn():
+                        respawn.append(d)
+                    else:
+                        self.unregister(d)
+                        # stop process, don't accumulate errors
+                        d.stop([])
+                        # save process data to dead list
+                        with plock:
+                            self.dead_list.append(DeadProcess(d))
                 except:
                     logger.error(traceback.format_exc())
                     
@@ -582,18 +604,23 @@ class ProcessMonitor(Thread):
                 printlog("all processes on machine have died, roslaunch will exit")
                 self.is_shutdown = True
             del dead[:]
+            _respawn=[]
             for r in respawn: 
                 try:
                     if self.is_shutdown:
                         break
-                    printlog("[%s] restarting process"%r.name)
-                    # stop process, don't accumulate errors
-                    r.stop([])
-                    r.start()
+                    if r.should_respawn() <= 0.0:
+                        printlog("[%s] restarting process" % r.name)
+                        # stop process, don't accumulate errors
+                        r.stop([])
+                        r.start()
+                    else:
+                        # not ready yet, keep it around
+                        _respawn.append(r)
                 except:
                     traceback.print_exc()
                     logger.error("Restart failed %s",traceback.format_exc())
-            del respawn[:]
+            respawn = _respawn
             time.sleep(0.1) #yield thread
         #moved this to finally block of _post_run
         #self._post_run() #kill all processes
