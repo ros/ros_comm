@@ -137,12 +137,13 @@ class TestRoslaunchPmon(unittest.TestCase):
         self.pmon = roslaunch.pmon.ProcessMonitor()
 
     ## test all apis of Process instance. part coverage/sanity test
-    def _test_Process(self, p, package, name, args, env, respawn):
+    def _test_Process(self, p, package, name, args, env, respawn, respawn_delay):
         self.assertEquals(package, p.package)
         self.assertEquals(name, p.name)
         self.assertEquals(args, p.args)        
         self.assertEquals(env, p.env)  
         self.assertEquals(respawn, p.respawn)
+        self.assertEquals(respawn_delay, p.respawn_delay)
         self.assertEquals(0, p.spawn_count)        
         self.assertEquals(None, p.exit_code)
         self.assert_(p.get_exit_description())
@@ -154,6 +155,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         self.assertEquals(args, info['args'])        
         self.assertEquals(env, info['env'])  
         self.assertEquals(respawn, info['respawn'])
+        self.assertEquals(respawn_delay, info['respawn_delay'])
         self.assertEquals(0, info['spawn_count'])        
         self.failIf('exit_code' in info)
 
@@ -184,14 +186,16 @@ class TestRoslaunchPmon(unittest.TestCase):
         args = [time.time(), time.time(), time.time()]
         env = { 'key': time.time(), 'key2': time.time() } 
 
-        p = Process(package, name, args, env)
-        self._test_Process(p, package, name, args, env, False)
-        p = Process(package, name, args, env, True)
-        self._test_Process(p, package, name, args, env, True) 
-        p = Process(package, name, args, env, False)
-        self._test_Process(p, package, name, args, env, False) 
+        p = Process(package, name, args, env, 0.0)
+        self._test_Process(p, package, name, args, env, False, 0.0)
+        p = Process(package, name, args, env, True, 0.0)
+        self._test_Process(p, package, name, args, env, True, 0.0)
+        p = Process(package, name, args, env, False, 0.0)
+        self._test_Process(p, package, name, args, env, False, 0.0)
+        p = Process(package, name, args, env, True, 1.0)
+        self._test_Process(p, package, name, args, env, True, 1.0)
         
-    def _test_DeadProcess(self, p0, package, name, args, env, respawn):
+    def _test_DeadProcess(self, p0, package, name, args, env, respawn, respawn_delay):
         from roslaunch.pmon import DeadProcess
         p0.exit_code = -1
         dp = DeadProcess(p0)
@@ -200,6 +204,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         self.assertEquals(args, dp.args)        
         self.assertEquals(env, dp.env)  
         self.assertEquals(respawn, dp.respawn)
+        self.assertEquals(respawn_delay, dp.respawn_delay)
         self.assertEquals(0, dp.spawn_count)        
         self.assertEquals(-1, dp.exit_code)
         self.failIf(dp.is_alive())
@@ -211,6 +216,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         self.assertEquals(info0['args'], info['args'])        
         self.assertEquals(info0['env'], info['env'])  
         self.assertEquals(info0['respawn'], info['respawn'])
+        self.assertEquals(info0['respawn_delay'], info['respawn_delay'])
         self.assertEquals(0, info['spawn_count'])        
 
         try:
@@ -245,12 +251,14 @@ class TestRoslaunchPmon(unittest.TestCase):
         args = [time.time(), time.time(), time.time()]
         env = { 'key': time.time(), 'key2': time.time() } 
 
-        p = Process(package, name, args, env)
-        self._test_DeadProcess(p, package, name, args, env, False)
-        p = Process(package, name, args, env, True)
-        self._test_DeadProcess(p, package, name, args, env, True) 
-        p = Process(package, name, args, env, False)
-        self._test_DeadProcess(p, package, name, args, env, False) 
+        p = Process(package, name, args, env, 0.0)
+        self._test_DeadProcess(p, package, name, args, env, False, 0.0)
+        p = Process(package, name, args, env, True, 0.0)
+        self._test_DeadProcess(p, package, name, args, env, True, 0.0)
+        p = Process(package, name, args, env, False, 0.0)
+        self._test_DeadProcess(p, package, name, args, env, False, 0.0)
+        p = Process(package, name, args, env, True, 1.0)
+        self._test_DeadProcess(p, package, name, args, env, True, 1.0)
 
     def test_start_shutdown_process_monitor(self):
         def failer():
