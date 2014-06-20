@@ -196,6 +196,7 @@ class Process(object):
         self.exit_code = None
         # for keeping track of respawning
         self.spawn_count = 0
+        self.time_of_death = None
 
         _init_signal_handlers()
 
@@ -227,10 +228,25 @@ class Process(object):
         return info
 
     def start(self):
+        self.time_of_death = None
         self.spawn_count += 1
 
     def is_alive(self):
+        if self.time_of_death is None:
+            self.time_of_death = time.time()
         return False
+
+    def should_respawn(self):
+        """
+        @return: False if process should not respawn
+                 floating point seconds until respawn otherwise
+        """
+        if not self.respawn:
+            return False
+        if self.time_of_death is None:
+            if self.is_alive():
+                return False
+        return (self.time_of_death+self.respawn_delay) - time.time()
 
     def stop(self, errors=None):
         """
