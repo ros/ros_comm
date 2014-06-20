@@ -118,7 +118,7 @@ class ProcessMock(roslaunch.pmon.Process):
         self.stopped = True
 
 class RespawnOnceProcessMock(ProcessMock):
-    def __init__(self, package, name, args, env, respawn=False):
+    def __init__(self, package, name, args, env, respawn=True):
         super(ProcessMock, self).__init__(package, name, args, env, respawn)
         self.spawn_count = 0
 
@@ -436,6 +436,8 @@ class TestRoslaunchPmon(unittest.TestCase):
         pmon.run()
         
         self.failIf(marker.marked, "pmon had to be externally killed")        
+
+        self.failIf(p3.spawn_count < 2, "process did not respawn")
 
         # retest assumptions
         self.failIf(pmon.procs)
