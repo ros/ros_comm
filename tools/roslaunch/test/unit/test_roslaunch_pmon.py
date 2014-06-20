@@ -132,6 +132,24 @@ class RespawnOnceProcessMock(ProcessMock):
             self.respawn = False
         self.time_of_death = None
 
+class RespawnOnceWithDelayProcessMock(ProcessMock):
+    def __init__(self, package, name, args, env, respawn=True, respawn_delay=1.0):
+        super(ProcessMock, self).__init__(package, name, args, env, respawn, respawn_delay=respawn_delay)
+        self.spawn_count = 0
+        self.respawn_interval = None
+
+    def is_alive(self):
+        if self.time_of_death is None:
+            self.time_of_death = time.time()
+        return False
+
+    def start(self):
+        self.spawn_count += 1
+        if self.spawn_count > 1:
+            self.respawn = False
+            self.respawn_interval = time.time() - self.time_of_death
+        self.time_of_death = None
+
 ## Test roslaunch.server
 class TestRoslaunchPmon(unittest.TestCase):
 
@@ -421,6 +439,10 @@ class TestRoslaunchPmon(unittest.TestCase):
         p3 = RespawnOnceProcessMock('bar', 'name3', [], {})        
         pmon.register(p3)
         
+        # give pmon a process that wants to respawn once after a delay
+        p4 = RespawnOnceWithDelayProcessMock('bar', 'name4', [], {})
+        pmon.register(p4)
+
         # test assumptions about pmon's internal data structures
         # before we begin test
         self.assert_(p1 in pmon.procs)
@@ -438,6 +460,8 @@ class TestRoslaunchPmon(unittest.TestCase):
         self.failIf(marker.marked, "pmon had to be externally killed")        
 
         self.failIf(p3.spawn_count < 2, "process did not respawn")
+
+        self.failIf(p4.respawn_interval < p4.respawn_delay, "Respawn delay not respected: %s %s"%(p4.respawn_interval, p4.respawn_delay))
 
         # retest assumptions
         self.failIf(pmon.procs)
