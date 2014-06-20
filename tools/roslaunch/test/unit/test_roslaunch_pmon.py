@@ -116,19 +116,21 @@ class ProcessMock(roslaunch.pmon.Process):
         self.stopped = False
     def stop(self, errors):
         self.stopped = True
-        
+
 class RespawnOnceProcessMock(ProcessMock):
     def __init__(self, package, name, args, env, respawn=False):
         super(ProcessMock, self).__init__(package, name, args, env, respawn)
         self.spawn_count = 0
 
     def is_alive(self):
+        self.time_of_death = time.time()
         return False
     
     def start(self):
         self.spawn_count += 1
         if self.spawn_count > 1:
             self.respawn = False
+        self.time_of_death = None
 
 ## Test roslaunch.server
 class TestRoslaunchPmon(unittest.TestCase):
