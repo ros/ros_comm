@@ -587,7 +587,7 @@ class ProcessMonitor(Thread):
             for d in dead:
                 try:
                     if d.should_respawn():
-                        respawn.append( d )
+                        respawn.append(d)
                     else:
                         self.unregister(d)
                         # stop process, don't accumulate errors
@@ -616,7 +616,7 @@ class ProcessMonitor(Thread):
                         r.start()
                     else:
                         # not ready yet, keep it around
-                        _respawn.append( r )
+                        _respawn.append(r)
                 except:
                     traceback.print_exc()
                     logger.error("Restart failed %s",traceback.format_exc())
