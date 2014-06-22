@@ -133,8 +133,10 @@ class RespawnOnceProcessMock(ProcessMock):
         self.time_of_death = None
 
 class RespawnOnceWithDelayProcessMock(ProcessMock):
-    def __init__(self, package, name, args, env, respawn=True, respawn_delay=1.0):
-        super(ProcessMock, self).__init__(package, name, args, env, respawn, respawn_delay=respawn_delay)
+    def __init__(self, package, name, args, env, respawn=True,
+            respawn_delay=1.0):
+        super(ProcessMock, self).__init__(package, name, args, env, respawn,
+                respawn_delay=respawn_delay)
         self.spawn_count = 0
         self.respawn_interval = None
 
@@ -215,7 +217,8 @@ class TestRoslaunchPmon(unittest.TestCase):
         p = Process(package, name, args, env, True, 1.0)
         self._test_Process(p, package, name, args, env, True, 1.0)
         
-    def _test_DeadProcess(self, p0, package, name, args, env, respawn, respawn_delay):
+    def _test_DeadProcess(self, p0, package, name, args, env, respawn,
+            respawn_delay):
         from roslaunch.pmon import DeadProcess
         p0.exit_code = -1
         dp = DeadProcess(p0)
@@ -461,7 +464,9 @@ class TestRoslaunchPmon(unittest.TestCase):
 
         self.failIf(p3.spawn_count < 2, "process did not respawn")
 
-        self.failIf(p4.respawn_interval < p4.respawn_delay, "Respawn delay not respected: %s %s"%(p4.respawn_interval, p4.respawn_delay))
+        self.failIf(p4.respawn_interval < p4.respawn_delay,
+                "Respawn delay not respected: %s %s"%(p4.respawn_interval,
+                                                      p4.respawn_delay))
 
         # retest assumptions
         self.failIf(pmon.procs)

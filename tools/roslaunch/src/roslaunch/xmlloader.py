@@ -330,7 +330,9 @@ class XmlLoader(loader.Loader):
 
         return test_name, time_limit, retry
         
-    NODE_ATTRS = ['pkg', 'type', 'machine', 'name', 'args', 'output', 'respawn', 'respawn_delay', 'cwd', NS, CLEAR_PARAMS, 'launch-prefix', 'required']
+    NODE_ATTRS = ['pkg', 'type', 'machine', 'name', 'args', 'output', \
+            'respawn', 'respawn_delay', 'cwd', NS, CLEAR_PARAMS, \
+            'launch-prefix', 'required']
     TEST_ATTRS = NODE_ATTRS + ['test-name','time-limit', 'retry']
     
     @ifunless
@@ -371,9 +373,10 @@ class XmlLoader(loader.Loader):
             pkg, node_type = self.reqd_attrs(tag, context, ('pkg', 'type'))
             
             # optional attributes
-            machine, args, output, respawn, respawn_delay, cwd, launch_prefix, required = \
-                     self.opt_attrs(tag, context, ('machine', 'args', 'output',
-                         'respawn', 'respawn_delay', 'cwd', 'launch-prefix', 'required'))
+            machine, args, output, respawn, respawn_delay, cwd, launch_prefix, \
+                    required = self.opt_attrs(tag, context, ('machine', 'args',
+                        'output', 'respawn', 'respawn_delay', 'cwd',
+                        'launch-prefix', 'required'))
             if tag.hasAttribute('machine') and not len(machine.strip()):
                 raise XmlParseException("<node> 'machine' must be non-empty: [%s]"%machine)
             if not machine and default_machine:
@@ -420,7 +423,8 @@ class XmlLoader(loader.Loader):
                     
             if not is_test:
                 return Node(pkg, node_type, name=name, namespace=child_ns.ns, machine_name=machine, 
-                            args=args, respawn=respawn, respawn_delay=respawn_delay,
+                            args=args, respawn=respawn,
+                            respawn_delay=respawn_delay,
                             remap_args=remap_context.remap_args(), env_args=env_context.env_args,
                             output=output, cwd=cwd, launch_prefix=launch_prefix,
                             required=required, filename=context.filename)

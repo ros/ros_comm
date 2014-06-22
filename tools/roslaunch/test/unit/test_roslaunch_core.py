@@ -83,8 +83,11 @@ def test_Node():
     assert n.package == 'package'
     assert n.type == 'node_type'
     assert n.xmltype() == 'node'
-    assert n.xmlattrs() == [('pkg', 'package'), ('type', 'node_type'),
-            ('machine', None), ('ns', '/'), ('args', ''), ('output', None), ('cwd', None), ('respawn', False), ('respawn_delay', 0.0), ('name', None), ('launch-prefix', None), ('required', False)], n.xmlattrs()
+    assert n.xmlattrs() == ([('pkg', 'package'), ('type', 'node_type'),
+            ('machine', None), ('ns', '/'), ('args', ''), ('output', None),
+            ('cwd', None), ('respawn', False), ('respawn_delay', 0.0),
+            ('name', None), ('launch-prefix', None), ('required', False)],
+            n.xmlattrs())
     assert n.output == None
 
     #tripwire for now

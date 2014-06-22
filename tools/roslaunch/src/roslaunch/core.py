@@ -426,7 +426,8 @@ class Node(object):
                  'filename']
 
     def __init__(self, package, node_type, name=None, namespace='/', \
-                 machine_name=None, args='', respawn=False, respawn_delay=0.0, \
+                 machine_name=None, args='', \
+                 respawn=False, respawn_delay=0.0, \
                  remap_args=None,env_args=None, output=None, cwd=None, \
                  launch_prefix=None, required=False, filename='<unknown>'):
         """
@@ -620,7 +621,8 @@ class Test(Node):
         to what it was initialized with, though the properties are the same
         """
         attrs = Node.xmlattrs(self)
-        attrs = [(a, v) for (a, v) in attrs if a not in ['respawn', 'respawn_delay']]
+        attrs = [(a, v) for (a, v) in attrs if a not in ['respawn', \
+                                                         'respawn_delay']]
         attrs.append(('test-name', self.test_name))
 
         if self.retry:
