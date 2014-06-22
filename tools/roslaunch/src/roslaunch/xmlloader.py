@@ -383,7 +383,7 @@ class XmlLoader(loader.Loader):
                 machine = default_machine.name
             # validate respawn, required
             required, respawn = [_bool_attr(*rr) for rr in ((required, False, 'required'),\
-                                                            (respawn, False, 'respawn'))]
+                                                                (respawn, False, 'respawn'))]
             respawn_delay = _float_attr(respawn_delay, 0.0, 'respawn_delay')
 
             # each node gets its own copy of <remap> arguments, which
