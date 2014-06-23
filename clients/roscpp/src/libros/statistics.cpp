@@ -46,8 +46,8 @@ void StatisticsLogger::init(const SubscriptionCallbackHelperPtr& helper) {
   param::param("/enable_statistics", enable_statistics, false);
   param::param("/statistics_window_min_elements", min_elements, 10);
   param::param("/statistics_window_max_elements", min_elements, 100);
-  param::param("/statistics_window_min_size", min_elements, 4);
-  param::param("/statistics_window_max_size", max_elements, 64);
+  param::param("/statistics_window_min_size", min_window, 4);
+  param::param("/statistics_window_max_size", max_window, 64);
 }
 
 void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_header,
