@@ -465,8 +465,8 @@ class TestRoslaunchPmon(unittest.TestCase):
         self.failIf(p3.spawn_count < 2, "process did not respawn")
 
         self.failIf(p4.respawn_interval < p4.respawn_delay,
-                "Respawn delay not respected: %s %s"%(p4.respawn_interval,
-                                                      p4.respawn_delay))
+                "Respawn delay not respected: %s %s" % (p4.respawn_interval,
+                                                        p4.respawn_delay))
 
         # retest assumptions
         self.failIf(pmon.procs)

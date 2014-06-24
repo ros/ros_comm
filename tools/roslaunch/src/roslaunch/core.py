@@ -518,7 +518,7 @@ class Node(object):
             ('output', self.output),
             ('cwd', cwd_str), 
             ('respawn', self.respawn), #not valid on <test>
-            ('respawn_delay', self.respawn_delay), #not valid on <test>
+            ('respawn_delay', self.respawn_delay), # not valid on <test>
             ('name', name_str),
             ('launch-prefix', self.launch_prefix),
             ('required', self.required),

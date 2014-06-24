@@ -246,7 +246,7 @@ class Process(object):
         if self.time_of_death is None:
             if self.is_alive():
                 return False
-        return (self.time_of_death+self.respawn_delay) - time.time()
+        return (self.time_of_death + self.respawn_delay) - time.time()
 
     def stop(self, errors=None):
         """
@@ -560,7 +560,7 @@ class ProcessMonitor(Thread):
                     if not p.is_alive():
                         logger.debug("Process[%s] has died, respawn=%s, required=%s, exit_code=%s",
                                 p.name,
-                                "True(%f)"%p.respawn_delay if p.respawn else p.respawn,
+                                "True(%f)" % p.respawn_delay if p.respawn else p.respawn,
                                 p.required, p.exit_code)
                         exit_code_str = p.get_exit_description()
                         if p.required:
@@ -609,8 +609,8 @@ class ProcessMonitor(Thread):
                 try:
                     if self.is_shutdown:
                         break
-                    if r.should_respawn()<=0.0:
-                        printlog("[%s] restarting process"%r.name)
+                    if r.should_respawn() <= 0.0:
+                        printlog("[%s] restarting process" % r.name)
                         # stop process, don't accumulate errors
                         r.stop([])
                         r.start()
