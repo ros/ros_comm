@@ -71,6 +71,9 @@ target_link_libraries(${PROJECT_NAME}-service_adv_unadv ${GTEST_LIBRARIES} ${cat
 add_executable(${PROJECT_NAME}-service_call EXCLUDE_FROM_ALL service_call.cpp)
 target_link_libraries(${PROJECT_NAME}-service_call ${GTEST_LIBRARIES} ${catkin_LIBRARIES})
 
+add_executable(${PROJECT_NAME}-service_call_zombie EXCLUDE_FROM_ALL service_call_zombie.cpp)
+target_link_libraries(${PROJECT_NAME}-service_call_zombie ${GTEST_LIBRARIES} ${catkin_LIBRARIES})
+
 add_executable(${PROJECT_NAME}-service_deadlock EXCLUDE_FROM_ALL service_deadlock.cpp)
 target_link_libraries(${PROJECT_NAME}-service_deadlock ${GTEST_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME}-service_deadlock std_srvs_gencpp)
@@ -81,7 +84,6 @@ target_link_libraries(${PROJECT_NAME}-service_call_repeatedly ${catkin_LIBRARIES
 add_executable(${PROJECT_NAME}-service_exception EXCLUDE_FROM_ALL service_exception.cpp)
 target_link_libraries(${PROJECT_NAME}-service_exception ${GTEST_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME}-service_exception std_srvs_gencpp)
-
 
 # Repeatedly call ros::init()
 add_executable(${PROJECT_NAME}-multiple_init_fini EXCLUDE_FROM_ALL multiple_init_fini.cpp)
@@ -101,6 +103,10 @@ target_link_libraries(${PROJECT_NAME}-service_adv_a ${GTEST_LIBRARIES} ${catkin_
 
 add_executable(${PROJECT_NAME}-service_wait_a_adv_b EXCLUDE_FROM_ALL service_wait_a_adv_b.cpp)
 target_link_libraries(${PROJECT_NAME}-service_wait_a_adv_b ${GTEST_LIBRARIES} ${catkin_LIBRARIES})
+
+# Zombie (node crashed) service
+add_executable(${PROJECT_NAME}-service_adv_zombie EXCLUDE_FROM_ALL service_adv_zombie.cpp)
+target_link_libraries(${PROJECT_NAME}-service_adv_zombie ${catkin_LIBRARIES})
 
 add_executable(${PROJECT_NAME}-service_call_expect_b EXCLUDE_FROM_ALL service_call_expect_b.cpp)
 target_link_libraries(${PROJECT_NAME}-service_call_expect_b ${GTEST_LIBRARIES} ${catkin_LIBRARIES})
@@ -227,6 +233,7 @@ if(TARGET tests)
     ${PROJECT_NAME}-service_adv
     ${PROJECT_NAME}-service_adv_unadv
     ${PROJECT_NAME}-service_call
+    ${PROJECT_NAME}-service_call_zombie
     ${PROJECT_NAME}-service_deadlock
     ${PROJECT_NAME}-service_exception
     ${PROJECT_NAME}-service_call_repeatedly
@@ -234,6 +241,7 @@ if(TARGET tests)
     ${PROJECT_NAME}-inspection
     ${PROJECT_NAME}-service_adv_multiple
     ${PROJECT_NAME}-service_adv_a
+    ${PROJECT_NAME}-service_adv_zombie
     ${PROJECT_NAME}-service_wait_a_adv_b
     ${PROJECT_NAME}-service_call_expect_b
     ${PROJECT_NAME}-name_remapping
@@ -289,6 +297,7 @@ add_dependencies(${PROJECT_NAME}-sim_time_test ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-service_adv ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-service_adv_unadv ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-service_call ${PROJECT_NAME}_gencpp)
+add_dependencies(${PROJECT_NAME}-service_call_zombie ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-service_deadlock ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-service_exception ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-service_call_repeatedly ${PROJECT_NAME}_gencpp)
@@ -298,6 +307,7 @@ add_dependencies(${PROJECT_NAME}-service_adv_multiple ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-service_adv_a ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-service_wait_a_adv_b ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-service_call_expect_b ${PROJECT_NAME}_gencpp)
+add_dependencies(${PROJECT_NAME}-service_adv_zombie ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-name_remapping ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-name_remapping_with_ns ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-namespaces ${PROJECT_NAME}_gencpp)
