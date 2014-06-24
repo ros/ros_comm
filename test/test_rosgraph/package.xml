@@ -1,6 +1,6 @@
 <package>
   <name>test_rosgraph</name>
-  <version>1.11.4</version>
+  <version>1.11.5</version>
   <description>
     Tests for rosgraph which depend on rostest.
   </description>

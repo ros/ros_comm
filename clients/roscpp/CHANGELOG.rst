@@ -2,8 +2,8 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.5 (2014-06-24)
+-------------------
 * improve handling dropped connections (`#434 <https://github.com/ros/ros_comm/issues/434>`)_
 * add header needed for Android (`#441 <https://github.com/ros/ros_comm/issues/441>`_)
 * fix typo for parameter used for statistics (`#448 <https://github.com/ros/ros_comm/issues/448>`_)

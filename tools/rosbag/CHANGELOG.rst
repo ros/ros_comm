@@ -2,8 +2,8 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.5 (2014-06-24)
+-------------------
 * Fix typo in rosbag usage
 * Contributors: lrasinen
 
