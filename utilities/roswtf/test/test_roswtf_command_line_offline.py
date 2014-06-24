@@ -72,7 +72,6 @@ class TestRoswtfOffline(unittest.TestCase):
             'cpp_common', 'roscpp_serialization', 'roscpp_traits', 'rostime',  # roscpp_core
             'rosbuild', 'rosclean', 'rosunit',  # ros
             'rospack', 'std_msgs', 'message_runtime', 'message_generation', 'gencpp', 'genlisp', 'genpy', 'genmsg', 'catkin',
-            'console_bridge'
         ]
         paths = [rospack.get_path(pkg) for pkg in pkgs]
         try:
