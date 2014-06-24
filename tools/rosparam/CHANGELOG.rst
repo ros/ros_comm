@@ -2,6 +2,9 @@
 Changelog for package rosparam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.11.4 (2014-06-16)
 -------------------
 * Python 3 compatibility (`#427 <https://github.com/ros/ros_comm/issues/427>`_)
