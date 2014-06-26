@@ -37,6 +37,19 @@ function(add_rostest file)
   rostest__strip_prefix(_testname "${PROJECT_BINARY_DIR}/")
 
   string(REPLACE "/" "_" _testname ${_testname})
+
+  # to support registering the same test with different ARGS
+  # append the args to the test name
+  if(_rostest_ARGS)
+    get_filename_component(_ext ${_testname} EXT)
+    get_filename_component(_testname ${_testname} NAME_WE)
+    foreach(arg ${_rostest_ARGS})
+      string(REPLACE ":=" "_" arg_string "${arg}")
+      set(_testname "${_testname}__${arg_string}")
+    endforeach()
+    set(_testname "${_testname}${_ext}")
+  endif()
+
   get_filename_component(_output_name ${_testname} NAME_WE)
   set(_output_name "${_output_name}.xml")
   set(cmd "${ROSTEST_EXE} --pkgdir=${PROJECT_SOURCE_DIR} --package=${PROJECT_NAME} --results-filename ${_output_name} ${_file_name} ${_rostest_ARGS}")
