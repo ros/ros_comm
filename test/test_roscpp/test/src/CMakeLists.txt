@@ -50,6 +50,9 @@ target_link_libraries(${PROJECT_NAME}-subscribe_unsubscribe_repeatedly ${catkin_
 add_executable(${PROJECT_NAME}-publish_constantly EXCLUDE_FROM_ALL publish_constantly.cpp)
 target_link_libraries(${PROJECT_NAME}-publish_constantly ${catkin_LIBRARIES})
 
+add_executable(${PROJECT_NAME}-publish_multiple EXCLUDE_FROM_ALL publish_multiple.cpp)
+target_link_libraries(${PROJECT_NAME}-publish_multiple ${catkin_LIBRARIES})
+
 add_executable(${PROJECT_NAME}-param_update_test EXCLUDE_FROM_ALL param_update_test.cpp)
 target_link_libraries(${PROJECT_NAME}-param_update_test ${catkin_LIBRARIES})
 
@@ -227,6 +230,7 @@ if(TARGET tests)
     ${PROJECT_NAME}-publish_unadvertise
     ${PROJECT_NAME}-subscribe_unsubscribe_repeatedly
     ${PROJECT_NAME}-publish_constantly
+    ${PROJECT_NAME}-publish_multiple
     ${PROJECT_NAME}-param_update_test
     ${PROJECT_NAME}-real_time_test
     ${PROJECT_NAME}-sim_time_test
@@ -291,6 +295,7 @@ add_dependencies(${PROJECT_NAME}-subscribe_unsubscribe ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-publish_unadvertise ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-subscribe_unsubscribe_repeatedly ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-publish_constantly ${PROJECT_NAME}_gencpp)
+add_dependencies(${PROJECT_NAME}-publish_multiple ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-param_update_test ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-real_time_test ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-sim_time_test ${PROJECT_NAME}_gencpp)
