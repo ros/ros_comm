@@ -38,9 +38,8 @@ function(add_rostest file)
 
   string(REPLACE "/" "_" _testname ${_testname})
   if(ARGN) # inserting parameters in name, if set
-    string(REPLACE ";" "__" argnstring "${ARGN}")
-    string(REGEX REPLACE "ARGS" "" argnstring ${argnstring})
-    string(REPLACE ":=" "_" argnstring ${argnstring})
+    string(REGEX REPLACE "[;:=.]|ARGS" "_" argnstring "${ARGN}")
+    string(REPLACE " " "-" argnstring "${argnstring}")
     string(REPLACE "." "_" _testname ${_testname})
     set(_testname "${_testname}_${argnstring}.test")
     message("-- Added testname WITH arguments: ${_testname}")
