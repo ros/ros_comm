@@ -518,6 +518,16 @@ class TCPROSTransport(Transport):
         @type  timeout: float
         @raise TransportInitError: if unable to create connection
         """
+        # first make sure that if ROS_HOSTNAME=localhost, we will not attempt
+        # to connect to anything other than localhost
+        if ("ROS_HOSTNAME" in os.environ) and (os.environ["ROS_HOSTNAME"] == "localhost"):
+          if not rosgraph.network.is_local_address(dest_addr):
+            msg = "attempted to connect to non-local host [%s] from a node launched with ROS_HOSTNAME=localhost" % (dest_addr)
+            logwarn(msg)
+            self.close()
+            raise TransportInitError(msg)  # bubble up
+ 
+        # now we can proceed with trying to connect.
         try:
             self.endpoint_id = endpoint_id
             self.dest_address = (dest_addr, dest_port)

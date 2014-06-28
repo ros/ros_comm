@@ -142,6 +142,9 @@ std::string TransportUDP::getTransportInfo()
 
 bool TransportUDP::connect(const std::string& host, int port, int connection_id)
 {
+  if (!isHostAllowed(host))
+    return false; // adios amigo
+
   sock_ = socket(AF_INET, SOCK_DGRAM, 0);
   connection_id_ = connection_id;
 
@@ -242,7 +245,9 @@ bool TransportUDP::createIncoming(int port, bool is_server)
 
   server_address_.sin_family = AF_INET;
   server_address_.sin_port = htons(port);
-  server_address_.sin_addr.s_addr = INADDR_ANY;
+  server_address_.sin_addr.s_addr = isOnlyLocalhostAllowed() ? 
+                                    htonl(INADDR_LOOPBACK) :
+                                    INADDR_ANY;
   if (bind(sock_, (sockaddr *)&server_address_, sizeof(server_address_)) < 0)
   {
     ROS_ERROR("bind() failed with error [%s]",  last_socket_error_string());

@@ -211,6 +211,9 @@ void TransportTCP::setKeepAlive(bool use, uint32_t idle, uint32_t interval, uint
 
 bool TransportTCP::connect(const std::string& host, int port)
 {
+  if (!isHostAllowed(host))
+    return false; // adios amigo
+
   sock_ = socket(s_use_ipv6_ ? AF_INET6 : AF_INET, SOCK_STREAM, 0);
   connected_host_ = host;
   connected_port_ = port;
@@ -357,7 +360,9 @@ bool TransportTCP::listen(int port, int backlog, const AcceptCallback& accept_cb
     sock_ = socket(AF_INET6, SOCK_STREAM, 0);
     sockaddr_in6 *address = (sockaddr_in6 *)&server_address_;
     address->sin6_family = AF_INET6;
-    address->sin6_addr = in6addr_any;
+    address->sin6_addr = isOnlyLocalhostAllowed() ? 
+                         in6addr_loopback : 
+                         in6addr_any;
     address->sin6_port = htons(port);
     sa_len_ = sizeof(sockaddr_in6);
   }
@@ -366,7 +371,9 @@ bool TransportTCP::listen(int port, int backlog, const AcceptCallback& accept_cb
     sock_ = socket(AF_INET, SOCK_STREAM, 0);
     sockaddr_in *address = (sockaddr_in *)&server_address_;
     address->sin_family = AF_INET;
-    address->sin_addr.s_addr = INADDR_ANY;
+    address->sin_addr.s_addr = isOnlyLocalhostAllowed() ? 
+                               htonl(INADDR_LOOPBACK) : 
+                               INADDR_ANY;
     address->sin_port = htons(port);
     sa_len_ = sizeof(sockaddr_in);
   }
