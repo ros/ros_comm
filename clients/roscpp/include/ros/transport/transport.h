@@ -141,6 +141,11 @@ protected:
    */
   bool isHostAllowed(const std::string &host);
 
+  /**
+   * \brief returns true if this transport is only allowed to talk to localhost
+   */
+  bool isOnlyLocalhostAllowed() { return only_localhost_allowed_; }
+
 private:
   bool only_localhost_allowed_;
   std::vector<std::string> allowed_hosts_;

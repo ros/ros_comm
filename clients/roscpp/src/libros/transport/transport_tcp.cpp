@@ -355,22 +355,14 @@ bool TransportTCP::listen(int port, int backlog, const AcceptCallback& accept_cb
   is_server_ = true;
   accept_cb_ = accept_cb;
 
-  char *ros_ip_env = NULL;
-  #ifdef _MSC_VER
-    _dupenv_s(&ros_ip_env, NULL, "ROS_IP");
-  #else
-    ros_ip_env = getenv("ROS_IP");
-  #endif
-  bool use_loopback = ros_ip_env && !strcmp(ros_ip_env, "localhost");
-  ROS_INFO_COND(use_loopback,
-    "ROS_IP is set to localhost; tcpros is binding to loopback interface");
-
   if (s_use_ipv6_)
   {
     sock_ = socket(AF_INET6, SOCK_STREAM, 0);
     sockaddr_in6 *address = (sockaddr_in6 *)&server_address_;
     address->sin6_family = AF_INET6;
-    address->sin6_addr = use_loopback ? in6addr_loopback : in6addr_any;
+    address->sin6_addr = isOnlyLocalhostAllowed() ? 
+                         in6addr_loopback : 
+                         in6addr_any;
     address->sin6_port = htons(port);
     sa_len_ = sizeof(sockaddr_in6);
   }
@@ -379,7 +371,7 @@ bool TransportTCP::listen(int port, int backlog, const AcceptCallback& accept_cb
     sock_ = socket(AF_INET, SOCK_STREAM, 0);
     sockaddr_in *address = (sockaddr_in *)&server_address_;
     address->sin_family = AF_INET;
-    address->sin_addr.s_addr = use_loopback ? 
+    address->sin_addr.s_addr = isOnlyLocalhostAllowed() ? 
                                htonl(INADDR_LOOPBACK) : 
                                INADDR_ANY;
     address->sin_port = htons(port);

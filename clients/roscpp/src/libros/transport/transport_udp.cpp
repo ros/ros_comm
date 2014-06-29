@@ -243,19 +243,9 @@ bool TransportUDP::createIncoming(int port, bool is_server)
     return false;
   }
 
-  char *ros_ip_env = NULL;
-  #ifdef _MSC_VER
-    _dupenv_s(&ros_ip_env, NULL, "ROS_IP");
-  #else
-    ros_ip_env = getenv("ROS_IP");
-  #endif
-  bool use_loopback = ros_ip_env && !strcmp(ros_ip_env, "localhost");
-  ROS_INFO_COND(use_loopback,
-    "ROS_IP is set to localhost; rosudp is binding to loopback interface");
-
   server_address_.sin_family = AF_INET;
   server_address_.sin_port = htons(port);
-  server_address_.sin_addr.s_addr = use_loopback ? 
+  server_address_.sin_addr.s_addr = isOnlyLocalhostAllowed() ? 
                                     htonl(INADDR_LOOPBACK) :
                                     INADDR_ANY;
   if (bind(sock_, (sockaddr *)&server_address_, sizeof(server_address_)) < 0)
