@@ -211,6 +211,26 @@ void TransportTCP::setKeepAlive(bool use, uint32_t idle, uint32_t interval, uint
 
 bool TransportTCP::connect(const std::string& host, int port)
 {
+  char *ros_ip_env = NULL;
+  #ifdef _MSC_VER
+    _dupenv_s(&ros_ip_env, NULL, "ROS_IP");
+  #else
+    ros_ip_env = getenv("ROS_IP");
+  #endif
+  if (ros_ip_env && !strcmp(ros_ip_env, "localhost"))
+  {
+    // we must verify that the requested connection is to localhost
+    char our_hostname[256] = {0};
+    gethostname(our_hostname, sizeof(our_hostname)-1);
+    if (std::string(our_hostname) != host)
+    {
+      ROS_WARN("ROS_IP is set to localhost (%s), and the requested outbound "
+               "connection is to host %s, so this connection will not be "
+               "allowed.", our_hostname, host.c_str());
+      return false; // adios amigo
+    }
+  }
+
   sock_ = socket(s_use_ipv6_ ? AF_INET6 : AF_INET, SOCK_STREAM, 0);
   connected_host_ = host;
   connected_port_ = port;
