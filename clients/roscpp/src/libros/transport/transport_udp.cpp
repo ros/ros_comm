@@ -153,7 +153,9 @@ bool TransportUDP::connect(const std::string& host, int port, int connection_id)
     // we must verify that the requested connection is to localhost
     char our_hostname[256] = {0};
     gethostname(our_hostname, sizeof(our_hostname)-1);
-    if (std::string(our_hostname) != host)
+    if (host != "127.0.0.1" && 
+        host != "::1" && 
+        std::string(our_hostname) != host)
     {
       ROS_WARN("ROS_IP is set to localhost (%s), and the requested outbound "
                "connection is to host %s, so this connection will not be "
