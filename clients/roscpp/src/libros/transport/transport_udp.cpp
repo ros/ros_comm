@@ -248,11 +248,13 @@ bool TransportUDP::createIncoming(int port, bool is_server)
   #endif
   bool use_loopback = ros_ip_env && !strcmp(ros_ip_env, "localhost");
   ROS_INFO_COND(use_loopback,
-                "ROS_IP is set to localhost; binding to loopback interface");
+    "ROS_IP is set to localhost; rosudp is binding to loopback interface");
 
   server_address_.sin_family = AF_INET;
   server_address_.sin_port = htons(port);
-  server_address_.sin_addr.s_addr = use_loopback ? INADDR_LOOPBACK : INADDR_ANY;
+  server_address_.sin_addr.s_addr = use_loopback ? 
+                                    htonl(INADDR_LOOPBACK) :
+                                    INADDR_ANY;
   if (bind(sock_, (sockaddr *)&server_address_, sizeof(server_address_)) < 0)
   {
     ROS_ERROR("bind() failed with error [%s]",  last_socket_error_string());
