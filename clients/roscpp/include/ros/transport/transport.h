@@ -154,4 +154,3 @@ private:
 }
 
 #endif // ROSCPP_TRANSPORT_H
-
