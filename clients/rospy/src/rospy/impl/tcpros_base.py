@@ -520,9 +520,9 @@ class TCPROSTransport(Transport):
         """
         # first make sure that if ROS_IP=localhost, we will not attempt
         # to connect to anything other than localhost
-        if ("ROS_IP" in os.environ) and (os.environ["ROS_IP"] == "localhost"):
+        if ("ROS_HOSTNAME" in os.environ) and (os.environ["ROS_HOSTNAME"] == "localhost"):
           if not rosgraph.network.is_local_address(dest_addr):
-            msg = "attempted to connect to non-local host [%s] from a node launched with ROS_IP=localhost." % (dest_addr)
+            msg = "attempted to connect to non-local host [%s] from a node launched with ROS_HOSTNAME=localhost" % (dest_addr)
             logwarn(msg)
             self.close()
             raise TransportInitError(msg)  # bubble up

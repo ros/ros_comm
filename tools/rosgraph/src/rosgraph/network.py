@@ -154,7 +154,7 @@ def get_address_override():
             msg = 'invalid ROS_IP (port should not be included)'
             sys.stderr.write(msg + '\n')
             logger.warn(msg)
-        elif ip.find('.') == -1 and ip.find(':') == -1 and ip != 'localhost':
+        elif ip.find('.') == -1 and ip.find(':') == -1:
             msg = 'invalid ROS_IP (must be a valid IPv4 or IPv6 address)'
             sys.stderr.write(msg + '\n')
             logger.warn(msg)
