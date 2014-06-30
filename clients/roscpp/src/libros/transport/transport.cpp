@@ -96,7 +96,7 @@ Transport::Transport()
   }
 }
 
-bool Transport::isHostAllowed(const std::string &host)
+bool Transport::isHostAllowed(const std::string &host) const
 {
   if (!only_localhost_allowed_)
     return true; // doesn't matter; we'll connect to anybody
@@ -111,7 +111,7 @@ bool Transport::isHostAllowed(const std::string &host)
       return true; // hooray
   }
   ROS_WARN("ROS_HOSTNAME / ROS_IP is set to only allow local connections, so "
-           "a requested connection to %s is being rejected.", host.c_str());
+           "a requested connection to '%s' is being rejected.", host.c_str());
   return false; // sadness
 }
 

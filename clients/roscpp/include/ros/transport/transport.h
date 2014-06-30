@@ -139,12 +139,12 @@ protected:
   /**
    * \brief returns true if the transport is allowed to connect to the host passed to it.
    */
-  bool isHostAllowed(const std::string &host);
+  bool isHostAllowed(const std::string &host) const;
 
   /**
    * \brief returns true if this transport is only allowed to talk to localhost
    */
-  bool isOnlyLocalhostAllowed() { return only_localhost_allowed_; }
+  bool isOnlyLocalhostAllowed() const { return only_localhost_allowed_; }
 
 private:
   bool only_localhost_allowed_;
