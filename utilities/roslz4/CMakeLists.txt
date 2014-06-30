@@ -27,8 +27,7 @@ target_link_libraries(roslz4 ${lz4_LIBRARIES} ${catkin_LIBRARIES})
 
 # Python bindings
 set(Python_ADDITIONAL_VERSIONS "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
-set(PythonLibs_FIND_VERSION "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
-find_package(PythonLibs REQUIRED)
+find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
 include_directories(${PYTHON_INCLUDE_PATH})
 
 add_library(roslz4_py src/_roslz4module.c)
