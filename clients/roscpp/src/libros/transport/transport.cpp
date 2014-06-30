@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2014, Open Source Robotics Foundation
+ *  Copyright (c) 2014, Open Source Robotics Foundation, Inc.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -104,7 +104,7 @@ bool Transport::isHostAllowed(const std::string &host) const
   if (host.length() >= 4 && host.substr(0, 4) == std::string("127."))
     return true; // ipv4 localhost
   // now, loop through the list of valid hostnames and see if we find it
-  for (std::vector<std::string>::iterator it = allowed_hosts_.begin(); 
+  for (std::vector<std::string>::const_iterator it = allowed_hosts_.begin(); 
        it != allowed_hosts_.end(); ++it)
   {
     if (host == *it)
