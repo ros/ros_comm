@@ -331,10 +331,9 @@ void Recorder::updateFilenames() {
     std::string prefix = options_.prefix;
     uint32_t ind = prefix.rfind(".bag");
 
-    if (ind == prefix.size() - 4)
+    if (ind != -1 && ind == prefix.size() - 4)
     {
       prefix.erase(ind);
-      ind = prefix.rfind(".bag");
     }
 
     if (prefix.length() > 0)
