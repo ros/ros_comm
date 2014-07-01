@@ -59,8 +59,6 @@ Transport::Transport()
   #endif
   if (ros_hostname_env && !strcmp(ros_hostname_env, "localhost"))
     only_localhost_allowed_ = true;
-  else if (ros_ip_env && !strcmp(ros_ip_env, "localhost"))
-    only_localhost_allowed_ = true;
   else if (ros_ip_env && !strncmp(ros_ip_env, "127.", 4))
     only_localhost_allowed_ = true;
 
