@@ -103,6 +103,7 @@ void Publication::addCallbacks(const SubscriberCallbacksPtr& callbacks)
   boost::mutex::scoped_lock lock(callbacks_mutex_);
 
   callbacks_.push_back(callbacks);
+  max_queue_ += callbacks->queue_size_;
 
   // Add connect callbacks for all current subscriptions if this publisher wants them
   if (callbacks->connect_ && callbacks->callback_queue_)
@@ -122,6 +123,7 @@ void Publication::addCallbacks(const SubscriberCallbacksPtr& callbacks)
 void Publication::removeCallbacks(const SubscriberCallbacksPtr& callbacks)
 {
   boost::mutex::scoped_lock lock(callbacks_mutex_);
+  max_queue_ -= callbacks->queue_size_;
 
   V_Callback::iterator it = std::find(callbacks_.begin(), callbacks_.end(), callbacks);
   if (it != callbacks_.end())
@@ -356,6 +358,12 @@ size_t Publication::getNumCallbacks()
 {
   boost::mutex::scoped_lock lock(callbacks_mutex_);
   return callbacks_.size();
+}
+
+size_t Publication::getMaxQueue()
+{
+  boost::mutex::scoped_lock lock(callbacks_mutex_);
+  return max_queue_;
 }
 
 uint32_t Publication::incrementSequence()

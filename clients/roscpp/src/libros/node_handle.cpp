@@ -296,7 +296,7 @@ Publisher NodeHandle::advertise(AdvertiseOptions& ops)
   }
 
   SubscriberCallbacksPtr callbacks(new SubscriberCallbacks(ops.connect_cb, ops.disconnect_cb, 
-							   ops.tracked_object, ops.callback_queue));
+							   ops.tracked_object, ops.callback_queue, ops.queue_size));
 
   if (TopicManager::instance()->advertise(ops, callbacks))
   {

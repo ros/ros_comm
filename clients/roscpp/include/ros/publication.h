@@ -73,7 +73,7 @@ public:
   /**
    * \brief returns the max queue size of this publication
    */
-  inline size_t getMaxQueue() { return max_queue_; }
+  size_t getMaxQueue();
   /**
    * \brief Get the accumulated stats for this publication
    */
@@ -168,6 +168,8 @@ private:
 
   typedef std::vector<SubscriberCallbacksPtr> V_Callback;
   V_Callback callbacks_;
+
+  // Also protects max_queue_, since it depends on the registered callbacks
   boost::mutex callbacks_mutex_;
 
   V_SubscriberLink subscriber_links_;
