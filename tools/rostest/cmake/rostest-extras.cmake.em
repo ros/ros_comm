@@ -37,13 +37,13 @@ function(add_rostest file)
   rostest__strip_prefix(_testname "${PROJECT_BINARY_DIR}/")
 
   string(REPLACE "/" "_" _testname ${_testname})
-  if(ARGN) # inserting parameters in name, if set
+  if(_rostest_ARGS) # inserting parameters in name, if set
     string(REGEX REPLACE "[;:=.]|ARGS" "_" argnstring "${ARGN}")
     string(REPLACE " " "-" argnstring "${argnstring}")
     string(REPLACE "." "_" _testname ${_testname})
     set(_testname "${_testname}_${argnstring}.test")
     message("-- Added testname WITH arguments: ${_testname}")
-  endif(ARGN)
+  endif(_rostest_ARGS)
 
   get_filename_component(_output_name ${_testname} NAME_WE)
   set(_output_name "${_output_name}.xml")
