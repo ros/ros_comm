@@ -518,7 +518,7 @@ class TCPROSTransport(Transport):
         @type  timeout: float
         @raise TransportInitError: if unable to create connection
         """
-        # first make sure that if ROS_IP=localhost, we will not attempt
+        # first make sure that if ROS_HOSTNAME=localhost, we will not attempt
         # to connect to anything other than localhost
         if ("ROS_HOSTNAME" in os.environ) and (os.environ["ROS_HOSTNAME"] == "localhost"):
           if not rosgraph.network.is_local_address(dest_addr):
