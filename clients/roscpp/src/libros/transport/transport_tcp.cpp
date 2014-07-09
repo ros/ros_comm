@@ -384,6 +384,7 @@ bool TransportTCP::listen(int port, int backlog, const AcceptCallback& accept_cb
     return false;
   }
 
+
   if (bind(sock_, (sockaddr *)&server_address_, sa_len_) < 0)
   {
     ROS_ERROR("bind() failed with error [%s]", last_socket_error_string());

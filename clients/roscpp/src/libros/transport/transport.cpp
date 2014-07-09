@@ -61,6 +61,8 @@ Transport::Transport()
     only_localhost_allowed_ = true;
   else if (ros_ip_env && !strncmp(ros_ip_env, "127.", 4))
     only_localhost_allowed_ = true;
+  else if (ros_ip_env && !strcmp(ros_ip_env, "::1"))
+    only_localhost_allowed_ = true;
 
   char our_hostname[256] = {0};
   gethostname(our_hostname, sizeof(our_hostname)-1);
