@@ -234,6 +234,11 @@ class ROSLaunchConfig(object):
             summary += '\n\nCLEAR PARAMETERS\n' + '\n'.join(sorted([' * %s'%p for p in self.clear_params]))
         if self.params:
             def strip_string(value):
+                # not dealing with non-ascii characters here
+                try:
+                    value = str(value)
+                except UnicodeEncodeError:
+                    return '<...>'
                 max_length = 20
                 if len(value) > max_length:
                     value = value[:max_length - 3] + '...'
@@ -247,7 +252,7 @@ class ROSLaunchConfig(object):
                             break
                         return '<...>'
                 return value
-            summary += '\n\nPARAMETERS\n' + '\n'.join(sorted([' * %s: %s' % (k, strip_string(str(v.value))) for k, v in self.params.items()]))
+            summary += '\n\nPARAMETERS\n' + '\n'.join(sorted([' * %s: %s' % (k, strip_string(v.value)) for k, v in self.params.items()]))
         if not local:
             summary += '\n\nMACHINES\n' + '\n'.join(sorted([' * %s'%k for k in self.machines if k]))
         summary += '\n\nNODES\n'
