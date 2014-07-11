@@ -2,6 +2,9 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.11.5 (2014-06-24)
 -------------------
 * rename variables within rosconsole macros (`#442 <https://github.com/ros/ros_comm/issues/442>`_)

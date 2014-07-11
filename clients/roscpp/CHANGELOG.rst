@@ -2,6 +2,10 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* check ROS_HOSTNAME for localhost / ROS_IP for 127./::1 and prevent connections from other hosts in that case (`#452 <https://github.com/ros/ros_comm/issues/452>`)_
+
 1.11.5 (2014-06-24)
 -------------------
 * improve handling dropped connections (`#434 <https://github.com/ros/ros_comm/issues/434>`)_

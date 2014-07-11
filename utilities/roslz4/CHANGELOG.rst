@@ -2,6 +2,10 @@
 Changelog for package roslz4
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix finding specific version of PythonLibs with CMake 3
+
 1.11.5 (2014-06-24)
 -------------------
 
