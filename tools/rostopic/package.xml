@@ -1,6 +1,6 @@
 <package>
   <name>rostopic</name>
-  <version>1.11.5</version>
+  <version>1.11.6</version>
   <description>
     rostopic contains the rostopic command-line tool for displaying
     debug information about
