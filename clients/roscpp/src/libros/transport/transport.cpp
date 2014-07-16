@@ -79,6 +79,8 @@ Transport::Transport()
   }
   for (ifaddrs *ifa = ifaddr; ifa; ifa = ifa->ifa_next)
   {
+    if(NULL == ifa->ifa_addr)
+      continue; // ifa_addr can be NULL
     int family = ifa->ifa_addr->sa_family;
     if (family != AF_INET && family != AF_INET6)
       continue; // we're only looking for IP addresses
