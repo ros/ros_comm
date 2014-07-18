@@ -2,13 +2,17 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix segfault due to accessing a NULL pointer for some network interfaces (`#465 <https://github.com/ros/ros_comm/issues/465>`_) (regression from 1.11.6)
+
 1.11.6 (2014-07-10)
 -------------------
-* check ROS_HOSTNAME for localhost / ROS_IP for 127./::1 and prevent connections from other hosts in that case (`#452 <https://github.com/ros/ros_comm/issues/452>`)_
+* check ROS_HOSTNAME for localhost / ROS_IP for 127./::1 and prevent connections from other hosts in that case (`#452 <https://github.com/ros/ros_comm/issues/452>`_)
 
 1.11.5 (2014-06-24)
 -------------------
-* improve handling dropped connections (`#434 <https://github.com/ros/ros_comm/issues/434>`)_
+* improve handling dropped connections (`#434 <https://github.com/ros/ros_comm/issues/434>`_)
 * add header needed for Android (`#441 <https://github.com/ros/ros_comm/issues/441>`_)
 * fix typo for parameter used for statistics (`#448 <https://github.com/ros/ros_comm/issues/448>`_)
 

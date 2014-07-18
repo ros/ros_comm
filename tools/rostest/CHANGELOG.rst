@@ -2,6 +2,10 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* make rostest use a random master port and run rostests in parallel (`#468 <https://github.com/ros/ros_comm/issues/468>`_)
+
 1.11.6 (2014-07-10)
 -------------------
 * resolving naming conflicts when multiple test are added with arguments (`#462 <https://github.com/ros/ros_comm/issues/462>`_)
