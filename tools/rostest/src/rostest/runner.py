@@ -47,8 +47,6 @@ from rostest.rostestutil import createXMLRunner, printSummary, printRostestSumma
 from rostest.rostest_parent import ROSTestLaunchParent
 import rosunit.junitxml
 
-_DEFAULT_TEST_PORT = 22422
-
 # NOTE: ignoring Python style guide as unittest is sadly written with Java-like camel casing
 
 _results = rosunit.junitxml.Result('rostest', 0, 0, 0)
@@ -192,7 +190,7 @@ def setUp(self):
     # new test_parent for each run. we are a bit inefficient as it would be possible to
     # reuse the roslaunch base infrastructure for each test, but the roslaunch code
     # is not abstracted well enough yet
-    self.test_parent = ROSTestLaunchParent(self.config, [self.test_file], port=_DEFAULT_TEST_PORT)
+    self.test_parent = ROSTestLaunchParent(self.config, [self.test_file])
     
     printlog("setup[%s] run_id[%s] starting", self.test_file, self.test_parent.run_id)
 
@@ -224,7 +222,7 @@ def createUnitTest(pkg, test_file):
     @type  test_file: str
     """
     # parse the config to find the test files
-    config = roslaunch.parent.load_config_default([test_file], _DEFAULT_TEST_PORT)
+    config = roslaunch.parent.load_config_default([test_file], None)
 
     # pass in config to class as a property so that test_parent can be initialized
     classdict = { 'setUp': setUp, 'tearDown': tearDown, 'config': config,
