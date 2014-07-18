@@ -102,6 +102,16 @@ void Publication::addCallbacks(const SubscriberCallbacksPtr& callbacks)
 {
   boost::mutex::scoped_lock lock(callbacks_mutex_);
 
+  // If a publisher requested an infinite queue size (max_queue=0),
+  // respect that
+  if(callbacks_.empty() || max_queue_ != 0)
+  {
+    if(callbacks->queue_size_ == 0)
+      max_queue_ = 0;
+    else
+      max_queue_ += callbacks->queue_size_;
+  }
+
   callbacks_.push_back(callbacks);
 
   // Add connect callbacks for all current subscriptions if this publisher wants them
@@ -123,16 +133,42 @@ void Publication::removeCallbacks(const SubscriberCallbacksPtr& callbacks)
 {
   boost::mutex::scoped_lock lock(callbacks_mutex_);
 
-  V_Callback::iterator it = std::find(callbacks_.begin(), callbacks_.end(), callbacks);
-  if (it != callbacks_.end())
+  // Go through all registered callbacks, remove the right instance and
+  // re-calculate the correct queue size at the same time.
+  bool infinite_queue = false;
+  unsigned int queue_size = 0;
+
+  V_Callback::iterator it = callbacks_.begin();
+  while(it != callbacks_.end())
   {
     const SubscriberCallbacksPtr& cb = *it;
-    if (cb->callback_queue_)
+
+    if(cb == callbacks)
     {
-      cb->callback_queue_->removeByID((uint64_t)cb.get());
+      if (cb->callback_queue_)
+      {
+        cb->callback_queue_->removeByID((uint64_t)cb.get());
+      }
+      it = callbacks_.erase(it);
     }
-    callbacks_.erase(it);
+    else if(!infinite_queue)
+    {
+      if(cb->queue_size_ != 0)
+      {
+        queue_size += cb->queue_size_;
+      }
+      else
+      {
+        infinite_queue = true;
+      }
+      ++it;
+    }
   }
+
+  if(!infinite_queue)
+    max_queue_ = queue_size;
+  else
+    max_queue_ = 0;
 }
 
 void Publication::drop()
@@ -356,6 +392,12 @@ size_t Publication::getNumCallbacks()
 {
   boost::mutex::scoped_lock lock(callbacks_mutex_);
   return callbacks_.size();
+}
+
+size_t Publication::getMaxQueue()
+{
+  boost::mutex::scoped_lock lock(callbacks_mutex_);
+  return max_queue_;
 }
 
 uint32_t Publication::incrementSequence()

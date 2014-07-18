@@ -103,10 +103,12 @@ struct SubscriberCallbacks
   SubscriberCallbacks(const SubscriberStatusCallback& connect = SubscriberStatusCallback(),
                       const SubscriberStatusCallback& disconnect = SubscriberStatusCallback(),
                       const VoidConstPtr& tracked_object = VoidConstPtr(),
-                      CallbackQueueInterface* callback_queue = 0)
+                      CallbackQueueInterface* callback_queue = 0,
+                      unsigned int queue_size = 0)
   : connect_(connect)
   , disconnect_(disconnect)
   , callback_queue_(callback_queue)
+  , queue_size_(queue_size)
   {
     has_tracked_object_ = false;
     if (tracked_object)
@@ -121,6 +123,9 @@ struct SubscriberCallbacks
   bool has_tracked_object_;
   VoidConstWPtr tracked_object_;
   CallbackQueueInterface* callback_queue_;
+
+  // Keep track of requested queue size per callback
+  uint32_t queue_size_;
 };
 typedef boost::shared_ptr<SubscriberCallbacks> SubscriberCallbacksPtr;
 

@@ -66,6 +66,7 @@ add_rostest(launch/pubsub_once.xml)
 # Publish a bunch of messages back to back
 add_rostest(launch/pubsub_n_fast.xml)
 add_rostest(launch/pubsub_n_fast_udp.xml)
+add_rostest(launch/pubsub_multiple.xml)
 
 # Publish a bunch of empty messages
 add_rostest(launch/pubsub_empty.xml)
