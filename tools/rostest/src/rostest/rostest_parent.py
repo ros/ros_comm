@@ -56,6 +56,7 @@ class ROSTestLaunchParent(roslaunch.parent.ROSLaunchParent):
         super(ROSTestLaunchParent, self).__init__(run_id, roslaunch_files, is_core=False, is_rostest=True)
         self.config = config
         self.port = port
+        self.master = None
         
     def _load_config(self):
         # disable super, just in case, though this shouldn't get called
@@ -75,6 +76,9 @@ class ROSTestLaunchParent(roslaunch.parent.ROSLaunchParent):
         if self.runner is not None:
             runner = self.runner
             runner.stop()
+        if self.master is not None:
+            self.master.stop()
+            self.master = None
         self._stop_infrastructure()
 
     def launch(self):
