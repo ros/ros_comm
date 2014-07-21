@@ -175,7 +175,6 @@ struct PreDeserialize<topic_tools::ShapeShifter>
     std::string msg_def  = (*params.connection_header)["message_definition"];
     std::string latching  = (*params.connection_header)["latching"];
 
-    typedef std::map<std::string, std::string> map_t;
     params.message->morph(md5, datatype, msg_def, latching);
   }
 };
