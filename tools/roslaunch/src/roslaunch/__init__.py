@@ -111,7 +111,10 @@ def write_pid_file(options_pid_fn, options_core, port):
 def _get_optparse():
     from optparse import OptionParser
 
-    parser = OptionParser(usage="usage: %prog [options] [package] <filename> [arg_name:=value...]", prog=NAME)
+    usage = "usage: %prog [options] [package] <filename> [arg_name:=value...]\n"
+    usage += "       %prog [options] <filename> [<filename>...] [arg_name:=value...]\n\n"
+    usage += "If <filename> is a single dash ('-'), launch XML is read from standard input."
+    parser = OptionParser(usage=usage, prog=NAME)
     parser.add_option("--files",
                       dest="file_list", default=False, action="store_true",
                       help="Print list files loaded by launch file, including launch file itself")
