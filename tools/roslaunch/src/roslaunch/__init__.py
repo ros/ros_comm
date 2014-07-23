@@ -274,7 +274,7 @@ def main(argv=sys.argv):
             # #1491 change terminal name
             if not options.disable_title:
                 rlutil.change_terminal_name(args, options.core)
-
+            
             # Read roslaunch string from stdin when - is passed as launch filename.
             roslaunch_strs = []
             if args == ['-']:

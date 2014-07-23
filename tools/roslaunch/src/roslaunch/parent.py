@@ -67,7 +67,7 @@ class ROSLaunchParent(object):
     and then starting up any remote processes. The __main__ method
     delegates most of runtime to ROSLaunchParent.
 
-    This must be called from the Python Main thread due to signal registration.
+    This must be called from the Python Main thread due to signal registration.    
     """
 
     def __init__(self, run_id, roslaunch_files, is_core=False, port=None, local_only=False, process_listeners=None,
