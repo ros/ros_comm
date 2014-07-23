@@ -67,10 +67,11 @@ class ROSLaunchParent(object):
     and then starting up any remote processes. The __main__ method
     delegates most of runtime to ROSLaunchParent.
 
-    This must be called from the Python Main thread due to signal registration.    
+    This must be called from the Python Main thread due to signal registration.
     """
 
-    def __init__(self, run_id, roslaunch_files, is_core=False, port=None, local_only=False, process_listeners=None, verbose=False, force_screen=False, is_rostest=False):
+    def __init__(self, run_id, roslaunch_files, is_core=False, port=None, local_only=False, process_listeners=None,
+            verbose=False, force_screen=False, is_rostest=False, roslaunch_strs=None):
         """
         @param run_id: UUID of roslaunch session
         @type  run_id: str
@@ -101,6 +102,7 @@ class ROSLaunchParent(object):
         self.process_listeners = process_listeners
         
         self.roslaunch_files = roslaunch_files
+        self.roslaunch_strs = roslaunch_strs
         self.is_core = is_core
         self.is_rostest = is_rostest
         self.port = port
@@ -118,7 +120,8 @@ class ROSLaunchParent(object):
         self.config = self.runner = self.server = self.pm = self.remote_runner = None
 
     def _load_config(self):
-        self.config = roslaunch.config.load_config_default(self.roslaunch_files, self.port, verbose=self.verbose)
+        self.config = roslaunch.config.load_config_default(self.roslaunch_files, self.port,
+                roslaunch_strs=self.roslaunch_strs, verbose=self.verbose)
 
         # #2370 (I really want to move this logic outside of parent)
         if self.force_screen:

@@ -194,8 +194,9 @@ def _validate_args(parser, options, args):
 
     elif len(args) == 0:
         parser.error("you must specify at least one input file")
-    elif [f for f in args if not os.path.exists(f)]:
-        parser.error("The following input files do not exist: %s"%f)
+    elif args != ['-']:
+        if [f for f in args if not os.path.exists(f)]:
+            parser.error("The following input files do not exist: %s"%f)
 
     if len([x for x in [options.node_list, options.find_node, options.node_args, options.ros_args] if x]) > 1:
         parser.error("only one of [--nodes, --find-node, --args --ros-args] may be specified")
@@ -207,7 +208,8 @@ def main(argv=sys.argv):
         parser = _get_optparse()
         
         (options, args) = parser.parse_args(argv[1:])
-        args = rlutil.resolve_launch_arguments(args)
+        if args != ['-']:
+            args = rlutil.resolve_launch_arguments(args)
         _validate_args(parser, options, args)
 
         # node args doesn't require any roslaunch infrastructure, so process it first
@@ -269,7 +271,15 @@ def main(argv=sys.argv):
             # #1491 change terminal name
             if not options.disable_title:
                 rlutil.change_terminal_name(args, options.core)
-            
+
+            # Read roslaunch string from stdin when - is passed as launch filename.
+            roslaunch_strs = []
+            if args == ['-']:
+                roslaunch_core.printlog("Passed '-' as file argument, attempting to read roslaunch XML from stdin.")
+                roslaunch_strs.append(sys.stdin.read())
+                roslaunch_core.printlog("... %d bytes read successfully.\n" % len(roslaunch_strs[-1]))
+                args.pop()
+
             # This is a roslaunch parent, spin up parent server and launch processes.
             # args are the roslaunch files to load
             from . import parent as roslaunch_parent
@@ -277,7 +287,9 @@ def main(argv=sys.argv):
                 # force a port binding spec if we are running a core
                 if options.core:
                     options.port = options.port or DEFAULT_MASTER_PORT
-                p = roslaunch_parent.ROSLaunchParent(uuid, args, is_core=options.core, port=options.port, local_only=options.local_only, verbose=options.verbose, force_screen=options.force_screen)
+                p = roslaunch_parent.ROSLaunchParent(uuid, args, roslaunch_strs=roslaunch_strs,
+                        is_core=options.core, port=options.port, local_only=options.local_only,
+                        verbose=options.verbose, force_screen=options.force_screen)
                 p.start()
                 p.spin()
             finally:
