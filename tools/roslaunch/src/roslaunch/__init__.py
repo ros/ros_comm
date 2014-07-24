@@ -197,9 +197,11 @@ def _validate_args(parser, options, args):
 
     elif len(args) == 0:
         parser.error("you must specify at least one input file")
-    elif args != ['-']:
-        if [f for f in args if not os.path.exists(f)]:
-            parser.error("The following input files do not exist: %s"%f)
+    elif [f for f in args if not (f == '-' or os.path.exists(f))]:
+        parser.error("The following input files do not exist: %s"%f)
+
+    if args.count('-') > 1:
+        parser.error("Only a single instance of the dash ('-') may be specified.")
 
     if len([x for x in [options.node_list, options.find_node, options.node_args, options.ros_args] if x]) > 1:
         parser.error("only one of [--nodes, --find-node, --args --ros-args] may be specified")
@@ -211,8 +213,7 @@ def main(argv=sys.argv):
         parser = _get_optparse()
         
         (options, args) = parser.parse_args(argv[1:])
-        if args != ['-']:
-            args = rlutil.resolve_launch_arguments(args)
+        args = rlutil.resolve_launch_arguments(args)
         _validate_args(parser, options, args)
 
         # node args doesn't require any roslaunch infrastructure, so process it first
@@ -277,11 +278,11 @@ def main(argv=sys.argv):
             
             # Read roslaunch string from stdin when - is passed as launch filename.
             roslaunch_strs = []
-            if args == ['-']:
+            if '-' in args:
                 roslaunch_core.printlog("Passed '-' as file argument, attempting to read roslaunch XML from stdin.")
                 roslaunch_strs.append(sys.stdin.read())
                 roslaunch_core.printlog("... %d bytes read successfully.\n" % len(roslaunch_strs[-1]))
-                args.pop()
+                args.remove('-')
 
             # This is a roslaunch parent, spin up parent server and launch processes.
             # args are the roslaunch files to load

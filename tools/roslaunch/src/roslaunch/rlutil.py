@@ -97,7 +97,7 @@ def resolve_launch_arguments(args):
         except rospkg.ResourceNotFound:
             pass
     # try to resolve launch file
-    if resolved_args is None and os.path.isfile(args[0]):
+    if resolved_args is None and (args[0] == '-' or os.path.isfile(args[0])):
         resolved_args = [args[0]] + args[1:]
     # raise if unable to resolve
     if resolved_args is None:
