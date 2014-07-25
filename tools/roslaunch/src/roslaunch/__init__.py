@@ -111,7 +111,10 @@ def write_pid_file(options_pid_fn, options_core, port):
 def _get_optparse():
     from optparse import OptionParser
 
-    parser = OptionParser(usage="usage: %prog [options] [package] <filename> [arg_name:=value...]", prog=NAME)
+    usage = "usage: %prog [options] [package] <filename> [arg_name:=value...]\n"
+    usage += "       %prog [options] <filename> [<filename>...] [arg_name:=value...]\n\n"
+    usage += "If <filename> is a single dash ('-'), launch XML is read from standard input."
+    parser = OptionParser(usage=usage, prog=NAME)
     parser.add_option("--files",
                       dest="file_list", default=False, action="store_true",
                       help="Print list files loaded by launch file, including launch file itself")
@@ -194,8 +197,11 @@ def _validate_args(parser, options, args):
 
     elif len(args) == 0:
         parser.error("you must specify at least one input file")
-    elif [f for f in args if not os.path.exists(f)]:
+    elif [f for f in args if not (f == '-' or os.path.exists(f))]:
         parser.error("The following input files do not exist: %s"%f)
+
+    if args.count('-') > 1:
+        parser.error("Only a single instance of the dash ('-') may be specified.")
 
     if len([x for x in [options.node_list, options.find_node, options.node_args, options.ros_args] if x]) > 1:
         parser.error("only one of [--nodes, --find-node, --args --ros-args] may be specified")
@@ -270,6 +276,14 @@ def main(argv=sys.argv):
             if not options.disable_title:
                 rlutil.change_terminal_name(args, options.core)
             
+            # Read roslaunch string from stdin when - is passed as launch filename.
+            roslaunch_strs = []
+            if '-' in args:
+                roslaunch_core.printlog("Passed '-' as file argument, attempting to read roslaunch XML from stdin.")
+                roslaunch_strs.append(sys.stdin.read())
+                roslaunch_core.printlog("... %d bytes read successfully.\n" % len(roslaunch_strs[-1]))
+                args.remove('-')
+
             # This is a roslaunch parent, spin up parent server and launch processes.
             # args are the roslaunch files to load
             from . import parent as roslaunch_parent
@@ -277,7 +291,9 @@ def main(argv=sys.argv):
                 # force a port binding spec if we are running a core
                 if options.core:
                     options.port = options.port or DEFAULT_MASTER_PORT
-                p = roslaunch_parent.ROSLaunchParent(uuid, args, is_core=options.core, port=options.port, local_only=options.local_only, verbose=options.verbose, force_screen=options.force_screen)
+                p = roslaunch_parent.ROSLaunchParent(uuid, args, roslaunch_strs=roslaunch_strs,
+                        is_core=options.core, port=options.port, local_only=options.local_only,
+                        verbose=options.verbose, force_screen=options.force_screen)
                 p.start()
                 p.spin()
             finally:
