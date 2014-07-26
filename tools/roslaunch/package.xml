@@ -29,6 +29,7 @@
   <run_depend>rosmaster</run_depend>
   <run_depend>rosout</run_depend>
   <run_depend>rosparam</run_depend>
+  <run_depend>rosunit</run_depend>
 
   <test_depend>rosbuild</test_depend>
 
