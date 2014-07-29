@@ -25,6 +25,19 @@
     <param name="wg2childparam2" value="a child namespace parameter 3" />  
   </group>
 
+  <!-- you can set parameters in remapped namespaces -->
+  <node pkg="package" type="test_base" name="node_rosparam1">
+    <remap from="node_rosparam1" to="/node_rosparam_remapped1" />
+    <param name="wg/remapparam1" value="a remap namespace parameter 1" />  
+    <arg name="~param1_name" value="p1" />
+  </node>
+  <remap from="/node_rosparam1" to="/node_rosparam_remapped1" />
+  <remap from="/node_rosparam2" to="/node_rosparam_remapped2" />
+  <node pkg="package" type="test_base" name="node_rosparam2">
+    <param name="wg/remapparam2" value="a remap namespace parameter 2" />  
+    <param name="wg/node_rosparam1/remapparam3" value="a remap namespace parameter 3" />  
+  </node>
+
   <!-- upload the contents of a file as a param -->
   <param name="configfile" textfile="$(find roslaunch)/resources/example.launch" />
   <!-- upload the contents of a file as base64 binary as a param -->

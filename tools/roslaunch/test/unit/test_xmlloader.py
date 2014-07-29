@@ -205,6 +205,9 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEquals("a child namespace parameter 1", param_d['/wg/wgchildparam'], p.value)
         self.assertEquals("a child namespace parameter 2", param_d['/wg2/wg2childparam1'], p.value)
         self.assertEquals("a child namespace parameter 3", param_d['/wg2/wg2childparam2'], p.value)
+        self.assertEquals("a remap namespace parameter 1", param_d['/node_rosparam_remapped1/wg/remapparam1'], p.value)
+        self.assertEquals("a remap namespace parameter 2", param_d['/node_rosparam_remapped2/wg/remapparam2'], p.value)
+        self.assertEquals("a remap namespace parameter 3", param_d['/node_rosparam_remapped2/wg/node_rosparam1/remapparam3'], p.value)
 
         import xmlrpclib
         f = open(os.path.join(get_example_path(), 'example.launch'))
