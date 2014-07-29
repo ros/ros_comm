@@ -40,6 +40,7 @@ from __future__ import print_function
 
 import itertools
 import sys
+import re
 import traceback
 import logging
 
@@ -419,6 +420,8 @@ class XmlLoader(loader.Loader):
                     # strip leading ~, which is optional/inferred
                     pkey = pkey[1:]
                 pkey = param_ns.ns + pkey
+                for remap in remap_context.remap_args():
+                    pkey = re.sub('^/?'+remap[0], remap[1],pkey)
                 ros_config.add_param(Param(pkey, p.value), verbose=verbose)
                     
             if not is_test:
