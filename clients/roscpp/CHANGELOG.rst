@@ -2,6 +2,10 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix C++11 compatibility issue (`#483 <https://github.com/ros/ros_comm/issues/483>`_)
+
 1.11.7 (2014-07-18)
 -------------------
 * fix segfault due to accessing a NULL pointer for some network interfaces (`#465 <https://github.com/ros/ros_comm/issues/465>`_) (regression from 1.11.6)

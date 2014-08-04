@@ -2,6 +2,11 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix handling of array index when being part of the topic (`#480 <https://github.com/ros/ros_comm/issues/480>`_)
+* support splice arguments in 'rostopic echo' (`#480 <https://github.com/ros/ros_comm/issues/480>`_)
+
 1.11.7 (2014-07-18)
 -------------------
 

@@ -2,6 +2,10 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix topic/connection statistics reporting code (`#482 <https://github.com/ros/ros_comm/issues/482>`_)
+
 1.11.7 (2014-07-18)
 -------------------
 
