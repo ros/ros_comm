@@ -296,14 +296,64 @@ def msgevalgen(pattern):
     if not pattern or pattern == '/':
         return None
     assert pattern[0] == '/'
+    msg_attribute = pattern[1:]
+
+    # use slice arguments if present
+    array_index_or_slice_object = None
+    index = msg_attribute.find('[')
+    if index != -1:
+        if not msg_attribute.endswith(']'):
+            sys.stderr.write("Topic name '%s' contains '[' but does not end with ']'\n" % msg_attribute)
+            return None
+        index_string = msg_attribute[index + 1:-1]
+        try:
+            array_index_or_slice_object = _get_array_index_or_slice_object(index_string)
+        except AssertionError as e:
+            sys.stderr.write("Topic name '%s' contains invalid slice argument '%s': %s\n" % (msg_attribute, index_string, str(e)))
+            return None
+        msg_attribute = msg_attribute[:index]
+
     def msgeval(msg):
         # I will probably replace this with some less beautiful but more efficient
         try:
-            return _get_nested_attribute(msg, pattern[1:])
+            value = _get_nested_attribute(msg, msg_attribute)
         except AttributeError as e:
             sys.stdout.write("no field named [%s]"%pattern+"\n")
             return None
+        if array_index_or_slice_object is not None:
+            value = value[array_index_or_slice_object]
+        return value
     return msgeval
+
+def _get_array_index_or_slice_object(index_string):
+    assert index_string != '', 'empty array index'
+    index_string_parts = index_string.split(':')
+    if len(index_string_parts) == 1:
+        try:
+            array_index = int(index_string_parts[0])
+        except ValueError:
+            assert False, "non-integer array index step '%s'" % index_string_parts[0]
+        return array_index
+
+    slice_args = [None, None, None]
+    if index_string_parts[0] != '':
+        try:
+            slice_args[0] = int(index_string_parts[0])
+        except ValueError:
+            assert False, "non-integer slice start '%s'" % index_string_parts[0]
+    if index_string_parts[1] != '':
+        try:
+            slice_args[1] = int(index_string_parts[1])
+        except ValueError:
+            assert False, "non-integer slice stop '%s'" % index_string_parts[1]
+    if len(index_string_parts) > 2 and index_string_parts[2] != '':
+            try:
+                slice_args[2] = int(index_string_parts[2])
+            except ValueError:
+                assert False, "non-integer slice step '%s'" % index_string_parts[2]
+    if len(index_string_parts) > 3:
+        assert False, 'too many slice arguments'
+    return slice(*slice_args)
 
 def _get_nested_attribute(msg, nested_attributes):
     value = msg
@@ -338,6 +388,7 @@ def _get_topic_type(topic):
                 break
             msg = msg_class()
             nested_attributes = topic[len(t) + 1:].rstrip('/')
+            nested_attributes = nested_attributes.split('[')[0]
             if nested_attributes == '':
                 break
             try:
