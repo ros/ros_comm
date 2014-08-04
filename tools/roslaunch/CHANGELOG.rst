@@ -2,8 +2,8 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.8 (2014-08-04)
+-------------------
 * remove implicit rostest dependency and use rosunit instead (`#475 <https://github.com/ros/ros_comm/issues/475>`_)
 * accept stdin input alongside files (`#472 <https://github.com/ros/ros_comm/issues/472>`_)
 

@@ -2,8 +2,8 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.8 (2014-08-04)
+-------------------
 * fix C++11 compatibility issue (`#483 <https://github.com/ros/ros_comm/issues/483>`_)
 
 1.11.7 (2014-07-18)
