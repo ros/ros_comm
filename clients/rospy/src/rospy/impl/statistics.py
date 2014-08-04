@@ -109,9 +109,9 @@ class SubscriberStatisticsLogger():
                 self.connections[publisher] = logger
 
             # delegate stuff to that instance
-            logger.callback(msg, stat_bytes)
-        except Exception:
-            rospy.ROS_ERROR("Unexpected error during statistics measurement: ", sys.exc_info()[0])
+            logger.callback(self, msg, stat_bytes)
+        except Exception as e:
+            rospy.logerr("Unexpected error during statistics measurement: %s", str(e))
 
 
 class ConnectionStatisticsLogger():
@@ -158,7 +158,7 @@ class ConnectionStatisticsLogger():
         self.stat_bytes_last_ = 0
         self.stat_bytes_window_ = 0
 
-    def sendStatistics(self):
+    def sendStatistics(self, subscriber_statistics_logger):
         """
         Send out statistics. Aggregate collected stats information.
 
@@ -205,9 +205,9 @@ class ConnectionStatisticsLogger():
         self.pub.publish(msg)
 
         # adjust window, if message count is not appropriate.
-        if len(self.arrival_time_list_) > self.max_elements and self.pub_frequency * 2 <= self.max_window:
+        if len(self.arrival_time_list_) > subscriber_statistics_logger.max_elements and self.pub_frequency.to_sec() * 2 <= subscriber_statistics_logger.max_window:
             self.pub_frequency *= 2
-        if len(self.arrival_time_list_) < self.min_elements and self.pub_frequency / 2 >= self.min_windowW:
+        if len(self.arrival_time_list_) < subscriber_statistics_logger.min_elements and self.pub_frequency.to_sec() / 2 >= subscriber_statistics_logger.min_window:
             self.pub_frequency /= 2
 
         # clear collected stats, start new window.
@@ -217,7 +217,7 @@ class ConnectionStatisticsLogger():
 
         self.window_start = curtime
 
-    def callback(self, msg, stat_bytes):
+    def callback(self, subscriber_statistics_logger, msg, stat_bytes):
         """
         This method is called for every message, that is received on this
         subscriber.
@@ -256,4 +256,4 @@ class ConnectionStatisticsLogger():
         # send out statistics with a certain frequency
         if self.last_pub_time + self.pub_frequency < arrival_time:
             self.last_pub_time = arrival_time
-            self.sendStatistics()
+            self.sendStatistics(subscriber_statistics_logger)
