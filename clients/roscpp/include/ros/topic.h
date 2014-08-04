@@ -61,7 +61,7 @@ public:
 
   bool hasMessage()
   {
-    return message_;
+    return static_cast<bool>(message_);
   }
 
   MConstPtr getMessage()
