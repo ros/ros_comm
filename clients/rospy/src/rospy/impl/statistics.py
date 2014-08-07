@@ -177,6 +177,7 @@ class ConnectionStatisticsLogger():
 
         msg.traffic = self.stat_bytes_window_
 
+        msg.delivered_msgs = len(self.arrival_time_list_)
         msg.dropped_msgs = self.dropped_msgs_
 
         # we can only calculate message age if the messages did contain Header fields.
