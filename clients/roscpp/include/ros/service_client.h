@@ -127,6 +127,11 @@ public:
   bool isValid() const;
 
   /**
+   * \brief Returns true if this handle points to a persistent service, false otherwise.
+   */
+  bool isPersistent() const;
+
+  /**
    * \brief Shutdown the connection associated with this ServiceClient
    *
    * This method usually does not need to be explicitly called, as automatic shutdown happens when
