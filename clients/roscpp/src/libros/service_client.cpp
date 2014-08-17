@@ -162,6 +162,16 @@ bool ServiceClient::isValid() const
   return impl_->isValid();
 }
 
+bool ServiceClient::isPersistent() const
+{
+  if (impl_ && impl_->persistent_)
+  {
+    return true;
+  }
+
+  return false;
+}
+
 void ServiceClient::shutdown()
 {
   if (impl_)
