@@ -208,6 +208,7 @@ def _validate_args(parser, options, args):
     
 def main(argv=sys.argv):
     options = None
+    logger = None
     try:
         from . import rlutil
         parser = _get_optparse()
@@ -305,13 +306,15 @@ def main(argv=sys.argv):
     except RLException as e:
         roslaunch_core.printerrlog(str(e))
         roslaunch_core.printerrlog('The traceback for the exception was written to the log file')
-        logger.error(traceback.format_exc())
+        if logger:
+            logger.error(traceback.format_exc())
         sys.exit(1)
     except ValueError as e:
         # TODO: need to trap better than this high-level trap
         roslaunch_core.printerrlog(str(e))
         roslaunch_core.printerrlog('The traceback for the exception was written to the log file')
-        logger.error(traceback.format_exc())
+        if logger:
+            logger.error(traceback.format_exc())
         sys.exit(1)
     except Exception as e:
         traceback.print_exc()
