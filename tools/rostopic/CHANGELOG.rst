@@ -2,6 +2,9 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.11.8 (2014-08-04)
 -------------------
 * fix handling of array index when being part of the topic (`#480 <https://github.com/ros/ros_comm/issues/480>`_)

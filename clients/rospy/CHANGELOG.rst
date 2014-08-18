@@ -2,6 +2,10 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* populate delivered_msgs field of TopicStatistics message (`#486 <https://github.com/ros/ros_comm/issues/486>`_)
+
 1.11.8 (2014-08-04)
 -------------------
 * fix topic/connection statistics reporting code (`#482 <https://github.com/ros/ros_comm/issues/482>`_)
