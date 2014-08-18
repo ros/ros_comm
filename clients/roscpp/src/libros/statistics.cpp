@@ -120,6 +120,7 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
     msg.node_sub = ros::this_node::getName();
     msg.window_start = window_start;
     msg.window_stop = received_time;
+    msg.delivered_msgs = stats.arrival_time_list.size();
     msg.dropped_msgs = stats.dropped_msgs;
     msg.traffic = bytes_sent - stats.stat_bytes_last;
 
