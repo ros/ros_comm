@@ -2,8 +2,8 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.9 (2014-08-18)
+-------------------
 * add accessor to expose whether service is persistent (`#489 <https://github.com/ros/ros_comm/issues/489>`_)
 * populate delivered_msgs field of TopicStatistics message (`#486 <https://github.com/ros/ros_comm/issues/486>`_)
 

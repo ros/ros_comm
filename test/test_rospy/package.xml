@@ -1,6 +1,6 @@
 <package>
   <name>test_rospy</name>
-  <version>1.11.8</version>
+  <version>1.11.9</version>
   <description>
     rospy unit and integration test framework.
   </description>
