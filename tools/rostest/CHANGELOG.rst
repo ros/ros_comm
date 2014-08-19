@@ -2,6 +2,10 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* resolving naming conflicts when multiple test are added with arguments (`#462 <https://github.com/ros/ros_comm/issues/462>`_)
+
 1.10.10 (2014-06-16)
 --------------------
 

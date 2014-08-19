@@ -2,6 +2,13 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add accessor to expose whether service is persistent (`#489 <https://github.com/ros/ros_comm/issues/489>`_)
+* only update param cache when being subscribed (`#351 <https://github.com/ros/ros_comm/issues/351>`_)
+* ensure to remove delete parameters completely
+* invalidate cached parent parameters when namespace parameter is set / changes (`#352 <https://github.com/ros/ros_comm/issues/352>`_)
+
 1.10.10 (2014-06-16)
 --------------------
 
