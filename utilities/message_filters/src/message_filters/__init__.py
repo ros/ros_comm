@@ -90,14 +90,66 @@ class Cache(SimpleFilter):
         SimpleFilter.__init__(self)
         self.connectInput(f)
         self.cache_size = cache_size
+        # Array to store messages
+        self.cache_msgs = []
+        # Array to store msgs times, auxiliary structure to facilitate
+        # sorted insertion
+        self.cache_times = []
 
     def connectInput(self, f):
         self.incoming_connection = f.registerCallback(self.add)
 
     def add(self, msg):
-        # Add msg to cache... XXX TODO
+        # Cannot use message filters with non-stamped messages
+        if not hasattr(msg, 'header') or not hasattr(msg.header, 'stamp'):
+            rospy.logwarn("Cannot use message filters with non-stamped messages")
+            return
 
+        # Insert sorted
+        stamp = msg.header.stamp
+        self.cache_times.append(stamp)
+        self.cache_msgs.append(msg)
+
+        # Implement a ring buffer, discard older if oversized
+        if (len(self.cache_msgs) > self.cache_size):
+            del self.cache_msgs[0]
+            del self.cache_times[0]
+
+        # Signal new input
         self.signalMessage(msg)
+
+    def getInterval(self, from_stamp, to_stamp):
+        """Query the current cache content between from_stamp to to_stamp."""
+        assert from_stamp <= to_stamp
+        return [m for m in self.cache_msgs
+                if m.header.stamp >= from_stamp and m.header.stamp <= to_stamp]
+
+    def getElemAfterTime(self, stamp):
+        """Return the oldest element after or equal the passed time stamp."""
+        newer = [m for m in self.cache_msgs if m.header.stamp >= stamp]
+        if not newer:
+            return None
+        return newer[0]
+
+    def getElemBeforeTime(self, stamp):
+        """Return the newest element before or equal the passed time stamp."""
+        older = [m for m in self.cache_msgs if m.header.stamp <= stamp]
+        if not older:
+            return None
+        return older[-1]
+
+    def getLastestTime(self):
+        """Return the newest recorded timestamp."""
+        if not self.cache_times:
+            return None
+        return self.cache_times[-1]
+
+    def getOldestTime(self):
+        """Return the oldest recorded timestamp."""
+        if not self.cache_times:
+            return None
+        return self.cache_times[0]
+
 
 class TimeSynchronizer(SimpleFilter):
 

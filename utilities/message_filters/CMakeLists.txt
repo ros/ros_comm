@@ -81,4 +81,5 @@ if(CATKIN_ENABLE_TESTING)
 
   # Unit test of the approximate synchronizer
   catkin_add_nosetests(test/test_approxsync.py)
+  catkin_add_nosetests(test/test_message_filters_cache.py)
 endif()
