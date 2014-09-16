@@ -90,14 +90,28 @@ class Cache(SimpleFilter):
         SimpleFilter.__init__(self)
         self.connectInput(f)
         self.cache_size = cache_size
+	self.cache = []
 
     def connectInput(self, f):
         self.incoming_connection = f.registerCallback(self.add)
 
     def add(self, msg):
-        # Add msg to cache... XXX TODO
-
+	# Add the message with its stamp
+	self.cache += [(msg.header.stamp, msg)]
+	# Sort according to stamp
+	# TODO: insert sorted instead of sorting everytime
+	self.cache = sorted(self.cache, key=lambda m: m[0])
+	# Implement a ring buffer - discard older if oversized
+	if (len(self.cache) > self.cache_size):
+		del self.cache[-1]
+	# Signal new input
         self.signalMessage(msg)
+
+    '''
+    Query the current cache content between from_stamp to to_stamp
+    '''
+    def query(self, from_stamp, to_stamp):
+	return [m[1] for m in self.cache if m[0] <= to_stamp and m[0] >= from_stamp]
 
 class TimeSynchronizer(SimpleFilter):
 
