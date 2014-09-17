@@ -175,7 +175,10 @@ class SSHChildROSLaunchProcess(roslaunch.server.ChildROSLaunchProcess):
         username = username or config_block['user']
         identity_file = None
         if config_block.get('identityfile', None):
-            identity_file = os.path.expanduser(config_block['identityfile'])
+            if isinstance(config_block['identityfile'], list):
+                identity_file = [os.path.expanduser(f) for f in config_block['identityfile']]
+            else:
+                identity_file = os.path.expanduser(config_block['identityfile'])
         #load ssh client and connect
         ssh = paramiko.SSHClient()
         err_msg = ssh_check_known_hosts(ssh, address, port, username=username, logger=_logger)
