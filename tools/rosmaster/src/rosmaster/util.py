@@ -54,3 +54,7 @@ def xmlrpcapi(uri):
         _proxies[uri] = xmlrpclib.ServerProxy(uri)
     return _proxies[uri]
 
+
+def remove_server_proxy(uri):
+    if uri in _proxies:
+        del _proxies[uri]
