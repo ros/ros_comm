@@ -106,6 +106,8 @@ struct ROSBAG_DECL RecorderOptions
     uint32_t        max_size;
     ros::Duration   max_duration;
     std::string     node;
+    unsigned long long   min_space;
+    std::string     min_space_str;
 
     std::vector<std::string> topics;
 };
