@@ -58,6 +58,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       ("buffsize,b", po::value<int>()->default_value(256), "Use an internal buffer of SIZE MB (Default: 256)")
       ("chunksize", po::value<int>()->default_value(768), "Set chunk size of message data, in KB (Default: 768. Advanced)")
       ("limit,l", po::value<int>()->default_value(0), "Only record NUM messages on each topic")
+      ("min-space,L", po::value<std::string>()->default_value("1G"), "Minimum allowed space on recording device (use G,M,k multipliers)")
       ("bz2,j", "use BZ2 compression")
       ("lz4", "use LZ4 compression")
       ("split", po::value<int>()->implicit_value(0), "Split the bag file and continue recording when maximum size or maximum duration reached.")
@@ -139,6 +140,36 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     if (vm.count("limit"))
     {
       opts.limit = vm["limit"].as<int>();
+    }
+    if (vm.count("min-space"))
+    {
+        std::string ms = vm["min-space"].as<std::string>();
+        long long int value = 1073741824ull;
+        char mul = 0;
+        // Sane default values, just in case
+        opts.min_space_str = "1G";
+        opts.min_space = value;
+        if (sscanf(ms.c_str(), " %lld%c", &value, &mul) > 0) {
+            opts.min_space_str = ms;
+            switch (mul) {
+                case 'G':
+                case 'g':
+                    opts.min_space = value * 1073741824ull;
+                    break;
+                case 'M':
+                case 'm':
+                    opts.min_space = value * 1048576ull;
+                    break;
+                case 'K':
+                case 'k':
+                    opts.min_space = value * 1024ull;
+                    break;
+                default:
+                    opts.min_space = value;
+                    break;
+            }
+        }
+        ROS_DEBUG("Rosbag using minimum space of %lld bytes, or %s", opts.min_space, opts.min_space_str.c_str());
     }
     if (vm.count("bz2") && vm.count("lz4"))
     {
