@@ -32,6 +32,7 @@
 #
 # Revision $Id$
 
+from rosmaster.util import remove_server_proxy
 from rosmaster.util import xmlrpcapi
 import rosmaster.exceptions
 
@@ -127,6 +128,7 @@ def shutdown_node_task(api, caller_id, reason):
         xmlrpcapi(api).shutdown('/master', reason)
     except:
         pass #expected in many common cases
+    remove_server_proxy(api)
     
 class Registrations(object):
     """
