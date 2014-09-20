@@ -175,7 +175,8 @@ class ConnectionStatisticsLogger():
         msg.window_start = self.window_start
         msg.window_stop = curtime
 
-        msg.traffic = self.stat_bytes_window_
+        # Calculate bytes since last message
+        msg.traffic = self.stat_bytes_window_ - self.stat_bytes_last_
 
         msg.delivered_msgs = len(self.arrival_time_list_)
         msg.dropped_msgs = self.dropped_msgs_
@@ -218,6 +219,8 @@ class ConnectionStatisticsLogger():
 
         self.window_start = curtime
 
+        self.stat_bytes_last_ = self.stat_bytes_window_
+
     def callback(self, subscriber_statistics_logger, msg, stat_bytes):
         """
         This method is called for every message, that is received on this
@@ -240,9 +243,7 @@ class ConnectionStatisticsLogger():
 
         self.arrival_time_list_.append(arrival_time)
 
-        # Calculate how many bytes of traffic did this message need?
-        self.stat_bytes_window_ = stat_bytes - self.stat_bytes_last_
-        self.stat_bytes_last_ = stat_bytes
+        self.stat_bytes_window_ = stat_bytes
 
         # rospy has the feature to subscribe a topic with AnyMsg which aren't deserialized.
         # Those subscribers won't have a header. But as these subscribers are rather rare
