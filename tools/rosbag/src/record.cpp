@@ -144,10 +144,12 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     if (vm.count("min-space"))
     {
         std::string ms = vm["min-space"].as<std::string>();
-        long long int value=0;
+        long long int value=1073741824ull;
         char mul=0; 
-        sscanf(ms.c_str()," %lld%c",&value,&mul);
-        if (value) {
+        // Sane default values, just in case
+        opts.min_space_str = "1G";
+        opts.min_space = value;
+        if (sscanf(ms.c_str()," %lld%c",&value,&mul)>0) {
             opts.min_space_str = ms; 
             switch (mul) {
                 case 'G':
@@ -166,12 +168,8 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
                     opts.min_space = value;
                     break;
             }
-        } else {
-            value = 1073741824ull;
-            opts.min_space_str = "1G";
-            opts.min_space = value;
         }
-        // ROS_INFO("Rosbag using minimum space of %lld bytes, or %s",opts.min_space,opts.min_space_str.c_str());
+        ROS_DEBUG("Rosbag using minimum space of %lld bytes, or %s",opts.min_space,opts.min_space_str.c_str());
     }
     if (vm.count("bz2") && vm.count("lz4"))
     {
