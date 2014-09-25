@@ -149,7 +149,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
         // Sane default values, just in case
         opts.min_space_str = "1G";
         opts.min_space = value;
-        if (sscanf(ms.c_str()," %lld%c",&value,&mul)>0) {
+        if (sscanf(ms.c_str(), " %lld%c", &value, &mul) > 0) {
             opts.min_space_str = ms; 
             switch (mul) {
                 case 'G':
@@ -169,7 +169,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
                     break;
             }
         }
-        ROS_DEBUG("Rosbag using minimum space of %lld bytes, or %s",opts.min_space,opts.min_space_str.c_str());
+        ROS_DEBUG("Rosbag using minimum space of %lld bytes, or %s", opts.min_space, opts.min_space_str.c_str());
     }
     if (vm.count("bz2") && vm.count("lz4"))
     {

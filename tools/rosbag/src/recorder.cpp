@@ -616,7 +616,7 @@ bool Recorder::checkDisk() {
         writing_enabled_ = false;
         return false;
     }
-    else if (free_space < 5*options_.min_space)
+    else if (free_space < 5 * options_.min_space)
     {
         ROS_WARN("Less than 5 x %s of space free on disk with %s.", options_.min_space_str.c_str(), bag_.getFileName().c_str());
     }
@@ -644,7 +644,7 @@ bool Recorder::checkDisk() {
         writing_enabled_ = false;
         return false;
     }
-    else if (info.available < 5*options_.min_space)
+    else if (info.available < 5 * options_.min_space)
     {
         ROS_WARN("Less than 5 x %s of space free on disk with %s.", options_.min_space_str.c_str(), bag_.getFileName().c_str());
         writing_enabled_ = true;
