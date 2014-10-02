@@ -2,7 +2,9 @@
 \mainpage
 \htmlinclude manifest.html
 
-\b rosbag is a set of tools and API's for recording/writing messages to bag files and playing/reading them back.
+\b rosbag_storage is a set of tools and API's for recording/writing messages to bag files and playing/reading them back without relying on the ROS client library.
+
+The code is still in the rosbag namespace since it was extracted from the <a href="../../../rosbag/html/c++/">rosbag</a> package without renaming any API.
 
 \section codeapi Code API
 

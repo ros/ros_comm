@@ -1,0 +1,9 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+\b rosbag is a set of tools and API's for recording/writing messages to bag files and playing/reading them back.
+
+Most code (not relying on the ROS client library) has been moved to the <a href="../../../rosbag_storage/html/c++/">rosbag_storage</a> package.
+
+*/
