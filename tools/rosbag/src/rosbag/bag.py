@@ -460,21 +460,30 @@ class Bag(object):
                 
         return collections.namedtuple("CompressionTuple", ["compression", "uncompressed", "compressed"])(compression=compression, uncompressed=uncompressed, compressed=compressed)
     
-    def get_message_count(self):
+    def get_message_count(self, topic_filters=None, type_filters=None):
         """
             Returns the number of messages in the bag.
+            
+            topic_filters - One or more topics to filter by
         """
         
         num_messages = 0
-        if self._chunks:
-            num_messages = 0
-            for c in self._chunks:
-                for counts in c.connection_counts.values():
-                    num_messages += counts
+        
+        if topic_filters is not None:
+            info = self.get_type_and_topic_info(topic_filters=topic_filters)
+            for topic in info.topics.itervalues():
+                num_messages+=topic.message_count
         else:
-            num_messages = sum([len(index) for index in self._connection_indexes.values()])
+            if self._chunks:
+                num_messages = 0
+                for c in self._chunks:
+                    for counts in c.connection_counts.values():
+                        num_messages += counts
+            else:
+                num_messages = sum([len(index) for index in self._connection_indexes.values()])
             
         return num_messages
+    
     def get_timing_info(self):
         if self._chunks:
             start_stamp = self._chunks[ 0].start_time.to_sec()
@@ -488,17 +497,22 @@ class Bag(object):
         return collections.namedtuple("TimingTuple", ["duration",
                                                       "start_stamp", "end_stamp"])(duration=duration,
                                                                                    start_stamp=start_stamp, end_stamp=end_stamp)
-    def get_type_and_topic_info(self):
+    def get_type_and_topic_info(self, topic_filters=None):
         """
             coallates info about the type and topics in the bag.
-
+            
+            topic_filters - specify one or more topic to filter by.
+            
+            Note, it would be nice to filter by type as well, but there appear to be some limitations in the current architecture
+            that prevent that from working when more than one message type is written on the same topic.
+            
             returns (TypesAndTopicsTuple):
                 - types(dict):
                     key: type name
                     val: md5hash
                 - topics(TopicTuple):
                     type: msg type (Ex. "std_msgs/String")
-                    message_count: the number of messages of the topic
+                    message_count: the number of messages of the particular type
                     connections: the number of connections
                     frequency: the data frequency
         """
@@ -506,8 +520,6 @@ class Bag(object):
         datatypes = set()
         datatype_infos = []
         
-        # loop through all the connections and collect the associated message types. FYI, if a topic has more than one type
-        # only the first type for that topic is listed
         for connection in list(self._connections.values()):
             if connection.datatype in datatypes:
                 continue
@@ -515,7 +527,15 @@ class Bag(object):
             datatype_infos.append((connection.datatype, connection.md5sum, connection.msg_def))
             datatypes.add(connection.datatype)
             
-        topics = sorted(set([c.topic for c in self._get_connections()]))
+        topics = []
+        # load our list of topics and optionally filter
+        if topic_filters is not None:
+            if not isinstance(topic_filters, list):
+                topic_filters = [topic_filters]
+            topics = sorted(set(topic_filters))
+        else:
+            topics = sorted(set([c.topic for c in self._get_connections()]))
+
             
         topic_datatypes    = {}
         topic_conn_counts  = {}
@@ -524,6 +544,9 @@ class Bag(object):
         
         for topic in topics:
             connections = list(self._get_connections(topic))
+            
+            if len(connections) == 0:
+                continue
                 
             topic_datatypes[topic] = connections[0].datatype
             topic_conn_counts[topic] = len(connections)
@@ -531,6 +554,7 @@ class Bag(object):
             msg_count = 0
             for connection in connections:
                 for chunk in self._chunks:
+                    
                     msg_count += chunk.connection_counts.get(connection.id, 0)
             topic_msg_counts[topic] = msg_count
 

@@ -47,6 +47,7 @@ from rosbag import bag
 import rospy
 from std_msgs.msg import Int32
 from std_msgs.msg import ColorRGBA
+from std_msgs.msg import String
 
 class TestRosbag(unittest.TestCase):
     def setUp(self):
@@ -253,7 +254,22 @@ class TestRosbag(unittest.TestCase):
         with rosbag.Bag(fn) as b:
             for topic, msg, t in b:
                 pass
-
+            
+    def test_get_message_count(self):
+        fn = '/tmp/test_get_message_count.bag'
+        with rosbag.Bag(fn, mode='w') as bag:
+            for i in xrange(100):
+                bag.write("/test_bag", Int32(data=i))
+                bag.write("/test_bag", String(data='also'))
+                bag.write("/test_bag/more", String(data='alone'))
+                
+        bag = rosbag.Bag(fn)
+        
+        self.assertEquals(bag.get_message_count(), 300)
+        self.assertEquals(bag.get_message_count(topic_filters='/test_bag'), 200)
+        self.assertEquals(bag.get_message_count(topic_filters=['/test_bag', '/test_bag/more']), 300)
+        self.assertEquals(bag.get_message_count(topic_filters=['/none']), 0)
+        
     def _print_bag_records(self, fn):
         with open(fn) as f:
             f.seek(0, os.SEEK_END)
