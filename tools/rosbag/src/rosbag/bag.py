@@ -421,7 +421,155 @@ class Bag(object):
             
             self._close_file()
             
+    def get_compression_info(self):
+        """
+            Returns information about the compression of the bag
+            
+            returns (CompressionTuple):
+                compression - Type of compression used
+                uncompressed - Number of uncompressed Bytes
+                compressed - Number of compressed Bytes
+        """
+        compression = self.compression
+        uncompressed = self.size
+        compressed = 0
+        
+        if len(self._chunk_headers) != 0:
+            compression_counts       = {}
+            compression_uncompressed = {}
+            compression_compressed   = {}
+            for chunk_header in self._chunk_headers.values():
+                if chunk_header.compression not in compression_counts:
+                    compression_counts[chunk_header.compression] = 1
+                    compression_uncompressed[chunk_header.compression] = chunk_header.uncompressed_size
+                    compression_compressed[chunk_header.compression] = chunk_header.compressed_size
+                else:
+                    compression_counts[chunk_header.compression] += 1
+                    compression_uncompressed[chunk_header.compression] += chunk_header.uncompressed_size
+                    compression_compressed[chunk_header.compression] += chunk_header.compressed_size
+
+            chunk_count = len(self._chunk_headers)
+
+            main_compression_count, main_compression = list(reversed(sorted([(v, k) for k, v in compression_counts.items()])))[0]
+            compression = str(main_compression)
+
+            all_uncompressed = (sum([count for c, count in compression_counts.items() if c != Compression.NONE]) == 0)
+            if not all_uncompressed:    
+                uncompressed = sum((h.uncompressed_size for h in self._chunk_headers.values()))
+                compressed = sum((h.compressed_size for h in self._chunk_headers.values()))
+                
+        return collections.namedtuple("CompressionTuple", ["compression", "uncompressed", "compressed"])(compression=compression, uncompressed=uncompressed, compressed=compressed)
+    
+    def get_message_count(self):
+        """
+            Returns the number of messages in the bag.
+        """
+        
+        num_messages = 0
+        if self._chunks:
+            num_messages = 0
+            for c in self._chunks:
+                for counts in c.connection_counts.values():
+                    num_messages += counts
+        else:
+            num_messages = sum([len(index) for index in self._connection_indexes.values()])
+            
+        return num_messages
+    def get_timing_info(self):
+        if self._chunks:
+            start_stamp = self._chunks[ 0].start_time.to_sec()
+            end_stamp   = self._chunks[-1].end_time.to_sec()
+        else:
+            start_stamp = min([index[ 0].time.to_sec() for index in self._connection_indexes.values()])
+            end_stamp   = max([index[-1].time.to_sec() for index in self._connection_indexes.values()])
+        
+        duration = end_stamp - start_stamp        
+        
+        return collections.namedtuple("TimingTuple", ["duration",
+                                                      "start_stamp", "end_stamp"])(duration=duration,
+                                                                                   start_stamp=start_stamp, end_stamp=end_stamp)
+    def get_type_and_topic_info(self):
+        """
+            coallates info about the type and topics in the bag.
+
+            returns (TypesAndTopicsTuple):
+                - types(dict):
+                    key: type name
+                    val: md5hash
+                - topics(TopicTuple):
+                    type: msg type (Ex. "std_msgs/String")
+                    message_count: the number of messages of the topic
+                    connections: the number of connections
+                    frequency: the data frequency
+        """
+        
+        datatypes = set()
+        datatype_infos = []
+        
+        # loop through all the connections and collect the associated message types. FYI, if a topic has more than one type
+        # only the first type for that topic is listed
+        for connection in list(self._connections.values()):
+            if connection.datatype in datatypes:
+                continue
+            
+            datatype_infos.append((connection.datatype, connection.md5sum, connection.msg_def))
+            datatypes.add(connection.datatype)
+            
+        topics = sorted(set([c.topic for c in self._get_connections()]))
+            
+        topic_datatypes    = {}
+        topic_conn_counts  = {}
+        topic_msg_counts   = {}
+        topic_freqs_median = {}
+        
+        for topic in topics:
+            connections = list(self._get_connections(topic))
+                
+            topic_datatypes[topic] = connections[0].datatype
+            topic_conn_counts[topic] = len(connections)
+
+            msg_count = 0
+            for connection in connections:
+                for chunk in self._chunks:
+                    msg_count += chunk.connection_counts.get(connection.id, 0)
+            topic_msg_counts[topic] = msg_count
+
+            if self._connection_indexes_read:
+                stamps = [entry.time.to_sec() for entry in self._get_entries(connections)]
+                if len(stamps) > 1:
+                    periods = [s1 - s0 for s1, s0 in zip(stamps[1:], stamps[:-1])]
+                    med_period = _median(periods)
+                    if med_period > 0.0:
+                        topic_freqs_median[topic] = 1.0 / med_period
+
+        topics = sorted(topic_datatypes.keys())
+
+        # process datatypes       
+        types = {}
+        for i, (datatype, md5sum, msg_def) in enumerate(sorted(datatype_infos)):
+            types[datatype] = md5sum
+            
+        # process topics
+        topics_t = {}
+        TopicTuple = collections.namedtuple("TopicTuple", ["type", "message_count", "connections", "frequency"])
+        for i, topic in enumerate(topics):
+            topic_msg_count = topic_msg_counts[topic]
+            topics_t[topic] = TopicTuple(type =
+                                            topic_datatypes[topic], 
+                                            message_count = topic_msg_count,
+                                            connections = topic_conn_counts[topic], 
+                                            frequency = topic_freqs_median[topic] if topic in topic_freqs_median
+                                            else None)
+            
+        return collections.namedtuple("TypesAndTopicsTuple", ["types",
+                                                              "topics"])(types=types, topics=topics_t)
+            
     def get_info(self):
+        """
+            Fetches info about the bag.
+            
+            returns (BagInfo)
+        """
         info = BagInfo()
         try:
             if self._filename:
@@ -433,114 +581,16 @@ class Bag(object):
             if not self._connection_indexes and not self._chunks:
                 info.indexed = False
             else:
-                if self._chunks:
-                    start_stamp = self._chunks[ 0].start_time.to_sec()
-                    end_stamp   = self._chunks[-1].end_time.to_sec()
-                else:
-                    start_stamp = min([index[ 0].time.to_sec() for index in self._connection_indexes.values()])
-                    end_stamp   = max([index[-1].time.to_sec() for index in self._connection_indexes.values()])
-                
-                duration = end_stamp - start_stamp
-                info.duration = duration
-                info.start = start_stamp
-                info.end = end_stamp
-                
-                if self._chunks:
-                    num_messages = 0
-                    for c in self._chunks:
-                        for counts in c.connection_counts.values():
-                            num_messages += counts
-                else:
-                    num_messages = sum([len(index) for index in self._connection_indexes.values()])
-                    
-                info.messages = num_messages
                 info.indexed = True
-
-                # Show compression information
-                if len(self._chunk_headers) == 0:
-                    info.compression = self.compression
-                    info.uncompressed = self.size
-                    info.compressed = 0
-                else:
-                    compression_counts       = {}
-                    compression_uncompressed = {}
-                    compression_compressed   = {}
-                    for chunk_header in self._chunk_headers.values():
-                        if chunk_header.compression not in compression_counts:
-                            compression_counts[chunk_header.compression] = 1
-                            compression_uncompressed[chunk_header.compression] = chunk_header.uncompressed_size
-                            compression_compressed[chunk_header.compression] = chunk_header.compressed_size
-                        else:
-                            compression_counts[chunk_header.compression] += 1
-                            compression_uncompressed[chunk_header.compression] += chunk_header.uncompressed_size
-                            compression_compressed[chunk_header.compression] += chunk_header.compressed_size
-    
-                    chunk_count = len(self._chunk_headers)
-    
-                    main_compression_count, main_compression = list(reversed(sorted([(v, k) for k, v in compression_counts.items()])))[0]
-                    info.compression = str(main_compression)
-    
-                    all_uncompressed = (sum([count for c, count in compression_counts.items() if c != Compression.NONE]) == 0)
-                    if not all_uncompressed:    
-                        info.uncompressed = sum((h.uncompressed_size for h in self._chunk_headers.values()))
-                        info.compressed = sum((h.compressed_size for h in self._chunk_headers.values()))
-
-                datatypes = set()
-                datatype_infos = []
-                for connection in self._connections.values():
-                    if connection.datatype in datatypes:
-                        continue
-                    datatype_infos.append((connection.datatype, connection.md5sum, connection.msg_def))
-                    datatypes.add(connection.datatype)
-                    
-                topics = sorted(set([c.topic for c in self._get_connections()]))
-                topic_datatypes    = {}
-                topic_conn_counts  = {}
-                topic_msg_counts   = {}
-                topic_freqs_median = {}
-                for topic in topics:
-                    connections = list(self._get_connections(topic))
-
-                    topic_datatypes[topic] = connections[0].datatype
-                    topic_conn_counts[topic] = len(connections)
-
-                    msg_count = 0
-                    for connection in connections:
-                        for chunk in self._chunks:
-                            msg_count += chunk.connection_counts.get(connection.id, 0)
-                    topic_msg_counts[topic] = msg_count
-
-                    if self._connection_indexes_read:
-                        stamps = [entry.time.to_sec() for entry in self._get_entries(connections)]
-                        if len(stamps) > 1:
-                            periods = [s1 - s0 for s1, s0 in zip(stamps[1:], stamps[:-1])]
-                            med_period = _median(periods)
-                            if med_period > 0.0:
-                                topic_freqs_median[topic] = 1.0 / med_period
-
-                topics = sorted(topic_datatypes.keys())
-                max_topic_len       = max([len(topic) for topic in topics])
-                max_datatype_len    = max([len(datatype) for datatype in datatypes])
-                max_msg_count_len   = max([len('%d' % msg_count) for msg_count in topic_msg_counts.values()])
-                max_freq_median_len = max([len(_human_readable_frequency(freq)) for freq in topic_freqs_median.values()]) if len(topic_freqs_median) > 0 else 0
-
-                # Show datatypes       
-                info.types = {}
-                for i, (datatype, md5sum, msg_def) in enumerate(sorted(datatype_infos)):
-                    info.types[datatype] = md5sum
-                    
-                # Show topics
-                info.topics = {}
-                TopicTuple = collections.namedtuple("TopicTuple", ["type", "messages", "connections", "frequency"])
-                for i, topic in enumerate(topics):
-                    topic_msg_count = topic_msg_counts[topic]
-                    info.topics[topic] = TopicTuple(type =
-                                                    topic_datatypes[topic], 
-                                                    messages = topic_msg_count,
-                                                    connections = topic_conn_counts[topic], 
-                                                    frequency = topic_freqs_median[topic] if topic in topic_freqs_median
-                                                    else None)
-
+                # Timing info
+                info.duration, info.start, info.end = self.get_timing_info()
+                # num messages
+                info.messages = self.get_message_count()
+                # compression information
+                info.compression, info.uncompressed, info.compressed = self.get_compression_info()
+                # type and topic info
+                info.types, info.topics = self.get_type_and_topic_info()
+                
             return info
 
         except Exception as ex:
