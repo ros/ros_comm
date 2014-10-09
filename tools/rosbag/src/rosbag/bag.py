@@ -99,7 +99,7 @@ class Compression:
 class BagInfo(object):
     def __init__(self, path=None, version=None, size=None, indexed=None, 
                  duration=None, start=None, end=None, messages=None, 
-                 compression=None, uncompressed=None, compressed=None, types={}, topics={}):
+                 compression=None, uncompressed=None, compressed=None, types=None, topics=None):
         self.path = path
         self.version = version
         self.size = size
@@ -111,8 +111,8 @@ class BagInfo(object):
         self.compression = compression
         self.uncompressed = uncompressed
         self.compressed = compressed
-        self.types = types
-        self.topics = topics
+        self.types = types or {}
+        self.topics = topics or {}
 
 class Bag(object):
     """
