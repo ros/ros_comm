@@ -507,7 +507,7 @@ class Bag(object):
             that prevent that from working when more than one message type is written on the same topic.
             
             returns (TypesAndTopicsTuple):
-                - types(dict):
+                - types(dict):  (Not affected by topic_filters)
                     key: type name
                     val: md5hash
                 - topics(TopicTuple):
