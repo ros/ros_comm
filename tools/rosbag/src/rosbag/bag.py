@@ -434,10 +434,10 @@ class Bag(object):
         uncompressed = self.size
         compressed = 0
         
-        if len(self._chunk_headers) != 0:
-            compression_counts       = {}
+        if self._chunk_headers:
+            compression_counts = {}
             compression_uncompressed = {}
-            compression_compressed   = {}
+            compression_compressed = {}
             for chunk_header in self._chunk_headers.values():
                 if chunk_header.compression not in compression_counts:
                     compression_counts[chunk_header.compression] = 1
@@ -450,7 +450,7 @@ class Bag(object):
 
             chunk_count = len(self._chunk_headers)
 
-            main_compression_count, main_compression = list(reversed(sorted([(v, k) for k, v in compression_counts.items()])))[0]
+            main_compression_count, main_compression = sorted([(v, k) for k, v in compression_counts.items()], reverse=True)[0]
             compression = str(main_compression)
 
             all_uncompressed = (sum([count for c, count in compression_counts.items() if c != Compression.NONE]) == 0)
@@ -472,7 +472,7 @@ class Bag(object):
         if topic_filters is not None:
             info = self.get_type_and_topic_info(topic_filters=topic_filters)
             for topic in info.topics.itervalues():
-                num_messages+=topic.message_count
+                num_messages += topic.message_count
         else:
             if self._chunks:
                 num_messages = 0
@@ -487,10 +487,10 @@ class Bag(object):
     def get_timing_info(self):
         if self._chunks:
             start_stamp = self._chunks[ 0].start_time.to_sec()
-            end_stamp   = self._chunks[-1].end_time.to_sec()
+            end_stamp = self._chunks[-1].end_time.to_sec()
         else:
             start_stamp = min([index[ 0].time.to_sec() for index in self._connection_indexes.values()])
-            end_stamp   = max([index[-1].time.to_sec() for index in self._connection_indexes.values()])
+            end_stamp = max([index[-1].time.to_sec() for index in self._connection_indexes.values()])
         
         duration = end_stamp - start_stamp        
         
@@ -537,9 +537,9 @@ class Bag(object):
             topics = sorted(set([c.topic for c in self._get_connections()]))
 
             
-        topic_datatypes    = {}
-        topic_conn_counts  = {}
-        topic_msg_counts   = {}
+        topic_datatypes = {}
+        topic_conn_counts = {}
+        topic_msg_counts = {}
         topic_freqs_median = {}
         
         for topic in topics:
