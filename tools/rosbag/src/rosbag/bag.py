@@ -96,24 +96,6 @@ class Compression:
     BZ2  = 'bz2'
     LZ4  = 'lz4'
     
-class BagInfo(object):
-    def __init__(self, path=None, version=None, size=None, indexed=None, 
-                 duration=None, start=None, end=None, messages=None, 
-                 compression=None, uncompressed=None, compressed=None, types=None, topics=None):
-        self.path = path
-        self.version = version
-        self.size = size
-        self.indexed = indexed
-        self.duration = duration
-        self.start = start
-        self.end = end
-        self.messages = messages
-        self.compression = compression
-        self.uncompressed = uncompressed
-        self.compressed = compressed
-        self.types = types or {}
-        self.topics = topics or {}
-
 class Bag(object):
     """
     Bag serialize messages to and from a single file on disk using the bag format.
@@ -591,38 +573,6 @@ class Bag(object):
         return collections.namedtuple("TypesAndTopicsTuple", ["types",
                                                               "topics"])(types=types, topics=topics_t)
             
-    def get_info(self):
-        """
-            Fetches info about the bag.
-            
-            returns (BagInfo)
-        """
-        info = BagInfo()
-        try:
-            if self._filename:
-                info.path = self._filename
-                
-            info.version = self._version
-
-            info.size = self.size
-            if not self._connection_indexes and not self._chunks:
-                info.indexed = False
-            else:
-                info.indexed = True
-                # Timing info
-                info.duration, info.start, info.end = self.get_timing_info()
-                # num messages
-                info.messages = self.get_message_count()
-                # compression information
-                info.compression, info.uncompressed, info.compressed = self.get_compression_info()
-                # type and topic info
-                info.types, info.topics = self.get_type_and_topic_info()
-                
-            return info
-
-        except Exception as ex:
-            raise        
-
     def __str__(self):
         rows = []
 
