@@ -531,7 +531,9 @@ class Bag(object):
         # load our list of topics and optionally filter
         if topic_filters is not None:
             if not isinstance(topic_filters, list):
-                topics = [topic_filters]
+                topic_filters = [topic_filters]
+                
+            topics = topic_filters
         else:
             topics = [c.topic for c in self._get_connections()]
             
