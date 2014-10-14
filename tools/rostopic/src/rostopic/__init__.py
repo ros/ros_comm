@@ -435,7 +435,7 @@ def _sub_str_plot_fields(val, f, field_filter):
     return None
 
 
-def _str_plot(val, time_offset=None, current_time=None, field_filter=None, type_information=None, fixed_width=None):
+def _str_plot(val, time_offset=None, current_time=None, field_filter=None, type_information=None, fixed_numeric_width=None):
     """
     Convert value to matlab/octave-friendly CSV string representation.
 
@@ -527,14 +527,14 @@ class CallbackEcho(object):
     def __init__(self, topic, msg_eval, plot=False, filter_fn=None,
                  echo_clear=False, echo_all_topics=False,
                  offset_time=False, count=None,
-                 fixed_width=None, field_filter_fn=None):
+                 fixed_numeric_width=None, field_filter_fn=None):
         """
         :param plot: if ``True``, echo in plotting-friendly format, ``bool``
         :param filter_fn: function that evaluates to ``True`` if message is to be echo'd, ``fn(topic, msg)``
         :param echo_all_topics: (optional) if ``True``, echo all messages in bag, ``bool``
         :param offset_time: (optional) if ``True``, display time as offset from current time, ``bool``
         :param count: number of messages to echo, ``None`` for infinite, ``int``
-        :param fixed_width: message precision, ``None`` for automatic, ``int``
+        :param fixed_numeric_width: message precision, ``None`` for automatic, ``int``
         :param field_filter_fn: filter the fields that are strified for Messages, ``fn(Message)->iter(str)``
         """
         if topic and topic[-1] == '/':
@@ -553,7 +553,7 @@ class CallbackEcho(object):
         # done tracks when we've exceeded the count
         self.done = False
         self.max_count = count
-        self.fixed_width = fixed_width
+        self.fixed_numeric_width = fixed_numeric_width
         self.count = 0
 
         # determine which strifying function to use
@@ -576,11 +576,11 @@ class CallbackEcho(object):
         self.last_topic = None
         self.last_msg_eval = None
 
-    def custom_strify_message(self, val, indent='', time_offset=None, current_time=None, field_filter=None, type_information=None, fixed_width=None):
+    def custom_strify_message(self, val, indent='', time_offset=None, current_time=None, field_filter=None, type_information=None, fixed_numeric_width=None):
         # ensure to print uint8[] as array of numbers instead of string
         if type_information and type_information.startswith('uint8['):
             val = [ord(x) for x in val]
-        return genpy.message.strify_message(val, indent=indent, time_offset=time_offset, current_time=current_time, field_filter=field_filter, fixed_width=fixed_width)
+        return genpy.message.strify_message(val, indent=indent, time_offset=time_offset, current_time=current_time, field_filter=field_filter, fixed_numeric_width=fixed_numeric_width)
 
     def callback(self, data, callback_args, current_time=None):
         """
@@ -633,12 +633,12 @@ class CallbackEcho(object):
                 if self.offset_time:
                     sys.stdout.write(self.prefix+\
                                      self.str_fn(data, time_offset=rospy.get_rostime(),
-                                                 current_time=current_time, field_filter=self.field_filter, type_information=type_information, fixed_width=self.fixed_width) + \
+                                                 current_time=current_time, field_filter=self.field_filter, type_information=type_information, fixed_numeric_width=self.fixed_numeric_width) + \
                                      self.suffix + '\n')
                 else:
                     sys.stdout.write(self.prefix+\
                                      self.str_fn(data,
-                                                 current_time=current_time, field_filter=self.field_filter, type_information=type_information, fixed_width=self.fixed_width) + \
+                                                 current_time=current_time, field_filter=self.field_filter, type_information=type_information, fixed_numeric_width=self.fixed_numeric_width) + \
                                      self.suffix + '\n')
 
                 # we have to flush in order before piping to work
@@ -994,7 +994,7 @@ def _rostopic_cmd_echo(argv):
                       action="store_true",
                       help="echo in a plotting friendly format")
     parser.add_option("-w", 
-                      dest="fixed_width", default=None, metavar="NUM_WIDTH",
+                      dest="fixed_numeric_width", default=None, metavar="NUM_WIDTH",
                       help="fixed-width precision for numerical values")
     parser.add_option("--filter", 
                       dest="filter_expr", default=None,
@@ -1051,8 +1051,8 @@ def _rostopic_cmd_echo(argv):
         parser.error("COUNT must be an integer")
 
     try:
-        fixed_width = int(options.fixed_width) if options.fixed_width else None
-        if fixed_width is not None and fixed_width < 2:
+        fixed_numeric_width = int(options.fixed_numeric_width) if options.fixed_numeric_width else None
+        if fixed_numeric_width is not None and fixed_numeric_width < 2:
             parser.error("Fixed width for array values must be at least 2")
     except ValueError:
         parser.error("NUM_WIDTH must be an integer")
@@ -1062,7 +1062,7 @@ def _rostopic_cmd_echo(argv):
                                  filter_fn=filter_fn,
                                  echo_clear=options.clear, echo_all_topics=options.all_topics,
                                  offset_time=options.offset_time, count=msg_count,
-                                 fixed_width=options.fixed_width, field_filter_fn=field_filter_fn)
+                                 fixed_numeric_width=fixed_numeric_width, field_filter_fn=field_filter_fn)
     try:
         _rostopic_echo(topic, callback_echo, bag_file=options.bag)
     except socket.error:
