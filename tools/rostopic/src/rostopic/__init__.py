@@ -534,7 +534,7 @@ class CallbackEcho(object):
         :param echo_all_topics: (optional) if ``True``, echo all messages in bag, ``bool``
         :param offset_time: (optional) if ``True``, display time as offset from current time, ``bool``
         :param count: number of messages to echo, ``None`` for infinite, ``int``
-        :param fixed_numeric_width: message precision, ``None`` for automatic, ``int``
+        :param fixed_numeric_width: fixed width for numeric values, ``None`` for automatic, ``int``
         :param field_filter_fn: filter the fields that are strified for Messages, ``fn(Message)->iter(str)``
         """
         if topic and topic[-1] == '/':
@@ -995,7 +995,7 @@ def _rostopic_cmd_echo(argv):
                       help="echo in a plotting friendly format")
     parser.add_option("-w", 
                       dest="fixed_numeric_width", default=None, metavar="NUM_WIDTH",
-                      help="fixed-width precision for numerical values")
+                      help="fixed width for numeric values")
     parser.add_option("--filter", 
                       dest="filter_expr", default=None,
                       metavar="FILTER-EXPRESSION",
@@ -1053,7 +1053,7 @@ def _rostopic_cmd_echo(argv):
     try:
         fixed_numeric_width = int(options.fixed_numeric_width) if options.fixed_numeric_width else None
         if fixed_numeric_width is not None and fixed_numeric_width < 2:
-            parser.error("Fixed width for array values must be at least 2")
+            parser.error("Fixed width for numeric values must be at least 2")
     except ValueError:
         parser.error("NUM_WIDTH must be an integer")
 
