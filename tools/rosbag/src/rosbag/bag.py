@@ -412,6 +412,7 @@ class Bag(object):
                 uncompressed - Number of uncompressed Bytes
                 compressed - Number of compressed Bytes
         """
+        
         compression = self.compression
         uncompressed = self.size
         compressed = 0
@@ -466,19 +467,30 @@ class Bag(object):
             
         return num_messages
     
-    def get_timing_info(self):
+    def get_start_time(self):
+        """
+            Returns the start time of the bag.
+        """
+        
         if self._chunks:
             start_stamp = self._chunks[ 0].start_time.to_sec()
-            end_stamp = self._chunks[-1].end_time.to_sec()
         else:
             start_stamp = min([index[ 0].time.to_sec() for index in self._connection_indexes.values()])
+        
+        return start_stamp
+    
+    def get_end_time(self):
+        """
+            Returns the end time of the bag.
+        """
+        
+        if self._chunks:
+            end_stamp = self._chunks[-1].end_time.to_sec()
+        else:
             end_stamp = max([index[-1].time.to_sec() for index in self._connection_indexes.values()])
         
-        duration = end_stamp - start_stamp        
-        
-        return collections.namedtuple("TimingTuple", ["duration",
-                                                      "start_stamp", "end_stamp"])(duration=duration,
-                                                                                   start_stamp=start_stamp, end_stamp=end_stamp)
+        return end_stamp
+    
     def get_type_and_topic_info(self, topic_filters=None):
         """
             coallates info about the type and topics in the bag.
@@ -520,7 +532,6 @@ class Bag(object):
             topics = [c.topic for c in self._get_connections()]
             
         topics = sorted(set(topics))
-
             
         topic_datatypes = {}
         topic_conn_counts = {}
@@ -539,8 +550,8 @@ class Bag(object):
             msg_count = 0
             for connection in connections:
                 for chunk in self._chunks:
-                    
                     msg_count += chunk.connection_counts.get(connection.id, 0)
+                    
             topic_msg_counts[topic] = msg_count
 
             if self._connection_indexes_read:
@@ -555,7 +566,7 @@ class Bag(object):
 
         # process datatypes       
         types = {}
-        for i, (datatype, md5sum, msg_def) in enumerate(sorted(datatype_infos)):
+        for datatype, md5sum, msg_def in sorted(datatype_infos):
             types[datatype] = md5sum
             
         # process topics
@@ -563,15 +574,13 @@ class Bag(object):
         TopicTuple = collections.namedtuple("TopicTuple", ["type", "message_count", "connections", "frequency"])
         for topic in topics:
             topic_msg_count = topic_msg_counts[topic]
-            topics_t[topic] = TopicTuple(type =
-                                            topic_datatypes[topic], 
-                                            message_count = topic_msg_count,
-                                            connections = topic_conn_counts[topic], 
-                                            frequency = topic_freqs_median[topic] if topic in topic_freqs_median
-                                            else None)
+            frequency = topic_freqs_median[topic] if topic in topic_freqs_median else None
+            topics_t[topic] = TopicTuple(type=topic_datatypes[topic], 
+                                            message_count=topic_msg_count,
+                                            connections=topic_conn_counts[topic], 
+                                            frequency=frequency)
             
-        return collections.namedtuple("TypesAndTopicsTuple", ["types",
-                                                              "topics"])(types=types, topics=topics_t)
+        return collections.namedtuple("TypesAndTopicsTuple", ["types", "topics"])(types=types, topics=topics_t)
             
     def __str__(self):
         rows = []
