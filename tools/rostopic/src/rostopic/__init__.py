@@ -1052,7 +1052,7 @@ def _rostopic_cmd_echo(argv):
 
     try:
         fixed_width = int(options.fixed_width) if options.fixed_width else None
-        if not fixed_width is None and fixed_width < 2:
+        if fixed_width is not None and fixed_width < 2:
             parser.error("Fixed width for array values must be at least 2")
     except ValueError:
         parser.error("NUM_WIDTH must be an integer")
