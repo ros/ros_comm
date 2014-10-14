@@ -95,7 +95,7 @@ class Compression:
     NONE = 'none'
     BZ2  = 'bz2'
     LZ4  = 'lz4'
-    
+
 class Bag(object):
     """
     Bag serialize messages to and from a single file on disk using the bag format.
