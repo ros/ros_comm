@@ -40,6 +40,7 @@ from __future__ import print_function
 
 import bisect
 import bz2
+import collections
 import heapq
 import os
 import re
@@ -48,7 +49,6 @@ import sys
 import threading
 import time
 import yaml
-import collections
 
 try:
     from cStringIO import StringIO  # Python 2.x
@@ -471,7 +471,7 @@ class Bag(object):
         
         if topic_filters is not None:
             info = self.get_type_and_topic_info(topic_filters=topic_filters)
-            for topic in info.topics.itervalues():
+            for topic in info.topics.values():
                 num_messages += topic.message_count
         else:
             if self._chunks:
@@ -520,7 +520,7 @@ class Bag(object):
         datatypes = set()
         datatype_infos = []
         
-        for connection in list(self._connections.values()):
+        for connection in self._connections.values():
             if connection.datatype in datatypes:
                 continue
             
@@ -531,10 +531,11 @@ class Bag(object):
         # load our list of topics and optionally filter
         if topic_filters is not None:
             if not isinstance(topic_filters, list):
-                topic_filters = [topic_filters]
-            topics = sorted(set(topic_filters))
+                topics = [topic_filters]
         else:
-            topics = sorted(set([c.topic for c in self._get_connections()]))
+            topics = [c.topic for c in self._get_connections()]
+            
+        topics = sorted(set(topics))
 
             
         topic_datatypes = {}
@@ -576,7 +577,7 @@ class Bag(object):
         # process topics
         topics_t = {}
         TopicTuple = collections.namedtuple("TopicTuple", ["type", "message_count", "connections", "frequency"])
-        for i, topic in enumerate(topics):
+        for topic in topics:
             topic_msg_count = topic_msg_counts[topic]
             topics_t[topic] = TopicTuple(type =
                                             topic_datatypes[topic], 
