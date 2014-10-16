@@ -463,7 +463,6 @@ class Bag(object):
                 num_messages += topic.message_count
         else:
             if self._chunks:
-                num_messages = 0
                 for c in self._chunks:
                     for counts in c.connection_counts.values():
                         num_messages += counts
