@@ -416,30 +416,35 @@ class Bag(object):
         compressed = 0
         
         if self._chunk_headers:
+            uncompressed = 0
             compression_counts = {}
             compression_uncompressed = {}
             compression_compressed = {}
+            
+            # the rest of this is determine which compression algorithm is dominant and
+            # to add up the uncompressed and compressed Bytes
             for chunk_header in self._chunk_headers.values():
                 if chunk_header.compression not in compression_counts:
-                    compression_counts[chunk_header.compression] = 1
-                    compression_uncompressed[chunk_header.compression] = chunk_header.uncompressed_size
-                    compression_compressed[chunk_header.compression] = chunk_header.compressed_size
-                else:
-                    compression_counts[chunk_header.compression] += 1
-                    compression_uncompressed[chunk_header.compression] += chunk_header.uncompressed_size
-                    compression_compressed[chunk_header.compression] += chunk_header.compressed_size
-
+                    compression_counts[chunk_header.compression] = 0
+                if chunk_header.compression not in compression_uncompressed:
+                    compression_uncompressed[chunk_header.compression] = 0
+                if chunk_header.compression not in compression_compressed:
+                    compression_compressed[chunk_header.compression] = 0
+                    
+                compression_counts[chunk_header.compression] += 1
+                compression_uncompressed[chunk_header.compression] += chunk_header.uncompressed_size
+                uncompressed += chunk_header.uncompressed_size
+                compression_compressed[chunk_header.compression] += chunk_header.compressed_size
+                compressed += chunk_header.compressed_size
+                
             chunk_count = len(self._chunk_headers)
 
             main_compression_count, main_compression = sorted([(v, k) for k, v in compression_counts.items()], reverse=True)[0]
             compression = str(main_compression)
 
-            all_uncompressed = (sum([count for c, count in compression_counts.items() if c != Compression.NONE]) == 0)
-            if not all_uncompressed:    
-                uncompressed = sum((h.uncompressed_size for h in self._chunk_headers.values()))
-                compressed = sum((h.compressed_size for h in self._chunk_headers.values()))
-                
-        return collections.namedtuple("CompressionTuple", ["compression", "uncompressed", "compressed"])(compression=compression, uncompressed=uncompressed, compressed=compressed)
+        return collections.namedtuple("CompressionTuple", ["compression",
+                                                           "uncompressed", "compressed"])(compression=compression,
+                                                                                          uncompressed=uncompressed, compressed=compressed)
     
     def get_message_count(self, topic_filters=None):
         """
