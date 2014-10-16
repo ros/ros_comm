@@ -479,9 +479,9 @@ class Bag(object):
         """
         
         if self._chunks:
-            start_stamp = self._chunks[ 0].start_time.to_sec()
+            start_stamp = self._chunks[0].start_time.to_sec()
         else:
-            start_stamp = min([index[ 0].time.to_sec() for index in self._connection_indexes.values()])
+            start_stamp = min([index[0].time.to_sec() for index in self._connection_indexes.values()])
         
         return start_stamp
     
