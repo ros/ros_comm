@@ -405,12 +405,10 @@ class Bag(object):
             
     def get_compression_info(self):
         """
-            Returns information about the compression of the bag
-            
-            returns (CompressionTuple):
-                compression - Type of compression used
-                uncompressed - Number of uncompressed Bytes
-                compressed - Number of compressed Bytes
+        Returns information about the compression of the bag
+        @return: generator of CompressionTuple(compression, uncompressed, compressed) describing the
+            type of compression used, number of uncompressed Bytes, and number of compressed Bytes
+        @rtype: generator of CompressionTuple of (str, int, int)
         """
         
         compression = self.compression
@@ -443,11 +441,13 @@ class Bag(object):
                 
         return collections.namedtuple("CompressionTuple", ["compression", "uncompressed", "compressed"])(compression=compression, uncompressed=uncompressed, compressed=compressed)
     
-    def get_message_count(self, topic_filters=None, type_filters=None):
+    def get_message_count(self, topic_filters=None):
         """
-            Returns the number of messages in the bag.
-            
-            topic_filters - One or more topics to filter by
+        Returns the number of messages in the bag. Can be filtered by Topic
+        @param topic_filters: One or more topics to filter by
+        @type topic_filters: Could be either a single str or a list of str.
+        @return: The number of messages in the bag, optionally filtered by topic
+        @rtype: int
         """
         
         num_messages = 0
@@ -469,7 +469,9 @@ class Bag(object):
     
     def get_start_time(self):
         """
-            Returns the start time of the bag.
+        Returns the start time of the bag.
+        @return: a timestamp of the start of the bag
+        @rtype: float, timestamp in seconds, includes fractions of a second
         """
         
         if self._chunks:
@@ -481,7 +483,9 @@ class Bag(object):
     
     def get_end_time(self):
         """
-            Returns the end time of the bag.
+        Returns the end time of the bag.
+        @return: a timestamp of the end of the bag
+        @rtype: float, timestamp in seconds, includes fractions of a second
         """
         
         if self._chunks:
@@ -493,22 +497,23 @@ class Bag(object):
     
     def get_type_and_topic_info(self, topic_filters=None):
         """
-            coallates info about the type and topics in the bag.
-            
-            topic_filters - specify one or more topic to filter by.
-            
-            Note, it would be nice to filter by type as well, but there appear to be some limitations in the current architecture
-            that prevent that from working when more than one message type is written on the same topic.
-            
-            returns (TypesAndTopicsTuple):
-                - types(dict):  (Not affected by topic_filters)
-                    key: type name
-                    val: md5hash
-                - topics(TopicTuple):
-                    type: msg type (Ex. "std_msgs/String")
-                    message_count: the number of messages of the particular type
-                    connections: the number of connections
-                    frequency: the data frequency
+        Coallates info about the type and topics in the bag.
+        
+        Note, it would be nice to filter by type as well, but there appear to be some limitations in the current architecture
+        that prevent that from working when more than one message type is written on the same topic.
+        
+        @param topic_filters: specify one or more topic to filter by.
+        @type topic_filters: either a single str or a list of str.
+        @return: generator of TypesAndTopicsTuple(types{key:type name, val: md5hash}, 
+            topics{type: msg type (Ex. "std_msgs/String"),
+                message_count: the number of messages of the particular type,
+                connections: the number of connections,
+                frequency: the data frequency,
+                key: type name,
+                val: md5hash}) describing the types of messages present
+            and information about the topics
+        @rtype: TypesAndTopicsTuple(dict(str, str), 
+            TopicTuple(str, int, int, float, str, str))
         """
         
         datatypes = set()
