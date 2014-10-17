@@ -407,16 +407,16 @@ class Bag(object):
         """
         Returns information about the compression of the bag
         @return: generator of CompressionTuple(compression, uncompressed, compressed) describing the
-            type of compression used, number of uncompressed Bytes, and number of compressed Bytes
+            type of compression used, size of the uncompressed data in Bytes, size of the compressed data in Bytes. If
+            no compression is used then uncompressed and compressed data will be equal.
         @rtype: generator of CompressionTuple of (str, int, int)
         """
         
         compression = self.compression
-        uncompressed = self.size
+        uncompressed = 0
         compressed = 0
         
         if self._chunk_headers:
-            uncompressed = 0
             compression_counts = {}
             compression_uncompressed = {}
             compression_compressed = {}
@@ -550,7 +550,7 @@ class Bag(object):
         for topic in topics:
             connections = list(self._get_connections(topic))
             
-            if len(connections) == 0:
+            if not connections:
                 continue
                 
             topic_datatypes[topic] = connections[0].datatype
@@ -571,8 +571,6 @@ class Bag(object):
                     if med_period > 0.0:
                         topic_freqs_median[topic] = 1.0 / med_period
 
-        topics = sorted(topic_datatypes.keys())
-
         # process datatypes       
         types = {}
         for datatype, md5sum, msg_def in sorted(datatype_infos):
@@ -580,16 +578,16 @@ class Bag(object):
             
         # process topics
         topics_t = {}
-        TopicTuple = collections.namedtuple("TopicTuple", ["type", "message_count", "connections", "frequency"])
-        for topic in topics:
+        TopicTuple = collections.namedtuple("TopicTuple", ["msg_type", "message_count", "connections", "frequency"])
+        for topic in sorted(topic_datatypes.keys()):
             topic_msg_count = topic_msg_counts[topic]
             frequency = topic_freqs_median[topic] if topic in topic_freqs_median else None
-            topics_t[topic] = TopicTuple(type=topic_datatypes[topic], 
+            topics_t[topic] = TopicTuple(msg_type=topic_datatypes[topic], 
                                             message_count=topic_msg_count,
                                             connections=topic_conn_counts[topic], 
                                             frequency=frequency)
             
-        return collections.namedtuple("TypesAndTopicsTuple", ["types", "topics"])(types=types, topics=topics_t)
+        return collections.namedtuple("TypesAndTopicsTuple", ["msg_types", "topics"])(msg_types=types, topics=topics_t)
             
     def __str__(self):
         rows = []
