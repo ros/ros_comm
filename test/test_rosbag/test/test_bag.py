@@ -263,12 +263,117 @@ class TestRosbag(unittest.TestCase):
                 bag.write("/test_bag", String(data='also'))
                 bag.write("/test_bag/more", String(data='alone'))
                 
-        bag = rosbag.Bag(fn)
+        with rosbag.Bag(fn) as bag:
+            self.assertEquals(bag.get_message_count(), 300)
+            self.assertEquals(bag.get_message_count(topic_filters='/test_bag'), 200)
+            self.assertEquals(bag.get_message_count(topic_filters=['/test_bag', '/test_bag/more']), 300)
+            self.assertEquals(bag.get_message_count(topic_filters=['/none']), 0)
         
-        self.assertEquals(bag.get_message_count(), 300)
-        self.assertEquals(bag.get_message_count(topic_filters='/test_bag'), 200)
-        self.assertEquals(bag.get_message_count(topic_filters=['/test_bag', '/test_bag/more']), 300)
-        self.assertEquals(bag.get_message_count(topic_filters=['/none']), 0)
+    def test_get_compression_info(self):
+        fn = '/tmp/test_get_compression_info.bag'
+        
+        # No Compression
+        with rosbag.Bag(fn, mode='w') as bag:
+            for i in xrange(100):
+                bag.write("/test_bag", Int32(data=i))
+                
+        with rosbag.Bag(fn) as bag:
+            info = bag.get_compression_info()
+            self.assertEquals(info.compression, rosbag.Compression.NONE)
+            # 167 Bytes of overhead, 50 Bytes per Int32.
+            self.assertEquals(info.uncompressed, 5167)
+            self.assertEquals(info.compressed, 5167)
+        
+        with rosbag.Bag(fn, mode='w', compression=rosbag.Compression.BZ2) as bag:
+            for i in xrange(100):
+                bag.write("/test_bag", Int32(data=i))
+                
+        with rosbag.Bag(fn) as bag:
+            info = bag.get_compression_info()
+            self.assertEquals(info.compression, rosbag.Compression.BZ2)
+            self.assertEquals(info.uncompressed, 5167)
+            
+            # the value varies each run, I suspect based on rand, but seems
+            # to generally be around 960 to 980 on my comp
+            self.assertLess(info.compressed, 1000)
+            self.assertGreater(info.compressed, 900)
+        
+    def test_get_time(self):
+        fn = '/tmp/test_get_time.bag'
+        
+        with rosbag.Bag(fn, mode='w') as bag:
+            for i in xrange(100):
+                bag.write("/test_bag", Int32(data=i), t=genpy.Time.from_sec(i))
+                
+        with rosbag.Bag(fn) as bag:
+            start_stamp = bag.get_start_time()
+            end_stamp = bag.get_end_time()
+            
+            self.assertEquals(start_stamp, 0.0)
+            self.assertEquals(end_stamp, 99.0)
+
+    def test_get_type_and_topic_info(self):
+        fn = '/tmp/test_get_type_and_topic_info.bag'
+        topic_1 = "/test_bag"
+        topic_2 = "/test_bag/more"
+        with rosbag.Bag(fn, mode='w') as bag:
+            for i in xrange(100):
+                bag.write(topic_1, Int32(data=i))
+                bag.write(topic_1, String(data='also'))
+                bag.write(topic_2, String(data='alone'))
+                
+        with rosbag.Bag(fn) as bag:
+            msg_types, topics = bag.get_type_and_topic_info()
+            self.assertEquals(len(msg_types), 2)
+            self.assertTrue("std_msgs/Int32" in msg_types)
+            self.assertTrue("std_msgs/String" in msg_types)
+            self.assertEquals(len(topics), 2)
+            self.assertTrue(topic_1 in topics)
+            self.assertTrue(topic_2 in topics)
+            
+            self.assertEquals(topics[topic_1].message_count, 200)
+            self.assertEquals(topics[topic_1].msg_type, "std_msgs/Int32")
+            self.assertEquals(topics[topic_2].message_count, 100)
+            self.assertEquals(topics[topic_2].msg_type, "std_msgs/String")
+            
+            #filter on topic 1
+            msg_types, topics = bag.get_type_and_topic_info(topic_1)
+            
+            # msg_types should be unaffected by the filter
+            self.assertEquals(len(msg_types), 2)
+            self.assertTrue("std_msgs/Int32" in msg_types)
+            self.assertTrue("std_msgs/String" in msg_types)            
+            
+            self.assertEquals(len(topics), 1)
+            self.assertTrue(topic_1 in topics)
+            
+            self.assertEquals(topics[topic_1].message_count, 200)
+            self.assertEquals(topics[topic_1].msg_type, "std_msgs/Int32")
+            
+            #filter on topic 2
+            msg_types, topics = bag.get_type_and_topic_info(topic_2)
+            
+            # msg_types should be unaffected by the filter
+            self.assertEquals(len(msg_types), 2)
+            self.assertTrue("std_msgs/Int32" in msg_types)
+            self.assertTrue("std_msgs/String" in msg_types)            
+            
+            self.assertEquals(len(topics), 1)
+            self.assertTrue(topic_2 in topics)
+            
+            self.assertEquals(topics[topic_2].message_count, 100)
+            self.assertEquals(topics[topic_2].msg_type, "std_msgs/String")
+            
+            #filter on missing topic
+            msg_types, topics = bag.get_type_and_topic_info("/none")
+            
+            # msg_types should be unaffected by the filter
+            self.assertEquals(len(msg_types), 2)
+            self.assertTrue("std_msgs/Int32" in msg_types)
+            self.assertTrue("std_msgs/String" in msg_types)            
+            
+            # topics should be empty
+            self.assertEquals(len(topics), 0)
         
     def _print_bag_records(self, fn):
         with open(fn) as f:
