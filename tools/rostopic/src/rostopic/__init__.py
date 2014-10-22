@@ -1593,7 +1593,6 @@ def stdin_publish(pub, msg_class, rate, once, filename, verbose):
     # publish, though we don't wait too long.
     wait_for_subscriber(pub, SUBSCRIBER_TIMEOUT)
 
-    single_arg = None
     for pub_args in iterator():
         if rospy.is_shutdown():
             break
@@ -1616,16 +1615,6 @@ def stdin_publish(pub, msg_class, rate, once, filename, verbose):
             r.sleep()
         if rospy.is_shutdown() or once:
             break
-
-    # Publishing a single message repeatedly
-    if single_arg and r and not once:
-        while not rospy.is_shutdown():
-            try:
-                publish_message(pub, msg_class, pub_args, None, True, verbose=verbose)
-                if r is not None:
-                    r.sleep()
-            except ValueError as e:
-                break
 
 def stdin_yaml_arg():
     """
