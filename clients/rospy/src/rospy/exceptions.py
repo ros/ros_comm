@@ -61,6 +61,15 @@ class ROSInterruptException(ROSException, KeyboardInterrupt):
     """    
     pass
 
+class ROSTimeMovedBackwardsException(ROSInterruptException): 
+    """
+    Exception if time moved backwards
+    """
+    def __init__(self, time):
+        self.time = time
+        """The amount of time in seconds."""
+        super(ROSTimeMovedBackwardsException, self).__init__("ROS time moved backwards")
+
 class ROSInternalException(Exception):
     """
     Base class for exceptions that are internal to the ROS system
