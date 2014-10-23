@@ -62,3 +62,16 @@ class TestRospyExceptions(unittest.TestCase):
             raise ROSInterruptException("test")
         except KeyboardInterrupt:
             pass
+
+    def test_ROSTimeMovedBackwardsException(self):
+        from rospy.exceptions import ROSTimeMovedBackwardsException, ROSInterruptException
+        try:
+            raise ROSTimeMovedBackwardsException(1.0)
+        except ROSInterruptException as e:
+            # ensure the message is not changed, because old code may check it
+            self.assertEqual("ROS time moved backwards", e.message)
+        try:
+            time = 1.0
+            raise ROSTimeMovedBackwardsException(time)
+        except ROSTimeMovedBackwardsException as e:
+            self.assertEqual(time, e.time)
