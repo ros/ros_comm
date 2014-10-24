@@ -90,7 +90,8 @@ def is_machine_local(machine):
     :returns: True if machine is local and doesn't require remote login, ``bool``
     """    
     try:
-        machine_ips = [host[4][0] for host in socket.getaddrinfo(machine.address, 0, 0, 0, socket.SOL_TCP)]
+        # If Python has ipv6 disabled but machine.address can be resolved somehow to an ipv6 address, then host[4][0] will be int
+        machine_ips = [host[4][0] for host in socket.getaddrinfo(machine.address, 0, 0, 0, socket.SOL_TCP) if isinstance(host[4][0], str)]
     except socket.gaierror:
         raise RLException("cannot resolve host address for machine [%s]"%machine.address)
     local_addresses = ['localhost'] + rosgraph.network.get_local_addresses()
