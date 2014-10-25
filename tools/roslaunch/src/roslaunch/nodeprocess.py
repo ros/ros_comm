@@ -215,7 +215,7 @@ class LocalProcess(Process):
                 if e.errno == 13:
                     raise RLException("unable to create directory for log file [%s].\nPlease check permissions."%log_dir)
                 else:
-                    raise RLException("unable to create directory for log file [%s]: %s"%(log_dir, e.msg))
+                    raise RLException("unable to create directory for log file [%s]: %s"%(log_dir, e.strerror))
         # #973: save log dir for error messages
         self.log_dir = log_dir
 
@@ -290,18 +290,18 @@ class LocalProcess(Process):
                 self.popen = subprocess.Popen(self.args, cwd=cwd, stdout=logfileout, stderr=logfileerr, env=full_env, close_fds=True, preexec_fn=os.setsid)
             except OSError as e:
                 self.started = True # must set so is_alive state is correct
-                _logger.error("OSError(%d, %s)", e.errno, e.msg)
-                if errno == 8: #Exec format error
+                _logger.error("OSError(%d, %s)", e.errno, e.strerror)
+                if e.errno == 8: #Exec format error
                     raise FatalProcessLaunch("Unable to launch [%s]. \nIf it is a script, you may be missing a '#!' declaration at the top."%self.name)
-                elif errno == 2: #no such file or directory
+                elif e.errno == 2: #no such file or directory
                     raise FatalProcessLaunch("""Roslaunch got a '%s' error while attempting to run:
 
 %s
 
 Please make sure that all the executables in this command exist and have
-executable permission. This is often caused by a bad launch-prefix."""%(msg, ' '.join(self.args)))
+executable permission. This is often caused by a bad launch-prefix."""%(e.strerror, ' '.join(self.args)))
                 else:
-                    raise FatalProcessLaunch("unable to launch [%s]: %s"%(' '.join(self.args), msg))
+                    raise FatalProcessLaunch("unable to launch [%s]: %s"%(' '.join(self.args), e.strerror))
                 
             self.started = True
             # Check that the process is either still running (poll returns
