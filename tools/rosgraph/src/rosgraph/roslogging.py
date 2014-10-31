@@ -152,11 +152,26 @@ class RosStreamHandler(logging.Handler):
 
     def emit(self, record):
         level, color = _logging_to_rospy_names[record.levelname]
-        msg = '[%s] [WallTime: %f]' % (level, time.time())
-        if self._get_time is not None and not self._is_wallclock():
-            msg += ' [%f]' % self._get_time()
-        msg += ' %s\n' % record.getMessage()
-
+        if 'ROSCONSOLE_FORMAT' in os.environ.keys():
+            msg = os.environ['ROSCONSOLE_FORMAT']
+            msg = msg.replace('${severity}', level)
+            msg = msg.replace('${message}', str(record.getMessage()))
+            msg = msg.replace('${time}', str(time.time()))
+            msg = msg.replace('${thread}', str(record.thread))
+            msg = msg.replace('${logger}', str(record.name))
+            msg = msg.replace('${file}', str(record.pathname))
+            msg = msg.replace('${line}', str(record.lineno))
+            msg = msg.replace('${function}', str(record.funcName))
+            from rospy import get_name
+            msg = msg.replace('${node}', get_name())
+            if self._get_time is not None and not self._is_wallclock():
+                msg += ' [%f]' % self._get_time()
+            msg += '\n'
+        else:
+            msg = '[%s] [WallTime: %f]' % (level, time.time())
+            if self._get_time is not None and not self._is_wallclock():
+                msg += ' [%f]' % self._get_time()
+            msg += ' %s\n' % record.getMessage()
         if record.levelno < logging.WARNING:
             self._write(sys.stdout, msg, color)
         else:
