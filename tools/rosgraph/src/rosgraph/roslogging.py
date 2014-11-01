@@ -162,8 +162,11 @@ class RosStreamHandler(logging.Handler):
             msg = msg.replace('${file}', str(record.pathname))
             msg = msg.replace('${line}', str(record.lineno))
             msg = msg.replace('${function}', str(record.funcName))
-            from rospy import get_name
-            msg = msg.replace('${node}', get_name())
+            try:
+                from rospy import get_name
+                msg = msg.replace('${node}', get_name())
+            except ImportError:
+                msg = msg.replace('${node}', 'unavailable')
             if self._get_time is not None and not self._is_wallclock():
                 msg += ' [%f]' % self._get_time()
             msg += '\n'
