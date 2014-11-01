@@ -60,7 +60,7 @@ def configure_logging(logname, level=logging.INFO, filename=None, env=None):
 
     logname = logname or 'unknown'
     log_dir = rospkg.get_log_dir(env=env)
-
+    
     # if filename is not explicitly provided, generate one using logname
     if not filename:
         log_filename = os.path.join(log_dir, '%s-%s.log'%(logname, os.getpid()))
@@ -99,7 +99,7 @@ def configure_logging(logname, level=logging.INFO, filename=None, env=None):
         sys.stderr.write("WARNING: cannot load logging configuration file, logging is disabled\n")
         logging.getLogger(logname).setLevel(logging.CRITICAL)
         return log_filename
-
+    
     # pass in log_filename as argument to pylogging.conf
     os.environ['ROS_LOG_FILENAME'] = log_filename
     # #3625: disabling_existing_loggers=False
@@ -112,7 +112,7 @@ def makedirs_with_parent_perms(p):
     (existing) parent directory. This is useful for logging, where a
     root process sometimes has to log in the user's space.
     :param p: directory to create, ``str``
-    """
+    """    
     p = os.path.abspath(p)
     parent = os.path.dirname(p)
     # recurse upwards, checking to make sure we haven't reached the
@@ -127,7 +127,7 @@ def makedirs_with_parent_perms(p):
         if s.st_uid != s2.st_uid or s.st_gid != s2.st_gid:
             os.chown(p, s.st_uid, s.st_gid)
         if s.st_mode != s2.st_mode:
-            os.chmod(p, s.st_mode)
+            os.chmod(p, s.st_mode)    
 
 _logging_to_rospy_names = {
     'DEBUG': ('DEBUG', '\033[32m'),
@@ -162,11 +162,8 @@ class RosStreamHandler(logging.Handler):
             msg = msg.replace('${file}', str(record.pathname))
             msg = msg.replace('${line}', str(record.lineno))
             msg = msg.replace('${function}', str(record.funcName))
-            try:
-                from rospy import get_name
-                msg = msg.replace('${node}', get_name())
-            except ImportError:
-                msg = msg.replace('${node}', 'unavailable')
+            from rospy import get_name
+            msg = msg.replace('${node}', get_name())
             if self._get_time is not None and not self._is_wallclock():
                 msg += ' [%f]' % self._get_time()
             msg += '\n'
