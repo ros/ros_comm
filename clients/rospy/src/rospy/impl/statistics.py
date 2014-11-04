@@ -59,7 +59,7 @@ class SubscriberStatisticsLogger():
             return False
 
     def __init__(self, subscriber):
-        self.subscriber = subscriber
+        self.subscriber_name = subscriber.name
         self.connections = dict()
         self.read_parameters()
 
@@ -94,14 +94,14 @@ class SubscriberStatisticsLogger():
 
         # /clock is special, as it is subscribed very early
         # also exclude /statistics to reduce noise.
-        if self.subscriber.name == "/clock" or self.subscriber.name == "/statistics":
+        if self.subscriber_name == "/clock" or self.subscriber_name == "/statistics":
             return
 
         try:
             # create ConnectionStatisticsLogger for new connections
             logger = self.connections.get(publisher)
             if logger is None:
-                logger = ConnectionStatisticsLogger(self.subscriber.name, rospy.get_name(), publisher)
+                logger = ConnectionStatisticsLogger(self.subscriber_name, rospy.get_name(), publisher)
                 self.connections[publisher] = logger
 
             # delegate stuff to that instance
