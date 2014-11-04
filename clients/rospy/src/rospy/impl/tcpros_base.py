@@ -581,9 +581,10 @@ class TCPROSTransport(Transport):
         for required in ['md5sum', 'type']:
             if not required in header:
                 raise TransportInitError("header missing required field [%s]"%required)
-        self.md5sum = header['md5sum']
-        self.callerid_pub = header['callerid']
         self.type = header['type']
+        self.md5sum = header['md5sum']
+        if 'callerid' in header:
+            self.callerid_pub = header['callerid']
         if header.get('latching', '0') == '1':
             self.is_latched = True
 
