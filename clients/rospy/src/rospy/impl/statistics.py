@@ -49,6 +49,15 @@ class SubscriberStatisticsLogger():
     this class basically just keeps a collection of ConnectionStatisticsLogger.
     """
 
+    @classmethod
+    def is_enabled(cls):
+        # disable statistics if node can't talk to parameter server
+        # which is the case in unit tests
+        try:
+            return rospy.get_param("/enable_statistics", False)
+        except Exception:
+            return False
+
     def __init__(self, subscriber):
         self.subscriber = subscriber
         self.connections = dict()
@@ -59,13 +68,6 @@ class SubscriberStatisticsLogger():
         Fetch window parameters from parameter server
         """
 
-        # disable statistics if node can't talk to parameter server which is the case in unit tests
-        try:
-            self.enabled = rospy.get_param("/enable_statistics", False)
-        except:
-            self.enabled = False
-            return
-
         # Range of window length, in seconds
         self.min_elements = rospy.get_param("/statistics_window_min_elements", 10)
         self.max_elements = rospy.get_param("/statistics_window_max_elements", 100)
@@ -75,9 +77,6 @@ class SubscriberStatisticsLogger():
         # outside this range.
         self.max_window = rospy.get_param("/statistics_window_max_size", 64)
         self.min_window = rospy.get_param("/statistics_window_min_size", 4)
-
-    def is_enable_statistics(self):
-        return self.enabled
 
     def callback(self, msg, publisher, stat_bytes):
         """
@@ -92,9 +91,6 @@ class SubscriberStatisticsLogger():
         between publisher and subscriber and delegates to statistics logging to that
         instance.
         """
-
-        if not self.enabled:
-            return
 
         # /clock is special, as it is subscribed very early
         # also exclude /statistics to reduce noise.
