@@ -570,6 +570,9 @@ class _SubscriberImpl(_TopicImpl):
         if self.callbacks:
             del self.callbacks[:]
             self.callbacks = None
+        if self.statistics_logger:
+            self.statistics_logger.shutdown()
+            self.statistics_logger = None
         
     def set_tcp_nodelay(self, tcp_nodelay):
         """

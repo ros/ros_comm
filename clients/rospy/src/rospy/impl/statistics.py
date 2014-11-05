@@ -109,6 +109,11 @@ class SubscriberStatisticsLogger():
         except Exception as e:
             rospy.logerr("Unexpected error during statistics measurement: %s", str(e))
 
+    def shutdown(self):
+        for logger in self.connections.values():
+            logger.shutdown()
+        self.connections.clear()
+
 
 class ConnectionStatisticsLogger():
     """
@@ -255,3 +260,6 @@ class ConnectionStatisticsLogger():
         if self.last_pub_time + self.pub_frequency < arrival_time:
             self.last_pub_time = arrival_time
             self.sendStatistics(subscriber_statistics_logger)
+
+    def shutdown(self):
+        self.pub.unregister()
