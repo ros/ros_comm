@@ -25,7 +25,6 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 from _bisect import bisect_right
-from matplotlib.cbook import Null
 
 """
 Message Filter Objects
