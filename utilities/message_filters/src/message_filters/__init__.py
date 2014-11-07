@@ -24,6 +24,8 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from _bisect import bisect_right
+from matplotlib.cbook import Null
 
 """
 Message Filter Objects
@@ -89,29 +91,77 @@ class Cache(SimpleFilter):
         SimpleFilter.__init__(self)
         self.connectInput(f)
         self.cache_size = cache_size
-        self.cache = []
+        # Array to store messages
+        self.cache_msgs = []
+        # Array to store msgs times - auxiliary structure to facilitate
+        # sorted insertion
+        self.cache_times = []
 
     def connectInput(self, f):
         self.incoming_connection = f.registerCallback(self.add)
 
     def add(self, msg):
-        # Add the message with its stamp
-        self.cache += [(msg.header.stamp, msg)]
-        # Sort according to stamp
-        # TODO: insert sorted instead of sorting everytime
-        self.cache = sorted(self.cache, key = lambda m : m[0])
+        # Cannot use message filters with non-stamped messages
+        if not hasattr(msg, 'header') or not hasattr(msg.header, 'stamp'):
+            rospy.logwarn("Cannot use message filters with non-stamped messages")
+            return
+        
+        # Insert sorted
+        stamp = msg.header.stamp
+        inspoint = bisect_right(self.cache_times, stamp)
+        self.cache_times.insert(inspoint, stamp)
+        self.cache_msgs.insert(inspoint, msg)
+
         # Implement a ring buffer - discard older if oversized
-        if (len(self.cache) > self.cache_size):
-            del self.cache[0]
+        if (len(self.cache_msgs) > self.cache_size):
+            del self.cache_msgs[0]
+            del self.cache_times[0]
+       
         # Signal new input
         self.signalMessage(msg)
 
     '''
     Query the current cache content between from_stamp to to_stamp
     '''
-    def query(self, from_stamp, to_stamp):
-        return [m[1] for m in self.cache 
-                if m[0] <= to_stamp and m[0] >= from_stamp]
+    def getInterval(self, from_stamp, to_stamp):
+        return [m for m in self.cache_msgs
+                if m.header.stamp <= to_stamp and m.header.stamp >= from_stamp]
+    '''
+    Returns the oldest element after time stamp
+    '''
+    def getElemAfterTime(self, stamp):
+        newer = [m for m in self.cache_msgs
+                   if m.header.stamp >= stamp]
+        if len(newer) == 0:
+            return None
+        return newer[0];
+    
+    '''
+    Returns the newest element before time stamp
+    '''
+    def getElemBeforeTime(self, stamp):
+        older = [m for m in self.cache_msgs
+                 if m.header.stamp <= stamp]
+        if len(older) == 0:
+            return None
+        return older[-1];
+    
+    '''
+    Returns the newest recorded timestamp
+    '''
+    def getLastestTime(self):
+        if len(self.cache_times) == 0:
+            return None
+        return self.cache_times[-1]
+    
+    '''
+    Returns the oldest recorded timestamp
+    '''
+    def getOldestTime(self):
+        if len(self.cache_times) == 0:
+            return None
+        return self.cache_times[0]
+        
 
 class TimeSynchronizer(SimpleFilter):
 
