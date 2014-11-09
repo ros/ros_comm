@@ -598,6 +598,6 @@ void param(const std::string& param_name, T& param_val, const T& default_val)
 
 } // namespace param
 
-} // namespace param
+} // namespace ros
 
 #endif // ROSCPP_PARAM_H
