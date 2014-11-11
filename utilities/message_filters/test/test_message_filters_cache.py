@@ -31,84 +31,95 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from rospy import rostime
+import rospy
 import unittest
 
 from message_filters import Cache, Subscriber
-from message_filters.msg import EmptyWithHeader
 import unittest
 
+from std_msgs.msg import String
 
 PKG='message_filters'
+
+class AnonymMsg:
+    class AnonymHeader:
+        stamp = None;
+        def __init__(self):
+            self.stamp = rospy.Time()
+
+    header = None
+    def __init__(self):
+        self.header = AnonymMsg.AnonymHeader()
 
 class TestCache(unittest.TestCase):
 
     def test_all_funcs(self):
-        sub = Subscriber("/empty", EmptyWithHeader)
+        sub = Subscriber("/empty", String) 
         cache = Cache(sub, 5)
         
-        msg = EmptyWithHeader()
-        msg.header.stamp = rostime.Time.from_sec(0)
+        msg = AnonymMsg(); 
+        msg.header.stamp = rospy.Time(0)
         cache.add(msg)
         
-        msg = EmptyWithHeader()
-        msg.header.stamp = rostime.Time.from_sec(1)
+        msg = AnonymMsg()
+        msg.header.stamp = rospy.Time(1)
         cache.add(msg)
         
-        msg = EmptyWithHeader()
-        msg.header.stamp = rostime.Time.from_sec(2)
+        msg = AnonymMsg()
+        msg.header.stamp = rospy.Time(2)
         cache.add(msg)
         
-        msg = EmptyWithHeader()
-        msg.header.stamp = rostime.Time.from_sec(3)
+        msg = AnonymMsg()
+        msg.header.stamp = rospy.Time(3)
         cache.add(msg)
         
-        msg = EmptyWithHeader()
-        msg.header.stamp = rostime.Time.from_sec(4)
+        msg = AnonymMsg()
+        msg.header.stamp = rospy.Time(4)
         cache.add(msg)
         
-        l = len(cache.getInterval(rostime.Time.from_sec(2.5),
-                                  rostime.Time.from_sec(3.5)))
+        l = len(cache.getInterval(rospy.Time(2.5),
+                                  rospy.Time(3.5)))
         self.assertEquals(l,1, "invalid number of messages" +
                                " returned in getInterval 1")
         
-        l = len(cache.getInterval(rostime.Time.from_sec(2),
-                                  rostime.Time.from_sec(3)))
+        l = len(cache.getInterval(rospy.Time(2),
+                                  rospy.Time(3)))
         self.assertEquals(l,2, "invalid number of messages" +
                                " returned in getInterval 2")
         
-        l = len(cache.getInterval(rostime.Time.from_sec(0),
-                                  rostime.Time.from_sec(4)))
+        l = len(cache.getInterval(rospy.Time(0),
+                                  rospy.Time(4)))
         self.assertEquals(l,5, "invalid number of messages" +
                                " returned in getInterval 3")
         
-        s = cache.getElemAfterTime(rostime.Time.from_sec(0)).header.stamp;
-        self.assertEqual(s, rostime.Time.from_sec(0),
+        s = cache.getElemAfterTime(rospy.Time(0)).header.stamp;
+        self.assertEqual(s, rospy.Time(0),
                          "invalid msg return by getElemAfterTime")
         
-        s = cache.getElemBeforeTime(rostime.Time.from_sec(3.5)).header.stamp;
-        self.assertEqual(s, rostime.Time.from_sec(3),
+        s = cache.getElemBeforeTime(rospy.Time(3.5)).header.stamp;
+        self.assertEqual(s, rospy.Time(3),
                          "invalid msg return by getElemBeforeTime")
         
         s = cache.getLastestTime();
-        self.assertEqual(s, rostime.Time.from_sec(4),
+        self.assertEqual(s, rospy.Time(4),
                          "invalid stamp return by getLastestTime")
         
         s = cache.getOldestTime();
-        self.assertEqual(s, rostime.Time.from_sec(0),
+        self.assertEqual(s, rospy.Time(0),
                          "invalid stamp return by getOldestTime")
         
         # Add another msg to fill the buffer 
-        msg = EmptyWithHeader()
-        msg.header.stamp = rostime.Time.from_sec(5)
+        msg = AnonymMsg()
+        msg.header.stamp = rospy.Time(5)
         cache.add(msg)
         
         # Test that it discarded the right one
         s = cache.getOldestTime();
-        self.assertEqual(s, rostime.Time.from_sec(1),
+        self.assertEqual(s, rospy.Time(1),
                          "wrong message discarded")
         
 if __name__ == '__main__':
     import rosunit
     rosunit.unitrun(PKG, 'test_message_filters_cache', TestCache)
+    #TestCache().test_all_funcs()
 

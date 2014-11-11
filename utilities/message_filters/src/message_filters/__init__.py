@@ -107,9 +107,11 @@ class Cache(SimpleFilter):
         
         # Insert sorted
         stamp = msg.header.stamp
-        inspoint = bisect_right(self.cache_times, stamp)
-        self.cache_times.insert(inspoint, stamp)
-        self.cache_msgs.insert(inspoint, msg)
+        #inspoint = bisect_right(self.cache_times, stamp)
+        #self.cache_times.insert(inspoint, stamp)
+        #self.cache_msgs.insert(inspoint, msg)
+        self.cache_times += [stamp]
+        self.cache_msgs += [msg]
 
         # Implement a ring buffer - discard older if oversized
         if (len(self.cache_msgs) > self.cache_size):
@@ -123,8 +125,10 @@ class Cache(SimpleFilter):
     Query the current cache content between from_stamp to to_stamp
     '''
     def getInterval(self, from_stamp, to_stamp):
+        print [m.header.stamp for m in self.cache_msgs]
         return [m for m in self.cache_msgs
                 if m.header.stamp <= to_stamp and m.header.stamp >= from_stamp]
+    
     '''
     Returns the oldest element after time stamp
     '''
