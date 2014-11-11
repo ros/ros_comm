@@ -353,12 +353,15 @@ class _TopicImpl(object):
             pass
         # while c might be a rospy.impl.tcpros_base.TCPROSTransport instance
         # connections might only contain the rospy.impl.tcpros_pubsub.QueuedConnection proxy
-        # therefore finding the "right" connection is more difficult then
-        # if c in connections
-        matching_connections = [
-            conn for conn in connections if conn.fileno() == c.fileno()]
-        if matching_connections:
-            connections.remove(matching_connections[0])
+        # finding the "right" connection is more difficult then
+        if c in connections:
+            connections.remove(c)
+        # therefore additionally check for fileno equality if available
+        elif c.fileno():
+            matching_connections = [
+                conn for conn in connections if conn.fileno() == c.fileno()]
+            if len(matching_connections) == 1:
+                connections.remove(matching_connections[0])
 
     def add_connection(self, c):
         """
