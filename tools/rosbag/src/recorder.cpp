@@ -187,7 +187,11 @@ int Recorder::run() {
 
     ros::Timer check_master_timer;
     if (options_.record_all || options_.regex || (options_.node != std::string("")))
+    {
+        // check for master first
+        doCheckMaster(ros::TimerEvent(), nh);
         check_master_timer = nh.createTimer(ros::Duration(1.0), boost::bind(&Recorder::doCheckMaster, this, _1, boost::ref(nh)));
+    }
 
     ros::MultiThreadedSpinner s(10);
     ros::spin(s);
