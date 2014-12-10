@@ -49,8 +49,17 @@ class SubscriberStatisticsLogger():
     this class basically just keeps a collection of ConnectionStatisticsLogger.
     """
 
+    @classmethod
+    def is_enabled(cls):
+        # disable statistics if node can't talk to parameter server
+        # which is the case in unit tests
+        try:
+            return rospy.get_param("/enable_statistics", False)
+        except Exception:
+            return False
+
     def __init__(self, subscriber):
-        self.subscriber = subscriber
+        self.subscriber_name = subscriber.name
         self.connections = dict()
         self.read_parameters()
 
@@ -58,13 +67,6 @@ class SubscriberStatisticsLogger():
         """
         Fetch window parameters from parameter server
         """
-
-        # disable statistics if node can't talk to parameter server which is the case in unit tests
-        try:
-            self.enabled = rospy.get_param("/enable_statistics", False)
-        except:
-            self.enabled = False
-            return
 
         # Range of window length, in seconds
         self.min_elements = rospy.get_param("/statistics_window_min_elements", 10)
@@ -75,9 +77,6 @@ class SubscriberStatisticsLogger():
         # outside this range.
         self.max_window = rospy.get_param("/statistics_window_max_size", 64)
         self.min_window = rospy.get_param("/statistics_window_min_size", 4)
-
-    def is_enable_statistics(self):
-        return self.enabled
 
     def callback(self, msg, publisher, stat_bytes):
         """
@@ -93,25 +92,27 @@ class SubscriberStatisticsLogger():
         instance.
         """
 
-        if not self.enabled:
-            return
-
         # /clock is special, as it is subscribed very early
         # also exclude /statistics to reduce noise.
-        if self.subscriber.name == "/clock" or self.subscriber.name == "/statistics":
+        if self.subscriber_name == "/clock" or self.subscriber_name == "/statistics":
             return
 
         try:
             # create ConnectionStatisticsLogger for new connections
             logger = self.connections.get(publisher)
             if logger is None:
-                logger = ConnectionStatisticsLogger(self.subscriber.name, rospy.get_name(), publisher)
+                logger = ConnectionStatisticsLogger(self.subscriber_name, rospy.get_name(), publisher)
                 self.connections[publisher] = logger
 
             # delegate stuff to that instance
             logger.callback(self, msg, stat_bytes)
         except Exception as e:
             rospy.logerr("Unexpected error during statistics measurement: %s", str(e))
+
+    def shutdown(self):
+        for logger in self.connections.values():
+            logger.shutdown()
+        self.connections.clear()
 
 
 class ConnectionStatisticsLogger():
@@ -259,3 +260,6 @@ class ConnectionStatisticsLogger():
         if self.last_pub_time + self.pub_frequency < arrival_time:
             self.last_pub_time = arrival_time
             self.sendStatistics(subscriber_statistics_logger)
+
+    def shutdown(self):
+        self.pub.unregister()

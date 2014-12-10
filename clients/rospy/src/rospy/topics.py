@@ -351,8 +351,17 @@ class _TopicImpl(object):
             c.close()
         except:
             pass
+        # while c might be a rospy.impl.tcpros_base.TCPROSTransport instance
+        # connections might only contain the rospy.impl.tcpros_pubsub.QueuedConnection proxy
+        # finding the "right" connection is more difficult then
         if c in connections:
             connections.remove(c)
+        # therefore additionally check for fileno equality if available
+        elif c.fileno():
+            matching_connections = [
+                conn for conn in connections if conn.fileno() == c.fileno()]
+            if len(matching_connections) == 1:
+                connections.remove(matching_connections[0])
 
     def add_connection(self, c):
         """
@@ -560,7 +569,9 @@ class _SubscriberImpl(_TopicImpl):
         self.queue_size = None
         self.buff_size = DEFAULT_BUFF_SIZE
         self.tcp_nodelay = False
-        self.statistics_logger = SubscriberStatisticsLogger(self);
+        self.statistics_logger = SubscriberStatisticsLogger(self) \
+            if SubscriberStatisticsLogger.is_enabled() \
+            else None
 
     def close(self):
         """close I/O and release resources"""
@@ -568,6 +579,9 @@ class _SubscriberImpl(_TopicImpl):
         if self.callbacks:
             del self.callbacks[:]
             self.callbacks = None
+        if self.statistics_logger:
+            self.statistics_logger.shutdown()
+            self.statistics_logger = None
         
     def set_tcp_nodelay(self, tcp_nodelay):
         """
@@ -701,7 +715,8 @@ class _SubscriberImpl(_TopicImpl):
         # save reference to avoid lock
         callbacks = self.callbacks
         for msg in msgs:
-            self.statistics_logger.callback(msg, connection.callerid_pub, connection.stat_bytes)
+            if self.statistics_logger:
+                self.statistics_logger.callback(msg, connection.callerid_pub, connection.stat_bytes)
             for cb, cb_args in callbacks:
                 self._invoke_callback(msg, cb, cb_args)
 

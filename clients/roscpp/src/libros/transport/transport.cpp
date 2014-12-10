@@ -34,10 +34,13 @@
 
 #include "ros/transport/transport.h"
 #include "ros/console.h"
-#include <ifaddrs.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <netdb.h>
+
+#if !defined(__ANDROID__)
+#include <ifaddrs.h>
+#endif
 
 #ifndef NI_MAXHOST
   #define NI_MAXHOST 1025
@@ -68,6 +71,7 @@ Transport::Transport()
   gethostname(our_hostname, sizeof(our_hostname)-1);
   allowed_hosts_.push_back(std::string(our_hostname));
   allowed_hosts_.push_back("localhost");
+#if !defined(__ANDROID__)
   // for ipv4 loopback, we'll explicitly search for 127.* in isHostAllowed()
   // now we need to iterate all local interfaces and add their addresses
   // from the getifaddrs manpage:  (maybe something similar for windows ?) 
@@ -96,6 +100,7 @@ Transport::Transport()
     }
     allowed_hosts_.push_back(std::string(addr));
   }
+#endif
 }
 
 bool Transport::isHostAllowed(const std::string &host) const

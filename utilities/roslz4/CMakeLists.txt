@@ -25,6 +25,7 @@ include_directories(include ${lz4_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 add_library(roslz4 src/lz4s.c src/xxhash.c)
 target_link_libraries(roslz4 ${lz4_LIBRARIES} ${catkin_LIBRARIES})
 
+if(NOT ANDROID)
 # Python bindings
 set(Python_ADDITIONAL_VERSIONS "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
 find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
@@ -35,6 +36,7 @@ set_target_properties(
   roslz4_py PROPERTIES OUTPUT_NAME roslz4 PREFIX "_" SUFFIX ".so"
   LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${PYTHON_INSTALL_DIR}/roslz4)
 target_link_libraries(roslz4_py roslz4 ${catkin_LIBRARIES} ${PYTHON_LIBRARIES})
+endif()
 
 install(TARGETS roslz4
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -42,8 +44,10 @@ install(TARGETS roslz4
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+if(NOT ANDROID)
 install(TARGETS roslz4_py
   LIBRARY DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
+endif()
 
 install(DIRECTORY include/${PROJECT_NAME}
   DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}

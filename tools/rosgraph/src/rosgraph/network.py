@@ -167,7 +167,10 @@ def is_local_address(hostname):
     :returns True: if hostname maps to a local address, False otherwise. False conditions include invalid hostnames.
     """
     try:
-        reverse_ips = [host[4][0] for host in socket.getaddrinfo(hostname, 0, 0, 0, socket.SOL_TCP)]
+        if use_ipv6():
+            reverse_ips = [host[4][0] for host in socket.getaddrinfo(hostname, 0, 0, 0, socket.SOL_TCP)]
+        else:
+            reverse_ips = [host[4][0] for host in socket.getaddrinfo(hostname, 0, socket.AF_INET, 0, socket.SOL_TCP)]
     except socket.error:
         return False
     local_addresses = ['localhost'] + get_local_addresses()
