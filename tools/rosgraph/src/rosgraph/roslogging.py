@@ -156,7 +156,7 @@ class RosStreamHandler(logging.Handler):
             msg = os.environ['ROSCONSOLE_FORMAT']
             msg = msg.replace('${severity}', level)
             msg = msg.replace('${message}', str(record.getMessage()))
-            msg = msg.replace('${time}', str(time.time()))
+            msg = msg.replace('${walltime}', '%f' % time.time())
             msg = msg.replace('${thread}', str(record.thread))
             msg = msg.replace('${logger}', str(record.name))
             msg = msg.replace('${file}', str(record.pathname))
@@ -164,11 +164,15 @@ class RosStreamHandler(logging.Handler):
             msg = msg.replace('${function}', str(record.funcName))
             try:
                 from rospy import get_name
-                msg = msg.replace('${node}', get_name())
+                node_name = get_name()
             except ImportError:
-                msg = msg.replace('${node}', 'unavailable')
+                node_name = '<unknown_node_name>'
+            msg = msg.replace('${node}', node_name)
             if self._get_time is not None and not self._is_wallclock():
-                msg += ' [%f]' % self._get_time()
+                t = self._get_time()
+            else:
+                t = time.time()
+            msg = msg.replace('${time}', '%f' % t)
             msg += '\n'
         else:
             msg = '[%s] [WallTime: %f]' % (level, time.time())
