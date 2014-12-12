@@ -301,6 +301,6 @@ def _load_env(ctx, env):
         raise WtfException("ROS_ROOT is not set")
     ctx.ros_package_path = env.get(rospkg.environment.ROS_PACKAGE_PATH, None)
     ctx.pythonpath = env.get('PYTHONPATH', None)
-    ctx.ros_master_uri = env.get(rosgraph.ROS_MASTER_URI, None)
+    ctx.ros_master_uri = rosgraph.rosenv.get_master_uri()
 
     

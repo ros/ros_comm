@@ -69,7 +69,7 @@ def get_master_uri(env=None, argv=None):
                 if not val:
                     raise ValueError("__master remapping argument '%s' improperly specified"%arg)
                 return val
-        return env[ROS_MASTER_URI]
+        return env.get(ROS_MASTER_URI, 'http://localhost:11311')
     except KeyError as e:
         return None
         

@@ -55,7 +55,7 @@ def test_get_master_uri():
     assert val == 'bar'
 
     # empty env
-    assert None == get_master_uri(env={})
+    assert 'http://localhost:11311' == get_master_uri(env={})
     
     # invalid argv
     try:

@@ -63,19 +63,15 @@ void init(const M_string& remappings)
     #else
       master_uri_env = getenv("ROS_MASTER_URI");
     #endif
-    if (!master_uri_env)
-    {
-      ROS_FATAL( "ROS_MASTER_URI is not defined in the environment. Either " \
-                 "type the following or (preferrably) add this to your " \
-                 "~/.bashrc file in order set up your " \
-                 "local machine as a ROS master:\n\n" \
-                 "export ROS_MASTER_URI=http://localhost:11311\n\n" \
-                 "then, type 'roscore' in another shell to actually launch " \
-                 "the master program.");
-      ROS_BREAK();
-    }
 
-    g_uri = master_uri_env;
+    if (master_uri_env)
+    {
+      g_uri = master_uri_env;
+    }
+    else
+    {
+      g_uri = "http://localhost:11311";
+    }
 
 #ifdef _MSC_VER
     // http://msdn.microsoft.com/en-us/library/ms175774(v=vs.80).aspx
