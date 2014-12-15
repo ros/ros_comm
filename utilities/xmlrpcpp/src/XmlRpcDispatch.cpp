@@ -6,6 +6,9 @@
 #include <math.h>
 #include <errno.h>
 #include <sys/timeb.h>
+#if defined (__ANDROID__)
+#include <sys/select.h>
+#endif
 
 #if defined(_WINDOWS)
 # include <winsock2.h>
