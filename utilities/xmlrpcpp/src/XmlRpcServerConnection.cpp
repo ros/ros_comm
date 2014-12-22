@@ -37,6 +37,8 @@ XmlRpcServerConnection::XmlRpcServerConnection(int fd, XmlRpcServer* server, boo
   XmlRpcUtil::log(2,"XmlRpcServerConnection: new socket %d.", fd);
   _server = server;
   _connectionState = READ_HEADER;
+  _contentLength = 0;
+  _bytesWritten = 0;
   _keepAlive = true;
 }
 

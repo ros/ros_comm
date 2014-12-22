@@ -18,6 +18,7 @@ XmlRpcServer::XmlRpcServer()
   _introspectionEnabled = false;
   _listMethods = 0;
   _methodHelp = 0;
+  _port = 0;
 }
 
 

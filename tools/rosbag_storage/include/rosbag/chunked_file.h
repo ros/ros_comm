@@ -87,7 +87,6 @@ private:
 private:
     std::string filename_;       //!< path to file
     FILE*       file_;           //!< file pointer
-    bool        writing_;        //!< true iff file is opened for writing
     uint64_t    offset_;         //!< current position in the file
     uint64_t    compressed_in_;  //!< number of bytes written to current compressed stream
     char*       unused_;         //!< extra data read by compressed stream

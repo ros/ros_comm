@@ -74,6 +74,7 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
     // this is the first time, we received something on this connection
     stats.stat_bytes_last = 0;
     stats.dropped_msgs = 0;
+    stats.last_seq = 0;
     stats.last_publish = ros::Time::now();
     map_[callerid] = stats;
   }

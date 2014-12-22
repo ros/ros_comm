@@ -50,6 +50,7 @@ const PollManagerPtr& PollManager::instance()
 }
 
 PollManager::PollManager()
+  : shutting_down_(false)
 {
 }
 

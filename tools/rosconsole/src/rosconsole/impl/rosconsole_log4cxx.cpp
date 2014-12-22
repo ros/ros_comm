@@ -252,6 +252,10 @@ bool get_loggers(std::map<std::string, levels::Level>& loggers)
     {
       level = levels::Fatal;
     }
+    else
+    {
+      return false;
+    }
     loggers[name] = level;
   }
 
