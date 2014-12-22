@@ -87,25 +87,27 @@ struct ROSBAG_DECL RecorderOptions
 {
     RecorderOptions();
 
-    bool            trigger;
-    bool            record_all;
-    bool            regex;
-    bool            do_exclude;
-    bool            quiet;
-    bool            append_date;
-    bool            snapshot;
-    bool            verbose;
-    CompressionType compression;
-    std::string     prefix;
-    std::string     name;
-    boost::regex    exclude_regex;
-    uint32_t        buffer_size;
-    uint32_t        chunk_size;
-    uint32_t        limit;
-    bool            split;
-    uint32_t        max_size;
-    ros::Duration   max_duration;
-    std::string     node;
+    bool               trigger;
+    bool               record_all;
+    bool               regex;
+    bool               do_exclude;
+    bool               quiet;
+    bool               append_date;
+    bool               snapshot;
+    bool               verbose;
+    CompressionType    compression;
+    std::string        prefix;
+    std::string        name;
+    boost::regex       exclude_regex;
+    uint32_t           buffer_size;
+    uint32_t           chunk_size;
+    uint32_t           limit;
+    bool               split;
+    uint32_t           max_size;
+    ros::Duration      max_duration;
+    std::string        node;
+    unsigned long long min_space;
+    std::string        min_space_str;
 
     std::vector<std::string> topics;
 };

@@ -610,15 +610,15 @@ bool Recorder::checkDisk() {
     }
     unsigned long long free_space = 0;
     free_space = (unsigned long long) (fiData.f_bsize) * (unsigned long long) (fiData.f_bavail);
-    if (free_space < 1073741824ull)
+    if (free_space < options_.min_space)
     {
-        ROS_ERROR("Less than 1GB of space free on disk with %s.  Disabling recording.", bag_.getFileName().c_str());
+        ROS_ERROR("Less than %s of space free on disk with %s.  Disabling recording.", options_.min_space_str.c_str(), bag_.getFileName().c_str());
         writing_enabled_ = false;
         return false;
     }
-    else if (free_space < 5368709120ull)
+    else if (free_space < 5 * options_.min_space)
     {
-        ROS_WARN("Less than 5GB of space free on disk with %s.", bag_.getFileName().c_str());
+        ROS_WARN("Less than 5 x %s of space free on disk with %s.", options_.min_space_str.c_str(), bag_.getFileName().c_str());
     }
     else
     {
@@ -638,15 +638,15 @@ bool Recorder::checkDisk() {
         writing_enabled_ = false;
         return false;
     }
-    if ( info.available < 1073741824ull)
+    if ( info.available < options_.min_space)
     {
-        ROS_ERROR("Less than 1GB of space free on disk with %s.  Disabling recording.", bag_.getFileName().c_str());
+        ROS_ERROR("Less than %s of space free on disk with %s.  Disabling recording.", options_.min_space_str.c_str(), bag_.getFileName().c_str());
         writing_enabled_ = false;
         return false;
     }
-    else if (info.available < 5368709120ull)
+    else if (info.available < 5 * options_.min_space)
     {
-        ROS_WARN("Less than 5GB of space free on disk with %s.", bag_.getFileName().c_str());
+        ROS_WARN("Less than 5 x %s of space free on disk with %s.", options_.min_space_str.c_str(), bag_.getFileName().c_str());
         writing_enabled_ = true;
     }
     else
