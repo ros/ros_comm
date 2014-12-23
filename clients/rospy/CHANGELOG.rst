@@ -2,8 +2,8 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.10 (2014-12-22)
+--------------------
 * add specific exception for time jumping backwards (`#485 <https://github.com/ros/ros_comm/issues/485>`_)
 * make param functions thread-safe (`#523 <https://github.com/ros/ros_comm/pull/523>`_)
 * fix infinitely retrying subscriber (`#533 <https://github.com/ros/ros_comm/issues/533>`_)
