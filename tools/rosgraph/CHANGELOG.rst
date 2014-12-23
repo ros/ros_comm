@@ -2,6 +2,11 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* rosconsole format for rospy (`#517 <https://github.com/ros/ros_comm/issues/517>`_)
+* fix exception at roscore startup if python has IPv6 disabled (`#515 <https://github.com/ros/ros_comm/issues/515>`_)
+
 1.11.9 (2014-08-18)
 -------------------
 

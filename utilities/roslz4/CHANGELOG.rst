@@ -2,6 +2,10 @@
 Changelog for package roslz4
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* disable lz4 Python bindings on Android (`#521 <https://github.com/ros/ros_comm/pull/521>`_)
+
 1.11.9 (2014-08-18)
 -------------------
 

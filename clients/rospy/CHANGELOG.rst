@@ -2,6 +2,16 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add specific exception for time jumping backwards (`#485 <https://github.com/ros/ros_comm/issues/485>`_)
+* make param functions thread-safe (`#523 <https://github.com/ros/ros_comm/pull/523>`_)
+* fix infinitely retrying subscriber (`#533 <https://github.com/ros/ros_comm/issues/533>`_)
+* fix removal of QueuedConnection leading to wrong subscriber count (`#526 <https://github.com/ros/ros_comm/issues/526>`_)
+* fix TCPROS header validation when `callerid` header is not set (`#522 <https://github.com/ros/ros_comm/issues/522>`_, regression from 1.11.1)
+* fix memory leak when using subcriber statistics (`#520 <https://github.com/ros/ros_comm/issues/520>`_)
+* fix reported traffic in bytes from Python nodes (`#501 <https://github.com/ros/ros_comm/issues/501>`_)
+
 1.11.9 (2014-08-18)
 -------------------
 * populate delivered_msgs field of TopicStatistics message (`#486 <https://github.com/ros/ros_comm/issues/486>`_)

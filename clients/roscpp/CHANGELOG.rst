@@ -2,6 +2,12 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix various defects reported by coverity
+* fix comment (`#529 <https://github.com/ros/ros_comm/issues/529>`_)
+* improve Android support (`#518 <https://github.com/ros/ros_comm/pull/518>`_)
+
 1.11.9 (2014-08-18)
 -------------------
 * add accessor to expose whether service is persistent (`#489 <https://github.com/ros/ros_comm/issues/489>`_)
