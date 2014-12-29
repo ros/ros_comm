@@ -2,6 +2,10 @@
 Changelog for package rosmaster
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix closing sockets properly on node shutdown (`#495 <https://github.com/ros/ros_comm/issues/495>`_)
+
 1.10.11 (2014-08-18)
 --------------------
 

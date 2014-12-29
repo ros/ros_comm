@@ -2,6 +2,10 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix infinitely retrying subscriber (`#533 <https://github.com/ros/ros_comm/issues/533>`_)
+
 1.10.11 (2014-08-18)
 --------------------
 
