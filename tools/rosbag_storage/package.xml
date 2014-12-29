@@ -1,6 +1,6 @@
 <package>
   <name>rosbag_storage</name>
-  <version>1.10.11</version>
+  <version>1.10.12</version>
   <description>
     This is a set of tools for recording from and playing back ROS
     message without relying on the ROS client library.
