@@ -231,7 +231,7 @@ def create_local_process_args(node, machine, env=None):
     try:
         #TODO:fuerte: pass through rospack and catkin cache
         rospack = rospkg.RosPack(rospkg.get_ros_paths(env=env))
-        matches = roslib.packages.find_node(node.package, node.type, rospack)
+        matches = roslib.packages.find_node(node.package, node.type, rospack, cache_find_packages=True)
     except rospkg.ResourceNotFound as e:
         # multiple nodes, invalid package
         raise NodeParamsException(str(e))
