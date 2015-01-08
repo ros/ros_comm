@@ -75,7 +75,12 @@ def isstring(s):
     except NameError:
         return isinstance(s, str)
 
-class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
+class BaseXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
+
+    # Use HTTP/1.1. This gives us persistent connections.
+    protocol_version = 'HTTP/1.1'
+
+class SilenceableXMLRPCRequestHandler(BaseXMLRPCRequestHandler):
     def log_message(self, format, *args):
         if 0:
             SimpleXMLRPCRequestHandler.log_message(self, format, *args)
