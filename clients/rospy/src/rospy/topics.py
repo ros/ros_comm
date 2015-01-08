@@ -374,6 +374,15 @@ class _TopicImpl(object):
         """
         rospyinfo("topic[%s] adding connection to [%s], count %s"%(self.resolved_name, c.endpoint_id, len(self.connections)))
         with self.c_lock:
+            # protect against race condition adding connection to closed sub
+            if self.closed:
+                rospyerr(
+                    "ERROR: Race condition failure adding connection to closed subscriber\n"
+                    "If you run into this please comment on "
+                    "https://github.com/ros/ros_comm/issues/544"
+                )
+                return False
+
             # c_lock is to make add_connection thread-safe, but we
             # still make a copy of self.connections so that the rest of the
             # code can use self.connections in an unlocked manner
