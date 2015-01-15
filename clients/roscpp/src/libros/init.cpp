@@ -589,6 +589,7 @@ void shutdown()
 
   g_started = false;
   g_ok = false;
+  g_initialized = false;
   Time::shutdown();
 }
 
