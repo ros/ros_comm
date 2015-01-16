@@ -77,6 +77,7 @@
   <!-- TODO remap args test -->
 
   <node name="n30" pkg="package" type="test_launch_prefix" launch-prefix="xterm -e gdb --args" />
-  
+ 
+  <node name="n31" pkg="package" type="logfile_size_tester" max_logfile_size="100" logfile_count="2"/>  
 </launch>
 
