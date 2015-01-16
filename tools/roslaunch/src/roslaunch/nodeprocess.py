@@ -51,7 +51,10 @@ from roslaunch.pmon import Process, FatalProcessLaunch
 
 from rosmaster.master_api import NUM_WORKERS
 
+import threading
+
 import logging
+from logging import handlers
 _logger = logging.getLogger("roslaunch")
 
 _TIMEOUT_SIGINT  = 15.0 #seconds
@@ -145,7 +148,25 @@ def create_node_process(run_id, node, master_uri):
     _logger.debug('process[%s]: returning LocalProcess wrapper')
     return LocalProcess(run_id, node.package, name, args, env, log_output, \
             respawn=node.respawn, respawn_delay=node.respawn_delay, \
-            required=node.required, cwd=node.cwd)
+            required=node.required, cwd=node.cwd, max_logfile_size=node.max_logfile_size,\
+            logfile_count=node.logfile_count)
+
+
+def stream_reader(stream, level, logger, popen):
+    while popen.poll() is None:
+        line = stream.readline()
+        if level == logging.INFO:
+            logger.info('%s', line.strip())
+        elif level == logging.ERROR:
+            logger.error('%s', line.strip())
+    #logger.handlers[0].flush()
+    #logger.handlers[0].close()
+    # it may be some data into th stream at the end of the process :
+    #line = stream.read()
+    #if level == logging.INFO:
+    #    logger.info('%s', line.strip())
+    #elif level == logging.ERROR:
+    #     logger.error('%s', line.strip())
 
 
 class LocalProcess(Process):
@@ -155,7 +176,7 @@ class LocalProcess(Process):
     
     def __init__(self, run_id, package, name, args, env, log_output,
             respawn=False, respawn_delay=0.0, required=False, cwd=None,
-            is_node=True):
+            is_node=True, max_logfile_size=None, logfile_count=None):
         """
         @param run_id: unique run ID for this roslaunch. Used to
           generate log directory location. run_id may be None if this
@@ -179,6 +200,10 @@ class LocalProcess(Process):
         @type  cwd: str
         @param is_node: (optional) if True, process is ROS node and accepts ROS node command-line arguments. Default: True
         @type  is_node: False
+        @param max_logfile_size: (optional) Maximum Size (in bytes) of the node's logfile. 0 mean unlimitted (default value),
+        this value must >= 0``int``
+        @param logfile_count: (optional) If max_logfile_size > 0, and logfile_count > 0, the system will save old log
+        files by appending the extensions .1, .2 etc... This is an optional parameter, default value is 2.
         """    
         super(LocalProcess, self).__init__(package, name, args, env,
                 respawn, respawn_delay, required)
@@ -191,6 +216,10 @@ class LocalProcess(Process):
         self.log_dir = None
         self.pid = -1
         self.is_node = is_node
+        self.max_logfile_size = max_logfile_size
+        self.logfile_count = logfile_count
+        self.logThreadError = None
+        self.logThreadInfo = None
 
     # NOTE: in the future, info() is going to have to be sufficient for relaunching a process
     def get_info(self):
@@ -231,7 +260,7 @@ class LocalProcess(Process):
         # open in append mode
         # note: logfileerr: disabling in favor of stderr appearing in the console.
         # will likely reinstate once roserr/rosout is more properly used.
-        logfileout = logfileerr = None
+        logger = None
         logfname = self._log_name()
         
         if self.log_output:
@@ -240,9 +269,29 @@ class LocalProcess(Process):
                 mode = 'a'
             else:
                 mode = 'w'
-            logfileout = open(outf, mode)
+            # we create a logger, and we add to it :
+            logger = logging.getLogger(self.package+'.'+self.name)
+            # we don't propagate logs into the hierarchy. If we do it, when the node will be killed, some unwanted
+            # stdout will be displayed on the console...
+            logger.propagate = False
+            if self.max_logfile_size:
+                # a rotating file handler if max_logfile_size was set by user in XML launch file.
+                hdlr_out = logging.handlers.RotatingFileHandler(outf, mode=mode, maxBytes=self.max_logfile_size,
+                                                                backupCount=self.logfile_count)
+                if is_child_mode():
+                    hdlr_err = logging.handlers.RotatingFileHandler(errf, mode=mode, maxBytes=self.max_logfile_size,
+                                                                    backupCount=self.logfile_count)
+            else:
+                # a simple file to have the same behaviour as before :
+                hdlr_out = logging.FileHandler(outf, mode=mode)
+                if is_child_mode():
+                    hdlr_err = logging.FileHandler(errf, mode=mode)
+
+            hdlr_out.setLevel(logging.INFO)
+            logger.addHandler(hdlr_out)
             if is_child_mode():
-                logfileerr = open(errf, mode)
+                hdlr_err.setLevel(logging.ERROR)
+                logger.addHandler(hdlr_err)
 
         # #986: pass in logfile name to node
         node_log_file = log_dir
@@ -251,7 +300,7 @@ class LocalProcess(Process):
             self.args = _cleanup_remappings(self.args, '__log:=')
             self.args.append("__log:=%s"%os.path.join(log_dir, "%s.log"%(logfname)))
 
-        return logfileout, logfileerr
+        return logger
 
     def start(self):
         """
@@ -272,15 +321,24 @@ class LocalProcess(Process):
             full_env = self.env
 
             # _configure_logging() can mutate self.args
+            process_logger = None
             try:
-                logfileout, logfileerr = self._configure_logging()
+                process_logger = self._configure_logging()
             except Exception as e:
                 _logger.error(traceback.format_exc())
                 printerrlog("[%s] ERROR: unable to configure logging [%s]"%(self.name, str(e)))
                 # it's not safe to inherit from this process as
                 # rostest changes stdout to a StringIO, which is not a
                 # proper file.
+                #logfileout, logfileerr = subprocess.PIPE, subprocess.PIPE
+
+            #if we must log into a file (so process_logger exists) :
+            if process_logger:
+                # stdout and stderr must of subprocess must be redirected to a pipe
                 logfileout, logfileerr = subprocess.PIPE, subprocess.PIPE
+            else:
+                # stdout and stderr must of subprocess must be displayed on the screen.
+                logfileout, logfileerr = None, None
 
             if self.cwd == 'node':
                 cwd = os.path.dirname(self.args[0])
@@ -316,7 +374,18 @@ Please make sure that all the executables in this command exist and have
 executable permission. This is often caused by a bad launch-prefix."""%(e.strerror, ' '.join(self.args)))
                 else:
                     raise FatalProcessLaunch("unable to launch [%s]: %s"%(' '.join(self.args), e.strerror))
-                
+
+            # we redirect subprocess output to proper loglevel in a dedicated thread :
+            if logfileout:
+                self.logThreadInfo = threading.Thread(target=stream_reader, args=(self.popen.stdout, logging.INFO,
+                                                                                  process_logger, self.popen))
+                self.logThreadInfo.start()
+
+            if logfileerr:
+                self.logThreadError = threading.Thread(target=stream_reader, args=(self.popen.stderr, logging.ERROR,
+                                                                                   process_logger, self.popen))
+                self.logThreadError.start()
+
             self.started = True
             # Check that the process is either still running (poll returns
             # None) or that it completed successfully since when we
@@ -432,6 +501,12 @@ executable permission. This is often caused by a bad launch-prefix."""%(e.strerr
                 _logger.info("process[%s]: SIGINT killed with return value %s", self.name, retcode)
                 
         finally:
+            if self.logThreadError:
+                _logger.info("process[%s]: Joining log Error thread")
+                self.logThreadError.join()
+            if self.logThreadInfo:
+                _logger.info("process[%s]: Joining log Info thread")
+                self.logThreadInfo.join()
             self.popen = None
 
     def _stop_win32(self, errors):
@@ -499,6 +574,10 @@ executable permission. This is often caused by a bad launch-prefix."""%(e.strerr
             else:
                 _logger.info("process[%s]: SIGINT killed with return value %s", self.name, retcode)
         finally:
+            if self.logThreadError:
+                self.logThreadError.join()
+            if self.logThreadInfo:
+                self.logThreadInfo.join()
             self.popen = None
 			
     def stop(self, errors=None):

@@ -174,6 +174,24 @@ class TestXmlLoader(unittest.TestCase):
         except roslaunch.xmlloader.XmlParseException:
             pass
 
+    def test_thatLogFileSizeAreParsedAsPositiveInteger(self):
+        loader = roslaunch.xmlloader.XmlLoader()
+        mock = RosLaunchMock()
+        loader.load(os.path.join(self.xml_dir, 'test-valid-logfile-size.xml'), mock)
+        self.assert_(mock.nodes)
+        for node in mock.nodes:
+            if(node.name == 'toto_0'):
+                self.assert_(isinstance(node.max_logfile_size, int))
+                self.assertEqual(node.max_logfile_size, 0)
+            elif(node.name=='toto_1000'):
+                self.assert_(isinstance(node.max_logfile_size, int))
+                self.assertEqual(node.max_logfile_size, 1000)
+        try:
+            loader.load(os.path.join(self.xml_dir, 'test-invalid-logfile-size.xml'), mock)
+            self.fail('invalid log file size was not catched by positive_integer parser !')
+        except roslaunch.xmlloader.XmlParseException:
+            pass
+
     def test_params_invalid(self):
         tests = ['test-params-invalid-%s.xml'%i for i in range(1, 6)]
         loader = roslaunch.xmlloader.XmlLoader()
