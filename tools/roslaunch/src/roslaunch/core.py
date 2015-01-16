@@ -424,13 +424,14 @@ class Node(object):
                  'remap_args', 'env_args',\
                  'process_name', 'output', 'cwd',
                  'launch_prefix', 'required',
-                 'filename']
+                 'filename', 'max_logfile_size', 'logfile_count']
 
     def __init__(self, package, node_type, name=None, namespace='/', \
                  machine_name=None, args='', \
                  respawn=False, respawn_delay=0.0, \
                  remap_args=None,env_args=None, output=None, cwd=None, \
-                 launch_prefix=None, required=False, filename='<unknown>'):
+                 launch_prefix=None, required=False, filename='<unknown>', \
+                 max_logfile_size=None, logfile_count=2):
         """
         :param package: node package name, ``str``
         :param node_type: node type, ``str``
@@ -448,7 +449,10 @@ class Node(object):
         :param launch_prefix: launch command/arguments to prepend to node executable arguments, ``str``
         :param required: node is required to stay running (launch fails if node dies), ``bool``
         :param filename: name of file Node was parsed from, ``str``
-
+        :param max_logfile_size: Maximum Size (in bytes) of the node's logfile. 0 mean unlimitted (default value),
+        this value must >= 0``int``
+        :param logfile_count: If max_logfile_size > 0, and logfile_count > 0, the system will save old log files by
+        appending the extensions .1, .2 etc... This is an optional parameter, default value is 2.
         :raises: :exc:`ValueError` If parameters do not validate
         """        
 
@@ -498,7 +502,14 @@ class Node(object):
         # configuration property
         self.machine = None
 
-        
+        # if we output to a screen, we ignore log file size arguments,
+        # else we must store them as a member value for using them later.
+        if self.output == 'screen':
+            self.max_logfile_size = None
+            self.logfile_count = None
+        else:
+            self.max_logfile_size = max_logfile_size
+            self.logfile_count = logfile_count
         
     def xmltype(self):
         return 'node'
@@ -523,6 +534,8 @@ class Node(object):
             ('name', name_str),
             ('launch-prefix', self.launch_prefix),
             ('required', self.required),
+            ('max_logfile_size', self.max_logfile_size),
+            ('logfile_count', self.logfile_count),
             ]
 
     #TODO: unify with to_remote_xml using a filter_fn

@@ -1,0 +1,4 @@
+<launch>
+ <node type="toto" pkg="toto" name="toto_1000" max_logfile_size="1000"/>
+ <node type="toto" pkg="toto" name="toto_0" max_logfile_size="0"/>
+</launch>
