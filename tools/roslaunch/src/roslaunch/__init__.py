@@ -44,6 +44,7 @@ if sys.version_info[:3] == (2, 7, 3):
     threading._DummyThread._Thread__stop = lambda _dummy: None
 
 import rospkg
+import roslib.packages
 
 from . import core as roslaunch_core
 from . import param_dump as roslaunch_param_dump
@@ -203,7 +204,13 @@ def main(argv=sys.argv):
     try:
         from . import rlutil
         parser = _get_optparse()
-        
+        global catkin_packages_cache
+        catkin_packages_cache = roslib.packages.catkin_packages_cache()
+        # set cache for each modules
+        rlutil._catkin_packages_cache = catkin_packages_cache
+        from . import node_args
+        node_args._catkin_packages_cache = catkin_packages_cache
+        substitution_args._catkin_packages_cache = catkin_packages_cache
         (options, args) = parser.parse_args(argv[1:])
         args = rlutil.resolve_launch_arguments(args)
         _validate_args(parser, options, args)
