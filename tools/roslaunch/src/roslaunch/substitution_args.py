@@ -47,6 +47,8 @@ except ImportError:
 import rosgraph.names
 import rospkg
 
+_catkin_packages_cache = None
+
 _rospack = None
 
 class SubstitutionException(Exception):
@@ -124,6 +126,7 @@ def _find(resolved, a, args, context):
     :raises: :exc:SubstitutionException: if PKG invalidly specified
     :raises: :exc:`rospkg.ResourceNotFound` If PKG requires resource (e.g. package) that does not exist
     """
+    global _catkin_packages_cache
     if len(args) != 1:
         raise SubstitutionException("$(find pkg) command only accepts one argument [%s]" % a)
     before, after = _split_command(resolved, a)
@@ -156,6 +159,7 @@ def _find_executable(resolved, a, args, _context):
     :returns: updated resolved argument, ``str``
     :raises: :exc:SubstitutionException: if PKG/PATH invalidly specified or executable is not found for PKG
     """
+    global _catkin_packages_cache
     if len(args) != 2:
         raise SubstitutionException("$(find-executable pkg path) command only accepts two argument [%s]" % a)
     before, after = _split_command(resolved, a)
@@ -164,7 +168,7 @@ def _find_executable(resolved, a, args, _context):
     # which will search in install/devel space
     full_path = None
     from catkin.find_in_workspaces import find_in_workspaces
-    paths = find_in_workspaces(['libexec'], project=args[0], first_matching_workspace_only=True, cache_find_packages=True)  # implicitly first_match_only=True
+    paths = find_in_workspaces(['libexec'], project=args[0], first_matching_workspace_only=True, source_path_to_packages=_catkin_packages_cache)  # implicitly first_match_only=True
     if paths:
         full_path = _get_executable_path(paths[0], os.path.basename(path))
     if not full_path:
@@ -183,6 +187,7 @@ def _find_resource(resolved, a, args, _context):
     :returns: updated resolved argument, ``str``
     :raises: :exc:SubstitutionException: if PKG and PATH invalidly specified or relative PATH is not found for PKG
     """
+    global _catkin_packages_cache
     if len(args) != 2:
         raise SubstitutionException("$(find-resource pkg path) command only accepts two argument [%s]" % a)
     before, after = _split_command(resolved, a)
@@ -190,7 +195,7 @@ def _find_resource(resolved, a, args, _context):
     # we try to find the specific path in share via catkin
     # which will search in install/devel space and the source folder of the package
     from catkin.find_in_workspaces import find_in_workspaces
-    paths = find_in_workspaces(['share'], project=args[0], path=path, first_matching_workspace_only=True, first_match_only=True, cache_find_packages=True)
+    paths = find_in_workspaces(['share'], project=args[0], path=path, first_matching_workspace_only=True, first_match_only=True, source_path_to_packages=_catkin_packages_cache)
     if not paths:
         raise SubstitutionException("$(find-resource pkg path) could not find path [%s]" % a)
     return before + paths[0] + after

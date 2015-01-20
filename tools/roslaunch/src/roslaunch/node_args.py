@@ -56,6 +56,8 @@ from roslaunch.core import setup_env, local_machine, RLException
 from roslaunch.config import load_config_default
 import roslaunch.xmlloader
 
+_catkin_packages_cache = None
+
 class NodeParamsException(Exception):
     """
     Exception to indicate that node parameters were invalid
@@ -207,6 +209,7 @@ def create_local_process_args(node, machine, env=None):
     :raises: :exc:`NodeParamsException` If args cannot be constructed for Node
       as specified (e.g. the node type does not exist)
     """
+    global _catkin_packages_cache
     if not node.name:
         raise ValueError("node name must be defined")
     if env is None:
@@ -231,7 +234,7 @@ def create_local_process_args(node, machine, env=None):
     try:
         #TODO:fuerte: pass through rospack and catkin cache
         rospack = rospkg.RosPack(rospkg.get_ros_paths(env=env))
-        matches = roslib.packages.find_node(node.package, node.type, rospack, cache_find_packages=True)
+        matches = roslib.packages.find_node(node.package, node.type, rospack, cache_find_packages=_catkin_packages_cache)
     except rospkg.ResourceNotFound as e:
         # multiple nodes, invalid package
         raise NodeParamsException(str(e))
