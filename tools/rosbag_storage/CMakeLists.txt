@@ -14,6 +14,9 @@ catkin_package(
   DEPENDS console_bridge Boost
 )
 
+# Support large bags (>2GB) on 32-bit systems
+add_definitions(-D_FILE_OFFSET_BITS=64)
+
 include_directories(include ${catkin_INCLUDE_DIRS} ${console_bridge_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${BZIP2_INCLUDE_DIR})
 add_definitions(${BZIP2_DEFINITIONS})
 
