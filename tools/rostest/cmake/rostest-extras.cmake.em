@@ -15,7 +15,7 @@ function(add_rostest file)
   set(ROSTEST_EXE "${rostest_DIR}/../../../@(CATKIN_GLOBAL_BIN_DESTINATION)/rostest")
 @[end if]@
 
-  cmake_parse_arguments(_rostest "" "WORKING_DIRECTORY" "ARGS" ${ARGN})
+  cmake_parse_arguments(_rostest "" "WORKING_DIRECTORY" "ARGS;DEPENDENCIES" ${ARGN})
 
   # Check that the file exists, #1621
   set(_file_name _file_name-NOTFOUND)
@@ -53,7 +53,7 @@ function(add_rostest file)
   get_filename_component(_output_name ${_testname} NAME_WE)
   set(_output_name "${_output_name}.xml")
   set(cmd "${ROSTEST_EXE} --pkgdir=${PROJECT_SOURCE_DIR} --package=${PROJECT_NAME} --results-filename ${_output_name} ${_file_name} ${_rostest_ARGS}")
-  catkin_run_tests_target("rostest" ${_testname} "rostest-${_output_name}" COMMAND ${cmd} WORKING_DIRECTORY ${_rostest_WORKING_DIRECTORY})
+  catkin_run_tests_target("rostest" ${_testname} "rostest-${_output_name}" COMMAND ${cmd} WORKING_DIRECTORY ${_rostest_WORKING_DIRECTORY} DEPENDENCIES ${_rostest_DEPENDENCIES})
 endfunction()
 
 #
