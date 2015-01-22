@@ -147,8 +147,16 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
       msg.stamp_age_stddev = ros::Duration(0);
       for(std::list<ros::Duration>::iterator it = stats.age_list.begin(); it != stats.age_list.end(); it++)
       {
-        ros::Duration t = msg.stamp_age_mean - *it;
-        msg.stamp_age_stddev += ros::Duration(t.toSec() * t.toSec());
+        try
+        {
+          ros::Duration t = msg.stamp_age_mean - *it;
+          msg.stamp_age_stddev += ros::Duration(t.toSec() * t.toSec());
+        }
+        catch(std::runtime_error& e)
+        {
+          ROS_WARN_STREAM("Error updating stamp_age_stddev for topic [" << topic << "] from node [" << callerid << "], likely due to the time between the mean stamp age and this message being exceptionally large. Exception was: " << e.what());
+          ROS_DEBUG_STREAM("Mean stamp age was: " << msg.stamp_age_mean << " - sample age of: " << *it);
+        }
       }
       msg.stamp_age_stddev = ros::Duration(sqrt(msg.stamp_age_stddev.toSec() / stats.age_list.size()));
 
