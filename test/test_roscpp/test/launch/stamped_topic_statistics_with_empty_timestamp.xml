@@ -1,0 +1,5 @@
+<launch>
+  <param name="enable_statistics" value="true" />
+  <test test-name="stamped_topic_statistics_with_empty_timestamp" pkg="test_roscpp" type="test_roscpp-stamped_topic_statistics_empty_timestamp"/>
+</launch>
+

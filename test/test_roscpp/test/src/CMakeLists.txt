@@ -198,6 +198,9 @@ add_executable(${PROJECT_NAME}-string_msg_expect EXCLUDE_FROM_ALL string_msg_exp
 target_link_libraries(${PROJECT_NAME}-string_msg_expect ${GTEST_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME}-string_msg_expect std_msgs_gencpp)
 
+add_executable(${PROJECT_NAME}-stamped_topic_statistics_empty_timestamp EXCLUDE_FROM_ALL stamped_topic_statistics_empty_timestamp.cpp)
+target_link_libraries(${PROJECT_NAME}-stamped_topic_statistics_empty_timestamp ${GTEST_LIBRARIES} ${catkin_LIBRARIES})
+
 # The publisher and subscriber are compiled but not registered as a unit test
 # since the test execution requires a network connection which drops packages.
 # Call scripts/test_udp_with_dropped_packets.sh to run the test.
@@ -272,6 +275,7 @@ if(TARGET tests)
     ${PROJECT_NAME}-string_msg_expect
     ${PROJECT_NAME}-publisher
     ${PROJECT_NAME}-subscriber
+    ${PROJECT_NAME}-stamped_topic_statistics_empty_timestamp
   )
 endif()
 
@@ -334,3 +338,5 @@ add_dependencies(${PROJECT_NAME}-test_ns_node_remapping ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-test_search_param ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-left_right ${PROJECT_NAME}_gencpp)
 add_dependencies(${PROJECT_NAME}-string_msg_expect ${PROJECT_NAME}_gencpp)
+add_dependencies(${PROJECT_NAME}-stamped_topic_statistics_empty_timestamp
+ ${PROJECT_NAME}_gencpp)
