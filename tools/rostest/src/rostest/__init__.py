@@ -128,7 +128,7 @@ def rosrun(package, test_name, test, sysargs=None):
     text_mode = '--text' in sysargs
     coverage_mode = '--cov' in sysargs
     if coverage_mode:
-        _start_coverage(package)
+        _start_coverage([package])
 
     import unittest
     import rospy
@@ -144,7 +144,7 @@ def rosrun(package, test_name, test, sysargs=None):
     else:
         result = rosunit.create_xml_runner(package, test_name, result_file).run(suite)
     if coverage_mode:
-        _stop_coverage(package)
+        _stop_coverage([package])
     rosunit.print_unittest_summary(result)
     
     # shutdown any node resources in case test forgets to
