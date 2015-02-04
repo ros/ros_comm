@@ -30,7 +30,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from _roslz4 import *
+from ._roslz4 import *
 
 def compress(data):
     compressor = LZ4Compressor()
