@@ -40,7 +40,7 @@ import time
 
 class FakeSocket(object):
     def __init__(self):
-        self.data = ''
+        self.data = b''
         self.sockopt = None
     def fileno(self):
         # fool select logic by giving it stdout fileno
