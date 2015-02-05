@@ -608,6 +608,8 @@ class ServiceImpl(_Service):
         @param err_msg: error message to send to client
         @type  err_msg: str
         """
+        if sys.hexversion > 0x03000000: #Python3
+            err_msg = bytes(err_msg, 'utf-8')
         transport.write_data(struct.pack('<BI%ss'%len(err_msg), 0, len(err_msg), err_msg))
 
     def _handle_request(self, transport, request):
