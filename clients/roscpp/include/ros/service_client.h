@@ -49,16 +49,31 @@ public:
 
   /**
    * @brief Call the service aliased by this handle with the specified request/response messages.
+   * @param req The service request
+   * @param res The service response
+   * @param reconnect If true, persistent services will attempt to automatically reconnect if their connection is lost.
+   * @param timeout The time to wait for the service to become available after a disconnect. If timeout is -1 (default), the ndoe waits until it is shutdown.
    * @note The request/response message types must match the types specified in the templated call to NodeHandle::serviceClient()/service::createClient()
    */
   template<class MReq, class MRes>
-  bool call(MReq& req, MRes& res)
+  bool call(MReq& req, MRes& res, bool reconnect = false, ros::Duration timeout = ros::Duration(-1))
   {
     namespace st = service_traits;
 
     if (!isValid())
     {
-      return false;
+      // if auto-reconnect is not requested, return false
+      if (!reconnect)
+      {
+        return false;
+      }
+      else
+      {
+        if (!tryToReconnect(timeout))
+        {
+          return false;
+        }
+      }
     }
 
     if (strcmp(st::md5sum(req), st::md5sum(res)))
@@ -76,15 +91,29 @@ public:
 
   /**
    * @brief Call the service aliased by this handle with the specified service request/response
+   * @param service The service type.
+   * @param reconnect If true, persistent services will attempt to automatically reconnect if their connection is lost.
+   * @param timeout The time to wait for the service to become available after a disconnect. If timeout is -1 (default), the ndoe waits until it is shutdown.
    */
   template<class Service>
-  bool call(Service& service)
+  bool call(Service& service, bool reconnect = false, ros::Duration timeout = ros::Duration(-1))
   {
     namespace st = service_traits;
 
     if (!isValid())
     {
-      return false;
+      // if auto-reconnect is not requested, return false
+      if (!reconnect)
+      {
+        return false;
+      }
+      else
+      {
+        if (!tryToReconnect(timeout))
+        {
+          return false;
+        }
+      }
     }
 
     return call(service.request, service.response, st::md5sum(service));
@@ -184,6 +213,8 @@ private:
   {
     ROS_ERROR("Exception thrown while while deserializing service call: %s", e.what());
   }
+
+  bool tryToReconnect(ros::Duration timeout);
 
   struct Impl
   {
