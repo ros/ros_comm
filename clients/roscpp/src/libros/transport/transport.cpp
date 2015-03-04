@@ -100,6 +100,7 @@ Transport::Transport()
     }
     allowed_hosts_.push_back(std::string(addr));
   }
+  freeifaddrs(ifaddr);
 #endif
 }
 
