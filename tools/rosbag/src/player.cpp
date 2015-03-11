@@ -273,7 +273,7 @@ void Player::doPublish(MessageInstance const& m) {
     string const& topic   = m.getTopic();
     ros::Time const& time = m.getTime();
     string callerid       = m.getCallerId();
-    
+
     ros::Time translated = time_translator_.translate(time);
     ros::WallTime horizon = ros::WallTime(translated.sec, translated.nsec);
 
@@ -362,6 +362,7 @@ void Player::doPublish(MessageInstance const& m) {
         time_publisher_.runClock(ros::WallDuration(.1));
     }
 
+    time_publisher_.forceClock();
     pub_iter->second.publish(m);
 }
 
@@ -611,6 +612,15 @@ void TimePublisher::runClock(const ros::WallDuration& duration)
             target = wc_horizon_;
 
         ros::WallTime::sleepUntil(target);
+    }
+}
+
+void TimePublisher::forceClock()
+{
+    ros::WallTime t = ros::WallTime::now();
+    if(t - next_pub_ > ros::WallDuration(0.0))
+    {
+        stepClock();
     }
 }
 

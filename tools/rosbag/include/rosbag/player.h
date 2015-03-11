@@ -129,6 +129,9 @@ public:
     //! Step the clock to the horizon
     void stepClock();
 
+    //! Force publishing clock if none has been published for a too long time
+    void forceClock();
+
     bool horizonReached();
 
 private:
