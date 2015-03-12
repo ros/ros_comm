@@ -113,7 +113,7 @@ Type rosconsole <command> -h for more detailed usage, e.g. 'rosconsole list -h'
 def main(argv=None):
     if argv is None:
         argv=sys.argv
-    # filter out remapping arguments in case we are being invoked via roslaunch
+
     argv = rospy.myargv(argv)
 
     # process argv
