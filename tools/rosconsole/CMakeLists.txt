@@ -123,6 +123,3 @@ if(CATKIN_ENABLE_TESTING)
 endif()
 
 catkin_python_setup()
-
-catkin_install_python(PROGRAMS scripts/rosconsole
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
