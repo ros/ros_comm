@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-# make sure we aren't using floor division
-from __future__ import division, print_function
-
 NAME = 'rosconsole'
 
 import os
