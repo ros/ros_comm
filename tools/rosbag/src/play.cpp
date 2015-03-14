@@ -59,7 +59,7 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
       ("keep-alive,k", "keep alive past end of bag (useful for publishing latched topics)")
       ("try-future-version", "still try to open a bag file, even if the version is not known to the player")
       ("topics", po::value< std::vector<std::string> >()->multitoken(), "topics to play back")
-      ("pausetopics", po::value< std::vector<std::string> >()->multitoken(), "topics to pause playback on")
+      ("pause_topics", po::value< std::vector<std::string> >()->multitoken(), "topics to pause playback on")
       ("bags", po::value< std::vector<std::string> >(), "bag files to play back from");
     
     po::positional_options_description p;
@@ -125,13 +125,13 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
         opts.topics.push_back(*i);
     }
 
-    if (vm.count("pausetopics"))
+    if (vm.count("pause_topics"))
     {
-      std::vector<std::string> pausetopics = vm["pausetopics"].as< std::vector<std::string> >();
-      for (std::vector<std::string>::iterator i = pausetopics.begin();
-           i != pausetopics.end();
+      std::vector<std::string> pause_topics = vm["pause_topics"].as< std::vector<std::string> >();
+      for (std::vector<std::string>::iterator i = pause_topics.begin();
+           i != pause_topics.end();
            i++)
-        opts.pausetopics.push_back(*i);
+        opts.pause_topics.push_back(*i);
     }
 
     if (vm.count("bags"))

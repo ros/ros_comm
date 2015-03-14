@@ -171,16 +171,16 @@ def handle_topics(option, opt_str, value, parser):
     del parser.rargs[:len(topics)]
 
 
-def handle_pausetopics(option, opt_str, value, parser):
-    pausetopics = []
+def handle_pause_topics(option, opt_str, value, parser):
+    pause_topics = []
     for arg in parser.rargs:
         if arg[:2] == "--" and len(arg) > 2:
             break
         if arg[:1] == "-" and len(arg) > 1:
             break
-        pausetopics.append(arg)
-    parser.values.pausetopics.extend(pausetopics)
-    del parser.rargs[:len(pausetopics)]
+        pause_topics.append(arg)
+    parser.values.pause_topics.extend(pause_topics)
+    del parser.rargs[:len(pause_topics)]
 
 
 def play_cmd(argv):
@@ -201,7 +201,7 @@ def play_cmd(argv):
     parser.add_option("-k", "--keep-alive",   dest="keep_alive", default=False, action="store_true", help="keep alive past end of bag (useful for publishing latched topics)")
     parser.add_option("--try-future-version", dest="try_future", default=False, action="store_true", help="still try to open a bag file, even if the version number is not known to the player")
     parser.add_option("--topics", dest="topics", default=[],  callback=handle_topics, action="callback", help="topics to play back")
-    parser.add_option("--pausetopics", dest="pausetopics", default=[],  callback=handle_pausetopics, action="callback", help="topics to pause on during playback")
+    parser.add_option("--pause_topics", dest="pause_topics", default=[],  callback=handle_pause_topics, action="callback", help="topics to pause on during playback")
     parser.add_option("--bags",  help="bags files to play back from")
 
     (options, args) = parser.parse_args(argv)
@@ -236,8 +236,8 @@ def play_cmd(argv):
     if options.topics:
         cmd.extend(['--topics'] + options.topics)
 
-    if options.pausetopics:
-        cmd.extend(['--pausetopics'] + options.pausetopics)
+    if options.pause_topics:
+        cmd.extend(['--pause_topics'] + options.pause_topics)
 
     if options.bags:
         cmd.extend(["--bags", str(options.bags)])

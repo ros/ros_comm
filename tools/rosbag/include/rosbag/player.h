@@ -90,7 +90,7 @@ struct ROSBAG_DECL PlayerOptions
 
     std::vector<std::string> bags;
     std::vector<std::string> topics;
-    std::vector<std::string> pausetopics;
+    std::vector<std::string> pause_topics;
 };
 
 

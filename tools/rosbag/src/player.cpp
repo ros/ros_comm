@@ -310,8 +310,8 @@ void Player::doPublish(MessageInstance const& m) {
 
     if (pause_for_topics_)
     {
-        for (std::vector<std::string>::iterator i = options_.pausetopics.begin();
-             i != options_.pausetopics.end();
+        for (std::vector<std::string>::iterator i = options_.pause_topics.begin();
+             i != options_.pause_topics.end();
              i++)
         {
             if (topic == *i)
