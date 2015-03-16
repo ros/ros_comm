@@ -82,7 +82,7 @@ class LoggerLevelServiceCaller(object):
         try:
             service = rosservice.get_service_class_by_name(servicename)
         except rosservice.ROSServiceException as e:
-            raise ROSConsoleException("node %s doesn't exist or doesn't support logger query" % node)
+            raise ROSConsoleException("node %s doesn't exist or doesn't support query" % node)
 
         request = service._request_class()
         proxy = rospy.ServiceProxy(str(servicename), service)
@@ -105,7 +105,7 @@ class LoggerLevelServiceCaller(object):
         :param logger: name of the logger to change, ''str''
         :param level: name of the level to change, ''str''
         :returns: True if the response is valid, ''bool''
-        :returns: False if the request raises an exception or would not change the cached state, ''bool''
+        :returns: False if the request raises an exception or would not change the state, ''bool''
         """
         servicename = node + '/set_logger_level'
         if self._current_levels[logger].lower() == level.lower():

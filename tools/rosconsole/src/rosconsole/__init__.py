@@ -1,19 +1,22 @@
 #!/usr/bin/env python
 
-NAME = 'rosconsole'
-
 import os
 import sys
 import socket
 
-from .logger_level_service_caller import LoggerLevelServiceCaller, ROSConsoleException
-
-import rosgraph
 import rospy
+import rosgraph
+
+from .logger_level_service_caller import LoggerLevelServiceCaller
+from .logger_level_service_caller import ROSConsoleException
+
+NAME = 'rosconsole'
+
 
 def error(status, msg):
     sys.stderr.write("%s: error: %s\n" % (NAME, msg))
     sys.exit(status)
+
 
 def _get_cmd_list_optparse(args):
     from optparse import OptionParser
@@ -22,6 +25,7 @@ def _get_cmd_list_optparse(args):
     parser = OptionParser(usage=usage, prog=NAME)
 
     return parser
+
 
 def _rosconsole_cmd_list(argv):
 
@@ -41,14 +45,17 @@ def _rosconsole_cmd_list(argv):
     output = '\n'.join(loggers)
     print(output)
 
+
 def _get_cmd_set_optparse(args):
     from optparse import OptionParser
 
     usage = "usage: %prog get <node> <logger> <level>\n"
-    usage += "\n <level> must be one of [" + ', '.join(LoggerLevelServiceCaller().get_levels()) + "]"
+    levels = ', '.join(LoggerLevelServiceCaller().get_levels())
+    usage += "\n <level> must be one of [" + levels + "]"
     parser = OptionParser(usage=usage, prog=NAME)
 
     return parser
+
 
 def _rosconsole_cmd_set(argv):
 
@@ -64,12 +71,13 @@ def _rosconsole_cmd_set(argv):
     loggers = logger_level.get_loggers(args[0])
 
     if args[1] not in logger_level._current_levels:
-        error(2, "node " + args[0]+ " does not contain logger " + args[1])
+        error(2, "node " + args[0] + " does not contain logger " + args[1])
 
     if args[2] not in map(str.lower, logger_level.get_levels()):
         parser.error("invalid level")
 
     logger_level.send_logger_change_message(args[0], args[1], args[2])
+
 
 def _get_cmd_get_optparse(args):
     from optparse import OptionParser
@@ -78,6 +86,7 @@ def _get_cmd_get_optparse(args):
     parser = OptionParser(usage=usage, prog=NAME)
 
     return parser
+
 
 def _rosconsole_cmd_get(argv):
 
@@ -93,7 +102,7 @@ def _rosconsole_cmd_get(argv):
     loggers = logger_level.get_loggers(args[0])
 
     if args[1] not in logger_level._current_levels:
-        error(2, "node " + args[0]+ " does not contain logger " + args[1])
+        error(2, "node " + args[0] + " does not contain logger " + args[1])
 
     print(logger_level._current_levels[args[1]])
 
@@ -110,9 +119,10 @@ Type rosconsole <command> -h for more detailed usage, e.g. 'rosconsole list -h'
 """)
     sys.exit(getattr(os, 'EX_USAGE', 1))
 
+
 def main(argv=None):
     if argv is None:
-        argv=sys.argv
+        argv = sys.argv
 
     argv = rospy.myargv(argv)
 
@@ -137,5 +147,7 @@ def main(argv=None):
         error(1, str(e))
     except ROSConsoleException as e:
         error(1, str(e))
-    except KeyboardInterrupt: pass
-    except rospy.ROSInterruptException: pass
+    except KeyboardInterrupt:
+        pass
+    except rospy.ROSInterruptException:
+        pass
