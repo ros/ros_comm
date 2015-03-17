@@ -474,6 +474,47 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
   } while(0)
 
 /**
+ * \brief Log to a given named logger at a given verbosity level, limited to a specific rate of printing, with printf-style formatting
+ *
+ * \param level One of the levels specified in ::ros::console::levels::Level
+ * \param name Name of the logger.  Note that this is the fully qualified name, and does NOT include "ros.<package_name>".  Use ROSCONSOLE_DEFAULT_NAME if you would like to use the default name.
+ * \param rate The rate it should actually trigger at
+ */
+#define ROS_LOG_DELAYED_THROTTLE(rate, level, name, ...) \
+  do \
+  { \
+    ROSCONSOLE_DEFINE_LOCATION(true, level, name); \
+    ::ros::Time __ros_log_delayed_throttle__now__ = ::ros::Time::now(); \
+    static double __ros_log_delayed_throttle__last_hit__ = __ros_log_delayed_throttle__now__.toSec(); \
+    if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && ROS_UNLIKELY(__ros_log_delayed_throttle__last_hit__ + rate <= __ros_log_delayed_throttle__now__.toSec())) \
+    { \
+      __ros_log_delayed_throttle__last_hit__ = __ros_log_delayed_throttle__now__.toSec(); \
+      ROSCONSOLE_PRINT_AT_LOCATION(__VA_ARGS__); \
+    } \
+  } while(0)
+
+// inside a macro which uses args use only well namespaced variable names in order to not overlay variables coming in via args
+/**
+ * \brief Log to a given named logger at a given verbosity level, limited to a specific rate of printing and postponed first message
+ *
+ * \param level One of the levels specified in ::ros::console::levels::Level
+ * \param name Name of the logger.  Note that this is the fully qualified name, and does NOT include "ros.<package_name>".  Use ROSCONSOLE_DEFAULT_NAME if you would like to use the default name.
+ * \param rate The rate it should actually trigger at, and the delay before which no message will be shown.
+ */
+#define ROS_LOG_STREAM_DELAYED_THROTTLE(rate, level, name, args) \
+  do \
+  { \
+    ROSCONSOLE_DEFINE_LOCATION(true, level, name); \
+    ::ros::Time __ros_log_stream_delayed_throttle__now__ = ::ros::Time::now(); \
+    static double __ros_log_stream_delayed_throttle__last_hit__ = __ros_log_stream_delayed_throttle__now__.toSec(); \
+    if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && ROS_UNLIKELY(__ros_log_stream_delayed_throttle__last_hit__ + rate <= __ros_log_stream_delayed_throttle__now__.toSec())) \
+    { \
+      __ros_log_stream_delayed_throttle__last_hit__ = __ros_log_stream_delayed_throttle__now__.toSec(); \
+      ROSCONSOLE_PRINT_STREAM_AT_LOCATION(args); \
+    } \
+  } while(0)
+
+/**
  * \brief Log to a given named logger at a given verbosity level, with user-defined filtering, with printf-style formatting
  *
  * \param filter pointer to the filter to be used
