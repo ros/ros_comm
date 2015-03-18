@@ -289,7 +289,9 @@ namespace ros
    * \return On success, a Publisher that, when it goes out of scope, will automatically release a reference
    * on this advertisement.  On failure, an empty Publisher which can be checked with:
 \verbatim
-if (handle)
+ros::NodeHandle nodeHandle;
+ros::publisher pub = nodeHandle.advertise<std_msgs::Empty>("my_topic", 1, (ros::SubscriberStatusCallback)callback);
+if (pub)	// Enter if publisher is valid
 {
 ...
 }
@@ -323,7 +325,11 @@ if (handle)
    * \return On success, a Publisher that, when it goes out of scope, will automatically release a reference
    * on this advertisement.  On failure, an empty Publisher which can be checked with:
 \verbatim
-if (handle)
+ros::NodeHandle nodeHandle;
+ros::AdvertiseOptions ops;
+...
+ros::publisher pub = nodeHandle.advertise(ops);
+if (pub)	// Enter if publisher is valid
 {
 ...
 }
@@ -367,7 +373,11 @@ ros::Subscriber sub = handle.subscribe("my_topic", 1, &Foo::callback, &foo_objec
    * \return On success, a Subscriber that, when all copies of it go out of scope, will unsubscribe from this topic.
    * On failure, an empty Subscriber which can be checked with:
 \verbatim
-if (handle)
+ros::NodeHandle nodeHandle;
+void Foo::callback(const std_msgs::Empty::ConstPtr& message) {}
+boost::shared_ptr<Foo> foo_object(new Foo);
+ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, &Foo::callback, foo_object);
+if (sub)	// Enter if subscriber is valid
 {
 ...
 }
@@ -426,7 +436,11 @@ ros::Subscriber sub = handle.subscribe("my_topic", 1, &Foo::callback, &foo_objec
    * \return On success, a Subscriber that, when all copies of it go out of scope, will unsubscribe from this topic.
    * On failure, an empty Subscriber which can be checked with:
 \verbatim
-if (handle)
+ros::NodeHandle nodeHandle;
+void Foo::callback(const std_msgs::Empty::ConstPtr& message) {}
+boost::shared_ptr<Foo> foo_object(new Foo);
+ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, &Foo::callback, foo_object);
+if (sub)	// Enter if subscriber is valid
 {
 ...
 }
@@ -486,7 +500,11 @@ ros::Subscriber sub = handle.subscribe("my_topic", 1, &Foo::callback, foo_object
    * \return On success, a Subscriber that, when all copies of it go out of scope, will unsubscribe from this topic.
    * On failure, an empty Subscriber which can be checked with:
 \verbatim
-if (handle)
+ros::NodeHandle nodeHandle;
+void Foo::callback(const std_msgs::Empty::ConstPtr& message) {}
+boost::shared_ptr<Foo> foo_object(new Foo);
+ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, &Foo::callback, foo_object);
+if (sub)	// Enter if subscriber is valid
 {
 ...
 }
@@ -547,7 +565,11 @@ ros::Subscriber sub = handle.subscribe("my_topic", 1, &Foo::callback, foo_object
    * \return On success, a Subscriber that, when all copies of it go out of scope, will unsubscribe from this topic.
    * On failure, an empty Subscriber which can be checked with:
 \verbatim
-if (handle)
+ros::NodeHandle nodeHandle;
+void Foo::callback(const std_msgs::Empty::ConstPtr& message) {}
+boost::shared_ptr<Foo> foo_object(new Foo);
+ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, &Foo::callback, foo_object);
+if (sub)	// Enter if subscriber is valid
 {
 ...
 }
@@ -606,7 +628,10 @@ ros::Subscriber sub = handle.subscribe("my_topic", 1, callback);
    * \return On success, a Subscriber that, when all copies of it go out of scope, will unsubscribe from this topic.
    * On failure, an empty Subscriber which can be checked with:
 \verbatim
-if (handle)
+void callback(const std_msgs::Empty::ConstPtr& message){...}
+ros::NodeHandle nodeHandle;
+ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, callback);
+if (sub)	// Enter if subscriber is valid
 {
 ...
 }
@@ -651,7 +676,10 @@ ros::Subscriber sub = handle.subscribe("my_topic", 1, callback);
    * \return On success, a Subscriber that, when all copies of it go out of scope, will unsubscribe from this topic.
    * On failure, an empty Subscriber which can be checked with:
 \verbatim
-if (handle)
+void callback(const std_msgs::Empty::ConstPtr& message){...}
+ros::NodeHandle nodeHandle;
+ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, callback);
+if (sub)	// Enter if subscriber is valid
 {
 ...
 }
@@ -694,7 +722,10 @@ if (handle)
    * \return On success, a Subscriber that, when all copies of it go out of scope, will unsubscribe from this topic.
    * On failure, an empty Subscriber which can be checked with:
 \verbatim
-if (handle)
+void callback(const std_msgs::Empty::ConstPtr& message){...}
+ros::NodeHandle nodeHandle;
+ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, callback);
+if (sub)	// Enter if subscriber is valid
 {
 ...
 }
@@ -740,7 +771,10 @@ if (handle)
    * \return On success, a Subscriber that, when all copies of it go out of scope, will unsubscribe from this topic.
    * On failure, an empty Subscriber which can be checked with:
 \verbatim
-if (handle)
+void callback(const std_msgs::Empty::ConstPtr& message){...}
+ros::NodeHandle nodeHandle;
+ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, callback);
+if (sub)	// Enter if subscriber is valid
 {
 ...
 }
@@ -774,7 +808,11 @@ if (handle)
    * \return On success, a Subscriber that, when all copies of it go out of scope, will unsubscribe from this topic.
    * On failure, an empty Subscriber which can be checked with:
 \verbatim
-if (handle)
+SubscribeOptions ops;
+...
+ros::NodeHandle nodeHandle;
+ros::Subscriber sub = nodeHandle.subscribe(ops);
+if (sub)	// Enter if subscriber is valid
 {
 ...
 }
@@ -810,7 +848,14 @@ ros::ServiceServer service = handle.advertiseService("my_service", &Foo::callbac
    * \return On success, a ServiceServer that, when all copies of it go out of scope, will unadvertise this service.
    * On failure, an empty ServiceServer which can be checked with:
 \verbatim
-if (handle)
+bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
+{
+  return true;
+}
+ros::NodeHandle nodeHandle;
+Foo foo_object;
+ros::ServiceServer service = nodeHandle.advertiseService("my_service", &Foo::callback, &foo_object);
+if (service)	// Enter if advertise service is valid
 {
 ...
 }
@@ -848,7 +893,14 @@ ros::ServiceServer service = handle.advertiseService("my_service", &Foo::callbac
    * \return On success, a ServiceServer that, when all copies of it go out of scope, will unadvertise this service.
    * On failure, an empty ServiceServer which can be checked with:
 \verbatim
-if (handle)
+bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
+{
+  return true;
+}
+ros::NodeHandle nodeHandle;
+Foo foo_object;
+ros::ServiceServer service = nodeHandle.advertiseService("my_service", &Foo::callback, &foo_object);
+if (service)	// Enter if advertise service is valid
 {
 ...
 }
@@ -887,7 +939,14 @@ ros::ServiceServer service = handle.advertiseService("my_service", &Foo::callbac
    * \return On success, a ServiceServer that, when all copies of it go out of scope, will unadvertise this service.
    * On failure, an empty ServiceServer which can be checked with:
 \verbatim
-if (handle)
+bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
+{
+  return true;
+}
+ros::NodeHandle nodeHandle;
+Foo foo_object;
+ros::ServiceServer service = nodeHandle.advertiseService("my_service", &Foo::callback, &foo_object);
+if (service)	// Enter if advertise service is valid
 {
 ...
 }
@@ -927,7 +986,14 @@ ros::ServiceServer service = handle.advertiseService("my_service", &Foo::callbac
    * \return On success, a ServiceServer that, when all copies of it go out of scope, will unadvertise this service.
    * On failure, an empty ServiceServer which can be checked with:
 \verbatim
-if (handle)
+bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
+{
+  return true;
+}
+ros::NodeHandle nodeHandle;
+Foo foo_object;
+ros::ServiceServer service = nodeHandle.advertiseService("my_service", &Foo::callback, &foo_object);
+if (service)	// Enter if advertise service is valid
 {
 ...
 }
@@ -964,7 +1030,14 @@ ros::ServiceServer service = handle.advertiseService("my_service", callback);
    * \return On success, a ServiceServer that, when all copies of it go out of scope, will unadvertise this service.
    * On failure, an empty ServiceServer which can be checked with:
 \verbatim
-if (handle)
+bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
+{
+  return true;
+}
+ros::NodeHandle nodeHandle;
+Foo foo_object;
+ros::ServiceServer service = nodeHandle.advertiseService("my_service", callback);
+if (service)	// Enter if advertise service is valid
 {
 ...
 }
@@ -1000,7 +1073,14 @@ ros::ServiceServer service = handle.advertiseService("my_service", callback);
    * \return On success, a ServiceServer that, when all copies of it go out of scope, will unadvertise this service.
    * On failure, an empty ServiceServer which can be checked with:
 \verbatim
-if (handle)
+bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
+{
+  return true;
+}
+ros::NodeHandle nodeHandle;
+Foo foo_object;
+ros::ServiceServer service = nodeHandle.advertiseService("my_service", callback);
+if (service)	// Enter if advertise service is valid
 {
 ...
 }
@@ -1034,7 +1114,14 @@ if (handle)
    * \return On success, a ServiceServer that, when all copies of it go out of scope, will unadvertise this service.
    * On failure, an empty ServiceServer which can be checked with:
 \verbatim
-if (handle)
+bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
+{
+  return true;
+}
+ros::NodeHandle nodeHandle;
+Foo foo_object;
+ros::ServiceServer service = nodeHandle.advertiseService("my_service", callback);
+if (service)	// Enter if advertise service is valid
 {
 ...
 }
@@ -1072,7 +1159,14 @@ if (handle)
    * \return On success, a ServiceServer that, when all copies of it go out of scope, will unadvertise this service.
    * On failure, an empty ServiceServer which can be checked with:
 \verbatim
-if (handle)
+bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
+{
+  return true;
+}
+ros::NodeHandle nodeHandle;
+Foo foo_object;
+ros::ServiceServer service = nodeHandle.advertiseService("my_service", callback);
+if (service)	// Enter if advertise service is valid
 {
 ...
 }
@@ -1101,7 +1195,11 @@ if (handle)
    * \return On success, a ServiceServer that, when all copies of it go out of scope, will unadvertise this service.
    * On failure, an empty ServiceServer which can be checked with:
 \verbatim
-if (handle)
+AdvertiseServiceOptions ops;
+...
+ros::NodeHandle nodeHandle;
+ros::ServiceServer service = nodeHandle.advertiseService(ops);
+if (service)	// Enter if advertise service is valid
 {
 ...
 }
