@@ -291,7 +291,7 @@ namespace ros
 \verbatim
 ros::NodeHandle nodeHandle;
 ros::publisher pub = nodeHandle.advertise<std_msgs::Empty>("my_topic", 1, (ros::SubscriberStatusCallback)callback);
-if (pub)	// Enter if publisher is valid
+if (pub)  // Enter if publisher is valid
 {
 ...
 }
@@ -329,7 +329,7 @@ ros::NodeHandle nodeHandle;
 ros::AdvertiseOptions ops;
 ...
 ros::publisher pub = nodeHandle.advertise(ops);
-if (pub)	// Enter if publisher is valid
+if (pub)  // Enter if publisher is valid
 {
 ...
 }
@@ -377,7 +377,7 @@ ros::NodeHandle nodeHandle;
 void Foo::callback(const std_msgs::Empty::ConstPtr& message) {}
 boost::shared_ptr<Foo> foo_object(new Foo);
 ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, &Foo::callback, foo_object);
-if (sub)	// Enter if subscriber is valid
+if (sub)  // Enter if subscriber is valid
 {
 ...
 }
@@ -440,7 +440,7 @@ ros::NodeHandle nodeHandle;
 void Foo::callback(const std_msgs::Empty::ConstPtr& message) {}
 boost::shared_ptr<Foo> foo_object(new Foo);
 ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, &Foo::callback, foo_object);
-if (sub)	// Enter if subscriber is valid
+if (sub)  // Enter if subscriber is valid
 {
 ...
 }
@@ -504,7 +504,7 @@ ros::NodeHandle nodeHandle;
 void Foo::callback(const std_msgs::Empty::ConstPtr& message) {}
 boost::shared_ptr<Foo> foo_object(new Foo);
 ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, &Foo::callback, foo_object);
-if (sub)	// Enter if subscriber is valid
+if (sub)  // Enter if subscriber is valid
 {
 ...
 }
@@ -569,7 +569,7 @@ ros::NodeHandle nodeHandle;
 void Foo::callback(const std_msgs::Empty::ConstPtr& message) {}
 boost::shared_ptr<Foo> foo_object(new Foo);
 ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, &Foo::callback, foo_object);
-if (sub)	// Enter if subscriber is valid
+if (sub)  // Enter if subscriber is valid
 {
 ...
 }
@@ -631,7 +631,7 @@ ros::Subscriber sub = handle.subscribe("my_topic", 1, callback);
 void callback(const std_msgs::Empty::ConstPtr& message){...}
 ros::NodeHandle nodeHandle;
 ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, callback);
-if (sub)	// Enter if subscriber is valid
+if (sub)  // Enter if subscriber is valid
 {
 ...
 }
@@ -679,7 +679,7 @@ ros::Subscriber sub = handle.subscribe("my_topic", 1, callback);
 void callback(const std_msgs::Empty::ConstPtr& message){...}
 ros::NodeHandle nodeHandle;
 ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, callback);
-if (sub)	// Enter if subscriber is valid
+if (sub)  // Enter if subscriber is valid
 {
 ...
 }
@@ -725,7 +725,7 @@ if (sub)	// Enter if subscriber is valid
 void callback(const std_msgs::Empty::ConstPtr& message){...}
 ros::NodeHandle nodeHandle;
 ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, callback);
-if (sub)	// Enter if subscriber is valid
+if (sub)  // Enter if subscriber is valid
 {
 ...
 }
@@ -774,7 +774,7 @@ if (sub)	// Enter if subscriber is valid
 void callback(const std_msgs::Empty::ConstPtr& message){...}
 ros::NodeHandle nodeHandle;
 ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, callback);
-if (sub)	// Enter if subscriber is valid
+if (sub)  // Enter if subscriber is valid
 {
 ...
 }
@@ -812,7 +812,7 @@ SubscribeOptions ops;
 ...
 ros::NodeHandle nodeHandle;
 ros::Subscriber sub = nodeHandle.subscribe(ops);
-if (sub)	// Enter if subscriber is valid
+if (sub)  // Enter if subscriber is valid
 {
 ...
 }
@@ -855,7 +855,7 @@ bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
 ros::NodeHandle nodeHandle;
 Foo foo_object;
 ros::ServiceServer service = nodeHandle.advertiseService("my_service", &Foo::callback, &foo_object);
-if (service)	// Enter if advertise service is valid
+if (service)  // Enter if advertise service is valid
 {
 ...
 }
@@ -900,7 +900,7 @@ bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
 ros::NodeHandle nodeHandle;
 Foo foo_object;
 ros::ServiceServer service = nodeHandle.advertiseService("my_service", &Foo::callback, &foo_object);
-if (service)	// Enter if advertise service is valid
+if (service)  // Enter if advertise service is valid
 {
 ...
 }
@@ -946,7 +946,7 @@ bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
 ros::NodeHandle nodeHandle;
 Foo foo_object;
 ros::ServiceServer service = nodeHandle.advertiseService("my_service", &Foo::callback, &foo_object);
-if (service)	// Enter if advertise service is valid
+if (service)  // Enter if advertise service is valid
 {
 ...
 }
@@ -993,7 +993,7 @@ bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
 ros::NodeHandle nodeHandle;
 Foo foo_object;
 ros::ServiceServer service = nodeHandle.advertiseService("my_service", &Foo::callback, &foo_object);
-if (service)	// Enter if advertise service is valid
+if (service)  // Enter if advertise service is valid
 {
 ...
 }
@@ -1037,7 +1037,7 @@ bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
 ros::NodeHandle nodeHandle;
 Foo foo_object;
 ros::ServiceServer service = nodeHandle.advertiseService("my_service", callback);
-if (service)	// Enter if advertise service is valid
+if (service)  // Enter if advertise service is valid
 {
 ...
 }
@@ -1080,7 +1080,7 @@ bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
 ros::NodeHandle nodeHandle;
 Foo foo_object;
 ros::ServiceServer service = nodeHandle.advertiseService("my_service", callback);
-if (service)	// Enter if advertise service is valid
+if (service)  // Enter if advertise service is valid
 {
 ...
 }
@@ -1121,7 +1121,7 @@ bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
 ros::NodeHandle nodeHandle;
 Foo foo_object;
 ros::ServiceServer service = nodeHandle.advertiseService("my_service", callback);
-if (service)	// Enter if advertise service is valid
+if (service)  // Enter if advertise service is valid
 {
 ...
 }
@@ -1166,7 +1166,7 @@ bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
 ros::NodeHandle nodeHandle;
 Foo foo_object;
 ros::ServiceServer service = nodeHandle.advertiseService("my_service", callback);
-if (service)	// Enter if advertise service is valid
+if (service)  // Enter if advertise service is valid
 {
 ...
 }
@@ -1199,7 +1199,7 @@ AdvertiseServiceOptions ops;
 ...
 ros::NodeHandle nodeHandle;
 ros::ServiceServer service = nodeHandle.advertiseService(ops);
-if (service)	// Enter if advertise service is valid
+if (service)  // Enter if advertise service is valid
 {
 ...
 }
