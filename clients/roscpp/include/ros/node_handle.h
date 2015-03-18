@@ -855,7 +855,7 @@ bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
 ros::NodeHandle nodeHandle;
 Foo foo_object;
 ros::ServiceServer service = nodeHandle.advertiseService("my_service", &Foo::callback, &foo_object);
-if (service)  // Enter if advertise service is valid
+if (service)  // Enter if advertised service is valid
 {
 ...
 }
@@ -900,7 +900,7 @@ bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
 ros::NodeHandle nodeHandle;
 Foo foo_object;
 ros::ServiceServer service = nodeHandle.advertiseService("my_service", &Foo::callback, &foo_object);
-if (service)  // Enter if advertise service is valid
+if (service)  // Enter if advertised service is valid
 {
 ...
 }
@@ -946,7 +946,7 @@ bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
 ros::NodeHandle nodeHandle;
 Foo foo_object;
 ros::ServiceServer service = nodeHandle.advertiseService("my_service", &Foo::callback, &foo_object);
-if (service)  // Enter if advertise service is valid
+if (service)  // Enter if advertised service is valid
 {
 ...
 }
@@ -993,7 +993,7 @@ bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
 ros::NodeHandle nodeHandle;
 Foo foo_object;
 ros::ServiceServer service = nodeHandle.advertiseService("my_service", &Foo::callback, &foo_object);
-if (service)  // Enter if advertise service is valid
+if (service)  // Enter if advertised service is valid
 {
 ...
 }
@@ -1037,7 +1037,7 @@ bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
 ros::NodeHandle nodeHandle;
 Foo foo_object;
 ros::ServiceServer service = nodeHandle.advertiseService("my_service", callback);
-if (service)  // Enter if advertise service is valid
+if (service)  // Enter if advertised service is valid
 {
 ...
 }
@@ -1080,7 +1080,7 @@ bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
 ros::NodeHandle nodeHandle;
 Foo foo_object;
 ros::ServiceServer service = nodeHandle.advertiseService("my_service", callback);
-if (service)  // Enter if advertise service is valid
+if (service)  // Enter if advertised service is valid
 {
 ...
 }
@@ -1121,7 +1121,7 @@ bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
 ros::NodeHandle nodeHandle;
 Foo foo_object;
 ros::ServiceServer service = nodeHandle.advertiseService("my_service", callback);
-if (service)  // Enter if advertise service is valid
+if (service)  // Enter if advertised service is valid
 {
 ...
 }
@@ -1166,7 +1166,7 @@ bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
 ros::NodeHandle nodeHandle;
 Foo foo_object;
 ros::ServiceServer service = nodeHandle.advertiseService("my_service", callback);
-if (service)  // Enter if advertise service is valid
+if (service)  // Enter if advertised service is valid
 {
 ...
 }
@@ -1199,7 +1199,7 @@ AdvertiseServiceOptions ops;
 ...
 ros::NodeHandle nodeHandle;
 ros::ServiceServer service = nodeHandle.advertiseService(ops);
-if (service)  // Enter if advertise service is valid
+if (service)  // Enter if advertised service is valid
 {
 ...
 }
