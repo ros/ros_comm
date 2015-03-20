@@ -49,7 +49,7 @@ class TestRospyMsg(unittest.TestCase):
     def test_args_kwds_to_message(self):
         import rospy
         from rospy.msg import args_kwds_to_message
-        from test_rospy.msg import Val
+        from test_rospy.msg import Val, Empty
         
         v = Val('hello world-1')
         d = args_kwds_to_message(Val, (v,), None)
@@ -63,6 +63,10 @@ class TestRospyMsg(unittest.TestCase):
         try:
             args_kwds_to_message(Val, 'hi', val='hello world-3')
             self.fail("should not allow args and kwds")
+        except TypeError: pass
+        try:
+            args_kwds_to_message(Empty, (Val('hola'),), None)
+            self.fail("should raise TypeError when publishing Val msg to Empty topic")
         except TypeError: pass
 
     def test_serialize_message(self):

@@ -9,6 +9,7 @@ if(CATKIN_ENABLE_TESTING)
     FILES
     ArrayVal.msg
     EmbedTest.msg
+    Empty.msg
     Floats.msg
     HeaderHeaderVal.msg
     HeaderVal.msg

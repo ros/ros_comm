@@ -114,12 +114,12 @@ def args_kwds_to_message(data_class, args, kwds):
             # data_class has fields and that the type matches.  This
             # branch isn't necessary but provides more useful
             # information to users
-            elif isinstance(arg, genpy.Message) and \
-                    (len(data_class._slot_types) == 0 or \
-                         arg._type != data_class._slot_types[0]):
-                raise TypeError("expected [%s] but got [%s]"%(data_class._slot_types[0], arg._type))
-            else:
-                return data_class(*args)
+            elif isinstance(arg, genpy.Message):
+                if len(data_class._slot_types) == 0:
+                    raise TypeError("expected [] but got [%s]"%arg._type)
+                elif arg._type != data_class._slot_types[0]:
+                    raise TypeError("expected [%s] but got [%s]"%(data_class._slot_types[0], arg._type))
+            return data_class(*args)
         else:
             return data_class(*args)
 
