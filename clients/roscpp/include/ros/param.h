@@ -244,6 +244,20 @@ ROSCPP_DECL bool getCached(const std::string& key, std::string& s);
  * \throws InvalidNameException if the key is not a valid graph resource name
  */
 ROSCPP_DECL bool getCached(const std::string& key, double& d);
+/** \brief Get a float value from the parameter server, with local caching
+ *
+ * This function will cache parameters locally, and subscribe for updates from
+ * the parameter server.  Once the parameter is retrieved for the first time
+ * no subsequent getCached() calls with the same key will query the master --
+ * they will instead look up in the local cache.
+ *
+ * \param key The key to be used in the parameter server's dictionary
+ * \param[out] f Storage for the retrieved value.
+ *
+ * \return true if the parameter value was retrieved, false otherwise
+ * \throws InvalidNameException if the key is not a valid graph resource name
+ */
+ROSCPP_DECL bool getCached(const std::string& key, float& f);
 /** \brief Get an integer value from the parameter server, with local caching
  *
  * This function will cache parameters locally, and subscribe for updates from
