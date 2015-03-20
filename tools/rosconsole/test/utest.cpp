@@ -701,6 +701,48 @@ TEST(RosConsole, throttle)
   logger->removeAppender(appender);
 }
 
+void delayedThrottleFunc()
+{
+  ROS_LOG_DELAYED_THROTTLE(0.5, ros::console::levels::Info, ROSCONSOLE_DEFAULT_NAME, "Hello");
+}
+
+void delayedThrottleFunc2()
+{
+  ROS_LOG_DELAYED_THROTTLE(0.5, ros::console::levels::Info, ROSCONSOLE_DEFAULT_NAME, "Hello2");
+}
+
+TEST(RosConsole, delayedThrottle)
+{
+  log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger(ROSCONSOLE_DEFAULT_NAME);
+
+  TestAppender* appender = new TestAppender;
+  logger->addAppender(appender);
+
+  ros::Time start = ros::Time::now();
+  while (ros::Time::now() <= start + ros::Duration(0.4))
+  {
+    delayedThrottleFunc();
+    ros::Duration(0.01).sleep();
+  }
+
+  EXPECT_EQ(appender->info_.size(), 0ULL);
+
+  const int pre_count = appender->info_.size();
+  start = ros::Time::now();
+  while (ros::Time::now() <= start + ros::Duration(0.6))
+  {
+    delayedThrottleFunc2();
+    ros::Duration(0.01).sleep();
+  }
+
+  const int post_count = appender->info_.size();
+
+  EXPECT_EQ(post_count, pre_count + 1);
+
+  logger->removeAppender(appender);
+}
+
+
 void onceStreamFunc()
 {
   ROS_LOG_STREAM_ONCE(ros::console::levels::Info, ROSCONSOLE_DEFAULT_NAME, "Hello");
@@ -743,6 +785,47 @@ TEST(RosConsole, throttleStream)
   throttleStreamFunc();
 
   EXPECT_EQ(appender->info_.size(), 2ULL);
+
+  logger->removeAppender(appender);
+}
+
+void delayedThrottleStreamFunc()
+{
+  ROS_LOG_STREAM_DELAYED_THROTTLE(0.5, ros::console::levels::Info, ROSCONSOLE_DEFAULT_NAME, "Hello");
+}
+
+void delayedThrottleStreamFunc2()
+{
+  ROS_LOG_STREAM_DELAYED_THROTTLE(0.5, ros::console::levels::Info, ROSCONSOLE_DEFAULT_NAME, "Hello2");
+}
+
+TEST(RosConsole, delayedStreamThrottle)
+{
+  log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger(ROSCONSOLE_DEFAULT_NAME);
+
+  TestAppender* appender = new TestAppender;
+  logger->addAppender(appender);
+
+  ros::Time start = ros::Time::now();
+  while (ros::Time::now() <= start + ros::Duration(0.4))
+  {
+    delayedThrottleStreamFunc();
+    ros::Duration(0.01).sleep();
+  }
+
+  EXPECT_EQ(appender->info_.size(), 0ULL);
+
+  const int pre_count = appender->info_.size();
+  start = ros::Time::now();
+  while (ros::Time::now() <= start + ros::Duration(0.6))
+  {
+    delayedThrottleStreamFunc2();
+    ros::Duration(0.01).sleep();
+  }
+
+  const int post_count = appender->info_.size();
+
+  EXPECT_EQ(post_count, pre_count + 1);
 
   logger->removeAppender(appender);
 }
