@@ -346,8 +346,8 @@ def add_client_shutdown_hook(h):
     L{add_shutdown_hook} and L{add_preshutdown_hooks}, these methods
     will be called before any rospy internal shutdown code.
     
-    @param h: function that takes in a single string argument (shutdown reason)
-    @type  h: fn(str)
+    @param h: function with zero args
+    @type  h: fn()
     """
     _add_shutdown_hook(h, _client_shutdown_hooks)
 
