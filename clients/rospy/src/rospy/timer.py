@@ -59,6 +59,19 @@ class Rate(object):
         self.last_time = rospy.rostime.get_rostime()
         self.sleep_dur = rospy.rostime.Duration(0, int(1e9/hz))
 
+    def remaining(self):
+        """
+        Get the time ramaining for rate to sleep
+        """
+        curr_time = rospy.rostime.get_rostime()
+        # detect time jumping backwards
+        if self.last_time > curr_time:
+            self.last_time = curr_time
+
+        # calculate remaining time
+        elapsed = curr_time - self.last_time
+        return self.sleep_dur - elapsed
+
     def sleep(self):
         """
         Attempt sleep at the specified rate. sleep() takes into
@@ -70,14 +83,7 @@ class Rate(object):
         @raise ROSTimeMovedBackwardsException: if ROS time is set
         backwards
         """
-        curr_time = rospy.rostime.get_rostime()
-        # detect time jumping backwards
-        if self.last_time > curr_time:
-            self.last_time = curr_time
-
-        # calculate sleep interval
-        elapsed = curr_time - self.last_time
-        sleep(self.sleep_dur - elapsed)
+        sleep(self.remaining())
         self.last_time = self.last_time + self.sleep_dur
 
         # detect time jumping forwards, as well as loops that are
