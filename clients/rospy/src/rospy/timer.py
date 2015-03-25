@@ -85,6 +85,7 @@ class Rate(object):
         @raise ROSTimeMovedBackwardsException: if ROS time is set
         backwards
         """
+        curr_time = rospy.rostime.get_rostime()
         sleep(self.remaining())
         self.last_time = self.last_time + self.sleep_dur
 
