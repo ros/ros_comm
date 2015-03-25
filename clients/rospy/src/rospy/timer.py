@@ -61,7 +61,9 @@ class Rate(object):
 
     def remaining(self):
         """
-        Get the time ramaining for rate to sleep
+        Get the time remaining for rate to sleep.
+        @return: time remaining
+        @rtype: L{Time}
         """
         curr_time = rospy.rostime.get_rostime()
         # detect time jumping backwards
