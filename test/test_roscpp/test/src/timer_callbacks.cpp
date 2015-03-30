@@ -61,6 +61,8 @@ public:
   : expected_period_(period)
   , failed_(false)
   , total_calls_(0)
+  , testing_period_(false)
+  , calls_before_testing_period_(0)
   {
     NodeHandle n;
     timer_ = n.createWallTimer(expected_period_, &WallTimerHelper::callback, this, oneshot);
@@ -82,12 +84,72 @@ public:
       }
     }
 
-    expected_next_call_ = e.current_expected + expected_period_;
+    if(testing_period_)
+    {
+
+      // Inside callback, less than current period, reset=false
+      if(total_calls_ == calls_before_testing_period_)
+      {
+        WallDuration p(0.5);
+        pretendWork(0.15);
+        setPeriod(p);
+      }
+      
+      // Inside callback, greater than current period, reset=false
+      else if(total_calls_ == (calls_before_testing_period_+1))
+      {
+        WallDuration p(0.25);
+        pretendWork(0.15);
+        setPeriod(p);
+      }
+      
+      // Inside callback, less than current period, reset=true
+      else if(total_calls_ == (calls_before_testing_period_+2))
+      {
+        WallDuration p(0.5);
+        pretendWork(0.15);
+        setPeriod(p, true);
+      }
+      
+      // Inside callback, greater than current period, reset=true
+      else if(total_calls_ == (calls_before_testing_period_+3))
+      {
+        WallDuration p(0.25);
+        pretendWork(0.15);
+        setPeriod(p, true);
+      }
+    }
+    else
+    { 
+      expected_next_call_ = e.current_expected + expected_period_;
+    }
 
     WallTime end = WallTime::now();
     last_duration_ = end - start;
 
     ++total_calls_;
+  }
+
+  void setPeriod(const WallDuration p, bool reset=false)
+  {
+    if(reset)
+    {
+      expected_next_call_ = WallTime::now() + p;
+    }
+    else
+    {
+      expected_next_call_ = last_call_ + p;
+    }
+    
+    timer_.setPeriod(p, reset);
+    expected_period_ = p;
+  }
+
+
+  void pretendWork(const float t)
+  {
+    ros::Rate r(1. / t);
+    r.sleep();
   }
 
   WallTime last_call_;
@@ -99,6 +161,9 @@ public:
 
   WallTimer timer_;
   int32_t total_calls_;
+
+  bool testing_period_;
+  int  calls_before_testing_period_;
 };
 
 TEST(RoscppTimerCallbacks, singleWallTimeCallback)
@@ -158,6 +223,88 @@ TEST(RoscppTimerCallbacks, multipleWallTimeCallbacks)
       ROS_ERROR("Helper %d total calls: %d (at least %d expected)", i, helpers[i]->total_calls_, expected_count);
       FAIL();
     }
+  }
+}
+
+TEST(RoscppTimerCallbacks, setPeriod)
+{
+  NodeHandle n;
+  WallDuration    period(0.5);
+  WallTimerHelper helper(period.toSec());
+  Rate            r(100);
+
+  // Let the callback occur once before getting started
+  while(helper.total_calls_ < 1)
+  {
+    spinOnce();
+    r.sleep();
+  }
+
+  helper.pretendWork(0.1);
+  
+  // outside callback, new period < old period, reset = false
+  Time          start = Time::now();
+  Duration      wait(0.5);
+  WallDuration  p(0.25);
+  helper.setPeriod(p);
+  while(helper.total_calls_ < 2)
+  {
+    spinOnce();
+    r.sleep();
+  }
+  
+  helper.pretendWork(0.1);
+  
+  // outside callback, new period > old period, reset = false
+  WallDuration p2(0.5);
+  start = Time::now();
+  helper.setPeriod(p);
+  while(helper.total_calls_ < 3)
+  {
+    spinOnce();
+    r.sleep();
+  }
+  
+  helper.pretendWork(0.1);
+  
+  // outside callback, new period < old period, reset = true
+  WallDuration p3(0.25);
+  start = Time::now();
+  helper.setPeriod(p, true);
+  while(helper.total_calls_ < 4)
+  {
+    spinOnce();
+    r.sleep();
+  }
+  
+  helper.pretendWork(0.1);
+  
+  // outside callback, new period > old period, reset = true
+  WallDuration p4(0.5);
+  start = Time::now();
+  helper.setPeriod(p, true);
+  while(helper.total_calls_ < 5)
+  {
+    spinOnce();
+    r.sleep();
+  }
+
+  // Test calling setPeriod inside callback
+  helper.calls_before_testing_period_ = helper.total_calls_;
+  int total = helper.total_calls_ + 5;
+  helper.testing_period_ = true;
+  while(helper.total_calls_ < total)
+  {
+    spinOnce();
+    r.sleep();
+  }
+  helper.testing_period_ = false;
+
+
+  if(helper.failed_)
+  {
+    ROS_ERROR("Helper failed in setPeriod");
+    FAIL();
   }
 }
 
