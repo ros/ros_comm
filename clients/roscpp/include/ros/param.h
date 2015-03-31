@@ -610,6 +610,31 @@ void param(const std::string& param_name, T& param_val, const T& default_val)
   param_val = default_val;
 }
 
+/**
+ * \brief Return value from parameter server, or default if unavailable.
+ *
+ * This method tries to retrieve the indicated parameter value from the
+ * parameter server. If the parameter cannot be retrieved, \c default_val
+ * is returned instead.
+ *
+ * \param param_name The key to be searched on the parameter server.
+ *
+ * \param default_val Value to return if the server doesn't contain this
+ * parameter.
+ *
+ * \return The parameter value retrieved from the parameter server, or
+ * \c default_val if unavailable.
+ *
+ * \throws InvalidNameException If the key is not a valid graph resource name.
+ */
+template<typename T>
+T param(const std::string& param_name, const T& default_val)
+{
+  T param_val;
+  param(param_name, param_val, default_val);
+  return param_val;
+}
+
 } // namespace param
 
 } // namespace ros

@@ -528,6 +528,38 @@ TEST(Params, mapBoolParam)
   ASSERT_TRUE(std::equal(map_b.begin(), map_b.end(), map_b2.begin()));
 }
 
+TEST(Params, paramTemplateFunction)
+{
+  EXPECT_EQ( param::param<std::string>( "string", "" ), "test" );
+  EXPECT_EQ( param::param<std::string>( "gnirts", "test" ), "test" );
+
+  EXPECT_EQ( param::param<int>( "int", 0 ), 10 );
+  EXPECT_EQ( param::param<int>( "tni", 10 ), 10 );
+
+  EXPECT_DOUBLE_EQ( param::param<double>( "double", 0.0 ), 10.5 );
+  EXPECT_DOUBLE_EQ( param::param<double>( "elbuod", 10.5 ), 10.5 );
+
+  EXPECT_EQ( param::param<bool>( "bool", true ), false );
+  EXPECT_EQ( param::param<bool>( "loob", true ), true );
+}
+
+TEST(Params, paramNodeHandleTemplateFunction)
+{
+  NodeHandle nh;
+
+  EXPECT_EQ( nh.param<std::string>( "string", "" ), "test" );
+  EXPECT_EQ( nh.param<std::string>( "gnirts", "test" ), "test" );
+
+  EXPECT_EQ( nh.param<int>( "int", 0 ), 10 );
+  EXPECT_EQ( nh.param<int>( "tni", 10 ), 10 );
+
+  EXPECT_DOUBLE_EQ( nh.param<double>( "double", 0.0 ), 10.5 );
+  EXPECT_DOUBLE_EQ( nh.param<double>( "elbuod", 10.5 ), 10.5 );
+
+  EXPECT_EQ( nh.param<bool>( "bool", true ), false );
+  EXPECT_EQ( nh.param<bool>( "loob", true ), true );
+}
+
 int
 main(int argc, char** argv)
 {

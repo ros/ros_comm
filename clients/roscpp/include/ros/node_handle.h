@@ -2021,6 +2021,32 @@ if (service)  // Enter if advertised service is valid
   }
 
   /**
+   * \brief Return value from parameter server, or default if unavailable.
+   *
+   * This method tries to retrieve the indicated parameter value from the
+   * parameter server. If the parameter cannot be retrieved, \c default_val
+   * is returned instead.
+   *
+   * \param param_name The key to be searched on the parameter server.
+   *
+   * \param default_val Value to return if the server doesn't contain this
+   * parameter.
+   *
+   * \return The parameter value retrieved from the parameter server, or
+   * \c default_val if unavailable.
+   *
+   * \throws InvalidNameException If the parameter key begins with a tilde,
+   * or is an otherwise invalid graph resource name.
+   */
+  template<typename T>
+  T param(const std::string& param_name, const T& default_val)
+  {
+      T param_val;
+      param(param_name, param_val, default_val);
+      return param_val;
+  }
+
+  /**
    * \brief Shutdown every handle created through this NodeHandle.
    *
    * This method will unadvertise every topic and service advertisement,
