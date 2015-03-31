@@ -95,7 +95,7 @@ namespace ros
      * ros::start() and sets the reference count to 1.
      *
      * \param ns Namespace for this NodeHandle.  This acts in addition to any namespace assigned to this ROS node.
-     *           eg. If the node's namespace is "/a" and the namespace passed in here is "b", all 
+     *           eg. If the node's namespace is "/a" and the namespace passed in here is "b", all
      *           topics/services/parameters will be prefixed with "/a/b/"
      * \param remappings Remappings for this NodeHandle.
      * \throws InvalidNameException if the namespace is not a valid graph resource name
@@ -135,7 +135,7 @@ namespace ros
      *
      * This version also lets you pass in name remappings that are specific to this NodeHandle
      *
-     * When a NodeHandle is copied, it inherits the namespace of the NodeHandle being copied, 
+     * When a NodeHandle is copied, it inherits the namespace of the NodeHandle being copied,
      * and increments the reference count of the global node state
      * by 1.
      * \throws InvalidNameException if the namespace is not a valid graph resource name
@@ -167,9 +167,9 @@ namespace ros
      * NodeHandle.  If none has been explicitly set, returns the global
      * queue.
      */
-    CallbackQueueInterface* getCallbackQueue() const 
-    { 
-      return callback_queue_ ? callback_queue_ : (CallbackQueueInterface*)getGlobalCallbackQueue(); 
+    CallbackQueueInterface* getCallbackQueue() const
+    {
+      return callback_queue_ ? callback_queue_ : (CallbackQueueInterface*)getGlobalCallbackQueue();
     }
 
     /**
@@ -267,7 +267,7 @@ namespace ros
      }
 
      MyClass my_class;
-     ros::Publisher pub = handle.advertise<std_msgs::Empty>("my_topic", 1, 
+     ros::Publisher pub = handle.advertise<std_msgs::Empty>("my_topic", 1,
                                                             boost::bind(&MyClass::connectCallback, my_class, _1));
      \endverbatim
      *
@@ -386,7 +386,7 @@ if (sub)  // Enter if subscriber is valid
    *  \throws ConflictingSubscriptionException If this node is already subscribed to the same topic with a different datatype
    */
   template<class M, class T>
-  Subscriber subscribe(const std::string& topic, uint32_t queue_size, void(T::*fp)(M), T* obj, 
+  Subscriber subscribe(const std::string& topic, uint32_t queue_size, void(T::*fp)(M), T* obj,
                        const TransportHints& transport_hints = TransportHints())
   {
     SubscribeOptions ops;
@@ -397,7 +397,7 @@ if (sub)  // Enter if subscriber is valid
 
   /// and the const version
   template<class M, class T>
-  Subscriber subscribe(const std::string& topic, uint32_t queue_size, void(T::*fp)(M) const, T* obj, 
+  Subscriber subscribe(const std::string& topic, uint32_t queue_size, void(T::*fp)(M) const, T* obj,
                        const TransportHints& transport_hints = TransportHints())
   {
     SubscribeOptions ops;
@@ -449,8 +449,8 @@ if (sub)  // Enter if subscriber is valid
    *  \throws ConflictingSubscriptionException If this node is already subscribed to the same topic with a different datatype
    */
   template<class M, class T>
-  Subscriber subscribe(const std::string& topic, uint32_t queue_size, 
-                       void(T::*fp)(const boost::shared_ptr<M const>&), T* obj, 
+  Subscriber subscribe(const std::string& topic, uint32_t queue_size,
+                       void(T::*fp)(const boost::shared_ptr<M const>&), T* obj,
                        const TransportHints& transport_hints = TransportHints())
   {
     SubscribeOptions ops;
@@ -459,8 +459,8 @@ if (sub)  // Enter if subscriber is valid
     return subscribe(ops);
   }
   template<class M, class T>
-  Subscriber subscribe(const std::string& topic, uint32_t queue_size, 
-                       void(T::*fp)(const boost::shared_ptr<M const>&) const, T* obj, 
+  Subscriber subscribe(const std::string& topic, uint32_t queue_size,
+                       void(T::*fp)(const boost::shared_ptr<M const>&) const, T* obj,
                        const TransportHints& transport_hints = TransportHints())
   {
     SubscribeOptions ops;
@@ -513,7 +513,7 @@ if (sub)  // Enter if subscriber is valid
    *  \throws ConflictingSubscriptionException If this node is already subscribed to the same topic with a different datatype
    */
   template<class M, class T>
-  Subscriber subscribe(const std::string& topic, uint32_t queue_size, void(T::*fp)(M), 
+  Subscriber subscribe(const std::string& topic, uint32_t queue_size, void(T::*fp)(M),
                        const boost::shared_ptr<T>& obj, const TransportHints& transport_hints = TransportHints())
   {
     SubscribeOptions ops;
@@ -524,7 +524,7 @@ if (sub)  // Enter if subscriber is valid
   }
 
   template<class M, class T>
-  Subscriber subscribe(const std::string& topic, uint32_t queue_size, void(T::*fp)(M) const, 
+  Subscriber subscribe(const std::string& topic, uint32_t queue_size, void(T::*fp)(M) const,
                        const boost::shared_ptr<T>& obj, const TransportHints& transport_hints = TransportHints())
   {
     SubscribeOptions ops;
@@ -578,8 +578,8 @@ if (sub)  // Enter if subscriber is valid
    *  \throws ConflictingSubscriptionException If this node is already subscribed to the same topic with a different datatype
    */
   template<class M, class T>
-  Subscriber subscribe(const std::string& topic, uint32_t queue_size, 
-                       void(T::*fp)(const boost::shared_ptr<M const>&), 
+  Subscriber subscribe(const std::string& topic, uint32_t queue_size,
+                       void(T::*fp)(const boost::shared_ptr<M const>&),
                        const boost::shared_ptr<T>& obj, const TransportHints& transport_hints = TransportHints())
   {
     SubscribeOptions ops;
@@ -589,8 +589,8 @@ if (sub)  // Enter if subscriber is valid
     return subscribe(ops);
   }
   template<class M, class T>
-  Subscriber subscribe(const std::string& topic, uint32_t queue_size, 
-                       void(T::*fp)(const boost::shared_ptr<M const>&) const, 
+  Subscriber subscribe(const std::string& topic, uint32_t queue_size,
+                       void(T::*fp)(const boost::shared_ptr<M const>&) const,
                        const boost::shared_ptr<T>& obj, const TransportHints& transport_hints = TransportHints())
   {
     SubscribeOptions ops;
@@ -1129,7 +1129,7 @@ if (service)  // Enter if advertised service is valid
    * \throws InvalidNameException If the service name begins with a tilde, or is an otherwise invalid graph resource name
    */
   template<class MReq, class MRes>
-  ServiceServer advertiseService(const std::string& service, const boost::function<bool(MReq&, MRes&)>& callback, 
+  ServiceServer advertiseService(const std::string& service, const boost::function<bool(MReq&, MRes&)>& callback,
                                  const VoidConstPtr& tracked_object = VoidConstPtr())
   {
     AdvertiseServiceOptions ops;
@@ -1174,7 +1174,7 @@ if (service)  // Enter if advertised service is valid
    * \throws InvalidNameException If the service name begins with a tilde, or is an otherwise invalid graph resource name
    */
   template<class S>
-  ServiceServer advertiseService(const std::string& service, const boost::function<bool(S&)>& callback, 
+  ServiceServer advertiseService(const std::string& service, const boost::function<bool(S&)>& callback,
                                  const VoidConstPtr& tracked_object = VoidConstPtr())
   {
     AdvertiseServiceOptions ops;
@@ -1224,7 +1224,7 @@ if (service)  // Enter if advertised service is valid
    * \throws InvalidNameException If the service name begins with a tilde, or is an otherwise invalid graph resource name
    */
   template<class MReq, class MRes>
-  ServiceClient serviceClient(const std::string& service_name, bool persistent = false, 
+  ServiceClient serviceClient(const std::string& service_name, bool persistent = false,
                               const M_string& header_values = M_string())
   {
     ServiceClientOptions ops;
@@ -1244,7 +1244,7 @@ if (service)  // Enter if advertised service is valid
    * \throws InvalidNameException If the service name begins with a tilde, or is an otherwise invalid graph resource name
    */
   template<class Service>
-  ServiceClient serviceClient(const std::string& service_name, bool persistent = false, 
+  ServiceClient serviceClient(const std::string& service_name, bool persistent = false,
                               const M_string& header_values = M_string())
   {
     ServiceClientOptions ops;
@@ -1297,7 +1297,7 @@ if (service)  // Enter if advertised service is valid
    * \param autostart If true (default), return timer that is already started
    */
   template<class T>
-  Timer createTimer(Duration period, void(T::*callback)(const TimerEvent&) const, T* obj, 
+  Timer createTimer(Duration period, void(T::*callback)(const TimerEvent&) const, T* obj,
                     bool oneshot = false, bool autostart = true) const
   {
     return createTimer(period, boost::bind(callback, obj, _1), oneshot, autostart);
@@ -1317,7 +1317,7 @@ if (service)  // Enter if advertised service is valid
    * \param autostart If true (default), return timer that is already started
    */
   template<class T>
-  Timer createTimer(Duration period, void(T::*callback)(const TimerEvent&), T* obj, 
+  Timer createTimer(Duration period, void(T::*callback)(const TimerEvent&), T* obj,
                     bool oneshot = false, bool autostart = true) const
   {
     return createTimer(period, boost::bind(callback, obj, _1), oneshot, autostart);
@@ -1339,7 +1339,7 @@ if (service)  // Enter if advertised service is valid
    * \param autostart If true (default), return timer that is already started
    */
   template<class T>
-  Timer createTimer(Duration period, void(T::*callback)(const TimerEvent&), const boost::shared_ptr<T>& obj, 
+  Timer createTimer(Duration period, void(T::*callback)(const TimerEvent&), const boost::shared_ptr<T>& obj,
                     bool oneshot = false, bool autostart = true) const
   {
     TimerOptions ops(period, boost::bind(callback, obj.get(), _1), 0);
@@ -1394,7 +1394,7 @@ if (service)  // Enter if advertised service is valid
    * \param autostart If true (default), return timer that is already started
    */
   template<class T>
-  WallTimer createWallTimer(WallDuration period, void(T::*callback)(const WallTimerEvent&), T* obj, 
+  WallTimer createWallTimer(WallDuration period, void(T::*callback)(const WallTimerEvent&), T* obj,
                             bool oneshot = false, bool autostart = true) const
   {
     return createWallTimer(period, boost::bind(callback, obj, _1), oneshot, autostart);
@@ -1416,8 +1416,8 @@ if (service)  // Enter if advertised service is valid
    * \param oneshot If true, this timer will only fire once
    */
   template<class T>
-  WallTimer createWallTimer(WallDuration period, void(T::*callback)(const WallTimerEvent&), 
-                            const boost::shared_ptr<T>& obj, 
+  WallTimer createWallTimer(WallDuration period, void(T::*callback)(const WallTimerEvent&),
+                            const boost::shared_ptr<T>& obj,
                             bool oneshot = false, bool autostart = true) const
   {
     WallTimerOptions ops(period, boost::bind(callback, obj.get(), _1), 0);
@@ -1439,7 +1439,7 @@ if (service)  // Enter if advertised service is valid
    * \param callback The function to call
    * \param oneshot If true, this timer will only fire once
    */
-  WallTimer createWallTimer(WallDuration period, const WallTimerCallback& callback, 
+  WallTimer createWallTimer(WallDuration period, const WallTimerCallback& callback,
                             bool oneshot = false, bool autostart = true) const;
 
   /**
@@ -2018,6 +2018,32 @@ if (service)  // Enter if advertised service is valid
     }
 
     param_val = default_val;
+  }
+
+  /**
+   * \brief Return value from parameter server, or default if unavailable.
+   *
+   * This method tries to retrieve the indicated parameter value from the
+   * parameter server. If the parameter cannot be retrieved, \c default_val
+   * is returned instead.
+   *
+   * \param param_name The key to be searched on the parameter server.
+   *
+   * \param default_val Value to return if the server doesn't contain this
+   * parameter.
+   *
+   * \return The parameter value retrieved from the parameter server, or
+   * \c default_val if unavailable.
+   *
+   * \throws InvalidNameException If the parameter key begins with a tilde,
+   * or is an otherwise invalid graph resource name.
+   */
+  template<typename T>
+  T param(const std::string& param_name, const T& default_val)
+  {
+      T param_val;
+      param(param_name, param_val, default_val);
+      return param_val;
   }
 
   /**

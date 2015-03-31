@@ -72,7 +72,7 @@ TEST(Params, setThenGetString)
   std::string param;
   ASSERT_TRUE( param::get( "test_set_param", param ) );
   ASSERT_STREQ( "asdf", param.c_str() );
-  
+
   XmlRpc::XmlRpcValue v;
   param::get("test_set_param", v);
   ASSERT_EQ(v.getType(), XmlRpc::XmlRpcValue::TypeString);
@@ -526,6 +526,38 @@ TEST(Params, mapBoolParam)
 
   ASSERT_EQ(map_b.size(), map_b2.size());
   ASSERT_TRUE(std::equal(map_b.begin(), map_b.end(), map_b2.begin()));
+}
+
+TEST(Params, paramTemplateFunction)
+{
+  EXPECT_TRUE( param::param<std::string>( "string", "" ) == "test" );
+  EXPECT_TRUE( param::param<std::string>( "gnirts", "test" ) == "test" );
+
+  EXPECT_TRUE( param::param<int>( "int", 0 ) == 10 );
+  EXPECT_TRUE( param::param<int>( "tni", 10 ) == 10 );
+
+  EXPECT_DOUBLE_EQ( param::param<double>( "double", 0.0 ), 10.5 );
+  EXPECT_DOUBLE_EQ( param::param<double>( "elbuod", 10.5 ), 10.5 );
+
+  EXPECT_FALSE( param::param<bool>( "bool", true ) );
+  EXPECT_TRUE( param::param<bool>( "loob", true ) );
+}
+
+TEST(Params, paramNodeHandleTemplateFunction)
+{
+  NodeHandle nh;
+
+  EXPECT_TRUE( nh.param<std::string>( "string", "" ) == "test" );
+  EXPECT_TRUE( nh.param<std::string>( "gnirts", "test" ) == "test" );
+
+  EXPECT_TRUE( nh.param<int>( "int", 0 ) == 10 );
+  EXPECT_TRUE( nh.param<int>( "tni", 10 ) == 10 );
+
+  EXPECT_DOUBLE_EQ( nh.param<double>( "double", 0.0 ), 10.5 );
+  EXPECT_DOUBLE_EQ( nh.param<double>( "elbuod", 10.5 ), 10.5 );
+
+  EXPECT_FALSE( nh.param<bool>( "bool", true ) );
+  EXPECT_TRUE( nh.param<bool>( "loob", true ) );
 }
 
 int
