@@ -72,7 +72,7 @@ TEST(Params, setThenGetString)
   std::string param;
   ASSERT_TRUE( param::get( "test_set_param", param ) );
   ASSERT_STREQ( "asdf", param.c_str() );
-
+  
   XmlRpc::XmlRpcValue v;
   param::get("test_set_param", v);
   ASSERT_EQ(v.getType(), XmlRpc::XmlRpcValue::TypeString);
