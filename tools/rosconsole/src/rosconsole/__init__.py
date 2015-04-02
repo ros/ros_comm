@@ -74,7 +74,7 @@ def _rosconsole_cmd_set(argv):
         error(2, "node " + args[0] + " does not contain logger " + args[1])
 
     # Match case-insensitively
-    if args[2].lower() not in map(str.lower, logger_level.get_levels()):
+    if args[2].lower() not in logger_level.get_levels():
         parser.error("invalid level")
 
     logger_level.send_logger_change_message(args[0], args[1], args[2])
