@@ -102,7 +102,10 @@ void PlayerOptions::check() {
 Player::Player(PlayerOptions const& options) :
     options_(options),
     paused_(false),
-    terminal_modified_(false)
+    terminal_modified_(false),
+    // If we were given a list of topics to pause on, then go into that mode
+    // by default (it can be toggled later via 't' from the keyboard).
+    pause_for_topics_(options_.pause_topics.size() > 0)
 {
 }
 
@@ -307,6 +310,20 @@ void Player::doPublish(MessageInstance const& m) {
       return;
     }
 
+    if (pause_for_topics_)
+    {
+        for (std::vector<std::string>::iterator i = options_.pause_topics.begin();
+             i != options_.pause_topics.end();
+             ++i)
+        {
+            if (topic == *i)
+            {
+                paused_ = true;
+                paused_time_ = ros::WallTime::now();
+            }
+        }
+    }
+
     while ((paused_ || !time_publisher_.horizonReached()) && node_handle_.ok())
     {
         bool charsleftorpaused = true;
@@ -346,6 +363,9 @@ void Player::doPublish(MessageInstance const& m) {
                     printTime();
                     return;
                 }
+                break;
+            case 't':
+                pause_for_topics_ = !pause_for_topics_;
                 break;
             case EOF:
                 if (paused_)
@@ -492,7 +512,7 @@ int Player::readCharFromStdin() {
         b = ReadConsoleInput(input_handle, input_record, input_size, &events);
         if (b)
         {
-            for (unsigned int i = 0; i < events; i++)
+            for (unsigned int i = 0; i < events; ++i)
             {
                 if (input_record[i].EventType & KEY_EVENT & input_record[i].Event.KeyEvent.bKeyDown)
                 {

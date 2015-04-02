@@ -59,6 +59,7 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
       ("keep-alive,k", "keep alive past end of bag (useful for publishing latched topics)")
       ("try-future-version", "still try to open a bag file, even if the version is not known to the player")
       ("topics", po::value< std::vector<std::string> >()->multitoken(), "topics to play back")
+      ("pause-topics", po::value< std::vector<std::string> >()->multitoken(), "topics to pause playback on")
       ("bags", po::value< std::vector<std::string> >(), "bag files to play back from");
     
     po::positional_options_description p;
@@ -124,6 +125,15 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
         opts.topics.push_back(*i);
     }
 
+    if (vm.count("pause-topics"))
+    {
+      std::vector<std::string> pause_topics = vm["pause-topics"].as< std::vector<std::string> >();
+      for (std::vector<std::string>::iterator i = pause_topics.begin();
+           i != pause_topics.end();
+           i++)
+        opts.pause_topics.push_back(*i);
+    }
+
     if (vm.count("bags"))
     {
       std::vector<std::string> bags = vm["bags"].as< std::vector<std::string> >();
@@ -132,8 +142,9 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
            i++)
           opts.bags.push_back(*i);
     } else {
-      if (vm.count("topics"))
-        throw ros::Exception("When using --topics, --bags should be specified to list bags.");
+      if (vm.count("topics") || vm.count("pause-topics"))
+        throw ros::Exception("When using --topics or --pause-topics, --bags "
+          "should be specified to list bags.");
       throw ros::Exception("You must specify at least one bag to play back.");
     }
             
