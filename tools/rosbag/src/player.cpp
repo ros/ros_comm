@@ -102,6 +102,7 @@ void PlayerOptions::check() {
 Player::Player(PlayerOptions const& options) :
     options_(options),
     paused_(false),
+    pause_for_topics_(false),
     terminal_modified_(false)
 {
 }
@@ -307,6 +308,20 @@ void Player::doPublish(MessageInstance const& m) {
       return;
     }
 
+    if (pause_for_topics_)
+    {
+        for (std::vector<std::string>::iterator i = options_.pause_topics.begin();
+             i != options_.pause_topics.end();
+             i++)
+        {
+            if (topic == *i)
+            {
+                paused_ = true;
+                paused_time_ = ros::WallTime::now();
+            }
+        }
+    }
+
     while ((paused_ || !time_publisher_.horizonReached()) && node_handle_.ok())
     {
         bool charsleftorpaused = true;
@@ -346,6 +361,9 @@ void Player::doPublish(MessageInstance const& m) {
                     printTime();
                     return;
                 }
+                break;
+            case 't':
+                pause_for_topics_ = !pause_for_topics_;
                 break;
             case EOF:
                 if (paused_)
