@@ -91,14 +91,15 @@ class LoggerLevelServiceCaller(object):
         try:
             service = rosservice.get_service_class_by_name(servicename)
         except rosservice.ROSServiceException as e:
-            raise ROSConsoleException("node '%s' doesn't exist or doesn't support query" % node)
+            raise ROSConsoleException(
+                "node '%s' doesn't exist or doesn't support query: %s" % (node, e))
 
         request = service._request_class()
         proxy = rospy.ServiceProxy(str(servicename), service)
         try:
             response = proxy(request)
         except rospy.ServiceException as e:
-            raise ROSConsoleException("node %s logger request failed" % node)
+            raise ROSConsoleException("node %s logger request failed: %s" % (node, e))
 
         if response._slot_types[0] == 'roscpp/Logger[]':
             for logger in getattr(response, response.__slots__[0]):
@@ -135,6 +136,6 @@ class LoggerLevelServiceCaller(object):
             proxy(request)
             self._current_levels[logger] = level.upper()
         except rospy.ServiceException as e:
-            raise ROSConsoleException("node %s logger request failed" % node)
+            raise ROSConsoleException("node %s logger request failed: %s" % (node, e))
 
         return True

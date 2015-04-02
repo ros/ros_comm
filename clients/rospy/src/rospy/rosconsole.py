@@ -29,6 +29,7 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+
 from __future__ import print_function
 
 import os
@@ -45,7 +46,7 @@ NAME = 'rosconsole'
 
 
 def error(status, msg):
-    print("%s: error: %s\n" % (NAME, msg), file=sys.stderr)
+    print("%s: error: %s" % (NAME, msg), file=sys.stderr)
     sys.exit(status)
 
 
@@ -177,7 +178,7 @@ def main(argv=None):
             _fullusage()
     except socket.error as e:
         error(1,
-              "Network communication failed; most likely failed to communicate with master: %s"%e)
+              "Network communication failed; most likely failed to communicate with master: %s" % e)
     except rosgraph.MasterException as e:
         # mainly for invalid master URI/rosgraph.masterapi
         error(1, str(e))
