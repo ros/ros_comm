@@ -37,17 +37,20 @@ import rosservice
 
 
 class ROSConsoleException(Exception):
-    """
-    Base exception class of rosconsole-related errors
-    """
+
+    """Base exception class of rosconsole-related errors."""
+
     pass
 
 
 class LoggerLevelServiceCaller(object):
+
     """
-    Handles service calls for getting lists of nodes and loggers
-    Also handles sending requests to change logger levels
+    Handles service calls for getting lists of nodes and loggers.
+
+    Also handles sending requests to change logger levels.
     """
+
     def __init__(self):
         pass
 
@@ -62,7 +65,8 @@ class LoggerLevelServiceCaller(object):
 
     def get_node_names(self):
         """
-        Gets a list of available services via a ros service call.
+        Get a list of available services via a ros service call.
+
         :returns: a list of all nodes that provide the set_logger_level service, ''list(str)''
         """
         set_logger_level_nodes = []
@@ -75,7 +79,8 @@ class LoggerLevelServiceCaller(object):
 
     def _refresh_loggers(self, node):
         """
-        Stores a list of loggers available for passed in node
+        Store a list of loggers available for passed in node.
+
         :param node: name of the node to query, ''str''
         :raises: :exc:`ROSTopicException` If topic type cannot be determined or loaded
         """
@@ -99,18 +104,19 @@ class LoggerLevelServiceCaller(object):
         try:
             response = proxy(request)
         except rospy.ServiceException as e:
-            raise ROSConsoleException("node %s logger request failed: %s" % (node, e))
+            raise ROSConsoleException("node '%s' logger request failed: %s" % (node, e))
 
         if response._slot_types[0] == 'roscpp/Logger[]':
             for logger in getattr(response, response.__slots__[0]):
                 self._current_loggers.append(logger.name)
-                self._current_levels[logger.name] = getattr(logger, 'level')
+                self._current_levels[logger.name] = logger.level
         else:
             raise ROSConsoleException(repr(response))
 
     def send_logger_change_message(self, node, logger, level):
         """
-        Sends a logger level change request to 'node'.
+        Send a logger level change request to 'node'.
+
         :param node: name of the node to chaange, ''str''
         :param logger: name of the logger to change, ''str''
         :param level: name of the level to change, ''str''
@@ -129,13 +135,13 @@ class LoggerLevelServiceCaller(object):
 
         service = rosservice.get_service_class_by_name(servicename)
         request = service._request_class()
-        setattr(request, 'logger', logger)
-        setattr(request, 'level', level)
+        request.logger = logger
+        request.level = level
         proxy = rospy.ServiceProxy(str(servicename), service)
         try:
             proxy(request)
             self._current_levels[logger] = level.upper()
         except rospy.ServiceException as e:
-            raise ROSConsoleException("node %s logger request failed: %s" % (node, e))
+            raise ROSConsoleException("node '%s' logger request failed: %s" % (node, e))
 
         return True
