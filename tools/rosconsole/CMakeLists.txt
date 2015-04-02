@@ -121,3 +121,5 @@ if(CATKIN_ENABLE_TESTING)
     target_link_libraries(${PROJECT_NAME}-thread_test ${PROJECT_NAME})
   endif()
 endif()
+
+catkin_python_setup()
