@@ -33,6 +33,8 @@
 import rosnode
 import rospy
 import rosservice
+# We'll resolve names via rosgraph.names
+import rosgraph
 
 
 class ROSConsoleException(Exception):
@@ -51,7 +53,9 @@ class LoggerLevelServiceCaller(object):
         pass
 
     def get_levels(self):
-        return ['Debug', 'Info', 'Warn', 'Error', 'Fatal']
+        # Declare level names lower-case, because that's how they are returned
+        # from the service call.
+        return ['debug', 'info', 'warn', 'error', 'fatal']
 
     def get_loggers(self, node):
         self._refresh_loggers(node)
@@ -78,7 +82,13 @@ class LoggerLevelServiceCaller(object):
         """
         self._current_loggers = []
         self._current_levels = {}
-        servicename = node + '/get_loggers'
+        # Construct the service name, taking into account our namespace
+        servicename = rosgraph.names.ns_join(
+            rosgraph.names.ns_join(rosgraph.names.get_ros_namespace(), node),
+            'get_loggers')
+        # Construct the service name, taking into account our namespace
+        servicename = rosgraph.names.resolve_name(
+            servicename, rosgraph.names.get_ros_namespace())
         try:
             service = rosservice.get_service_class_by_name(servicename)
         except rosservice.ROSServiceException as e:
@@ -107,7 +117,13 @@ class LoggerLevelServiceCaller(object):
         :returns: True if the response is valid, ''bool''
         :returns: False if the request raises an exception or would not change the state, ''bool''
         """
-        servicename = node + '/set_logger_level'
+        # Construct the service name, taking into account our namespace
+        servicename = rosgraph.names.ns_join(
+            rosgraph.names.ns_join(rosgraph.names.get_ros_namespace(), node),
+            'set_logger_level')
+        # Construct the service name, taking into account our namespace
+        servicename = rosgraph.names.resolve_name(
+            servicename, rosgraph.names.get_ros_namespace())
         if self._current_levels[logger].lower() == level.lower():
             return False
 

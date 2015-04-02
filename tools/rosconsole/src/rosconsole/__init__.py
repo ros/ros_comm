@@ -49,7 +49,7 @@ def _rosconsole_cmd_list(argv):
 def _get_cmd_set_optparse(args):
     from optparse import OptionParser
 
-    usage = "usage: %prog get <node> <logger> <level>\n"
+    usage = "usage: %prog set <node> <logger> <level>\n"
     levels = ', '.join(LoggerLevelServiceCaller().get_levels())
     usage += "\n <level> must be one of [" + levels + "]"
     parser = OptionParser(usage=usage, prog=NAME)
@@ -73,7 +73,8 @@ def _rosconsole_cmd_set(argv):
     if args[1] not in logger_level._current_levels:
         error(2, "node " + args[0] + " does not contain logger " + args[1])
 
-    if args[2] not in map(str.lower, logger_level.get_levels()):
+    # Match case-insensitively
+    if args[2].lower() not in map(str.lower, logger_level.get_levels()):
         parser.error("invalid level")
 
     logger_level.send_logger_change_message(args[0], args[1], args[2])
@@ -124,6 +125,9 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv
 
+    # Initialize ourselves as a node, to ensure handling of namespace and
+    # remapping arguments
+    rospy.init_node('rosconsole', anonymous=True)
     argv = rospy.myargv(argv)
 
     # process argv
