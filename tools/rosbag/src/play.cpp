@@ -121,7 +121,7 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
       std::vector<std::string> topics = vm["topics"].as< std::vector<std::string> >();
       for (std::vector<std::string>::iterator i = topics.begin();
            i != topics.end();
-           i++)
+           ++i)
         opts.topics.push_back(*i);
     }
 
@@ -130,7 +130,7 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
       std::vector<std::string> pause_topics = vm["pause-topics"].as< std::vector<std::string> >();
       for (std::vector<std::string>::iterator i = pause_topics.begin();
            i != pause_topics.end();
-           i++)
+           ++i)
         opts.pause_topics.push_back(*i);
     }
 
@@ -139,7 +139,7 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
       std::vector<std::string> bags = vm["bags"].as< std::vector<std::string> >();
       for (std::vector<std::string>::iterator i = bags.begin();
            i != bags.end();
-           i++)
+           ++i)
           opts.bags.push_back(*i);
     } else {
       if (vm.count("topics") || vm.count("pause-topics"))
