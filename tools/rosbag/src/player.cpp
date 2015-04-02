@@ -317,7 +317,7 @@ void Player::doPublish(MessageInstance const& m) {
     {
         for (std::vector<std::string>::iterator i = options_.pause_topics.begin();
              i != options_.pause_topics.end();
-             i++)
+             ++i)
         {
             if (topic == *i)
             {
@@ -515,7 +515,7 @@ int Player::readCharFromStdin() {
         b = ReadConsoleInput(input_handle, input_record, input_size, &events);
         if (b)
         {
-            for (unsigned int i = 0; i < events; i++)
+            for (unsigned int i = 0; i < events; ++i)
             {
                 if (input_record[i].EventType & KEY_EVENT & input_record[i].Event.KeyEvent.bKeyDown)
                 {
