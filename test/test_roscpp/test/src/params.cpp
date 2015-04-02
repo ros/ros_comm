@@ -547,8 +547,8 @@ TEST(Params, paramNodeHandleTemplateFunction)
 {
   NodeHandle nh;
 
-  EXPECT_TRUE( nh.param<std::string>( "string", "" ) == "test" );
-  EXPECT_TRUE( nh.param<std::string>( "gnirts", "test" ) == "test" );
+  EXPECT_EQ( nh.param<std::string>( "string", "" ), "test" );
+  EXPECT_EQ( nh.param<std::string>( "gnirts", "test" ), "test" );
 
   EXPECT_TRUE( nh.param<int>( "int", 0 ) == 10 );
   EXPECT_TRUE( nh.param<int>( "tni", 10 ) == 10 );
