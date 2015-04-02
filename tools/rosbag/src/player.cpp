@@ -102,14 +102,11 @@ void PlayerOptions::check() {
 Player::Player(PlayerOptions const& options) :
     options_(options),
     paused_(false),
-    terminal_modified_(false)
-{
+    terminal_modified_(false),
     // If we were given a list of topics to pause on, then go into that mode
     // by default (it can be toggled later via 't' from the keyboard).
-    if (options_.pause_topics.size() > 0)
-        pause_for_topics_ = true;
-    else
-        pause_for_topics_ = false;
+    pause_for_topics_(options_.pause_topics.size() > 0)
+{
 }
 
 Player::~Player() {
