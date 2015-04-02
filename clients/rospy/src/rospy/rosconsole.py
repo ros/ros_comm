@@ -60,7 +60,6 @@ def _get_cmd_list_optparse():
 
 
 def _rosconsole_cmd_list(argv):
-
     args = argv[2:]
     parser = _get_cmd_list_optparse()
     (options, args) = parser.parse_args(args)
@@ -90,7 +89,6 @@ def _get_cmd_set_optparse():
 
 
 def _rosconsole_cmd_set(argv):
-
     args = argv[2:]
     parser = _get_cmd_set_optparse()
     (options, args) = parser.parse_args(args)
@@ -120,7 +118,6 @@ def _get_cmd_get_optparse():
 
 
 def _rosconsole_cmd_get(argv):
-
     args = argv[2:]
     parser = _get_cmd_get_optparse()
     (options, args) = parser.parse_args(args)
