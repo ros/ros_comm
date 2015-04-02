@@ -1,6 +1,6 @@
 # Software License Agreement (BSD License)
 #
-# Copyright (c) 2012, Willow Garage, Inc.
+# Copyright (c) 2015, Chris Mansley, Open Source Robotics Foundation, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,11 +30,10 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import rosgraph
 import rosnode
 import rospy
 import rosservice
-# We'll resolve names via rosgraph.names
-import rosgraph
 
 
 class ROSConsoleException(Exception):
@@ -92,7 +91,7 @@ class LoggerLevelServiceCaller(object):
         try:
             service = rosservice.get_service_class_by_name(servicename)
         except rosservice.ROSServiceException as e:
-            raise ROSConsoleException("node %s doesn't exist or doesn't support query" % node)
+            raise ROSConsoleException("node '%s' doesn't exist or doesn't support query" % node)
 
         request = service._request_class()
         proxy = rospy.ServiceProxy(str(servicename), service)
@@ -103,8 +102,8 @@ class LoggerLevelServiceCaller(object):
 
         if response._slot_types[0] == 'roscpp/Logger[]':
             for logger in getattr(response, response.__slots__[0]):
-                self._current_loggers.append(getattr(logger, 'name'))
-                self._current_levels[getattr(logger, 'name')] = getattr(logger, 'level')
+                self._current_loggers.append(logger.name)
+                self._current_levels[logger.name] = getattr(logger, 'level')
         else:
             raise ROSConsoleException(repr(response))
 
@@ -124,7 +123,7 @@ class LoggerLevelServiceCaller(object):
         # Construct the service name, taking into account our namespace
         servicename = rosgraph.names.resolve_name(
             servicename, rosgraph.names.get_ros_namespace())
-        if self._current_levels[logger].lower() == level.lower():
+        if self._current_levels[logger] == level:
             return False
 
         service = rosservice.get_service_class_by_name(servicename)
