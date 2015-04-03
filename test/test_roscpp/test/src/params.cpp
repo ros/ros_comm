@@ -530,8 +530,8 @@ TEST(Params, mapBoolParam)
 
 TEST(Params, paramTemplateFunction)
 {
-  EXPECT_TRUE( param::param<std::string>( "string", "" ) == "test" );
-  EXPECT_TRUE( param::param<std::string>( "gnirts", "test" ) == "test" );
+  EXPECT_EQ( param::param<std::string>( "string", "" ), "test" );
+  EXPECT_EQ( param::param<std::string>( "gnirts", "test" ), "test" );
 
   EXPECT_TRUE( param::param<int>( "int", 0 ) == 10 );
   EXPECT_TRUE( param::param<int>( "tni", 10 ) == 10 );
