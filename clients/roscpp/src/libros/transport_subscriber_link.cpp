@@ -111,6 +111,7 @@ bool TransportSubscriberLink::handleHeader(const Header& header)
   m["message_definition"] = pt->getMessageDefinition();
   m["callerid"] = this_node::getName();
   m["latching"] = pt->isLatching() ? "1" : "0";
+  m["topic"] = topic_;
   connection_->writeHeader(m, boost::bind(&TransportSubscriberLink::onHeaderWritten, this, _1));
 
   pt->addSubscriberLink(shared_from_this());
