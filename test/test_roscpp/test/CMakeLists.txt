@@ -158,3 +158,5 @@ add_rostest(launch/local_remappings.xml)
 add_rostest(launch/global_remappings.xml)
 add_rostest(launch/ns_node_remapping.xml)
 add_rostest(launch/search_param.xml)
+
+add_rostest(launch/stamped_topic_statistics_with_empty_timestamp.xml)
