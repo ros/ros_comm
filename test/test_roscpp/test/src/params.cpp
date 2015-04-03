@@ -533,14 +533,14 @@ TEST(Params, paramTemplateFunction)
   EXPECT_EQ( param::param<std::string>( "string", "" ), "test" );
   EXPECT_EQ( param::param<std::string>( "gnirts", "test" ), "test" );
 
-  EXPECT_TRUE( param::param<int>( "int", 0 ) == 10 );
-  EXPECT_TRUE( param::param<int>( "tni", 10 ) == 10 );
+  EXPECT_EQ( param::param<int>( "int", 0 ), 10 );
+  EXPECT_EQ( param::param<int>( "tni", 10 ), 10 );
 
   EXPECT_DOUBLE_EQ( param::param<double>( "double", 0.0 ), 10.5 );
   EXPECT_DOUBLE_EQ( param::param<double>( "elbuod", 10.5 ), 10.5 );
 
-  EXPECT_FALSE( param::param<bool>( "bool", true ) );
-  EXPECT_TRUE( param::param<bool>( "loob", true ) );
+  EXPECT_EQ( param::param<bool>( "bool", true ), false );
+  EXPECT_EQ( param::param<bool>( "loob", true ), true );
 }
 
 TEST(Params, paramNodeHandleTemplateFunction)
@@ -550,14 +550,14 @@ TEST(Params, paramNodeHandleTemplateFunction)
   EXPECT_EQ( nh.param<std::string>( "string", "" ), "test" );
   EXPECT_EQ( nh.param<std::string>( "gnirts", "test" ), "test" );
 
-  EXPECT_TRUE( nh.param<int>( "int", 0 ) == 10 );
-  EXPECT_TRUE( nh.param<int>( "tni", 10 ) == 10 );
+  EXPECT_EQ( nh.param<int>( "int", 0 ), 10 );
+  EXPECT_EQ( nh.param<int>( "tni", 10 ), 10 );
 
   EXPECT_DOUBLE_EQ( nh.param<double>( "double", 0.0 ), 10.5 );
   EXPECT_DOUBLE_EQ( nh.param<double>( "elbuod", 10.5 ), 10.5 );
 
-  EXPECT_FALSE( nh.param<bool>( "bool", true ) );
-  EXPECT_TRUE( nh.param<bool>( "loob", true ) );
+  EXPECT_EQ( nh.param<bool>( "bool", true ), false );
+  EXPECT_EQ( nh.param<bool>( "loob", true ), true );
 }
 
 int
