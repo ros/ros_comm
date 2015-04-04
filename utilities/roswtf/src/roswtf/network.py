@@ -53,7 +53,11 @@ def ip_check(ctx):
 
     remote_ips = list(set(global_ips) - set(local_addrs))
     if remote_ips:
-        return "Local hostname [%s] resolves to [%s], which does not appear to be a local IP address %s."%(socket.gethostname(), ','.join(remote_ips), str(local_addrs))
+        retval = "Local hostname [%s] resolves to [%s], which does not appear to be a local IP address %s." % (socket.gethostname(), ','.join(remote_ips), str(local_addrs))
+        # IPv6 support % to denote zone/scope ids. The value is expanded
+        # in other functions, this is why we are using replace command in
+        # the return. For more info https://github.com/ros/ros_comm/pull/598
+        return retval.replace('%', '%%')
 
 # suggestion by mquigley based on laptop dhcp issues    
 def ros_hostname_check(ctx):
