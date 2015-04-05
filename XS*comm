@@ -1,0 +1,15 @@
+#access data-sheet [comm-functionality] required as (user_list) will be collated with ADELLE protocol+
++.CS memory.mod
+>>list_file0-codex
+>list_codex-0
+>file_.CS
+
+*data.CS >>_codex-3_0
+          >_FUNCTION.CS
+          >#USER.XS
+          >DATA.LIST
+          >format-ADELLE
+
++file_.XS
+_ADELLE.XS[data-function] *list
+"there wasn't a way out ~ all we had was our conversation."
