@@ -2,6 +2,10 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add DELAYED_THROTTLE versions of log macros (`#571 <https://github.com/ros/ros_comm/issues/571>`_)
+
 1.11.10 (2014-12-22)
 --------------------
 * fix various defects reported by coverity

@@ -2,6 +2,10 @@
 Changelog for package rosbag_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* support large bagfiles (>2GB) on 32-bit systems (`#464 <https://github.com/ros/ros_comm/issues/464>`_)
+
 1.11.10 (2014-12-22)
 --------------------
 * fix various defects reported by coverity

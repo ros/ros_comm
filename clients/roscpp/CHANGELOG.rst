@@ -2,6 +2,14 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix memory leak in transport constructor (`#570 <https://github.com/ros/ros_comm/pull/570>`_)
+* fix computation of stddev in statistics (`#556 <https://github.com/ros/ros_comm/pull/556>`_)
+* fix empty connection header topic (`#543 <https://github.com/ros/ros_comm/issues/543>`_)
+* alternative API to get parameter values (`#592 <https://github.com/ros/ros_comm/pull/592>`_)
+* add getCached() for float parameters (`#584 <https://github.com/ros/ros_comm/pull/584>`_)
+
 1.11.10 (2014-12-22)
 --------------------
 * fix various defects reported by coverity
