@@ -261,8 +261,9 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
         if sub.add_connection(conn): #pass tcp connection to handler
             return 1, "Connected topic[%s]. Transport impl[%s]"%(resolved_name, conn.__class__.__name__), dest_port
         else:
+            # _SubscriberImpl already closed or duplicate subscriber created
             conn.close()
-            return 0, "ERROR: Race condition failure: duplicate topic subscriber [%s] was created"%(resolved_name), 0
+            return 0, "ERROR: Race condition failure creating topic subscriber [%s]"%(resolved_name), 0
 
     def supports(self, protocol):
         """
