@@ -2,8 +2,8 @@
 Changelog for package roslz4
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.11 (2015-04-16)
+--------------------
 * fix import of compiled library with Python 3.x (`#563 <https://github.com/ros/ros_comm/pull/563>`_)
 
 1.11.10 (2014-12-22)

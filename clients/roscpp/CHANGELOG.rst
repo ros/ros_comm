@@ -2,8 +2,8 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.11 (2015-04-16)
+--------------------
 * fix memory leak in transport constructor (`#570 <https://github.com/ros/ros_comm/pull/570>`_)
 * fix computation of stddev in statistics (`#556 <https://github.com/ros/ros_comm/pull/556>`_)
 * fix empty connection header topic (`#543 <https://github.com/ros/ros_comm/issues/543>`_)

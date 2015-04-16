@@ -2,8 +2,8 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.11 (2015-04-16)
+--------------------
 * add support for pausing when specified topics are about to be published (`#569 <https://github.com/ros/ros_comm/pull/569>`_)
 
 1.11.10 (2014-12-22)

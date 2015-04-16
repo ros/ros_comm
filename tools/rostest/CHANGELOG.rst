@@ -2,8 +2,8 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.11 (2015-04-16)
+--------------------
 * add DEPENDENCIES option to CMake function add_rostest (`#546 <https://github.com/ros/ros_comm/issues/546>`_)
 
 1.11.10 (2014-12-22)
