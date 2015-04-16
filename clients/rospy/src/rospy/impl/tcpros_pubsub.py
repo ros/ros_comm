@@ -255,14 +255,18 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
         t = threading.Thread(name=resolved_name, target=robust_connect_subscriber, args=(conn, dest_addr, dest_port, pub_uri, sub.receive_callback,resolved_name))
         # don't enable this just yet, need to work on this logic
         #rospy.core._add_shutdown_thread(t)
-        t.start()
 
         # Attach connection to _SubscriberImpl
         if sub.add_connection(conn): #pass tcp connection to handler
+            # since the thread might cause the connection to close
+            # it should only be started after the connection has been added to the subscriber
+            # https://github.com/ros/ros_comm/issues/544
+            t.start()
             return 1, "Connected topic[%s]. Transport impl[%s]"%(resolved_name, conn.__class__.__name__), dest_port
         else:
+            # _SubscriberImpl already closed or duplicate subscriber created
             conn.close()
-            return 0, "ERROR: Race condition failure: duplicate topic subscriber [%s] was created"%(resolved_name), 0
+            return 0, "ERROR: Race condition failure creating topic subscriber [%s]"%(resolved_name), 0
 
     def supports(self, protocol):
         """
