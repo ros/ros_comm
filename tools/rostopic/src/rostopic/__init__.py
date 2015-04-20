@@ -300,28 +300,37 @@ def msgevalgen(pattern):
 
     # use slice arguments if present
     array_index_or_slice_object = None
-    index = msg_attribute.find('[')
-    if index != -1:
-        if not msg_attribute.endswith(']'):
+    rec_msgeval = None
+    index_start = msg_attribute.find('[')
+    if index_start != -1:
+        index_end = msg_attribute.find(']')
+        if index_end == -1:
             sys.stderr.write("Topic name '%s' contains '[' but does not end with ']'\n" % msg_attribute)
             return None
-        index_string = msg_attribute[index + 1:-1]
+        index_string = msg_attribute[index_start + 1:index_end]
         try:
             array_index_or_slice_object = _get_array_index_or_slice_object(index_string)
         except AssertionError as e:
             sys.stderr.write("Topic name '%s' contains invalid slice argument '%s': %s\n" % (msg_attribute, index_string, str(e)))
             return None
-        msg_attribute = msg_attribute[:index]
+        msg_attribute_tail = msg_attribute[index_end+1:]
+        rec_msgeval = msgevalgen(msg_attribute_tail)
+        msg_attribute = msg_attribute[:index_start]
 
     def msgeval(msg):
         # I will probably replace this with some less beautiful but more efficient
         try:
             value = _get_nested_attribute(msg, msg_attribute)
         except AttributeError as e:
-            sys.stdout.write("no field named [%s]"%pattern+"\n")
+            if len(msg) > 1:
+                sys.stdout.write("slicing only supported for last array index\n")
+            else:
+                sys.stdout.write("no field named [%s]\n"%pattern)
             return None
         if array_index_or_slice_object is not None:
             value = value[array_index_or_slice_object]
+            if rec_msgeval is not None:
+                value = rec_msgeval(value)
         return value
     return msgeval
 
@@ -788,7 +797,9 @@ def _rostopic_echo(topic, callback_echo, bag_file=None, echo_all_topics=False):
                     index = submsg_class.__slots__.index(field)
                     type_information = submsg_class._slot_types[index]
                     if fields:
-                        submsg_class = roslib.message.get_message_class(type_information)
+                        submsg_class = roslib.message.get_message_class(type_information.split('[')[0])
+                        if not submsg_class:
+                            raise ROSTopicException("Cannot load message class for [%s]. Are your messages built?"%type_information)
 
         use_sim_time = rospy.get_param('/use_sim_time', False)
         sub = rospy.Subscriber(real_topic, msg_class, callback_echo.callback, {'topic': topic, 'type_information': type_information})
