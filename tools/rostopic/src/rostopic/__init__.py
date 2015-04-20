@@ -334,9 +334,13 @@ def msgevalgen(pattern):
                 sys.stdout.write("no field named [%s]\n"%pattern)
             return None
         if array_index_or_slice_object is not None:
-            value = value[array_index_or_slice_object]
-            if rec_msgeval is not None:
-                value = rec_msgeval(value)
+            try:
+                value = value[array_index_or_slice_object]
+                if rec_msgeval is not None:
+                    value = rec_msgeval(value)
+            except IndexError as e:
+                sys.stdout.write("%s: %s\n" % (str(e), pattern))
+                return None
         return value
     return msgeval
 
