@@ -303,7 +303,7 @@ def msgevalgen(pattern):
     rec_msgeval = None
     index_start = msg_attribute.find('[')
     if index_start != -1:
-        index_end = msg_attribute.find(']')
+        index_end = msg_attribute.find(']', index_start)
         if index_end == -1:
             sys.stderr.write("Topic name '%s' contains '[' but does not end with ']'\n" % msg_attribute)
             return None
@@ -322,9 +322,15 @@ def msgevalgen(pattern):
         try:
             value = _get_nested_attribute(msg, msg_attribute)
         except AttributeError as e:
+            # slicing several times, e.g. /topic/field[0:3]/field[0:2],
+            # would generate a list of msgs for each slice. However,
+            # _get_nested_attribute can only handle a single msg and
+            # its not clear, how to output the product of several slicings.
+            # Hence, we warn the user, if msg is a list (and extraction failed).
             if len(msg) > 1:
                 sys.stdout.write("slicing only supported for last array index\n")
             else:
+                # The usual reason for a failure is, that the name is wrong:
                 sys.stdout.write("no field named [%s]\n"%pattern)
             return None
         if array_index_or_slice_object is not None:
