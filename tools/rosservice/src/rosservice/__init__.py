@@ -732,7 +732,7 @@ def rosservicemain(argv=sys.argv):
         # filter remapping args, #3433
         argv = [a for a in argv if not rosgraph.names.REMAP in a]
         command = argv[1]
-        if command in 'list':
+        if command == 'list':
             _rosservice_cmd_list(argv)
         elif command == 'info':
             _rosservice_cmd_info(argv)

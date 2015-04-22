@@ -1767,7 +1767,7 @@ def rostopicmain(argv=None):
             _rostopic_cmd_hz(argv)
         elif command == 'type':
             _rostopic_cmd_type(argv)
-        elif command in 'list':
+        elif command == 'list':
             _rostopic_cmd_list(argv)
         elif command == 'info':
             _rostopic_cmd_info(argv)
