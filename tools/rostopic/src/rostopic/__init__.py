@@ -285,64 +285,59 @@ def _rostopic_bw(topic, window_size=-1):
         _sleep(1.0)
         rt.print_bw()
 
-# TODO: port to the version I wrote for rxplot instead as it should be more efficient
-
+# code adapted from rqt_plot
 def msgevalgen(pattern):
     """
-    Generates a function that returns the relevant field (aka 'subtopic') of a Message object
-    :param pattern: subtopic, e.g. /x. Must have a leading '/' if specified, ``str``
+    Generates a function that returns the relevant field(s) (aka 'subtopic(s)') of a Message object
+    :param pattern: subtopic, e.g. /x[2:]/y[:-1]/z, ``str``
     :returns: function that converts a message into the desired value, ``fn(Message) -> value``
     """
-    if not pattern or pattern == '/':
-        return None
-    assert pattern[0] == '/'
-    msg_attribute = pattern[1:]
+    evals = [] # list of (field_name, slice_object) pairs
+    fields = [f for f in pattern.split('/') if f]
+    for f in fields:
+        if '[' in f:
+            field_name, rest = f.split('[')
+            rest = rest[:rest.find(']')]
+            try:
+                array_index_or_slice_object = _get_array_index_or_slice_object(rest)
+            except AssertionError as e:
+                sys.stderr.write("field '%s' has invalid slice argument '%s': %s\n"
+                                 % (field_name, rest, str(e)))
+                return None
+            evals.append((field_name, array_index_or_slice_object))
+        else:
+            evals.append((f, None))
 
-    # use slice arguments if present
-    array_index_or_slice_object = None
-    rec_msgeval = None
-    index_start = msg_attribute.find('[')
-    if index_start != -1:
-        index_end = msg_attribute.find(']', index_start)
-        if index_end == -1:
-            sys.stderr.write("Topic name '%s' contains '[' but does not end with ']'\n" % msg_attribute)
-            return None
-        index_string = msg_attribute[index_start + 1:index_end]
-        try:
-            array_index_or_slice_object = _get_array_index_or_slice_object(index_string)
-        except AssertionError as e:
-            sys.stderr.write("Topic name '%s' contains invalid slice argument '%s': %s\n" % (msg_attribute, index_string, str(e)))
-            return None
-        msg_attribute_tail = msg_attribute[index_end+1:]
-        rec_msgeval = msgevalgen(msg_attribute_tail)
-        msg_attribute = msg_attribute[:index_start]
+    def _msgeval(msg, evals):
+        if not evals:
+            return msg
+        for i, (field_name, slice_object) in enumerate(evals):
+            try: # access field first
+                msg = getattr(msg, field_name)
+            except AttributeError:
+                sys.stderr.write("no field named [%s]\n" % field_name)
+                return None
+
+            if slice_object is not None: # access slice
+                try:
+                    msg = msg.__getitem__(slice_object)
+                except IndexError as e:
+                    sys.stdout.write("%s: %s\n" % (str(e), pattern))
+                    return None
+
+                # if a list is returned here (i.e. not only a single element accessed),
+                # we need to recursively call msg_eval() with the rest of evals
+                # in order to handle nested slices
+                if isinstance(msg, list):
+                    rest = evals[i+1:]
+                    return [_msgeval(m, rest) for m in msg]
+        return msg
 
     def msgeval(msg):
-        # I will probably replace this with some less beautiful but more efficient
-        try:
-            value = _get_nested_attribute(msg, msg_attribute)
-        except AttributeError as e:
-            # slicing several times, e.g. /topic/field[0:3]/field[0:2],
-            # would generate a list of msgs for each slice. However,
-            # _get_nested_attribute can only handle a single msg and
-            # its not clear, how to output the product of several slicings.
-            # Hence, we warn the user, if msg is a list (and extraction failed).
-            if len(msg) > 1:
-                sys.stdout.write("slicing only supported for last array index\n")
-            else:
-                # The usual reason for a failure is, that the name is wrong:
-                sys.stdout.write("no field named [%s]\n"%pattern)
-            return None
-        if array_index_or_slice_object is not None:
-            try:
-                value = value[array_index_or_slice_object]
-                if rec_msgeval is not None:
-                    value = rec_msgeval(value)
-            except IndexError as e:
-                sys.stdout.write("%s: %s\n" % (str(e), pattern))
-                return None
-        return value
-    return msgeval
+        return _msgeval(msg, evals)
+
+    return msgeval if evals else None
+
 
 def _get_array_index_or_slice_object(index_string):
     assert index_string != '', 'empty array index'
