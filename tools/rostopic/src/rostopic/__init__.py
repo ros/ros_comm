@@ -322,7 +322,7 @@ def msgevalgen(pattern):
                 try:
                     msg = msg.__getitem__(slice_object)
                 except IndexError as e:
-                    sys.stdout.write("%s: %s\n" % (str(e), pattern))
+                    sys.stderr.write("%s: %s\n" % (str(e), pattern))
                     return None
 
                 # if a list is returned here (i.e. not only a single element accessed),
