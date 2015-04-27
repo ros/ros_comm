@@ -2,6 +2,9 @@
 Changelog for package message_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.11.11 (2015-04-16)
 --------------------
 * implement message filter cache in Python (`#599 <https://github.com/ros/ros_comm/pull/599>`_)

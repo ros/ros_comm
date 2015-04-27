@@ -2,6 +2,10 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix location of rostest result files (`#82 <https://github.com/ros/ros/pull/82>`_)
+
 1.11.11 (2015-04-16)
 --------------------
 * add DEPENDENCIES option to CMake function add_rostest (`#546 <https://github.com/ros/ros_comm/issues/546>`_)

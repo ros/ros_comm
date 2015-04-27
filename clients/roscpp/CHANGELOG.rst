@@ -2,6 +2,9 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.11.11 (2015-04-16)
 --------------------
 * fix memory leak in transport constructor (`#570 <https://github.com/ros/ros_comm/pull/570>`_)
