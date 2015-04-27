@@ -2,8 +2,8 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.12 (2015-04-27)
+--------------------
 * fix location of rostest result files (`#82 <https://github.com/ros/ros/pull/82>`_)
 
 1.11.11 (2015-04-16)
