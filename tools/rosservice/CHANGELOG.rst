@@ -2,6 +2,9 @@
 Changelog for package rosservice
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.11.12 (2015-04-27)
 --------------------
 * fix command parsing for rosservice and rostopic to not accept arbitrary substrings of 'list' (`#609 <https://github.com/ros/ros_comm/issues/609>`_)
