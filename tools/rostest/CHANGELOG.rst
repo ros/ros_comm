@@ -2,8 +2,8 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.13 (2015-04-28)
+--------------------
 * fix location of rostest result files (`#611 <https://github.com/ros/ros_comm/issues/611>`_)
 
 1.11.12 (2015-04-27)
