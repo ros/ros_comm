@@ -95,8 +95,9 @@ def rostestmain():
     parser.add_option("--results-filename", metavar="RESULTS_FILENAME",
                       dest="results_filename", default=None,
                       help="results_filename")
-    parser.add_option("--results-dir", metavar="RESULTS_DIR",
-                      help="results_filename")
+    parser.add_option("--results-base-dir", metavar="RESULTS_BASE_DIR",
+                      help="The base directory of the test results. The test result file is " +
+                           "created in a subfolder name PKG_DIR.")
     (options, args) = parser.parse_args()
     try:
         args = roslaunch.rlutil.resolve_launch_arguments(args)
@@ -136,8 +137,8 @@ def rostestmain():
         outname = rostest_name_from_path(pkg_dir, test_file)
 
     env = None
-    if options.results_dir:
-        env = {ROS_TEST_RESULTS_DIR: options.results_dir}
+    if options.results_base_dir:
+        env = {ROS_TEST_RESULTS_DIR: options.results_base_dir}
 
     # #1140
     if not os.path.isfile(test_file):
