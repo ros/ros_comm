@@ -1475,6 +1475,8 @@ class _ChunkHeader(object):
             return 'compression: %s, size: %d, uncompressed: %d' % (self.compression, self.compressed_size, self.uncompressed_size)
 
 class ComparableMixin(object):
+    __slots__ = []
+
     def _compare(self, other, method):
         try:
             return method(self._cmpkey(), other._cmpkey())
@@ -1502,6 +1504,8 @@ class ComparableMixin(object):
         return self._compare(other, lambda s, o: s != o)
 
 class _IndexEntry(ComparableMixin):
+    __slots__ = ['time']
+
     def __init__(self, time):
         self.time = time
 
@@ -1509,6 +1513,8 @@ class _IndexEntry(ComparableMixin):
         return self.time
 
 class _IndexEntry102(_IndexEntry):
+    __slots__ = ['offset']
+
     def __init__(self, time, offset):
         self.time   = time
         self.offset = offset
@@ -1521,6 +1527,8 @@ class _IndexEntry102(_IndexEntry):
         return '%d.%d: %d' % (self.time.secs, self.time.nsecs, self.offset)
 
 class _IndexEntry200(_IndexEntry):
+    __slots__ = ['chunk_pos', 'offset']
+
     def __init__(self, time, chunk_pos, offset):
         self.time      = time
         self.chunk_pos = chunk_pos
