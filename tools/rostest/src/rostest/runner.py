@@ -190,7 +190,9 @@ def setUp(self):
     # new test_parent for each run. we are a bit inefficient as it would be possible to
     # reuse the roslaunch base infrastructure for each test, but the roslaunch code
     # is not abstracted well enough yet
-    self.test_parent = ROSTestLaunchParent(self.config, [self.test_file])
+
+    # As long as passed here the port num can be specified.
+    self.test_parent = ROSTestLaunchParent(self.config, [self.test_file], port=self.config.master.get_port())
     
     printlog("setup[%s] run_id[%s] starting", self.test_file, self.test_parent.run_id)
 
@@ -212,7 +214,7 @@ def tearDown(self):
         
     printlog("rostest teardown %s complete", self.test_file)
     
-def createUnitTest(pkg, test_file):
+def createUnitTest(pkg, test_file, port=None):
     """
     Unit test factory. Constructs a unittest class based on the roslaunch
 
@@ -220,9 +222,11 @@ def createUnitTest(pkg, test_file):
     @type  pkg: str
     @param test_file: rostest filename
     @type  test_file: str
+    @param port: ROS Master port to run a test at
+    @type  port: int
     """
     # parse the config to find the test files
-    config = roslaunch.parent.load_config_default([test_file], None)
+    config = roslaunch.parent.load_config_default([test_file], port)
 
     # pass in config to class as a property so that test_parent can be initialized
     classdict = { 'setUp': setUp, 'tearDown': tearDown, 'config': config,

@@ -98,6 +98,8 @@ def rostestmain():
     parser.add_option("--results-base-dir", metavar="RESULTS_BASE_DIR",
                       help="The base directory of the test results. The test result file is " +
                            "created in a subfolder name PKG_DIR.")
+    parser.add_option("--port", metavar="PORT",
+                      help="ROS Master port number (default: random unused port)")
     (options, args) = parser.parse_args()
     try:
         args = roslaunch.rlutil.resolve_launch_arguments(args)
@@ -147,7 +149,7 @@ def rostestmain():
         parser.error("test file is invalid. Generated failure case result file in %s"%results_file)
         
     try:
-        testCase = rostest.runner.createUnitTest(pkg, test_file)
+        testCase = rostest.runner.createUnitTest(pkg, test_file, port=options.port)
         suite = unittest.TestLoader().loadTestsFromTestCase(testCase)
 
         if options.text_mode:
