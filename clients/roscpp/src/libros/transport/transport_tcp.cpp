@@ -643,45 +643,57 @@ TransportTCPPtr TransportTCP::accept()
 
 void TransportTCP::socketUpdate(int events)
 {
+  // If we call a callback while holding the close_mutex_, we might cause a
+  // deadlock. It is unnecessary anyway, since any TransportTCP methods
+  // called by the callback will lock the mutex again.
+
+  std::vector< boost::function<void()> > callbacks;
+
+  // First determine the callbacks that we need to call
   {
     boost::recursive_mutex::scoped_lock lock(close_mutex_);
     if (closed_)
     {
       return;
     }
-  }
 
-  // Handle read events before err/hup/nval, since there may be data left on the wire
-  if ((events & POLLIN) && expecting_read_)
-  {
-    if (is_server_)
+    // Handle read events before err/hup/nval, since there may be data left on the wire
+    if ((events & POLLIN) && expecting_read_)
     {
-      // Should not block here, because poll() said that it's ready
-      // for reading
-      TransportTCPPtr transport = accept();
-      if (transport)
+      if (is_server_)
       {
-        ROS_ASSERT(accept_cb_);
-        accept_cb_(transport);
+        // Should not block here, because poll() said that it's ready
+        // for reading
+        TransportTCPPtr transport = accept();
+        if (transport)
+        {
+          ROS_ASSERT(accept_cb_);
+          callbacks.push_back(boost::bind(accept_cb_, transport));
+        }
+      }
+      else
+      {
+        if (read_cb_)
+        {
+          callbacks.push_back(boost::bind(read_cb_, shared_from_this()));
+        }
       }
     }
-    else
+
+    if ((events & POLLOUT) && expecting_write_)
     {
-      if (read_cb_)
+      if (write_cb_)
       {
-        read_cb_(shared_from_this());
+        callbacks.push_back(boost::bind(write_cb_, shared_from_this()));
       }
     }
   }
 
-  if ((events & POLLOUT) && expecting_write_)
-  {
-    if (write_cb_)
-    {
-      write_cb_(shared_from_this());
-    }
-  }
+  // Now call them without the mutex
+  for (unsigned int i = 0; i < callbacks.size(); ++i)
+    callbacks[i]();
 
+  // Now we can re-lock the mutex and handle socket errors
   boost::recursive_mutex::scoped_lock lock(close_mutex_);
   if (closed_)
   {
