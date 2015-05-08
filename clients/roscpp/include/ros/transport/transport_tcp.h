@@ -141,6 +141,16 @@ private:
 
   socket_fd_t sock_;
   bool closed_;
+
+  /**
+   * This mutex protects the closed_ property and is also held while
+   * close() is running. Please refer to close() to find out when you need
+   * to hold it.
+   *
+   * @note It is *not* allowed to hold this mutex while calling callbacks, since
+   *   those are typically higher-level functions. Calling those with held
+   *   mutexes might lead to deadlocks.
+   **/
   boost::recursive_mutex close_mutex_;
 
   bool expecting_read_;
