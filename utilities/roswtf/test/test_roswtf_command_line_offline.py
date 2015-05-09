@@ -80,6 +80,12 @@ class TestRoswtfOffline(unittest.TestCase):
             pass
         else:
             paths.append(path)
+        try:
+            path = rospack.get_path('geneus')
+        except rospkg.ResourceNotFound:
+            pass
+        else:
+            paths.append(path)
         env['ROS_PACKAGE_PATH'] = os.pathsep.join(paths)
 
         cwd  = get_roswtf_path()
