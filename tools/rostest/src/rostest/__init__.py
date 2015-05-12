@@ -128,7 +128,7 @@ def rosrun(package, test_name, test, sysargs=None):
     text_mode = '--text' in sysargs
     coverage_mode = '--cov' in sysargs
     if coverage_mode:
-        _start_coverage(package)
+        _start_coverage([package])
 
     import unittest
     import rospy
