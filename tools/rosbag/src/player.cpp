@@ -618,7 +618,7 @@ void TimePublisher::runClock(const ros::WallDuration& duration)
 void TimePublisher::forceClock()
 {
     ros::WallTime t = ros::WallTime::now();
-    if(t - next_pub_ > ros::WallDuration(0.0))
+    if(t > next_pub_)
     {
         stepClock();
     }

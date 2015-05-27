@@ -28,7 +28,7 @@ class ClockSub(unittest.TestCase):
 
         time.sleep(2)
 
-        self.assertEqual(self.success, True)
+        self.assertTrue(self.success)
 
 if __name__ == '__main__':
     rostest.rosrun('rosbag', 'clock_sub', ClockSub, sys.argv)
