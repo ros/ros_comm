@@ -417,6 +417,9 @@ void Player::doKeepAlive() {
         printTime();
         time_publisher_.runClock(ros::WallDuration(.1));
     }
+
+    // force clock publishing if time_publisher_ accumulated too much delay
+    time_publisher_.forceClock();
 }
 
 

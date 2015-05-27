@@ -25,6 +25,8 @@ if(CATKIN_ENABLE_TESTING)
     FILENAME test/test_rosbag_latched_pub.bag MD5 ed70b8cbb8a53220434aeb24bccf7342)
   catkin_download_test_data(download_data_test_clock.bag http://tutux.web4all.fr/ros/clock.bag
     FILENAME test/clock.bag MD5 d81aca4472ad4220b282ecf9e2e557e7)
+  catkin_download_test_data(download_data_test_clock_alive.bag http://tutux.web4all.fr/ros/clock_alive.bag
+    FILENAME test/clock_alive.bag MD5 8b1b690b93161eec88396aa72957c5a8)
 
   catkin_add_nosetests(test/test_bag.py)
 
@@ -45,6 +47,9 @@ if(CATKIN_ENABLE_TESTING)
   configure_file(test/clock_sub.test.in 
                  ${PROJECT_BINARY_DIR}/test/clock_sub.test)
   add_rostest(${PROJECT_BINARY_DIR}/test/clock_sub.test)
+  configure_file(test/clock_sub_alive.test.in 
+                 ${PROJECT_BINARY_DIR}/test/clock_sub_alive.test)
+  add_rostest(${PROJECT_BINARY_DIR}/test/clock_sub_alive.test)
 
   add_rostest(test/latched_pub.test)
   configure_file(test/latched_sub.test.in ${PROJECT_BINARY_DIR}/test/latched_sub.test)
