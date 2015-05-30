@@ -139,7 +139,7 @@ Changelog for package roscpp
 * allow sending data exceeding 2GB in chunks (`#4049 <https://code.ros.org/trac/ros/ticket/4049>`_)
 * update getParam() doc (`#1460 <https://code.ros.org/trac/ros/ticket/1460>`_)
 * add param::get(float) (`#3754 <https://code.ros.org/trac/ros/ticket/3754>`_)
-* update inactive assert when publishing message with md5sum *, update related tests (`#3714 <https://code.ros.org/trac/ros/ticket/3714>`_)
+* update inactive assert when publishing message with md5sum "*", update related tests (`#3714 <https://code.ros.org/trac/ros/ticket/3714>`_)
 * fix ros master retry timeout (`#4024 <https://code.ros.org/trac/ros/ticket/4024>`_)
 * fix inactive assert when publishing message with wrong type (`#3714 <https://code.ros.org/trac/ros/ticket/3714>`_)
 
