@@ -260,7 +260,7 @@ class ROSTopicBandwidth(object):
 def _isstring_type(t):
     valid_types = [str]
     try:
-        valid_type.append(unicode)
+        valid_types.append(unicode)
     except NameError:
         pass
     return t in valid_types
