@@ -11,4 +11,5 @@ catkin_install_python(PROGRAMS scripts/rostopic
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest)
   add_rostest(test/rostopic.test)
+  catkin_add_nosetests(test/test_rostopic_command_line_offline.py)
 endif()
