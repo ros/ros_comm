@@ -296,8 +296,8 @@ def msgevalgen(pattern):
     fields = [f for f in pattern.split('/') if f]
     for f in fields:
         if '[' in f:
-            field_name, rest = f.split('[')
-            rest = rest[:rest.find(']')]
+            field_name, rest = f.split('[', 1)
+            rest = rest[:-1]  # slice content, removing closing bracket
             try:
                 array_index_or_slice_object = _get_array_index_or_slice_object(rest)
             except AssertionError as e:
@@ -309,8 +309,6 @@ def msgevalgen(pattern):
             evals.append((f, None))
 
     def _msgeval(msg, evals):
-        if not evals:
-            return msg
         for i, (field_name, slice_object) in enumerate(evals):
             try: # access field first
                 msg = getattr(msg, field_name)

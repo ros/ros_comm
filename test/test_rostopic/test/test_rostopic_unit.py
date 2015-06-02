@@ -401,6 +401,7 @@ class TestRostopicUnit(unittest.TestCase):
         self.assertEqual(f(''), None)
         self.assertEqual(f('/'), None)
         self.assertListEqual(f('/vals')(msg), msg.vals)
+        self.assertListEqual(f('/vals/')(msg), msg.vals)
         # first-level slicing
         self.assertListEqual(f('/vals[:]')(msg), msg.vals)
         self.assertListEqual(f('/vals[0:2]')(msg), msg.vals[0:2])
