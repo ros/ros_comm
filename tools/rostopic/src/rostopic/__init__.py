@@ -60,7 +60,7 @@ import genpy
 
 import roslib.message
 import rosgraph
-#TODO: lazy-import rospy or move rospy-dependent routines to separate location
+# TODO: lazy-import rospy or move rospy-dependent routines to separate location
 import rospy
 
 class ROSTopicException(Exception):
@@ -280,7 +280,7 @@ def _rostopic_bw(topic, window_size=-1):
     # we use a large buffer size as we don't know what sort of messages we're dealing with.
     # may parameterize this in the future
     sub = rospy.Subscriber(real_topic, rospy.AnyMsg, rt.callback)
-    print("subscribed to [%s]"%real_topic)
+    print("subscribed to [%s]" % real_topic)
     while not rospy.is_shutdown():
         _sleep(1.0)
         rt.print_bw()
@@ -292,7 +292,7 @@ def msgevalgen(pattern):
     :param pattern: subtopic, e.g. /x[2:]/y[:-1]/z, ``str``
     :returns: function that converts a message into the desired value, ``fn(Message) -> value``
     """
-    evals = [] # list of (field_name, slice_object) pairs
+    evals = []  # list of (field_name, slice_object) pairs
     fields = [f for f in pattern.split('/') if f]
     for f in fields:
         if '[' in f:
@@ -329,7 +329,7 @@ def msgevalgen(pattern):
                 # we need to recursively call msg_eval() with the rest of evals
                 # in order to handle nested slices
                 if isinstance(msg, list):
-                    rest = evals[i+1:]
+                    rest = evals[i + 1:]
                     return [_msgeval(m, rest) for m in msg]
         return msg
 
@@ -461,7 +461,7 @@ def get_topic_class(topic, blocking=False):
         return None, None, None
     msg_class = roslib.message.get_message_class(topic_type)
     if not msg_class:
-        raise ROSTopicException("Cannot load message class for [%s]. Are your messages built?"%topic_type)
+        raise ROSTopicException("Cannot load message class for [%s]. Are your messages built?" % topic_type)
     return msg_class, real_topic, msg_eval
 
 def _str_plot_fields(val, f, field_filter):
@@ -804,7 +804,7 @@ def _rostopic_echo(topic, callback_echo, bag_file=None, echo_all_topics=False):
                     if fields:
                         submsg_class = roslib.message.get_message_class(type_information.split('[')[0])
                         if not submsg_class:
-                            raise ROSTopicException("Cannot load message class for [%s]. Are your messages built?"%type_information)
+                            raise ROSTopicException("Cannot load message class for [%s]. Are your messages built?" % type_information)
 
         use_sim_time = rospy.get_param('/use_sim_time', False)
         sub = rospy.Subscriber(real_topic, msg_class, callback_echo.callback, {'topic': topic, 'type_information': type_information})
