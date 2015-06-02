@@ -301,8 +301,8 @@ def msgevalgen(pattern):
             try:
                 array_index_or_slice_object = _get_array_index_or_slice_object(rest)
             except AssertionError as e:
-                sys.stderr.write("field '%s' has invalid slice argument '%s': %s\n"
-                                 % (field_name, rest, str(e)))
+                print("field '%s' has invalid slice argument '%s': %s"
+                      % (field_name, rest, str(e)), file=sys.stderr)
                 return None
             evals.append((field_name, array_index_or_slice_object))
         else:
@@ -315,14 +315,14 @@ def msgevalgen(pattern):
             try: # access field first
                 msg = getattr(msg, field_name)
             except AttributeError:
-                sys.stderr.write("no field named [%s]\n" % field_name)
+                print("no field named %s in %s" % (field_name, pattern), file=sys.stderr)
                 return None
 
             if slice_object is not None: # access slice
                 try:
                     msg = msg.__getitem__(slice_object)
                 except IndexError as e:
-                    sys.stderr.write("%s: %s\n" % (str(e), pattern))
+                    print("%s: %s" % (str(e), pattern), file=sys.stderr)
                     return None
 
                 # if a list is returned here (i.e. not only a single element accessed),
