@@ -390,7 +390,7 @@ class TestRostopicUnit(unittest.TestCase):
         self.assertEquals(['seq', 'stamp'], list(f(m)))
 
     def test_slicing(self):
-        from test_rospy.msg import ArrayVal, Val
+        from test_rostopic.msg import ArrayVal, Val
         from rostopic import msgevalgen as f
 
         # prepare a sliceable msg
@@ -400,7 +400,7 @@ class TestRostopicUnit(unittest.TestCase):
 
         self.assertEqual(f(''), None)
         self.assertEqual(f('/'), None)
-        self.assertListEqual(f('/vals')(msg),    msg.vals)
+        self.assertListEqual(f('/vals')(msg), msg.vals)
         # first-level slicing
         self.assertListEqual(f('/vals[:]')(msg), msg.vals)
         self.assertListEqual(f('/vals[0:2]')(msg), msg.vals[0:2])
