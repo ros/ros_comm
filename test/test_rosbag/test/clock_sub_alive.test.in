@@ -1,5 +1,5 @@
 <launch>
   <param name="use_sim_time" value="true" />
-  <node name="player" pkg="rosbag" type="play" args="@PROJECT_BINARY_DIR@/test/clock_alive.bag --clock --keep-alive"/>
-  <test test-name="clock_sub_alive" pkg="test_rosbag" type="clock_sub_alive.py" time-limit="70.0" />
+  <node name="player" pkg="rosbag" type="play" args="@PROJECT_BINARY_DIR@/test/clock_alive.bag --clock --keep-alive -u 5"/>
+  <test test-name="clock_sub_alive" pkg="test_rosbag" type="clock_sub_alive.py" />
 </launch>
