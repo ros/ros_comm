@@ -297,6 +297,9 @@ def msgevalgen(pattern):
     for f in fields:
         if '[' in f:
             field_name, rest = f.split('[', 1)
+            if rest[-1] != ']':
+                print("missing closing ']' in slice spec '%s'" % f, file=sys.stderr)
+                return None
             rest = rest[:-1]  # slice content, removing closing bracket
             try:
                 array_index_or_slice_object = _get_array_index_or_slice_object(rest)
@@ -800,7 +803,7 @@ def _rostopic_echo(topic, callback_echo, bag_file=None, echo_all_topics=False):
                     index = submsg_class.__slots__.index(field)
                     type_information = submsg_class._slot_types[index]
                     if fields:
-                        submsg_class = roslib.message.get_message_class(type_information.split('[')[0])
+                        submsg_class = roslib.message.get_message_class(type_information.split('[',1)[0])
                         if not submsg_class:
                             raise ROSTopicException("Cannot load message class for [%s]. Are your messages built?" % type_information)
 

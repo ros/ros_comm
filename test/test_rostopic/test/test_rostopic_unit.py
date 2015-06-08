@@ -408,6 +408,7 @@ class TestRostopicUnit(unittest.TestCase):
         # element access
         self.assertEqual(f('/vals[0]')(msg), msg.vals[0])
         self.assertEqual(f('/vals[1]')(msg), msg.vals[1])
+        self.assertEqual(f('/vals[0'), None)
         # element access continued
         self.assertEqual(f('/vals[0]/val')(msg), msg.vals[0].val)
         self.assertEqual(f('/vals[1]/val')(msg), msg.vals[1].val)
