@@ -311,7 +311,7 @@ def msgevalgen(pattern):
         else:
             evals.append((f, None))
 
-    def _msgeval(msg, evals):
+    def msgeval(msg, evals):
         for i, (field_name, slice_object) in enumerate(evals):
             try: # access field first
                 msg = getattr(msg, field_name)
@@ -331,13 +331,10 @@ def msgevalgen(pattern):
                 # in order to handle nested slices
                 if isinstance(msg, list):
                     rest = evals[i + 1:]
-                    return [_msgeval(m, rest) for m in msg]
+                    return [msgeval(m, rest) for m in msg]
         return msg
 
-    def msgeval(msg):
-        return _msgeval(msg, evals)
-
-    return msgeval if evals else None
+    return (lambda msg: msgeval(msg, evals)) if evals else None
 
 
 def _get_array_index_or_slice_object(index_string):
