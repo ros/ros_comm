@@ -388,3 +388,47 @@ class TestRostopicUnit(unittest.TestCase):
         self.assertEquals(['t', 'd'], list(f(m)))
         m = Header()
         self.assertEquals(['seq', 'stamp'], list(f(m)))
+
+    def test_slicing(self):
+        from test_rostopic.msg import ArrayVal, Val
+        from rostopic import msgevalgen as f
+
+        # prepare a sliceable msg
+        msg = ArrayVal()
+        for v in ['ABCDEFG', 'abcdefg', '1234567', 'short']:
+            msg.vals.append(Val(val=v))
+
+        self.assertEqual(f(''), None)
+        self.assertEqual(f('/'), None)
+        self.assertListEqual(f('/vals')(msg), msg.vals)
+        self.assertListEqual(f('/vals/')(msg), msg.vals)
+        # first-level slicing
+        self.assertListEqual(f('/vals[:]')(msg), msg.vals)
+        self.assertListEqual(f('/vals[0:2]')(msg), msg.vals[0:2])
+        # element access
+        self.assertEqual(f('/vals[0]')(msg), msg.vals[0])
+        self.assertEqual(f('/vals[1]')(msg), msg.vals[1])
+        self.assertEqual(f('/vals[0'), None)
+        # element access continued
+        self.assertEqual(f('/vals[0]/val')(msg), msg.vals[0].val)
+        self.assertEqual(f('/vals[1]/val')(msg), msg.vals[1].val)
+        # second-level slicing
+        self.assertEqual(f('/vals[0]/val[:]')(msg), msg.vals[0].val)
+        self.assertEqual(f('/vals[0]/val[0:2]')(msg), msg.vals[0].val[0:2])
+        self.assertEqual(f('/vals[0]/val[:-3]')(msg), msg.vals[0].val[:-3])
+        self.assertEqual(f('/vals[0]/val[2]')(msg), msg.vals[0].val[2])
+        # first-level slicing + second-level access
+        self.assertListEqual(f('/vals[:3]/val[0]')(msg), ['A', 'a', '1'])
+        self.assertListEqual(f('/vals[:3]/val[0]')(msg), ['A', 'a', '1'])
+        self.assertListEqual(f('/vals[1:3]/val[0]')(msg), ['a', '1'])
+        self.assertListEqual(f('/vals[:]/val[-1]')(msg), ['G', 'g', '7', 't'])
+        # multiple slicing
+        self.assertListEqual(f('/vals[:3]/val[1:3]')(msg), ['BC', 'bc', '23'])
+        # out-of-range errors
+        self.assertEqual(f('/vals[5]/val')(msg), None)
+        self.assertListEqual(f('/vals[:]/val[6]')(msg), ['G', 'g', '7', None])
+        # invalid descriptions
+        self.assertEqual(f('/vals[:]/val[]'), None)
+        self.assertEqual(f('/unknown[:]/val[0]')(msg), None)
+        self.assertListEqual(f('/vals[:]/unknown[0]')(msg), [None, None, None, None])
+        self.assertEqual(f('/vals/unknown[0]')(msg), None)

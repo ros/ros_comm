@@ -8,10 +8,12 @@ if(CATKIN_ENABLE_TESTING)
   add_message_files(DIRECTORY msg
     FILES
     Arrays.msg
+    ArrayVal.msg
     Embed.msg
     Floats.msg
     Simple.msg
     TVals.msg
+    Val.msg
   )
   generate_messages(DEPENDENCIES std_msgs)
 endif()
