@@ -207,6 +207,9 @@ def play_cmd(argv):
 
     (options, args) = parser.parse_args(argv)
 
+    if options.bags:
+        args.append(options.bags)
+
     if len(args) == 0:
         parser.error('You must specify at least 1 bag file to play back.')
 
@@ -240,8 +243,9 @@ def play_cmd(argv):
     if options.pause_topics:
         cmd.extend(['--pause-topics'] + options.pause_topics)
 
-    if options.bags:
-        cmd.extend(["--bags", str(options.bags)])
+    # prevent bag files to be passed as --topics or --pause-topics
+    if options.topics or options.pause_topics:
+        cmd.extend(['--bags'])
 
     cmd.extend(args)
     # Better way of handling it than os.execv
