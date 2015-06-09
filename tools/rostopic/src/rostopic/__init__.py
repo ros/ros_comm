@@ -297,7 +297,7 @@ def msgevalgen(pattern):
     for f in fields:
         if '[' in f:
             field_name, rest = f.split('[', 1)
-            if not rest or rest[-1] != ']':
+            if not rest.endswith(']'):
                 print("missing closing ']' in slice spec '%s'" % f, file=sys.stderr)
                 return None
             rest = rest[:-1]  # slice content, removing closing bracket
