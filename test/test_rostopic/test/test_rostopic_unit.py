@@ -408,10 +408,15 @@ class TestRostopicUnit(unittest.TestCase):
         # element access
         self.assertEqual(f('/vals[0]')(msg), msg.vals[0])
         self.assertEqual(f('/vals[1]')(msg), msg.vals[1])
+        self.assertEqual(f('/vals['), None)
+        self.assertEqual(f('/vals[]'), None)
         self.assertEqual(f('/vals[0'), None)
         # element access continued
         self.assertEqual(f('/vals[0]/val')(msg), msg.vals[0].val)
         self.assertEqual(f('/vals[1]/val')(msg), msg.vals[1].val)
+        self.assertEqual(f('/vals[/val'), None)
+        self.assertEqual(f('/vals[]/val'), None)
+        self.assertEqual(f('/vals[0/val'), None)
         # second-level slicing
         self.assertEqual(f('/vals[0]/val[:]')(msg), msg.vals[0].val)
         self.assertEqual(f('/vals[0]/val[0:2]')(msg), msg.vals[0].val[0:2])
