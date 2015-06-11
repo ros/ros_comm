@@ -56,21 +56,22 @@ using ros::Exception;
 
 namespace rosbag {
 
-ros::AdvertiseOptions createAdvertiseOptions(const ConnectionInfo* c, uint32_t queue_size) {
-    ros::AdvertiseOptions opts(c->topic, queue_size, c->md5sum, c->datatype, c->msg_def);
+ros::AdvertiseOptions createAdvertiseOptions(const ConnectionInfo* c, uint32_t queue_size, const std::string& prefix) {
+    ros::AdvertiseOptions opts(prefix + c->topic, queue_size, c->md5sum, c->datatype, c->msg_def);
     ros::M_string::const_iterator header_iter = c->header->find("latching");
     opts.latch = (header_iter != c->header->end() && header_iter->second == "1");
     return opts;
 }
 
 
-ros::AdvertiseOptions createAdvertiseOptions(MessageInstance const& m, uint32_t queue_size) {
-    return ros::AdvertiseOptions(m.getTopic(), queue_size, m.getMD5Sum(), m.getDataType(), m.getMessageDefinition());
+ros::AdvertiseOptions createAdvertiseOptions(MessageInstance const& m, uint32_t queue_size, const std::string& prefix) {
+    return ros::AdvertiseOptions(prefix + m.getTopic(), queue_size, m.getMD5Sum(), m.getDataType(), m.getMessageDefinition());
 }
 
 // PlayerOptions
 
 PlayerOptions::PlayerOptions() :
+    prefix(""),
     quiet(false),
     start_paused(false),
     at_once(false),
@@ -140,6 +141,11 @@ void Player::publish() {
     if (!node_handle_.ok())
       return;
 
+    if (!options_.prefix.empty())
+    {
+      ROS_INFO_STREAM("Using prefix '" << options_.prefix << "'' for topics ");
+    }
+
     if (!options_.quiet)
       puts("");
     
@@ -188,7 +194,7 @@ void Player::publish() {
         map<string, ros::Publisher>::iterator pub_iter = publishers_.find(callerid_topic);
         if (pub_iter == publishers_.end()) {
 
-            ros::AdvertiseOptions opts = createAdvertiseOptions(c, options_.queue_size);
+            ros::AdvertiseOptions opts = createAdvertiseOptions(c, options_.queue_size, options_.prefix);
 
             ros::Publisher pub = node_handle_.advertise(opts);
             publishers_.insert(publishers_.begin(), pair<string, ros::Publisher>(callerid_topic, pub));
