@@ -178,6 +178,11 @@ void Player::publish() {
       return;
     }
 
+    if (!options_.prefix.empty())
+    {
+      ROS_INFO_STREAM("Using prefix " << options_.prefix << " for topics ");
+    }
+
     // Advertise all of our messages
     foreach(const ConnectionInfo* c, view.getConnections())
     {
@@ -189,12 +194,10 @@ void Player::publish() {
         map<string, ros::Publisher>::iterator pub_iter = publishers_.find(callerid_topic);
         if (pub_iter == publishers_.end()) {
 
-            std::cout << "using prefix " << options_.prefix << " for topic " << c->topic << std::endl;
             ros::AdvertiseOptions opts = createAdvertiseOptions(c, options_.queue_size, options_.prefix);
 
             ros::Publisher pub = node_handle_.advertise(opts);
             publishers_.insert(publishers_.begin(), pair<string, ros::Publisher>(callerid_topic, pub));
-            std::cout << "initialized publisher on topic " << pub.getTopic() << std::endl;
 
             pub_iter = publishers_.find(callerid_topic);
         }

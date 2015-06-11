@@ -252,10 +252,6 @@ def play_cmd(argv):
 
     cmd.extend(args)
 
-    print('hello world')
-    #print "command to forward"
-    for item in cmd:
-        print(item)
     # Better way of handling it than os.execv
     # This makes sure stdin handles are passed to the process.
     subprocess.call(cmd)

@@ -122,7 +122,6 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
     if (vm.count("prefix"))
     {
       opts.prefix = vm["prefix"].as<std::string>();
-      std::cout << "PREFIX SET TO " << vm["prefix"].as<std::string>() << std::endl;
     }
 
     if (vm.count("topics"))
