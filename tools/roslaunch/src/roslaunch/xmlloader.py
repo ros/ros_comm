@@ -74,11 +74,11 @@ def ifunless_test(obj, tag, context):
     if if_val is not None and unless_val is not None:
         raise XmlParseException("cannot set both 'if' and 'unless' on the same tag")
     if if_val is not None:
-        if_val = loader.convert_value(if_val, 'bool')
+        if_val = loader.convert_value(loader.eval_value(if_val), 'bool')
         if if_val:
             return True
     elif unless_val is not None:
-        unless_val = loader.convert_value(unless_val, 'bool')
+        unless_val = loader.convert_value(loader.eval_value(unless_val), 'bool')
         if not unless_val:
             return True
     else:

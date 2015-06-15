@@ -51,6 +51,15 @@ class LoadException(RLException):
     """Error loading data as specified (e.g. cannot find included files, etc...)"""
     pass
 
+_eval_dict=dict(true=True, false=False)
+def eval_value(value):
+    if value is None:
+        return None
+    try:
+        return str(eval(value, None, _eval_dict))
+    except:
+        return value
+
 #TODO: lists, maps(?)
 def convert_value(value, type_):
     """
