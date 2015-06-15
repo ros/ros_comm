@@ -293,7 +293,7 @@ class XmlLoader(loader.Loader):
                 raise XmlParseException(
                     "<arg> tag must have one and only one of value/default.")
             
-            context.add_arg(name, value=value, default=default, doc=doc)
+            context.add_arg(name, value=loader.eval_value(value), default=loader.eval_value(default), doc=doc)
 
         except substitution_args.ArgException as e:
             raise XmlParseException(
