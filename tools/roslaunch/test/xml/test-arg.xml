@@ -2,6 +2,7 @@
 
   <arg name="required" />
   <arg name="if_test" />
+  <arg name="py_if_test" />
   
   <arg name="optional" default="not_set" />
   <arg name="grounded" value="set" />
@@ -22,11 +23,15 @@
   <arg if="$(arg if_test)" name="if_param_value" value="true" />
   <arg unless="$(arg if_test)" name="if_param_value" value="false" />
 
+  <arg if="$(arg py_if_test)" name="py_if_param_value" value="$(eval 1 == 1)"/>
+  <arg unless="$(arg py_if_test)" name="py_if_param_value" value="$(eval 1 == 0)"/>
+
   <param name="$(arg param1_name)_test" value="$(arg param1_value)" />
   <param name="$(arg param2_name)_test" value="$(arg param2_value)" />
   <param name="$(arg param3_name)_test" value="$(arg param3_value)" />
 
   <param name="if_param" value="$(arg if_param_value)" />
+  <param name="py_if_param" value="$(arg py_if_param_value)" />
   <param name="int_param" value="$(arg int_value)" />
   <param name="float_param" value="$(arg float_value)" />  
   
@@ -57,6 +62,23 @@
     <param name="if_test" value="not_ran" />
   </group>
 
+  <arg name="py_fail" value="$(eval 0 &gt; 1)"/>
+  <group if="$(eval arg('py_fail') == True)">
+    <param name="py_fail" value="fail" />
+  </group>
+
+  <group unless="$(eval arg('py_fail') == True)">
+    <param name="py_succeed" value="yes" />
+  </group>
+
+  <group if="$(eval arg('py_if_test') == True)">
+    <param name="py_if_test" value="ran" />
+  </group>
+
+  <group unless="$(eval arg('py_if_test') == True)">
+    <param name="py_if_test" value="not_ran" />
+  </group>
+
   <include file="$(find roslaunch)/test/xml/test-arg-include.xml">
     <arg name="required" value="required1" />
     <arg name="include_arg" value="$(arg include_arg)" />
@@ -74,6 +96,4 @@
     <arg name="include_arg" value="new3" />
   </include>
   
-
-
 </launch>

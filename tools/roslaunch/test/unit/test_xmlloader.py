@@ -816,11 +816,17 @@ class TestXmlLoader(unittest.TestCase):
         for k in keys:
             self.assert_('/'+k+'_pass' in param_d, param_d)
             self.failIf('/'+k+'_fail' in param_d, k)
+            # Also check the result of Python-parsed expressions
+            self.assert_('/py_'+k+'_pass' in param_d, param_d)
+            self.failIf('/py_'+k+'_fail' in param_d, k)
 
         n = mock.nodes[0]
         for k in ['if', 'unless']:
             self.assert_(['from_%s_pass'%k, 'to_%s_pass'%k] in n.remap_args)
             self.failIf(['from_%s_fail'%k, 'to_%s_fail'%k] in n.remap_args)            
+            # Also check the result of Python-parsed expressions
+            self.assert_(['py_from_%s_pass'%k, 'py_to_%s_pass'%k] in n.remap_args)
+            self.failIf(['py_from_%s_fail'%k, 'py_to_%s_fail'%k] in n.remap_args)
         
     def test_if_unless_invalid(self):
         mock = RosLaunchMock()
@@ -867,7 +873,7 @@ class TestXmlLoader(unittest.TestCase):
         filename = os.path.join(self.xml_dir, 'test-arg.xml')
 
         mock = RosLaunchMock()
-        loader.load(filename, mock, argv=["required:=test_arg", "if_test:=0"])
+        loader.load(filename, mock, argv=["required:=test_arg", "if_test:=0", "py_if_test:=0"])
 
         param_d = {}
         for p in mock.params:
@@ -877,11 +883,15 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEquals(param_d['/p2_test'], 'not_set')
         self.assertEquals(param_d['/p3_test'], 'set')
         self.assertEquals(param_d['/succeed'], 'yes')                
+        self.assertEquals(param_d['/py_succeed'], 'yes')
         self.assertEquals(param_d['/if_test'], 'not_ran')                
+        self.assertEquals(param_d['/py_if_test'], 'not_ran')
         self.assertEquals(param_d['/if_param'], False)   
+        self.assertEquals(param_d['/py_if_param'], False)
         self.assertEquals(param_d['/int_param'], 1234)   
         self.assertAlmostEquals(param_d['/float_param'], 3.)   
         self.failIf('/fail' in param_d)
+        self.failIf('/py_fail' in param_d)
 
         # context tests
         #  - args are scoped to their context, and thus can be rebound in a sibling context
@@ -906,7 +916,7 @@ class TestXmlLoader(unittest.TestCase):
 
         # test again with optional value set
         mock = RosLaunchMock()
-        loader.load(filename, mock, argv=["required:=test_arg", "optional:=test_arg2", "if_test:=1"])
+        loader.load(filename, mock, argv=["required:=test_arg", "optional:=test_arg2", "if_test:=1", "py_if_test:=1"])
 
         param_d = {}
         for p in mock.params:
@@ -918,9 +928,13 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEquals(param_d['/context1'], 'group1')
         self.assertEquals(param_d['/context2'], 'group2')                
         self.assertEquals(param_d['/succeed'], 'yes')                
+        self.assertEquals(param_d['/py_succeed'], 'yes')
         self.assertEquals(param_d['/if_test'], 'ran')   
+        self.assertEquals(param_d['/py_if_test'], 'ran')
         self.assertEquals(param_d['/if_param'], True)   
+        self.assertEquals(param_d['/py_if_param'], True)
         self.failIf('/fail' in param_d)
+        self.failIf('/py_fail' in param_d)
 
         # include tests
         self.assertEquals(param_d['/include_test/p1_test'], 'required1')

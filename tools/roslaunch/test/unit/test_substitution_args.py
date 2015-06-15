@@ -130,6 +130,16 @@ def test_resolve_args():
         ('$(arg fuga)$(arg fuga)', 'hogehoge'),
         ('$(arg car)$(arg fuga)', 'cdrhoge'),
         ('$(arg fuga)hoge', 'hogehoge'),
+
+        # $(eval ...) versions of those tests
+        ("$(eval find('roslaunch'))", roslaunch_dir),
+        ("$(eval env('ROS_ROOT'))", os.environ['ROS_ROOT']),
+        ("$(eval optenv('ROS_ROOT', 'alternate text'))", os.environ['ROS_ROOT']),
+        ("$(eval optenv('NOT_ROS_ROOT', 'alternate text'))", "alternate text"),
+        ("$(eval optenv('NOT_ROS_ROOT'))", ""),
+        ("$(eval anon('foo'))", 'bar'),
+        ("$(eval arg('fuga'))", 'hoge'),
+        ('$(eval arg("fuga"))', 'hoge'),
         ]
     for arg, val in tests:
         assert val == resolve_args(arg, context=context)
