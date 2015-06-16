@@ -107,7 +107,9 @@
 #endif
 
 #ifndef NDEBUG
+#ifndef ROS_ASSERT_ENABLED
 #define ROS_ASSERT_ENABLED
+#endif
 #endif
 
 #ifdef ROS_ASSERT_ENABLED
