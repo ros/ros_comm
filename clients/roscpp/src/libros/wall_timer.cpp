@@ -95,7 +95,7 @@ WallTimer::WallTimer(const WallTimerOptions& ops)
   impl_->callback_ = ops.callback;
   impl_->callback_queue_ = ops.callback_queue;
   impl_->tracked_object_ = ops.tracked_object;
-  impl_->has_tracked_object_ = ops.tracked_object;
+  impl_->has_tracked_object_ = (ops.tracked_object != NULL);
   impl_->oneshot_ = ops.oneshot;
 }
 
