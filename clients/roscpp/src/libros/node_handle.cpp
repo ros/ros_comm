@@ -607,6 +607,14 @@ bool NodeHandle::getParam(const std::string& key, double& d) const
   return param::get(resolveName(key), d);
 }
 
+bool NodeHandle::getParam(const std::string& key, float& f) const
+{
+  double d = 0.0;
+  const bool ret = getParam(key,d);
+  if (ret) f = static_cast<float>(d);
+  return ret;
+}
+
 bool NodeHandle::getParam(const std::string& key, int& i) const
 {
   return param::get(resolveName(key), i);
