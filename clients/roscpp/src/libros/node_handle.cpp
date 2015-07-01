@@ -607,6 +607,11 @@ bool NodeHandle::getParam(const std::string& key, double& d) const
   return param::get(resolveName(key), d);
 }
 
+bool NodeHandle::getParam(const std::string& key, float& f) const
+{
+  return param::get(resolveName(key), f);
+}
+
 bool NodeHandle::getParam(const std::string& key, int& i) const
 {
   return param::get(resolveName(key), i);
@@ -673,6 +678,11 @@ bool NodeHandle::getParamCached(const std::string& key, std::string& s) const
 bool NodeHandle::getParamCached(const std::string& key, double& d) const
 {
   return param::getCached(resolveName(key), d);
+}
+
+bool NodeHandle::getParamCached(const std::string& key, float& f) const
+{
+  return param::getCached(resolveName(key), f);
 }
 
 bool NodeHandle::getParamCached(const std::string& key, int& i) const
