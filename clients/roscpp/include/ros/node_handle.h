@@ -1589,6 +1589,17 @@ if (service)  // Enter if advertised service is valid
    * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
    */
   bool getParam(const std::string& key, double& d) const;
+  /** \brief Get a float value from the parameter server.
+   *
+   * If you want to provide a default value in case the key does not exist use param().
+   *
+   * \param key The key to be used in the parameter server's dictionary
+   * \param[out] f Storage for the retrieved value.
+   *
+   * \return true if the parameter value was retrieved, false otherwise
+   * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
+   */
+  bool getParam(const std::string& key, float& f) const;
   /** \brief Get an integer value from the parameter server.
    *
    * If you want to provide a default value in case the key does not exist use param().
