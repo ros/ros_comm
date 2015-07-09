@@ -104,13 +104,14 @@ class Cache(SimpleFilter):
         self.incoming_connection = f.registerCallback(self.add)
 
     def add(self, msg):
-        # Cannot use message filters with non-stamped messages
+        stamp = rospy.Time.now()
         if not hasattr(msg, 'header') or not hasattr(msg.header, 'stamp'):
-            rospy.logwarn("Cannot use message filters with non-stamped messages")
-            return
+            rospy.logdebug("Message saved to Cache has no header.stamp field. It will be assigned a timestamp\
+                based on the time it was saved to the Cache.")
+        else:
+            stamp = msg.header.stamp
 
         # Insert sorted
-        stamp = msg.header.stamp
         self.cache_times.append(stamp)
         self.cache_msgs.append(msg)
 
@@ -125,19 +126,21 @@ class Cache(SimpleFilter):
     def getInterval(self, from_stamp, to_stamp):
         """Query the current cache content between from_stamp to to_stamp."""
         assert from_stamp <= to_stamp
-        return [m for m in self.cache_msgs
-                if m.header.stamp >= from_stamp and m.header.stamp <= to_stamp]
+        return [self.cache_msgs[i] for i in range(0, len(self.cache_msgs))
+                if self.cache_times[i] >= from_stamp and self.cache_times[i] <= to_stamp]
 
     def getElemAfterTime(self, stamp):
         """Return the oldest element after or equal the passed time stamp."""
-        newer = [m for m in self.cache_msgs if m.header.stamp >= stamp]
+        newer = [self.cache_msgs[i] for i in range(0, len(self.cache_msgs))
+                 if self.cache_times[i] >= stamp]
         if not newer:
             return None
         return newer[0]
 
     def getElemBeforeTime(self, stamp):
         """Return the newest element before or equal the passed time stamp."""
-        older = [m for m in self.cache_msgs if m.header.stamp <= stamp]
+        older = [self.cache_msgs[i] for i in range(0, len(self.cache_msgs))
+                 if self.cache_times[i] <= stamp]
         if not older:
             return None
         return older[-1]
@@ -153,6 +156,11 @@ class Cache(SimpleFilter):
         if not self.cache_times:
             return None
         return self.cache_times[0]
+        
+    def getLast(self):
+        if self.getLastestTime() is None:
+            return None
+        return self.getElemAfterTime(self.getLastestTime())
 
 
 class TimeSynchronizer(SimpleFilter):
