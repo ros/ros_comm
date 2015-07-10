@@ -93,7 +93,7 @@ public:
   void remove(int32_t handle);
 
   bool hasPending(int32_t handle);
-  void setPeriod(int32_t handle, const D& period);
+  void setPeriod(int32_t handle, const D& period, bool reset=true);
 
   static TimerManager& global()
   {
@@ -419,7 +419,7 @@ void TimerManager<T, D, E>::updateNext(const TimerInfoPtr& info, const T& curren
 }
 
 template<class T, class D, class E>
-void TimerManager<T, D, E>::setPeriod(int32_t handle, const D& period)
+void TimerManager<T, D, E>::setPeriod(int32_t handle, const D& period, bool reset)
 {
   boost::mutex::scoped_lock lock(timers_mutex_);
   TimerInfoPtr info = findTimer(handle);
@@ -431,9 +431,33 @@ void TimerManager<T, D, E>::setPeriod(int32_t handle, const D& period)
 
   {
     boost::mutex::scoped_lock lock(waiting_mutex_);
+  
+    if(reset)
+    {
+      info->next_expected = T::now() + period;
+    }
+    
+    // else if some time has elapsed since last cb (called outside of cb)
+    else if( (T::now() - info->last_real) < info->period)
+    {
+      // if elapsed time is greater than the new period
+      // do the callback now
+      if( (T::now() - info->last_real) > period)
+      {
+        info->next_expected = T::now();
+      }
+   
+      // else, account for elapsed time by using last_real+period
+      else
+      {
+        info->next_expected = info->last_real + period;
+      }
+    }
+    
+    // Else if called in a callback, last_real has not been updated yet => (now - last_real) > period
+    // In this case, let next_expected be updated only in updateNext
+    
     info->period = period;
-    info->next_expected = T::now() + period;
-
     waiting_.sort(boost::bind(&TimerManager::waitingCompare, this, _1, _2));
   }
 

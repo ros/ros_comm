@@ -81,10 +81,10 @@ bool WallTimer::Impl::hasPending()
   return TimerManager<WallTime, WallDuration, WallTimerEvent>::global().hasPending(timer_handle_);
 }
 
-void WallTimer::Impl::setPeriod(const WallDuration& period)
+void WallTimer::Impl::setPeriod(const WallDuration& period, bool reset)
 {
   period_ = period;
-  TimerManager<WallTime, WallDuration, WallTimerEvent>::global().setPeriod(timer_handle_, period);
+  TimerManager<WallTime, WallDuration, WallTimerEvent>::global().setPeriod(timer_handle_, period, reset);
 }
 
 
@@ -134,11 +134,11 @@ bool WallTimer::hasPending()
   return false;
 }
 
-void WallTimer::setPeriod(const WallDuration& period)
+void WallTimer::setPeriod(const WallDuration& period, bool reset)
 {
   if (impl_)
   {
-    impl_->setPeriod(period);
+    impl_->setPeriod(period, reset);
   }
 }
 
