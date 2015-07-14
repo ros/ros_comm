@@ -41,6 +41,7 @@ import roslaunch.launch
 import roslaunch.pmon
 import roslaunch.server
 import roslaunch.xmlloader 
+import roslaunch.rlutil
 
 import roslaunch.parent
 
@@ -48,14 +49,18 @@ from rosmaster.master import Master
 
 class ROSTestLaunchParent(roslaunch.parent.ROSLaunchParent):
 
-    def __init__(self, config, roslaunch_files, port=0):
+    def __init__(self, config, roslaunch_files, port=0, reuse_master=False):
         if config is None:
             raise Exception("config not initialized")
         # we generate a run_id for each test
-        run_id = roslaunch.core.generate_run_id()
+        if not reuse_master:
+            run_id = roslaunch.core.generate_run_id()
+        else:
+            run_id = roslaunch.rlutil.get_or_generate_uuid(None, False)
         super(ROSTestLaunchParent, self).__init__(run_id, roslaunch_files, is_core=False, is_rostest=True)
         self.config = config
         self.port = port
+        self.reuse_master = reuse_master
         self.master = None
         
     def _load_config(self):
@@ -67,9 +72,10 @@ class ROSTestLaunchParent(roslaunch.parent.ROSLaunchParent):
         initializes self.config and xmlrpc infrastructure
         """
         self._start_infrastructure()
-        self.master = Master(port=self.port)
-        self.master.start()
-        self.config.master.uri = self.master.uri
+        if not self.reuse_master:
+            self.master = Master(port=self.port)
+            self.master.start()
+            self.config.master.uri = self.master.uri
         self._init_runner()
 
     def tearDown(self):
