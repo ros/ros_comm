@@ -52,34 +52,41 @@ class RelayField(object):
     def __init__(self):
         parser = argparse.ArgumentParser(
             formatter_class=argparse.RawTextHelpFormatter,
-            description='Allows to relay field data from one topic to another.\n\n'
-                        'Usage:\n\trosrun topic_tools relay_field '
-                        '<input> <output topic> <output type> '
-                        '<expression on m>\n\n'
-                        'Example:\n\trosrun topic_tools relay_field '
-                        '/chatter /header std_msgs/Header\n\t'
-                        '"seq: 0\n\t stamp:\n\t   secs: 0\n\t   nsecs: 0\n\t   frame_id: m.data"\n\n')
+            description=(
+                'Allows to relay field data from one topic to another.\n\n'
+                'Usage:\n\trosrun topic_tools relay_field '
+                '<input> <output topic> <output type> '
+                '<expression on m>\n\n'
+                'Example:\n\trosrun topic_tools relay_field '
+                '/chatter /header std_msgs/Header\n\t'
+                '"seq: 0\n\t stamp:\n\t   secs: 0\n\t   nsecs: 0\n\t   '
+                'frame_id: m.data"\n\n'
+                )
+            )
         parser.add_argument('input', help='Input topic or topic field.')
         parser.add_argument('output_topic', help='Output topic.')
         parser.add_argument('output_type', help='Output topic type.')
         parser.add_argument(
-            'expression', default='m',
+            'expression',
             help='Python expression to apply on the input message \'m\'.'
-        )
+            )
 
         args = parser.parse_args()
 
         self.expression = args.expression
 
-        input_class, input_topic, self.input_fn = rostopic.get_topic_class(args.input)
+        input_class, input_topic, self.input_fn = rostopic.get_topic_class(
+                                                      args.input)
         if input_topic is None:
-            print('ERROR: Wrong input topic (or topic field): %s' % args.input, file=sys.stderr)
+            print('ERROR: Wrong input topic (or topic field): %s' % args.input,
+                  file=sys.stderr)
             sys.exit(1)
 
         self.output_class = roslib.message.get_message_class(args.output_type)
 
         self.sub = rospy.Subscriber(input_topic, input_class, self.callback)
-        self.pub = rospy.Publisher(args.output_topic, self.output_class, queue_size=1)
+        self.pub = rospy.Publisher(args.output_topic, self.output_class,
+                                   queue_size=1)
 
     def callback(self, m):
         if self.input_fn is not None:
