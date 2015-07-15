@@ -1,0 +1,108 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+Allows to take a topic or one of its fields and output it on another topic
+or fields.
+
+The operations are done on the message, which is taken in the variable 'm'.
+
+Example:
+    $ rosrun topic_tools relay_field /chatter /header std_msgs/Header
+      "seq: 0
+       stamp:
+         secs: 0
+         nsecs: 0
+         frame_id: m.data"
+"""
+
+from __future__ import print_function
+import argparse
+import sys
+import copy
+
+import yaml
+
+import roslib
+import rospy
+import rostopic
+import genpy
+import std_msgs
+
+__author__ = 'www.kentaro.wada@gmail.com (Kentaro Wada)'
+
+
+def _eval_in_dict_impl(dict_, globals_, locals_):
+    res = copy.deepcopy(dict_)
+    for k, v in res.items():
+        type_ = type(v)
+        if type_ is dict:
+            res[k] = _eval_in_dict_impl(v, globals_, locals_)
+        elif (type_ is str) or (type_ is unicode):
+            try:
+                res[k] = eval(v, globals_, locals_)
+            except NameError:
+                pass
+            except SyntaxError:
+                pass
+    return res
+
+
+class RelayField(object):
+    def __init__(self):
+        parser = argparse.ArgumentParser(
+            formatter_class=argparse.RawTextHelpFormatter,
+            description=(
+                'Allows to relay field data from one topic to another.\n\n'
+                'Usage:\n\trosrun topic_tools relay_field '
+                '<input> <output topic> <output type> '
+                '<expression on m>\n\n'
+                'Example:\n\trosrun topic_tools relay_field '
+                '/chatter /header std_msgs/Header\n\t'
+                '"seq: 0\n\t stamp:\n\t   secs: 0\n\t   nsecs: 0\n\t   '
+                'frame_id: m.data"\n\n'
+                )
+            )
+        parser.add_argument('input', help='Input topic or topic field.')
+        parser.add_argument('output_topic', help='Output topic.')
+        parser.add_argument('output_type', help='Output topic type.')
+        parser.add_argument(
+            'expression',
+            help='Python expression to apply on the input message \'m\'.'
+            )
+
+        args = parser.parse_args()
+
+        self.expression = args.expression
+
+        input_class, input_topic, self.input_fn = rostopic.get_topic_class(
+            args.input)
+        if input_topic is None:
+            print('ERROR: Wrong input topic (or topic field): %s' % args.input,
+                  file=sys.stderr)
+            sys.exit(1)
+
+        self.output_class = roslib.message.get_message_class(args.output_type)
+
+        self.sub = rospy.Subscriber(input_topic, input_class, self.callback)
+        self.pub = rospy.Publisher(args.output_topic, self.output_class,
+                                   queue_size=1)
+
+    def callback(self, m):
+        if self.input_fn is not None:
+            m = self.input_fn(m)
+
+        msg_generation = yaml.load(self.expression)
+        pub_args = _eval_in_dict_impl(msg_generation, None, {'m': m})
+
+        now = rospy.get_rostime()
+        keys = {'now': now, 'auto': std_msgs.msg.Header(stamp=now)}
+        msg = self.output_class()
+        genpy.message.fill_message_args(msg, [pub_args], keys=keys)
+        self.pub.publish(msg)
+
+
+if __name__ == '__main__':
+    rospy.init_node('relay_field', anonymous=True)
+    app = RelayField()
+    rospy.spin()
