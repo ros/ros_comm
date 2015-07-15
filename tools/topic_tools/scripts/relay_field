@@ -6,6 +6,14 @@ Allows to take a topic or one of its fields and output it on another topic
 or fields.
 
 The operations are done on the message, which is taken in the variable 'm'.
+
+Example:
+    $ rosrun topic_tools relay_field /chatter /header std_msgs/Header
+      "seq: 0
+       stamp:
+         secs: 0
+         nsecs: 0
+         frame_id: m.data"
 """
 
 from __future__ import print_function
@@ -44,7 +52,13 @@ class RelayField(object):
     def __init__(self):
         parser = argparse.ArgumentParser(
             formatter_class=argparse.RawTextHelpFormatter,
-            description='')
+            description='Allows to relay field data from one topic to another.\n\n'
+                        'Usage:\n\trosrun topic_tools relay_field '
+                        '<input> <output topic> <output type> '
+                        '<expression on m>\n\n'
+                        'Example:\n\trosrun topic_tools relay_field '
+                        '/chatter /header std_msgs/Header\n\t'
+                        '"seq: 0\n\t stamp:\n\t   secs: 0\n\t   nsecs: 0\n\t   frame_id: m.data"\n\n')
         parser.add_argument('input', help='Input topic or topic field.')
         parser.add_argument('output_topic', help='Output topic.')
         parser.add_argument('output_type', help='Output topic type.')
