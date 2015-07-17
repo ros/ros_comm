@@ -207,7 +207,7 @@ def check_roslaunch(f):
         file_deps = {}
     for pkg, miss in missing.items():
         if miss:
-            errors.append("Missing manifest dependencies: %s/manifest.xml: %s"%(pkg, ', '.join(miss)))
+            errors.append("Missing package dependencies: %s/package.xml: %s"%(pkg, ', '.join(miss)))
     
     # load all node defs
     nodes = []
