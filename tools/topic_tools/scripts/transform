@@ -55,6 +55,10 @@ class TopicOp:
             '-i', '--import', dest='modules', nargs='+', default=['numpy'],
             help='List of Python modules to import.'
         )
+        parser.add_argument(
+            '--wait-for-start', dest='wait_for_start', action='store_true',
+            help='Wait for input messages.'
+        )
 
         args = parser.parse_args()
 
@@ -69,7 +73,7 @@ class TopicOp:
 
         self.expression = args.expression
 
-        input_class, input_topic, self.input_fn = rostopic.get_topic_class(args.input)
+        input_class, input_topic, self.input_fn = rostopic.get_topic_class(args.input,blocking=args.wait_for_start)
         if input_topic is None:
             print('ERROR: Wrong input topic (or topic field): %s' % args.input, file=sys.stderr)
             sys.exit(1)
