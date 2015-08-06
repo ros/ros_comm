@@ -97,6 +97,7 @@ def _rosconsole_cmd_set(argv):
         parser.error("you must specify a node, a logger and a level")
 
     logger_level = LoggerLevelServiceCaller()
+    logger_level.get_loggers(args[0])
 
     if args[1] not in logger_level._current_levels:
         error(2, "node " + args[0] + " does not contain logger " + args[1])
@@ -126,6 +127,7 @@ def _rosconsole_cmd_get(argv):
         parser.error("you must specify a node and a logger")
 
     logger_level = LoggerLevelServiceCaller()
+    logger_level.get_loggers(args[0])
 
     if args[1] not in logger_level._current_levels:
         error(2, "node " + args[0] + " does not contain logger " + args[1])
