@@ -45,6 +45,13 @@ from rospkg.environment import ROS_LOG_DIR
 
 class LoggingException: pass
 
+def renew_latest_logdir(logfile_dir):
+    log_dir = os.path.dirname(logfile_dir)
+    latest_dir = os.path.join(log_dir, 'latest')
+    if os.path.lexists(latest_dir):
+        os.remove(latest_dir)
+    os.symlink(logfile_dir, latest_dir)
+
 def configure_logging(logname, level=logging.INFO, filename=None, env=None):
     """
     Configure Python logging package to send log files to ROS-specific log directory
@@ -77,6 +84,11 @@ def configure_logging(logname, level=logging.INFO, filename=None, env=None):
             return None
     elif os.path.isfile(logfile_dir):
         raise LoggingException("Cannot save log files: file [%s] is in the way"%logfile_dir)
+
+    try:
+        renew_latest_logdir(logfile_dir)
+    except OSError:
+        sys.stderr.write("INFO: cannot create a symlink to latest log directory. Maybe your environment is not a Unix.\n")
 
     if 'ROS_PYTHON_LOG_CONFIG_FILE' in os.environ:
         config_file = os.environ['ROS_PYTHON_LOG_CONFIG_FILE']
