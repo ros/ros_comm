@@ -231,6 +231,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     if (vm.count("topic"))
     {
       std::vector<std::string> bags = vm["topic"].as< std::vector<std::string> >();
+      bags.erase(std::unique(bags.begin(), bags.end()), bags.end());
       for (std::vector<std::string>::iterator i = bags.begin();
            i != bags.end();
            i++)
