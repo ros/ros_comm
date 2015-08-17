@@ -494,7 +494,7 @@ class Subscriber(Topic):
           the callback_args as a second argument, i.e. fn(data,
           callback_args).  NOTE: Additional callbacks can be added using
           add_callback().
-        @type  callback: str
+        @type  callback: fn(msg, cb_args)
         @param callback_args: additional arguments to pass to the
           callback. This is useful when you wish to reuse the same
           callback for multiple subscriptions.
@@ -653,7 +653,7 @@ class _SubscriberImpl(_TopicImpl):
         @param cb: callback function to invoke with message data
           instance, i.e. fn(data). If callback args is set, they will
           be passed in as the second argument.
-        @type  cb: fn(msg)
+        @type  cb: fn(msg, cb_args)
         @param cb_cargs: additional arguments to pass to callback
         @type  cb_cargs: Any
         """
@@ -674,8 +674,8 @@ class _SubscriberImpl(_TopicImpl):
     def remove_callback(self, cb, cb_args):
         """
         Unregister a message callback.
-        @param cb: callback function 
-        @type  cb: fn(msg)
+        @param cb: callback function
+        @type  cb: fn(msg, cb_args)
         @param cb_cargs: additional arguments associated with callback
         @type  cb_cargs: Any
         @raise KeyError: if no matching callback
