@@ -313,7 +313,7 @@ def _add_shutdown_hook(h, hooks):
         raise TypeError("shutdown hook [%s] must be a function or callable object: %s"%(h, type(h)))
     if _shutdown_flag:
         _logger.warn("add_shutdown_hook called after shutdown")
-        h("already shutdown")
+        h()
         return
     with _shutdown_lock:
         if hooks is None:
