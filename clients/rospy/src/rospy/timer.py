@@ -48,7 +48,7 @@ class Rate(object):
     """
     Convenience class for sleeping in a loop at a specified rate
     """
-    
+
     def __init__(self, hz):
         """
         Constructor.
@@ -181,7 +181,7 @@ class Timer(threading.Thread):
     Convenience class for calling a callback at a specified rate
     """
 
-    def __init__(self, period, callback, oneshot=False):
+    def __init__(self, period, callback, oneshot=False, start_running=False):
         """
         Constructor.
         @param period: desired period between callbacks
@@ -190,12 +190,14 @@ class Timer(threading.Thread):
         @type  callback: function taking rospy.TimerEvent
         @param oneshot: if True, fire only once, otherwise fire continuously until shutdown is called [default: False]
         @type  oneshot: bool
+        @param start: if True, begin running the `run` method immediately, otherwise wait until self.start() is called [default: False]
+        @type  start: bool
         """
         threading.Thread.__init__(self)
         self._period   = period
         self._callback = callback
         self._oneshot  = oneshot
-        self._shutdown = False
+        self._shutdown = not start_running
         self.setDaemon(True)
         self.start()
 
@@ -204,7 +206,13 @@ class Timer(threading.Thread):
         Stop firing callbacks.
         """
         self._shutdown = True
-        
+
+    def start(self):
+        """
+        Start run method by setting self._shutdown to False.
+        """
+        self._shutdown = False
+
     def run(self):
         r = Rate(1.0 / self._period.to_sec())
         current_expected = rospy.rostime.get_rostime() + self._period
