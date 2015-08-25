@@ -181,7 +181,7 @@ class Timer(threading.Thread):
     Convenience class for calling a callback at a specified rate
     """
 
-    def __init__(self, period, callback, oneshot=False, start_running=False):
+    def __init__(self, period, callback, oneshot=False, start_running=True):
         """
         Constructor.
         @param period: desired period between callbacks
