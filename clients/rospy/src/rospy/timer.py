@@ -194,7 +194,8 @@ class Timer(threading.Thread):
         @type  start: bool
         """
         threading.Thread.__init__(self)
-        self._period   = period
+        self.__period = period
+        self._period   = self.__period
         self._callback = callback
         self._oneshot  = oneshot
         self._shutdown = not start_running
@@ -206,6 +207,7 @@ class Timer(threading.Thread):
         Stop firing callbacks.
         """
         self._shutdown = True
+        self._period = self.__period
 
     def startup(self):
         """
