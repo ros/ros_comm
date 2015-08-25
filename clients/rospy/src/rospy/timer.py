@@ -207,7 +207,7 @@ class Timer(threading.Thread):
         """
         self._shutdown = True
 
-    def start(self):
+    def startup(self):
         """
         Start run method by setting self._shutdown to False.
         """
