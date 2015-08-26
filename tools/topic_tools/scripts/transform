@@ -60,7 +60,9 @@ class TopicOp:
             help='Wait for input messages.'
         )
 
-        args = parser.parse_args()
+        # get and strip out ros args first
+        args0 = rospy.myargv()
+        args = parser.parse_args(args0[1:])
 
         self.modules = {}
         for module in args.modules:
