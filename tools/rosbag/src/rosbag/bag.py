@@ -251,7 +251,7 @@ class Bag(object):
     def read_messages(self, topics=None, start_time=None, end_time=None, connection_filter=None, raw=False):
         """
         Read messages from the bag, optionally filtered by topic, timestamp and connection details.
-        @param topics: list of topics or a single topic [optional]
+        @param topics: list of topics or a single topic. if an empty list is given all topics will be read [optional]
         @type  topics: list(str) or str
         @param start_time: earliest timestamp of message to return [optional]
         @type  start_time: U{genpy.Time}
