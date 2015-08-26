@@ -16,9 +16,10 @@
   <build_depend>rosunit</build_depend>
 
   <run_depend>boost</run_depend>
-  <run_depend>rospy</run_depend>
+  <run_depend>rosgraph</run_depend>
   <run_depend>roslaunch</run_depend>
   <run_depend>rosmaster</run_depend>
+  <run_depend>rospy</run_depend>
   <run_depend>rosunit</run_depend>
 
   <export>
