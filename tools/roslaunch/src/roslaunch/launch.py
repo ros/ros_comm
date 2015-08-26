@@ -668,7 +668,9 @@ class ROSLaunchRunner(object):
         while pm.mainthread_spin_once() and self.is_node_running(test):
             #test fails on timeout
             if time.time() > timeout_t:
-                raise RLTestTimeoutException("test max time allotted")
+                raise RLTestTimeoutException(
+                    "max time [%ss] allotted for test [%s] of type [%s/%s]" %
+                    (test.time_limit, test.test_name, test.package, test.type))
             time.sleep(0.1)
         
 # NOTE: the mainly exists to prevent implicit circular dependency as
