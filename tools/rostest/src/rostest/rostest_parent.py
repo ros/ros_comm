@@ -35,6 +35,7 @@
 import logging
 import sys
 
+import rosgraph
 import roslaunch.config
 from roslaunch.core import printlog_bold, RLException
 import roslaunch.launch
@@ -45,17 +46,50 @@ import roslaunch.xmlloader
 import roslaunch.parent
 
 from rosmaster.master import Master
+from rospy import logwarn
+
 
 class ROSTestLaunchParent(roslaunch.parent.ROSLaunchParent):
 
-    def __init__(self, config, roslaunch_files, port=0):
+    def __init__(self, config, roslaunch_files, port=0, reuse_master=False, clear=False):
         if config is None:
             raise Exception("config not initialized")
         # we generate a run_id for each test
-        run_id = roslaunch.core.generate_run_id()
+        if not reuse_master:
+            run_id = roslaunch.core.generate_run_id()
+        else:
+            param_server = rosgraph.Master('/roslaunch')
+            have_master = False
+            try:
+                run_id = param_server.getParam('/run_id')
+                have_master = True
+            except Exception as e:
+                logwarn("Could not connect to existing ROS master; will create a new master: " +
+                        str(e))
+            except:
+                # oh boy; we got something that wasn't an exception...
+                # ignore it, the same way that roslaunch does in this situation
+                logwarn("Could not connect to existing ROS master; will create a new master")
+            if not have_master:
+                run_id = roslaunch.core.generate_run_id()
+
+            if clear and have_master:
+                params = param_server.getParamNames()
+                # whitelist of parameters to keep
+                whitelist = ['/run_id', '/rosversion', '/rosdistro']
+                for i in reversed(range(len(params))):
+                    param = params[i]
+                    if param in whitelist:
+                        del params[i]
+                    elif param.startswith('/roslaunch/'):
+                        del params[i]
+                for param in params:
+                    param_server.deleteParam(param)
+
         super(ROSTestLaunchParent, self).__init__(run_id, roslaunch_files, is_core=False, is_rostest=True)
         self.config = config
         self.port = port
+        self.reuse_master = reuse_master
         self.master = None
         
     def _load_config(self):
@@ -67,9 +101,10 @@ class ROSTestLaunchParent(roslaunch.parent.ROSLaunchParent):
         initializes self.config and xmlrpc infrastructure
         """
         self._start_infrastructure()
-        self.master = Master(port=self.port)
-        self.master.start()
-        self.config.master.uri = self.master.uri
+        if not self.reuse_master:
+            self.master = Master(port=self.port)
+            self.master.start()
+            self.config.master.uri = self.master.uri
         self._init_runner()
 
     def tearDown(self):
