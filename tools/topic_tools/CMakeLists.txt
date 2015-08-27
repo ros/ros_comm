@@ -69,6 +69,7 @@ catkin_install_python(PROGRAMS
   scripts/mux_list
   scripts/mux_select
   scripts/transform
+  scripts/relay_field
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #Testing
