@@ -139,6 +139,7 @@ add_rostest(launch/pingpong_large.xml)
 add_rostest(launch/subscribe_self.xml)
 
 add_rostest(launch/check_master.xml)
+#add_rostest(launch/check_master_false.xml)
 
 add_rostest(launch/handles.xml)
 add_rostest(launch/timer_callbacks.xml)

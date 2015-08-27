@@ -18,4 +18,5 @@ if(CATKIN_ENABLE_TESTING)
   catkin_add_nosetests(test)
 
   add_rostest(test/rosservice.test)
+  #add_rostest(test/rosservice_unit.test)
 endif()
