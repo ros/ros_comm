@@ -36,7 +36,6 @@
 #define ROSCPP_CALLBACK_QUEUE_INTERFACE_H
 
 #include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
 #include "common.h"
 #include "ros/types.h"
 
@@ -73,7 +72,6 @@ public:
   virtual bool ready() { return true; }
 };
 typedef boost::shared_ptr<CallbackInterface> CallbackInterfacePtr;
-typedef boost::weak_ptr<CallbackInterface> CallbackInterfaceWPtr;
 
 /**
  * \brief Abstract interface for a queue used to handle all callbacks within roscpp.

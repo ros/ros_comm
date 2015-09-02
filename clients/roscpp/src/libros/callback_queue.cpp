@@ -361,12 +361,10 @@ CallbackQueue::CallOneResult CallbackQueue::callOneCB(TLS* tls)
 
   // Alias the CallbackInfo object via reference (rather than copying it)
   CallbackInfo& info = *tls->cb_it;
-  // Create a weak pointer from the CallbackInterface shared pointer.
-  // When ready to execute the callback, if a shared pointer fails to be
-  // made from the weak pointer, then the CallbackInterface was destroyed
-  // in another thread. In that case, the callback is Invalid and should
-  // not be executed.
-  CallbackInterfaceWPtr weak_cb = info.callback;
+  // Incriment the reference count of the shared pointer of the
+  // CallbackInterface to make sure it is not destroyed while we wait for
+  // the mutex lock.
+  CallbackInterfacePtr cb = info.callback;
 
   IDInfoPtr id_info = getIDInfo(info.removal_id);
   if (id_info)
@@ -385,11 +383,7 @@ CallbackQueue::CallOneResult CallbackQueue::callOneCB(TLS* tls)
       else
       {
         tls->cb_it = tls->callbacks.erase(tls->cb_it);
-        // Create a scoped CallbackInterface shared ptr and execute the callback
-        if (CallbackInterfacePtr cb = weak_cb.lock())
-        {
-          result = cb->call();
-        }
+        result = cb->call();
       }
     }
     catch (std::exception&)
