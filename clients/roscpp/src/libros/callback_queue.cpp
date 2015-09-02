@@ -361,7 +361,7 @@ CallbackQueue::CallOneResult CallbackQueue::callOneCB(TLS* tls)
 
   // Alias the CallbackInfo object via reference (rather than copying it)
   CallbackInfo& info = *tls->cb_it;
-  // Incriment the reference count of the shared pointer of the
+  // Increment the reference count of the shared pointer of the
   // CallbackInterface to make sure it is not destroyed while we wait for
   // the mutex lock.
   CallbackInterfacePtr cb = info.callback;
