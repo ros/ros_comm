@@ -317,8 +317,12 @@ class TestRosbag(unittest.TestCase):
         fn = '/tmp/test_get_time_emtpy_bag.bag'
 
         with rosbag.Bag(fn, mode='w') as bag:
-            self.assertRaises(rosbag.ROSBagException, bag.get_start_time)
-            self.assertRaises(rosbag.ROSBagException, bag.get_end_time)
+            self.assertRaisesRegexp(rosbag.ROSBagException,
+                                    'Bag contains no message',
+                                    bag.get_start_time)
+            self.assertRaisesRegexp(rosbag.ROSBagException,
+                                    'Bag contains no message',
+                                    bag.get_end_time)
 
     def test_get_type_and_topic_info(self):
         fn = '/tmp/test_get_type_and_topic_info.bag'
