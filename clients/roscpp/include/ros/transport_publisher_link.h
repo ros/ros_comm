@@ -31,6 +31,7 @@
 #include "common.h"
 #include "publisher_link.h"
 #include "connection.h"
+#include <boost/thread/recursive_mutex.hpp>
 
 namespace ros
 {
@@ -85,12 +86,10 @@ private:
   WallDuration retry_period_;
   WallTime next_retry_;
   bool dropping_;
+  boost::recursive_mutex dropping_mutex_;
 };
 typedef boost::shared_ptr<TransportPublisherLink> TransportPublisherLinkPtr;
 
 } // namespace ros
 
 #endif // ROSCPP_TRANSPORT_PUBLISHER_LINK_H
-
-
-

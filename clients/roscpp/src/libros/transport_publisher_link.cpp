@@ -65,7 +65,8 @@ TransportPublisherLink::TransportPublisherLink(const SubscriptionPtr& parent, co
 
 TransportPublisherLink::~TransportPublisherLink()
 {
-  dropping_ = true;
+   boost::recursive_mutex::scoped_lock lock(dropping_mutex_);
+   dropping_ = true;
 
   if (retry_timer_handle_ != -1)
   {
@@ -104,7 +105,9 @@ bool TransportPublisherLink::initialize(const ConnectionPtr& connection)
 
 void TransportPublisherLink::drop()
 {
+  boost::recursive_mutex::scoped_lock lock(dropping_mutex_);
   dropping_ = true;
+
   connection_->drop(Connection::Destructing);
 
   if (SubscriptionPtr parent = parent_.lock())
@@ -192,6 +195,7 @@ void TransportPublisherLink::onMessage(const ConnectionPtr& conn, const boost::s
 
 void TransportPublisherLink::onRetryTimer(const ros::WallTimerEvent&)
 {
+  boost::recursive_mutex::scoped_lock lock(dropping_mutex_);
   if (dropping_)
   {
     return;
@@ -242,6 +246,7 @@ CallbackQueuePtr getInternalCallbackQueue();
 
 void TransportPublisherLink::onConnectionDropped(const ConnectionPtr& conn, Connection::DropReason reason)
 {
+  boost::recursive_mutex::scoped_lock lock(dropping_mutex_);
   if (dropping_)
   {
     return;
@@ -304,4 +309,3 @@ std::string TransportPublisherLink::getTransportInfo()
 }
 
 } // namespace ros
-
