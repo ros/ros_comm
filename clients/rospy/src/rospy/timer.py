@@ -190,8 +190,8 @@ class Timer(threading.Thread):
         @type  callback: function taking rospy.TimerEvent
         @param oneshot: if True, fire only once, otherwise fire continuously until shutdown is called [default: False]
         @type  oneshot: bool
-        @param start: if True, begin running the `run` method immediately, otherwise wait until self.start() is called [default: False]
-        @type  start: bool
+        @param start_running: if True, begin running the `run` method immediately, otherwise wait until self.start() is called [default: False]
+        @type  start_running: bool
         """
         threading.Thread.__init__(self)
         self.__period = period
