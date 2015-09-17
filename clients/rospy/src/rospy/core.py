@@ -305,7 +305,7 @@ def is_shutdown_requested():
     """
     return _in_shutdown
 
-def _add_shutdown_hook(h, hooks):
+def _add_shutdown_hook(h, hooks, pass_reason_argument=True):
     """
     shared implementation of add_shutdown_hook and add_preshutdown_hook
     """
@@ -313,7 +313,10 @@ def _add_shutdown_hook(h, hooks):
         raise TypeError("shutdown hook [%s] must be a function or callable object: %s"%(h, type(h)))
     if _shutdown_flag:
         _logger.warn("add_shutdown_hook called after shutdown")
-        h("already shutdown")
+        if pass_reason_argument:
+            h("already shutdown")
+        else:
+            h()
         return
     with _shutdown_lock:
         if hooks is None:
@@ -349,7 +352,7 @@ def add_client_shutdown_hook(h):
     @param h: function with zero args
     @type  h: fn()
     """
-    _add_shutdown_hook(h, _client_shutdown_hooks)
+    _add_shutdown_hook(h, _client_shutdown_hooks, pass_reason_argument=False)
 
 def add_preshutdown_hook(h):
     """
