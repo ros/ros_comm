@@ -48,7 +48,7 @@ class Rate(object):
     """
     Convenience class for sleeping in a loop at a specified rate
     """
-
+    
     def __init__(self, hz):
         """
         Constructor.
