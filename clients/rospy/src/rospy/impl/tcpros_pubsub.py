@@ -386,15 +386,11 @@ class QueuedConnection(object):
 
         self._lock = threading.Lock()
         self._cond_data_available = threading.Condition(self._lock)
-        self._connection.set_cleanup_callback(self._closed_connection_callback)
         self._queue = []
         self._error = None
 
         self._thread = threading.Thread(target=self._run)
         self._thread.start()
-
-    def _closed_connection_callback(self, connection):
-        self._cond_data_available.notify()
 
     def __getattr__(self, name):
         if name.startswith('__'):
@@ -423,7 +419,7 @@ class QueuedConnection(object):
             with self._lock:
                 # wait for available data
                 while not self._queue and not self._connection.done:
-                    self._cond_data_available.wait()
+                    self._cond_data_available.wait(1.0)
                 # take all data from queue for processing outside of the lock
                 if self._queue:
                     queue = self._queue
