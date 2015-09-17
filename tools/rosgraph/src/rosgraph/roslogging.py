@@ -49,8 +49,11 @@ def renew_latest_logdir(logfile_dir):
     log_dir = os.path.dirname(logfile_dir)
     latest_dir = os.path.join(log_dir, 'latest')
     if os.path.lexists(latest_dir):
+        if not os.path.islink(latest_dir):
+            return False
         os.remove(latest_dir)
     os.symlink(logfile_dir, latest_dir)
+    return True
 
 def configure_logging(logname, level=logging.INFO, filename=None, env=None):
     """
@@ -85,10 +88,13 @@ def configure_logging(logname, level=logging.INFO, filename=None, env=None):
     elif os.path.isfile(logfile_dir):
         raise LoggingException("Cannot save log files: file [%s] is in the way"%logfile_dir)
 
-    try:
-        renew_latest_logdir(logfile_dir)
-    except OSError:
-        sys.stderr.write("INFO: cannot create a symlink to latest log directory. Maybe your environment is not a Unix.\n")
+    if sys.platform not in ['win32']:
+        try:
+            success = renew_latest_logdir(logfile_dir)
+            if not success:
+                sys.stderr.write("INFO: cannot create a symlink to latest log directory\n")
+        except OSError as e:
+            sys.stderr.write("INFO: cannot create a symlink to latest log directory: %s\n" % e)
 
     if 'ROS_PYTHON_LOG_CONFIG_FILE' in os.environ:
         config_file = os.environ['ROS_PYTHON_LOG_CONFIG_FILE']
