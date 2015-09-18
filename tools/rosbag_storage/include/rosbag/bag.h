@@ -470,7 +470,7 @@ void Bag::doWrite(std::string const& topic, ros::Time const& time, T const& msg,
 
     if (time < ros::TIME_MIN)
     {
-        throw BagException("Tried to insert a message with time less than ros::MIN_TIME");
+        throw BagException("Tried to insert a message with time less than ros::TIME_MIN");
     }
 
     // Whenever we write we increment our revision
