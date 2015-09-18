@@ -41,6 +41,8 @@ PKG = 'test_rospy'
 import sys
 import time
 import unittest
+import gc
+import weakref
 
 import rospy
 import rostest
@@ -74,7 +76,8 @@ class TestDeregister(unittest.TestCase):
         self.assert_(not pubs, pubs)
         
         print("Publishing ", PUBTOPIC)
-        pub = rospy.Publisher(PUBTOPIC, String)
+        pub = rospy.Publisher(PUBTOPIC, String, queue_size=1)
+        impl = weakref.ref(pub.impl)
         topic = rospy.resolve_name(PUBTOPIC)
         _, _, pubs = node_proxy.getPublications('/foo')
         pubs = [p for p in pubs if p[0] != '/rosout']
@@ -101,6 +104,9 @@ class TestDeregister(unittest.TestCase):
         n = rospy.get_caller_id()
         self.assert_(not rostest.is_publisher(topic, n), "publication is still active on master")
 
+        # verify that the impl was cleaned up
+        gc.collect()
+        self.assertIsNone(impl())
         
     def test_unsubscribe(self):
         global _last_callback
