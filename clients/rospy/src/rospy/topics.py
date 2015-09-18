@@ -426,7 +426,16 @@ class _TopicImpl(object):
             self.connections = new_connections
 
             # connections make a callback when closed
-            c.set_cleanup_callback(self.remove_connection)
+            # don't clobber an existing callback
+            if not c.cleanup_cb:
+                c.set_cleanup_callback(self.remove_connection)
+            else:
+                previous_callback = c.cleanup_cb
+                new_callback = self.remove_connection
+                def cleanup_cb_wrapper(s):
+                    new_callback(s)
+                    previous_callback(s)
+                c.set_cleanup_callback(cleanup_cb_wrapper)
             
             return True
 
