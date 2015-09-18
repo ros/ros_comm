@@ -39,6 +39,7 @@ import time
 import unittest
 
 import rospkg
+from rospkg.environment import ROS_TEST_RESULTS_DIR
 import roslaunch
 import roslib.packages 
 
@@ -92,7 +93,7 @@ def failRunner(testName, message):
         self.fail(message)
     return fn
     
-def rostestRunner(test, test_pkg):
+def rostestRunner(test, test_pkg, results_base_dir=None):
     """
     Test function generator that takes in a roslaunch Test object and
     returns a class instance method that runs the test. TestCase
@@ -121,7 +122,10 @@ def rostestRunner(test, test_pkg):
 
             #setup the test
             # - we pass in the output test_file name so we can scrape it
-            test_file = xmlResultsFile(test_pkg, test_name, False)
+            env = None
+            if results_base_dir:
+                env = {ROS_TEST_RESULTS_DIR: results_base_dir}
+            test_file = xmlResultsFile(test_pkg, test_name, False, env=env)
             if os.path.exists(test_file):
                 printlog("removing previous test results file [%s]", test_file)
                 os.remove(test_file)
@@ -212,7 +216,7 @@ def tearDown(self):
         
     printlog("rostest teardown %s complete", self.test_file)
     
-def createUnitTest(pkg, test_file, reuse_master=False, clear=False):
+def createUnitTest(pkg, test_file, reuse_master=False, clear=False, results_base_dir=None):
     """
     Unit test factory. Constructs a unittest class based on the roslaunch
 
@@ -248,7 +252,7 @@ def createUnitTest(pkg, test_file, reuse_master=False, clear=False):
         elif testName in testNames:
             classdict[testName] = failDuplicateRunner(test.test_name)
         else:
-            classdict[testName] = rostestRunner(test, pkg)
+            classdict[testName] = rostestRunner(test, pkg, results_base_dir=results_base_dir)
             testNames.append(testName)
 
     # instantiate the TestCase instance with our magically-created tests

@@ -156,7 +156,7 @@ def rostestmain():
         parser.error("test file is invalid. Generated failure case result file in %s"%results_file)
         
     try:
-        testCase = rostest.runner.createUnitTest(pkg, test_file, options.reuse_master, options.clear)
+        testCase = rostest.runner.createUnitTest(pkg, test_file, options.reuse_master, options.clear, options.results_base_dir)
         suite = unittest.TestLoader().loadTestsFromTestCase(testCase)
 
         if options.text_mode:
