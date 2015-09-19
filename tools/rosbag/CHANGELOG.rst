@@ -2,6 +2,14 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* reduce memory usage by using slots for IndexEntry types (`#613 <https://github.com/ros/ros_comm/pull/613>`_)
+* remove duplicate topics (`#647 <https://github.com/ros/ros_comm/issues/647>`_)
+* better exception when calling get_start_time / get_end_time on empty bags (`#657 <https://github.com/ros/ros_comm/pull/657>`_)
+* make support for lz4 in rosbag optional (`#642 <https://github.com/ros/ros_comm/pull/642>`_)
+* fix handling of "play --topics" (`#620 <https://github.com/ros/ros_comm/issues/620>`_)
+
 1.11.13 (2015-04-28)
 --------------------
 

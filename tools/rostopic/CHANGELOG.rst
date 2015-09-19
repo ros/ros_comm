@@ -2,6 +2,11 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* support specifying multiple array indices (`#606 <https://github.com/ros/ros_comm/pull/606>`_)
+* fix string type check if variable is unicode
+
 1.11.13 (2015-04-28)
 --------------------
 

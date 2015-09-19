@@ -2,6 +2,12 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add optional reset argument to Timer::setPeriod() (`#590 <https://github.com/ros/ros_comm/issues/590>`_)
+* add getParam() and getParamCached() for float (`#621 <https://github.com/ros/ros_comm/issues/621>`_, `#623 <https://github.com/ros/ros_comm/issues/623>`_)
+* use explicit bool cast to compile with C++11 (`#632 <https://github.com/ros/ros_comm/pull/632>`_)
+
 1.11.13 (2015-04-28)
 --------------------
 
