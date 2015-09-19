@@ -2,8 +2,8 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.14 (2015-09-19)
+--------------------
 * add more information when test times out
 
 1.11.13 (2015-04-28)

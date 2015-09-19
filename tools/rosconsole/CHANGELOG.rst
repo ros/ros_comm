@@ -2,8 +2,8 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.14 (2015-09-19)
+--------------------
 * avoid redefining ROS_ASSERT_ENABLED (`#628 <https://github.com/ros/ros_comm/pull/628>`_)
 
 1.11.13 (2015-04-28)

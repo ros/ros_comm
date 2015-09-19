@@ -2,8 +2,8 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.14 (2015-09-19)
+--------------------
 * new tool "relay_field" which allows relay topic fields to another topic (`#639 <https://github.com/ros/ros_comm/pull/639>`_)
 * allow transform to be used with ros arguments and in a launch file (`#644 <https://github.com/ros/ros_comm/issues/644>`_)
 * add --wait-for-start option to transform script (`#646 <https://github.com/ros/ros_comm/pull/646>`_)
