@@ -71,7 +71,6 @@ TransportPublisherLink::~TransportPublisherLink()
   {
     getInternalTimerManager()->remove(retry_timer_handle_);
   }
-
   connection_->drop(Connection::Destructing);
 }
 
@@ -201,21 +200,11 @@ void TransportPublisherLink::onRetryTimer(const ros::WallTimerEvent&)
   {
     retry_period_ = std::min(retry_period_ * 2, WallDuration(20));
     needs_retry_ = false;
-    SubscriptionPtr parent = parent_.lock();
-    // TODO: support retry on more than just TCP
-    // For now, since UDP does not have a heartbeat, we do not attempt to retry
-    // UDP connections since an error there likely means some invalid operation has
-    // happened.
-    if (connection_->getTransport()->getType() == std::string("TCPROS"))
-    {
-      std::string topic = parent ? parent->getName() : "unknown";
 
       TransportTCPPtr old_transport = boost::dynamic_pointer_cast<TransportTCP>(connection_->getTransport());
       ROS_ASSERT(old_transport);
       const std::string& host = old_transport->getConnectedHost();
       int port = old_transport->getConnectedPort();
-
-      ROSCPP_LOG_DEBUG("Retrying connection to [%s:%d] for topic [%s]", host.c_str(), port, topic.c_str());
 
       TransportTCPPtr transport(new TransportTCP(&PollManager::instance()->getPollSet()));
       if (transport->connect(host, port))
@@ -226,15 +215,6 @@ void TransportPublisherLink::onRetryTimer(const ros::WallTimerEvent&)
 
         ConnectionManager::instance()->addConnection(connection);
       }
-      else
-      {
-        ROSCPP_LOG_DEBUG("connect() failed when retrying connection to [%s:%d] for topic [%s]", host.c_str(), port, topic.c_str());
-      }
-    }
-    else if (parent)
-    {
-      parent->removePublisherLink(shared_from_this());
-    }
   }
 }
 
@@ -250,7 +230,6 @@ void TransportPublisherLink::onConnectionDropped(const ConnectionPtr& conn, Conn
   ROS_ASSERT(conn == connection_);
 
   SubscriptionPtr parent = parent_.lock();
-
   if (reason == Connection::TransportDisconnect)
   {
     std::string topic = parent ? parent->getName() : "unknown";
@@ -265,9 +244,20 @@ void TransportPublisherLink::onConnectionDropped(const ConnectionPtr& conn, Conn
     {
       retry_period_ = WallDuration(0.1);
       next_retry_ = WallTime::now() + retry_period_;
+      // TODO: support retry on more than just TCP
+      // For now, since UDP does not have a heartbeat, we do not attempt to retry
+      // UDP connections since an error there likely means some invalid operation has
+      // happened.
+      if (connection_->getTransport()->getType() == std::string("TCPROS"))
+      {
       retry_timer_handle_ = getInternalTimerManager()->add(WallDuration(retry_period_),
           boost::bind(&TransportPublisherLink::onRetryTimer, this, _1), getInternalCallbackQueue().get(),
           VoidConstPtr(), false);
+      }
+      else
+      {
+        drop();
+      }
     }
     else
     {
@@ -304,4 +294,3 @@ std::string TransportPublisherLink::getTransportInfo()
 }
 
 } // namespace ros
-
