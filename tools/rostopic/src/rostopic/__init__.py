@@ -187,6 +187,10 @@ def _rostopic_hz(topic, window_size=-1, filter_expr=None):
     :param window_size: number of messages to average over, -1 for infinite, ``int``
     :param filter_expr: Python filter expression that is called with m, the message instance
     """
+    if rospy.get_param('use_sim_time', False):
+        print("WARNING: topic [%s] may be using simulated time" % (topic),
+              file=sys.stderr)
+
     msg_class, real_topic, _ = get_topic_class(topic, blocking=True) #pause hz until topic is published
     if rospy.is_shutdown():
         return
