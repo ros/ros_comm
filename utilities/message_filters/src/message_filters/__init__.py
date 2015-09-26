@@ -226,3 +226,46 @@ class ApproximateTimeSynchronizer(TimeSynchronizer):
                 for q,t in qt:
                     del q[t]
         self.lock.release()
+
+class TimeSequencer(SimpleFilter):
+    """
+    Guarantees that messages will be called in temporal order according to their
+    header's timestamp.
+
+    :class:`TimeSequencer` is constructed with a specific delay which specifies
+    how long to queue up messages before passing them through. A callback for a
+    message is never invoked until the messages' time stamp is out of date by at
+    least delay. However, for all messages which are out of date by at least the
+    delay, their callback are invoked and guaranteed to be in temporal order.
+    If a message arrives from a time prior to a message which has already had
+    its callback invoked, it is thrown away. 
+    """
+
+    def __init__(self, fs, delay, rate, queue_size):
+        SimpleFilter.__init__(self)
+        self.lock       = threading.Lock()
+        self.queue      = {}
+        self.queue_size = queue_size
+        self.last_stamp = rospy.Time(0)
+        self.rate       = rospy.Duration.from_sec(rate)
+        self.delay      = rospy.Duration.from_sec(delay)
+        self.timer      = rospy.Timer(self.rate, self.check)
+        fs.registerCallback(self.add)
+
+    def add(self, msg):
+        self.lock.acquire()
+        if msg.header.stamp > self.last_stamp:
+            self.queue[msg.header.stamp] = msg
+        while len(self.queue) > self.queue_size:
+            t = min(self.queue)
+            del self.queue[t]
+        self.lock.release()
+
+    def check(self, _):
+        self.lock.acquire()
+        to_call = sorted(filter(lambda t: t + self.delay <= rospy.Time.now(),
+                              self.queue.keys()))
+        self.last_stamp = to_call[-1] if len(to_call) > 0 else self.last_stamp
+        map(lambda k: self.signalMessage(self.queue[k]), to_call)
+        map(lambda k: self.queue.__delitem__(k), to_call)
+        self.lock.release()
