@@ -57,7 +57,7 @@ using ros::Exception;
 namespace rosbag {
 
 ros::AdvertiseOptions createAdvertiseOptions(const ConnectionInfo* c, uint32_t queue_size, const std::string& prefix) {
-    ros::AdvertiseOptions opts(prefix+c->topic, queue_size, c->md5sum, c->datatype, c->msg_def);
+    ros::AdvertiseOptions opts(prefix + c->topic, queue_size, c->md5sum, c->datatype, c->msg_def);
     ros::M_string::const_iterator header_iter = c->header->find("latching");
     opts.latch = (header_iter != c->header->end() && header_iter->second == "1");
     return opts;
@@ -65,7 +65,7 @@ ros::AdvertiseOptions createAdvertiseOptions(const ConnectionInfo* c, uint32_t q
 
 
 ros::AdvertiseOptions createAdvertiseOptions(MessageInstance const& m, uint32_t queue_size, const std::string& prefix) {
-    return ros::AdvertiseOptions(prefix+m.getTopic(), queue_size, m.getMD5Sum(), m.getDataType(), m.getMessageDefinition());
+    return ros::AdvertiseOptions(prefix + m.getTopic(), queue_size, m.getMD5Sum(), m.getDataType(), m.getMessageDefinition());
 }
 
 // PlayerOptions
@@ -141,6 +141,11 @@ void Player::publish() {
     if (!node_handle_.ok())
       return;
 
+    if (!options_.prefix.empty())
+    {
+      ROS_INFO_STREAM("Using prefix " << options_.prefix << " for topics ");
+    }
+
     if (!options_.quiet)
       puts("");
 
@@ -176,11 +181,6 @@ void Player::publish() {
       std::cerr << "No messages to play on specified topics.  Exiting." << std::endl;
       ros::shutdown();
       return;
-    }
-
-    if (!options_.prefix.empty())
-    {
-      ROS_INFO_STREAM("Using prefix " << options_.prefix << " for topics ");
     }
 
     // Advertise all of our messages

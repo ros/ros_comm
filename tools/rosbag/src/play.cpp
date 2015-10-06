@@ -44,7 +44,7 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
 
     desc.add_options()
       ("help,h", "produce help message")
-      ("prefix,q", po::value<std::string>()->default_value(""), "prefixes all output topics in replay")
+      ("prefix,p", po::value<std::string>()->default_value(""), "prefixes all output topics in replay")
       ("quiet,q", "suppress console output")
       ("immediate,i", "play back all messages without waiting")
       ("pause", "start in paused mode")
@@ -73,11 +73,9 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
       po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
     } catch (boost::program_options::invalid_command_line_syntax& e)
     {
-      std::cout << "error " << e.what() << std::endl;
       throw ros::Exception(e.what());
     }  catch (boost::program_options::unknown_option& e)
     {
-      std::cout << "error 2 " << e.what() << std::endl;
       throw ros::Exception(e.what());
     }
 
@@ -86,6 +84,8 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
       exit(0);
     }
 
+    if (vm.count("prefix"))
+      opts.prefix = vm["prefix"].as<std::string>();
     if (vm.count("quiet"))
       opts.quiet = true;
     if (vm.count("immediate"))
@@ -118,11 +118,6 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
       opts.loop = true;
     if (vm.count("keep-alive"))
       opts.keep_alive = true;
-
-    if (vm.count("prefix"))
-    {
-      opts.prefix = vm["prefix"].as<std::string>();
-    }
 
     if (vm.count("topics"))
     {

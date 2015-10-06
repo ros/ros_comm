@@ -187,8 +187,8 @@ def handle_pause_topics(option, opt_str, value, parser):
 def play_cmd(argv):
     parser = optparse.OptionParser(usage="rosbag play BAGFILE1 [BAGFILE2 BAGFILE3 ...]",
                                    description="Play back the contents of one or more bag files in a time-synchronized fashion.")
+    parser.add_option("-p", "--prefix",       dest="prefix",     default='',    type='str',          help="prefix all output topics")
     parser.add_option("-q", "--quiet",        dest="quiet",      default=False, action="store_true", help="suppress console output")
-    parser.add_option("-p", "--prefix",        dest="prefix",    default='',    type='str',          help="prefix all output topics")
     parser.add_option("-i", "--immediate",    dest="immediate",  default=False, action="store_true", help="play back all messages without waiting")
     parser.add_option("--pause",              dest="pause",      default=False, action="store_true", help="start in paused mode")
     parser.add_option("--queue",              dest="queue",      default=100,     type='int', action="store", help="use an outgoing queue of size SIZE (defaults to %default)", metavar="SIZE")
@@ -219,7 +219,8 @@ def play_cmd(argv):
         parser.error("Cannot find rosbag/play executable")
     cmd = [playpath[0]]
 
-    if options.prefix:     cmd.extend(["--prefix", str(options.prefix)])
+    if options.prefix:
+        cmd.extend(["--prefix", str(options.prefix)])
 
     if options.quiet:      cmd.extend(["--quiet"])
     if options.pause:      cmd.extend(["--pause"])
@@ -251,7 +252,6 @@ def play_cmd(argv):
         cmd.extend(['--bags'])
 
     cmd.extend(args)
-
     # Better way of handling it than os.execv
     # This makes sure stdin handles are passed to the process.
     subprocess.call(cmd)
