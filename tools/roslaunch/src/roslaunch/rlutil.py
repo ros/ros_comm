@@ -51,6 +51,7 @@ import rosgraph
 import roslaunch.core
 import roslaunch.config
 import roslaunch.depends
+import roslaunch.resource_cache
 from rosmaster import DEFAULT_MASTER_PORT
 
 def check_log_disk_usage():
@@ -89,7 +90,7 @@ def resolve_launch_arguments(args):
     # try to resolve launch file in package first
     if len(args) >= 2:
         try:
-            resolved = roslib.packages.find_resource(args[0], args[1])
+            resolved = roslaunch.resource_cache.find_resource(args[0], args[1])
             if len(resolved) > 1:
                 raise roslaunch.core.RLException("multiple files named [%s] in package [%s]:%s\nPlease specify full path instead" % (args[1], args[0], ''.join(['\n- %s' % r for r in resolved])))
             if len(resolved) == 1:
@@ -225,7 +226,7 @@ def check_roslaunch(f):
     # check for missing nodes
     for pkg, node_type in nodes:
         try:
-            if not roslib.packages.find_node(pkg, node_type):
+            if not roslaunch.resource_cache.find_node(pkg, node_type):
                 errors.append("cannot find node [%s] in package [%s]"%(node_type, pkg))
         except Exception as e:
             errors.append("unable to find node [%s/%s]: %s"%(pkg, node_type, str(e)))

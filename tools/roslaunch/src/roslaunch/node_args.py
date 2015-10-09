@@ -52,6 +52,7 @@ from rosgraph.names import script_resolve_name
 
 import roslib.packages
 
+from . import resource_cache
 from . import substitution_args
 
 from roslaunch.core import setup_env, local_machine, RLException
@@ -239,7 +240,7 @@ def create_local_process_args(node, machine, env=None):
     try:
         #TODO:fuerte: pass through rospack and catkin cache
         rospack = rospkg.RosPack(rospkg.get_ros_paths(env=env))
-        matches = roslib.packages.find_node(node.package, node.type, rospack)
+        matches = resource_cache.find_node(node.package, node.type, rospack)
     except rospkg.ResourceNotFound as e:
         # multiple nodes, invalid package
         raise NodeParamsException(str(e))
