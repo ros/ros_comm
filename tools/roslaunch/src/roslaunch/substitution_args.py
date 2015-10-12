@@ -163,8 +163,7 @@ def _find_executable(resolved, a, args, _context):
     # we try to find the specific executable in libexec via catkin
     # which will search in install/devel space
     full_path = None
-    # don't know why not imported at the top
-    from roslaunch.resource_cache import find_in_workspaces
+    from catkin.find_in_workspaces import find_in_workspaces
     paths = find_in_workspaces(['libexec'], project=args[0], first_matching_workspace_only=True)  # implicitly first_match_only=True
     if paths:
         full_path = _get_executable_path(paths[0], os.path.basename(path))
@@ -190,8 +189,7 @@ def _find_resource(resolved, a, args, _context):
     path = _sanitize_path(args[1])
     # we try to find the specific path in share via catkin
     # which will search in install/devel space and the source folder of the package
-    # don't know why not imported at the top
-    from roslaunch.resource_cache import find_in_workspaces
+    from catkin.find_in_workspaces import find_in_workspaces
     paths = find_in_workspaces(['share'], project=args[0], path=path, first_matching_workspace_only=True, first_match_only=True)
     if not paths:
         raise SubstitutionException("$(find-resource pkg path) could not find path [%s]" % a)
