@@ -225,7 +225,7 @@ def check_roslaunch(f):
     # check for missing nodes
     for pkg, node_type in nodes:
         try:
-            if not roslib.packages.find_node(pkg, node_type):
+            if not roslib.packages.find_node(pkg, node_type, rospack=rospack):
                 errors.append("cannot find node [%s] in package [%s]"%(node_type, pkg))
         except Exception as e:
             errors.append("unable to find node [%s/%s]: %s"%(pkg, node_type, str(e)))
