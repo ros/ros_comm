@@ -2,6 +2,10 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* validate name after remapping (`#669 <https://github.com/ros/ros_comm/pull/669>`_)
+
 1.11.14 (2015-09-19)
 --------------------
 * fix memory/thread leak with QueuedConnection (`#661 <https://github.com/ros/ros_comm/pull/661>`_)

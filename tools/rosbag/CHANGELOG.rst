@@ -2,6 +2,10 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add option --prefix for prefixing output topics (`#626 <https://github.com/ros/ros_comm/pull/626>`_)
+
 1.11.14 (2015-09-19)
 --------------------
 * reduce memory usage by using slots for IndexEntry types (`#613 <https://github.com/ros/ros_comm/pull/613>`_)
