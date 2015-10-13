@@ -2,8 +2,8 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.15 (2015-10-13)
+--------------------
 * validate name after remapping (`#669 <https://github.com/ros/ros_comm/pull/669>`_)
 
 1.11.14 (2015-09-19)

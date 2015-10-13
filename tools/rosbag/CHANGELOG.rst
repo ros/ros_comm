@@ -2,8 +2,8 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.15 (2015-10-13)
+--------------------
 * add option --prefix for prefixing output topics (`#626 <https://github.com/ros/ros_comm/pull/626>`_)
 
 1.11.14 (2015-09-19)
