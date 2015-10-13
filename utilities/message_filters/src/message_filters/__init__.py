@@ -76,6 +76,9 @@ class Subscriber(SimpleFilter):
     def getTopic(self):
         return self.topic
 
+    def unregister(self):
+        self.sub.unregister()
+
 class Cache(SimpleFilter):
 
     """
