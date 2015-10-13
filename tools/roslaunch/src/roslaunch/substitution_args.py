@@ -132,23 +132,31 @@ def _find(resolved, a, args, context):
     path = _sanitize_path(path)
     if path.startswith('/') or path.startswith('\\'):
         path = path[1:]
-    if path:
-        try:
-            return _find_executable(resolve_without_path, a, [args[0], path], context)
-        except SubstitutionException:
-            pass
-        try:
-            return _find_resource(resolve_without_path, a, [args[0], path], context)
-        except SubstitutionException:
-            pass
     rp = _get_rospack()
+    if path:
+        source_path_to_packages = rp.get_custom_cache('source_path_to_packages', {})
+        try:
+            return _find_executable(
+                resolve_without_path, a, [args[0], path], context,
+                source_path_to_packages=source_path_to_packages)
+        except SubstitutionException:
+            pass
+        try:
+            return _find_resource(
+                resolve_without_path, a, [args[0], path], context,
+                source_path_to_packages=source_path_to_packages)
+        except SubstitutionException:
+            pass
+        # persist mapping of packages in rospack instance
+        if source_path_to_packages:
+            rp.set_custom_cache('source_path_to_packages', source_path_to_packages)
     pkg_path = rp.get_path(args[0])
     if path:
         pkg_path = os.path.join(pkg_path, path)
     return before + pkg_path + after
 
 
-def _find_executable(resolved, a, args, _context):
+def _find_executable(resolved, a, args, _context, source_path_to_packages=None):
     """
     process $(find-executable PKG PATH)
     It finds the executable with the basename(PATH) in the libexec folder
@@ -163,9 +171,11 @@ def _find_executable(resolved, a, args, _context):
     # we try to find the specific executable in libexec via catkin
     # which will search in install/devel space
     full_path = None
-    # don't know why not imported at the top
-    from roslaunch.resource_cache import find_in_workspaces
-    paths = find_in_workspaces(['libexec'], project=args[0], first_matching_workspace_only=True)  # implicitly first_match_only=True
+    from catkin.find_in_workspaces import find_in_workspaces
+    paths = find_in_workspaces(
+        ['libexec'], project=args[0], first_matching_workspace_only=True,
+        # implicitly first_match_only=True
+        source_path_to_packages=source_path_to_packages)
     if paths:
         full_path = _get_executable_path(paths[0], os.path.basename(path))
     if not full_path:
@@ -177,7 +187,7 @@ def _find_executable(resolved, a, args, _context):
     return before + full_path + after
 
 
-def _find_resource(resolved, a, args, _context):
+def _find_resource(resolved, a, args, _context, source_path_to_packages=None):
     """
     process $(find-resource PKG PATH)
     Resolves the relative PATH from the share folder of the PKG either from install space, devel space or from the source folder.
@@ -190,9 +200,10 @@ def _find_resource(resolved, a, args, _context):
     path = _sanitize_path(args[1])
     # we try to find the specific path in share via catkin
     # which will search in install/devel space and the source folder of the package
-    # don't know why not imported at the top
-    from roslaunch.resource_cache import find_in_workspaces
-    paths = find_in_workspaces(['share'], project=args[0], path=path, first_matching_workspace_only=True, first_match_only=True)
+    from catkin.find_in_workspaces import find_in_workspaces
+    paths = find_in_workspaces(
+        ['share'], project=args[0], path=path, first_matching_workspace_only=True,
+        first_match_only=True, source_path_to_packages=source_path_to_packages)
     if not paths:
         raise SubstitutionException("$(find-resource pkg path) could not find path [%s]" % a)
     return before + paths[0] + after
