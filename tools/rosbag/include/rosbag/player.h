@@ -71,6 +71,7 @@ struct ROSBAG_DECL PlayerOptions
 
     void check();
 
+    std::string prefix;
     bool     quiet;
     bool     start_paused;
     bool     at_once;

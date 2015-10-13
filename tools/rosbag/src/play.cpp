@@ -44,6 +44,7 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
 
     desc.add_options()
       ("help,h", "produce help message")
+      ("prefix,p", po::value<std::string>()->default_value(""), "prefixes all output topics in replay")
       ("quiet,q", "suppress console output")
       ("immediate,i", "play back all messages without waiting")
       ("pause", "start in paused mode")
@@ -61,13 +62,13 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
       ("topics", po::value< std::vector<std::string> >()->multitoken(), "topics to play back")
       ("pause-topics", po::value< std::vector<std::string> >()->multitoken(), "topics to pause playback on")
       ("bags", po::value< std::vector<std::string> >(), "bag files to play back from");
-    
+
     po::positional_options_description p;
     p.add("bags", -1);
-    
+
     po::variables_map vm;
-    
-    try 
+
+    try
     {
       po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
     } catch (boost::program_options::invalid_command_line_syntax& e)
@@ -83,6 +84,8 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
       exit(0);
     }
 
+    if (vm.count("prefix"))
+      opts.prefix = vm["prefix"].as<std::string>();
     if (vm.count("quiet"))
       opts.quiet = true;
     if (vm.count("immediate"))
