@@ -70,7 +70,7 @@ class TestRosparamOffline(unittest.TestCase):
             self.assert_("%s %s"%(cmd, c) in output[0].decode(), "%s: %s" % (c, output[0].decode()))
             
         # test no args on commands that require args
-        for c in ['set', 'get', 'load', 'dump', 'delete']:
+        for c in ['set', 'get', 'load', 'delete']:
             output = Popen([cmd, c], stdout=PIPE, stderr=PIPE).communicate()
             self.assert_("Usage:" in output[0].decode() or "Usage:" in output[1].decode(), "%s\n%s"%(output, c))
             self.assert_("%s %s"%(cmd, c) in output[1].decode())
