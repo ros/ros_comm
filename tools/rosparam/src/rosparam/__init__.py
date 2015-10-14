@@ -160,11 +160,16 @@ def load_file(filename, default_namespace=None, verbose=False):
       corresponding namespaces for each YAML document in the file
     :raises: :exc:`RosParamException`: if unable to load contents of filename
     """
-    if not os.path.isfile(filename):
-        raise RosParamException("file [%s] does not exist"%filename)
-    if verbose:
-        print("reading parameters from [%s]"%filename)
-    f = open(filename, 'r')
+    if not filename or filename == '-':
+        f = sys.stdin
+        if verbose:
+            print("reading parameters from stdin")
+    else:
+        if not os.path.isfile(filename):
+            raise RosParamException("file [%s] does not exist"%filename)
+        if verbose:
+            print("reading parameters from [%s]"%filename)
+        f = open(filename, 'r')
     try:
         return load_str(f.read(), filename, default_namespace=default_namespace, verbose=verbose)
     finally:
@@ -293,7 +298,10 @@ def dump_params(filename, param, verbose=False):
     tree = get_param(param)
     if verbose:
         print_params(tree, param)
-    f = open(filename, 'w')
+    if not filename or filename == '-':
+        f = sys.stdout
+    else:
+        f = open(filename, 'w')
     try:
         yaml.dump(tree, f)
     finally:
@@ -424,7 +432,7 @@ def _rosparam_cmd_get_dump(cmd, argv):
     
     if len(args) == 0:
         if cmd == 'dump':
-            parser.error("invalid arguments. Please specify a file name")
+            arg = '-'
         elif cmd == 'get':
             parser.error("invalid arguments. Please specify a parameter name")
     elif len(args) == 1:
@@ -499,7 +507,7 @@ def _rosparam_cmd_set_load(cmd, argv):
     arg2 = None
     if len(args) == 0:
         if cmd == 'load':
-            parser.error("invalid arguments. Please specify a file name")
+            arg = '-'
         elif cmd == 'set':
             parser.error("invalid arguments. Please specify a parameter name")
     elif len(args) == 1:
