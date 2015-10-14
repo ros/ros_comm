@@ -298,7 +298,10 @@ def dump_params(filename, param, verbose=False):
     tree = get_param(param)
     if verbose:
         print_params(tree, param)
-    f = open(filename, 'w')
+    if not filename or filename == '-':
+        f = sys.stdout
+    else:
+        f = open(filename, 'w')
     try:
         yaml.dump(tree, f)
     finally:
@@ -429,7 +432,7 @@ def _rosparam_cmd_get_dump(cmd, argv):
     
     if len(args) == 0:
         if cmd == 'dump':
-            parser.error("invalid arguments. Please specify a file name")
+            arg = '-'
         elif cmd == 'get':
             parser.error("invalid arguments. Please specify a parameter name")
     elif len(args) == 1:
