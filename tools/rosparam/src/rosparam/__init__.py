@@ -298,7 +298,7 @@ def dump_params(filename, param, verbose=False):
     tree = get_param(param)
     if verbose:
         print_params(tree, param)
-    if not filename or filename == '-':
+    if not filename:
         f = sys.stdout
     else:
         f = open(filename, 'w')
@@ -431,9 +431,7 @@ def _rosparam_cmd_get_dump(cmd, argv):
     ns = ''
     
     if len(args) == 0:
-        if cmd == 'dump':
-            arg = '-'
-        elif cmd == 'get':
+        if cmd == 'get':
             parser.error("invalid arguments. Please specify a parameter name")
     elif len(args) == 1:
         arg = args[0]
@@ -499,15 +497,17 @@ def _rosparam_cmd_set_load(cmd, argv):
 
     parser.add_option("-v", dest="verbose", default=False,
                       action="store_true", help="turn on verbose output")
-    options, args = _set_optparse_neg_args(parser, argv)
     if cmd == 'set':
+        options, args = _set_optparse_neg_args(parser, argv)
         if options.text_file and options.bin_file:
             parser.error("you may only specify one of --textfile or --binfile")
+    else:
+        options, args = parser.parse_args(argv[2:])
 
     arg2 = None
     if len(args) == 0:
         if cmd == 'load':
-            arg = '-'
+            parser.error("invalid arguments. Please specify a file name or - for stdin")
         elif cmd == 'set':
             parser.error("invalid arguments. Please specify a parameter name")
     elif len(args) == 1:
