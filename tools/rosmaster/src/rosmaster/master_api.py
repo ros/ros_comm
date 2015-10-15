@@ -236,13 +236,13 @@ class ROSMasterHandler(object):
     this parameter (see ros::client::getMaster()).
     """
     
-    def __init__(self):
+    def __init__(self, num_workers=NUM_WORKERS):
         """ctor."""
 
         self.uri = None
         self.done = False
 
-        self.thread_pool = rosmaster.threadpool.MarkedThreadPool(NUM_WORKERS)
+        self.thread_pool = rosmaster.threadpool.MarkedThreadPool(num_workers)
         # pub/sub/providers: dict { topicName : [publishers/subscribers names] }
         self.ps_lock = threading.Condition(threading.Lock())
 

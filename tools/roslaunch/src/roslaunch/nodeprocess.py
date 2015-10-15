@@ -49,6 +49,8 @@ from roslaunch.core import *
 from roslaunch.node_args import create_local_process_args
 from roslaunch.pmon import Process, FatalProcessLaunch
 
+from rosmaster.master_api import NUM_WORKERS
+
 import logging
 _logger = logging.getLogger("roslaunch")
 
@@ -61,7 +63,7 @@ def _next_counter():
     _counter += 1
     return _counter
 
-def create_master_process(run_id, type_, ros_root, port):
+def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS, timeout=None):
     """
     Launch a master
     @param type_: name of master executable (currently just Master.ZENMASTER)
@@ -70,18 +72,24 @@ def create_master_process(run_id, type_, ros_root, port):
     @type  ros_root: str
     @param port: port to launch master on
     @type  port: int
+    @param num_workers: number of worker threads.
+    @type  num_workers: int
+    @param timeout: socket timeout for connections.
+    @type  timeout: float
     @raise RLException: if type_ or port is invalid
     """    
     if port < 1 or port > 65535:
         raise RLException("invalid port assignment: %s"%port)
 
-    _logger.info("create_master_process: %s, %s, %s", type_, ros_root, port)
+    _logger.info("create_master_process: %s, %s, %s, %s, %s", type_, ros_root, port, num_workers, timeout)
     # catkin/fuerte: no longer use ROS_ROOT-relative executables, search path instead
     master = type_
     # zenmaster is deprecated and aliased to rosmaster
     if type_ in [Master.ROSMASTER, Master.ZENMASTER]:        
         package = 'rosmaster'        
-        args = [master, '--core', '-p', str(port)]
+        args = [master, '--core', '-p', str(port), '-w', str(num_workers)]
+        if timeout is not None:
+            args += ['-t', str(timeout)]
     else:
         raise RLException("unknown master typ_: %s"%type_)
 
