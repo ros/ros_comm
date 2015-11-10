@@ -2,8 +2,8 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.16 (2015-11-09)
+--------------------
 * add `-w` and `-t` options (`#687 <https://github.com/ros/ros_comm/pull/687>`_)
 * fix missing minimum version for rospkg dependency (`#693 <https://github.com/ros/ros_comm/issues/693>`_)
 
