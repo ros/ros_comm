@@ -2,6 +2,9 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.11.15 (2015-10-13)
 --------------------
 * add warning to rostopic hz about simulated time (`#672 <https://github.com/ros/ros_comm/pull/672>`_)
