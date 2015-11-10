@@ -419,7 +419,6 @@ def get_msg_text(type_, raw=False, rospack=None):
     :returns: text of .msg file, ``str``
     :raises :exc:`ROSMsgException` If type_ is unknown
     """
-
     if rospack is None:
         rospack = rospkg.RosPack()
     search_path = {}
