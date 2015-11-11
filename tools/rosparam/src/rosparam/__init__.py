@@ -164,16 +164,14 @@ def load_file(filename, default_namespace=None, verbose=False):
         f = sys.stdin
         if verbose:
             print("reading parameters from stdin")
+        return load_str(f.read(), filename, default_namespace=default_namespace, verbose=verbose)
     else:
         if not os.path.isfile(filename):
             raise RosParamException("file [%s] does not exist"%filename)
         if verbose:
             print("reading parameters from [%s]"%filename)
-        f = open(filename, 'r')
-    try:
-        return load_str(f.read(), filename, default_namespace=default_namespace, verbose=verbose)
-    finally:
-        f.close()
+        with open(filename, 'r') as f:
+            return load_str(f.read(), filename, default_namespace=default_namespace, verbose=verbose)
         
 def load_str(str, filename, default_namespace=None, verbose=False):
     """
@@ -300,12 +298,13 @@ def dump_params(filename, param, verbose=False):
         print_params(tree, param)
     if not filename:
         f = sys.stdout
+        yaml.dump(tree, f)
     else:
         f = open(filename, 'w')
-    try:
-        yaml.dump(tree, f)
-    finally:
-        f.close()
+        try:
+            yaml.dump(tree, f)
+        finally:
+            f.close()
 
 
 def delete_param(param, verbose=False):
