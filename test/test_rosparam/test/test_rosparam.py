@@ -57,6 +57,14 @@ def fakestdout():
     yield fakestdout
     sys.stdout = realstdout
 
+@contextmanager
+def fakestdin(input_str):
+    realstdin = sys.stdin
+    fakestdin = StringIO(input_str)
+    sys.stdin = fakestdin
+    yield fakestdin
+    sys.stdin = realstdin
+
 def tolist(b):
     return [x.strip() for x in b.getvalue().split('\n') if x.strip()]
 
@@ -141,6 +149,12 @@ class TestRosparam(unittest.TestCase):
         
         rosparam.yamlmain([cmd, 'load', '-v', f])
         self.assertEquals('bar', ps.getParam('/foo'))
+
+        # load into top-level from stdin
+        with fakestdin('stdin_string: stdin_foo\nstdin_string2: stdin_bar'):
+            rosparam.yamlmain([cmd, 'load', '-'])
+        self.assertEquals('stdin_foo', ps.getParam('/stdin_string'))
+        self.assertEquals('stdin_bar', ps.getParam('/stdin_string2'))
         
         # load into namespace
         rosparam.yamlmain([cmd, 'load', f, '/rosparam_load/test'])
@@ -338,6 +352,12 @@ class TestRosparam(unittest.TestCase):
         with open(f_out) as b:
             with open(f) as b2:
                 self.assertEquals(yaml.load(b.read()), yaml.load(b2.read()))
+
+        # yaml file and std_out should be the same
+        with fakestdout() as b:
+            rosparam.yamlmain([cmd, 'dump'])
+            with open(f) as b2:
+                self.assertEquals(yaml.load(b.getvalue())['rosparam_dump'], yaml.load(b2.read()))
 
     def test_fullusage(self):
         import rosparam
