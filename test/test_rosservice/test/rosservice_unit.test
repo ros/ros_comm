@@ -7,5 +7,5 @@
   <group ns="bar">
     <node name="a2iserver" pkg="test_rosmaster" type="add_two_ints_server" />
   </group>
-  <test test-name="rosservice_unit" pkg="test_rosservice" type="test_rosservice.py" />
+  <test test-name="rosservice_unit" pkg="test_rosservice" type="check_rosservice.py" />
 </launch>
