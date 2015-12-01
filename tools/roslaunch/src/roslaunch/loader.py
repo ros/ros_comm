@@ -51,12 +51,16 @@ class LoadException(RLException):
     """Error loading data as specified (e.g. cannot find included files, etc...)"""
     pass
 
-_eval_dict=dict(true=True, false=False)
+_eval_dict=dict(true=True, false=False, __builtins__={})
 def eval_value(value):
     if value is None:
         return None
     try:
-        return str(eval(value, None, _eval_dict))
+        # ignore values containing double underscores (for safety)
+        # http://nedbatchelder.com/blog/201206/eval_really_is_dangerous.html
+        if value.find('__') >= 0:
+            return value
+        return str(eval(value, _eval_dict, None))
     except:
         return value
 
