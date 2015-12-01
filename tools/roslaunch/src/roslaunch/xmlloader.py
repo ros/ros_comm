@@ -220,7 +220,7 @@ class XmlLoader(loader.Loader):
     def _check_attrs(self, tag, context, ros_config, attrs):
         tag_attrs = tag.attributes.keys()
         for t_a in tag_attrs:
-            if not t_a in attrs and not t_a in ['if', 'unless']:
+            if not t_a in attrs and not t_a in ['if', 'unless', 'pyeval']:
                 ros_config.add_config_error("[%s] unknown <%s> attribute '%s'"%(context.filename, tag.tagName, t_a))
 
     # 'ns' attribute is now deprecated and is an alias for
