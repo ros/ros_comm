@@ -65,7 +65,7 @@ def eval_value(value):
         if value.find('__') >= 0:
             return value
         return str(eval(value, _eval_dict, None))
-    except Exception as e:
+    except Exception:
         return value
 
 #TODO: lists, maps(?)

@@ -1,6 +1,0 @@
-<launch>
-  
-  <group if="1 and 1" pyparse="false">
-  </group>
-
-</launch>

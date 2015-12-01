@@ -70,19 +70,19 @@ def ifunless_test(obj, tag, context):
     """
     @return True: if tag should be processed according to its if/unless attributes
     """
-    if_val, unless_val, pyparse = obj.opt_attrs(tag, context, ['if', 'unless', 'pyparse'])
-    if pyparse is not None:
-        pyparse = loader.convert_value(pyparse, 'bool')
+    if_val, unless_val, pyeval = obj.opt_attrs(tag, context, ['if', 'unless', 'pyeval'])
+    if pyeval is not None:
+        pyeval = loader.convert_value(pyeval, 'bool')
     if if_val is not None and unless_val is not None:
         raise XmlParseException("cannot set both 'if' and 'unless' on the same tag")
     if if_val is not None:
-        if pyparse:
+        if pyeval:
             if_val = loader.eval_value(if_val)
         if_val = loader.convert_value(if_val, 'bool')
         if if_val:
             return True
     elif unless_val is not None:
-        if pyparse:
+        if pyeval:
             unless_val = loader.eval_value(unless_val)
         unless_val = loader.convert_value(unless_val, 'bool')
         if not unless_val:
@@ -293,13 +293,18 @@ class XmlLoader(loader.Loader):
         try:
             self._check_attrs(tag, context, ros_config, XmlLoader.ARG_ATTRS)
             (name,) = self.reqd_attrs(tag, context, ('name',))
-            value, default, doc = self.opt_attrs(tag, context, ('value', 'default', 'doc'))
+            value, default, doc, pyeval = self.opt_attrs(tag, context, ('value', 'default', 'doc', 'pyeval'))
             
+            if pyeval is not None:
+                pyeval = loader.convert_value(pyeval, 'bool')
             if value is not None and default is not None:
                 raise XmlParseException(
                     "<arg> tag must have one and only one of value/default.")
             
-            context.add_arg(name, value=loader.eval_value(value), default=loader.eval_value(default), doc=doc)
+            if pyeval:
+                value = loader.eval_value(value)
+                default = loader.eval_value(default)
+            context.add_arg(name, value=value, default=default, doc=doc)
 
         except substitution_args.ArgException as e:
             raise XmlParseException(

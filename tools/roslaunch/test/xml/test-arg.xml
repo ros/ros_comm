@@ -23,8 +23,8 @@
   <arg if="$(arg if_test)" name="if_param_value" value="true" />
   <arg unless="$(arg if_test)" name="if_param_value" value="false" />
 
-  <arg if="$(arg py_if_test)" name="py_if_param_value" value="1 == 1" pyparse="true"/>
-  <arg unless="$(arg py_if_test)" name="py_if_param_value" value="1 == 0" pyparse="true"/>
+  <arg if="$(arg py_if_test)" name="py_if_param_value" value="1 == 1" pyeval="true"/>
+  <arg unless="$(arg py_if_test)" name="py_if_param_value" value="1 == 0" pyeval="true"/>
 
   <param name="$(arg param1_name)_test" value="$(arg param1_value)" />
   <param name="$(arg param2_name)_test" value="$(arg param2_value)" />
@@ -62,20 +62,20 @@
     <param name="if_test" value="not_ran" />
   </group>
 
-  <arg name="py_fail" value="0 > 1" pyparse="true"/>
-  <group if="$(arg py_fail) == True" pyparse="true">
+  <arg name="py_fail" value="0 > 1" pyeval="true"/>
+  <group if="$(arg py_fail) == True" pyeval="true">
     <param name="py_fail" value="fail" />
   </group>
 
-  <group unless="$(arg py_fail) == True" pyparse="true">
+  <group unless="$(arg py_fail) == True" pyeval="true">
     <param name="py_succeed" value="yes" />
   </group>
 
-  <group if="$(arg py_if_test) == True" pyparse="true">
+  <group if="$(arg py_if_test) == True" pyeval="true">
     <param name="py_if_test" value="ran" />
   </group>
 
-  <group unless="$(arg py_if_test) == True" pyparse="true">
+  <group unless="$(arg py_if_test) == True" pyeval="true">
     <param name="py_if_test" value="not_ran" />
   </group>
 
@@ -96,6 +96,27 @@
     <arg name="include_arg" value="new3" />
   </include>
   
+  <!-- Test that evaluation can be disabled for arg values -->
+  <arg name="py_parse_true" value="1 == 1" pyeval="true"/>
+  <arg name="py_parse_false" value="1 == 1" pyeval="false"/>
+  <arg name="py_parse_notset" value="1 == 1" />
 
+  <!-- To avoid evalution of previously unevaluated expressions, do these as
+       string comparisons. -->
+  <group if="'$(arg py_parse_true)' == 'True'" pyeval="true">
+    <param name="py_parse_true" value="set"/>
+  </group>
+  <group if="'$(arg py_parse_false)' == '1 == 1'" pyeval="true">
+    <param name="py_parse_false" value="set"/>
+  </group>
+  <group if="'$(arg py_parse_false)' == 'True'" pyeval="true">
+    <param name="py_parse_false_fail" value="set"/>
+  </group>
+  <group if="'$(arg py_parse_notset)' == '1 == 1'" pyeval="true">
+    <param name="py_parse_notset" value="set"/>
+  </group>
+  <group if="'$(arg py_parse_notset)' == 'True'" pyeval="true">
+    <param name="py_parse_notset_fail" value="set"/>
+  </group>
 
 </launch>

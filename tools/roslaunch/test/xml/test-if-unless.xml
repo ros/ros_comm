@@ -27,16 +27,16 @@
 
   <!-- Test Python parsing -->
 
-  <group if="1 == 1" pyparse="true">
+  <group if="1 == 1" pyeval="true">
      <param name="py_group_if_pass" value="1" />
   </group>
-  <group if="0 == 1" pyparse="true">
+  <group if="0 == 1" pyeval="true">
      <param name="py_group_if_fail" value="1" />
   </group>
-  <group unless="0 == 1" pyparse="true">
+  <group unless="0 == 1" pyeval="true">
      <param name="py_group_unless_pass" value="1" />
   </group>
-  <group unless="1 == 1" pyparse="true">
+  <group unless="1 == 1" pyeval="true">
      <param name="py_group_unless_fail" value="1" />
   </group>
 
@@ -45,19 +45,19 @@
   <arg name="false_lower" value="false"/>
   <arg name="false_upper" value="False"/>
 
-  <param name="py_param_if_pass" value="1" if="$(arg true_lower) and (40+2) == 42" pyparse="true" />
-  <param name="py_param_if_fail" value="1" if="$(arg false_lower) or (40-2) != 38" pyparse="true" />
+  <param name="py_param_if_pass" value="1" if="$(arg true_lower) and (40+2) == 42" pyeval="true" />
+  <param name="py_param_if_fail" value="1" if="$(arg false_lower) or (40-2) != 38" pyeval="true" />
 
-  <param name="py_param_unless_pass" value="1" unless="$(arg false_upper) or 1 &lt; 1" pyparse="true" />
-  <param name="py_param_unless_fail" value="1" unless="$(arg true_upper) and 1 &gt;= 1" pyparse="true" />
+  <param name="py_param_unless_pass" value="1" unless="$(arg false_upper) or 1 &lt; 1" pyeval="true" />
+  <param name="py_param_unless_fail" value="1" unless="$(arg true_upper) and 1 &gt;= 1" pyeval="true" />
 
-  <remap from="py_from_if_pass" to="py_to_if_pass" if="'$(arg true_upper)' == 'True'" pyparse="true" />
-  <remap from="py_from_if_fail" to="py_to_if_fail" if="'$(arg false_upper)' != 'False'" pyparse="true" />
+  <remap from="py_from_if_pass" to="py_to_if_pass" if="'$(arg true_upper)' == 'True'" pyeval="true" />
+  <remap from="py_from_if_fail" to="py_to_if_fail" if="'$(arg false_upper)' != 'False'" pyeval="true" />
 
   <remap from="py_from_unless_pass" to="py_to_unless_pass"
-         unless="$(arg false_lower) or $(arg false_upper) or '$(arg false_upper)' != 'False'" pyparse="true" />
+         unless="$(arg false_lower) or $(arg false_upper) or '$(arg false_upper)' != 'False'" pyeval="true" />
   <remap from="py_from_unless_fail" to="py_to_unless_fail"
-         unless="$(arg true_lower) and $(arg true_upper) and '$(arg true_upper)' == 'True'" pyparse="true" />
+         unless="$(arg true_lower) and $(arg true_upper) and '$(arg true_upper)' == 'True'" pyeval="true" />
 
   <node name="remap" pkg="rospy" type="talker.py" />
 

@@ -840,10 +840,10 @@ class TestXmlLoader(unittest.TestCase):
             self.assert_('unless' in str(e))
             self.assert_('if' in str(e))
 
-    def test_if_unless_invalid_pyparse_false(self):
+    def test_if_unless_invalid_pyeval_false(self):
         mock = RosLaunchMock()
         loader = roslaunch.xmlloader.XmlLoader()
-        filename = os.path.join(self.xml_dir, 'test-if-unless-invalid-pyparse-false.xml')
+        filename = os.path.join(self.xml_dir, 'test-if-unless-invalid-pyeval-false.xml')
         # this should raise, not sure XmlParseException is what we want as it destroys semantic info
         try:
             loader.load(filename, mock, argv=[])
@@ -851,10 +851,10 @@ class TestXmlLoader(unittest.TestCase):
         except ValueError as e:
             self.assert_('bool' in str(e))
 
-    def test_if_unless_invalid_pyparse_notset(self):
+    def test_if_unless_invalid_pyeval_notset(self):
         mock = RosLaunchMock()
         loader = roslaunch.xmlloader.XmlLoader()
-        filename = os.path.join(self.xml_dir, 'test-if-unless-invalid-pyparse-notset.xml')
+        filename = os.path.join(self.xml_dir, 'test-if-unless-invalid-pyeval-notset.xml')
         # this should raise, not sure XmlParseException is what we want as it destroys semantic info
         try:
             loader.load(filename, mock, argv=[])
@@ -914,6 +914,11 @@ class TestXmlLoader(unittest.TestCase):
         self.assertAlmostEquals(param_d['/float_param'], 3.)   
         self.failIf('/fail' in param_d)
         self.failIf('/py_fail' in param_d)
+        self.assertEquals(param_d['/py_parse_true'], 'set')   
+        self.assertEquals(param_d['/py_parse_false'], 'set')   
+        self.assertEquals(param_d['/py_parse_notset'], 'set')   
+        self.failIf('/py_parse_false_fail' in param_d)
+        self.failIf('/py_parse_notset_fail' in param_d)
 
         # context tests
         #  - args are scoped to their context, and thus can be rebound in a sibling context
