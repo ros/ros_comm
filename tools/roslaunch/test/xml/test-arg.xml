@@ -62,7 +62,7 @@
     <param name="if_test" value="not_ran" />
   </group>
 
-  <arg name="py_fail" value="0 > 1" pyeval="true"/>
+  <arg name="py_fail" value="0 &gt; 1" pyeval="true"/>
   <group if="$(arg py_fail) == True" pyeval="true">
     <param name="py_fail" value="fail" />
   </group>
