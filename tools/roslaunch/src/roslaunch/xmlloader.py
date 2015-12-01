@@ -70,15 +70,21 @@ def ifunless_test(obj, tag, context):
     """
     @return True: if tag should be processed according to its if/unless attributes
     """
-    if_val, unless_val = obj.opt_attrs(tag, context, ['if', 'unless'])
+    if_val, unless_val, pyparse = obj.opt_attrs(tag, context, ['if', 'unless', 'pyparse'])
+    if pyparse is not None:
+        pyparse = loader.convert_value(pyparse, 'bool')
     if if_val is not None and unless_val is not None:
         raise XmlParseException("cannot set both 'if' and 'unless' on the same tag")
     if if_val is not None:
-        if_val = loader.convert_value(loader.eval_value(if_val), 'bool')
+        if pyparse:
+            if_val = loader.eval_value(if_val)
+        if_val = loader.convert_value(if_val, 'bool')
         if if_val:
             return True
     elif unless_val is not None:
-        unless_val = loader.convert_value(loader.eval_value(unless_val), 'bool')
+        if pyparse:
+            unless_val = loader.eval_value(unless_val)
+        unless_val = loader.convert_value(unless_val, 'bool')
         if not unless_val:
             return True
     else:
