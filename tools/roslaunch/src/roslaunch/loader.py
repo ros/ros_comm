@@ -55,7 +55,7 @@ class LoadException(RLException):
 # context.  We disable all the builtins, then add back True and False, and also
 # add true and false for convenience (because we accept those lower-case strings
 # as boolean values in XML).
-_eval_dict=dict(true=True, false=False, True=True, False=False, __builtins__={})
+_eval_dict=dict(true=True, false=False, __builtins__={'True': True, 'False': False})
 def eval_value(value):
     if value is None:
         return None
