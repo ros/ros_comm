@@ -58,7 +58,7 @@ class ROSLaunch(object):
         """
         import rosgraph.masterapi
         master = rosgraph.masterapi.Master('/roslaunch_script')
-        uuid = master.getParam('/run_id')
+        uuid = roslaunch.rlutil.get_or_generate_uuid(None, True)
         self.parent = roslaunch.parent.ROSLaunchParent(uuid, [], is_core=False)
         self.started = False
 
