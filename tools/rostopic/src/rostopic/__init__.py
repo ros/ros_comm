@@ -145,14 +145,17 @@ class ROSTopicHz(object):
             if len(self.times) > self.window_size - 1:
                 self.times.pop(0)
 
-    def print_hz(self):
+    def get_hz(self):
         """
-        print the average publishing rate to screen
+        calculate the average publising rate
+
+        @returns: tuple of stat results
+            (rate, min_delta, max_delta, standard deviation, window number)
+            None when waiting for the first message or there is no new one
         """
         if not self.times:
             return
         elif self.msg_tn == self.last_printed_tn:
-            print("no new messages")
             return
         with self.lock:
             #frequency
@@ -177,39 +180,92 @@ class ROSTopicHz(object):
             min_delta = min(self.times)
 
             self.last_printed_tn = self.msg_tn
-        print("average rate: %.3f\n\tmin: %.3fs max: %.3fs std dev: %.5fs window: %s"%(rate, min_delta, max_delta, std_dev, n+1))
+
+        return rate, min_delta, max_delta, std_dev, n+1
+
+    def print_hz(self):
+        """
+        print the average publishing rate to screen
+        """
+        if not self.times:
+            return
+        ret = self.get_hz()
+        if ret is None:
+            print("no new messages")
+            return
+        rate, min_delta, max_delta, std_dev, window = ret
+        print("average rate: %.3f\n\tmin: %.3fs max: %.3fs std dev: %.5fs window: %s"%(rate, min_delta, max_delta, std_dev, window))
 
 def _sleep(duration):
     rospy.rostime.wallsleep(duration)
 
-def _rostopic_hz(topic, window_size=-1, filter_expr=None, use_wtime=False):
+def _rostopic_hz(topics, window_size=-1, filter_expr=None, use_wtime=False):
     """
     Periodically print the publishing rate of a topic to console until
     shutdown
-    :param topic: topic name, ``str``
+    :param topics: topic names, ``list`` of ``str``
     :param window_size: number of messages to average over, -1 for infinite, ``int``
     :param filter_expr: Python filter expression that is called with m, the message instance
     """
-    msg_class, real_topic, _ = get_topic_class(topic, blocking=True) #pause hz until topic is published
     if rospy.is_shutdown():
         return
     rospy.init_node(NAME, anonymous=True)
-    rt = ROSTopicHz(window_size, filter_expr=filter_expr, use_wtime=use_wtime)
-    # we use a large buffer size as we don't know what sort of messages we're dealing with.
-    # may parameterize this in the future
-    if filter_expr is not None:
-        # have to subscribe with topic_type
-        sub = rospy.Subscriber(real_topic, msg_class, rt.callback_hz)
-    else:
-        sub = rospy.Subscriber(real_topic, rospy.AnyMsg, rt.callback_hz)        
-    print("subscribed to [%s]"%real_topic)
+    hz_checkers = []
+    for topic in topics:
+        msg_class, real_topic, _ = get_topic_class(topic, blocking=True) # pause hz until topic is published
+        rt = ROSTopicHz(window_size, filter_expr=filter_expr, use_wtime=use_wtime)
+        # we use a large buffer size as we don't know what sort of messages we're dealing with.
+        # may parameterize this in the future
+        if filter_expr is not None:
+            # have to subscribe with topic_type
+            rospy.Subscriber(real_topic, msg_class, rt.callback_hz)
+        else:
+            rospy.Subscriber(real_topic, rospy.AnyMsg, rt.callback_hz)
+        hz_checkers.append(rt)
+        print("subscribed to [%s]" % real_topic)
 
     if rospy.get_param('use_sim_time', False):
         print("WARNING: may be using simulated time",file=sys.stderr)
 
     while not rospy.is_shutdown():
         _sleep(1.0)
-        rt.print_hz()
+        if len(topics) == 1:
+            hz_checkers[0].print_hz()
+            continue
+        # monitoring multiple topics' hz
+        header = ['topic', 'rate', 'min_delta', 'max_delta', 'std_dev', 'window']
+        stats = {h: [] for h in header}
+        if not any(rt.times for rt in hz_checkers):
+            continue  # wait for initial message
+        for topic, rt in zip(topics, hz_checkers):
+            hz_stat = rt.get_hz()
+            if hz_stat is None:
+                continue
+            rate, min_delta, max_delta, std_dev, window = hz_stat
+            stats['topic'].append(topic)
+            stats['rate'].append('{:.4}'.format(rate))
+            stats['min_delta'].append('{:.4}'.format(min_delta))
+            stats['max_delta'].append('{:.4}'.format(max_delta))
+            stats['std_dev'].append('{:.4}'.format(std_dev))
+            stats['window'].append(str(window))
+        if len(stats['topic']) == 1:
+            print('no new messages')
+            continue
+        # compose table with left alignment
+        header_aligned = []
+        col_widths = []
+        for h in header:
+            col_width = max(len(h), max(len(el) for el in stats[h]))
+            col_widths.append(col_width)
+            header_aligned.append(h.center(col_width))
+            for i, el in enumerate(stats[h]):
+                stats[h][i] = stats[h][i].ljust(col_width)
+        # sum of col and each 3 spaces width
+        table_width = sum(col_widths) + 3 * (len(header) - 1)
+        body = '\n'.join('   '.join(stats[h][i] for h in header) for i in xrange(len(stats['topic'])))
+        table = '{header}\n{hline}\n{body}\n'.format(
+            header='   '.join(header_aligned), hline='=' * table_width, body=body)
+        print(table)
 
 
 class ROSTopicDelay(object):
@@ -1287,7 +1343,7 @@ def _rostopic_cmd_type(argv):
 def _rostopic_cmd_hz(argv):
     args = argv[2:]
     from optparse import OptionParser
-    parser = OptionParser(usage="usage: %prog hz /topic", prog=NAME)
+    parser = OptionParser(usage="usage: %prog hz /topic_0 [/topic_1 [[topic_2 [..]]]] ..", prog=NAME)
     parser.add_option("-w", "--window",
                       dest="window_size", default=-1,
                       help="window size, in # of messages, for calculating rate", metavar="WINDOW")
@@ -1301,8 +1357,6 @@ def _rostopic_cmd_hz(argv):
     (options, args) = parser.parse_args(args)
     if len(args) == 0:
         parser.error("topic must be specified")        
-    if len(args) > 1:
-        parser.error("you may only specify one input topic")
     try:
         if options.window_size != -1:
             import string
@@ -1311,7 +1365,8 @@ def _rostopic_cmd_hz(argv):
             window_size = options.window_size
     except:
         parser.error("window size must be an integer")
-    topic = rosgraph.names.script_resolve_name('rostopic', args[0])
+
+    topics = [rosgraph.names.script_resolve_name('rostopic', t) for t in args]
 
     # #694
     if options.filter_expr:
@@ -1322,7 +1377,7 @@ def _rostopic_cmd_hz(argv):
         filter_expr = expr_eval(options.filter_expr)
     else:
         filter_expr = None
-    _rostopic_hz(topic, window_size=window_size, filter_expr=filter_expr,
+    _rostopic_hz(topics, window_size=window_size, filter_expr=filter_expr,
                  use_wtime=options.use_wtime)
 
 
