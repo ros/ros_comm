@@ -100,7 +100,7 @@ class ROSTopicHz(object):
     def __init__(self, window_size, filter_expr=None):
         import threading
         self.lock = threading.Lock()
-        self.last_printed_tn = 0
+        self.last_msg_tn = 0
         self.msg_t0 = -1.
         self.msg_tn = 0
         self.times =[]
@@ -142,14 +142,16 @@ class ROSTopicHz(object):
             if len(self.times) > self.window_size - 1:
                 self.times.pop(0)
 
-    def print_hz(self):
+    def get_hz(self):
         """
-        print the average publishing rate to screen
+        calculate the average publising rate
+
+        @returns: tuple of stat results
+            rate, min_delta, max_delta, standard deviation, window number
         """
         if not self.times:
             return
-        elif self.msg_tn == self.last_printed_tn:
-            print("no new messages")
+        elif self.msg_tn == self.last_msg_tn:
             return
         with self.lock:
             #frequency
@@ -157,7 +159,7 @@ class ROSTopicHz(object):
             # kwc: In the past, the rate decayed when a publisher
             # dies.  Now, we use the last received message to perform
             # the calculation.  This change was made because we now
-            # report a count and keep track of last_printed_tn.  This
+            # report a count and keep track of last_msg_tn.  This
             # makes it easier for users to see when a publisher dies,
             # so the decay is no longer necessary.
             
@@ -173,8 +175,20 @@ class ROSTopicHz(object):
             max_delta = max(self.times)
             min_delta = min(self.times)
 
-            self.last_printed_tn = self.msg_tn
-        print("average rate: %.3f\n\tmin: %.3fs max: %.3fs std dev: %.5fs window: %s"%(rate, min_delta, max_delta, std_dev, n+1))
+            self.last_msg_tn = self.msg_tn
+
+        return rate, min_delta, max_delta, std_dev, n+1
+
+    def print_hz(self):
+        """
+        print the average publishing rate to screen
+        """
+        ret = self.get_hz()
+        if ret is None and self.times:
+            print("no new messages")
+            return
+        rate, min_delta, max_delta, std_dev, window = ret
+        print("average rate: %.3f\n\tmin: %.3fs max: %.3fs std dev: %.5fs window: %s"%(rate, min_delta, max_delta, std_dev, window))
 
 def _sleep(duration):
     rospy.rostime.wallsleep(duration)
