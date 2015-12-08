@@ -610,7 +610,11 @@ def rosmsg_cmd_show(mode, full):
         if '/' in arg: #package specified
             rosmsg_debug(rospack, mode, arg, options.raw)
         else:
-            for found in rosmsg_search(rospack, mode, arg):
+            found_msgs = list(rosmsg_search(rospack, mode, arg))
+            if not found_msgs:
+                print("Could not find msg '%s' " % arg)
+                exit(1)
+            for found in found_msgs:
                 print("[%s]:"%found)
                 rosmsg_debug(rospack, mode, found, options.raw)
 

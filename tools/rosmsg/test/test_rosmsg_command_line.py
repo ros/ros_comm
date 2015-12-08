@@ -168,3 +168,6 @@ class TestRosmsg(unittest.TestCase):
             self.assertEquals(text, output[0], "Failed: %s"%(str(output)))
             output = Popen(['rosmsg', 'show', '--raw', type_], stdout=PIPE).communicate()[0]
             self.assertEquals(text, output)
+
+if __name__ == '__main__':
+    unittest.main()
