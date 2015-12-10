@@ -1,1 +1,1 @@
-std_msgs/Empty empty
+test_rosmaster/Empty empty
