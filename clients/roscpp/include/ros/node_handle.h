@@ -112,9 +112,15 @@ namespace ros
     /**
      * \brief Parent constructor
      *
-     * This version of the constructor takes a "parent" NodeHandle, and is equivalent to:
+     * This version of the constructor takes a "parent" NodeHandle.
+     * If the passed "ns" is relative (does not start with a slash), it is equivalent to calling:
      \verbatim
      NodeHandle child(parent.getNamespace() + "/" + ns);
+     \endverbatim
+     *
+     * If the passed "ns" is absolute (does start with a slash), it is equivalent to calling:
+     \verbatim
+     NodeHandle child(ns);
      \endverbatim
      *
      * When a NodeHandle is copied, it inherits the namespace of the
@@ -128,9 +134,15 @@ namespace ros
     /**
      * \brief Parent constructor
      *
-     * This version of the constructor takes a "parent" NodeHandle, and is equivalent to:
+     * This version of the constructor takes a "parent" NodeHandle.
+     * If the passed "ns" is relative (does not start with a slash), it is equivalent to calling:
      \verbatim
      NodeHandle child(parent.getNamespace() + "/" + ns, remappings);
+     \endverbatim
+     *
+     * If the passed "ns" is absolute (does start with a slash), it is equivalent to calling:
+     \verbatim
+     NodeHandle child(ns, remappings);
      \endverbatim
      *
      * This version also lets you pass in name remappings that are specific to this NodeHandle
