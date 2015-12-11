@@ -2,10 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import math
-
-import numpy as np
-from texttable import Texttable
 
 import rosgraph
 import rospy
@@ -45,7 +41,6 @@ def main():
             parent_topics.extend(get_parent_topics(topic, impl=True))
         parent_topics = list(set(parent_topics))
         topics.extend(parent_topics)
-    topics = np.array(topics)
     # prepare topic hz checkers
     rospy.loginfo('subscribing {} topics'.format(len(topics)))
     hz_checkers = []
@@ -55,29 +50,42 @@ def main():
         rospy.Subscriber(t, rospy.AnyMsg, rt.callback_hz)
     rospy.loginfo('subscribed {} topics'.format(len(topics)))
     # main loop
+    header = ['topic', 'rate', 'min_delta', 'max_delta', 'std_dev', 'window']
     while not rospy.is_shutdown():
         # collect topic hz stats
-        show_topics, stats = [], []
-        for i, rt in enumerate(hz_checkers):
+        stats = []
+        max_col_width = [len(h) for h in header]
+        for topic, rt in zip(topics, hz_checkers):
             hz_stat = rt.get_hz()
             if hz_stat is None:
                 continue
             rate, min_delta, max_delta, std_dev, window = hz_stat
-            show_topics.append(topics[i])
-            stats.append([rate, min_delta, max_delta, std_dev, window])
-        show_topics, stats = np.array(show_topics), np.array(stats)
-        if stats.size == 0:
+            stat = [topic, '{:.4}'.format(rate), '{:.4}'.format(min_delta),
+                    '{:.4}'.format(max_delta), '{:.4}'.format(std_dev),
+                    str(window)]
+            stats.append(stat)
+            for i, s in enumerate(stat):
+                col_width = len(s)
+                if col_width > max_col_width[i]:
+                    max_col_width[i] = col_width
+        if not stats:
             rospy.logwarn('no messages')
         else:
-            sort_indices = np.argsort(stats[:, 0])[::-1]
-            show_topics, stats = show_topics[sort_indices], stats[sort_indices]
-            stats = np.hstack((show_topics.reshape(-1, 1), stats)).tolist()
-            # print stats result
-            header = ['topic', 'rate', 'min_delta', 'max_delta', 'std_dev', 'window']
-            table = Texttable(max_width=0)
-            table.set_deco(Texttable.HEADER)
-            table.add_rows([header] + stats)
-            print(table.draw())
+            stats = sorted(stats, key=lambda x: x[1], reverse=True)
+            # compose table with left alignment
+            for j, w in enumerate(max_col_width):
+                header[j] = header[j].center(w)
+                for i in range(len(stats)):
+                    stats[i][j] = stats[i][j].ljust(w)
+            # sum of col and each 3 spaces width
+            table_width = sum(max_col_width) + 3 * (len(header) - 1)
+            body = '\n'.join('   '.join(s for s in stat) for stat in stats)
+            table = '''\
+{header}
+{hline}
+{body}
+'''.format(header='   '.join(header), hline='=' * table_width, body=body)
+            print(table)
         # wait for next check
         rospy.rostime.wallsleep(1.0)
 
