@@ -147,7 +147,8 @@ class ROSTopicHz(object):
         calculate the average publising rate
 
         @returns: tuple of stat results
-            rate, min_delta, max_delta, standard deviation, window number
+            (rate, min_delta, max_delta, standard deviation, window number)
+            None when waiting for the first message or there is no new one
         """
         if not self.times:
             return
