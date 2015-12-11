@@ -183,8 +183,10 @@ class ROSTopicHz(object):
         """
         print the average publishing rate to screen
         """
+        if not self.times:
+            return
         ret = self.get_hz()
-        if ret is None and self.times:
+        if ret is None:
             print("no new messages")
             return
         rate, min_delta, max_delta, std_dev, window = ret
