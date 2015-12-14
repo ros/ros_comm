@@ -69,7 +69,6 @@ catkin_install_python(PROGRAMS
   scripts/mux_list
   scripts/mux_select
   scripts/relay_field
-  scripts/topic_hz_monitor
   scripts/transform
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
