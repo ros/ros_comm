@@ -197,33 +197,13 @@ def _sleep(duration):
     rospy.rostime.wallsleep(duration)
 
 
-def get_parent_topics(topic, parent_topics=None, impl=False):
-    master = rosgraph.Master('/rostopic')
-    publications, subscriptions, _ = master.getSystemState()
-    if parent_topics is None:
-        parent_topics = []
-    pub_nodes = [l for t, l in publications if t == topic]
-    if not pub_nodes:
-        return parent_topics
-    for node in pub_nodes[0]:
-        subs = [t for t, l in subscriptions if node in l]
-        subs = filter(lambda x: x not in parent_topics, subs)  # get unique
-        parent_topics.extend(subs)
-        if not impl:
-            return parent_topics
-        for sub in subs:
-            parent_topics = get_parent_topics(sub, parent_topics, impl=impl)
-    return parent_topics
-
-
-def _rostopic_hz(topics, window_size=-1, filter_expr=None, search_parent=False):
+def _rostopic_hz(topics, window_size=-1, filter_expr=None):
     """
     Periodically print the publishing rate of a topic to console until
     shutdown
     :param topics: topic names, ``list`` of ``str``
     :param window_size: number of messages to average over, -1 for infinite, ``int``
     :param filter_expr: Python filter expression that is called with m, the message instance
-    :param search_parent: whether search parent topics to check the hz
     """
     if rospy.is_shutdown():
         return
@@ -1269,7 +1249,6 @@ def _rostopic_cmd_hz(argv):
     parser.add_option("--filter",
                       dest="filter_expr", default=None,
                       help="only measure messages matching the specified Python expression", metavar="EXPR")
-    parser.add_option("--search-parent", action="store_true", help="search parent topics and check the hz")
 
     (options, args) = parser.parse_args(args)
     if len(args) == 0:
@@ -1284,13 +1263,6 @@ def _rostopic_cmd_hz(argv):
         parser.error("window size must be an integer")
 
     topics = [rosgraph.names.script_resolve_name('rostopic', t) for t in args]
-    if options.search_parent:
-        # get all parent topics
-        parent_topics = []
-        for topic in topics:
-            parent_topics.extend(get_parent_topics(topic, impl=True))
-        parent_topics = list(set(parent_topics))
-        topics.extend(parent_topics)
 
     # #694
     if options.filter_expr:
@@ -1301,8 +1273,7 @@ def _rostopic_cmd_hz(argv):
         filter_expr = expr_eval(options.filter_expr)
     else:
         filter_expr = None
-    _rostopic_hz(topics, window_size=window_size, filter_expr=filter_expr,
-                 search_parent=options.search_parent)
+    _rostopic_hz(topics, window_size=window_size, filter_expr=filter_expr)
 
 def _rostopic_cmd_bw(argv=sys.argv):
     args = argv[2:]
