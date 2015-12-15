@@ -207,7 +207,107 @@ def _rostopic_hz(topic, window_size=-1, filter_expr=None):
     while not rospy.is_shutdown():
         _sleep(1.0)
         rt.print_hz()
-    
+
+
+class ROSTopicDelay(object):
+
+    def __init__(self, window_size):
+        import threading
+        self.lock = threading.Lock()
+        self.last_msg_tn = 0
+        self.msg_t0 = -1.
+        self.msg_tn = 0
+        self.delays = []
+
+        # can't have infinite window size due to memory restrictions
+        if window_size < 0:
+            window_size = 50000
+        self.window_size = window_size
+
+    def callback_delay(self, msg):
+        if not msg._has_header:
+            rospy.logerr('msg does not have header')
+            return
+        with self.lock:
+            curr_rostime = rospy.get_rostime()
+
+            # time reset
+            if curr_rostime.is_zero():
+                if len(self.delays) > 0:
+                    print("time has reset, resetting counters")
+                    self.delays = []
+                return
+
+            curr = curr_rostime.to_sec()
+            if self.msg_t0 < 0 or self.msg_t0 > curr:
+                self.msg_t0 = curr
+                self.msg_tn = curr
+                self.delays = []
+            else:
+                self.delays.append(curr_rostime.to_time() -
+                                   msg.header.stamp.to_time())
+                self.msg_tn = curr
+
+            if len(self.delays) > self.window_size - 1:
+                self.delays.pop(0)
+
+    def get_delay(self):
+        if self.msg_tn == self.last_msg_tn:
+            return
+        with self.lock:
+            if not self.delays:
+                return
+            n = len(self.delays)
+
+            mean = sum(self.delays) / n
+            rate = 1. / mean if mean > 0 else 0
+
+            std_dev = math.sqrt(sum((x - mean)**2 for x in self.delays) / n)
+
+            max_delta = max(self.delays)
+            min_delta = min(self.delays)
+
+            self.last_msg_tn = self.msg_tn
+        return mean, min_delta, max_delta, std_dev, n + 1
+
+    def print_delay(self):
+        """
+        print the average publishing delay to screen
+        """
+        if not self.delays:
+            return
+        ret = self.get_delay()
+        if ret is None:
+            print("no new messages")
+            return
+        delay, min_delta, max_delta, std_dev, window = ret
+        print("average delay: %.3f\n\tmin: %.3fs max: %.3fs std dev: %.5fs window: %s"%(delay, min_delta, max_delta, std_dev, window))
+
+
+def _rostopic_delay(topic, window_size=-1):
+    """
+    Periodically print the publishing delay of a topic to console until
+    shutdown
+    :param topic: topic name, ``str``
+    :param window_size: number of messages to average over, -1 for infinite, ``int``
+    """
+    # pause hz until topic is published
+    msg_class, real_topic, _ = get_topic_class(topic, blocking=True)
+    if rospy.is_shutdown():
+        return
+    rospy.init_node(NAME, anonymous=True)
+    rt = ROSTopicDelay(window_size)
+    sub = rospy.Subscriber(real_topic, msg_class, rt.callback_delay)
+    print("subscribed to [%s]" % real_topic)
+
+    if rospy.get_param('use_sim_time', False):
+        print("WARNING: may be using simulated time",file=sys.stderr)
+
+    while not rospy.is_shutdown():
+        _sleep(1.0)
+        rt.print_delay()
+
+
 class ROSTopicBandwidth(object):
     def __init__(self, window_size=100):
         import threading
@@ -1218,6 +1318,23 @@ def _rostopic_cmd_hz(argv):
         filter_expr = None
     _rostopic_hz(topic, window_size=window_size, filter_expr=filter_expr)
 
+
+def _rostopic_cmd_delay(argv):
+    args = argv[2:]
+    import argparse
+    parser = argparse.ArgumentParser(usage="%(prog)s delay [options] /topic", prog=NAME)
+    parser.add_argument("topic", help="topic name to be calcurated the delay")
+    parser.add_argument("-w", "--window",
+                        dest="window_size", default=-1, type=int,
+                        help="window size, in # of messages, for calculating rate")
+
+    args = parser.parse_args(args)
+    topic_name = args.topic
+    window_size = args.window_size
+    topic = rosgraph.names.script_resolve_name('rostopic', topic_name)
+    _rostopic_delay(topic, window_size=window_size)
+
+
 def _rostopic_cmd_bw(argv=sys.argv):
     args = argv[2:]
     from optparse import OptionParser
@@ -1763,6 +1880,7 @@ def _fullusage():
 
 Commands:
 \trostopic bw\tdisplay bandwidth used by topic
+\trostopic delay\tdisplay delay of topic from timestamp in header
 \trostopic echo\tprint messages to screen
 \trostopic find\tfind topics by type
 \trostopic hz\tdisplay publishing rate of topic    
@@ -1803,6 +1921,8 @@ def rostopicmain(argv=None):
             _rostopic_cmd_bw(argv)
         elif command == 'find':
             _rostopic_cmd_find(argv)
+        elif command == 'delay':
+            _rostopic_cmd_delay(argv)
         else:
             _fullusage()
     except socket.error:

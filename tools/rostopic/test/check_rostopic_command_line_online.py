@@ -117,6 +117,10 @@ class TestRostopicOnline(unittest.TestCase):
                 # hz
                 stdout, stderr = run_for([cmd, 'hz', name], 2.)
                 self.assert_('average rate:' in stdout)
+
+                # delay
+                stdout, stderr = run_for([cmd, 'delay', name], 2.)
+                self.assert_('average rate:' in stdout)
             
         # pub
         #  - pub wait until ctrl-C, so we have to wait then kill it
