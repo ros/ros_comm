@@ -225,29 +225,22 @@ def _rostopic_hz(topics, window_size=-1, filter_expr=None, search_parent=False):
     :param filter_expr: Python filter expression that is called with m, the message instance
     :param search_parent: whether search parent topics to check the hz
     """
-    msg_classes, real_topics = [], []
-    for topic in topics:
-        msg_class, real_topic, _ = get_topic_class(topic, blocking=True) #pause hz until topic is published
-        msg_classes.append(msg_class)
-        real_topics.append(real_topic)
     if rospy.is_shutdown():
         return
     rospy.init_node(NAME, anonymous=True)
     hz_checkers = []
     for topic in topics:
+        msg_class, real_topic, _ = get_topic_class(topic, blocking=True) # pause hz until topic is published
         rt = ROSTopicHz(window_size, filter_expr=filter_expr)
         # we use a large buffer size as we don't know what sort of messages we're dealing with.
         # may parameterize this in the future
         if filter_expr is not None:
             # have to subscribe with topic_type
-            sub = rospy.Subscriber(real_topic, msg_class, rt.callback_hz)
+            rospy.Subscriber(real_topic, msg_class, rt.callback_hz)
         else:
-            sub = rospy.Subscriber(real_topic, rospy.AnyMsg, rt.callback_hz)
+            rospy.Subscriber(real_topic, rospy.AnyMsg, rt.callback_hz)
         hz_checkers.append(rt)
-    if len(topics) == 1:
-        print("subscribed to [%s]"%real_topic)
-    else:
-        print("subscribed %d topics" % len(topics))
+        print("subscribed to [%s]" % real_topic)
 
     if rospy.get_param('use_sim_time', False):
         print("WARNING: may be using simulated time",file=sys.stderr)
