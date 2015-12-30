@@ -46,6 +46,7 @@ except ImportError:
 
 import rosgraph.names
 import rospkg
+import loader
 
 _rospack = None
 
@@ -285,7 +286,7 @@ _eval_dict=dict(true=True, false=False, __builtins__={'True': True, 'False': Fal
 
 def _eval(s, context):
     def _eval_anon_context(id): return _eval_anon(id, context)
-    def _eval_arg_context(name): return _eval_arg(name, context)
+    def _eval_arg_context(name): return loader.convert_value(_eval_arg(name, context), 'auto')
     functions = dict(env = _eval_env, optenv = _eval_optenv,
                      anon = _eval_anon_context, find = _eval_find,
                      arg = _eval_arg_context)
