@@ -268,6 +268,18 @@ def _arg(resolved, a, args, context):
     else:
         raise ArgException(arg_name)
 
+# Create a dictionary of global symbols that will be available in the eval
+# context.  We disable all the builtins, then add back True and False, and also
+# add true and false for convenience (because we accept those lower-case strings
+# as boolean values in XML).
+_eval_dict=dict(true=True, false=False, __builtins__={'True': True, 'False': False})
+
+def _eval(s, context):
+    # ignore values containing double underscores (for safety)
+    # http://nedbatchelder.com/blog/201206/eval_really_is_dangerous.html
+    if s.find('__') >= 0:
+        raise SubstitutionException("$(eval ...) may not contain double underscore expressions")
+    return str(eval(s, _eval_dict, None))
 
 def resolve_args(arg_str, context=None, resolve_anon=True):
     """
@@ -294,9 +306,11 @@ def resolve_args(arg_str, context=None, resolve_anon=True):
     """
     if context is None:
         context = {}
-    #parse found substitution args
     if not arg_str:
         return arg_str
+    # special handling of $(eval ...)
+    if arg_str.startswith('$(eval ') and arg_str.endswith(')'):
+        return _eval(arg_str[7:-1], context)
     # first resolve variables like 'env' and 'arg'
     commands = {
         'env': _env,
