@@ -140,6 +140,7 @@ def test_resolve_args():
         ("$(eval anon('foo'))", 'bar'),
         ("$(eval arg('fuga'))", 'hoge'),
         ('$(eval arg("fuga"))', 'hoge'),
+        ('$(eval fuga)', 'hoge'),
         ]
     for arg, val in tests:
         assert val == resolve_args(arg, context=context)
