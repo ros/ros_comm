@@ -45,18 +45,18 @@
   <arg name="false_upper" value="False"/>
 
   <param name="py_param_if_pass" value="1" if="$(eval arg('true_lower') and (40+2) == 42)"/>
-  <param name="py_param_if_fail" value="1" if="$(eval arg('false_lower') or (40-2) != 38)"/>
+  <param name="py_param_if_fail" value="1" if="$(eval false_lower or (40-2) != 38)"/>
 
   <param name="py_param_unless_pass" value="1" unless="$(eval arg('false_upper') or 1 &lt; 1)"/>
-  <param name="py_param_unless_fail" value="1" unless="$(eval arg('true_upper') and 1 &gt;= 1)"/>
+  <param name="py_param_unless_fail" value="1" unless="$(eval true_upper and 1 &gt;= 1)"/>
 
   <remap from="py_from_if_pass" to="py_to_if_pass" if="$(eval arg('true_upper') == True)"/>
-  <remap from="py_from_if_fail" to="py_to_if_fail" if="$(eval arg('false_upper') != False)"/>
+  <remap from="py_from_if_fail" to="py_to_if_fail" if="$(eval false_upper != False)"/>
 
   <remap from="py_from_unless_pass" to="py_to_unless_pass"
-         unless="$(eval arg('false_lower') or arg('false_upper') or arg('false_upper') != False)"/>
+         unless="$(eval arg('false_lower') or false_upper or arg('false_upper') != False)"/>
   <remap from="py_from_unless_fail" to="py_to_unless_fail"
-         unless="$(eval arg('true_lower') and arg('true_upper') and arg('true_upper') == True)"/>
+         unless="$(eval arg('true_lower') and true_upper and arg('true_upper') == True)"/>
 
   <node name="remap" pkg="rospy" type="talker.py" />
 

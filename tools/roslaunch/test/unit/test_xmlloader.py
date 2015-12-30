@@ -873,7 +873,7 @@ class TestXmlLoader(unittest.TestCase):
         filename = os.path.join(self.xml_dir, 'test-arg.xml')
 
         mock = RosLaunchMock()
-        loader.load(filename, mock, argv=["required:=test_arg", "if_test:=0", "py_if_test:=0"])
+        loader.load(filename, mock, argv=["required:=test_arg", "if_test:=0"])
 
         param_d = {}
         for p in mock.params:
@@ -916,7 +916,7 @@ class TestXmlLoader(unittest.TestCase):
 
         # test again with optional value set
         mock = RosLaunchMock()
-        loader.load(filename, mock, argv=["required:=test_arg", "optional:=test_arg2", "if_test:=1", "py_if_test:=1"])
+        loader.load(filename, mock, argv=["required:=test_arg", "optional:=test_arg2", "if_test:=1"])
 
         param_d = {}
         for p in mock.params:

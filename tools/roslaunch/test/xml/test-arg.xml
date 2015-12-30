@@ -2,8 +2,7 @@
 
   <arg name="required" />
   <arg name="if_test" />
-  <arg name="py_if_test" />
-  
+
   <arg name="optional" default="not_set" />
   <arg name="grounded" value="set" />
 
@@ -23,8 +22,8 @@
   <arg if="$(arg if_test)" name="if_param_value" value="true" />
   <arg unless="$(arg if_test)" name="if_param_value" value="false" />
 
-  <arg if="$(arg py_if_test)" name="py_if_param_value" value="$(eval 1 == 1)"/>
-  <arg unless="$(arg py_if_test)" name="py_if_param_value" value="$(eval 1 == 0)"/>
+  <arg if="$(arg if_test)" name="py_if_param_value" value="$(eval 1 == 1)"/>
+  <arg unless="$(arg if_test)" name="py_if_param_value" value="$(eval 1 == 0)"/>
 
   <param name="$(arg param1_name)_test" value="$(arg param1_value)" />
   <param name="$(arg param2_name)_test" value="$(arg param2_value)" />
@@ -63,7 +62,7 @@
   </group>
 
   <arg name="py_fail" value="$(eval 0 &gt; 1)"/>
-  <group if="$(eval arg('py_fail') == True)">
+  <group if="$(eval py_fail == True)">
     <param name="py_fail" value="fail" />
   </group>
 
@@ -71,11 +70,11 @@
     <param name="py_succeed" value="yes" />
   </group>
 
-  <group if="$(eval arg('py_if_test') == True)">
+  <group if="$(eval if_test == True)">
     <param name="py_if_test" value="ran" />
   </group>
 
-  <group unless="$(eval arg('py_if_test') == True)">
+  <group unless="$(eval arg('if_test') == True)">
     <param name="py_if_test" value="not_ran" />
   </group>
 
