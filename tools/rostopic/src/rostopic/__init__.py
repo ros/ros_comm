@@ -679,14 +679,15 @@ def _sub_str_plot_fields(val, f, field_filter):
     return None
 
 
-def _str_plot(val, time_offset=None, current_time=None, field_filter=None, type_information=None, fixed_numeric_width=None):
+def _str_plot(val, time_offset=None, current_time=None, field_filter=None, type_information=None, fixed_numeric_width=None, value_transform_fn=None):
     """
     Convert value to matlab/octave-friendly CSV string representation.
 
     :param val: message
     :param current_time: current :class:`genpy.Time` to use if message does not contain its own timestamp.
     :param time_offset: (optional) for time printed for message, print as offset against this :class:`genpy.Time`
-    :param field_filter: filter the fields that are strified for Messages, ``fn(Message)->iter(str)``
+    :param field_filter: filter the fields that are stringified for Messages, ``fn(Message)->iter(str)``
+    :param value_transform_fn: Not used but for same API as CallbackEcho.custom_strify_message
     :returns: comma-separated list of field values in val, ``str``
     """
         
@@ -771,15 +772,17 @@ class CallbackEcho(object):
     def __init__(self, topic, msg_eval, plot=False, filter_fn=None,
                  echo_clear=False, echo_all_topics=False,
                  offset_time=False, count=None,
-                 field_filter_fn=None, fixed_numeric_width=None):
+                 field_filter_fn=None, fixed_numeric_width=None,
+                 value_transform_fn=None):
         """
         :param plot: if ``True``, echo in plotting-friendly format (csv), ``bool``
         :param filter_fn: function that evaluates to ``True`` if message is to be echo'd, ``fn(topic, msg)``
         :param echo_all_topics: (optional) if ``True``, echo all messages in bag, ``bool``
         :param offset_time: (optional) if ``True``, display time as offset from current time, ``bool``
         :param count: number of messages to echo, ``None`` for infinite, ``int``
-        :param field_filter_fn: filter the fields that are strified for Messages, ``fn(Message)->iter(str)``
+        :param field_filter_fn: filter the fields that are stringified for Messages, ``fn(Message)->iter(str)``
         :param fixed_numeric_width: fixed width for numeric values, ``None`` for automatic, ``int``
+        :param value_transform_fn: transform the values of Messages, ``fn(Message)->Message``
         """
         if topic and topic[-1] == '/':
             topic = topic[:-1]
@@ -812,6 +815,7 @@ class CallbackEcho(object):
                 self.prefix = '\033[2J\033[;H'
 
         self.field_filter=field_filter_fn
+        self.value_transform=value_transform_fn
         
         # first tracks whether or not we've printed anything yet. Need this for printing plot fields.
         self.first = True
@@ -820,10 +824,13 @@ class CallbackEcho(object):
         self.last_topic = None
         self.last_msg_eval = None
 
-    def custom_strify_message(self, val, indent='', time_offset=None, current_time=None, field_filter=None, type_information=None, fixed_numeric_width=None):
+    def custom_strify_message(self, val, indent='', time_offset=None, current_time=None, field_filter=None,
+                              type_information=None, fixed_numeric_width=None, value_transform=None):
         # ensure to print uint8[] as array of numbers instead of string
         if type_information and type_information.startswith('uint8['):
             val = [ord(x) for x in val]
+        if value_transform is not None:
+            val = value_transform(val)
         return genpy.message.strify_message(val, indent=indent, time_offset=time_offset, current_time=current_time, field_filter=field_filter, fixed_numeric_width=fixed_numeric_width)
 
     def callback(self, data, callback_args, current_time=None):
@@ -877,12 +884,16 @@ class CallbackEcho(object):
                 if self.offset_time:
                     sys.stdout.write(self.prefix+\
                                      self.str_fn(data, time_offset=rospy.get_rostime(),
-                                                 current_time=current_time, field_filter=self.field_filter, type_information=type_information, fixed_numeric_width=self.fixed_numeric_width) + \
+                                                 current_time=current_time, field_filter=self.field_filter,
+                                                 type_information=type_information, fixed_numeric_width=self.fixed_numeric_width,
+                                                 value_transform=self.value_transform) + \
                                      self.suffix + '\n')
                 else:
                     sys.stdout.write(self.prefix+\
                                      self.str_fn(data,
-                                                 current_time=current_time, field_filter=self.field_filter, type_information=type_information, fixed_numeric_width=self.fixed_numeric_width) + \
+                                                 current_time=current_time, field_filter=self.field_filter,
+                                                 type_information=type_information, fixed_numeric_width=self.fixed_numeric_width,
+                                                 value_transform=self.value_transform) + \
                                      self.suffix + '\n')
 
                 # we have to flush in order before piping to work
@@ -1307,16 +1318,57 @@ def _rostopic_cmd_echo(argv):
     except ValueError:
         parser.error("NUM_WIDTH must be an integer")
 
-    field_filter_fn = create_field_filter(options.nostr, options.noarr)
+    if options.plot:
+        field_filter_fn = create_field_filter(options.nostr, options.noarr)
+        value_transform_fn = None
+    else:
+        field_filter_fn = None
+        value_transform_fn = create_value_transform(options.nostr, options.noarr)
+
     callback_echo = CallbackEcho(topic, None, plot=options.plot,
                                  filter_fn=filter_fn,
                                  echo_clear=options.clear, echo_all_topics=options.all_topics,
                                  offset_time=options.offset_time, count=msg_count,
-                                 field_filter_fn=field_filter_fn, fixed_numeric_width=fixed_numeric_width)
+                                 field_filter_fn=field_filter_fn,
+                                 value_transform_fn=value_transform_fn,
+                                 fixed_numeric_width=fixed_numeric_width)
     try:
         _rostopic_echo(topic, callback_echo, bag_file=options.bag)
     except socket.error:
         sys.stderr.write("Network communication failed. Most likely failed to communicate with master.\n")
+
+def create_value_transform(echo_nostr, echo_noarr):
+    def value_transform(val):
+
+        class TransformedMessage(genpy.Message):
+            # These should be copy because changing these variables
+            # in transforming is problematic without its untransforming.
+            __slots__ = val.__slots__[:]
+            _slot_types = val._slot_types[:]
+
+        val_trans = TransformedMessage()
+
+        fields = val.__slots__
+        field_types = val._slot_types
+        for index, (f, t) in enumerate(zip(fields, field_types)):
+            f_val = getattr(val, f)
+            if echo_noarr and '[' in t:
+                setattr(val_trans, f, '<array type: %s, length: %s>' %
+                                      (t.rstrip('[]'), len(f_val)))
+                val_trans._slot_types[index] = 'string'
+            elif echo_nostr and 'string' in t:
+                setattr(val_trans, f, '<string length: %s>' % len(f_val))
+            else:
+                try:
+                    msg_class = genpy.message.get_message_class(t)
+                    if msg_class is None:
+                        continue
+                    nested_transformed = value_transform(f_val)
+                    setattr(val_trans, f, nested_transformed)
+                except ValueError:
+                    setattr(val_trans, f, f_val)
+        return val_trans
+    return value_transform
 
 def create_field_filter(echo_nostr, echo_noarr):
     def field_filter(val):
