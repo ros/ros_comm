@@ -48,7 +48,7 @@
 
 #include <boost/bind.hpp>
 
-#include <XmlRpcValue.h>
+#include <xmlrpcpp/XmlRpcValue.h>
 
 namespace ros
 {

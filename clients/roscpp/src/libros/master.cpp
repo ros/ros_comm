@@ -34,7 +34,7 @@
 #include <ros/console.h>
 #include <ros/assert.h>
 
-#include "XmlRpc.h"
+#include "xmlrpcpp/XmlRpc.h"
 
 namespace ros
 {

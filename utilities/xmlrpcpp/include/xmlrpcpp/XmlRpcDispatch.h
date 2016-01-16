@@ -8,7 +8,7 @@
 # pragma warning(disable:4786)    // identifier was truncated in debug info
 #endif
 
-#include "XmlRpcDecl.h"
+#include "xmlrpcpp/XmlRpcDecl.h"
 
 #ifndef MAKEDEPEND
 # include <list>

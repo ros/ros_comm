@@ -40,7 +40,7 @@
 
 #include "ros/ros.h"
 
-#include "XmlRpc.h"
+#include "xmlrpcpp/XmlRpc.h"
 
 using namespace XmlRpc;
 

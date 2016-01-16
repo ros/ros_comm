@@ -35,8 +35,7 @@ if(WIN32)
   target_link_libraries(xmlrpcpp ws2_32)
 endif()
 
-# FIXME the headers should be in a package-specific subfolder but can not be for backward compatibility
-install(DIRECTORY include/
+install(DIRECTORY include/${PROJECT_NAME}
   DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h")
 

@@ -2,12 +2,12 @@
 // added features: server can be opened on port 0 and you can read back
 // what port the OS gave you
 
-#include "XmlRpcServer.h"
-#include "XmlRpcServerConnection.h"
-#include "XmlRpcServerMethod.h"
-#include "XmlRpcSocket.h"
-#include "XmlRpcUtil.h"
-#include "XmlRpcException.h"
+#include "xmlrpcpp/XmlRpcServer.h"
+#include "xmlrpcpp/XmlRpcServerConnection.h"
+#include "xmlrpcpp/XmlRpcServerMethod.h"
+#include "xmlrpcpp/XmlRpcSocket.h"
+#include "xmlrpcpp/XmlRpcUtil.h"
+#include "xmlrpcpp/XmlRpcException.h"
 
 
 using namespace XmlRpc;

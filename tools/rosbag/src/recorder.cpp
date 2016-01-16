@@ -60,7 +60,7 @@
 
 #include "ros/network.h"
 #include "ros/xmlrpc_manager.h"
-#include "XmlRpc.h"
+#include "xmlrpcpp/XmlRpc.h"
 
 #define foreach BOOST_FOREACH
 

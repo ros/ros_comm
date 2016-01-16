@@ -29,7 +29,7 @@
 #define ROSCPP_MASTER_H
 
 #include "forwards.h"
-#include "XmlRpcValue.h"
+#include "xmlrpcpp/XmlRpcValue.h"
 #include "common.h"
 
 namespace ros

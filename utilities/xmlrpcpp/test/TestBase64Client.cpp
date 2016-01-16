@@ -5,7 +5,7 @@
 // Requests a png file from the specified server and saves it in outputfile.
 // Link against xmlrpc lib and whatever socket libs your system needs (ws2_32.lib on windows)
 
-#include "XmlRpc.h"
+#include "xmlrpcpp/XmlRpc.h"
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>

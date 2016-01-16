@@ -11,7 +11,7 @@
 # include <string>
 #endif
 
-#include "XmlRpcDecl.h"
+#include "xmlrpcpp/XmlRpcDecl.h"
 
 #if defined(_MSC_VER)
 # define snprintf	    _snprintf_s
