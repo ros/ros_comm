@@ -71,7 +71,9 @@ class RelayField(object):
             help='Python expression to apply on the input message \'m\'.'
             )
 
-        args = parser.parse_args()
+        # get and strip out ros args first                                                                                                                      
+        argv = rospy.myargv()
+        args = parser.parse_args(argv[1:])
 
         self.expression = args.expression
 
