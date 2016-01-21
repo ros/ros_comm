@@ -89,7 +89,7 @@ def _optenv(resolved, a, args, context):
         return resolved.replace("$(%s)"%a, ' '.join(args[1:]))
     else:
         return resolved.replace("$(%s)"%a, '')
-    
+
 def _anon(resolved, a, args, context):
     """
     process $(anon) arg
@@ -245,10 +245,52 @@ def _get_rospack():
     return _rospack
 
 
+def _arg_compare(cmd, resolved, a, args, context, resolve_value=False):
+    """
+    helper function for substitution args that compare an argument to a value
+
+    Checks that the proper format of the commands is $(cmd arg value) and that
+    both an 'arg' and 'value' are provided. This function handles resolving
+    the value of 'arg', and handles optionally resolving the value of the
+    right hand side 'value' (if 'resolve_value' is true) to support comparing
+    the value of two arguments. This function returns a tuple where the first
+    item is the value of the given 'arg', and the second item is the value of
+    the given 'value'.
+
+    @return tuple: resolved value of the argument, and the expected value
+    @rtype:  tuple
+    @raise SubstitutionException: if the arg was formed invalid or there is
+                                  an error resolving substitution args
+
+    """
+    if len(args) == 0:
+        raise SubstitutionException("$(%s var value) must specify an environment variable and a value [%s]"%(cmd, a))
+    if len(args) == 1:
+        raise SubstitutionException("$(%s var value) must specify a value [%s]"%(cmd, a))
+    if len(args) < 2:
+        raise SubstitutionException("$(%s var value) can only specify one value [%s]"%(cmd, a))
+
+    # Grab items from the command
+    arg_name = args[0]
+    expected_arg_value = args[1]
+
+    # Resolve the value of the given argument
+    arg_command = 'arg %s' % arg_name
+    arg_value = _arg('$(%s)' % arg_command, arg_command, [arg_name], context)
+
+    # If the value needs to be resolved, then attempt to resolve it as
+    # if it were an argument name
+    if resolve_value:
+        arg_command = 'arg %s' % expected_arg_value
+        expected_arg_value = _arg('$(%s)' % arg_command, arg_command, [expected_arg_value], context)
+
+    return arg_value, expected_arg_value
+
+
 def _arg(resolved, a, args, context):
     """
     process $(arg) arg
-    
+
     :returns: updated resolved argument, ``str``
     :raises: :exc:`ArgException` If arg invalidly specified
     """
@@ -256,7 +298,7 @@ def _arg(resolved, a, args, context):
         raise SubstitutionException("$(arg var) must specify an environment variable [%s]"%(a))
     elif len(args) > 1:
         raise SubstitutionException("$(arg var) may only specify one arg [%s]"%(a))
-    
+
     if 'arg' not in context:
         context['arg'] = {}
     arg_context = context['arg']
@@ -267,6 +309,88 @@ def _arg(resolved, a, args, context):
         return resolved.replace("$(%s)"%a, arg_value)
     else:
         raise ArgException(arg_name)
+
+
+def _eq(resolved, a, args, context):
+    """
+    process $(eq arg value)
+
+    :returns: ``true`` if value equals the resolved argument, ``false`` otherwise
+    :raises: :exc:`ArgException` If arg invalidly specified
+    """
+    actual, expected = _arg_compare('eq', resolved, a, args, context)
+    return 'true' if actual == expected else 'false'
+
+
+def _neq(resolved, a, args, context):
+    """
+    process $(neq arg value)
+
+    :returns: ``true`` if value does not equal the resolved argument, ``false`` otherwise
+    :raises: :exc:`ArgException` If arg invalidly specified
+    """
+    actual, expected = _arg_compare('neq', resolved, a, args, context)
+    return 'true' if actual != expected else 'false'
+
+
+def _eqarg(resolved, a, args, context):
+    """
+    process $(eqarg arg1 arg2)
+
+    :returns: ``true`` if value of arg1 equals the value of arg2, ``false`` otherwise
+    :raises: :exc:`ArgException` If arg invalidly specified
+    """
+    actual, expected = _arg_compare('eqarg', resolved, a, args, context, resolve_value=True)
+    return 'true' if actual == expected else 'false'
+
+
+def _neqarg(resolved, a, args, context):
+    """
+    process $(neqarg arg1 arg2)
+
+    :returns: ``true`` if value of arg1 does not equal the value of arg2, ``false`` otherwise
+    :raises: :exc:`ArgException` If arg invalidly specified
+    """
+    actual, expected = _arg_compare('neqarg', resolved, a, args, context, resolve_value=True)
+    return 'true' if actual != expected else 'false'
+
+
+def _empty(resolved, a, args, context):
+    """
+    process $(empty arg1)
+
+    :returns: ``true`` if value of arg1 has an empty value, ``false`` otherwise
+    :raises: :exc:`ArgException` If arg invalidly specified
+    """
+    if len(args) == 0:
+        raise SubstitutionException("$(empty value) must specify an environment variable [%s]"%(a))
+    elif len(args) > 1:
+        raise SubstitutionException("$(empty value) must specify only one environment variable [%s]"%(a))
+
+    # Resolve the value of the given argument
+    command = 'arg %s' % args[0]
+    arg_value = _arg('$(%s)' % command, command, [args[0]], context)
+
+    return 'true' if len(arg_value) == 0 else 'false'
+
+
+def _notempty(resolved, a, args, context):
+    """
+    process $(notempty arg1)
+
+    :returns: ``true`` if value of arg1 does not have an empty value, ``false`` otherwise
+    :raises: :exc:`ArgException` If arg invalidly specified
+    """
+    if len(args) == 0:
+        raise SubstitutionException("$(notempty value) must specify an environment variable [%s]"%(a))
+    elif len(args) > 1:
+        raise SubstitutionException("$(notempty value) must specify only one environment variable [%s]"%(a))
+
+    # Resolve the value of the given argument
+    command = 'arg %s' % args[0]
+    arg_value = _arg('$(%s)' % command, command, [args[0]], context)
+
+    return 'true' if len(arg_value) != 0 else 'false'
 
 
 def resolve_args(arg_str, context=None, resolve_anon=True):
@@ -303,6 +427,12 @@ def resolve_args(arg_str, context=None, resolve_anon=True):
         'optenv': _optenv,
         'anon': _anon,
         'arg': _arg,
+        'eq': _eq,
+        'neq': _neq,
+        'eqarg': _eqarg,
+        'neqarg': _neqarg,
+        'empty': _empty,
+        'notempty': _notempty,
     }
     resolved = _resolve_args(arg_str, context, resolve_anon, commands)
     # than resolve 'find' as it requires the subsequent path to be expanded already
@@ -313,7 +443,8 @@ def resolve_args(arg_str, context=None, resolve_anon=True):
     return resolved
 
 def _resolve_args(arg_str, context, resolve_anon, commands):
-    valid = ['find', 'env', 'optenv', 'anon', 'arg']
+    valid = ['find', 'env', 'optenv', 'anon', 'arg', 'eq', 'neq',
+             'eqarg', 'neqarg', 'empty', 'notempty']
     resolved = arg_str
     for a in _collect_args(arg_str):
         splits = [s for s in a.split(' ') if s]
@@ -333,7 +464,7 @@ def _collect_args(arg_str):
     """
     State-machine parser for resolve_args. Substitution args are of the form:
     $(find package_name)/scripts/foo.py $(export some/attribute blar) non-relevant stuff
-    
+
     @param arg_str: argument string to parse args from
     @type  arg_str: str
     @raise SubstitutionException: if args are invalidly specified
