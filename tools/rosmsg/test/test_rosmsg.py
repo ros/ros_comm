@@ -79,9 +79,9 @@ class TestRosmsg(unittest.TestCase):
             text = f.read()
         type_ = 'test_rosmaster/'+t
         self.assertEquals(text, rosmsg.get_msg_text(type_, raw=True))
-        self.assertEquals("""std_msgs/String s1
+        self.assertEquals("""test_rosmaster/String s1
   string data
-std_msgs/String s2
+test_rosmaster/String s2
   string data""", rosmsg.get_msg_text(type_, raw=False).strip())
 
     def test_iterate_packages(self):
