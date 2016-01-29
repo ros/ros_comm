@@ -133,16 +133,19 @@ test_rosmaster/String s2
     def test_get_srv_text(self):
         d = get_test_path()
         srv_d = os.path.join(d, 'srv')
-        with open(os.path.join(srv_d, 'RossrvA.srv'), 'r') as f:
-            text = f.read()
-        self.assertEquals(text, rosmsg.get_srv_text('test_rosmaster/RossrvA', raw=False))
-        self.assertEquals(text, rosmsg.get_srv_text('test_rosmaster/RossrvA', raw=True))
-
-        # std_msgs/empty / std_msgs/empty
-        with open(os.path.join(srv_d, 'RossrvB.srv'), 'r') as f:
-            text = f.read()
-        self.assertEquals(text, rosmsg.get_srv_text('test_rosmaster/RossrvB', raw=False))
-        self.assertEquals(text, rosmsg.get_srv_text('test_rosmaster/RossrvB', raw=True))
+        
+        test_srv_package = 'test_rosmaster'
+        rospack = rospkg.RosPack()
+        srv_raw_d = os.path.join(rospack.get_path(test_srv_package), 'srv')
+        for t in ['RossrvA', 'RossrvB']:
+            with open(os.path.join(srv_d, '%s.srv'%t), 'r') as f:
+                text = f.read()
+            with open(os.path.join(srv_raw_d, '%s.srv'%t), 'r') as f:
+                text_raw = f.read()
+                
+            type_ = test_srv_package+'/'+t
+            self.assertEquals(text, rosmsg.get_srv_text(type_, raw=False))
+            self.assertEquals(text_raw, rosmsg.get_srv_text(type_, raw=True))
 
     def test_rosmsg_cmd_packages(self):
         from rosmsg import rosmsg_cmd_packages, MODE_MSG, MODE_SRV
