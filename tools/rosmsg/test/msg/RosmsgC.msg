@@ -1,2 +1,2 @@
-std_msgs/String s1
-std_msgs/String s2
+test_rosmaster/String s1
+test_rosmaster/String s2
