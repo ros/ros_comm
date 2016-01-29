@@ -39,6 +39,8 @@ try:
 except ImportError:
     from io import StringIO
 import time
+
+import rospkg
         
 import rosmsg
 
@@ -66,19 +68,26 @@ class TestRosmsg(unittest.TestCase):
     def test_get_msg_text(self):
         d = get_test_path()
         msg_d = os.path.join(d, 'msg')
+        
+        test_message_package = 'test_rosmaster'
+        rospack = rospkg.RosPack()
+        msg_raw_d = os.path.join(rospack.get_path(test_message_package), 'msg')
         for t in ['RosmsgA', 'RosmsgB']:
             with open(os.path.join(msg_d, '%s.msg'%t), 'r') as f:
                 text = f.read()
-            type_ = 'test_rosmaster/'+t
+            with open(os.path.join(msg_raw_d, '%s.msg'%t), 'r') as f:
+                text_raw = f.read()
+                
+            type_ = test_message_package+'/'+t
             self.assertEquals(text, rosmsg.get_msg_text(type_, raw=False))
-            self.assertEquals(text, rosmsg.get_msg_text(type_, raw=True))
+            self.assertEquals(text_raw, rosmsg.get_msg_text(type_, raw=True))
             
         # test recursive types
         t = 'RosmsgC'
-        with open(os.path.join(msg_d, '%s.msg'%t), 'r') as f:
-            text = f.read()
+        with open(os.path.join(msg_raw_d, '%s.msg'%t), 'r') as f:
+            text_raw = f.read()
         type_ = 'test_rosmaster/'+t
-        self.assertEquals(text, rosmsg.get_msg_text(type_, raw=True))
+        self.assertEquals(text_raw, rosmsg.get_msg_text(type_, raw=True))
         self.assertEquals("""test_rosmaster/String s1
   string data
 test_rosmaster/String s2
