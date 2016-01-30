@@ -84,14 +84,14 @@ class TestRosmsg(unittest.TestCase):
             
         # test recursive types
         t = 'RosmsgC'
+        with open(os.path.join(d, '%s_raw.txt'%t), 'r') as f:
+            text = f.read()
         with open(os.path.join(msg_raw_d, '%s.msg'%t), 'r') as f:
             text_raw = f.read()
-        type_ = 'test_rosmaster/'+t
+        type_ = test_message_package+'/'+t
+        
+        self.assertEquals(text, rosmsg.get_msg_text(type_, raw=False))
         self.assertEquals(text_raw, rosmsg.get_msg_text(type_, raw=True))
-        self.assertEquals("""test_rosmaster/String s1
-  string data
-test_rosmaster/String s2
-  string data""", rosmsg.get_msg_text(type_, raw=False).strip())
 
     def test_iterate_packages(self):
         from rosmsg import iterate_packages, MODE_MSG, MODE_SRV
