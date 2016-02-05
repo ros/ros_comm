@@ -160,6 +160,13 @@ public:
    */
   std::string getService();
 
+  /**
+   * \brief Set timeout for service calls
+   * \param timeout The amount of time to wait for call response. If timeout is -1 (default),
+   * waits until call is complete
+   */
+  void setTimeout(double timeout);
+
   operator void*() const { return isValid() ? (void*)1 : (void*)0; }
   bool operator<(const ServiceClient& rhs) const
   {
@@ -199,6 +206,7 @@ private:
     M_string header_values_;
     std::string service_md5sum_;
     bool is_shutdown_;
+    double timeout;		///< Timeout for calling service
   };
   typedef boost::shared_ptr<Impl> ImplPtr;
   typedef boost::weak_ptr<Impl> ImplWPtr;
