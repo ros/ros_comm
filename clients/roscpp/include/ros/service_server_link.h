@@ -105,7 +105,7 @@ public:
    * If there is already a call happening in another thread, this will queue up the call and still block until
    * it has finished.
    */
-  bool call(const SerializedMessage& req, SerializedMessage& resp);
+  bool call(const SerializedMessage& req, SerializedMessage& resp, double timeout = -1);
 
 private:
   void onConnectionDropped(const ConnectionPtr& conn);
