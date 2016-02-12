@@ -560,6 +560,12 @@ TEST(Params, paramNodeHandleTemplateFunction)
   EXPECT_EQ( nh.param<bool>( "loob", true ), true );
 }
 
+TEST(Params, getParamNames) {
+  std::vector<std::string> test_params;
+  EXPECT_TRUE(ros::param::getParamNames(test_params));
+  EXPECT_LT(10, test_params.size());
+}
+
 int
 main(int argc, char** argv)
 {

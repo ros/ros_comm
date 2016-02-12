@@ -584,6 +584,13 @@ ROSCPP_DECL bool search(const std::string& ns, const std::string& key, std::stri
  */
 ROSCPP_DECL bool search(const std::string& key, std::string& result);
 
+/**
+ * \brief Get the list of all the parameters in the server
+ * \param keys The vector of all the keys
+ * \return false if the process fails
+ */
+ROSCPP_DECL bool getParamNames(std::vector<std::string>& keys);
+
 /** \brief Assign value from parameter server, with default.
  *
  * This method tries to retrieve the indicated parameter value from the

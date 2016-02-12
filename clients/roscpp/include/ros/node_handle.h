@@ -2017,6 +2017,12 @@ if (service)  // Enter if advertised service is valid
    */
   bool deleteParam(const std::string& key) const;
 
+  /** \brief Get the keys for all the parameters in the parameter server.
+   * \param keys The keys retrieved.
+   * \return true if the query succeeded, false otherwise.
+   */
+  bool getParamNames(std::vector<std::string>& keys) const;
+
   /** \brief Assign value from parameter server, with default.
    *
    * This method tries to retrieve the indicated parameter value from the
