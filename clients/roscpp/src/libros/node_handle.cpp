@@ -592,7 +592,7 @@ bool NodeHandle::deleteParam(const std::string& key) const
   return param::del(resolveName(key));
 }
 
-bool NodeHandle::getParamNames(std::vector<std::string> keys) const
+bool NodeHandle::getParamNames(std::vector<std::string>& keys) const
 {
   return param::getParamNames(keys);
 }

@@ -2020,7 +2020,7 @@ if (service)  // Enter if advertised service is valid
    * \param keys The keys retrieved.
    * \return true if the query succeeded, false otherwise.
    */
-  bool getParamNames(std::vector<std::string> keys) const;
+  bool getParamNames(std::vector<std::string>& keys) const;
 
   /** \brief Assign value from parameter server, with default.
    *
