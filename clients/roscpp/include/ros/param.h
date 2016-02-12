@@ -543,6 +543,7 @@ ROSCPP_DECL bool getCached(const std::string& key, std::map<std::string, bool>& 
  * \throws InvalidNameException if the key is not a valid graph resource name
  */
 ROSCPP_DECL bool has(const std::string& key);
+
 /** \brief Delete a parameter from the parameter server.
  *
  * \param key The key to delete.
@@ -583,6 +584,13 @@ ROSCPP_DECL bool search(const std::string& ns, const std::string& key, std::stri
  * \throws InvalidNameException if the key is not a valid graph resource name
  */
 ROSCPP_DECL bool search(const std::string& key, std::string& result);
+
+/**
+ * \brief Get the list of all the parameters in the server
+ * \param keys The vector of all the keys
+ * \return false if the process fails
+ */
+ROSCPP_DECL bool getParamNames(std::vector<std::string>& keys);
 
 /** \brief Assign value from parameter server, with default.
  *

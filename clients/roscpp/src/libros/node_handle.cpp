@@ -592,6 +592,11 @@ bool NodeHandle::deleteParam(const std::string& key) const
   return param::del(resolveName(key));
 }
 
+bool NodeHandle::getParamNames(std::vector<std::string> keys) const
+{
+  return param::getParamNames(keys);
+}
+
 bool NodeHandle::getParam(const std::string& key, XmlRpc::XmlRpcValue& v) const
 {
   return param::get(resolveName(key), v);
