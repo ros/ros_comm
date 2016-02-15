@@ -67,7 +67,7 @@ typedef boost::shared_ptr<CountingCallback> CountingCallbackPtr;
 
 TEST(CallbackQueue, singleCallback)
 {
-  CountingCallbackPtr cb(new CountingCallback);
+  CountingCallbackPtr cb(boost::make_shared<CountingCallback>());
   CallbackQueue queue;
   queue.addCallback(cb, 1);
   queue.callOne();
@@ -88,7 +88,7 @@ TEST(CallbackQueue, singleCallback)
 
 TEST(CallbackQueue, multipleCallbacksCallAvailable)
 {
-  CountingCallbackPtr cb(new CountingCallback);
+  CountingCallbackPtr cb(boost::make_shared<CountingCallback>());
   CallbackQueue queue;
   for (uint32_t i = 0; i < 1000; ++i)
   {
@@ -102,7 +102,7 @@ TEST(CallbackQueue, multipleCallbacksCallAvailable)
 
 TEST(CallbackQueue, multipleCallbacksCallOne)
 {
-  CountingCallbackPtr cb(new CountingCallback);
+  CountingCallbackPtr cb(boost::make_shared<CountingCallback>());
   CallbackQueue queue;
   for (uint32_t i = 0; i < 1000; ++i)
   {
@@ -118,8 +118,8 @@ TEST(CallbackQueue, multipleCallbacksCallOne)
 
 TEST(CallbackQueue, remove)
 {
-  CountingCallbackPtr cb1(new CountingCallback);
-  CountingCallbackPtr cb2(new CountingCallback);
+  CountingCallbackPtr cb1(boost::make_shared<CountingCallback>());
+  CountingCallbackPtr cb2(boost::make_shared<CountingCallback>());
   CallbackQueue queue;
   queue.addCallback(cb1, 1);
   queue.addCallback(cb2, 2);
@@ -158,8 +158,8 @@ typedef boost::shared_ptr<SelfRemovingCallback> SelfRemovingCallbackPtr;
 TEST(CallbackQueue, removeSelf)
 {
   CallbackQueue queue;
-  SelfRemovingCallbackPtr cb1(new SelfRemovingCallback(&queue, 1));
-  CountingCallbackPtr cb2(new CountingCallback());
+  SelfRemovingCallbackPtr cb1(boost::make_shared<SelfRemovingCallback>(&queue, 1));
+  CountingCallbackPtr cb2(boost::make_shared<CountingCallback>());
   queue.addCallback(cb1, 1);
   queue.addCallback(cb2, 1);
   queue.addCallback(cb2, 1);
@@ -212,7 +212,7 @@ typedef boost::shared_ptr<RecursiveCallback> RecursiveCallbackPtr;
 TEST(CallbackQueue, recursive1)
 {
   CallbackQueue queue;
-  RecursiveCallbackPtr cb(new RecursiveCallback(&queue, true));
+  RecursiveCallbackPtr cb(boost::make_shared<RecursiveCallback>(&queue, true));
   queue.addCallback(cb, 1);
   queue.addCallback(cb, 1);
   queue.addCallback(cb, 1);
@@ -224,7 +224,7 @@ TEST(CallbackQueue, recursive1)
 TEST(CallbackQueue, recursive2)
 {
   CallbackQueue queue;
-  RecursiveCallbackPtr cb(new RecursiveCallback(&queue, false));
+  RecursiveCallbackPtr cb(boost::make_shared<RecursiveCallback>(&queue, false));
   queue.addCallback(cb, 1);
   queue.addCallback(cb, 1);
   queue.addCallback(cb, 1);
@@ -236,7 +236,7 @@ TEST(CallbackQueue, recursive2)
 TEST(CallbackQueue, recursive3)
 {
   CallbackQueue queue;
-  RecursiveCallbackPtr cb(new RecursiveCallback(&queue, false));
+  RecursiveCallbackPtr cb(boost::make_shared<RecursiveCallback>(&queue, false));
   queue.addCallback(cb, 1);
   queue.addCallback(cb, 1);
   queue.addCallback(cb, 1);
@@ -248,7 +248,7 @@ TEST(CallbackQueue, recursive3)
 TEST(CallbackQueue, recursive4)
 {
   CallbackQueue queue;
-  RecursiveCallbackPtr cb(new RecursiveCallback(&queue, true));
+  RecursiveCallbackPtr cb(boost::make_shared<RecursiveCallback>(&queue, true));
   queue.addCallback(cb, 1);
   queue.addCallback(cb, 1);
   queue.addCallback(cb, 1);
@@ -297,7 +297,7 @@ size_t runThreadedTest(const CountingCallbackPtr& cb, const boost::function<void
 
 TEST(CallbackQueue, threadedCallAvailable)
 {
-  CountingCallbackPtr cb(new CountingCallback);
+  CountingCallbackPtr cb(boost::make_shared<CountingCallback>());
   size_t i = runThreadedTest(cb, callAvailableThread);
   ROS_INFO_STREAM(i);
   EXPECT_EQ(cb->count, i);
@@ -313,7 +313,7 @@ void callOneThread(CallbackQueue* queue, bool& done)
 
 TEST(CallbackQueue, threadedCallOne)
 {
-  CountingCallbackPtr cb(new CountingCallback);
+  CountingCallbackPtr cb(boost::make_shared<CountingCallback>());
   size_t i = runThreadedTest(cb, callOneThread);
   ROS_INFO_STREAM(i);
   EXPECT_EQ(cb->count, i);
@@ -378,7 +378,7 @@ TEST(CallbackQueue, recursiveTimer)
   ros::Time::init();
   CallbackQueue queue;
   recursiveTimerQueue = &queue;
-  TimerRecursionCallbackPtr cb(new TimerRecursionCallback(&queue));
+  TimerRecursionCallbackPtr cb(boost::make_shared<TimerRecursionCallback>(&queue));
   queue.addCallback(cb, 1);
 
   boost::thread_group tg;

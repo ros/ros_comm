@@ -60,10 +60,10 @@ namespace ros
 
   Subscriber::Subscriber(const std::string& topic, const NodeHandle& node_handle, 
 			 const SubscriptionCallbackHelperPtr& helper)
-  : impl_(new Impl)
+  : impl_(boost::make_shared<Impl>())
   {
     impl_->topic_ = topic;
-    impl_->node_handle_ = NodeHandlePtr(new NodeHandle(node_handle));
+    impl_->node_handle_ = boost::make_shared<NodeHandle>(node_handle);
     impl_->helper_ = helper;
   }
 

@@ -92,8 +92,8 @@ void myCallback(const MsgConstPtr& msg)
 }
 
 Chain<Msg> c;
-c.addFilter(boost::shared_ptr<PassThrough<Msg> >(new PassThrough<Msg>));
-c.addFilter(boost::shared_ptr<PassThrough<Msg> >(new PassThrough<Msg>));
+c.addFilter(boost::make_shared<PassThrough<Msg> >());
+c.addFilter(boost::make_shared<PassThrough<Msg> >());
 c.registerCallback(myCallback);
 \endverbatim
 
@@ -156,7 +156,7 @@ public:
     FilterInfo info;
     info.add_func = boost::bind((void(F::*)(const EventType&))&F::add, filter.get(), _1);
     info.filter = filter;
-    info.passthrough.reset(new PassThrough<M>);
+    info.passthrough = boost::make_shared<PassThrough<M> >();
 
     last_filter_connection_.disconnect();
     info.passthrough->connectInput(*filter);

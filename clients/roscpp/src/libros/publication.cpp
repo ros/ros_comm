@@ -113,7 +113,7 @@ void Publication::addCallbacks(const SubscriberCallbacksPtr& callbacks)
     for (; it != end; ++it)
     {
       const SubscriberLinkPtr& sub_link = *it;
-      CallbackInterfacePtr cb(new PeerConnDisconnCallback(callbacks->connect_, sub_link, callbacks->has_tracked_object_, callbacks->tracked_object_));
+      CallbackInterfacePtr cb(boost::make_shared<PeerConnDisconnCallback>(callbacks->connect_, sub_link, callbacks->has_tracked_object_, callbacks->tracked_object_));
       callbacks->callback_queue_->addCallback(cb, (uint64_t)callbacks.get());
     }
   }
@@ -331,7 +331,7 @@ void Publication::peerConnect(const SubscriberLinkPtr& sub_link)
     const SubscriberCallbacksPtr& cbs = *it;
     if (cbs->connect_ && cbs->callback_queue_)
     {
-      CallbackInterfacePtr cb(new PeerConnDisconnCallback(cbs->connect_, sub_link, cbs->has_tracked_object_, cbs->tracked_object_));
+      CallbackInterfacePtr cb(boost::make_shared<PeerConnDisconnCallback>(cbs->connect_, sub_link, cbs->has_tracked_object_, cbs->tracked_object_));
       cbs->callback_queue_->addCallback(cb, (uint64_t)cbs.get());
     }
   }
@@ -346,7 +346,7 @@ void Publication::peerDisconnect(const SubscriberLinkPtr& sub_link)
     const SubscriberCallbacksPtr& cbs = *it;
     if (cbs->disconnect_ && cbs->callback_queue_)
     {
-      CallbackInterfacePtr cb(new PeerConnDisconnCallback(cbs->disconnect_, sub_link, cbs->has_tracked_object_, cbs->tracked_object_));
+      CallbackInterfacePtr cb(boost::make_shared<PeerConnDisconnCallback>(cbs->disconnect_, sub_link, cbs->has_tracked_object_, cbs->tracked_object_));
       cbs->callback_queue_->addCallback(cb, (uint64_t)cbs.get());
     }
   }

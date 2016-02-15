@@ -51,7 +51,7 @@ ROSOutAppender::ROSOutAppender()
   AdvertiseOptions ops;
   ops.init<rosgraph_msgs::Log>(names::resolve("/rosout"), 0);
   ops.latch = true;
-  SubscriberCallbacksPtr cbs(new SubscriberCallbacks);
+  SubscriberCallbacksPtr cbs(boost::make_shared<SubscriberCallbacks>());
   TopicManager::instance()->advertise(ops, cbs);
 }
 
@@ -74,7 +74,7 @@ const std::string&  ROSOutAppender::getLastError() const
 
 void ROSOutAppender::log(::ros::console::Level level, const char* str, const char* file, const char* function, int line)
 {
-  rosgraph_msgs::LogPtr msg(new rosgraph_msgs::Log);
+  rosgraph_msgs::LogPtr msg(boost::make_shared<rosgraph_msgs::Log>());
 
   msg->header.stamp = ros::Time::now();
   if (level == ros::console::levels::Debug)

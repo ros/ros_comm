@@ -263,7 +263,7 @@ TEST(TimeSynchronizer, immediate2)
   TimeSynchronizer<Msg, Msg> sync(1);
   Helper h;
   sync.registerCallback(boost::bind(&Helper::cb, &h));
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
   m->header.stamp = ros::Time::now();
 
   sync.add0(m);
@@ -277,7 +277,7 @@ TEST(TimeSynchronizer, immediate3)
   TimeSynchronizer<Msg, Msg, Msg> sync(1);
   Helper h;
   sync.registerCallback(boost::bind(&Helper::cb, &h));
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
   m->header.stamp = ros::Time::now();
 
   sync.add0(m);
@@ -293,7 +293,7 @@ TEST(TimeSynchronizer, immediate4)
   TimeSynchronizer<Msg, Msg, Msg, Msg> sync(1);
   Helper h;
   sync.registerCallback(boost::bind(&Helper::cb, &h));
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
   m->header.stamp = ros::Time::now();
 
   sync.add0(m);
@@ -311,7 +311,7 @@ TEST(TimeSynchronizer, immediate5)
   TimeSynchronizer<Msg, Msg, Msg, Msg, Msg> sync(1);
   Helper h;
   sync.registerCallback(boost::bind(&Helper::cb, &h));
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
   m->header.stamp = ros::Time::now();
 
   sync.add0(m);
@@ -331,7 +331,7 @@ TEST(TimeSynchronizer, immediate6)
   TimeSynchronizer<Msg, Msg, Msg, Msg, Msg, Msg> sync(1);
   Helper h;
   sync.registerCallback(boost::bind(&Helper::cb, &h));
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
   m->header.stamp = ros::Time::now();
 
   sync.add0(m);
@@ -353,7 +353,7 @@ TEST(TimeSynchronizer, immediate7)
   TimeSynchronizer<Msg, Msg, Msg, Msg, Msg, Msg, Msg> sync(1);
   Helper h;
   sync.registerCallback(boost::bind(&Helper::cb, &h));
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
   m->header.stamp = ros::Time::now();
 
   sync.add0(m);
@@ -377,7 +377,7 @@ TEST(TimeSynchronizer, immediate8)
   TimeSynchronizer<Msg, Msg, Msg, Msg, Msg, Msg, Msg, Msg> sync(1);
   Helper h;
   sync.registerCallback(boost::bind(&Helper::cb, &h));
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
   m->header.stamp = ros::Time::now();
 
   sync.add0(m);
@@ -403,7 +403,7 @@ TEST(TimeSynchronizer, immediate9)
   TimeSynchronizer<Msg, Msg, Msg, Msg, Msg, Msg, Msg, Msg, Msg> sync(1);
   Helper h;
   sync.registerCallback(boost::bind(&Helper::cb, &h));
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
   m->header.stamp = ros::Time::now();
 
   sync.add0(m);
@@ -435,13 +435,13 @@ TEST(TimeSynchronizer, multipleTimes)
   TimeSynchronizer<Msg, Msg, Msg> sync(2);
   Helper h;
   sync.registerCallback(boost::bind(&Helper::cb, &h));
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
   m->header.stamp = ros::Time();
 
   sync.add0(m);
   ASSERT_EQ(h.count_, 0);
 
-  m.reset(new Msg);
+  m = boost::make_shared<Msg>();
   m->header.stamp = ros::Time(0.1);
   sync.add1(m);
   ASSERT_EQ(h.count_, 0);
@@ -456,7 +456,7 @@ TEST(TimeSynchronizer, queueSize)
   TimeSynchronizer<Msg, Msg, Msg> sync(1);
   Helper h;
   sync.registerCallback(boost::bind(&Helper::cb, &h));
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
   m->header.stamp = ros::Time();
 
   sync.add0(m);
@@ -464,12 +464,12 @@ TEST(TimeSynchronizer, queueSize)
   sync.add1(m);
   ASSERT_EQ(h.count_, 0);
 
-  m.reset(new Msg);
+  m = boost::make_shared<Msg>();
   m->header.stamp = ros::Time(0.1);
   sync.add1(m);
   ASSERT_EQ(h.count_, 0);
 
-  m.reset(new Msg);
+  m = boost::make_shared<Msg>();
   m->header.stamp = ros::Time(0);
   sync.add1(m);
   ASSERT_EQ(h.count_, 0);
@@ -483,7 +483,7 @@ TEST(TimeSynchronizer, dropCallback)
   Helper h;
   sync.registerCallback(boost::bind(&Helper::cb, &h));
   sync.registerDropCallback(boost::bind(&Helper::dropcb, &h));
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
   m->header.stamp = ros::Time();
 
   sync.add0(m);
@@ -511,7 +511,7 @@ TEST(TimeSynchronizer, eventInEventOut)
   TimeSynchronizer<Msg, Msg> sync(2);
   EventHelper h;
   sync.registerCallback(&EventHelper::callback, &h);
-  ros::MessageEvent<Msg const> evt(MsgPtr(new Msg), ros::Time(4));
+  ros::MessageEvent<Msg const> evt(boost::make_shared<Msg>(), ros::Time(4));
 
   sync.add<0>(evt);
   sync.add<1>(evt);
@@ -528,7 +528,7 @@ TEST(TimeSynchronizer, connectConstructor)
   TimeSynchronizer<Msg, Msg> sync(pt1, pt2, 1);
   Helper h;
   sync.registerCallback(boost::bind(&Helper::cb, &h));
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
   m->header.stamp = ros::Time::now();
 
   pt1.add(m);

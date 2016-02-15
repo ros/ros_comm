@@ -209,19 +209,17 @@ shared_ptr<ros::Subscriber> Recorder::subscribe(string const& topic) {
 	ROS_INFO("Subscribing to %s", topic.c_str());
 
     ros::NodeHandle nh;
-    shared_ptr<int> count(new int(options_.limit));
-    shared_ptr<ros::Subscriber> sub(new ros::Subscriber);
+    shared_ptr<int> count(boost::make_shared<int>(options_.limit));
+    shared_ptr<ros::Subscriber> sub(boost::make_shared<ros::Subscriber>());
 
     ros::SubscribeOptions ops;
     ops.topic = topic;
     ops.queue_size = 100;
     ops.md5sum = ros::message_traits::md5sum<topic_tools::ShapeShifter>();
     ops.datatype = ros::message_traits::datatype<topic_tools::ShapeShifter>();
-    ops.helper = ros::SubscriptionCallbackHelperPtr(
-        new ros::SubscriptionCallbackHelperT<const ros::MessageEvent<topic_tools::ShapeShifter const>& >(
-            boost::bind(&Recorder::doQueue, this, _1, topic, sub, count)
-        )
-    );
+    ops.helper = boost::make_shared<ros::SubscriptionCallbackHelperT<
+        const ros::MessageEvent<topic_tools::ShapeShifter const> &> >(
+            boost::bind(&Recorder::doQueue, this, _1, topic, sub, count));
     *sub = nh.subscribe(ops);
 
     currently_recording_.insert(topic);

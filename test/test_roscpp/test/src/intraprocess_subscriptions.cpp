@@ -190,7 +190,7 @@ TEST(IntraprocessSubscriptions, noCopy)
   ros::Subscriber sub = nh.subscribe("test", 0, messageCallback);
   ros::Publisher pub = nh.advertise<Msg>("test", 0);
 
-  MsgConstPtr msg(new Msg);
+  MsgConstPtr msg(boost::make_shared<Msg>());
 
   while (pub.getNumSubscribers() == 0)
   {
@@ -221,7 +221,7 @@ TEST(IntraprocessSubscriptions, differentRTTI)
   ros::Subscriber sub = nh.subscribe("test", 0, messageCallback);
   ros::Publisher pub = nh.advertise<Msg2>("test", 0);
 
-  Msg2ConstPtr msg(new Msg2);
+  Msg2ConstPtr msg(boost::make_shared<Msg2>());
 
   while (pub.getNumSubscribers() == 0)
   {
@@ -259,7 +259,7 @@ TEST(IntraprocessSubscriptions, noCopyAndDifferentRTTI)
   ros::Subscriber sub2 = nh.subscribe("test", 0, messageCallback2);
   ros::Publisher pub = nh.advertise<Msg2>("test", 0);
 
-  Msg2ConstPtr msg(new Msg2);
+  Msg2ConstPtr msg(boost::make_shared<Msg2>());
 
   while (pub.getNumSubscribers() == 0)
   {

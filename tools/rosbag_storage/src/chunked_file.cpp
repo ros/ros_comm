@@ -37,6 +37,7 @@
 #include <iostream>
 
 #include <boost/format.hpp>
+#include <boost/make_shared.hpp>
 
 //#include <ros/ros.h>
 #ifdef _WIN32
@@ -67,7 +68,7 @@ ChunkedFile::ChunkedFile() :
     unused_(NULL),
     nUnused_(0)
 {
-    stream_factory_ = boost::shared_ptr<StreamFactory>(new StreamFactory(this));
+    stream_factory_ = boost::make_shared<StreamFactory>(this);
 }
 
 ChunkedFile::~ChunkedFile() {
@@ -116,8 +117,8 @@ void ChunkedFile::open(string const& filename, string const& mode) {
     if (!file_)
         throw BagIOException((format("Error opening file: %1%") % filename.c_str()).str());
 
-    read_stream_  = shared_ptr<Stream>(new UncompressedStream(this));
-    write_stream_ = shared_ptr<Stream>(new UncompressedStream(this));
+    read_stream_  = boost::make_shared<UncompressedStream>(this);
+    write_stream_ = boost::make_shared<UncompressedStream>(this);
     filename_     = filename;
     offset_       = ftello(file_);
 }

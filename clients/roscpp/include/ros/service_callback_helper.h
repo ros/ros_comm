@@ -50,7 +50,7 @@ struct ROSCPP_DECL ServiceCallbackHelperCallParams
 template<typename M>
 inline boost::shared_ptr<M> defaultServiceCreateFunction()
 {
-  return boost::shared_ptr<M>(new M);
+  return boost::make_shared<M>();
 }
 
 template<typename MReq, typename MRes>
