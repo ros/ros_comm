@@ -62,7 +62,7 @@ const TopicManagerPtr& TopicManager::instance()
     boost::mutex::scoped_lock lock(g_topic_manager_mutex);
     if (!g_topic_manager)
     {
-      g_topic_manager.reset(new TopicManager);
+      g_topic_manager = boost::make_shared<TopicManager>();
     }
   }
 
@@ -281,7 +281,7 @@ bool TopicManager::subscribe(const SubscribeOptions& ops)
   const std::string& md5sum = ops.md5sum;
   std::string datatype = ops.datatype;
 
-  SubscriptionPtr s(new Subscription(ops.topic, md5sum, datatype, ops.transport_hints));
+  SubscriptionPtr s(boost::make_shared<Subscription>(ops.topic, md5sum, datatype, ops.transport_hints));
   s->addCallback(ops.helper, ops.md5sum, ops.callback_queue, ops.queue_size, ops.tracked_object, ops.allow_concurrent_callbacks);
 
   if (!registerSubscriber(s, ops.datatype))
@@ -357,7 +357,7 @@ bool TopicManager::advertise(const AdvertiseOptions& ops, const SubscriberCallba
       return true;
     }
 
-    pub = PublicationPtr(new Publication(ops.topic, ops.datatype, ops.md5sum, ops.message_definition, ops.queue_size, ops.latch, ops.has_header));
+    pub = PublicationPtr(boost::make_shared<Publication>(ops.topic, ops.datatype, ops.md5sum, ops.message_definition, ops.queue_size, ops.latch, ops.has_header));
     pub->addCallbacks(callbacks);
     advertised_topics_.push_back(pub);
   }
@@ -635,7 +635,7 @@ bool TopicManager::requestTopic(const string &topic,
         return false;
       }
       std::vector<char> header_bytes = proto[1];
-      boost::shared_array<uint8_t> buffer = boost::shared_array<uint8_t>(new uint8_t[header_bytes.size()]);
+      boost::shared_array<uint8_t> buffer(new uint8_t[header_bytes.size()]);
       memcpy(buffer.get(), &header_bytes[0], header_bytes.size());
       Header h;
       string err;

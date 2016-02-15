@@ -258,38 +258,38 @@ TokenPtr createTokenFromType(const std::string& type)
 {
   if (type == "severity")
   {
-    return TokenPtr(new SeverityToken());
+    return TokenPtr(boost::make_shared<SeverityToken>());
   }
   else if (type == "message")
   {
-    return TokenPtr(new MessageToken());
+    return TokenPtr(boost::make_shared<MessageToken>());
   }
   else if (type == "time")
   {
-    return TokenPtr(new TimeToken());
+    return TokenPtr(boost::make_shared<TimeToken>());
   }
   else if (type == "thread")
   {
-    return TokenPtr(new ThreadToken());
+    return TokenPtr(boost::make_shared<ThreadToken>());
   }
   else if (type == "logger")
   {
-    return TokenPtr(new LoggerToken());
+    return TokenPtr(boost::make_shared<LoggerToken>());
   }
   else if (type == "file")
   {
-    return TokenPtr(new FileToken());
+    return TokenPtr(boost::make_shared<FileToken>());
   }
   else if (type == "line")
   {
-    return TokenPtr(new LineToken());
+    return TokenPtr(boost::make_shared<LineToken>());
   }
   else if (type == "function")
   {
-    return TokenPtr(new FunctionToken());
+    return TokenPtr(boost::make_shared<FunctionToken>());
   }
 
-  return TokenPtr(new FixedMapToken(type));
+  return TokenPtr(boost::make_shared<FixedMapToken>(type));
 }
 
 void Formatter::init(const char* fmt)
@@ -314,7 +314,7 @@ void Formatter::init(const char* fmt)
 
     std::string token = results[1];
     last_suffix = results.suffix();
-    tokens_.push_back(TokenPtr(new FixedToken(results.prefix())));
+    tokens_.push_back(TokenPtr(boost::make_shared<FixedToken>(results.prefix())));
     tokens_.push_back(createTokenFromType(token));
 
     start = results[0].second;
@@ -323,11 +323,11 @@ void Formatter::init(const char* fmt)
 
   if (matched_once)
   {
-    tokens_.push_back(TokenPtr(new FixedToken(last_suffix)));
+    tokens_.push_back(TokenPtr(boost::make_shared<FixedToken>(last_suffix)));
   }
   else
   {
-    tokens_.push_back(TokenPtr(new FixedToken(format_)));
+    tokens_.push_back(TokenPtr(boost::make_shared<FixedToken>(format_)));
   }
 }
 

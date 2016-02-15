@@ -88,7 +88,7 @@ struct ROSCPP_DECL SubscribeOptions
     queue_size = _queue_size;
     md5sum = message_traits::md5sum<MessageType>();
     datatype = message_traits::datatype<MessageType>();
-    helper = SubscriptionCallbackHelperPtr(new SubscriptionCallbackHelperT<P>(_callback, factory_fn));
+    helper = boost::make_shared<SubscriptionCallbackHelperT<P> >(_callback, factory_fn);
   }
 
   /**
@@ -109,7 +109,7 @@ struct ROSCPP_DECL SubscribeOptions
     queue_size = _queue_size;
     md5sum = message_traits::md5sum<MessageType>();
     datatype = message_traits::datatype<MessageType>();
-    helper = SubscriptionCallbackHelperPtr(new SubscriptionCallbackHelperT<const boost::shared_ptr<MessageType const>&>(_callback, factory_fn));
+    helper = boost::make_shared<SubscriptionCallbackHelperT<const boost::shared_ptr<MessageType const>&> >(_callback, factory_fn);
   }
 
   std::string topic;                                                ///< Topic to subscribe to

@@ -179,7 +179,7 @@ void ThroughputTest::sendThread(boost::barrier* all_connected)
     }
   }
 
-  test_roscpp::ThroughputMessagePtr msg(new test_roscpp::ThroughputMessage);
+  test_roscpp::ThroughputMessagePtr msg(boost::make_shared<test_roscpp::ThroughputMessage>());
   msg->array.resize(message_size_);
 
   all_connected->wait();
@@ -443,7 +443,7 @@ void LatencyTest::sendThread(boost::barrier* all_connected, uint32_t thread_inde
   std::vector<test_roscpp::LatencyMessagePtr> messages;
   for (uint32_t i = 0; i < streams_; ++i)
   {
-    test_roscpp::LatencyMessagePtr msg(new test_roscpp::LatencyMessage);
+    test_roscpp::LatencyMessagePtr msg(boost::make_shared<test_roscpp::LatencyMessage>());
     msg->thread_index = thread_index;
     msg->array.resize(message_size_);
     messages.push_back(msg);
@@ -670,7 +670,7 @@ STLatencyResult STLatencyTest::run()
 
   ROS_INFO("All connections established");
 
-  test_roscpp::LatencyMessagePtr msg(new test_roscpp::LatencyMessage);
+  test_roscpp::LatencyMessagePtr msg(boost::make_shared<test_roscpp::LatencyMessage>());
   msg->publish_time = ros::WallTime::now().toSec();
   send_pub.publish(msg);
   while (msg->count < message_count_)

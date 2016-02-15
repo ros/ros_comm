@@ -323,7 +323,7 @@ void ServiceServerLink::processNextCall()
 
 bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& resp)
 {
-  CallInfoPtr info(new CallInfo);
+  CallInfoPtr info(boost::make_shared<CallInfo>());
   info->req_ = req;
   info->resp_ = &resp;
   info->success_ = false;

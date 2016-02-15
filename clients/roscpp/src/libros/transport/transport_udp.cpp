@@ -686,7 +686,7 @@ TransportUDPPtr TransportUDP::createOutgoing(std::string host, int port, int con
 {
   ROS_ASSERT(is_server_);
   
-  TransportUDPPtr transport(new TransportUDP(poll_set_, flags_, max_datagram_size));
+  TransportUDPPtr transport(boost::make_shared<TransportUDP>(poll_set_, flags_, max_datagram_size));
   if (!transport->connect(host, port, connection_id))
   {
     ROS_ERROR("Failed to create outgoing connection");

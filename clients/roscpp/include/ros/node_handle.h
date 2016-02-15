@@ -387,7 +387,7 @@ ros::Subscriber sub = handle.subscribe("my_topic", 1, &Foo::callback, &foo_objec
 \verbatim
 ros::NodeHandle nodeHandle;
 void Foo::callback(const std_msgs::Empty::ConstPtr& message) {}
-boost::shared_ptr<Foo> foo_object(new Foo);
+boost::shared_ptr<Foo> foo_object(boost::make_shared<Foo>());
 ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, &Foo::callback, foo_object);
 if (sub)  // Enter if subscriber is valid
 {
@@ -450,7 +450,7 @@ ros::Subscriber sub = handle.subscribe("my_topic", 1, &Foo::callback, &foo_objec
 \verbatim
 ros::NodeHandle nodeHandle;
 void Foo::callback(const std_msgs::Empty::ConstPtr& message) {}
-boost::shared_ptr<Foo> foo_object(new Foo);
+boost::shared_ptr<Foo> foo_object(boost::make_shared<Foo>());
 ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, &Foo::callback, foo_object);
 if (sub)  // Enter if subscriber is valid
 {
@@ -496,7 +496,7 @@ void Foo::callback(const std_msgs::Empty::ConstPtr& message)
 {
 }
 
-boost::shared_ptr<Foo> foo_object(new Foo);
+boost::shared_ptr<Foo> foo_object(boost::make_shared<Foo>());
 ros::Subscriber sub = handle.subscribe("my_topic", 1, &Foo::callback, foo_object);
 \endverbatim
    *
@@ -514,7 +514,7 @@ ros::Subscriber sub = handle.subscribe("my_topic", 1, &Foo::callback, foo_object
 \verbatim
 ros::NodeHandle nodeHandle;
 void Foo::callback(const std_msgs::Empty::ConstPtr& message) {}
-boost::shared_ptr<Foo> foo_object(new Foo);
+boost::shared_ptr<Foo> foo_object(boost::make_shared<Foo>());
 ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, &Foo::callback, foo_object);
 if (sub)  // Enter if subscriber is valid
 {
@@ -561,7 +561,7 @@ void Foo::callback(const std_msgs::Empty::ConstPtr& message)
 {
 }
 
-boost::shared_ptr<Foo> foo_object(new Foo);
+boost::shared_ptr<Foo> foo_object(boost::make_shared<Foo>());
 ros::Subscriber sub = handle.subscribe("my_topic", 1, &Foo::callback, foo_object);
 \endverbatim
    *
@@ -579,7 +579,7 @@ ros::Subscriber sub = handle.subscribe("my_topic", 1, &Foo::callback, foo_object
 \verbatim
 ros::NodeHandle nodeHandle;
 void Foo::callback(const std_msgs::Empty::ConstPtr& message) {}
-boost::shared_ptr<Foo> foo_object(new Foo);
+boost::shared_ptr<Foo> foo_object(boost::make_shared<Foo>());
 ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, &Foo::callback, foo_object);
 if (sub)  // Enter if subscriber is valid
 {
@@ -940,7 +940,7 @@ bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
   return true;
 }
 
-boost::shared_ptr<Foo> foo_object(new Foo);
+boost::shared_ptr<Foo> foo_object(boost::make_shared<Foo>());
 ros::ServiceServer service = handle.advertiseService("my_service", &Foo::callback, foo_object);
 \endverbatim
    *
@@ -987,7 +987,7 @@ bool Foo::callback(ros::ServiceEvent<std_srvs::Empty, std_srvs::Empty>& event)
   return true;
 }
 
-boost::shared_ptr<Foo> foo_object(new Foo);
+boost::shared_ptr<Foo> foo_object(boost::make_shared<Foo>());
 ros::ServiceServer service = handle.advertiseService("my_service", &Foo::callback, foo_object);
 \endverbatim
    *

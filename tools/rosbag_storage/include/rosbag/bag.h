@@ -403,7 +403,7 @@ boost::shared_ptr<T> Bag::instantiateBuffer(IndexEntry const& index_entry) const
             throw BagFormatException((boost::format("Unknown connection ID: %1%") % connection_id).str());
         ConnectionInfo* connection_info = connection_iter->second;
 
-        boost::shared_ptr<T> p = boost::shared_ptr<T>(new T());
+        boost::shared_ptr<T> p = boost::make_shared<T>();
 
         ros::serialization::PreDeserializeParams<T> predes_params;
         predes_params.message = p;
@@ -440,10 +440,10 @@ boost::shared_ptr<T> Bag::instantiateBuffer(IndexEntry const& index_entry) const
             throw BagFormatException((boost::format("Unknown connection ID: %1%") % connection_id).str());
         ConnectionInfo* connection_info = connection_iter->second;
 
-        boost::shared_ptr<T> p = boost::shared_ptr<T>(new T());
+        boost::shared_ptr<T> p = boost::make_shared<T>();
 
         // Create a new connection header, updated with the latching and callerid values
-        boost::shared_ptr<ros::M_string> message_header(new ros::M_string);
+        boost::shared_ptr<ros::M_string> message_header(boost::make_shared<ros::M_string>());
         for (ros::M_string::const_iterator i = connection_info->header->begin(); i != connection_info->header->end(); i++)
             (*message_header)[i->first] = i->second;
         (*message_header)["latching"] = latching;
@@ -534,7 +534,7 @@ void Bag::doWrite(std::string const& topic, ros::Time const& time, T const& msg,
                 connection_info->header = connection_header;
             }
             else {
-                connection_info->header = boost::shared_ptr<ros::M_string>(new ros::M_string);
+                connection_info->header = boost::make_shared<ros::M_string>();
                 (*connection_info->header)["type"]               = connection_info->datatype;
                 (*connection_info->header)["md5sum"]             = connection_info->md5sum;
                 (*connection_info->header)["message_definition"] = connection_info->msg_def;

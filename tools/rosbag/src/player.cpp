@@ -126,7 +126,7 @@ void Player::publish() {
 
         try
         {
-            shared_ptr<Bag> bag(new Bag);
+            shared_ptr<Bag> bag(boost::make_shared<Bag>());
             bag->open(filename, bagmode::Read);
             bags_.push_back(bag);
         }

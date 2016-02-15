@@ -626,7 +626,7 @@ TransportTCPPtr TransportTCP::accept()
   {
     ROSCPP_LOG_DEBUG("Accepted connection on socket [%d], new socket [%d]", sock_, new_sock);
 
-    TransportTCPPtr transport(new TransportTCP(poll_set_, flags_));
+    TransportTCPPtr transport(boost::make_shared<TransportTCP>(poll_set_, flags_));
     if (!transport->setSocket(new_sock))
     {
       ROS_ERROR("Failed to set socket on transport for socket %d", new_sock);

@@ -221,10 +221,10 @@ void TransportPublisherLink::onRetryTimer(const ros::WallTimerEvent&)
 
       ROSCPP_LOG_DEBUG("Retrying connection to [%s:%d] for topic [%s]", host.c_str(), port, topic.c_str());
 
-      TransportTCPPtr transport(new TransportTCP(&PollManager::instance()->getPollSet()));
+      TransportTCPPtr transport(boost::make_shared<TransportTCP>(&PollManager::instance()->getPollSet()));
       if (transport->connect(host, port))
       {
-        ConnectionPtr connection(new Connection);
+        ConnectionPtr connection(boost::make_shared<Connection>());
         connection->initialize(transport, false, HeaderReceivedFunc());
         initialize(connection);
 
