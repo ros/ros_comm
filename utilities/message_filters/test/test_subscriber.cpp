@@ -105,7 +105,7 @@ TEST(Subscriber, subInChain)
   ros::NodeHandle nh;
   Helper h;
   Chain<Msg> c;
-  c.addFilter(boost::make_shared<Subscriber<Msg> >(nh, "test_topic", 0));
+  c.addFilter(boost::make_shared<Subscriber<Msg> >(boost::ref(nh), "test_topic", 0));
   c.registerCallback(boost::bind(&Helper::cb, &h, _1));
   ros::Publisher pub = nh.advertise<Msg>("test_topic", 0);
 

@@ -40,6 +40,7 @@
 #include <boost/thread.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/regex.hpp>
+#include <boost/make_shared.hpp>
 
 #include <cstdarg>
 #include <cstdlib>
