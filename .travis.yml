@@ -11,20 +11,20 @@ install:
   - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu precise main" > /etc/apt/sources.list.d/ros-latest.list'
   - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
   - sudo apt-get update -qq
-  - sudo apt-get install python-rosdep python-catkin-pkg python-nose python-coverage python-wstool pep8 -qq
-  - sudo apt-get install ros-groovy-catkin -qq
+  - sudo apt-get install python-rosdep python-rosinstall-generator python-wstool python-rosinstall build-essential -qq
   - sudo rosdep init
   - rosdep update
+  - rosinstall_generator ros_comm --rosdistro indigo --deps --wet-only --tar > indigo-ros_comm-wet.rosinstall
   # Make a workspace
   - mkdir -p /tmp/ros_comm_ws/src
   # Add this folder to the workspace
   - ln -s `pwd` /tmp/ros_comm_ws/src/ros_comm
   # Install dependencies
   - cd /tmp/ros_comm_ws
-  - rosdep install --from-paths src --ignore-src --rosdistro groovy -y > /dev/null
+  - wstool init -j8 src indigo-ros_comm-wet.rosinstall
 # command to run tests
 script:
-  - source /opt/ros/groovy/setup.bash
+  - source /opt/ros/indigo/setup.bash
   - cd /tmp/ros_comm_ws
   - catkin_make tests > log.make_tests
   - cd build
