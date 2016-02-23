@@ -143,28 +143,36 @@ class TestRosmsg(unittest.TestCase):
         self.assertEquals('int64 a\nint64 b\n---\nint64 sum', output.strip())
 
         # test against test_rosmsg package
-        rospack = rospkg.RosPack()
-        d = rospack.get_path('test_rosmaster')
+        d = os.path.abspath(os.path.dirname(__file__))
         msg_d = os.path.join(d, 'msg')
-        # - test with non-recursive types, which should have identical raw/non-raw
+        
+        test_message_package = 'test_rosmaster'
+        rospack = rospkg.RosPack()
+        msg_raw_d = os.path.join(rospack.get_path(test_message_package), 'msg')
+        
+        # - test with non-recursive types
         for t in ['RosmsgA', 'RosmsgB']:
             with open(os.path.join(msg_d, '%s.msg'%t), 'r') as f:
                 text = f.read()
+            with open(os.path.join(msg_raw_d, '%s.msg'%t), 'r') as f:
+                text_raw = f.read()
             text = text+'\n' # running command adds one new line
-            type_ ='test_rosmaster/'+t
+            text_raw = text_raw+'\n'
+            type_ =test_message_package+'/'+t
             output = Popen(['rosmsg', 'show', type_], stdout=PIPE).communicate()[0]
             self.assertEquals(text, output)
-            output = Popen(['rosmsg', 'show', '-r',type_], stdout=PIPE, stderr=PIPE).communicate()
-            self.assertEquals(text, output[0], "Failed: %s"%(str(output)))
+            output = Popen(['rosmsg', 'show', '-r',type_], stdout=PIPE).communicate()[0]
+            self.assertEquals(text_raw, output)
             output = Popen(['rosmsg', 'show', '--raw', type_], stdout=PIPE).communicate()[0]
-            self.assertEquals(text, output)
+            self.assertEquals(text_raw, output)
 
             # test as search
             type_ = t
             text = "[test_rosmaster/%s]:\n%s"%(t, text)
+            text_raw = "[test_rosmaster/%s]:\n%s"%(t, text_raw)
             output = Popen(['rosmsg', 'show', type_], stdout=PIPE).communicate()[0]
             self.assertEquals(text, output)
             output = Popen(['rosmsg', 'show', '-r',type_], stdout=PIPE, stderr=PIPE).communicate()
-            self.assertEquals(text, output[0], "Failed: %s"%(str(output)))
+            self.assertEquals(text_raw, output[0], "Failed: %s"%(str(output)))
             output = Popen(['rosmsg', 'show', '--raw', type_], stdout=PIPE).communicate()[0]
-            self.assertEquals(text, output)
+            self.assertEquals(text_raw, output)
