@@ -160,6 +160,10 @@ struct SeverityToken : public Token
 {
   virtual std::string getString(void*, ::ros::console::Level level, const char* str, const char* file, const char* function, int line)
   {
+    (void)str;
+    (void)file;
+    (void)function;
+    (void)line;
     if (level == levels::Fatal)
     {
       return "FATAL";
@@ -224,6 +228,11 @@ struct LoggerToken : public Token
 {
   virtual std::string getString(void* logger_handle, ::ros::console::Level level, const char* str, const char* file, const char* function, int line)
   {
+    (void)level;
+    (void)str;
+    (void)file;
+    (void)function;
+    (void)line;
     return ::ros::console::impl::getName(logger_handle);
   }
 };

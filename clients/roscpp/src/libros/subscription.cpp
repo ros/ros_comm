@@ -784,6 +784,7 @@ void Subscription::removeCallback(const SubscriptionCallbackHelperPtr& helper)
 
 void Subscription::headerReceived(const PublisherLinkPtr& link, const Header& h)
 {
+  (void)h;
   boost::mutex::scoped_lock lock(md5sum_mutex_);
   if (md5sum_ == "*")
   {

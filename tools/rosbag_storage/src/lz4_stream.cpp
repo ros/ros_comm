@@ -101,7 +101,7 @@ void LZ4Stream::writeStream(int action) {
         // If output data is ready, write to disk
         int to_write = lz4s_.output_next - buff_;
         if (to_write > 0) {
-            if (fwrite(buff_, 1, to_write, getFilePointer()) != to_write) {
+            if (fwrite(buff_, 1, to_write, getFilePointer()) != static_cast<size_t>(to_write)) {
                 throw BagException("Problem writing data to disk");
             }
             advanceOffset(to_write);

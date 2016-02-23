@@ -77,7 +77,7 @@ public:
   virtual std::string getTransportInfo() = 0;
 
   virtual bool isIntraprocess() { return false; }
-  virtual void getPublishTypes(bool& ser, bool& nocopy, const std::type_info& ti) { ser = true; nocopy = false; }
+  virtual void getPublishTypes(bool& ser, bool& nocopy, const std::type_info& ti) { (void)ti; ser = true; nocopy = false; }
 
   const std::string& getMD5Sum();
   const std::string& getDataType();

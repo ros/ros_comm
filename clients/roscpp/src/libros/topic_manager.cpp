@@ -1031,6 +1031,7 @@ void TopicManager::requestTopicCallback(XmlRpc::XmlRpcValue& params, XmlRpc::Xml
 
 void TopicManager::getBusStatsCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
 {
+  (void)params;
   result[0] = 1;
   result[1] = std::string("");
   XmlRpcValue response;
@@ -1040,6 +1041,7 @@ void TopicManager::getBusStatsCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlR
 
 void TopicManager::getBusInfoCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
 {
+  (void)params;
   result[0] = 1;
   result[1] = std::string("");
   XmlRpcValue response;
@@ -1049,6 +1051,7 @@ void TopicManager::getBusInfoCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRp
 
 void TopicManager::getSubscriptionsCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
 {
+  (void)params;
   result[0] = 1;
   result[1] = std::string("subscriptions");
   XmlRpcValue response;
@@ -1058,6 +1061,7 @@ void TopicManager::getSubscriptionsCallback(XmlRpc::XmlRpcValue& params, XmlRpc:
 
 void TopicManager::getPublicationsCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
 {
+  (void)params;
   result[0] = 1;
   result[1] = std::string("publications");
   XmlRpcValue response;

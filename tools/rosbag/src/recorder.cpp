@@ -270,6 +270,7 @@ bool Recorder::shouldSubscribeToTopic(std::string const& topic, bool from_node) 
 template<class T>
 std::string Recorder::timeToStr(T ros_t)
 {
+    (void)ros_t;
     std::stringstream msg;
     const boost::posix_time::ptime now=
         boost::posix_time::second_clock::local_time();
@@ -333,9 +334,9 @@ void Recorder::updateFilenames() {
     vector<string> parts;
 
     std::string prefix = options_.prefix;
-    uint32_t ind = prefix.rfind(".bag");
+    size_t ind = prefix.rfind(".bag");
 
-    if (ind != -1 && ind == prefix.size() - 4)
+    if (ind != std::string::npos && ind == prefix.size() - 4)
     {
       prefix.erase(ind);
     }
@@ -357,6 +358,7 @@ void Recorder::updateFilenames() {
 
 //! Callback to be invoked to actually do the recording
 void Recorder::snapshotTrigger(std_msgs::Empty::ConstPtr trigger) {
+    (void)trigger;
     updateFilenames();
     
     ROS_INFO("Triggered snapshot recording with name %s.", target_filename_.c_str());
@@ -537,6 +539,8 @@ void Recorder::doRecordSnapshotter() {
 }
 
 void Recorder::doCheckMaster(ros::TimerEvent const& e, ros::NodeHandle& node_handle) {
+    (void)e;
+    (void)node_handle;
     ros::master::V_TopicInfo topics;
     if (ros::master::getTopics(topics)) {
 		foreach(ros::master::TopicInfo const& t, topics) {

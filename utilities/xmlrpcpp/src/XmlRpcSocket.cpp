@@ -216,9 +216,6 @@ XmlRpcSocket::connect(int fd, std::string& host, int port)
   bool found = false;
   struct addrinfo* it = addr;
 
-  socklen_t len;
-  struct sockaddr *address;
-
   for (; it; it = it->ai_next)
   {
     if (!s_use_ipv6_ && it->ai_family == AF_INET)

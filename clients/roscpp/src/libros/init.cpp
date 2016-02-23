@@ -268,6 +268,7 @@ CallbackQueuePtr getInternalCallbackQueue()
 
 void basicSigintHandler(int sig)
 {
+  (void)sig;
   ros::requestShutdown();
 }
 

@@ -153,6 +153,7 @@ void in_cb(const boost::shared_ptr<ShapeShifter const>& msg)
 bool list_topic_cb(topic_tools::DemuxList::Request& req,
 	 	   topic_tools::DemuxList::Response& res)
 {
+  (void)req;
   for (list<struct pub_info_t>::iterator it = g_pubs.begin();
        it != g_pubs.end();
        ++it)
@@ -166,6 +167,7 @@ bool list_topic_cb(topic_tools::DemuxList::Request& req,
 bool add_topic_cb(topic_tools::DemuxAdd::Request& req,
 		  topic_tools::DemuxAdd::Response& res)
 {
+  (void)res;
   // Check that it's not already in our list
   ROS_INFO("trying to add %s to demux", req.topic.c_str());
 
@@ -203,6 +205,7 @@ bool add_topic_cb(topic_tools::DemuxAdd::Request& req,
 bool del_topic_cb(topic_tools::DemuxDelete::Request& req,
 		  topic_tools::DemuxDelete::Response& res)
 {
+  (void)res;
   // Check that it's in our list
   ROS_INFO("trying to delete %s from demux", req.topic.c_str());
   // spin through our vector of inputs and find this guy
