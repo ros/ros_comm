@@ -184,6 +184,7 @@ void in_cb(const boost::shared_ptr<ShapeShifter const>& msg,
 bool list_topic_cb(topic_tools::MuxList::Request& req,
 	 	   topic_tools::MuxList::Response& res)
 {
+  (void)req;
   for (list<struct sub_info_t>::iterator it = g_subs.begin();
        it != g_subs.end();
        ++it)
@@ -197,6 +198,7 @@ bool list_topic_cb(topic_tools::MuxList::Request& req,
 bool add_topic_cb(topic_tools::MuxAdd::Request& req,
 		  topic_tools::MuxAdd::Response& res)
 {
+  (void)res;
   // Check that it's not already in our list
   ROS_INFO("trying to add %s to mux", req.topic.c_str());
   
@@ -248,6 +250,7 @@ bool add_topic_cb(topic_tools::MuxAdd::Request& req,
 bool del_topic_cb(topic_tools::MuxDelete::Request& req,
 		  topic_tools::MuxDelete::Response& res)
 {
+  (void)res;
   // Check that it's in our list
   ROS_INFO("trying to delete %s from mux", req.topic.c_str());
   // spin through our vector of inputs and find this guy

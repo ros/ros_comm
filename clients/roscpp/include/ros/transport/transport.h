@@ -129,7 +129,7 @@ public:
   /**
    * \brief Provides an opportunity for transport-specific options to come in through the header
    */
-  virtual void parseHeader(const Header& header) { }
+  virtual void parseHeader(const Header& header) { (void)header; }
 
 protected:
   Callback disconnect_cb_;

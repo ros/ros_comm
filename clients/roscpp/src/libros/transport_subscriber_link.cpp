@@ -135,12 +135,14 @@ void TransportSubscriberLink::onConnectionDropped(const ConnectionPtr& conn)
 
 void TransportSubscriberLink::onHeaderWritten(const ConnectionPtr& conn)
 {
+  (void)conn;
   header_written_ = true;
   startMessageWrite(true);
 }
 
 void TransportSubscriberLink::onMessageWritten(const ConnectionPtr& conn)
 {
+  (void)conn;
   writing_message_ = false;
   startMessageWrite(true);
 }
@@ -173,6 +175,7 @@ void TransportSubscriberLink::startMessageWrite(bool immediate_write)
 
 void TransportSubscriberLink::enqueueMessage(const SerializedMessage& m, bool ser, bool nocopy)
 {
+  (void)nocopy;
   if (!ser)
   {
     return;

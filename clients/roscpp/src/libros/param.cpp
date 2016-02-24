@@ -174,6 +174,7 @@ template <class T>
   // into an array type with the given size
   XmlRpc::XmlRpcValue xml_value;
   const XmlRpc::XmlRpcValue::ValueStruct& xml_map = (const XmlRpc::XmlRpcValue::ValueStruct &)(xml_value);
+  (void)xml_map;
 
   // Copy the contents into the XmlRpcValue
   for(typename std::map<std::string, T>::const_iterator it = map.begin(); it != map.end(); ++it) {

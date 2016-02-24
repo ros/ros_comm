@@ -119,6 +119,7 @@ void TransportPublisherLink::drop()
 
 void TransportPublisherLink::onHeaderWritten(const ConnectionPtr& conn)
 {
+  (void)conn;
   // Do nothing
 }
 
