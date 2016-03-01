@@ -393,19 +393,17 @@ def encode_ros_handshake_header(header):
     FORMAT: (4-byte length + [4-byte field length + field=value ]*)
 
     :param header: header field keys/values, ``dict``
-    :returns: header encoded as byte string, ``str``
+    :returns: header encoded as byte string, ``bytes``
     """
-    fields = ["%s=%s" % (k, v) for k, v in sorted(header.items())]
+    str_cls = str if python3 else unicode
     
-    # in the usual configuration, the error 'TypeError: can't concat bytes to str' appears:
-    if python3 == 0:
-        #python 2
-        fields = [str(f) for f in fields]
-        s = ''.join(["%s%s"%(struct.pack('<I', len(f)), f) for f in fields])
-    else:
-        #python 3 
-        fields = [f.encode('utf-8') for f in fields]
-        s = b''.join([(struct.pack('<I', len(f)) + f) for f in fields])
+    # encode all unicode keys in the header. Ideally, the type of these would be specified by the api
+    for k, v in sorted(header.items()):
+        if isinstance(k, str_cls): k = k.encode('utf-8')
+        if isinstance(v, str_cls): v = v.encode('utf-8')
+    
+    fields = [k + b"=" + v for k, v in sorted(header.items())]
+    s = b''.join([struct.pack('<I', len(f)) + f for f in fields])
     
     return struct.pack('<I', len(s)) + s
                                         
