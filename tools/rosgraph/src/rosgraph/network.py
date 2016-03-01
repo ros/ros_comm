@@ -402,12 +402,12 @@ def encode_ros_handshake_header(header):
         #python 2
         fields = [str(f) for f in fields]
         s = ''.join(["%s%s"%(struct.pack('<I', len(f)), f) for f in fields])
-        return struct.pack('<I', len(s)) + s
     else:
         #python 3 
         fields = [f.encode('utf-8') for f in fields]
         s = b''.join([(struct.pack('<I', len(f)) + f) for f in fields])
-        return struct.pack('<I', len(s)) + s
+    
+    return struct.pack('<I', len(s)) + s
                                         
 def write_ros_handshake_header(sock, header):
     """
