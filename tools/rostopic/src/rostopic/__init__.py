@@ -1321,26 +1321,17 @@ def _rostopic_cmd_hz(argv):
 
 def _rostopic_cmd_delay(argv):
     args = argv[2:]
-    from optparse import OptionParser
-    parser = OptionParser(usage="usage: %prog delay /topic", prog=NAME)
-    parser.add_option("-w", "--window",
-                      dest="window_size", default=-1,
-                      help="window size, in # of messages, for calculating rate", metavar="WINDOW")
+    import argparse
+    parser = argparse.ArgumentParser(usage="usage: %prog delay /topic", prog=NAME)
+    parser.add_argument("topic", help="topic name to be calcurated the delay")
+    parser.add_argument("-w", "--window",
+                        dest="window_size", default=-1, type=int,
+                        help="window size, in # of messages, for calculating rate")
 
-    (options, args) = parser.parse_args(args)
-    if len(args) == 0:
-        parser.error("topic must be specified")
-    if len(args) > 1:
-        parser.error("you may only specify one input topic")
-    try:
-        if options.window_size != -1:
-            import string
-            window_size = string.atoi(options.window_size)
-        else:
-            window_size = options.window_size
-    except:
-        parser.error("window size must be an integer")
-    topic = rosgraph.names.script_resolve_name('rostopic', args[0])
+    args = parser.parse_args(args)
+    topic_name = args.topic
+    window_size = args.window_size
+    topic = rosgraph.names.script_resolve_name('rostopic', topic_name)
     _rostopic_delay(topic, window_size=window_size)
 
 
