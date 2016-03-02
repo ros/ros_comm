@@ -711,17 +711,17 @@ class CallbackEcho(object):
     def __init__(self, topic, msg_eval, plot=False, filter_fn=None,
                  echo_clear=False, echo_all_topics=False,
                  offset_time=False, count=None,
-                 field_filter_fn=None, value_transform_fn=None,
-                 fixed_numeric_width=None):
+                 field_filter_fn=None, fixed_numeric_width=None,
+                 value_transform_fn=None):
         """
         :param plot: if ``True``, echo in plotting-friendly format, ``bool``
         :param filter_fn: function that evaluates to ``True`` if message is to be echo'd, ``fn(topic, msg)``
         :param echo_all_topics: (optional) if ``True``, echo all messages in bag, ``bool``
         :param offset_time: (optional) if ``True``, display time as offset from current time, ``bool``
         :param count: number of messages to echo, ``None`` for infinite, ``int``
-        :param field_filter_fn: filter the fields that are strified for Messages, ``fn(Message)->iter(str)``
-        :param value_transform_fn: transform the values of Messages, ``fn(Message)->Message``
+        :param field_filter_fn: filter the fields that are stringified for Messages, ``fn(Message)->iter(str)``
         :param fixed_numeric_width: fixed width for numeric values, ``None`` for automatic, ``int``
+        :param value_transform_fn: transform the values of Messages, ``fn(Message)->Message``
         """
         if topic and topic[-1] == '/':
             topic = topic[:-1]
@@ -763,8 +763,8 @@ class CallbackEcho(object):
         self.last_topic = None
         self.last_msg_eval = None
 
-    def custom_strify_message(self, val, indent='', time_offset=None, current_time=None, field_filter=None, value_transform=None,
-                              type_information=None, fixed_numeric_width=None):
+    def custom_strify_message(self, val, indent='', time_offset=None, current_time=None, field_filter=None,
+                              type_information=None, fixed_numeric_width=None, value_transform=None):
         # ensure to print uint8[] as array of numbers instead of string
         if type_information and type_information.startswith('uint8['):
             val = [ord(x) for x in val]
@@ -829,14 +829,16 @@ class CallbackEcho(object):
                 if self.offset_time:
                     sys.stdout.write(self.prefix+\
                                      self.str_fn(data, time_offset=rospy.get_rostime(),
-                                                 current_time=current_time, field_filter=self.field_filter, value_transform=self.value_transform,
-                                                 type_information=type_information, fixed_numeric_width=self.fixed_numeric_width) + \
+                                                 current_time=current_time, field_filter=self.field_filter,
+                                                 type_information=type_information, fixed_numeric_width=self.fixed_numeric_width,
+                                                 value_transform=self.value_transform) + \
                                      self.suffix + '\n')
                 else:
                     sys.stdout.write(self.prefix+\
                                      self.str_fn(data,
-                                                 current_time=current_time, field_filter=self.field_filter, value_transform=self.value_transform,
-                                                 type_information=type_information, fixed_numeric_width=self.fixed_numeric_width) + \
+                                                 current_time=current_time, field_filter=self.field_filter,
+                                                 type_information=type_information, fixed_numeric_width=self.fixed_numeric_width,
+                                                 value_transform=self.value_transform) + \
                                      self.suffix + '\n')
 
                 # we have to flush in order before piping to work
@@ -1288,8 +1290,8 @@ def create_value_transform(echo_nostr, echo_noarr):
             elif echo_nostr and 'string' in t:
                 val.__setattr__(f, '<string length: %s>' % len(val.__getattribute__(f)))
         def untransform_fn(val):
-            for index, type in transformed_arrays:
-                val._slot_types[index] = type
+            for index, type_ in transformed_arrays:
+                val._slot_types[index] = type_
             return val
         return val, untransform_fn
     return value_transform
