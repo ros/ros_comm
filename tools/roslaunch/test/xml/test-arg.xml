@@ -2,23 +2,23 @@
 
   <arg name="required" />
   <arg name="if_test" />
-  
+
   <arg name="optional" default="not_set" />
   <arg name="grounded" value="set" />
 
   <arg name="include_arg" value="initial" />
-  
+
   <arg name="param1_name" value="p1" />
   <arg name="param2_name" value="p2" />
   <arg name="param3_name" value="p3" />
-  
+
   <arg name="param1_value" value="$(arg required)" />
   <arg name="param2_value" value="$(arg optional)" />
   <arg name="param3_value" value="$(arg grounded)" />
 
   <arg name="int_value" value="1234" />
   <arg name="float_value" value="3.0" />
-  
+
   <arg if="$(arg if_test)" name="if_param_value" value="true" />
   <arg unless="$(arg if_test)" name="if_param_value" value="false" />
 
@@ -28,8 +28,8 @@
 
   <param name="if_param" value="$(arg if_param_value)" />
   <param name="int_param" value="$(arg int_value)" />
-  <param name="float_param" value="$(arg float_value)" />  
-  
+  <param name="float_param" value="$(arg float_value)" />
+
   <group>
     <arg name="context" value="group1" />
     <param name="context1" value="$(arg context)" />
@@ -73,7 +73,64 @@
     <arg name="optional" value="optional3" />
     <arg name="include_arg" value="new3" />
   </include>
-  
+
+  <param name="eq1_test" value="$(eq param1_name p1)" />
+  <param name="eq2_test" value="$(eq param1_name p2)" />
+  <param name="eq3_test" value="$(eq int_value 1234)" />
+  <param name="eq4_test" value="$(eq float_value 3.5)" />
+
+  <param name="neq1_test" value="$(neq param1_name p1)" />
+  <param name="neq2_test" value="$(neq param1_name p2)" />
+  <param name="neq3_test" value="$(neq int_value 1234)" />
+  <param name="neq4_test" value="$(neq float_value 3.5)" />
+
+  <param name="eqarg1_test" value="$(eqarg param1_name param2_name)" />
+  <param name="eqarg2_test" value="$(eqarg param1_name param1_name)" />
+  <param name="eqarg3_test" value="$(eqarg int_value float_value)" />
+  <param name="eqarg4_test" value="$(eqarg int_value int_value)" />
+  <param name="eqarg5_test" value="$(eqarg float_value float_value)" />
+  <param name="eqarg6_test" value="$(eqarg float_value int_value)" />
+
+  <param name="neqarg1_test" value="$(neqarg param1_name param2_name)" />
+  <param name="neqarg2_test" value="$(neqarg param1_name param1_name)" />
+  <param name="neqarg3_test" value="$(neqarg int_value float_value)" />
+  <param name="neqarg4_test" value="$(neqarg int_value int_value)" />
+  <param name="neqarg5_test" value="$(neqarg float_value float_value)" />
+  <param name="neqarg6_test" value="$(neqarg float_value int_value)" />
+
+  <arg name="my_empty_var" default="" />
+  <arg name="another_empty_var" default="$(arg my_empty_var)" />
+  <param name="empty1_test" value="$(empty param1_name)" />
+  <param name="empty2_test" value="$(empty my_empty_var)" />
+  <param name="empty3_test" value="$(empty another_empty_var)" />
+
+  <param name="notempty1_test" value="$(notempty param1_name)" />
+  <param name="notempty2_test" value="$(notempty my_empty_var)" />
+  <param name="notempty3_test" value="$(notempty another_empty_var)" />
+
+  <group if="$(eq param1_name p2)">
+    <param name="eq1_fail" value="fail" />
+  </group>
+
+  <group if="$(neq param1_name p1)">
+    <param name="neq1_fail" value="fail" />
+  </group>
+
+  <group if="$(eqarg param1_name param2_name)">
+    <param name="eqarg1_fail" value="fail" />
+  </group>
+
+  <group if="$(neqarg param1_name param1_name)">
+    <param name="neqarg1_fail" value="fail" />
+  </group>
+
+  <group if="$(empty param1_name)">
+    <param name="empty1_fail" value="fail" />
+  </group>
+
+  <group if="$(notempty my_empty_var)">
+    <param name="notempty1_fail" value="fail" />
+  </group>
 
 
 </launch>

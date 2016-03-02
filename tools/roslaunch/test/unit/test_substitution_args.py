@@ -38,7 +38,7 @@ import rospkg
 def test__arg():
     import random
     from roslaunch.substitution_args import _arg, ArgException, SubstitutionException
-    
+
     ctx = { 'arg': {
             'foo': '12345',
             'bar': 'hello world',
@@ -46,7 +46,7 @@ def test__arg():
             'empty': '',
             }
             }
-    
+
     # test invalid
     try:
         _arg('$(arg)', 'arg', [], ctx)
@@ -59,16 +59,16 @@ def test__arg():
         ('12345', ('$(arg foo)', 'arg foo', ['foo'], ctx)),
         ('', ('$(arg empty)', 'arg empty', ['empty'], ctx)),
         ('sim', ('$(arg baz)', 'arg baz', ['baz'], ctx)),
-        
+
         # test with other args present, should only resolve match
         ('1234512345', ('$(arg foo)$(arg foo)', 'arg foo', ['foo'], ctx)),
-        ('12345$(arg baz)', ('$(arg foo)$(arg baz)', 'arg foo', ['foo'], ctx)),            
-        ('$(arg foo)sim', ('$(arg foo)$(arg baz)', 'arg baz', ['baz'], ctx)),            
-        
+        ('12345$(arg baz)', ('$(arg foo)$(arg baz)', 'arg foo', ['foo'], ctx)),
+        ('$(arg foo)sim', ('$(arg foo)$(arg baz)', 'arg baz', ['baz'], ctx)),
+
         # test double-resolve safe
-        ('12345', ('12345', 'arg foo', ['foo'], ctx)),            
+        ('12345', ('12345', 'arg foo', ['foo'], ctx)),
         ]
-        
+
     for result, test in tests:
         resolved, a, args, context = test
         assert result == _arg(resolved, a, args, context)
@@ -97,7 +97,7 @@ def test_resolve_args():
     anon_context = {'foo': 'bar'}
     arg_context = {'fuga': 'hoge', 'car': 'cdr'}
     context = {'anon': anon_context, 'arg': arg_context }
-        
+
     tests = [
         ('$(find roslaunch)', roslaunch_dir),
         ('hello$(find roslaunch)', 'hello'+roslaunch_dir),
@@ -138,12 +138,12 @@ def test_resolve_args():
     r = resolve_args('$(anon foo)/bar')
     assert '/bar' in r
     assert not '$(anon foo)' in r
-        
-            
+
+
     # test against strings that should not match
     noop_tests = [
         '$(find roslaunch', '$find roslaunch', '', ' ', 'noop', 'find roslaunch', 'env ROS_ROOT', '$$', ')', '(', '()',
-        None, 
+        None,
         ]
     for t in noop_tests:
         assert t == resolve_args(t)
@@ -154,7 +154,7 @@ def test_resolve_args():
         '$(env NOT_SET)',
         '$(optenv)',
         '$(anon)',
-        '$(anon foo bar)',            
+        '$(anon foo bar)',
         ]
     for f in failures:
         try:
@@ -175,3 +175,413 @@ def test_resolve_duplicate_anon():
         assert False, 'loading a launch file with duplicate anon node names should have raised an exception'
     except RLException:
         pass
+
+
+def test__eq():
+    import random
+    from roslaunch.substitution_args import _eq, ArgException, SubstitutionException
+
+    ctx = {
+        'arg': {
+            'foo': '12345',
+            'bar': 'hello world',
+            'baz': 'sim',
+            'empty': '',
+        }
+    }
+
+    # test a missing arg and value
+    try:
+        inside = '$(eq)'
+        _eq('$(%s)' % inside, inside, [], ctx)
+        assert False, "should have thrown"
+    except SubstitutionException:
+        pass
+
+    # test a missing value
+    try:
+        inside = 'eq arg'
+        _eq('$(%s)' % inside, inside, [], ctx)
+        assert False, "should have thrown"
+    except SubstitutionException:
+        pass
+
+    # test an unknown argument name
+    try:
+        inside = "eq missing_arg value"
+        _eq('$(%s)' % inside, inside, [], ctx)
+        assert False, "should have thrown"
+    except SubstitutionException:
+        pass
+
+    # test normal
+    tests = [
+        ('true', ('$(eq foo 12345)', 'eq foo 12345', ['foo', '12345'], ctx)),
+        ('false', ('$(eq foo 543221)', 'eq foo 54321', ['foo', '54321'], ctx)),
+        ('true', ('$(eq baz sim)', 'eq baz sim', ['baz', 'sim'], ctx)),
+
+        # test with other args present, should only resolve match
+        ('true', ('$(eq foo 12345)$(eq foo 54321)', 'eq foo 12345', ['foo', '12345'], ctx)),
+        ('false', ('$(eq foo 12345)$(eq baz 54321)', 'eq foo 54321', ['foo', '54321'], ctx)),
+        ]
+
+    for result, test in tests:
+        resolved, a, args, context = test
+        assert result == _eq(resolved, a, args, context)
+
+    #  - test that all fail if ctx is not set
+    for result, test in tests:
+        resolved, a, args, context = test
+        try:
+            _eq(resolved, a, args, {})
+            assert False, "should have thrown"
+        except ArgException as e:
+            assert args[0] == str(e)
+        try:
+            _eq(resolved, a, args, {'arg': {}})
+            assert False, "should have thrown"
+        except ArgException as e:
+            assert args[0] == str(e)
+
+
+def test__neq():
+    import random
+    from roslaunch.substitution_args import _neq, ArgException, SubstitutionException
+
+    ctx = {
+        'arg': {
+            'foo': '12345',
+            'bar': 'hello world',
+            'baz': 'sim',
+            'empty': '',
+        }
+    }
+
+    # test a missing arg and value
+    try:
+        inside = '$(neq)'
+        _neq('$(%s)' % inside, inside, [], ctx)
+        assert False, "should have thrown"
+    except SubstitutionException:
+        pass
+
+    # test a missing value
+    try:
+        inside = 'neq arg'
+        _neq('$(%s)' % inside, inside, [], ctx)
+        assert False, "should have thrown"
+    except SubstitutionException:
+        pass
+
+    # test an unknown argument name
+    try:
+        inside = "neq missing_arg value"
+        _neq('$(%s)' % inside, inside, [], ctx)
+        assert False, "should have thrown"
+    except SubstitutionException:
+        pass
+
+    # test normal
+    tests = [
+        ('false', ('$(neq foo 12345)', 'neq foo 12345', ['foo', '12345'], ctx)),
+        ('true', ('$(neq foo 543221)', 'neq foo 54321', ['foo', '54321'], ctx)),
+        ('false', ('$(neq baz sim)', 'neq baz sim', ['baz', 'sim'], ctx)),
+
+        # test with other args present, should only resolve match
+        ('false', ('$(neq foo 12345)$(neq foo 54321)', 'neq foo 12345', ['foo', '12345'], ctx)),
+        ('true', ('$(neq foo 12345)$(neq baz 54321)', 'neq foo 54321', ['foo', '54321'], ctx)),
+        ]
+
+    for result, test in tests:
+        resolved, a, args, context = test
+        assert result == _neq(resolved, a, args, context)
+
+    #  - test that all fail if ctx is not set
+    for result, test in tests:
+        resolved, a, args, context = test
+        try:
+            _neq(resolved, a, args, {})
+            assert False, "should have thrown"
+        except ArgException as e:
+            assert args[0] == str(e)
+        try:
+            _neq(resolved, a, args, {'arg': {}})
+            assert False, "should have thrown"
+        except ArgException as e:
+            assert args[0] == str(e)
+
+
+def test__eqarg():
+    import random
+    from roslaunch.substitution_args import _eqarg, ArgException, SubstitutionException
+
+    ctx = {
+        'arg': {
+            'foo': '12345',
+            'bar': 'hello world',
+            'baz': 'sim',
+            'empty': '',
+            'foo2': '12345',
+        }
+    }
+
+    # test a missing arg and value
+    try:
+        inside = '$(eqarg)'
+        _eqarg('$(%s)' % inside, inside, [], ctx)
+        assert False, "should have thrown"
+    except SubstitutionException:
+        pass
+
+    # test a missing value
+    try:
+        inside = 'eqarg arg'
+        _eqarg('$(%s)' % inside, inside, [], ctx)
+        assert False, "should have thrown"
+    except SubstitutionException:
+        pass
+
+    # test an unknown argument name
+    try:
+        inside = "eqarg missing_arg value"
+        _eqarg('$(%s)' % inside, inside, [], ctx)
+        assert False, "should have thrown"
+    except SubstitutionException:
+        pass
+
+    # test an unknown value name
+    try:
+        inside = "eqarg foo missing_arg"
+        _eqarg('$(%s)' % inside, inside, [], ctx)
+        assert False, "should have thrown"
+    except SubstitutionException:
+        pass
+
+    # test normal
+    tests = [
+        ('true', ('$(eqarg foo foo)', 'eqarg foo foo', ['foo', 'foo'], ctx)),
+        ('false', ('$(eqarg foo bar)', 'eqarg foo bar', ['foo', 'bar'], ctx)),
+        ('true', ('$(eqarg foo foo2)', 'eqarg foo foo2', ['foo', 'foo2'], ctx)),
+        ('false', ('$(eqarg baz empty)', 'eqarg baz empty', ['baz', 'empty'], ctx)),
+
+        # test with other args present, should only resolve match
+        ('false', ('$(eqarg foo bar)$(eqarg foo foo2)', 'eqarg foo bar', ['foo', 'bar'], ctx)),
+        ('true', ('$(eqarg foo baz)$(eqarg foo2 foo)', 'eqarg foo2 foo', ['foo2', 'foo'], ctx)),
+        ]
+
+    for result, test in tests:
+        resolved, a, args, context = test
+        assert result == _eqarg(resolved, a, args, context)
+
+    #  - test that all fail if ctx is not set
+    for result, test in tests:
+        resolved, a, args, context = test
+        try:
+            _eqarg(resolved, a, args, {})
+            assert False, "should have thrown"
+        except ArgException as e:
+            assert args[0] == str(e)
+        try:
+            _eqarg(resolved, a, args, {'arg': {}})
+            assert False, "should have thrown"
+        except ArgException as e:
+            assert args[0] == str(e)
+
+
+def test__neqarg():
+    import random
+    from roslaunch.substitution_args import _neqarg, ArgException, SubstitutionException
+
+    ctx = {
+        'arg': {
+            'foo': '12345',
+            'bar': 'hello world',
+            'baz': 'sim',
+            'empty': '',
+            'foo2': '12345',
+        }
+    }
+
+    # test a missing arg and value
+    try:
+        inside = '$(neqarg)'
+        _neqarg('$(%s)' % inside, inside, [], ctx)
+        assert False, "should have thrown"
+    except SubstitutionException:
+        pass
+
+    # test a missing value
+    try:
+        inside = 'neqarg arg'
+        _neqarg('$(%s)' % inside, inside, [], ctx)
+        assert False, "should have thrown"
+    except SubstitutionException:
+        pass
+
+    # test an unknown argument name
+    try:
+        inside = "neqarg missing_arg value"
+        _neqarg('$(%s)' % inside, inside, [], ctx)
+        assert False, "should have thrown"
+    except SubstitutionException:
+        pass
+
+    # test an unknown value name
+    try:
+        inside = "neqarg foo missing_arg"
+        _neqarg('$(%s)' % inside, inside, [], ctx)
+        assert False, "should have thrown"
+    except SubstitutionException:
+        pass
+
+    # test normal
+    tests = [
+        ('false', ('$(neqarg foo foo)', 'neqarg foo foo', ['foo', 'foo'], ctx)),
+        ('true', ('$(neqarg foo bar)', 'neqarg foo bar', ['foo', 'bar'], ctx)),
+        ('false', ('$(neqarg foo foo2)', 'neqarg foo foo2', ['foo', 'foo2'], ctx)),
+        ('true', ('$(neqarg baz empty)', 'neqarg baz empty', ['baz', 'empty'], ctx)),
+
+        # test with other args present, should only resolve match
+        ('true', ('$(neqarg foo bar)$(neqarg foo foo2)', 'neqarg foo bar', ['foo', 'bar'], ctx)),
+        ('false', ('$(neqarg foo baz)$(neqarg foo2 foo)', 'neqarg foo2 foo', ['foo2', 'foo'], ctx)),
+        ]
+
+    for result, test in tests:
+        resolved, a, args, context = test
+        assert result == _neqarg(resolved, a, args, context)
+
+    #  - test that all fail if ctx is not set
+    for result, test in tests:
+        resolved, a, args, context = test
+        try:
+            _neqarg(resolved, a, args, {})
+            assert False, "should have thrown"
+        except ArgException as e:
+            assert args[0] == str(e)
+        try:
+            _neqarg(resolved, a, args, {'arg': {}})
+            assert False, "should have thrown"
+        except ArgException as e:
+            assert args[0] == str(e)
+
+
+def test__empty():
+    import random
+    from roslaunch.substitution_args import _empty, ArgException, SubstitutionException
+
+    ctx = {
+        'arg': {
+            'foo': '12345',
+            'bar': 'hello world',
+            'baz': 'sim',
+            'empty': '',
+            'bang': '',
+        }
+    }
+
+    # test a missing arg
+    try:
+        inside = '$(empty)'
+        _empty('$(%s)' % inside, inside, [], ctx)
+        assert False, "should have thrown"
+    except SubstitutionException:
+        pass
+
+    # test an unknown argument name
+    try:
+        inside = "empty missing_arg"
+        _empty('$(%s)' % inside, inside, [], ctx)
+        assert False, "should have thrown"
+    except SubstitutionException:
+        pass
+
+    # test normal
+    tests = [
+        ('false', ('$(empty foo)', 'empty foo', ['foo'], ctx)),
+        ('true', ('$(empty empty)', 'empty empty', ['empty'], ctx)),
+        ('true', ('$(empty bang)', 'empty bang', ['bang'], ctx)),
+        ('false', ('$(empty bar)', 'empty bar', ['bar'], ctx)),
+
+        # test with other args present, should only resolve match
+        ('true', ('$(empty bang)$(empty foo)', 'empty bang', ['bang'], ctx)),
+        ('false', ('$(empty bang)$(empty bar)', 'empty bar', ['bar'], ctx)),
+        ]
+
+    for result, test in tests:
+        resolved, a, args, context = test
+        assert result == _empty(resolved, a, args, context)
+
+    #  - test that all fail if ctx is not set
+    for result, test in tests:
+        resolved, a, args, context = test
+        try:
+            _empty(resolved, a, args, {})
+            assert False, "should have thrown"
+        except ArgException as e:
+            assert args[0] == str(e)
+        try:
+            _empty(resolved, a, args, {'arg': {}})
+            assert False, "should have thrown"
+        except ArgException as e:
+            assert args[0] == str(e)
+
+
+def test__notempty():
+    import random
+    from roslaunch.substitution_args import _notempty, ArgException, SubstitutionException
+
+    ctx = {
+        'arg': {
+            'foo': '12345',
+            'bar': 'hello world',
+            'baz': 'sim',
+            'notempty': '',
+            'bang': '',
+        }
+    }
+
+    # test a missing arg
+    try:
+        inside = '$(notempty)'
+        _notempty('$(%s)' % inside, inside, [], ctx)
+        assert False, "should have thrown"
+    except SubstitutionException:
+        pass
+
+    # test an unknown argument name
+    try:
+        inside = "notempty missing_arg"
+        _notempty('$(%s)' % inside, inside, [], ctx)
+        assert False, "should have thrown"
+    except SubstitutionException:
+        pass
+
+    # test normal
+    tests = [
+        ('true', ('$(notempty foo)', 'notempty foo', ['foo'], ctx)),
+        ('false', ('$(notempty notempty)', 'notempty notempty', ['notempty'], ctx)),
+        ('false', ('$(notempty bang)', 'notempty bang', ['bang'], ctx)),
+        ('true', ('$(notempty bar)', 'notempty bar', ['bar'], ctx)),
+
+        # test with other args present, should only resolve match
+        ('false', ('$(notempty bang)$(notempty foo)', 'notempty bang', ['bang'], ctx)),
+        ('true', ('$(notempty bang)$(notempty bar)', 'notempty bar', ['bar'], ctx)),
+        ]
+
+    for result, test in tests:
+        resolved, a, args, context = test
+        assert result == _notempty(resolved, a, args, context)
+
+    #  - test that all fail if ctx is not set
+    for result, test in tests:
+        resolved, a, args, context = test
+        try:
+            _notempty(resolved, a, args, {})
+            assert False, "should have thrown"
+        except ArgException as e:
+            assert args[0] == str(e)
+        try:
+            _notempty(resolved, a, args, {'arg': {}})
+            assert False, "should have thrown"
+        except ArgException as e:
+            assert args[0] == str(e)

@@ -35,8 +35,8 @@ import os
 import sys
 import unittest
 
-import roslaunch.loader 
-import roslaunch.xmlloader 
+import roslaunch.loader
+import roslaunch.xmlloader
 
 def get_test_path():
     return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'xml'))
@@ -52,11 +52,11 @@ class RosLaunchMock(object):
         self.nodes = []
         self.tests = []
         self.params = []
-        self.executables = []        
-        self.clear_params = []        
+        self.executables = []
+        self.clear_params = []
         self.machines = []
         self.master = None
-        self.config_errors = []        
+        self.config_errors = []
         self.roslaunch_files = []
     def set_master(self, m):
         self.master = m
@@ -72,17 +72,17 @@ class RosLaunchMock(object):
 
     def add_config_error(self, msg):
         self.config_errors.append(msg)
-        
+
     def add_test(self, t, verbose=True):
-        self.tests.append(t)        
+        self.tests.append(t)
     def add_executable(self, t):
-        self.executables.append(t)        
+        self.executables.append(t)
 
     def add_param(self, p, filename=None, verbose=True):
         matches = [x for x in self.params if x.key == p.key]
         for m in matches:
             self.params.remove(m)
-        self.params.append(p)        
+        self.params.append(p)
     def add_clear_param(self, param):
         self.clear_params.append(param)
 
@@ -92,14 +92,14 @@ class TestXmlLoader(unittest.TestCase):
 
     def setUp(self):
         self.xml_dir = get_test_path()
-        
+
     def _load(self, test_file):
         loader = roslaunch.xmlloader.XmlLoader()
         mock = RosLaunchMock()
         self.assert_(os.path.exists(test_file), "cannot locate test file %s"%test_file)
         loader.load(test_file, mock)
         return mock
-        
+
     def _load_valid_nodes(self, tests):
         mock = self._load(os.path.join(self.xml_dir, 'test-node-valid.xml'))
         nodes = [n for n in mock.nodes if n.type in tests]
@@ -111,7 +111,7 @@ class TestXmlLoader(unittest.TestCase):
         nodes = [n for n in mock.tests if n.type in tests]
         self.assertEquals(len(tests), len(nodes))
         return nodes
-    
+
     def _load_valid_machines(self, tests):
         mock = self._load(os.path.join(self.xml_dir, 'test-machine-valid.xml'))
         machines = [m for m in mock.machines if m.name in tests]
@@ -130,7 +130,7 @@ class TestXmlLoader(unittest.TestCase):
             self.fail("no root lauch element passed")
         except Exception as e:
             self.assertEquals(str(e), "Invalid roslaunch XML syntax: no root <launch> tag")
-        
+
         f = open(os.path.join(self.xml_dir, 'test-node-valid.xml'), 'r')
         try:
             s = f.read()
@@ -148,7 +148,7 @@ class TestXmlLoader(unittest.TestCase):
         finally:
             f.close()
         try:
-            loader.load_string(s, mock)            
+            loader.load_string(s, mock)
             self.fail('load_string should have thrown an exception')
         except roslaunch.xmlloader.XmlParseException:
             pass
@@ -156,7 +156,7 @@ class TestXmlLoader(unittest.TestCase):
     def test_load(self):
         # make sure load isn't broken
         loader = roslaunch.xmlloader.XmlLoader()
-        
+
         # test against empty data
         loader.load(os.path.join(self.xml_dir, 'test-valid.xml'), RosLaunchMock())
 
@@ -169,7 +169,7 @@ class TestXmlLoader(unittest.TestCase):
 
         # check exception case
         try:
-            loader.load(os.path.join(self.xml_dir, 'invalid-xml.xml'), mock)            
+            loader.load(os.path.join(self.xml_dir, 'invalid-xml.xml'), mock)
             self.fail('load_string should have thrown an exception')
         except roslaunch.xmlloader.XmlParseException:
             pass
@@ -227,8 +227,8 @@ class TestXmlLoader(unittest.TestCase):
             f.close()
         p = [p for p in mock.params if p.key == '/commandoutput'][0]
         self.assertEquals(contents, p.value, 1)
-        
-        
+
+
     def test_rosparam_valid(self):
         mock = self._load(os.path.join(self.xml_dir, 'test-rosparam-valid.xml'))
 
@@ -242,7 +242,7 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEquals('bar', p.value)
         p = [p for p in mock.params if p.key == '/node_rosparam/robots/childparam'][0]
         self.assertEquals('a child namespace parameter', p.value)
-        
+
         exes = [e for e in mock.executables if e.command == 'rosparam']
         self.assertEquals(len(exes), 2, "expected 2 rosparam exes, got %s"%len(exes))
         from roslaunch.core import PHASE_SETUP
@@ -253,7 +253,7 @@ class TestXmlLoader(unittest.TestCase):
             rp_cmd, rp_file, rp_ctx = args
             self.failIf('$(find' in rp_file, "file attribute was not evaluated")
             self.assertEquals('dump', rp_cmd)
-                
+
             # verify that the context is passed in correctly
             if rp_file.endswith('dump.yaml'):
                 self.assertEquals('/', rp_ctx)
@@ -274,7 +274,7 @@ class TestXmlLoader(unittest.TestCase):
         p = [p for p in mock.params if p.key == '/inline_dict2/key4'][0]
         self.assertEquals('value4', p.value)
 
-        # verify that later tags override 
+        # verify that later tags override
         # - key2 is overriden
         self.assertEquals(1, len([p for p in mock.params if p.key == '/override/key1']))
         p = [p for p in mock.params if p.key == '/override/key1'][0]
@@ -318,7 +318,7 @@ class TestXmlLoader(unittest.TestCase):
         self.assertAlmostEquals(p.value, math.pi)
         p = [p for p in mock.params if p.key == '/dict_rad/rad2pi'][0]
         self.assertAlmostEquals(p.value, 2 * math.pi)
-                    
+
         # rosparam file also contains empty params
         mock = self._load(os.path.join(self.xml_dir, 'test-rosparam-empty.xml'))
         self.assertEquals([], mock.params)
@@ -334,13 +334,13 @@ class TestXmlLoader(unittest.TestCase):
                 self.fail("xmlloader did not throw an xmlloadexception for [%s]"%filename)
             except roslaunch.loader.LoadException:
                 pass
-        
+
     def test_node_valid(self):
         nodes = self._load_valid_nodes([])
 
     def test_rostest_valid(self):
         nodes = self._load_valid_rostests([])
-        
+
     def test_node_rosparam_invalid(self):
         tests = ['test-node-rosparam-invalid-name.xml']
         loader = roslaunch.xmlloader.XmlLoader()
@@ -363,12 +363,12 @@ class TestXmlLoader(unittest.TestCase):
                  ("test-node-rosparam-load-param.xml", "test_node_rosparam_load_param"),
                  ("test-node-rosparam-load-ns.xml", "test_node_rosparam_load_ns")]
         for f, test in tests:
-                 
+
             mock = self._load(os.path.join(self.xml_dir, f))
             nodes = [n for n in mock.nodes if n.type == test]
             self.assertEquals(1, len(nodes))
             n = nodes[0]
-                          
+
             exes = [e for e in mock.executables if e.command == 'rosparam']
 
             if n.type == "test_node_rosparam_load":
@@ -380,12 +380,12 @@ class TestXmlLoader(unittest.TestCase):
             elif n.type == "test_node_rosparam_delete":
                 self.assertEquals(1, len(exes))
                 self.assert_(len(exes[0].args) == 2, "invalid arg: %s"%(str(exes[0].args)))
-                rp_cmd, rp_param = exes[0].args   
+                rp_cmd, rp_param = exes[0].args
                 self.assertEquals("delete", rp_cmd)
                 self.assertEquals("/ns1/rosparam_delete/ns2/param", rp_param)
             elif n.type == "test_node_rosparam_dump":
                 self.assertEquals(1, len(exes))
-                rp_cmd, rp_file, rp_ctx = exes[0].args                
+                rp_cmd, rp_file, rp_ctx = exes[0].args
                 self.assertEquals("dump", rp_cmd)
                 self.assertEquals("dump.yaml", rp_file)
                 self.assertEquals('/rosparam_dump/', rp_ctx)
@@ -419,7 +419,7 @@ class TestXmlLoader(unittest.TestCase):
                 self.assertEquals('bar', p.value)
                 p = [p for p in mock.params if p.key == '/rosparam_multi/msubns/robots/childparam'][0]
                 self.assertEquals('a child namespace parameter', p.value)
-                
+
     ## test that ~params in groups get applied to later members of group
     def test_local_param_group(self):
         mock = self._load(os.path.join(self.xml_dir, 'test-local-param-group.xml'))
@@ -442,7 +442,7 @@ class TestXmlLoader(unittest.TestCase):
             self.assertEquals(1, len(p), "%s not present in parameters: %s"%(k, mock.params))
             self.assertEquals(v, p[0].value)
         node_types = [n.type for n in mock.nodes]
-        
+
     def test_roslaunch_files(self):
         f = os.path.join(self.xml_dir, 'test-env.xml')
         f2 = os.path.join(self.xml_dir, 'test-env-include.xml')
@@ -491,7 +491,7 @@ class TestXmlLoader(unittest.TestCase):
                 self.assert_(("ONE", "one") in n.env_args)
                 self.assert_(("TWO", "two") in n.env_args)
                 self.assert_(("INCLUDE", "include") in n.env_args)
-                
+
     def test_clear_params(self):
         true_tests = ["/test_clear_params1/","/test_clear_params2/",
                       "/clear_params_ns/test_clear_params_ns/",
@@ -502,7 +502,7 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEquals(len(true_tests), len(mock.clear_params), "clear params did not match expected true: %s"%(str(mock.clear_params)))
         for t in true_tests:
             self.assert_(t in mock.clear_params, "%s was not marked for clear: %s"%(t, mock.clear_params))
-                
+
     def test_clear_params_invalid(self):
         tests = ['test-clear-params-invalid-1.xml', 'test-clear-params-invalid-2.xml',
                  'test-clear-params-invalid-3.xml','test-clear-params-invalid-4.xml',]
@@ -519,7 +519,7 @@ class TestXmlLoader(unittest.TestCase):
     def _subtest_node_base(self, nodes):
         node = nodes[0]
         self.assertEquals("package", node.package)
-        self.assertEquals("test_base", node.type)        
+        self.assertEquals("test_base", node.type)
 
     def test_node_base(self):
         self._subtest_node_base(self._load_valid_nodes(['test_base']))
@@ -527,13 +527,13 @@ class TestXmlLoader(unittest.TestCase):
         self._subtest_node_base(tests)
         self.assertEquals('test1', tests[0].test_name)
         self.assertEquals(roslaunch.core.TEST_TIME_LIMIT_DEFAULT, tests[0].time_limit)
-        
+
     def _subtest_node_args(self, nodes):
         for n in nodes:
             if n.type == 'test_args':
                 self.assertEquals("args test", n.args)
             elif n.type == 'test_args_empty':
-                self.assertEquals("", n.args)                
+                self.assertEquals("", n.args)
 
     def test_node_args(self):
         self._subtest_node_args(self._load_valid_nodes(['test_args', 'test_args_empty']))
@@ -543,8 +543,8 @@ class TestXmlLoader(unittest.TestCase):
             if n.type == 'test_args':
                 self.assertEquals("test2", n.test_name)
             elif n.type == 'test_args_empty':
-                self.assertEquals("test3", n.test_name)                
-        
+                self.assertEquals("test3", n.test_name)
+
     def test_rostest_time_limit(self):
         tests = self._load_valid_rostests(['test_time_limit_int_1', 'test_time_limit_float_10_1'])
         for n in tests:
@@ -556,16 +556,16 @@ class TestXmlLoader(unittest.TestCase):
     def test_rostest_retry(self):
         n = self._load_valid_rostests(['test_retry'])[0]
         self.assertEquals(2, n.retry)
-                
+
     def test_node_cwd(self):
         nodes = self._load_valid_nodes(['test_base', 'test_cwd_2', 'test_cwd_3', 'test_cwd_4'])
         for n in nodes:
             if n.type == 'test_base':
                 self.assertEquals(None, n.cwd)
             elif n.type == 'test_cwd_2':
-                self.assertEquals("node", n.cwd)  
+                self.assertEquals("node", n.cwd)
             elif n.type in ['test_cwd_3', 'test_cwd_4']:
-                self.assertEquals("ROS_HOME", n.cwd)  
+                self.assertEquals("ROS_HOME", n.cwd)
 
     def test_node_output(self):
         nodes = self._load_valid_nodes(['test_output_log', 'test_output_screen'])
@@ -573,20 +573,20 @@ class TestXmlLoader(unittest.TestCase):
             if n.type == 'test_output_log':
                 self.assertEquals("log", n.output)
             elif n.type == 'test_output_screen':
-                self.assertEquals("screen", n.output) 
+                self.assertEquals("screen", n.output)
 
     def test_node_required(self):
         nodes = self._load_valid_nodes(['test_base',
                                         'test_required_true_1',
                                         'test_required_true_2',
                                         'test_required_false_1',
-                                        'test_required_false_2',                                        
+                                        'test_required_false_2',
                                         ])
         for n in nodes:
             if n.type.startswith('test_required_true'):
                 self.assertEquals(True, n.required)
             else:
-                self.assertEquals(False, n.required) 
+                self.assertEquals(False, n.required)
 
     def test_node_machine(self):
         nodes = self._load_valid_nodes(['test_machine'])
@@ -599,17 +599,17 @@ class TestXmlLoader(unittest.TestCase):
             if n.type == 'test_ns1':
                 self.assertEquals("/ns_test1/", n.namespace)
             elif n.type == 'test_ns2':
-                self.assertEquals("/ns_test2/child2/", n.namespace) 
+                self.assertEquals("/ns_test2/child2/", n.namespace)
             elif n.type == 'test_ns3':
-                self.assertEquals("/ns_test3/child3/", n.namespace) 
+                self.assertEquals("/ns_test3/child3/", n.namespace)
 
     def test_machines(self):
         tests = ['test-machine-invalid.xml', \
                  'test-machine-invalid-4.xml', 'test-machine-invalid-5.xml',
                  'test-machine-invalid-6.xml', 'test-machine-invalid-7.xml',
-                 'test-machine-invalid-8.xml', 'test-machine-invalid-9.xml', 
+                 'test-machine-invalid-8.xml', 'test-machine-invalid-9.xml',
                  'test-machine-invalid-10.xml', 'test-machine-invalid-11.xml',
-                 'test-machine-invalid-12.xml', 
+                 'test-machine-invalid-12.xml',
                  ]
         loader = roslaunch.xmlloader.XmlLoader()
         for filename in tests:
@@ -632,7 +632,7 @@ class TestXmlLoader(unittest.TestCase):
             elif m.name == 'machine9':
                 self.assertEquals(m.env_loader, '/opt/ros/fuerte/env.sh')
 
-                
+
     def test_node_subst(self):
         test_file =os.path.join(self.xml_dir, 'test-node-substitution.xml')
         keys = ['PACKAGE', 'TYPE', 'OUTPUT', 'RESPAWN']
@@ -643,7 +643,7 @@ class TestXmlLoader(unittest.TestCase):
         r = random.randint(0, 100000)
         if r%2:
             output = 'screen'
-            respawn = 'true' 
+            respawn = 'true'
         else:
             output = 'log'
             respawn = 'false'
@@ -670,11 +670,11 @@ class TestXmlLoader(unittest.TestCase):
         if respawn == 'true':
             self.assert_(n.respawn)
         else:
-            self.failIf(n.respawn)            
+            self.failIf(n.respawn)
 
     def test_machine_subst(self):
         test_file = os.path.join(self.xml_dir, 'test-machine-substitution.xml')
-        keys = ['NAME', 'ADDRESS'] 
+        keys = ['NAME', 'ADDRESS']
         for k in keys:
             if k in os.environ:
                 del os.environ[k]
@@ -727,13 +727,13 @@ class TestXmlLoader(unittest.TestCase):
                 self.assertEquals([['foo', 'fad'], ['a', 'b'], ['c', 'd']], n.remap_args)
             elif n.type == 'node6':
                 self.assertEquals([['foo', 'far'], ['old1', 'new1'], ['old2', 'new2'], ['old3', 'new3']], n.remap_args)
-                 
+
     def test_substitution(self):
         mock = self._load(os.path.join(self.xml_dir, 'test-substitution.xml'))
-        # for now this is mostly a trip wire test due to #1776 
+        # for now this is mostly a trip wire test due to #1776
         for p in mock.params:
             self.assert_('$' not in p.key)
-            self.assert_('$' not in p.value)            
+            self.assert_('$' not in p.value)
         for n in mock.nodes:
             self.assert_('$' not in n.package)
             self.assert_('$' not in n.type)
@@ -744,8 +744,8 @@ class TestXmlLoader(unittest.TestCase):
                 self.assert_('$' not in r[0])
                 self.assert_('$' not in r[1])
             for a in n.args:
-                self.assert_('$' not in a)                        
-    
+                self.assert_('$' not in a)
+
     def test_node_invalid(self):
         tests = ['test-node-invalid-type.xml','test-node-invalid-type-2.xml',
                  'test-node-invalid-pkg.xml','test-node-invalid-pkg-2.xml',
@@ -755,19 +755,19 @@ class TestXmlLoader(unittest.TestCase):
                  'test-node-invalid-name-3.xml',
                  'test-node-invalid-machine.xml',
                  'test-node-invalid-respawn.xml',
-                 'test-node-invalid-respawn-required.xml',                 
+                 'test-node-invalid-respawn-required.xml',
                  'test-node-invalid-required-1.xml',
-                 'test-node-invalid-required-2.xml',                  
-                 'test-node-invalid-ns.xml','test-node-invalid-ns-2.xml',                 
+                 'test-node-invalid-required-2.xml',
+                 'test-node-invalid-ns.xml','test-node-invalid-ns-2.xml',
                  'test-node-invalid-env-name.xml','test-node-invalid-env-name-2.xml',
                  'test-node-invalid-env-value.xml',
                  'test-node-invalid-output.xml',
-                 'test-node-invalid-cwd.xml',                 
+                 'test-node-invalid-cwd.xml',
                  'test-node-invalid-exception.xml',
 
                  # rostest <test> tests
                  'test-test-invalid-reqd-1.xml',
-                 'test-test-invalid-reqd-2.xml',                 
+                 'test-test-invalid-reqd-2.xml',
                  'test-test-invalid-respawn.xml',
                  'test-test-invalid-output.xml',
                  'test-test-invalid-time-limit-1.xml',
@@ -788,9 +788,9 @@ class TestXmlLoader(unittest.TestCase):
         tests = ['test-remap-invalid-1.xml',
                  'test-remap-invalid-2.xml',
                  'test-remap-invalid-3.xml',
-                 'test-remap-invalid-4.xml',                                  
-                 'test-remap-invalid-name-from.xml',                 
-                 'test-remap-invalid-name-to.xml',                 
+                 'test-remap-invalid-4.xml',
+                 'test-remap-invalid-name-from.xml',
+                 'test-remap-invalid-name-to.xml',
                  ]
         loader = roslaunch.xmlloader.XmlLoader()
         for filename in tests:
@@ -820,8 +820,8 @@ class TestXmlLoader(unittest.TestCase):
         n = mock.nodes[0]
         for k in ['if', 'unless']:
             self.assert_(['from_%s_pass'%k, 'to_%s_pass'%k] in n.remap_args)
-            self.failIf(['from_%s_fail'%k, 'to_%s_fail'%k] in n.remap_args)            
-        
+            self.failIf(['from_%s_fail'%k, 'to_%s_fail'%k] in n.remap_args)
+
     def test_if_unless_invalid(self):
         mock = RosLaunchMock()
         loader = roslaunch.xmlloader.XmlLoader()
@@ -860,8 +860,8 @@ class TestXmlLoader(unittest.TestCase):
             self.fail("should have raised with multiple decl")
         except roslaunch.xmlloader.XmlParseException as e:
             self.assert_('grounded' in str(e))
-            
-                    
+
+
     def test_arg(self):
         loader = roslaunch.xmlloader.XmlLoader()
         filename = os.path.join(self.xml_dir, 'test-arg.xml')
@@ -876,29 +876,29 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEquals(param_d['/p1_test'], 'test_arg')
         self.assertEquals(param_d['/p2_test'], 'not_set')
         self.assertEquals(param_d['/p3_test'], 'set')
-        self.assertEquals(param_d['/succeed'], 'yes')                
-        self.assertEquals(param_d['/if_test'], 'not_ran')                
-        self.assertEquals(param_d['/if_param'], False)   
-        self.assertEquals(param_d['/int_param'], 1234)   
-        self.assertAlmostEquals(param_d['/float_param'], 3.)   
+        self.assertEquals(param_d['/succeed'], 'yes')
+        self.assertEquals(param_d['/if_test'], 'not_ran')
+        self.assertEquals(param_d['/if_param'], False)
+        self.assertEquals(param_d['/int_param'], 1234)
+        self.assertAlmostEquals(param_d['/float_param'], 3.)
         self.failIf('/fail' in param_d)
 
         # context tests
         #  - args are scoped to their context, and thus can be rebound in a sibling context
         self.assertEquals(param_d['/context1'], 'group1')
-        self.assertEquals(param_d['/context2'], 'group2')        
-        
+        self.assertEquals(param_d['/context2'], 'group2')
+
         # include tests
         self.assertEquals(param_d['/include_test/p1_test'], 'required1')
         self.assertEquals(param_d['/include_test/p2_test'], 'not_set')
         self.assertEquals(param_d['/include_test/p3_test'], 'set')
         self.assertEquals(param_d['/include_test/p4_test'], 'initial')
-        
+
         self.assertEquals(param_d['/include2/include_test/p1_test'], 'required2')
         self.assertEquals(param_d['/include2/include_test/p2_test'], 'optional2')
         self.assertEquals(param_d['/include2/include_test/p3_test'], 'set')
         self.assertEquals(param_d['/include2/include_test/p4_test'], 'new2')
-            
+
         self.assert_('/include3/include_test/p1_test' not in param_d)
         self.assert_('/include3/include_test/p2_test' not in param_d)
         self.assert_('/include3/include_test/p3_test' not in param_d)
@@ -911,15 +911,15 @@ class TestXmlLoader(unittest.TestCase):
         param_d = {}
         for p in mock.params:
             param_d[p.key] = p.value
-            
+
         self.assertEquals(param_d['/p1_test'], 'test_arg')
         self.assertEquals(param_d['/p2_test'], 'test_arg2')
         self.assertEquals(param_d['/p3_test'], 'set')
         self.assertEquals(param_d['/context1'], 'group1')
-        self.assertEquals(param_d['/context2'], 'group2')                
-        self.assertEquals(param_d['/succeed'], 'yes')                
-        self.assertEquals(param_d['/if_test'], 'ran')   
-        self.assertEquals(param_d['/if_param'], True)   
+        self.assertEquals(param_d['/context2'], 'group2')
+        self.assertEquals(param_d['/succeed'], 'yes')
+        self.assertEquals(param_d['/if_test'], 'ran')
+        self.assertEquals(param_d['/if_param'], True)
         self.failIf('/fail' in param_d)
 
         # include tests
@@ -927,15 +927,59 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEquals(param_d['/include_test/p2_test'], 'not_set')
         self.assertEquals(param_d['/include_test/p3_test'], 'set')
         self.assertEquals(param_d['/include_test/p4_test'], 'initial')
-        
+
         self.assertEquals(param_d['/include2/include_test/p1_test'], 'required2')
         self.assertEquals(param_d['/include2/include_test/p2_test'], 'optional2')
         self.assertEquals(param_d['/include2/include_test/p3_test'], 'set')
         self.assertEquals(param_d['/include2/include_test/p4_test'], 'new2')
-        
+
         self.assertEquals(param_d['/include3/include_test/p1_test'], 'required3')
         self.assertEquals(param_d['/include3/include_test/p2_test'], 'optional3')
         self.assertEquals(param_d['/include3/include_test/p3_test'], 'set')
         self.assertEquals(param_d['/include3/include_test/p4_test'], 'new3')
-        
 
+        # eq tests
+        self.assertEquals(param_d['/eq1_test'], True)
+        self.assertEquals(param_d['/eq2_test'], False)
+        self.assertEquals(param_d['/eq3_test'], True)
+        self.assertEquals(param_d['/eq4_test'], False)
+
+        # neq tests
+        self.assertEquals(param_d['/neq1_test'], False)
+        self.assertEquals(param_d['/neq2_test'], True)
+        self.assertEquals(param_d['/neq3_test'], False)
+        self.assertEquals(param_d['/neq4_test'], True)
+
+        # eqarg tests
+        self.assertEquals(param_d['/eqarg1_test'], False)
+        self.assertEquals(param_d['/eqarg2_test'], True)
+        self.assertEquals(param_d['/eqarg3_test'], False)
+        self.assertEquals(param_d['/eqarg4_test'], True)
+        self.assertEquals(param_d['/eqarg5_test'], True)
+        self.assertEquals(param_d['/eqarg6_test'], False)
+
+        # neqarg tests
+        self.assertEquals(param_d['/neqarg1_test'], True)
+        self.assertEquals(param_d['/neqarg2_test'], False)
+        self.assertEquals(param_d['/neqarg3_test'], True)
+        self.assertEquals(param_d['/neqarg4_test'], False)
+        self.assertEquals(param_d['/neqarg5_test'], False)
+        self.assertEquals(param_d['/neqarg6_test'], True)
+
+        # empty tests
+        self.assertEquals(param_d['/empty1_test'], False)
+        self.assertEquals(param_d['/empty2_test'], True)
+        self.assertEquals(param_d['/empty3_test'], True)
+
+        # notempty tests
+        self.assertEquals(param_d['/notempty1_test'], True)
+        self.assertEquals(param_d['/notempty2_test'], False)
+        self.assertEquals(param_d['/notempty3_test'], False)
+
+        # Fail tests
+        self.failIf('/eq1_fail' in param_d)
+        self.failIf('/neq1_fail' in param_d)
+        self.failIf('/eqarg1_fail' in param_d)
+        self.failIf('/neqarg1_fail' in param_d)
+        self.failIf('/empty1_fail' in param_d)
+        self.failIf('/notempt1_fail' in param_d)
