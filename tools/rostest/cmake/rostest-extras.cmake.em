@@ -47,7 +47,7 @@ function(add_rostest file)
     endforeach()
     set(_testname "${_testname}${_ext}")
   endif()
-  
+
   string(REPLACE "/" "_" _testname ${_testname})
 
   get_filename_component(_output_name ${_testname} NAME_WE)
