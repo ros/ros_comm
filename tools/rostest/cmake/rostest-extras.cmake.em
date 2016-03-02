@@ -36,8 +36,6 @@ function(add_rostest file)
   rostest__strip_prefix(_testname "${PROJECT_SOURCE_DIR}/")
   rostest__strip_prefix(_testname "${PROJECT_BINARY_DIR}/")
 
-  string(REPLACE "/" "_" _testname ${_testname})
-
   # to support registering the same test with different ARGS
   # append the args to the test name
   if(_rostest_ARGS)
@@ -49,6 +47,8 @@ function(add_rostest file)
     endforeach()
     set(_testname "${_testname}${_ext}")
   endif()
+  
+  string(REPLACE "/" "_" _testname ${_testname})
 
   get_filename_component(_output_name ${_testname} NAME_WE)
   set(_output_name "${_output_name}.xml")
