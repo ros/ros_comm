@@ -626,7 +626,7 @@ def _str_plot(val, time_offset=None, current_time=None, field_filter=None, type_
     :param val: message
     :param current_time: current :class:`genpy.Time` to use if message does not contain its own timestamp.
     :param time_offset: (optional) for time printed for message, print as offset against this :class:`genpy.Time`
-    :param field_filter: filter the fields that are strified for Messages, ``fn(Message)->iter(str)``
+    :param field_filter: filter the fields that are stringified for Messages, ``fn(Message)->iter(str)``
     :returns: comma-separated list of field values in val, ``str``
     """
         
@@ -774,7 +774,7 @@ class CallbackEcho(object):
         text = genpy.message.strify_message(val, indent=indent, time_offset=time_offset, current_time=current_time, field_filter=field_filter, fixed_numeric_width=fixed_numeric_width)
         if value_untransform_fn is not None:
             # this operation is necessary because value_transform does change the type of message
-            # and that causes not strified values next time
+            # and that causes not stringified values next time
             val = value_untransform_fn(val)
         return text
 
