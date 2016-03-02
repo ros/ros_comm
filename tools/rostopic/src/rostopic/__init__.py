@@ -225,7 +225,7 @@ class ROSTopicDelay(object):
         self.window_size = window_size
 
     def callback_delay(self, msg):
-        if msg._has_header is False:
+        if not msg._has_header:
             rospy.logerr('msg does not have header')
             return
         with self.lock:
@@ -244,8 +244,8 @@ class ROSTopicDelay(object):
                 self.msg_tn = curr
                 self.delays = []
             else:
-                self.delays.append(curr_rostime.to_time()
-                                   -  msg.header.stamp.to_time())
+                self.delays.append(curr_rostime.to_time() -
+                                   msg.header.stamp.to_time())
                 self.msg_tn = curr
 
             if len(self.delays) > self.window_size - 1:
