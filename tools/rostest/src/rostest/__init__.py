@@ -136,7 +136,7 @@ def rosrun(package, test_name, test, sysargs=None):
     suite = None
     if issubclass(test, unittest.TestCase):
         suite = unittest.TestLoader().loadTestsFromTestCase(test)
-    elif:
+    else:
         suite = unittest.TestLoader().loadTestsFromName(test)
 
     if text_mode:
