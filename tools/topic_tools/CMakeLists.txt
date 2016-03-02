@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(topic_tools)
+
+if(NOT WIN32)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+endif()
+
 find_package(catkin COMPONENTS cpp_common message_generation rosconsole roscpp rostime std_msgs xmlrpcpp)
 
 include_directories(include)

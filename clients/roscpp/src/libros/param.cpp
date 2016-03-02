@@ -742,7 +742,7 @@ bool getParamNames(std::vector<std::string>& keys)
   keys.resize(parameters.size());
 
   // Fill the output vector with the answer
-  for (size_t i = 0; i < parameters.size(); ++i) {
+  for (int i = 0; i < parameters.size(); ++i) {
     if (parameters[i].getType() != XmlRpc::XmlRpcValue::TypeString) {
       return false;
     }
