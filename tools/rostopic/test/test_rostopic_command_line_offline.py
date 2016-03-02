@@ -54,7 +54,8 @@ class TestRostopicOffline(unittest.TestCase):
         self.assert_('Commands' in output)
         # make sure all the commands are in the usage
         for c in sub:
-            self.assert_("%s %s"%(cmd, c) in output, output)            
+            cmd_sub = "%s %s"%(cmd, c)
+            self.assert_(cmd_sub in output, "'%s' is not in help: \n%s"%(cmd_sub, output))
 
         for c in sub:
             output = Popen([cmd, c, '-h'], stdout=PIPE, stderr=PIPE).communicate()
