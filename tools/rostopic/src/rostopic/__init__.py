@@ -1880,6 +1880,7 @@ def _fullusage():
 
 Commands:
 \trostopic bw\tdisplay bandwidth used by topic
+\trostopic delay\tdisplay delay of topic from timestamp in header
 \trostopic echo\tprint messages to screen
 \trostopic find\tfind topics by type
 \trostopic hz\tdisplay publishing rate of topic    
