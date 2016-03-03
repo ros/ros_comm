@@ -205,7 +205,7 @@ boost::shared_ptr<M> ShapeShifter::instantiate() const
   if (ros::message_traits::md5sum<M>() != getMD5Sum())
     throw ShapeShifterException("Tried to instantiate message without matching md5sum.");
   
-  boost::shared_ptr<M> p(new M());
+  boost::shared_ptr<M> p(boost::make_shared<M>());
 
   ros::serialization::IStream s(msgBuf, msgBufUsed);
   ros::serialization::deserialize(s, *p);

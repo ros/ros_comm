@@ -50,8 +50,9 @@ DEFAULT_MASTER_PORT=11311 #default port for master's to bind to
 
 class Master(object):
     
-    def __init__(self, port=DEFAULT_MASTER_PORT):
+    def __init__(self, port=DEFAULT_MASTER_PORT, num_workers=rosmaster.master_api.NUM_WORKERS):
         self.port = port
+        self.num_workers = num_workers
         
     def start(self):
         """
@@ -61,7 +62,7 @@ class Master(object):
         self.master_node = None
         self.uri = None
 
-        handler = rosmaster.master_api.ROSMasterHandler()
+        handler = rosmaster.master_api.ROSMasterHandler(self.num_workers)
         master_node = rosgraph.xmlrpc.XmlRpcNode(self.port, handler)
         master_node.start()
 

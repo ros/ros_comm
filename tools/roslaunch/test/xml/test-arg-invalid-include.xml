@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find roslaunch)/test/xml/test-arg-invalid-included.xml">
+    <arg name="grounded" value="not_set"/>
+  </include>
+</launch>

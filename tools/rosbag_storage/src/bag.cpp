@@ -685,7 +685,7 @@ void Bag::readConnectionRecord() {
         ConnectionInfo* connection_info = new ConnectionInfo();
         connection_info->id       = id;
         connection_info->topic    = topic;
-        connection_info->header = shared_ptr<M_string>(new M_string);
+        connection_info->header = boost::make_shared<M_string>();
         for (M_string::const_iterator i = connection_header.getValues()->begin(); i != connection_header.getValues()->end(); i++)
             (*connection_info->header)[i->first] = i->second;
         connection_info->msg_def  = (*connection_info->header)["message_definition"];
@@ -733,7 +733,7 @@ void Bag::readMessageDefinitionRecord102() {
     connection_info->msg_def  = message_definition;
     connection_info->datatype = datatype;
     connection_info->md5sum   = md5sum;
-    connection_info->header = boost::shared_ptr<ros::M_string>(new ros::M_string);
+    connection_info->header = boost::make_shared<ros::M_string>();
     (*connection_info->header)["type"]               = connection_info->datatype;
     (*connection_info->header)["md5sum"]             = connection_info->md5sum;
     (*connection_info->header)["message_definition"] = connection_info->msg_def;

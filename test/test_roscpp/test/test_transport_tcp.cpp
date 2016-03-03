@@ -58,8 +58,8 @@ protected:
 
   virtual void SetUp()
   {
-    transports_[0] = TransportTCPPtr(new TransportTCP(NULL, TransportTCP::SYNCHRONOUS));
-    transports_[1] = TransportTCPPtr(new TransportTCP(NULL, TransportTCP::SYNCHRONOUS));
+    transports_[0] = boost::make_shared<TransportTCP>(static_cast<ros::PollSet*>(NULL), TransportTCP::SYNCHRONOUS);
+    transports_[1] = boost::make_shared<TransportTCP>(static_cast<ros::PollSet*>(NULL), TransportTCP::SYNCHRONOUS);
 
     if (!transports_[0]->listen(0, 100, TransportTCP::AcceptCallback()))
     {
@@ -251,8 +251,8 @@ protected:
     disconnected_[1] = false;
     disconnected_[2] = false;
 
-    transports_[0] = TransportTCPPtr(new TransportTCP(&poll_set_));
-    transports_[1] = TransportTCPPtr(new TransportTCP(&poll_set_));
+    transports_[0] = boost::make_shared<TransportTCP>(&poll_set_);
+    transports_[1] = boost::make_shared<TransportTCP>(&poll_set_);
 
     if (!transports_[0]->listen(0, 100, boost::bind(&Polled::connectionReceived, this, _1)))
     {

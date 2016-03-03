@@ -67,12 +67,12 @@ TEST(Chain, simple)
 {
   Helper h;
   Chain<Msg> c;
-  c.addFilter(PassThroughPtr(new PassThrough<Msg>));
+  c.addFilter(boost::make_shared<PassThrough<Msg> >());
   c.registerCallback(boost::bind(&Helper::cb, &h));
 
-  c.add(MsgPtr(new Msg));
+  c.add(boost::make_shared<Msg>());
   EXPECT_EQ(h.count_, 1);
-  c.add(MsgPtr(new Msg));
+  c.add(boost::make_shared<Msg>());
   EXPECT_EQ(h.count_, 2);
 }
 
@@ -80,15 +80,15 @@ TEST(Chain, multipleFilters)
 {
   Helper h;
   Chain<Msg> c;
-  c.addFilter(PassThroughPtr(new PassThrough<Msg>));
-  c.addFilter(PassThroughPtr(new PassThrough<Msg>));
-  c.addFilter(PassThroughPtr(new PassThrough<Msg>));
-  c.addFilter(PassThroughPtr(new PassThrough<Msg>));
+  c.addFilter(boost::make_shared<PassThrough<Msg> >());
+  c.addFilter(boost::make_shared<PassThrough<Msg> >());
+  c.addFilter(boost::make_shared<PassThrough<Msg> >());
+  c.addFilter(boost::make_shared<PassThrough<Msg> >());
   c.registerCallback(boost::bind(&Helper::cb, &h));
 
-  c.add(MsgPtr(new Msg));
+  c.add(boost::make_shared<Msg>());
   EXPECT_EQ(h.count_, 1);
-  c.add(MsgPtr(new Msg));
+  c.add(boost::make_shared<Msg>());
   EXPECT_EQ(h.count_, 2);
 }
 
@@ -96,17 +96,17 @@ TEST(Chain, addingFilters)
 {
   Helper h;
   Chain<Msg> c;
-  c.addFilter(PassThroughPtr(new PassThrough<Msg>));
-  c.addFilter(PassThroughPtr(new PassThrough<Msg>));
+  c.addFilter(boost::make_shared<PassThrough<Msg> >());
+  c.addFilter(boost::make_shared<PassThrough<Msg> >());
   c.registerCallback(boost::bind(&Helper::cb, &h));
 
-  c.add(MsgPtr(new Msg));
+  c.add(boost::make_shared<Msg>());
   EXPECT_EQ(h.count_, 1);
 
-  c.addFilter(PassThroughPtr(new PassThrough<Msg>));
-  c.addFilter(PassThroughPtr(new PassThrough<Msg>));
+  c.addFilter(boost::make_shared<PassThrough<Msg> >());
+  c.addFilter(boost::make_shared<PassThrough<Msg> >());
 
-  c.add(MsgPtr(new Msg));
+  c.add(boost::make_shared<Msg>());
   EXPECT_EQ(h.count_, 2);
 }
 
@@ -114,15 +114,15 @@ TEST(Chain, inputFilter)
 {
   Helper h;
   Chain<Msg> c;
-  c.addFilter(PassThroughPtr(new PassThrough<Msg>));
+  c.addFilter(boost::make_shared<PassThrough<Msg> >());
   c.registerCallback(boost::bind(&Helper::cb, &h));
 
   PassThrough<Msg> p;
   c.connectInput(p);
-  p.add(MsgPtr(new Msg));
+  p.add(boost::make_shared<Msg>());
   EXPECT_EQ(h.count_, 1);
 
-  p.add(MsgPtr(new Msg));
+  p.add(boost::make_shared<Msg>());
   EXPECT_EQ(h.count_, 2);
 }
 
@@ -134,9 +134,9 @@ TEST(Chain, nonSharedPtrFilter)
   c.addFilter(&p);
   c.registerCallback(boost::bind(&Helper::cb, &h));
 
-  c.add(MsgPtr(new Msg));
+  c.add(boost::make_shared<Msg>());
   EXPECT_EQ(h.count_, 1);
-  c.add(MsgPtr(new Msg));
+  c.add(boost::make_shared<Msg>());
   EXPECT_EQ(h.count_, 2);
 }
 
@@ -146,7 +146,7 @@ TEST(Chain, retrieveFilter)
 
   ASSERT_FALSE(c.getFilter<PassThrough<Msg> >(0));
 
-  c.addFilter(PassThroughPtr(new PassThrough<Msg>));
+  c.addFilter(boost::make_shared<PassThrough<Msg> >());
 
   ASSERT_TRUE(c.getFilter<PassThrough<Msg> >(0));
   ASSERT_FALSE(c.getFilter<PassThrough<Msg> >(1));
@@ -159,7 +159,7 @@ TEST(Chain, retrieveFilterThroughBaseClass)
 
   ASSERT_FALSE(cb->getFilter<PassThrough<Msg> >(0));
 
-  c.addFilter(PassThroughPtr(new PassThrough<Msg>));
+  c.addFilter(boost::make_shared<PassThrough<Msg> >());
 
   ASSERT_TRUE(cb->getFilter<PassThrough<Msg> >(0));
   ASSERT_FALSE(cb->getFilter<PassThrough<Msg> >(1));
@@ -173,7 +173,7 @@ struct PTDerived : public PassThrough<Msg>
 TEST(Chain, retrieveBaseClass)
 {
   Chain<Msg> c;
-  c.addFilter(PassThroughPtr(new PTDerived));
+  c.addFilter(boost::make_shared<PTDerived>());
   ASSERT_TRUE(c.getFilter<PassThrough<Msg> >(0));
   ASSERT_TRUE(c.getFilter<PTDerived>(0));
 }

@@ -120,7 +120,7 @@ Please manually:
 then try roslaunching again.
 
 If you wish to configure roslaunch to automatically recognize unknown
-hosts, please set the environment variable ROSLAUNCH_SSH_UNKNOWN=1"""%(resolved_address, user_str, port_str, resolved_address)
+hosts, please set the environment variable ROSLAUNCH_SSH_UNKNOWN=1"""%(resolved_address, port_str, user_str, resolved_address)
         
 class SSHChildROSLaunchProcess(roslaunch.server.ChildROSLaunchProcess):
     """

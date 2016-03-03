@@ -1,0 +1,48 @@
+<launch>
+
+  <arg name="required" />
+  <arg name="optional" default="not_set" />
+  <arg name="grounded" value="parent" />
+  <arg name="include_arg" value="dontcare" />
+  <arg name="if_test" value="dontcare" />
+
+  <arg name="param1_name" value="p1" />
+  <arg name="param2_name" value="p2" />
+  <arg name="param3_name" value="p3" />
+
+  <arg name="param1_value" value="$(arg required)" />
+  <arg name="param2_value" value="$(arg optional)" />
+  <arg name="param3_value" value="$(arg grounded)" />
+
+  <param name="$(arg param1_name)_test" value="$(arg param1_value)" />
+  <param name="$(arg param2_name)_test" value="$(arg param2_value)" />
+  <param name="$(arg param3_name)_test" value="$(arg param3_value)" />
+
+  <!-- Normal include: explicitly set args -->
+  <include ns="notall" file="$(find roslaunch)/test/xml/test-arg-include.xml">
+    <arg name="required" value="$(arg required)" />
+    <arg name="include_arg" value="$(arg include_arg)" />
+    <arg name="if_test" value="$(arg if_test)" />
+  </include>
+
+  <!-- Normal include: explicitly set args, including an optional one -->
+  <include ns="notall_optional" file="$(find roslaunch)/test/xml/test-arg-include.xml">
+    <arg name="required" value="$(arg required)" />
+    <arg name="optional" value="$(arg optional)" />
+    <arg name="include_arg" value="$(arg include_arg)" />
+    <arg name="if_test" value="$(arg if_test)" />
+  </include>
+
+  <!-- Include with passing in all args in my namespace -->
+  <include ns="all" file="$(find roslaunch)/test/xml/test-arg-include.xml"
+           pass_all_args="true">
+  </include>
+
+  <!-- Include with passing in all args in my namespace, and then override one
+       of them explicitly -->
+  <include ns="all_override" file="$(find roslaunch)/test/xml/test-arg-include.xml"
+           pass_all_args="true">
+    <arg name="required" value="override" />
+  </include>
+
+</launch>

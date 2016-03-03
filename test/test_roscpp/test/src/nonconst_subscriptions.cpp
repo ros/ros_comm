@@ -71,7 +71,7 @@ TEST(NonConstSubscriptions, oneNonConstSubscriber)
   ros::Subscriber sub = nh.subscribe("test", 0, &NonConstHelper::callback, &h);
   ros::Publisher pub = nh.advertise<test_roscpp::TestEmpty>("test", 0);
 
-  test_roscpp::TestEmptyPtr msg(new test_roscpp::TestEmpty);
+  test_roscpp::TestEmptyPtr msg(boost::make_shared<test_roscpp::TestEmpty>());
   pub.publish(msg);
   ros::spinOnce();
 
@@ -88,7 +88,7 @@ TEST(NonConstSubscriptions, oneConstOneNonConst)
   ros::Subscriber sub2 = nh.subscribe("test", 0, &ConstHelper::callback, &h2);
   ros::Publisher pub = nh.advertise<test_roscpp::TestEmpty>("test", 0);
 
-  test_roscpp::TestEmptyPtr msg(new test_roscpp::TestEmpty);
+  test_roscpp::TestEmptyPtr msg(boost::make_shared<test_roscpp::TestEmpty>());
   pub.publish(msg);
   ros::spinOnce();
 
@@ -106,7 +106,7 @@ TEST(NonConstSubscriptions, twoNonConst)
   ros::Subscriber sub2 = nh.subscribe("test", 0, &NonConstHelper::callback, &h2);
   ros::Publisher pub = nh.advertise<test_roscpp::TestEmpty>("test", 0);
 
-  test_roscpp::TestEmptyPtr msg(new test_roscpp::TestEmpty);
+  test_roscpp::TestEmptyPtr msg(boost::make_shared<test_roscpp::TestEmpty>());
   pub.publish(msg);
   ros::spinOnce();
 
@@ -123,7 +123,7 @@ TEST(NonConstSubscriptions, twoConst)
   ros::Subscriber sub2 = nh.subscribe("test", 0, &ConstHelper::callback, &h2);
   ros::Publisher pub = nh.advertise<test_roscpp::TestEmpty>("test", 0);
 
-  test_roscpp::TestEmptyPtr msg(new test_roscpp::TestEmpty);
+  test_roscpp::TestEmptyPtr msg(boost::make_shared<test_roscpp::TestEmpty>());
   pub.publish(msg);
   ros::spinOnce();
 

@@ -33,6 +33,7 @@
 
 import sys
 from optparse import OptionParser
+from rosmaster.master_api import NUM_WORKERS
 
 NAME = 'roscore'
 
@@ -49,6 +50,12 @@ def _get_optparse():
     parser.add_option("-v", action="store_true",
                       dest="verbose", default=False,
                       help="verbose printing")
+    parser.add_option("-w", "--numworkers",
+                      dest="num_workers", default=NUM_WORKERS, type=int,
+                      help="override number of worker threads", metavar="NUM_WORKERS")
+    parser.add_option("-t", "--timeout",
+                      dest="timeout",
+                      help="override the socket connection timeout (in seconds).", metavar="TIMEOUT")
     return parser
 
 

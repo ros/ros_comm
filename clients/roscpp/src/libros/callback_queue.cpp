@@ -117,7 +117,7 @@ void CallbackQueue::addCallback(const CallbackInterfacePtr& callback, uint64_t r
     M_IDInfo::iterator it = id_info_.find(removal_id);
     if (it == id_info_.end())
     {
-      IDInfoPtr id_info(new IDInfo);
+      IDInfoPtr id_info(boost::make_shared<IDInfo>());
       id_info->id = removal_id;
       id_info_.insert(std::make_pair(removal_id, id_info));
     }

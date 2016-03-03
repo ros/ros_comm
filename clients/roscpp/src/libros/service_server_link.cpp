@@ -131,11 +131,13 @@ bool ServiceServerLink::initialize(const ConnectionPtr& connection)
 
 void ServiceServerLink::onHeaderWritten(const ConnectionPtr& conn)
 {
+  (void)conn;
   header_written_ = true;
 }
 
 bool ServiceServerLink::onHeaderReceived(const ConnectionPtr& conn, const Header& header)
 {
+  (void)conn;
   std::string md5sum, type;
   if (!header.getValue("md5sum", md5sum))
   {
@@ -177,6 +179,7 @@ void ServiceServerLink::onConnectionDropped(const ConnectionPtr& conn)
 
 void ServiceServerLink::onRequestWritten(const ConnectionPtr& conn)
 {
+  (void)conn;
   //ros::WallDuration(0.1).sleep();
   connection_->read(5, boost::bind(&ServiceServerLink::onResponseOkAndLength, this, _1, _2, _3, _4));
 }
@@ -323,7 +326,7 @@ void ServiceServerLink::processNextCall()
 
 bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& resp)
 {
-  CallInfoPtr info(new CallInfo);
+  CallInfoPtr info(boost::make_shared<CallInfo>());
   info->req_ = req;
   info->resp_ = &resp;
   info->success_ = false;

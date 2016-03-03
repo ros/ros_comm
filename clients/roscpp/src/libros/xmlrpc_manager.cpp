@@ -89,6 +89,7 @@ private:
 
 void getPid(const XmlRpcValue& params, XmlRpcValue& result)
 {
+  (void)params;
   result = xmlrpc::responseInt(1, "", (int)getpid());
 }
 

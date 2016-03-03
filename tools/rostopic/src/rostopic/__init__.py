@@ -187,10 +187,6 @@ def _rostopic_hz(topic, window_size=-1, filter_expr=None):
     :param window_size: number of messages to average over, -1 for infinite, ``int``
     :param filter_expr: Python filter expression that is called with m, the message instance
     """
-    if rospy.get_param('use_sim_time', False):
-        print("WARNING: topic [%s] may be using simulated time" % (topic),
-              file=sys.stderr)
-
     msg_class, real_topic, _ = get_topic_class(topic, blocking=True) #pause hz until topic is published
     if rospy.is_shutdown():
         return
@@ -204,6 +200,10 @@ def _rostopic_hz(topic, window_size=-1, filter_expr=None):
     else:
         sub = rospy.Subscriber(real_topic, rospy.AnyMsg, rt.callback_hz)        
     print("subscribed to [%s]"%real_topic)
+
+    if rospy.get_param('use_sim_time', False):
+        print("WARNING: may be using simulated time",file=sys.stderr)
+
     while not rospy.is_shutdown():
         _sleep(1.0)
         rt.print_hz()
@@ -1306,7 +1306,7 @@ def create_publisher(topic_name, topic_type, latch):
     pub = rospy.Publisher(topic_name, msg_class, latch=latch, queue_size=100)
     return pub, msg_class
 
-def _publish_at_rate(pub, msg, rate, verbose=False):
+def _publish_at_rate(pub, msg, rate, verbose=False, substitute_keywords=False, pub_args=None):
     """
     Publish message at specified rate. Subroutine of L{publish_message()}.
     
@@ -1320,6 +1320,8 @@ def _publish_at_rate(pub, msg, rate, verbose=False):
     except ValueError:
         raise ROSTopicException("Rate must be a number")
     while not rospy.is_shutdown():
+        if substitute_keywords:
+            _fillMessageArgs(msg, pub_args)
         if verbose:
             print("publishing %s"%msg)
         pub.publish(msg)
@@ -1343,7 +1345,7 @@ def _publish_latched(pub, msg, once=False, verbose=False):
     if not once:
         rospy.spin()        
 
-def publish_message(pub, msg_class, pub_args, rate=None, once=False, verbose=False):
+def publish_message(pub, msg_class, pub_args, rate=None, once=False, verbose=False, substitute_keywords=False):
     """
     Create new instance of msg_class, populate with pub_args, and publish. This may
     print output to screen.
@@ -1356,6 +1358,30 @@ def publish_message(pub, msg_class, pub_args, rate=None, once=False, verbose=Fal
     :param verbose: If ``True``, print more verbose output to stdout, ``bool``
     """
     msg = msg_class()
+
+    _fillMessageArgs(msg, pub_args)
+
+    try:
+        
+        if rate is None:
+            s = "publishing and latching [%s]"%(msg) if verbose else "publishing and latching message"
+            if once:
+                s = s + " for %s seconds"%_ONCE_DELAY
+            else:
+                s = s + ". Press ctrl-C to terminate"
+            print(s)
+
+            _publish_latched(pub, msg, once, verbose)
+        else:
+            _publish_at_rate(pub, msg, rate, verbose=verbose, substitute_keywords=substitute_keywords, pub_args=pub_args)
+            
+    except rospy.ROSSerializationException as e:
+        import rosmsg
+        # we could just print the message definition, but rosmsg is more readable
+        raise ROSTopicException("Unable to publish message. One of the fields has an incorrect type:\n"+\
+                                "  %s\n\nmsg file:\n%s"%(e, rosmsg.get_msg_text(msg_class._type)))
+
+def _fillMessageArgs(msg, pub_args):
     try:
         # Populate the message and enable substitution keys for 'now'
         # and 'auto'. There is a corner case here: this logic doesn't
@@ -1366,34 +1392,14 @@ def publish_message(pub, msg_class, pub_args, rate=None, once=False, verbose=Fal
         # do more reasoning over types. to avoid ambiguous cases
         # (e.g. a std_msgs/String type, which only has a single string
         # field).
-        
+
         # allow the use of the 'now' string with timestamps and 'auto' with header
-        now = rospy.get_rostime() 
+        now = rospy.get_rostime()
         import std_msgs.msg
         keys = { 'now': now, 'auto': std_msgs.msg.Header(stamp=now) }
         genpy.message.fill_message_args(msg, pub_args, keys=keys)
     except genpy.MessageException as e:
         raise ROSTopicException(str(e)+"\n\nArgs are: [%s]"%genpy.message.get_printable_message_args(msg))
-    try:
-        
-        if rate is None:
-            s = "publishing and latching [%s]"%(msg) if verbose else "publishing and latching message"
-            if once:
-                s = s + " for %s seconds"%_ONCE_DELAY
-            else:
-                s = s + ". Press ctrl-C to terminate"
-            print(s)
-        
-        if rate is None:
-            _publish_latched(pub, msg, once, verbose)
-        else:
-            _publish_at_rate(pub, msg, rate, verbose)
-            
-    except rospy.ROSSerializationException as e:
-        import rosmsg
-        # we could just print the message definition, but rosmsg is more readable
-        raise ROSTopicException("Unable to publish message. One of the fields has an incorrect type:\n"+\
-                                "  %s\n\nmsg file:\n%s"%(e, rosmsg.get_msg_text(msg_class._type)))
     
 def _rostopic_cmd_pub(argv):
     """
@@ -1417,6 +1423,8 @@ def _rostopic_cmd_pub(argv):
                       help="read args from YAML file (Bagy)")
     parser.add_option("-l", '--latch', dest="latch", default=False, action="store_true",
                       help="enable latching for -f, -r and piped input.  This latches the first message.")
+    parser.add_option("-s", '--substitute-keywords', dest="substitute_keywords", default=False, action="store_true",
+                      help="When publishing with a rate, performs keyword ('now' or 'auto') substitution for each message")
     #parser.add_option("-p", '--param', dest="parameter", metavar='/PARAM', default=None,
     #                  help="read args from ROS parameter (Bagy format)")
     
@@ -1477,7 +1485,7 @@ def _rostopic_cmd_pub(argv):
             rate = 10.
         stdin_publish(pub, msg_class, rate, options.once, options.file, options.verbose)
     else:
-        argv_publish(pub, msg_class, pub_args, rate, options.once, options.verbose)
+        argv_publish(pub, msg_class, pub_args, rate, options.once, options.verbose, substitute_keywords=options.substitute_keywords)
         
 
 def file_yaml_arg(filename):
@@ -1500,8 +1508,8 @@ def file_yaml_arg(filename):
             raise ROSTopicException("invalid YAML in file: %s"%(str(e)))
     return bagy_iter
     
-def argv_publish(pub, msg_class, pub_args, rate, once, verbose):
-    publish_message(pub, msg_class, pub_args, rate, once, verbose=verbose)
+def argv_publish(pub, msg_class, pub_args, rate, once, verbose, substitute_keywords=False):
+    publish_message(pub, msg_class, pub_args, rate, once, verbose=verbose, substitute_keywords=substitute_keywords)
 
     if once:
         # stick around long enough for others to grab

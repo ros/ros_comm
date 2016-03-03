@@ -49,7 +49,7 @@ const ConnectionManagerPtr& ConnectionManager::instance()
     boost::mutex::scoped_lock lock(g_connection_manager_mutex);
     if (!g_connection_manager)
     {
-      g_connection_manager.reset(new ConnectionManager);
+      g_connection_manager = boost::make_shared<ConnectionManager>();
     }
   }
 
@@ -73,7 +73,7 @@ void ConnectionManager::start()
 								this));
 
   // Bring up the TCP listener socket
-  tcpserver_transport_ = TransportTCPPtr(new TransportTCP(&poll_manager_->getPollSet()));
+  tcpserver_transport_ = boost::make_shared<TransportTCP>(&poll_manager_->getPollSet());
   if (!tcpserver_transport_->listen(network::getTCPROSPort(), 
 				    MAX_TCPROS_CONN_QUEUE, 
 				    boost::bind(&ConnectionManager::tcprosAcceptConnection, this, _1)))
@@ -83,7 +83,7 @@ void ConnectionManager::start()
   }
 
   // Bring up the UDP listener socket
-  udpserver_transport_ = TransportUDPPtr(new TransportUDP(&poll_manager_->getPollSet()));
+  udpserver_transport_ = boost::make_shared<TransportUDP>(&poll_manager_->getPollSet());
   if (!udpserver_transport_->createIncoming(0, true))
   {
     ROS_FATAL("Listen failed");
@@ -185,7 +185,7 @@ void ConnectionManager::udprosIncomingConnection(const TransportUDPPtr& transpor
   std::string client_uri = ""; // TODO: transport->getClientURI();
   ROSCPP_LOG_DEBUG("UDPROS received a connection from [%s]", client_uri.c_str());
 
-  ConnectionPtr conn(new Connection());
+  ConnectionPtr conn(boost::make_shared<Connection>());
   addConnection(conn);
 
   conn->initialize(transport, true, NULL);
@@ -197,7 +197,7 @@ void ConnectionManager::tcprosAcceptConnection(const TransportTCPPtr& transport)
   std::string client_uri = transport->getClientURI();
   ROSCPP_LOG_DEBUG("TCPROS received a connection from [%s]", client_uri.c_str());
 
-  ConnectionPtr conn(new Connection());
+  ConnectionPtr conn(boost::make_shared<Connection>());
   addConnection(conn);
 
   conn->initialize(transport, true, boost::bind(&ConnectionManager::onConnectionHeaderReceived, this, _1, _2));
@@ -212,7 +212,7 @@ bool ConnectionManager::onConnectionHeaderReceived(const ConnectionPtr& conn, co
     ROSCPP_LOG_DEBUG("Connection: Creating TransportSubscriberLink for topic [%s] connected to [%s]", 
 		     val.c_str(), conn->getRemoteString().c_str());
 
-    TransportSubscriberLinkPtr sub_link(new TransportSubscriberLink());
+    TransportSubscriberLinkPtr sub_link(boost::make_shared<TransportSubscriberLink>());
     sub_link->initialize(conn);
     ret = sub_link->handleHeader(header);
   }
@@ -221,7 +221,7 @@ bool ConnectionManager::onConnectionHeaderReceived(const ConnectionPtr& conn, co
     ROSCPP_LOG_DEBUG("Connection: Creating ServiceClientLink for service [%s] connected to [%s]", 
 		     val.c_str(), conn->getRemoteString().c_str());
 
-    ServiceClientLinkPtr link(new ServiceClientLink());
+    ServiceClientLinkPtr link(boost::make_shared<ServiceClientLink>());
     link->initialize(conn);
     ret = link->handleHeader(header);
   }

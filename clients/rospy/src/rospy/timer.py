@@ -210,7 +210,12 @@ class Timer(threading.Thread):
         current_expected = rospy.rostime.get_rostime() + self._period
         last_expected, last_real, last_duration = None, None, None
         while not rospy.core.is_shutdown() and not self._shutdown:
-            r.sleep()
+            try:
+                r.sleep()
+            except rospy.exceptions.ROSInterruptException as e:
+                if rospy.core.is_shutdown():
+                    break
+                raise
             if self._shutdown:
                 break
             current_real = rospy.rostime.get_rostime()

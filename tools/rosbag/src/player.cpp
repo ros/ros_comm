@@ -103,10 +103,10 @@ void PlayerOptions::check() {
 Player::Player(PlayerOptions const& options) :
     options_(options),
     paused_(false),
-    terminal_modified_(false),
     // If we were given a list of topics to pause on, then go into that mode
     // by default (it can be toggled later via 't' from the keyboard).
-    pause_for_topics_(options_.pause_topics.size() > 0)
+    pause_for_topics_(options_.pause_topics.size() > 0),
+    terminal_modified_(false)
 {
 }
 
@@ -126,7 +126,7 @@ void Player::publish() {
 
         try
         {
-            shared_ptr<Bag> bag(new Bag);
+            shared_ptr<Bag> bag(boost::make_shared<Bag>());
             bag->open(filename, bagmode::Read);
             bags_.push_back(bag);
         }

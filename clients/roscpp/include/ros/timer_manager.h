@@ -282,7 +282,7 @@ template<class T, class D, class E>
 int32_t TimerManager<T, D, E>::add(const D& period, const boost::function<void(const E&)>& callback, CallbackQueueInterface* callback_queue,
                                    const VoidConstPtr& tracked_object, bool oneshot)
 {
-  TimerInfoPtr info(new TimerInfo);
+  TimerInfoPtr info(boost::make_shared<TimerInfo>());
   info->period = period;
   info->callback = callback;
   info->callback_queue = callback_queue;
@@ -515,7 +515,7 @@ void TimerManager<T, D, E>::threadFunc()
           current = T::now();
 
           //ROS_DEBUG("Scheduling timer callback for timer [%d] of period [%f], [%f] off expected", info->handle, info->period.toSec(), (current - info->next_expected).toSec());
-          CallbackInterfacePtr cb(new TimerQueueCallback(this, info, info->last_expected, info->last_real, info->next_expected));
+          CallbackInterfacePtr cb(boost::make_shared<TimerQueueCallback>(this, info, info->last_expected, info->last_real, info->next_expected));
           info->callback_queue->addCallback(cb, (uint64_t)info.get());
 
           waiting_.pop_front();

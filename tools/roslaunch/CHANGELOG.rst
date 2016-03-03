@@ -2,6 +2,11 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.11.16 (2015-11-09)
+--------------------
+* add `-w` and `-t` options (`#687 <https://github.com/ros/ros_comm/pull/687>`_)
+* fix missing minimum version for rospkg dependency (`#693 <https://github.com/ros/ros_comm/issues/693>`_)
+
 1.11.15 (2015-10-13)
 --------------------
 * improve performance by reusing the rospack instance across nodes with the same default environment (`#682 <https://github.com/ros/ros_comm/pull/682>`_)

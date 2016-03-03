@@ -2,6 +2,10 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.11.16 (2015-11-09)
+--------------------
+* add getROSArg function (`#694 <https://github.com/ros/ros_comm/pull/694>`_)
+
 1.11.15 (2015-10-13)
 --------------------
 * fix crash in onRetryTimer() callback (`#577 <https://github.com/ros/ros_comm/issues/577>`_)

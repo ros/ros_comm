@@ -114,7 +114,7 @@ TEST(SubscribeStar, simpleSubFirstIntra)
   EXPECT_EQ(pub.getNumSubscribers(), 1U);
   EXPECT_EQ(sub.getNumPublishers(), 1U);
 
-  AnyMessagePtr msg(new AnyMessage);
+  AnyMessagePtr msg(boost::make_shared<AnyMessage>());
   pub.publish(msg);
   ros::spinOnce();
   EXPECT_EQ(h.count, 1U);
@@ -130,7 +130,7 @@ TEST(SubscribeStar, simplePubFirstIntra)
   EXPECT_EQ(pub.getNumSubscribers(), 1U);
   EXPECT_EQ(sub.getNumPublishers(), 1U);
 
-  AnyMessagePtr msg(new AnyMessage);
+  AnyMessagePtr msg(boost::make_shared<AnyMessage>());
   pub.publish(msg);
   ros::spinOnce();
   EXPECT_EQ(h.count, 1U);

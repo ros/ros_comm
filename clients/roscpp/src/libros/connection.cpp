@@ -442,6 +442,7 @@ void Connection::onHeaderWritten(const ConnectionPtr& conn)
 
 void Connection::onErrorHeaderWritten(const ConnectionPtr& conn)
 {
+  (void)conn;
   drop(HeaderError);
 }
 

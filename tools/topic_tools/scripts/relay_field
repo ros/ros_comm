@@ -70,13 +70,19 @@ class RelayField(object):
             'expression',
             help='Python expression to apply on the input message \'m\'.'
             )
+        parser.add_argument(
+            '--wait-for-start', action='store_true',
+            help='Wait for input messages.'
+            )
 
-        args = parser.parse_args()
+        # get and strip out ros args first                                                                                                                      
+        argv = rospy.myargv()
+        args = parser.parse_args(argv[1:])
 
         self.expression = args.expression
 
         input_class, input_topic, self.input_fn = rostopic.get_topic_class(
-            args.input)
+            args.input, blocking=args.wait_for_start)
         if input_topic is None:
             print('ERROR: Wrong input topic (or topic field): %s' % args.input,
                   file=sys.stderr)

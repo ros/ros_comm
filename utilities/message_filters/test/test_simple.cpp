@@ -120,7 +120,7 @@ TEST(SimpleFilter, callbackTypes)
   f.registerCallback<MsgPtr>(boost::bind(&Helper::cb6, &h, _1));
   f.registerCallback<const ros::MessageEvent<Msg>&>(boost::bind(&Helper::cb7, &h, _1));
 
-  f.add(Filter::EventType(MsgPtr(new Msg)));
+  f.add(Filter::EventType(boost::make_shared<Msg>()));
   EXPECT_EQ(h.counts_[0], 1);
   EXPECT_EQ(h.counts_[1], 1);
   EXPECT_EQ(h.counts_[2], 1);

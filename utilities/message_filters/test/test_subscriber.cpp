@@ -105,7 +105,7 @@ TEST(Subscriber, subInChain)
   ros::NodeHandle nh;
   Helper h;
   Chain<Msg> c;
-  c.addFilter(boost::shared_ptr<Subscriber<Msg> >(new Subscriber<Msg>(nh, "test_topic", 0)));
+  c.addFilter(boost::make_shared<Subscriber<Msg> >(boost::ref(nh), "test_topic", 0));
   c.registerCallback(boost::bind(&Helper::cb, &h, _1));
   ros::Publisher pub = nh.advertise<Msg>("test_topic", 0);
 
@@ -147,7 +147,7 @@ TEST(Subscriber, singleNonConstCallback)
   Subscriber<Msg> sub(nh, "test_topic", 0);
   sub.registerCallback(&NonConstHelper::cb, &h);
   ros::Publisher pub = nh.advertise<Msg>("test_topic", 0);
-  MsgPtr msg(new Msg);
+  MsgPtr msg(boost::make_shared<Msg>());
   pub.publish(msg);
 
   ros::spinOnce();
@@ -164,7 +164,7 @@ TEST(Subscriber, multipleNonConstCallbacksFilterSubscriber)
   sub.registerCallback(&NonConstHelper::cb, &h);
   sub.registerCallback(&NonConstHelper::cb, &h2);
   ros::Publisher pub = nh.advertise<Msg>("test_topic", 0);
-  MsgPtr msg(new Msg);
+  MsgPtr msg(boost::make_shared<Msg>());
   pub.publish(msg);
 
   ros::spinOnce();
@@ -184,7 +184,7 @@ TEST(Subscriber, multipleCallbacksSomeFilterSomeDirect)
   sub.registerCallback(&NonConstHelper::cb, &h);
   ros::Subscriber sub2 = nh.subscribe("test_topic", 0, &NonConstHelper::cb, &h2);
   ros::Publisher pub = nh.advertise<Msg>("test_topic", 0);
-  MsgPtr msg(new Msg);
+  MsgPtr msg(boost::make_shared<Msg>());
   pub.publish(msg);
 
   ros::spinOnce();

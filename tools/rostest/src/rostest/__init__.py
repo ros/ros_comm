@@ -109,8 +109,8 @@ def rosrun(package, test_name, test, sysargs=None):
     @type  package: str
     @param test_name: name of test that is being run
     @type  test_name: str
-    @param test: test class 
-    @type  test: unittest.TestCase
+    @param test: a test case instance or a name resolving to a test case or suite
+    @type  test: unittest.TestCase, or string
     @param sysargs: command-line args. If not specified, this defaults to sys.argv. rostest
       will look for the --text and --gtest_output parameters
     @type  sysargs: list
@@ -133,7 +133,12 @@ def rosrun(package, test_name, test, sysargs=None):
     import unittest
     import rospy
     
-    suite = unittest.TestLoader().loadTestsFromTestCase(test)
+    suite = None
+    if issubclass(test, unittest.TestCase):
+        suite = unittest.TestLoader().loadTestsFromTestCase(test)
+    else:
+        suite = unittest.TestLoader().loadTestsFromName(test)
+
     if text_mode:
         result = unittest.TextTestRunner(verbosity=2).run(suite)
     else:

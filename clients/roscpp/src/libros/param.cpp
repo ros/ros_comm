@@ -174,6 +174,7 @@ template <class T>
   // into an array type with the given size
   XmlRpc::XmlRpcValue xml_value;
   const XmlRpc::XmlRpcValue::ValueStruct& xml_map = (const XmlRpc::XmlRpcValue::ValueStruct &)(xml_value);
+  (void)xml_map;
 
   // Copy the contents into the XmlRpcValue
   for(typename std::map<std::string, T>::const_iterator it = map.begin(); it != map.end(); ++it) {
@@ -720,6 +721,35 @@ bool getCached(const std::string& key, std::map<std::string, bool>& map)
   return getImpl(key, map, true);
 }
 
+bool getParamNames(std::vector<std::string>& keys)
+{
+  XmlRpc::XmlRpcValue params, result, payload;
+  params[0] = this_node::getName();
+  if (!master::execute("getParamNames", params, result, payload, false)) {
+    return false;
+  }
+  // Make sure it's an array type
+  if (result.getType() != XmlRpc::XmlRpcValue::TypeArray) {
+    return false;
+  }
+  // Make sure it returned 3 elements
+  if (result.size() != 3) {
+    return false;
+  }
+  // Get the actual parameter keys
+  XmlRpc::XmlRpcValue parameters = result[2];
+  // Resize the output
+  keys.resize(parameters.size());
+
+  // Fill the output vector with the answer
+  for (int i = 0; i < parameters.size(); ++i) {
+    if (parameters[i].getType() != XmlRpc::XmlRpcValue::TypeString) {
+      return false;
+    }
+    keys[i] = std::string(parameters[i]);
+  }
+  return true;
+}
 
 bool search(const std::string& key, std::string& result_out)
 {

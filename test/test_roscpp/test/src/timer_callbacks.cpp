@@ -606,7 +606,7 @@ TEST(RoscppTimerCallbacks, trackedObject)
   Time now(1, 0);
   Time::setNow(now);
 
-  boost::shared_ptr<Tracked> tracked(new Tracked);
+  boost::shared_ptr<Tracked> tracked(boost::make_shared<Tracked>());
   Timer timer = n.createTimer(Duration(0.001), &Tracked::callback, tracked);
 
   now += Duration(0.1);

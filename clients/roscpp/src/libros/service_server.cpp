@@ -56,10 +56,10 @@ void ServiceServer::Impl::unadvertise()
 }
 
 ServiceServer::ServiceServer(const std::string& service, const NodeHandle& node_handle)
-: impl_(new Impl)
+: impl_(boost::make_shared<Impl>())
 {
   impl_->service_ = service;
-  impl_->node_handle_ = NodeHandlePtr(new NodeHandle(node_handle));
+  impl_->node_handle_ = boost::make_shared<NodeHandle>(node_handle);
 }
 
 ServiceServer::ServiceServer(const ServiceServer& rhs)

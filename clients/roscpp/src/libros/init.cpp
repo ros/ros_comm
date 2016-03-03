@@ -268,6 +268,7 @@ CallbackQueuePtr getInternalCallbackQueue()
 
 void basicSigintHandler(int sig)
 {
+  (void)sig;
   ros::requestShutdown();
 }
 
@@ -507,6 +508,20 @@ void init(const VP_string& remappings, const std::string& name, uint32_t options
   }
 
   init(remappings_map, name, options);
+}
+
+std::string getROSArg(int argc, const char* const* argv, const std::string& arg)
+{
+  for (int i = 0; i < argc; ++i)
+  {
+    std::string str_arg = argv[i];
+    size_t pos = str_arg.find(":=");
+    if (str_arg.substr(0,pos) == arg)
+    {
+      return str_arg.substr(pos+2);
+    }
+  }
+  return "";
 }
 
 void removeROSArgs(int argc, const char* const* argv, V_string& args_out)

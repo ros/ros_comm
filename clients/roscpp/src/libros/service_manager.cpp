@@ -61,7 +61,7 @@ const ServiceManagerPtr& ServiceManager::instance()
     boost::mutex::scoped_lock lock(g_service_manager_mutex);
     if (!g_service_manager)
     {
-      g_service_manager.reset(new ServiceManager);
+      g_service_manager = boost::make_shared<ServiceManager>();
     }
   }
 
@@ -148,7 +148,7 @@ bool ServiceManager::advertiseService(const AdvertiseServiceOptions& ops)
       return false;
     }
 
-    ServicePublicationPtr pub(new ServicePublication(ops.service, ops.md5sum, ops.datatype, ops.req_datatype, ops.res_datatype, ops.helper, ops.callback_queue, ops.tracked_object));
+    ServicePublicationPtr pub(boost::make_shared<ServicePublication>(ops.service, ops.md5sum, ops.datatype, ops.req_datatype, ops.res_datatype, ops.helper, ops.callback_queue, ops.tracked_object));
     service_publications_.push_back(pub);
   }
 
@@ -262,17 +262,17 @@ ServiceServerLinkPtr ServiceManager::createServiceServerLink(const std::string& 
     return ServiceServerLinkPtr();
   }
 
-  TransportTCPPtr transport(new TransportTCP(&poll_manager_->getPollSet()));
+  TransportTCPPtr transport(boost::make_shared<TransportTCP>(&poll_manager_->getPollSet()));
 
   // Make sure to initialize the connection *before* transport->connect()
   // is called, otherwise we might miss a connect error (see #434).
-  ConnectionPtr connection(new Connection());
+  ConnectionPtr connection(boost::make_shared<Connection>());
   connection_manager_->addConnection(connection);
   connection->initialize(transport, false, HeaderReceivedFunc());
 
   if (transport->connect(serv_host, serv_port))
   {
-    ServiceServerLinkPtr client(new ServiceServerLink(service, persistent, request_md5sum, response_md5sum, header_values));
+    ServiceServerLinkPtr client(boost::make_shared<ServiceServerLink>(service, persistent, request_md5sum, response_md5sum, header_values));
 
     {
       boost::mutex::scoped_lock lock(service_server_links_mutex_);
