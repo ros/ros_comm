@@ -1279,19 +1279,22 @@ def create_value_transform(echo_nostr, echo_noarr):
     def value_transform(val):
         fields = val.__slots__
         field_types = val._slot_types
-        transformed_arrays = []
-        for f, t in zip(fields, field_types):
+        transformed = []
+        for index, (f, t) in enumerate(zip(fields, field_types)):
             if echo_noarr and '[' in t:
+                f_val = val.__getattribute__(f)
+                transformed.append((index, t, f, f_val))
                 val.__setattr__(f, '<array type: %s, length: %s>' %
-                                (t.rstrip('[]'), len(val.__getattribute__(f))))
-                index = fields.index(f)
+                                (t.rstrip('[]'), len(f_val)))
                 val._slot_types[index] = 'string'
-                transformed_arrays.append((index, t))
             elif echo_nostr and 'string' in t:
-                val.__setattr__(f, '<string length: %s>' % len(val.__getattribute__(f)))
+                f_val = val.__getattribute__(f)
+                transformed.append((index, t, f, f_val))
+                val.__setattr__(f, '<string length: %s>' % len(f_val))
         def untransform_fn(val):
-            for index, type_ in transformed_arrays:
+            for index, type_, f, f_val in transformed:
                 val._slot_types[index] = type_
+                val.__setattr__(f, f_val)
             return val
         return val, untransform_fn
     return value_transform
