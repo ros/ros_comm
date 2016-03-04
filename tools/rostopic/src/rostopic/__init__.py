@@ -1322,7 +1322,7 @@ def _rostopic_cmd_hz(argv):
 def _rostopic_cmd_delay(argv):
     args = argv[2:]
     import argparse
-    parser = argparse.ArgumentParser(usage="usage: %prog delay /topic", prog=NAME)
+    parser = argparse.ArgumentParser(usage="%(prog)s delay [options] /topic", prog=NAME)
     parser.add_argument("topic", help="topic name to be calcurated the delay")
     parser.add_argument("-w", "--window",
                         dest="window_size", default=-1, type=int,

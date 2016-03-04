@@ -59,14 +59,14 @@ class TestRostopicOffline(unittest.TestCase):
 
         for c in sub:
             output = Popen([cmd, c, '-h'], stdout=PIPE, stderr=PIPE).communicate()
-            self.assert_("Usage:" in output[0], output)
+            self.assert_("usage:" in output[0].lower(), output)
             # make sure usage refers to the command
             self.assert_("%s %s"%(cmd, c) in output[0], output)
             
         # test no args on commands that require args
         for c in ['bw', 'echo', 'hz', 'delay', 'info', 'pub', 'type', 'find']:
             output = Popen([cmd, c], stdout=PIPE, stderr=PIPE).communicate()
-            self.assert_("Usage:" in output[0] or "Usage:" in output[1], output)
+            self.assert_("usage:" in output[0].lower() or "usage:" in output[1].lower(), output)
             # make sure usage refers to the command
             self.assert_("%s %s"%(cmd, c) in output[1], output)
             
