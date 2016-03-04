@@ -43,7 +43,7 @@ import logging.config
 import rospkg
 from rospkg.environment import ROS_LOG_DIR
 
-class LoggingException: pass
+class LoggingException(Exception): pass
 
 def renew_latest_logdir(logfile_dir):
     log_dir = os.path.dirname(logfile_dir)
