@@ -46,7 +46,7 @@ for gobbling up all of our threads
 import threading, logging, traceback
 from time import sleep
 
-class MarkedThreadPool:
+class MarkedThreadPool(object):
 
     """Flexible thread pool class.  Creates a pool of threads, then
     accepts tasks that will be dispatched to the next available
