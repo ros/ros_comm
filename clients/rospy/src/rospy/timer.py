@@ -191,7 +191,7 @@ class Timer(threading.Thread):
         @param oneshot: if True, fire only once, otherwise fire continuously until shutdown is called [default: False]
         @type  oneshot: bool
         """
-        threading.Thread.__init__(self)
+        super(Timer, self).__init__()
         self._period   = period
         self._callback = callback
         self._oneshot  = oneshot

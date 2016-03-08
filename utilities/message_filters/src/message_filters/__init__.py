@@ -34,7 +34,7 @@ import itertools
 import threading
 import rospy
 
-class SimpleFilter:
+class SimpleFilter(object):
 
     def __init__(self):
         self.callbacks = {}
