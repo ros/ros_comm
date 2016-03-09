@@ -193,6 +193,7 @@ def check_roslaunch(f):
     except roslaunch.core.RLException as e:
         return str(e)
     
+    rospack = rospkg.RosPack()
     errors = []
     # check for missing deps
     try:
@@ -206,8 +207,21 @@ def check_roslaunch(f):
         missing = {}
         file_deps = {}
     for pkg, miss in missing.items():
-        if miss:
+        # even if the pkgs is not found in packges.xml, if other package.xml provdes that pkgs, then it will be ok
+        all_pkgs = []
+        try:
+            for file_dep in file_deps.keys():
+                file_pkg = rospkg.get_package_name(file_dep)
+                all_pkgs.extend(rospack.get_depends(file_pkg,implicit=False))
+                miss_all = list(set(miss) - set(all_pkgs))
+        except Exception as e:
+            print(e, file=sys.stderr)
+            miss_all = True
+        if miss_all:
+            print("Missing package dependencies: %s/package.xml: %s"%(pkg, ', '.join(miss)), file=sys.stderr)
             errors.append("Missing package dependencies: %s/package.xml: %s"%(pkg, ', '.join(miss)))
+        elif miss:
+            print("Missing package dependencies: %s/package.xml: %s (notify upstream maintainer)"%(pkg, ', '.join(miss)), file=sys.stderr)
     
     # load all node defs
     nodes = []
@@ -215,7 +229,6 @@ def check_roslaunch(f):
         nodes.extend(rldeps.nodes)
 
     # check for missing packages
-    rospack = rospkg.RosPack()
     for pkg, node_type in nodes:
         try:
             rospack.get_path(pkg)
