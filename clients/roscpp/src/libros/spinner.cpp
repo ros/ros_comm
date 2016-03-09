@@ -187,7 +187,7 @@ void AsyncSpinnerImpl::threadFunc()
   disableAllSignalsInThisThread();
 
   CallbackQueue* queue = callback_queue_;
-  bool use_call_available = thread_count_ == 1;
+  bool use_call_available = thread_count_ > 1;
   WallDuration timeout(0.1);
 
   while (continue_ && nh_.ok())
