@@ -97,7 +97,7 @@ class ROSTopicHz(object):
     """
     ROSTopicHz receives messages for a topic and computes frequency stats
     """
-    def __init__(self, window_size, filter_expr=None):
+    def __init__(self, window_size, filter_expr=None, use_wtime=False):
         import threading
         self.lock = threading.Lock()
         self.last_printed_tn = 0
@@ -105,6 +105,7 @@ class ROSTopicHz(object):
         self.msg_tn = 0
         self.times =[]
         self.filter_expr = filter_expr
+        self.use_wtime = use_wtime
         
         # can't have infinite window size due to memory restrictions
         if window_size < 0:
@@ -120,7 +121,8 @@ class ROSTopicHz(object):
         if self.filter_expr is not None and not self.filter_expr(m):
             return
         with self.lock:
-            curr_rostime = rospy.get_rostime()
+            curr_rostime = rospy.get_rostime() if not self.use_wtime else \
+                    rospy.Time.from_sec(time.time())
 
             # time reset
             if curr_rostime.is_zero():
@@ -129,7 +131,8 @@ class ROSTopicHz(object):
                     self.times = []
                 return
             
-            curr = curr_rostime.to_sec()
+            curr = curr_rostime.to_sec() if not self.use_wtime else \
+                    rospy.Time.from_sec(time.time()).to_sec()
             if self.msg_t0 < 0 or self.msg_t0 > curr:
                 self.msg_t0 = curr
                 self.msg_tn = curr
@@ -179,7 +182,7 @@ class ROSTopicHz(object):
 def _sleep(duration):
     rospy.rostime.wallsleep(duration)
 
-def _rostopic_hz(topic, window_size=-1, filter_expr=None):
+def _rostopic_hz(topic, window_size=-1, filter_expr=None, use_wtime=False):
     """
     Periodically print the publishing rate of a topic to console until
     shutdown
@@ -191,7 +194,7 @@ def _rostopic_hz(topic, window_size=-1, filter_expr=None):
     if rospy.is_shutdown():
         return
     rospy.init_node(NAME, anonymous=True)
-    rt = ROSTopicHz(window_size, filter_expr=filter_expr)
+    rt = ROSTopicHz(window_size, filter_expr=filter_expr, use_wtime=use_wtime)
     # we use a large buffer size as we don't know what sort of messages we're dealing with.
     # may parameterize this in the future
     if filter_expr is not None:
@@ -1291,6 +1294,9 @@ def _rostopic_cmd_hz(argv):
     parser.add_option("--filter",
                       dest="filter_expr", default=None,
                       help="only measure messages matching the specified Python expression", metavar="EXPR")
+    parser.add_option("--wall-time",
+                      dest="use_wtime", default=False, action="store_true",
+                      help="calculates rate using wall time which can be helpful when clock isnt published during simulation")
 
     (options, args) = parser.parse_args(args)
     if len(args) == 0:
@@ -1316,7 +1322,8 @@ def _rostopic_cmd_hz(argv):
         filter_expr = expr_eval(options.filter_expr)
     else:
         filter_expr = None
-    _rostopic_hz(topic, window_size=window_size, filter_expr=filter_expr)
+    _rostopic_hz(topic, window_size=window_size, filter_expr=filter_expr,
+                 use_wtime=options.use_wtime)
 
 
 def _rostopic_cmd_delay(argv):
