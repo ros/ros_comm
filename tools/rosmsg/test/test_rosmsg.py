@@ -39,6 +39,8 @@ try:
 except ImportError:
     from io import StringIO
 import time
+
+import rospkg
         
 import rosmsg
 
@@ -66,23 +68,30 @@ class TestRosmsg(unittest.TestCase):
     def test_get_msg_text(self):
         d = get_test_path()
         msg_d = os.path.join(d, 'msg')
+        
+        test_message_package = 'test_rosmaster'
+        rospack = rospkg.RosPack()
+        msg_raw_d = os.path.join(rospack.get_path(test_message_package), 'msg')
         for t in ['RosmsgA', 'RosmsgB']:
             with open(os.path.join(msg_d, '%s.msg'%t), 'r') as f:
                 text = f.read()
-            type_ = 'test_ros/'+t
+            with open(os.path.join(msg_raw_d, '%s.msg'%t), 'r') as f:
+                text_raw = f.read()
+                
+            type_ = test_message_package+'/'+t
             self.assertEquals(text, rosmsg.get_msg_text(type_, raw=False))
-            self.assertEquals(text, rosmsg.get_msg_text(type_, raw=True))
+            self.assertEquals(text_raw, rosmsg.get_msg_text(type_, raw=True))
             
         # test recursive types
         t = 'RosmsgC'
-        with open(os.path.join(msg_d, '%s.msg'%t), 'r') as f:
+        with open(os.path.join(d, '%s_raw.txt'%t), 'r') as f:
             text = f.read()
-        type_ = 'test_ros/'+t
-        self.assertEquals(text, rosmsg.get_msg_text(type_, raw=True))
-        self.assertEquals("""std_msgs/String s1
-  string data
-std_msgs/String s2
-  string data""", rosmsg.get_msg_text(type_, raw=False).strip())
+        with open(os.path.join(msg_raw_d, '%s.msg'%t), 'r') as f:
+            text_raw = f.read()
+        type_ = test_message_package+'/'+t
+        
+        self.assertEquals(text, rosmsg.get_msg_text(type_, raw=False))
+        self.assertEquals(text_raw, rosmsg.get_msg_text(type_, raw=True))
 
     def test_iterate_packages(self):
         from rosmsg import iterate_packages, MODE_MSG, MODE_SRV
@@ -111,29 +120,32 @@ std_msgs/String s2
         # test msgs
         l = rosmsg.list_types('rospy', mode='.msg')
         self.assertEquals([], l)
-        l = rosmsg.list_types('test_ros', mode='.msg')
-        for t in ['test_ros/RosmsgA', 'test_ros/RosmsgB', 'test_ros/RosmsgC']:
+        l = rosmsg.list_types('test_rosmaster', mode='.msg')
+        for t in ['test_rosmaster/RosmsgA', 'test_rosmaster/RosmsgB', 'test_rosmaster/RosmsgC']:
             assert t in l
         
         l = rosmsg.list_types('rospy', mode='.srv')
         self.assertEquals([], l)        
-        l = rosmsg.list_types('test_ros', mode='.srv')
-        for t in ['test_ros/RossrvA', 'test_ros/RossrvB']:
+        l = rosmsg.list_types('test_rosmaster', mode='.srv')
+        for t in ['test_rosmaster/RossrvA', 'test_rosmaster/RossrvB']:
             assert t in l
 
     def test_get_srv_text(self):
         d = get_test_path()
         srv_d = os.path.join(d, 'srv')
-        with open(os.path.join(srv_d, 'RossrvA.srv'), 'r') as f:
-            text = f.read()
-        self.assertEquals(text, rosmsg.get_srv_text('test_ros/RossrvA', raw=False))
-        self.assertEquals(text, rosmsg.get_srv_text('test_ros/RossrvA', raw=True))
-
-        # std_msgs/empty / std_msgs/empty
-        with open(os.path.join(srv_d, 'RossrvB.srv'), 'r') as f:
-            text = f.read()
-        self.assertEquals(text, rosmsg.get_srv_text('test_ros/RossrvB', raw=False))
-        self.assertEquals(text, rosmsg.get_srv_text('test_ros/RossrvB', raw=True))
+        
+        test_srv_package = 'test_rosmaster'
+        rospack = rospkg.RosPack()
+        srv_raw_d = os.path.join(rospack.get_path(test_srv_package), 'srv')
+        for t in ['RossrvA', 'RossrvB']:
+            with open(os.path.join(srv_d, '%s.srv'%t), 'r') as f:
+                text = f.read()
+            with open(os.path.join(srv_raw_d, '%s.srv'%t), 'r') as f:
+                text_raw = f.read()
+                
+            type_ = test_srv_package+'/'+t
+            self.assertEquals(text, rosmsg.get_srv_text(type_, raw=False))
+            self.assertEquals(text_raw, rosmsg.get_srv_text(type_, raw=True))
 
     def test_rosmsg_cmd_packages(self):
         from rosmsg import rosmsg_cmd_packages, MODE_MSG, MODE_SRV
