@@ -4,3 +4,5 @@ find_package(catkin)
 catkin_package()
 
 catkin_python_setup()
+
+catkin_add_nosetests(test)
