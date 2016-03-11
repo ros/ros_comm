@@ -2,8 +2,8 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.17 (2016-03-11)
+--------------------
 * add --wait-for-start option to relay_field script (`#728 <https://github.com/ros/ros_comm/pull/728>`_)
 * use boost::make_shared instead of new for constructing boost::shared_ptr (`#740 <https://github.com/ros/ros_comm/issues/740>`_)
 

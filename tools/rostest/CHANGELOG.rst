@@ -2,8 +2,8 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.17 (2016-03-11)
+--------------------
 * rostest.rosrun now generates coverage reports (`#558 <https://github.com/ros/ros_comm/issues/558>`_)
 * rostest can load tests from a dotted name (`#722 <https://github.com/ros/ros_comm/issues/722>`_)
 * include GTEST_INCLUDE_DIRS so that the proper gtest headers are found (`#727 <https://github.com/ros/ros_comm/issues/727>`_)

@@ -1,6 +1,6 @@
 <package>
   <name>rosmaster</name>
-  <version>1.11.16</version>
+  <version>1.11.17</version>
   <description>
     ROS <a href="http://ros.org/wiki/Master">Master</a> implementation.
   </description>
