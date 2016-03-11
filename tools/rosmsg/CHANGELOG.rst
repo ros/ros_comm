@@ -2,6 +2,10 @@
 Changelog for package rosmsg
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* improve rosmsg show to print error message and return non-zero rc when message is not found (`#691 <https://github.com/ros/ros_comm/issues/691>`_)
+
 1.11.16 (2015-11-09)
 --------------------
 

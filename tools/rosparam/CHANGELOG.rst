@@ -2,6 +2,10 @@
 Changelog for package rosparam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add support for loading parameters from stdin as well as dumping rosparam to stdout (`#686 <https://github.com/ros/ros_comm/pull/686>`_)
+
 1.11.16 (2015-11-09)
 --------------------
 

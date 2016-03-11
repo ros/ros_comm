@@ -2,6 +2,12 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix raising classes not derived from `Exception` which caused a TypeError (`#761 <https://github.com/ros/ros_comm/pull/761>`_)
+* fix handshake header with Python 3 (`#759 <https://github.com/ros/ros_comm/issues/759>`_)
+* fix encoding of header fields (`#704 <https://github.com/ros/ros_comm/issues/704>`_)
+
 1.11.16 (2015-11-09)
 --------------------
 

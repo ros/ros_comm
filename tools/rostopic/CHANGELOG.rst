@@ -2,6 +2,12 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add "rostopic delay" to measure message delay compared to the input from real world (`#719 <https://github.com/ros/ros_comm/pull/719>`_)
+* add option to perform keyword substitution for messages published with "rostopic pub" (`#702 <https://github.com/ros/ros_comm/pull/702>`_)
+* add wall-time option for rostopic hz (`#674 <https://github.com/ros/ros_comm/pull/674>`_)
+
 1.11.16 (2015-11-09)
 --------------------
 

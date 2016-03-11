@@ -2,6 +2,13 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* improve roslaunch-check to not fail if recursive dependencies lack dependencies (`#730 <https://github.com/ros/ros_comm/pull/730>`_)
+* add "pass_all_args" attribute to roslaunch "include" tag (`#710 <https://github.com/ros/ros_comm/pull/710>`_)
+* fix a typo in unknown host error message (`#735 <https://github.com/ros/ros_comm/pull/735>`_)
+* wait for param server to be available before trying to get param (`#711 <https://github.com/ros/ros_comm/pull/711>`_)
+
 1.11.16 (2015-11-09)
 --------------------
 * add `-w` and `-t` options (`#687 <https://github.com/ros/ros_comm/pull/687>`_)

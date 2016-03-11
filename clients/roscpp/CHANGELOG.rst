@@ -2,6 +2,13 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add method for getting all the parameters from the parameter server as implemented in the rospy client (`#739 <https://github.com/ros/ros_comm/issues/739>`_)
+* use boost::make_shared instead of new for constructing boost::shared_ptr (`#740 <https://github.com/ros/ros_comm/issues/740>`_)
+* fix max elements param for statistics window (`#750 <https://github.com/ros/ros_comm/issues/750>`_)
+* improve NodeHandle constructor documentation (`#692 <https://github.com/ros/ros_comm/issues/692>`_)
+
 1.11.16 (2015-11-09)
 --------------------
 * add getROSArg function (`#694 <https://github.com/ros/ros_comm/pull/694>`_)

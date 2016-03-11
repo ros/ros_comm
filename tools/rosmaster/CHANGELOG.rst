@@ -2,6 +2,9 @@
 Changelog for package rosmaster
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.11.16 (2015-11-09)
 --------------------
 * add `-w` and `-t` options (`#687 <https://github.com/ros/ros_comm/pull/687>`_)
