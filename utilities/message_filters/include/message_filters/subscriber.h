@@ -188,6 +188,7 @@ public:
   template<typename F>
   void connectInput(F& f)
   {
+    (void)f;
   }
 
   /**
@@ -195,6 +196,7 @@ public:
    */
   void add(const EventType& e)
   {
+    (void)e;
   }
 
 private:

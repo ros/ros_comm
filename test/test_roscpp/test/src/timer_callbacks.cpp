@@ -333,7 +333,7 @@ TEST(RoscppTimerCallbacks, stopWallTimer)
 }
 
 int32_t g_count = 0;
-void timerCallback(const ros::WallTimerEvent& evt)
+void timerCallback(const ros::WallTimerEvent&)
 {
   ++g_count;
 }
@@ -387,7 +387,7 @@ public:
     timer_ = n.createTimer(r, &TimerHelper::callback, this, oneshot);
   }
 
-  void callback(const TimerEvent& e)
+  void callback(const TimerEvent&)
   {
     ++total_calls_;
   }
@@ -594,7 +594,7 @@ public:
     g_count = 0;
   }
 
-  void callback(const TimerEvent& e)
+  void callback(const TimerEvent&)
   {
     ++g_count;
   }

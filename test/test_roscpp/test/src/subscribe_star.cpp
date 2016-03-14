@@ -79,7 +79,7 @@ template<>
 struct Serializer<AnyMessage>
 {
   template<typename Stream, typename T>
-  static void allInOne(Stream s, T t)
+  static void allInOne(Stream, T)
   {
   }
 
@@ -95,7 +95,7 @@ struct AnyHelper
   {
   }
 
-  void cb(const AnyMessageConstPtr& msg)
+  void cb(const AnyMessageConstPtr&)
   {
     ++count;
   }

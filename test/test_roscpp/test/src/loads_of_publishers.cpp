@@ -37,9 +37,8 @@
 
 uint32_t g_pub_count = 0;
 
-void callback(const test_roscpp::TestArrayConstPtr& msg)
+void callback(const test_roscpp::TestArrayConstPtr&)
 {
-
 }
 
 TEST(LoadsOfPublishers, waitForAll)

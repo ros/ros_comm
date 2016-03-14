@@ -53,7 +53,7 @@ public:
   V_Info info_;
 
 protected:
-  virtual void append(const log4cxx::spi::LoggingEventPtr& event, log4cxx::helpers::Pool& pool)
+  virtual void append(const log4cxx::spi::LoggingEventPtr& event, log4cxx::helpers::Pool&)
   {
     Info info;
     info.level_ = event->getLevel();

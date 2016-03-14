@@ -40,7 +40,7 @@
 #include "roscpp/Empty.h"
 
 int32_t g_count = 0;
-void callback(const test_roscpp::TestArrayConstPtr& msg)
+void callback(const test_roscpp::TestArrayConstPtr&)
 {
   ++g_count;
 }

@@ -32,7 +32,7 @@
 #include "ros/ros.h"
 #include <test_roscpp/TestArray.h>
 
-void callback(const test_roscpp::TestArrayConstPtr& msg)
+void callback(const test_roscpp::TestArrayConstPtr&)
 {
 }
 

@@ -75,12 +75,12 @@ struct NullPolicy : public PolicyBase<M0, M1, M2, M3, M4, M5, M6, M7, M8>
     }
   }
 
-  void initParent(Sync* parent)
+  void initParent(Sync*)
   {
   }
 
   template<int i>
-  void add(const typename mpl::at_c<Events, i>::type& evt)
+  void add(const typename mpl::at_c<Events, i>::type&)
   {
     ++added_.at(i);
   }

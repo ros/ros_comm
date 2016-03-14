@@ -40,36 +40,36 @@
 
 #include <vector>
 
-bool add(test_roscpp::TestStringString::Request  &req,
-         test_roscpp::TestStringString::Response &res )
+bool add(test_roscpp::TestStringString::Request &,
+         test_roscpp::TestStringString::Response &)
 {
   return true;
 }
 
-bool add2(ros::ServiceEvent<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response>& event)
+bool add2(ros::ServiceEvent<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response>&)
 {
   return true;
 }
 
-bool add3(ros::ServiceEvent<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response>& event, const std::string& bound)
+bool add3(ros::ServiceEvent<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response>&, const std::string&)
 {
   return true;
 }
 
 struct A
 {
-  bool add(test_roscpp::TestStringString::Request  &req,
-           test_roscpp::TestStringString::Response &res )
+  bool add(test_roscpp::TestStringString::Request &,
+           test_roscpp::TestStringString::Response &)
   {
     return true;
   }
 
-  bool add2(ros::ServiceEvent<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response>& event)
+  bool add2(ros::ServiceEvent<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response>&)
   {
     return true;
   }
 
-  bool add3(ros::ServiceEvent<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response>& event, const std::string& bound)
+  bool add3(ros::ServiceEvent<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response>&, const std::string&)
   {
     return true;
   }

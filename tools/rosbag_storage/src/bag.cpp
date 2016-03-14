@@ -1024,6 +1024,7 @@ void Bag::readHeaderFromBuffer(Buffer& buffer, uint32_t offset, ros::Header& hea
 }
 
 void Bag::readMessageDataHeaderFromBuffer(Buffer& buffer, uint32_t offset, ros::Header& header, uint32_t& data_size, uint32_t& total_bytes_read) const {
+    (void)buffer;
     total_bytes_read = 0;
     uint8_t op = 0xFF;
     do {

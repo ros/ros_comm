@@ -6,7 +6,7 @@
 #include <ros/console.h>
 #include <ros/poll_manager.h>
 
-bool dummyService(std_srvs::Empty::Request &req,std_srvs::Empty::Request &res)
+bool dummyService(std_srvs::Empty::Request &, std_srvs::Empty::Request &)
 {
   return true;
 }

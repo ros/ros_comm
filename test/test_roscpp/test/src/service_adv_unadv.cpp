@@ -51,8 +51,8 @@ class ServiceAdvertiser : public testing::Test
     bool advertised_;
     bool failure_;
 
-    bool srvCallback(test_roscpp::TestStringString::Request  &req,
-                     test_roscpp::TestStringString::Response &res)
+    bool srvCallback(test_roscpp::TestStringString::Request &,
+                     test_roscpp::TestStringString::Response &)
     {
       ROS_INFO("in callback");
       if(!advertised_)
