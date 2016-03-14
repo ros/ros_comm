@@ -54,13 +54,13 @@ template<class M>
 struct NullFilter
 {
   template<typename C>
-  Connection registerCallback(const C& callback)
+  Connection registerCallback(const C&)
   {
     return Connection();
   }
 
   template<typename P>
-  Connection registerCallback(const boost::function<void(P)>& callback)
+  Connection registerCallback(const boost::function<void(P)>&)
   {
     return Connection();
   }

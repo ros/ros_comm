@@ -14,7 +14,7 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 #common commands for building c++ executables and libraries
 add_library(${PROJECT_NAME}_perf EXCLUDE_FROM_ALL src/intra.cpp src/inter.cpp)
-add_dependencies(${PROJECT_NAME}_perf ${PROJECT_NAME}_gencpp)
+add_dependencies(${PROJECT_NAME}_perf ${${PROJECT_NAME}_EXPORTED_TARGETS})
 target_link_libraries(${PROJECT_NAME}_perf ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 
 # These performance tests will not be built or executed automatically.

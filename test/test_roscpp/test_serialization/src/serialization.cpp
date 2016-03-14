@@ -218,7 +218,7 @@ struct Serializer<FixedSizeSimple>
     deserialize(stream, v.a);
   }
 
-  inline static uint32_t serializedLength(const FixedSizeSimple& v)
+  inline static uint32_t serializedLength(const FixedSizeSimple&)
   {
     return 4;
   }

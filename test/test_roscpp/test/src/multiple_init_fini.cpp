@@ -46,7 +46,7 @@
 int g_argc;
 char** g_argv;
 
-void callback(const test_roscpp::TestArrayConstPtr& msg)
+void callback(const test_roscpp::TestArrayConstPtr&)
 {
 }
 

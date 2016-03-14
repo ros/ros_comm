@@ -122,7 +122,7 @@ TEST(RoscppHandles, nodeHandleParentWithRemappings)
 }
 
 int32_t g_recv_count = 0;
-void subscriberCallback(const test_roscpp::TestArray::ConstPtr& msg)
+void subscriberCallback(const test_roscpp::TestArray::ConstPtr&)
 {
   ++g_recv_count;
 }
@@ -134,7 +134,7 @@ public:
   : recv_count_(0)
   {}
 
-  void callback(const test_roscpp::TestArray::ConstPtr& msg)
+  void callback(const test_roscpp::TestArray::ConstPtr&)
   {
     ++recv_count_;
   }
@@ -350,7 +350,7 @@ TEST(RoscppHandles, publisherMultiple)
   ASSERT_TRUE(std::find(topics.begin(), topics.end(), "/test") == topics.end());
 }
 
-bool serviceCallback(TestStringString::Request& req, TestStringString::Response& res)
+bool serviceCallback(TestStringString::Request&, TestStringString::Response&)
 {
   return true;
 }
@@ -433,7 +433,7 @@ TEST(RoscppHandles, serviceAdvMultiple)
 }
 
 int32_t g_sub_count = 0;
-void connectedCallback(const ros::SingleSubscriberPublisher& pub)
+void connectedCallback(const ros::SingleSubscriberPublisher&)
 {
   ++g_sub_count;
 }
@@ -519,7 +519,7 @@ TEST(RoscppHandles, multiplePublishersWithSubscriberConnectCallback)
 class ServiceClass
 {
 public:
-  bool serviceCallback(TestStringString::Request& req, TestStringString::Response& res)
+  bool serviceCallback(TestStringString::Request&, TestStringString::Response&)
   {
     return true;
   }

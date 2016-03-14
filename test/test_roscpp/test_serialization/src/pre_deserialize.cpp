@@ -64,16 +64,16 @@ template<>
 struct Serializer<IncomingMsg>
 {
   template<typename Stream>
-  inline static void write(Stream& stream, const IncomingMsg& v)
+  inline static void write(Stream&, const IncomingMsg&)
   {
   }
 
   template<typename Stream>
-  inline static void read(Stream& stream, IncomingMsg& v)
+  inline static void read(Stream&, IncomingMsg&)
   {
   }
 
-  inline static uint32_t serializedLength(const IncomingMsg& v)
+  inline static uint32_t serializedLength(const IncomingMsg&)
   {
     return 0;
   }
@@ -83,16 +83,16 @@ template<>
 struct Serializer<OutgoingMsg>
 {
   template<typename Stream>
-  inline static void write(Stream& stream, const OutgoingMsg& v)
+  inline static void write(Stream&, const OutgoingMsg&)
   {
   }
 
   template<typename Stream>
-  inline static void read(Stream& stream, OutgoingMsg& v)
+  inline static void read(Stream&, OutgoingMsg&)
   {
   }
 
-  inline static uint32_t serializedLength(const OutgoingMsg& v)
+  inline static uint32_t serializedLength(const OutgoingMsg&)
   {
     return 0;
   }

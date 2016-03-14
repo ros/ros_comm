@@ -33,7 +33,7 @@
 
 #include <test_roscpp/TestWithHeader.h>
 
-void callback(const test_roscpp::TestWithHeaderConstPtr& msg)
+void callback(const test_roscpp::TestWithHeaderConstPtr&)
 {
   // No operation needed here
 }

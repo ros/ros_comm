@@ -43,7 +43,7 @@
 #include <sys/wait.h>
 #include <cstdlib>
 
-bool srvCallback(test_roscpp::TestStringString::Request  &req,
+bool srvCallback(test_roscpp::TestStringString::Request &,
                  test_roscpp::TestStringString::Response &res)
 {
   res.str = "A";

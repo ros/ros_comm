@@ -53,7 +53,7 @@ public:
   virtual const std::string __getMD5Sum() const { return ""; }
   virtual const std::string __getMessageDefinition() const { return ""; }
   virtual uint32_t serializationLength() const { return 0; }
-  virtual uint8_t *serialize(uint8_t *write_ptr, uint32_t seq) const { return write_ptr; }
+  virtual uint8_t *serialize(uint8_t *write_ptr, uint32_t seq) const { (void)seq; return write_ptr; }
   virtual uint8_t *deserialize(uint8_t *read_ptr) { return read_ptr; }
 };
 
@@ -74,6 +74,7 @@ public:
 
   virtual void call(SubscriptionCallbackHelperCallParams& params)
   {
+    (void)params;
     {
       boost::mutex::scoped_lock lock(mutex_);
       ++calls_;

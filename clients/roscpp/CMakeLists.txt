@@ -120,7 +120,7 @@ add_library(roscpp
   src/libros/this_node.cpp
   )
 
-add_dependencies(roscpp roscpp_gencpp rosgraph_msgs_gencpp std_msgs_gencpp)
+add_dependencies(roscpp ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(roscpp
   ${catkin_LIBRARIES}

@@ -36,7 +36,7 @@
 #include "ros/ros.h"
 #include <test_roscpp/TestStringString.h>
 
-bool srvCallback(test_roscpp::TestStringString::Request  &req,
+bool srvCallback(test_roscpp::TestStringString::Request &,
                  test_roscpp::TestStringString::Response &res)
 {
   res.str = "B";
