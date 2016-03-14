@@ -39,11 +39,11 @@ target_link_libraries(switch_mux topic_tools ${catkin_LIBRARIES})
 
 add_executable(mux src/mux.cpp)
 target_link_libraries(mux topic_tools ${catkin_LIBRARIES})
-add_dependencies(topic_tools topic_tools_gencpp)
+add_dependencies(topic_tools ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(demux src/demux.cpp)
 target_link_libraries(demux topic_tools ${catkin_LIBRARIES})
-add_dependencies(topic_tools topic_tools_gencpp)
+add_dependencies(topic_tools ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(relay src/relay.cpp)
 target_link_libraries(relay topic_tools ${catkin_LIBRARIES})
