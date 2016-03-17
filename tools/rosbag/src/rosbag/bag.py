@@ -103,6 +103,8 @@ class Compression:
     BZ2  = 'bz2'
     LZ4  = 'lz4'
 
+BagMessage = collections.namedtuple('BagMessage', 'topic message timestamp')
+
 class Bag(object):
     """
     Bag serialize messages to and from a single file on disk using the bag format.
@@ -261,7 +263,7 @@ class Bag(object):
         @type  connection_filter: function taking (topic, datatype, md5sum, msg_def, header) and returning bool
         @param raw: if True, then generate tuples of (datatype, (data, md5sum, position), pytype)
         @type  raw: bool
-        @return: generator of (topic, message, timestamp) tuples for each message in the bag file
+        @return: generator of BagMessage(topic, message, timestamp) namedtuples for each message in the bag file
         @rtype:  generator of tuples of (str, U{genpy.Message}, U{genpy.Time}) [not raw] or (str, (str, str, str, tuple, class), U{genpy.Time}) [raw]
         """
         self.flush()
@@ -1842,7 +1844,7 @@ class _BagReader102_Unindexed(_BagReader):
                 msg = msg_type()
                 msg.deserialize(data)
 
-            yield (topic, msg, t)
+            yield BagMessage(topic, msg, t)
 
         self.bag._connection_indexes_read = True
 
@@ -2061,7 +2063,7 @@ class _BagReader102_Indexed(_BagReader102_Unindexed):
             msg = msg_type()
             msg.deserialize(data)
         
-        return (topic, msg, t)
+        return BagMessage(topic, msg, t)
 
 class _BagReader200(_BagReader):
     """
@@ -2478,7 +2480,7 @@ class _BagReader200(_BagReader):
             msg = msg_type()
             msg.deserialize(data)
         
-        return (connection_info.topic, msg, t)
+        return BagMessage(connection_info.topic, msg, t)
 
 def _time_to_str(secs):
     secs_frac = secs - int(secs) 
