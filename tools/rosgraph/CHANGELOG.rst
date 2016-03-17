@@ -2,6 +2,9 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.11.17 (2016-03-11)
 --------------------
 * fix raising classes not derived from `Exception` which caused a TypeError (`#761 <https://github.com/ros/ros_comm/pull/761>`_)

@@ -2,6 +2,9 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.11.17 (2016-03-11)
 --------------------
 * rostest.rosrun now generates coverage reports (`#558 <https://github.com/ros/ros_comm/issues/558>`_)

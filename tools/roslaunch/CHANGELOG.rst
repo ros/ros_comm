@@ -2,6 +2,9 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.11.17 (2016-03-11)
 --------------------
 * improve roslaunch-check to not fail if recursive dependencies lack dependencies (`#730 <https://github.com/ros/ros_comm/pull/730>`_)

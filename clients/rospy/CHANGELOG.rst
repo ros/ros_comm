@@ -2,6 +2,9 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.11.17 (2016-03-11)
 --------------------
 * preserve identity of numpy_msg(T) (`#758 <https://github.com/ros/ros_comm/pull/758>`_)

@@ -2,6 +2,10 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix CMake warning about non-existing targets
+
 1.11.17 (2016-03-11)
 --------------------
 * fix order of argument in SubscriberLink interface to match actual implemenation (`#701 <https://github.com/ros/ros_comm/issues/701>`_)
