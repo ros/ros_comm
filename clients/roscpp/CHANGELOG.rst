@@ -2,8 +2,8 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.18 (2016-03-17)
+--------------------
 * fix CMake warning about non-existing targets
 
 1.11.17 (2016-03-11)

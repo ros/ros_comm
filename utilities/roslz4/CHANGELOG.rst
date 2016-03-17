@@ -2,8 +2,8 @@
 Changelog for package roslz4
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.18 (2016-03-17)
+--------------------
 * fix compiler warnings
 
 1.11.17 (2016-03-11)
