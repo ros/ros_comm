@@ -113,6 +113,21 @@ class RosMsgProtoTest(unittest.TestCase):
         self.assertEqual('"data:\n  secs: 0\n  nsecs: 0"', rosmsg_cmd_prototype(["msg", "std_msgs/Duration"]))
         self.assertEqual('"{data: {secs: 0, nsecs: 0}}"', rosmsg_cmd_prototype(["msg", "std_msgs/Duration", "-f1"]))
 
+    def test_rosmsg_cmd_prototype_std_msgs_ColorRGBA(self):
+        self.assertEqual('"r: 0.0\ng: 0.0\nb: 0.0\na: 0.0"', rosmsg_cmd_prototype(["msg", "std_msgs/ColorRGBA", "-f0"]))
 
+    def test_rosmsg_cmd_prototype_std_msgs_MultiArrayLayout(self):
+        self.assertEqual('"dim:\n- label: \'\'\n  size: 0\n  stride: 0\ndata_offset: 0"', rosmsg_cmd_prototype(["msg", "std_msgs/MultiArrayLayout"]))
+        self.assertEqual('"dim: []\ndata_offset: 0"', rosmsg_cmd_prototype(["msg", "std_msgs/MultiArrayLayout", "-e"]))
 
+    def test_rosmsg_cmd_prototype_std_msgs_Float64MultiArray(self):
+        self.assertEqual('"layout:\n  dim:\n  - label: \'\'\n    size: 0\n    stride: 0\n  data_offset: 0\ndata:\n- 0"', rosmsg_cmd_prototype(["msg", "std_msgs/Float64MultiArray"]))
+        self.assertEqual('"layout:\n  dim:\n  - label: \'\'\n    size: 0\n  data_offset: 0"', rosmsg_cmd_prototype(["msg", "std_msgs/Float64MultiArray", "-x", "stride,data"]))
 
+    def test_rosmsg_cmd_prototype_std_msgs_MultiArrayDimension(self):
+        self.assertEqual('"label: \'\'\nsize: 0\nstride: 0"', rosmsg_cmd_prototype(["msg", "std_msgs/MultiArrayDimension"]))
+
+    def test_rosmsg_cmd_prototype_std_msgs_Float32MultiArray(self):
+        self.assertEqual('"layout:\n  dim:\n  - label: \'\'\n    size: 0\n    stride: 0\n  data_offset: 0\ndata:\n- 0"', rosmsg_cmd_prototype(["msg", "std_msgs/Float32MultiArray"]))
+        self.assertEqual('"layout:\n  dim:\n  - label: \'\'\n    size: 0\n    stride: 0\n  data_offset: 0\ndata:\n- 0"', rosmsg_cmd_prototype(["msg", "std_msgs/Float32MultiArray", "-f0"]))
+        self.assertEqual('"{layout: {dim: [{label: \'\', size: 0, stride: 0}], data_offset: 0}, data: [0]}"', rosmsg_cmd_prototype(["msg", "std_msgs/Float32MultiArray", "-f1"]))
