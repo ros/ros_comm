@@ -59,10 +59,11 @@ namespace rosbag {
 /*!
  *  param msg         The Message instance for which to generate adveritse options
  *  param queue_size  The size of the outgoing queue
+ *  param prefix      An optional prefix for all output topics
  */
-ros::AdvertiseOptions createAdvertiseOptions(MessageInstance const& msg, uint32_t queue_size);
+ros::AdvertiseOptions createAdvertiseOptions(MessageInstance const& msg, uint32_t queue_size, const std::string& prefix = "");
 
-ROSBAG_DECL ros::AdvertiseOptions createAdvertiseOptions(const ConnectionInfo* c, uint32_t queue_size);
+ROSBAG_DECL ros::AdvertiseOptions createAdvertiseOptions(const ConnectionInfo* c, uint32_t queue_size, const std::string& prefix = "");
 
 
 struct ROSBAG_DECL PlayerOptions
