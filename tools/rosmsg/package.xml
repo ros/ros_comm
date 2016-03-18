@@ -25,7 +25,7 @@
   <run_depend>rosbag</run_depend>
   <run_depend>roslib</run_depend>
 
-  <test_depend>geometry_msgs</test_depend>
+  <test_depend>std_msgs</test_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>
