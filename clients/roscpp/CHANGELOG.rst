@@ -2,6 +2,11 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* improve TopicManager::instance (`#770 <https://github.com/ros/ros_comm/issues/770>`_)
+* change return value of param() to bool (`#753 <https://github.com/ros/ros_comm/issues/753>`_)
+
 1.11.18 (2016-03-17)
 --------------------
 * fix CMake warning about non-existing targets
