@@ -2033,20 +2033,22 @@ if (service)  // Enter if advertised service is valid
    * \param[out] param_val Storage for the retrieved value.
    * \param default_val Value to use if the server doesn't contain this
    * parameter.
+   * \return true if the parameter was retrieved from the server, false otherwise.
    * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
    */
   template<typename T>
-  void param(const std::string& param_name, T& param_val, const T& default_val) const
+  bool param(const std::string& param_name, T& param_val, const T& default_val) const
   {
     if (hasParam(param_name))
     {
       if (getParam(param_name, param_val))
       {
-        return;
+        return true;
       }
     }
 
     param_val = default_val;
+    return false;
   }
 
   /**
