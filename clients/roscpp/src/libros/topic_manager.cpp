@@ -53,20 +53,10 @@ using namespace std; // sigh
 namespace ros
 {
 
-TopicManagerPtr g_topic_manager;
-boost::mutex g_topic_manager_mutex;
 const TopicManagerPtr& TopicManager::instance()
 {
-  if (!g_topic_manager)
-  {
-    boost::mutex::scoped_lock lock(g_topic_manager_mutex);
-    if (!g_topic_manager)
-    {
-      g_topic_manager = boost::make_shared<TopicManager>();
-    }
-  }
-
-  return g_topic_manager;
+  static TopicManagerPtr topic_manager = boost::make_shared<TopicManager>();
+  return topic_manager;
 }
 
 TopicManager::TopicManager()
