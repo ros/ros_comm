@@ -2,8 +2,8 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.0 (2016-03-18)
+-------------------
 * improve TopicManager::instance (`#770 <https://github.com/ros/ros_comm/issues/770>`_)
 * change return value of param() to bool (`#753 <https://github.com/ros/ros_comm/issues/753>`_)
 

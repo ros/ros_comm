@@ -2,8 +2,8 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.0 (2016-03-18)
+-------------------
 * make LogAppender and Token destructor virtual (`#729 <https://github.com/ros/ros_comm/issues/729>`_)
 
 1.11.18 (2016-03-17)
