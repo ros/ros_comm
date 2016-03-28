@@ -6,6 +6,6 @@ catkin_python_setup()
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest)
-  # add_rostest(test/roswtf.test)
-  # catkin_add_nosetests(test)
+  add_rostest(test/roswtf.test)
+  catkin_add_nosetests(test)
 endif()

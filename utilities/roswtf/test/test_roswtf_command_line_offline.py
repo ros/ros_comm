@@ -94,13 +94,26 @@ class TestRoswtfOffline(unittest.TestCase):
         # run roswtf nakedly
         output = Popen([cmd], **kwds).communicate()
         output = [o.decode() for o in output]
-        # - due both a positive and negative test
-        self.assert_('No errors or warnings' in output[0], "OUTPUT[%s]"%str(output))
-        self.assert_('ERROR' not in output[0], "OUTPUT[%s]"%str(output))
+
+        # there should either be no errors or warnings or
+        # there should be exactly one error about rosdep not being initialized
+        self._check_output(output[0])
 
         # run roswtf on a simple launch file offline
         p = os.path.join(get_test_path(), 'min.launch')
         output = Popen([cmd, p], **kwds).communicate()[0]
         output = output.decode()
-        self.assert_('No errors or warnings' in output, "OUTPUT[%s]"%output)
-        self.assert_('ERROR' not in output, "OUTPUT[%s]"%output)        
+        self._check_output(output)
+
+    def _check_output(self, output):
+        # do both a positive and negative test
+        self.assert_(
+            'No errors or warnings' in output or 'Found 1 error' in output,
+            'OUTPUT[%s]' % output)
+        if 'No errors or warnings' in output:
+            self.assert_('ERROR' not in output, 'OUTPUT[%s]' % output)
+        if 'Found 1 error' in output:
+            self.assert_(output.count('ERROR') == 1, 'OUTPUT[%s]' % output)
+            self.assert_(
+                'Error: the rosdep view is empty' not in output,
+                'OUTPUT[%s]' % output)
