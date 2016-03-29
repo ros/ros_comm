@@ -95,7 +95,7 @@ def test_resolve_args():
     assert roslaunch_dir
 
     anon_context = {'foo': 'bar'}
-    arg_context = {'fuga': 'hoge', 'car': 'cdr'}
+    arg_context = {'fuga': 'hoge', 'car': 'cdr', 'arg': 'foo', 'True': 'False'}
     context = {'anon': anon_context, 'arg': arg_context }
         
     tests = [
@@ -140,7 +140,13 @@ def test_resolve_args():
         ("$(eval anon('foo'))", 'bar'),
         ("$(eval arg('fuga'))", 'hoge'),
         ('$(eval arg("fuga"))', 'hoge'),
+        ('$(eval arg("arg"))', 'foo'),
+        ('$(eval arg("True"))', 'False'),
+        ('$(eval 1==1)', 'True'),
+        ('$(eval [0,1,2][1])', '1'),
+        # test implicit arg access
         ('$(eval fuga)', 'hoge'),
+        ('$(eval True)', 'False'),
         ]
     for arg, val in tests:
         assert val == resolve_args(arg, context=context)
