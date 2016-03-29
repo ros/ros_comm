@@ -281,7 +281,8 @@ def _arg(resolved, a, args, context):
 # context.  We disable all the builtins, then add back True and False, and also
 # add true and false for convenience (because we accept those lower-case strings
 # as boolean values in XML).
-_eval_dict=dict(true=True, false=False, __builtins__={'True': True, 'False': False})
+_eval_dict={'true': True, 'false': False, 'True': True, 'False': False, '__builtins__': {},
+            'env': _eval_env, 'optenv': _eval_optenv, 'find': _eval_find}
 
 class _DictWrapper(object):
     def __init__(self, args, functions):
@@ -304,14 +305,14 @@ def _eval(s, context):
     def _eval_anon_context(id): return _eval_anon(id, anons=context['anon'])
     # inject arg context
     def _eval_arg_context(name): return loader.convert_value(_eval_arg(name, args=context['arg']), 'auto')
-    functions = dict(env = _eval_env, optenv = _eval_optenv, find = _eval_find,
-                     anon = _eval_anon_context, arg = _eval_arg_context)
+    functions = dict(anon = _eval_anon_context, arg = _eval_arg_context)
+    functions.update(_eval_dict)
 
     # ignore values containing double underscores (for safety)
     # http://nedbatchelder.com/blog/201206/eval_really_is_dangerous.html
     if s.find('__') >= 0:
         raise SubstitutionException("$(eval ...) may not contain double underscore expressions")
-    return str(eval(s, _eval_dict, _DictWrapper(context['arg'], functions)))
+    return str(eval(s, {}, _DictWrapper(context['arg'], functions)))
 
 def resolve_args(arg_str, context=None, resolve_anon=True):
     """

@@ -146,7 +146,7 @@ def test_resolve_args():
         ('$(eval [0,1,2][1])', '1'),
         # test implicit arg access
         ('$(eval fuga)', 'hoge'),
-        ('$(eval True)', 'False'),
+        ('$(eval True)', 'True'),
         ]
     for arg, val in tests:
         assert val == resolve_args(arg, context=context)
