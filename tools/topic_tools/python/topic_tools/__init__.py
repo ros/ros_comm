@@ -1,5 +1,3 @@
-import six
-
 import rospy
 
 
@@ -21,8 +19,8 @@ class MetaConnectionBasedTransport(type):
         return obj
 
 
-@six.add_metaclass(MetaConnectionBasedTransport)
 class ConnectionBasedTransport(rospy.SubscribeListener):
+    __metaclass__ = MetaConnectionBasedTransport
 
     def __init__(self):
         super(ConnectionBasedTransport, self).__init__()

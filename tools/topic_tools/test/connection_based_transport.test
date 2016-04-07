@@ -7,6 +7,7 @@
   <node name="simple_image_transport"
         pkg="topic_tools" type="simple_image_transport.py">
     <remap from="~input" to="input" />
+    <param name="~always_subscribe" value="true" />
   </node>
 
   <test test-name="test_connection"
