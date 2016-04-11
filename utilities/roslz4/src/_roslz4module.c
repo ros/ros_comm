@@ -82,6 +82,7 @@ LZ4Compressor_dealloc(LZ4Compressor *self)
 static int
 LZ4Compressor_init(LZ4Compressor *self, PyObject *args, PyObject *kwds)
 {
+  (void)kwds;
   if (!PyArg_ParseTuple(args, ":__init__")) {
     return -1;
   }
@@ -252,6 +253,7 @@ LZ4Decompressor_dealloc(LZ4Decompressor *self)
 static int
 LZ4Decompressor_init(LZ4Decompressor *self, PyObject *args, PyObject *kwds)
 {
+  (void)kwds;
   if (!PyArg_ParseTuple(args, ":__init__")) {
     return -1;
   }
