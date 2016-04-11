@@ -55,9 +55,15 @@ catkin_add_nosetests(${PROJECT_BINARY_DIR}/test/migrate_test.py)
 configure_file(test/random_record.xml.in
   ${PROJECT_BINARY_DIR}/test/random_record.xml)
 add_rostest(${PROJECT_BINARY_DIR}/test/random_record.xml)
+# Make sure that the random_record test runs before either of the random_play
+# tests, both of which require a .bag file that the random_record test will
+# write into /tmp. We're making an assumption about the target names generated
+# by add_rostest(), but that naming scheme seems to be pretty stable.
 configure_file(test/random_play.xml.in
   ${PROJECT_BINARY_DIR}/test/random_play.xml)
-add_rostest(${PROJECT_BINARY_DIR}/test/random_play.xml)
+add_rostest(${PROJECT_BINARY_DIR}/test/random_play.xml
+  DEPENDENCIES run_tests_test_rosbag_rostest_test_random_record.xml)
 configure_file(test/random_play_sim.xml.in
   ${PROJECT_BINARY_DIR}/test/random_play_sim.xml)
-add_rostest(${PROJECT_BINARY_DIR}/test/random_play_sim.xml)
+add_rostest(${PROJECT_BINARY_DIR}/test/random_play_sim.xml
+  DEPENDENCIES run_tests_test_rosbag_rostest_test_random_record.xml)
