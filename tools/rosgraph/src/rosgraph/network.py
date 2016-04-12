@@ -398,11 +398,15 @@ def encode_ros_handshake_header(header):
     str_cls = str if python3 else unicode
     
     # encode all unicode keys in the header. Ideally, the type of these would be specified by the api
-    for k, v in sorted(header.items()):
-        if isinstance(k, str_cls): k = k.encode('utf-8')
-        if isinstance(v, str_cls): v = v.encode('utf-8')
-    
-    fields = [k + b"=" + v for k, v in sorted(header.items())]
+    encoded_header = {}
+    for k, v in header.items():
+        if isinstance(k, str_cls):
+            k = k.encode('utf-8')
+        if isinstance(v, str_cls):
+            v = v.encode('utf-8')
+        encoded_header[k] = v
+
+    fields = [k + b"=" + v for k, v in sorted(encoded_header.items())]
     s = b''.join([struct.pack('<I', len(f)) + f for f in fields])
     
     return struct.pack('<I', len(s)) + s
