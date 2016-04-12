@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(rosbag_storage)
 
 if(NOT WIN32)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+  set_directory_properties(PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra")
 endif()
 
 find_package(console_bridge REQUIRED)
