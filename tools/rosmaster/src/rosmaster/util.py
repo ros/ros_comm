@@ -45,6 +45,10 @@ try:
 except ImportError:
     from xmlrpclib import ServerProxy
 
+from defusedxml.xmlrpc import monkey_patch
+monkey_patch()
+del monkey_patch
+
 _proxies = {} #cache ServerProxys
 def xmlrpcapi(uri):
     """
