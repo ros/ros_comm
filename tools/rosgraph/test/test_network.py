@@ -71,6 +71,19 @@ class NetworkTest(unittest.TestCase):
         encoded = encoded+struct.pack('<I', len(s))+s        
         assert struct.pack('<I', len(encoded))+encoded == \
             encode_ros_handshake_header(d)
+        if sys.version_info > (3, 0):
+            assert \
+                encode_ros_handshake_header(
+                    {'a': 'b', 'c': 'd', 'e': 'f'}) == \
+                encode_ros_handshake_header(
+                    {b'a': 'b', 'c': b'd', b'e': b'f'})
+        else:
+            assert \
+                encode_ros_handshake_header(
+                    {'a': 'b', 'c': 'd', 'e': 'f'}) == \
+                encode_ros_handshake_header(
+                    {u'a': 'b', 'c': u'd', u'e': u'f'})
+
       
     def test_decode_ros_handshake_header(self):
         from rosgraph.network import decode_ros_handshake_header, ROSHandshakeException
