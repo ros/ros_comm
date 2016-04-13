@@ -147,9 +147,14 @@ def test_resolve_args():
         # test implicit arg access
         ('$(eval fuga)', 'hoge'),
         ('$(eval True)', 'True'),
-        ]
+        # math expressions
+        ('$(eval round(sin(pi),1))', '0.0'),
+        ('$(eval cos(0))', '1.0'),
+        # str, map
+        ("$(eval ''.join(map(str, [4,2])))", '42'),
+    ]
     for arg, val in tests:
-        assert val == resolve_args(arg, context=context)
+        assert val == resolve_args(arg, context=context), arg
 
     # more #1776
     r = resolve_args('$(anon foo)/bar')

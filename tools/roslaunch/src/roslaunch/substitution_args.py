@@ -47,6 +47,7 @@ except ImportError:
 import rosgraph.names
 import rospkg
 from roslaunch.loader import convert_value
+import math
 
 _rospack = None
 
@@ -279,8 +280,16 @@ def _arg(resolved, a, args, context):
 # context.  We disable all the builtins, then add back True and False, and also
 # add true and false for convenience (because we accept those lower-case strings
 # as boolean values in XML).
-_eval_dict={'true': True, 'false': False, 'True': True, 'False': False, '__builtins__': {},
-            'env': _eval_env, 'optenv': _eval_optenv, 'find': _eval_find}
+_eval_dict={
+    'true': True, 'false': False,
+    'True': True, 'False': False,
+    '__builtins__': {k: __builtins__[k] for k in ['list', 'dict', 'map', 'str', 'float', 'int']},
+    'env': _eval_env,
+    'optenv': _eval_optenv,
+    'find': _eval_find
+}
+# also define all math symbols and functions
+_eval_dict.update(math.__dict__)
 
 class _DictWrapper(object):
     def __init__(self, args, functions):
