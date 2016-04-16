@@ -43,6 +43,8 @@ except ImportError:
     python3 = 1
 import socket
 import logging
+import os
+import subprocess
 
 import threading
 import time
@@ -526,48 +528,77 @@ class TCPROSTransport(Transport):
             logwarn(msg)
             self.close()
             raise TransportInitError(msg)  # bubble up
- 
-        # now we can proceed with trying to connect.
+
+        self.endpoint_id = endpoint_id
+        self.dest_address = (dest_addr, dest_port)
+
+        if rosgraph.network.use_ipv6():
+            s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        else:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        if _is_use_tcp_keepalive():
+            # OSX (among others) does not define these options
+            if hasattr(socket, 'TCP_KEEPCNT') and \
+               hasattr(socket, 'TCP_KEEPIDLE') and \
+               hasattr(socket, 'TCP_KEEPINTVL'):
+                # turn on KEEPALIVE
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+                # - # keepalive failures before actual connection failure
+                s.setsockopt(socket.SOL_TCP, socket.TCP_KEEPCNT, 9)
+                # - timeout before starting KEEPALIVE process
+                s.setsockopt(socket.SOL_TCP, socket.TCP_KEEPIDLE, 60)
+                # - interval to send KEEPALIVE after IDLE timeout
+                s.setsockopt(socket.SOL_TCP, socket.TCP_KEEPINTVL, 10)
+        if timeout is not None:
+            s.settimeout(timeout)
+        self.socket = s
+
+        if 'ROS_SSH' in os.environ:
+            # set up ssh tunnel and connect through it
+            # first, ask the OS for a free port to listen on
+            port_probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            port_probe.bind(('', 0))
+            local_port = port_probe.getsockname()[1]
+            port_probe.close() # the OS won't re-allocate this port anytime soon
+            ssh_incantation = ["ssh", "-nNT", "-L", "%d:localhost:%d" % (local_port, dest_port), str(dest_addr)]
+            print("spawning ssh tunnel with: %s" % " ".join(ssh_incantation))
+            import time
+            try:
+                subprocess.Popen(ssh_incantation, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                time.sleep(1) # HAXX. do a retry-loop
+                self.socket.connect(('127.0.0.1', local_port))
+            except Exception as e:
+                print("OH NOES couldn't connect through tunnel: %s" % str(e))
+                raise
+
+        else:
+            # connect over raw sockets
+            try:
+                logdebug('connecting to ' + str(dest_addr)+ ' ' + str(dest_port))
+                self.socket.connect((dest_addr, dest_port))
+            except TransportInitError as tie:
+                rospyerr("Unable to initiate TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, traceback.format_exc()))
+                raise
+            except Exception as e:
+                #logerr("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, str(e)))
+                rospywarn("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, traceback.format_exc()))
+                # FATAL: no reconnection as error is unknown
+                self.close()
+                raise TransportInitError(str(e)) #re-raise i/o error
+
         try:
-            self.endpoint_id = endpoint_id
-            self.dest_address = (dest_addr, dest_port)
-            if rosgraph.network.use_ipv6():
-                s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-            else:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            if _is_use_tcp_keepalive():
-                # OSX (among others) does not define these options
-                if hasattr(socket, 'TCP_KEEPCNT') and \
-                   hasattr(socket, 'TCP_KEEPIDLE') and \
-                   hasattr(socket, 'TCP_KEEPINTVL'):
-                    # turn on KEEPALIVE
-                    s.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-                    # - # keepalive failures before actual connection failure
-                    s.setsockopt(socket.SOL_TCP, socket.TCP_KEEPCNT, 9)
-                    # - timeout before starting KEEPALIVE process
-                    s.setsockopt(socket.SOL_TCP, socket.TCP_KEEPIDLE, 60)
-                    # - interval to send KEEPALIVE after IDLE timeout
-                    s.setsockopt(socket.SOL_TCP, socket.TCP_KEEPINTVL, 10)
-            if timeout is not None:
-                s.settimeout(timeout)
-            self.socket = s
-            logdebug('connecting to ' + str(dest_addr)+ ' ' + str(dest_port))
-            self.socket.connect((dest_addr, dest_port))
             self.write_header()
             self.read_header()
             self.local_endpoint = self.socket.getsockname()
             self.remote_endpoint = (dest_addr, dest_port)
-        except TransportInitError as tie:
-            rospyerr("Unable to initiate TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, traceback.format_exc()))            
-            raise
         except Exception as e:
             #logerr("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, str(e)))
-            rospywarn("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, traceback.format_exc()))            
-
+            rospywarn("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, traceback.format_exc()))
             # FATAL: no reconnection as error is unknown
             self.close()
             raise TransportInitError(str(e)) #re-raise i/o error
-                
+
     def _validate_header(self, header):
         """
         Validate header and initialize fields accordingly
