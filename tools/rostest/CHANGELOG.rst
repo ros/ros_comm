@@ -2,6 +2,10 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix passing multiple args to add_rostest (fix `#790 <https://github.com/ros/ros_comm/issues/790>`_)
+
 1.11.18 (2016-03-17)
 --------------------
 
