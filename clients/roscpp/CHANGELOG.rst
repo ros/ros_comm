@@ -2,6 +2,10 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* use directory specific compiler flags (`#785 <https://github.com/ros/ros_comm/pull/785>`_)
+
 1.12.0 (2016-03-18)
 -------------------
 * improve TopicManager::instance (`#770 <https://github.com/ros/ros_comm/issues/770>`_)
