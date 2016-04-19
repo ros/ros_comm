@@ -2,8 +2,8 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.1 (2016-04-18)
+-------------------
 * promote the result of read_messages to a namedtuple (`#777 <https://github.com/ros/ros_comm/pull/777>`_)
 * use directory specific compiler flags (`#785 <https://github.com/ros/ros_comm/pull/785>`_)
 

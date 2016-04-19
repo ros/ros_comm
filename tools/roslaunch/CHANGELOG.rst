@@ -2,8 +2,8 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.1 (2016-04-18)
+-------------------
 * add support for Python expressions (`#784 <https://github.com/ros/ros_comm/pull/784>`_, `#793 <https://github.com/ros/ros_comm/pull/793>`_)
 
 1.12.0 (2016-03-18)
