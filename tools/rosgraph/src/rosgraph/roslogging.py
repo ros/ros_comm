@@ -88,13 +88,15 @@ def configure_logging(logname, level=logging.INFO, filename=None, env=None):
     elif os.path.isfile(logfile_dir):
         raise LoggingException("Cannot save log files: file [%s] is in the way"%logfile_dir)
 
-    if sys.platform not in ['win32']:
-        try:
-            success = renew_latest_logdir(logfile_dir)
-            if not success:
-                sys.stderr.write("INFO: cannot create a symlink to latest log directory\n")
-        except OSError as e:
-            sys.stderr.write("INFO: cannot create a symlink to latest log directory: %s\n" % e)
+    # the log dir itself should not be symlinked as latest
+    if logfile_dir != log_dir:
+        if sys.platform not in ['win32']:
+            try:
+                success = renew_latest_logdir(logfile_dir)
+                if not success:
+                    sys.stderr.write("INFO: cannot create a symlink to latest log directory\n")
+            except OSError as e:
+                sys.stderr.write("INFO: cannot create a symlink to latest log directory: %s\n" % e)
 
     if 'ROS_PYTHON_LOG_CONFIG_FILE' in os.environ:
         config_file = os.environ['ROS_PYTHON_LOG_CONFIG_FILE']
