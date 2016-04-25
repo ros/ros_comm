@@ -465,6 +465,8 @@ def is_topic(param_name):
         return v
     return validator
 
+_ssh_tunnels = {}
+
 def xmlrpcapi(uri):
     """
     @return: instance for calling remote server or None if not a valid URI
@@ -475,5 +477,40 @@ def xmlrpcapi(uri):
     uriValidate = urlparse.urlparse(uri)
     if not uriValidate[0] or not uriValidate[1]:
         return None
+    requested_uri = uri
+    #print("xmlrpcapi(%s) host = %s" % (uri, uriValidate.hostname))
+    # see if we should connect directly to this URI,
+    # or instead fork an SSH tunnel and go through that
+    dest_hostname = uriValidate.hostname
+    dest_port = uriValidate.port
+    if 'ROS_SSH' in os.environ:
+        # if we are connecting locally, don't worry about it
+        #if uriValidate.hostname != 'localhost' and uriValidate.hostname != '127.0.0.1':
+        if True:
+            # see if we already have a tunnel to this URI
+            if uri in _ssh_tunnels:
+                uri = _ssh_tunnels[uri]['local_uri']
+            else:
+                print(" need to create a tunnel!")
+                import socket
+                # first, ask the OS for a free port to listen on
+                port_probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                port_probe.bind(('', 0))
+                local_port = port_probe.getsockname()[1]
+                port_probe.close() # the OS won't re-allocate this port anytime soon
+                ssh_incantation = ["ssh", "-nNT", "-L", "%d:localhost:%d" % (local_port, dest_port), str(dest_hostname)]
+                print("spawning ssh tunnel with: %s" % " ".join(ssh_incantation))
+                try:
+                    import subprocess
+                    _ssh_tunnels[uri] = {}
+                    _ssh_tunnels[uri]['local_port'] = local_port
+                    _ssh_tunnels[uri]['process'] = subprocess.Popen(ssh_incantation, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    time.sleep(1) # HAXX. do a retry-loop
+                    _ssh_tunnels[uri]['local_uri'] = "http://localhost:%d" % local_port
+                    uri = _ssh_tunnels[uri]['local_uri']
+                except Exception as e:
+                    print("OH NOES couldn't create tunnel: %s" % str(e))
+                    raise
+        print("remapped xmlrpcapi request: %s => %s" % (requested_uri, uri))
     return xmlrpcclient.ServerProxy(uri)
 
