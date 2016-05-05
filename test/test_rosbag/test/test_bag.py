@@ -281,8 +281,8 @@ class TestRosbag(unittest.TestCase):
             info = bag.get_compression_info()
             self.assertEquals(info.compression, rosbag.Compression.NONE)
             # 167 Bytes of overhead, 50 Bytes per Int32.
-            self.assertEquals(info.uncompressed, 5167)
-            self.assertEquals(info.compressed, 5167)
+            self.assertEquals(info.uncompressed, 5166)
+            self.assertEquals(info.compressed, 5166)
         
         with rosbag.Bag(fn, mode='w', compression=rosbag.Compression.BZ2) as bag:
             for i in xrange(100):
@@ -291,7 +291,7 @@ class TestRosbag(unittest.TestCase):
         with rosbag.Bag(fn) as bag:
             info = bag.get_compression_info()
             self.assertEquals(info.compression, rosbag.Compression.BZ2)
-            self.assertEquals(info.uncompressed, 5167)
+            self.assertEquals(info.uncompressed, 5166)
             
             # the value varies each run, I suspect based on rand, but seems
             # to generally be around 960 to 980 on my comp
