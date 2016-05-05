@@ -33,10 +33,12 @@
 #
 # test_bag.py
 
+import hashlib
 import heapq
 import os
 import shutil
 import sys
+import tempfile
 import time
 import unittest
 
@@ -187,6 +189,33 @@ class TestRosbag(unittest.TestCase):
         msgs = list(rosbag.Bag(outbag_filename).read_messages())
 
         self.assertEquals(len(msgs), 5)
+
+    # Regression test for issue #736
+    def test_trivial_rosbag_filter(self):
+        tempdir = tempfile.mkdtemp()
+        try: 
+            inbag_filename = os.path.join(tempdir, 'test_rosbag_filter__1.bag') 
+            outbag1_filename = os.path.join(tempdir, 'test_rosbag_filter__2.bag') 
+            outbag2_filename = os.path.join(tempdir, 'test_rosbag_filter__3.bag') 
+
+            with rosbag.Bag(inbag_filename, 'w') as b:
+                for i in range(30):
+                    msg = ColorRGBA()
+                    t = genpy.Time.from_sec(i)
+                    b.write('/ints' + str(i), msg, t)
+
+            # filtering multiple times should not affect the filtered rosbag
+            cmd = 'rosbag filter %s %s "True"'
+            os.system(cmd % (inbag_filename, outbag1_filename))
+            os.system(cmd % (outbag1_filename, outbag2_filename))
+            
+            with open(outbag1_filename, 'r') as h:
+                outbag1_md5 = hashlib.md5(h.read()).hexdigest()
+            with open(outbag2_filename, 'r') as h:
+                outbag2_md5 = hashlib.md5(h.read()).hexdigest()
+            self.assertEquals(outbag1_md5, outbag2_md5)
+        finally:
+            shutil.rmtree(tempdir)
 
     def test_reindex_works(self):
         fn = '/tmp/test_reindex_works.bag'
