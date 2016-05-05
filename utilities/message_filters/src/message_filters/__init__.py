@@ -30,9 +30,14 @@ Message Filter Objects
 ======================
 """
 
+from __future__ import print_function  # DEBUG
 import itertools
+import time  # DEBUG
 import threading
 import rospy
+
+import numpy as np
+
 
 class SimpleFilter(object):
 
@@ -184,9 +189,9 @@ class TimeSynchronizer(SimpleFilter):
 
     def connectInput(self, fs):
         self.queues = [{} for f in fs]
-        self.input_connections = [f.registerCallback(self.add, q) for (f, q) in zip(fs, self.queues)]
+        self.input_connections = [f.registerCallback(self.add, i_q, q) for i_q, (f, q) in enumerate(zip(fs, self.queues))]
 
-    def add(self, msg, my_queue):
+    def add(self, msg, my_queue_index, my_queue):
         self.lock.acquire()
         my_queue[msg.header.stamp] = msg
         while len(my_queue) > self.queue_size:
@@ -215,13 +220,35 @@ class ApproximateTimeSynchronizer(TimeSynchronizer):
     def __init__(self, fs, queue_size, slop):
         TimeSynchronizer.__init__(self, fs, queue_size)
         self.slop = rospy.Duration.from_sec(slop)
+        self.times = 0  # DEBUG
 
-    def add(self, msg, my_queue):
+    def add(self, msg, my_queue_index, my_queue):
         self.lock.acquire()
+        print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')  # DEBUG
+        self.times += 1  # DEBUG
         my_queue[msg.header.stamp] = msg
         while len(my_queue) > self.queue_size:
             del my_queue[min(my_queue)]
-        for vv in itertools.product(*[list(q.keys()) for q in self.queues]):
+        t_start = time.time()
+        print('times:', self.times, 'i_topic', my_queue_index,
+              'n_topics:', len(self.queues),
+              'current_queue_sizes:', map(len, self.queues))  # DEBUG
+        iterations = 0
+        # self.queues = [topic_0 {stamp: msg}, topic_1 {stamp: msg}, ...]
+        stamps = []
+        stamp_ints = []
+        for i_q, q in enumerate(self.queues):
+            if i_q == my_queue_index:
+                continue
+            s = np.array(q.keys())
+            s_ints = np.array([abs(ss.to_nsec() - msg.header.stamp.to_nsec()) for ss in s])
+            in_range = s_ints < self.slop.to_nsec()
+            stamp_ints.append(s_ints[in_range])
+            stamps.append(s[in_range])
+        for stamp_indices in itertools.product(*[np.argsort(s) for s in stamp_ints]):
+            iterations += 1  # DEBUG
+            vv = [stamps[i_topic][i_stamp] for i_topic, i_stamp in enumerate(stamp_indices)]
+            vv.insert(my_queue_index, msg.header.stamp)
             qt = list(zip(self.queues, vv))
             if ( ((max(vv) - min(vv)) < self.slop) and
                 (len([1 for q,t in qt if t not in q]) == 0) ):
@@ -229,4 +256,8 @@ class ApproximateTimeSynchronizer(TimeSynchronizer):
                 self.signalMessage(*msgs)
                 for q,t in qt:
                     del q[t]
+                break
+        print('iterations: {0} times'.format(iterations))  # DEBUG
+        print('elapsed_time: {0:.2} [s]'.format(time.time() - t_start))  # DEBUG
+        print('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')  # DEBUG
         self.lock.release()
