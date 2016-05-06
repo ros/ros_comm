@@ -530,7 +530,7 @@ class TCPROSTransport(Transport):
             raise TransportInitError(msg)  # bubble up
 
         self.endpoint_id = endpoint_id
-        self.dest_address = (dest_addr, dest_port)
+        self.dest_address = (dest_addr, dest_port) # TODO(codebot): port/addr will change if tunneled
 
         if rosgraph.network.use_ipv6():
             s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
@@ -552,40 +552,9 @@ class TCPROSTransport(Transport):
                 s.setsockopt(socket.SOL_TCP, socket.TCP_KEEPINTVL, 10)
         if timeout is not None:
             s.settimeout(timeout)
+
+        rospy.security.get_security().connect(s, dest_addr, dest_port, endpoint_id, timeout)
         self.socket = s
-
-        if 'ROS_SSH' in os.environ:
-            # set up ssh tunnel and connect through it
-            # first, ask the OS for a free port to listen on
-            port_probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            port_probe.bind(('', 0))
-            local_port = port_probe.getsockname()[1]
-            port_probe.close() # the OS won't re-allocate this port anytime soon
-            ssh_incantation = ["ssh", "-nNT", "-L", "%d:localhost:%d" % (local_port, dest_port), str(dest_addr)]
-            print("spawning ssh tunnel with: %s" % " ".join(ssh_incantation))
-            import time
-            try:
-                subprocess.Popen(ssh_incantation, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                time.sleep(1) # HAXX. do a retry-loop
-                self.socket.connect(('127.0.0.1', local_port))
-            except Exception as e:
-                print("OH NOES couldn't connect through tunnel: %s" % str(e))
-                raise
-
-        else:
-            # connect over raw sockets
-            try:
-                logdebug('connecting to ' + str(dest_addr)+ ' ' + str(dest_port))
-                self.socket.connect((dest_addr, dest_port))
-            except TransportInitError as tie:
-                rospyerr("Unable to initiate TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, traceback.format_exc()))
-                raise
-            except Exception as e:
-                #logerr("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, str(e)))
-                rospywarn("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, traceback.format_exc()))
-                # FATAL: no reconnection as error is unknown
-                self.close()
-                raise TransportInitError(str(e)) #re-raise i/o error
 
         try:
             self.write_header()
