@@ -4,10 +4,6 @@ import rospy
 __all__ = ('ConnectionBasedTransport',)
 
 
-SUBSCRIBED = 0
-NOT_SUBSCRIBED = 1
-
-
 # define a new metaclass which overrides the '__call__' function
 # See: http://martyalchin.com/2008/jan/10/simple-plugin-framework/
 class MetaConnectionBasedTransport(type):
@@ -25,19 +21,21 @@ class ConnectionBasedTransport(rospy.SubscribeListener):
     def __init__(self):
         super(ConnectionBasedTransport, self).__init__()
         self._publishers = []
-        self._ever_subscribed = False
-        self._connection_status = NOT_SUBSCRIBED
+        # self._connection_status has 3 meanings
+        # - None: never been subscribed
+        # - False: currently not subscribed but has been subscribed before
+        # - True: currently subscribed
+        self._connection_status = None
         rospy.Timer(rospy.Duration(5),
                     self._warn_never_subscribed_cb, oneshot=True)
 
     def _post_init(self):
         if rospy.get_param('~always_subscribe', False):
             self.subscribe()
-            self._connection_status = SUBSCRIBED
-            self._ever_subscribed = True
+            self._connection_status = True
 
     def _warn_never_subscribed_cb(self, timer_event):
-        if not self._ever_subscribed:
+        if self._connection_status is None:
             rospy.logwarn(
                 '[{name}] subscribes topics only with'
                 " child subscribers. Set '~always_subscribe' as True"
@@ -51,24 +49,22 @@ class ConnectionBasedTransport(rospy.SubscribeListener):
 
     def peer_subscribe(self, *args, **kwargs):
         rospy.logdebug('[{topic}] is subscribed'.format(topic=args[0]))
-        if self._connection_status == NOT_SUBSCRIBED:
+        if self._connection_status == False:
             self.subscribe()
-            self._connection_status = SUBSCRIBED
-            if not self._ever_subscribed:
-                self._ever_subscribed = True
+            self._connection_status = True
 
     def peer_unsubscribe(self, *args, **kwargs):
         rospy.logdebug('[{topic}] is unsubscribed'.format(topic=args[0]))
         if rospy.get_param('~always_subscribe', False):
             return  # do not unsubscribe
-        if self._connection_status == NOT_SUBSCRIBED:
+        if self._connection_status in [None, False]:
             return  # no need to unsubscribe
         for pub in self._publishers:
             if pub.get_num_connections() > 0:
                 break
         else:
             self.unsubscribe()
-            self._connection_status = NOT_SUBSCRIBED
+            self._connection_status = False
 
     def advertise(self, *args, **kwargs):
         # subscriber_listener should be 'self'
