@@ -1,25 +1,25 @@
 import rospy
 
 
-__all__ = ('ConnectionBasedTransport',)
+__all__ = ('LazyTransport',)
 
 
 # define a new metaclass which overrides the '__call__' function
 # See: http://martyalchin.com/2008/jan/10/simple-plugin-framework/
-class MetaConnectionBasedTransport(type):
+class MetaLazyTransport(type):
 
     def __call__(cls, *args, **kwargs):
-        """Called when you call ConnectionBasedTransport()"""
+        """Called when you call LazyTransport()"""
         obj = type.__call__(cls, *args, **kwargs)
         obj._post_init()
         return obj
 
 
-class ConnectionBasedTransport(rospy.SubscribeListener):
-    __metaclass__ = MetaConnectionBasedTransport
+class LazyTransport(rospy.SubscribeListener):
+    __metaclass__ = MetaLazyTransport
 
     def __init__(self):
-        super(ConnectionBasedTransport, self).__init__()
+        super(LazyTransport, self).__init__()
         self._publishers = []
         # self._connection_status has 3 meanings
         # - None: never been subscribed
