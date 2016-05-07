@@ -53,6 +53,7 @@ import select
 
 import rosgraph
 import rosgraph.network
+import rosgraph.security
 from genpy import DeserializationError, Message
 from rosgraph.network import read_ros_handshake_header, write_ros_handshake_header
 
@@ -553,7 +554,7 @@ class TCPROSTransport(Transport):
         if timeout is not None:
             s.settimeout(timeout)
 
-        rospy.security.get_security().connect(s, dest_addr, dest_port, endpoint_id, timeout)
+        rosgraph.security.get_security().connect(s, dest_addr, dest_port, endpoint_id, timeout)
         self.socket = s
 
         try:

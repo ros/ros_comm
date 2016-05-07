@@ -52,7 +52,7 @@ import rosgraph.roslogging
 
 import rospy.exceptions
 import rospy.rostime
-import rospy.security
+import rosgraph.security
 
 from rospy.names import *
 from rospy.impl.validators import ParameterInvalid
@@ -467,5 +467,5 @@ def xmlrpcapi(uri):
     """
     if uri is None:
         return None
-    return rospy.security.get_security().xmlrpcapi(uri)
+    return rosgraph.security.get_security().xmlrpcapi(uri)
 

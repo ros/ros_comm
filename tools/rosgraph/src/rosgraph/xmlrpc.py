@@ -65,6 +65,7 @@ except ImportError:
     import SocketServer as socketserver
 
 import rosgraph.network
+import rosgraph.security
 
 def isstring(s):
     """Small helper version to check an object is a string in a way that works
@@ -259,6 +260,9 @@ class XmlRpcNode(object):
 
             self.server.register_multicall_functions()
             self.server.register_instance(self.handler)
+
+            print(self.server.socket)
+            self.server.socket = rosgraph.security.get_security().wrap_socket(self.server.socket)
 
         except socket.error as e:
             if e.errno == 98:

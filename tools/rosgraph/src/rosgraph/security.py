@@ -5,6 +5,7 @@ import time
 import socket
 import subprocess
 import traceback
+import ssl
 from rospy.exceptions import TransportInitError
 
 try:
@@ -24,6 +25,12 @@ class Security(object):
     # TODO: add security logging stuff here
     def __init__(self):
         rospy.loginfo("security init")
+    def wrap_socket(self, sock):
+        """
+        Called whenever there is an opportunity to wrap a server socket.
+        The default implementation doesn't do anything.
+        """
+        return sock
 
 #########################################################################
 
@@ -196,6 +203,13 @@ extendedKeyUsage = serverAuth
             print("creating roscore certificate: %s" % openssl_incantation)
             subprocess.check_call(openssl_incantation.split(' '))
 
+    def wrap_socket(self, sock):
+        """
+        Called whenever there is an opportunity to wrap a server socket
+        """
+        print("SSLSecurity.wrap_socket")
+        # todo: return ssl.wrap_socket(sock, ...)
+        return sock
 
 #########################################################################
 _security = None
