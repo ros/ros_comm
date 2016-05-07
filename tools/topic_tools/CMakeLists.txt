@@ -101,7 +101,7 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/throttle_simtime.test)
   add_rostest(test/drop.test)
   add_rostest(test/relay.test)
-  add_rostest(test/connection_based_transport.test)
+  add_rostest(test/lazy_transport.test)
   ## Latched test disabled until underlying issue in roscpp is resolved,
   ## #3385, #3434.
   #rosbuild_add_rostest(test/relay_latched.test)
