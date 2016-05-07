@@ -207,6 +207,7 @@ def _rostopic_hz(topics, window_size=-1, filter_expr=None, use_wtime=False):
     :param window_size: number of messages to average over, -1 for infinite, ``int``
     :param filter_expr: Python filter expression that is called with m, the message instance
     """
+    _check_master()
     if rospy.is_shutdown():
         return
     rospy.init_node(NAME, anonymous=True)
