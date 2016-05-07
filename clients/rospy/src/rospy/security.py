@@ -116,6 +116,88 @@ class SSHSecurity(Security):
                 print("OH NOES couldn't connect through tunnel: %s" % str(e))
                 raise
 
+#########################################################################
+class SSLSecurity(Security):
+    def __init__(self):
+        super(SSLSecurity, self).__init__()
+        rospy.loginfo("  rospy.security.SSLSecurity init")
+        self.create_certs_if_needed()
+
+    def create_certs_if_needed(self):
+        print("checking if there is a root certificate available...")
+        kpath = os.path.join(os.path.expanduser('~'), '.ros', 'keys')
+        if not os.path.exists(kpath):
+            print("creating keys path: %s" % kpath)
+            os.makedirs(kpath)
+        root_cert_path = os.path.join(kpath, 'root.cer')
+        root_privkey_path = os.path.join(kpath, 'root.privkey.pem')
+        if not os.path.isfile(root_cert_path):
+            openssl_incantation = "openssl req -batch -newkey rsa:4096 -subj /C=US/ST=CA/O=ros -days 3650 -x509 -sha256 -nodes -out %s -keyout %s" % (root_cert_path, root_privkey_path)
+            print("creating root certificate and key: %s" % openssl_incantation)
+            subprocess.check_call(openssl_incantation.split(' '))
+
+        root_db_path = os.path.join(kpath, 'certindex')
+        if not os.path.isfile(root_db_path):
+            open(root_db_path, 'w').close() # creates an empty file
+
+        root_serial_path = os.path.join(kpath, 'serial')
+        if not os.path.isfile(root_serial_path):
+            with open(root_serial_path, 'w') as f:
+                f.write('000a')
+
+        openssl_conf_path = os.path.join(kpath, 'openssl.conf')
+        if not os.path.isfile(openssl_conf_path):
+            with open(openssl_conf_path, 'w') as f:
+                f.write('''\
+[ ca ]
+default_ca = ros_ca
+
+[ crl_ext ]
+authorityKeyIdentifier=keyid:always
+
+[ ros_ca ]
+new_certs_dir = /tmp
+unique_subject = no
+certificate = {0}
+database = {1}
+private_key = {2}
+serial = {3}
+default_days = 3650
+default_md = sha512
+policy = ros_ca_policy
+x509_extensions = ros_ca_extensions
+
+[ ros_ca_policy ]
+commonName = supplied
+stateOrProvinceName = optional
+countryName = optional
+emailAddress = optional
+organizationName = optional
+organizationalUnitName = optional
+
+[ ros_ca_extensions ]
+basicConstraints = CA:false
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always
+keyUsage = digitalSignature,keyEncipherment
+extendedKeyUsage = serverAuth
+'''.format(root_cert_path, root_db_path, root_privkey_path, root_serial_path))
+
+        roscore_csr_path = os.path.join(kpath, 'roscore.csr')
+        roscore_key_path = os.path.join(kpath, 'roscore.key')
+        if not os.path.isfile(roscore_csr_path):
+            openssl_incantation = r'openssl req -batch -subj /C=US/ST=CA/O=ros/CN=roscore -newkey rsa:4096 -sha256 -nodes -out {0} -keyout {1}'.format(roscore_csr_path, roscore_key_path)
+            print("creating roscore certificate signing request and key: %s" % openssl_incantation)
+            subprocess.check_call(openssl_incantation.split(' '))
+
+        roscore_cert_path = os.path.join(kpath, 'roscore.cert')
+        if not os.path.isfile(roscore_cert_path):
+            openssl_incantation = "openssl ca -batch -config {0} -notext -in {1} -out {2}".format(openssl_conf_path, roscore_csr_path, roscore_cert_path)
+            print("creating roscore certificate: %s" % openssl_incantation)
+            subprocess.check_call(openssl_incantation.split(' '))
+
+
+#########################################################################
 _security = None
 def get_security():
     global _security
@@ -125,6 +207,8 @@ def get_security():
         if 'ROS_SECURITY' in os.environ:
             if os.environ['ROS_SECURITY'] == 'ssh':
                 _security = SSHSecurity()
+            elif os.environ['ROS_SECURITY'] == 'ssl':
+                _security = SSLSecurity()
             else:
                 raise ValueError("unknown ROS security model: [%s]" % os.environ['ROS_SECURITY'])
         else:

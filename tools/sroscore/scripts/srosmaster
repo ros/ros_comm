@@ -1,0 +1,3 @@
+#!/usr/bin/env python
+import sroscore
+sroscore.rosmaster_main()
