@@ -63,7 +63,7 @@ class Master(object):
         self.uri = None
 
         handler = rosmaster.master_api.ROSMasterHandler(self.num_workers)
-        master_node = rosgraph.xmlrpc.XmlRpcNode(self.port, handler)
+        master_node = rosgraph.xmlrpc.XmlRpcNode(self.port, handler, node_name='master')
         master_node.start()
 
         # poll for initialization

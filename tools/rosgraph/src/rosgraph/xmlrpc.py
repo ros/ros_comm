@@ -155,7 +155,7 @@ class XmlRpcNode(object):
     XmlRpcNode is initialized when the uri field has a value.
     """
 
-    def __init__(self, port=0, rpc_handler=None, on_run_error=None):
+    def __init__(self, port=0, rpc_handler=None, on_run_error=None, node_name=None):
         """
         XML RPC Node constructor
         :param port: port to use for starting XML-RPC API. Set to 0 or omit to bind to any available port, ``int``
@@ -164,6 +164,8 @@ class XmlRpcNode(object):
           Exception. Server always terminates if run() throws, but this
           enables cleanup routines to be invoked if server goes down, as
           well as include additional debugging. ``fn(Exception)``
+        :param node_name: needed for security policies which generate 
+          certificate names based on the node name
         """
         super(XmlRpcNode, self).__init__()
 
@@ -175,6 +177,9 @@ class XmlRpcNode(object):
         self.port = port
         self.is_shutdown = False
         self.on_run_error = on_run_error
+        self.node_name = node_name 
+        if node_name is None:
+            raise ValueError('node_name not passed to XmlRpcNode.__init__()')
 
     def shutdown(self, reason):
         """
@@ -227,7 +232,6 @@ class XmlRpcNode(object):
             port = self.port or 0 #0 = any
 
             bind_address = rosgraph.network.get_bind_address()
-            print("xml-rpc server binding to %s" % (repr(bind_address)))
             logger.info("XML-RPC server binding to %s:%d" % (bind_address, port))
             
             self.server = ThreadingXMLRPCServer((bind_address, port), log_requests)
@@ -261,8 +265,7 @@ class XmlRpcNode(object):
             self.server.register_multicall_functions()
             self.server.register_instance(self.handler)
 
-            print(self.server.socket)
-            self.server.socket = rosgraph.security.get_security().wrap_socket(self.server.socket)
+            self.server.socket = rosgraph.security.get_security().wrap_socket(self.server.socket, self.node_name)
 
         except socket.error as e:
             if e.errno == 98:

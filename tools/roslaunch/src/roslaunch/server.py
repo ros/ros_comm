@@ -348,7 +348,7 @@ class ROSLaunchNode(xmlrpc.XmlRpcNode):
         @param handler: xmlrpc api handler
         @type  handler: L{ROSLaunchBaseHandler}
         """
-        super(ROSLaunchNode, self).__init__(0, handler)
+        super(ROSLaunchNode, self).__init__(0, handler, node_name='roslaunch')
 
     def start(self):
         """
