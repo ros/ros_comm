@@ -1347,7 +1347,7 @@ def _rostopic_cmd_type(argv):
 def _rostopic_cmd_hz(argv):
     args = argv[2:]
     from optparse import OptionParser
-    parser = OptionParser(usage="usage: %prog hz /topic_0 [/topic_1 [[topic_2 [..]]]] ..", prog=NAME)
+    parser = OptionParser(usage="usage: %prog hz [options] /topic_0 [/topic_1 [[topic_2 [..]]]]", prog=NAME)
     parser.add_option("-w", "--window",
                       dest="window_size", default=-1,
                       help="window size, in # of messages, for calculating rate", metavar="WINDOW")
