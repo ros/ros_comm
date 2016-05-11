@@ -99,11 +99,12 @@ class ROSTopicHz(object):
     """
     def __init__(self, window_size, filter_expr=None, use_wtime=False):
         import threading
+        from collections import defaultdict
         self.lock = threading.Lock()
-        self.last_printed_tn = 0
-        self.msg_t0 = -1.
-        self.msg_tn = 0
-        self.times =[]
+        self.last_printed_tn = defaultdict(int)
+        self.msg_t0 = defaultdict(lambda: -1)
+        self.msg_tn = defaultdict(int)
+        self.times = defaultdict(list)
         self.filter_expr = filter_expr
         self.use_wtime = use_wtime
         
@@ -112,10 +113,11 @@ class ROSTopicHz(object):
             window_size = 50000
         self.window_size = window_size
                 
-    def callback_hz(self, m):
+    def callback_hz(self, m, topic):
         """
         ros sub callback
         :param m: Message instance
+        :param topic: Topic name
         """
         # #694: ignore messages that don't match filter
         if self.filter_expr is not None and not self.filter_expr(m):
@@ -126,26 +128,26 @@ class ROSTopicHz(object):
 
             # time reset
             if curr_rostime.is_zero():
-                if len(self.times) > 0:
+                if len(self.times[topic]) > 0:
                     print("time has reset, resetting counters")
-                    self.times = []
+                    self.times[topic] = []
                 return
             
             curr = curr_rostime.to_sec() if not self.use_wtime else \
                     rospy.Time.from_sec(time.time()).to_sec()
-            if self.msg_t0 < 0 or self.msg_t0 > curr:
-                self.msg_t0 = curr
-                self.msg_tn = curr
-                self.times = []
+            if self.msg_t0[topic] < 0 or self.msg_t0[topic] > curr:
+                self.msg_t0[topic] = curr
+                self.msg_tn[topic] = curr
+                self.times[topic] = []
             else:
-                self.times.append(curr - self.msg_tn)
-                self.msg_tn = curr
+                self.times[topic].append(curr - self.msg_tn[topic])
+                self.msg_tn[topic] = curr
 
             #only keep statistics for the last 10000 messages so as not to run out of memory
-            if len(self.times) > self.window_size - 1:
-                self.times.pop(0)
+            if len(self.times[topic]) > self.window_size - 1:
+                self.times[topic].pop(0)
 
-    def get_hz(self):
+    def get_hz(self, topic):
         """
         calculate the average publising rate
 
@@ -153,9 +155,9 @@ class ROSTopicHz(object):
             (rate, min_delta, max_delta, standard deviation, window number)
             None when waiting for the first message or there is no new one
         """
-        if not self.times:
+        if not self.times[topic]:
             return
-        elif self.msg_tn == self.last_printed_tn:
+        elif self.msg_tn[topic] == self.last_printed_tn[topic]:
             return
         with self.lock:
             #frequency
@@ -167,34 +169,76 @@ class ROSTopicHz(object):
             # makes it easier for users to see when a publisher dies,
             # so the decay is no longer necessary.
             
-            n = len(self.times)
+            n = len(self.times[topic])
             #rate = (n - 1) / (rospy.get_time() - self.msg_t0)
-            mean = sum(self.times) / n
+            mean = sum(self.times[topic]) / n
             rate = 1./mean if mean > 0. else 0
 
             #std dev
-            std_dev = math.sqrt(sum((x - mean)**2 for x in self.times) /n)
+            std_dev = math.sqrt(sum((x - mean)**2 for x in self.times[topic]) /n)
 
             # min and max
-            max_delta = max(self.times)
-            min_delta = min(self.times)
+            max_delta = max(self.times[topic])
+            min_delta = min(self.times[topic])
 
-            self.last_printed_tn = self.msg_tn
+            self.last_printed_tn[topic] = self.msg_tn[topic]
 
         return rate, min_delta, max_delta, std_dev, n+1
 
-    def print_hz(self):
+    def print_hz(self, topics):
         """
         print the average publishing rate to screen
         """
-        if not self.times:
+        if not any(self.times[topic] for topic in topics):
             return
-        ret = self.get_hz()
-        if ret is None:
-            print("no new messages")
+        if len(topics) == 1:
+            ret = self.get_hz(topics[0])
+            if ret is None:
+                print("no new messages")
+                return
+            rate, min_delta, max_delta, std_dev, window = ret
+            print("average rate: %.3f\n\tmin: %.3fs max: %.3fs std dev: %.5fs window: %s"%(rate, min_delta, max_delta, std_dev, window))
             return
-        rate, min_delta, max_delta, std_dev, window = ret
-        print("average rate: %.3f\n\tmin: %.3fs max: %.3fs std dev: %.5fs window: %s"%(rate, min_delta, max_delta, std_dev, window))
+
+        # monitoring multiple topics' hz
+        header = ['topic', 'rate', 'min_delta', 'max_delta', 'std_dev', 'window']
+        stats = {h: [] for h in header}
+        if not any(self.times.values()):
+            return  # wait for initial message
+        for topic in topics:
+            hz_stat = self.get_hz(topic)
+            if hz_stat is None:
+                continue
+            rate, min_delta, max_delta, std_dev, window = hz_stat
+            stats['window'].append(str(window))
+            stats['topic'].append(topic)
+            stats['rate'].append('{:.4}'.format(rate))
+            stats['min_delta'].append('{:.4}'.format(min_delta))
+            stats['max_delta'].append('{:.4}'.format(max_delta))
+            stats['std_dev'].append('{:.4}'.format(std_dev))
+            stats['window'].append(str(window))
+        if len(stats['topic']) == 1:
+            print('no new messages')
+            return
+        print(_get_ascii_table(header, stats))
+
+def _get_ascii_table(header, cols):
+    # compose table with left alignment
+    header_aligned = []
+    col_widths = []
+    for h in header:
+        col_width = max(len(h), max(len(el) for el in cols[h]))
+        col_widths.append(col_width)
+        header_aligned.append(h.center(col_width))
+        for i, el in enumerate(cols[h]):
+            cols[h][i] = str(cols[h][i]).ljust(col_width)
+    # sum of col and each 3 spaces width
+    table_width = sum(col_widths) + 3 * (len(header) - 1)
+    n_rows = len(cols[header[0]])
+    body = '\n'.join('   '.join(cols[h][i] for h in header) for i in xrange(n_rows))
+    table = '{header}\n{hline}\n{body}\n'.format(
+        header='   '.join(header_aligned), hline='=' * table_width, body=body)
+    return table
 
 def _sleep(duration):
     rospy.rostime.wallsleep(duration)
@@ -211,18 +255,16 @@ def _rostopic_hz(topics, window_size=-1, filter_expr=None, use_wtime=False):
     if rospy.is_shutdown():
         return
     rospy.init_node(NAME, anonymous=True)
-    hz_checkers = []
+    rt = ROSTopicHz(window_size, filter_expr=filter_expr, use_wtime=use_wtime)
     for topic in topics:
         msg_class, real_topic, _ = get_topic_class(topic, blocking=True) # pause hz until topic is published
-        rt = ROSTopicHz(window_size, filter_expr=filter_expr, use_wtime=use_wtime)
         # we use a large buffer size as we don't know what sort of messages we're dealing with.
         # may parameterize this in the future
         if filter_expr is not None:
             # have to subscribe with topic_type
-            rospy.Subscriber(real_topic, msg_class, rt.callback_hz)
+            rospy.Subscriber(real_topic, msg_class, rt.callback_hz, callback_args=topic)
         else:
-            rospy.Subscriber(real_topic, rospy.AnyMsg, rt.callback_hz)
-        hz_checkers.append(rt)
+            rospy.Subscriber(real_topic, rospy.AnyMsg, rt.callback_hz, callback_args=topic)
         print("subscribed to [%s]" % real_topic)
 
     if rospy.get_param('use_sim_time', False):
@@ -230,44 +272,7 @@ def _rostopic_hz(topics, window_size=-1, filter_expr=None, use_wtime=False):
 
     while not rospy.is_shutdown():
         _sleep(1.0)
-        if len(topics) == 1:
-            hz_checkers[0].print_hz()
-            continue
-        # monitoring multiple topics' hz
-        header = ['topic', 'rate', 'min_delta', 'max_delta', 'std_dev', 'window']
-        stats = {h: [] for h in header}
-        if not any(rt.times for rt in hz_checkers):
-            continue  # wait for initial message
-        for topic, rt in zip(topics, hz_checkers):
-            hz_stat = rt.get_hz()
-            if hz_stat is None:
-                continue
-            rate, min_delta, max_delta, std_dev, window = hz_stat
-            stats['topic'].append(topic)
-            stats['rate'].append('{:.4}'.format(rate))
-            stats['min_delta'].append('{:.4}'.format(min_delta))
-            stats['max_delta'].append('{:.4}'.format(max_delta))
-            stats['std_dev'].append('{:.4}'.format(std_dev))
-            stats['window'].append(str(window))
-        if len(stats['topic']) == 1:
-            print('no new messages')
-            continue
-        # compose table with left alignment
-        header_aligned = []
-        col_widths = []
-        for h in header:
-            col_width = max(len(h), max(len(el) for el in stats[h]))
-            col_widths.append(col_width)
-            header_aligned.append(h.center(col_width))
-            for i, el in enumerate(stats[h]):
-                stats[h][i] = stats[h][i].ljust(col_width)
-        # sum of col and each 3 spaces width
-        table_width = sum(col_widths) + 3 * (len(header) - 1)
-        body = '\n'.join('   '.join(stats[h][i] for h in header) for i in xrange(len(stats['topic'])))
-        table = '{header}\n{hline}\n{body}\n'.format(
-            header='   '.join(header_aligned), hline='=' * table_width, body=body)
-        print(table)
-
+        rt.print_hz(topics)
 
 class ROSTopicDelay(object):
 
