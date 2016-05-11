@@ -65,7 +65,7 @@ except ImportError:
     import SocketServer as socketserver
 
 import rosgraph.network
-import rosgraph.security
+import rosgraph.security as security
 
 def isstring(s):
     """Small helper version to check an object is a string in a way that works
@@ -248,24 +248,25 @@ class XmlRpcNode(object):
             uri = None
             override = rosgraph.network.get_address_override()
             if override:
-                uri = 'http://%s:%s/'%(override, self.port)
+                uri = '%s://%s:%s/'%(security.get_security().xmlrpc_protocol(),override, self.port)
             else:
                 try:
                     hostname = socket.gethostname()
                     if hostname and not hostname == 'localhost' and not hostname.startswith('127.') and hostname != '::':
-                        uri = 'http://%s:%s/'%(hostname, self.port)
+                        uri = '%s://%s:%s/'%(security.get_security().xmlrpc_protocol(),hostname, self.port)
                 except:
                     pass
             if not uri:
-                uri = 'http://%s:%s/'%(rosgraph.network.get_local_address(), self.port)
+                uri = '%s://%s:%s/'%(security.get_security().xmlrpc_protocol(),rosgraph.network.get_local_address(), self.port)
             self.set_uri(uri)
             
-            logger.info("Started XML-RPC server [%s]", self.uri)
+            print("Started XML-RPC server [%s]", self.uri)
 
             self.server.register_multicall_functions()
             self.server.register_instance(self.handler)
 
-            self.server.socket = rosgraph.security.get_security().wrap_socket(self.server.socket, self.node_name)
+            print("wrapping TLS socket on port %d" % self.port)
+            self.server.socket = security.get_security().wrap_socket(self.server.socket, self.node_name)
 
         except socket.error as e:
             if e.errno == 98:

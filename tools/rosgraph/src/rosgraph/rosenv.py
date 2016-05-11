@@ -69,6 +69,11 @@ def get_master_uri(env=None, argv=None):
                 if not val:
                     raise ValueError("__master remapping argument '%s' improperly specified"%arg)
                 return val
+        if env['ROS_SECURITY'] == 'ssl' and \
+            env[ROS_MASTER_URI].split('://')[0] == 'http':
+            print("INFO: ROS_SECURITY is set to SSL but ROS_MASTER_URI is not HTTPS. I'll fix that for you.")
+            return 'https://' + env[ROS_MASTER_URI].split('://')[1]
+            
         return env[ROS_MASTER_URI]
     except KeyError as e:
         return None

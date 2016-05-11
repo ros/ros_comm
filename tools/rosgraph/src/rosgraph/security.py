@@ -8,6 +8,7 @@ import socket
 import subprocess
 import traceback
 import ssl
+import rosgraph.masterapi
 #from rospy.exceptions import TransportInitError
 
 try:
@@ -34,6 +35,9 @@ class Security(object):
         The default implementation doesn't do anything.
         """
         return sock
+    def xmlrpc_protocol(self):
+        return 'http'
+
 
 #########################################################################
 
@@ -48,7 +52,7 @@ class NoSecurity(Security):
         return xmlrpcclient.ServerProxy(uri)
     def connect(self, sock, dest_addr, dest_port, endpoint_id, timeout=None):
         try:
-            _logger.info('connecting to ' + str(dest_addr)+ ' ' + str(dest_port))
+            _logger.info('connecting to '+str(dest_addr)+' '+str(dest_port))
             sock.connect((dest_addr, dest_port))
         #except TransportInitError as tie:
         #    rospyerr("Unable to initiate TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, traceback.format_exc()))
@@ -135,6 +139,48 @@ class SSLSecurity(Security):
         self.openssl_conf_path = os.path.join(self.kpath, 'openssl.conf')
         self.root_ca_path = os.path.join(self.kpath, 'root.ca')
 
+        # TODO: be able to change this, for "strict mode" at some point
+        self.cert_verify_mode = ssl.CERT_OPTIONAL
+
+        self.server_context_ = None
+        self.client_contexts_ = {}
+
+    def request_cert(self, node_name, mode):
+        print("requesting certificate for node [%s] as %s" % (node_name, mode))
+        self.master_proxy = rosgraph.masterapi.Master(node_name)
+        print("about to query master PID...")
+        master_pid = self.master_proxy.getPid()
+        print("security master pid query: %d" % master_pid)
+
+        raise Exception
+
+    def create_context(self, mode, node_name):
+        print("Security.create_context(%s, %s)" % (mode, node_name))
+        context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+        context.verify_mode = self.cert_verify_mode
+        if mode != 'server' and mode != 'client':
+            raise ValueError("unknown SSL context mode: [%s]" % mode)
+        keyfile  = os.path.join(self.kpath, node_name + '.' + mode + '.key')
+        certfile = os.path.join(self.kpath, node_name + '.' + mode + '.cert')
+        if not os.path.isfile(keyfile) or not os.path.isfile(certfile):
+            self.request_cert(node_name, mode)
+        print("loading %s and %s" % (certfile, keyfile))
+        context.load_cert_chain(certfile, keyfile=keyfile)
+        return context
+
+    def get_server_context(self, node_name):
+        # TODO: request root CA if we don't already have it
+        if self.server_context_ is None:
+            self.server_context_ = self.create_context('server', node_name)
+        return self.server_context_
+
+    def get_client_context(self, node_name):
+        # TODO: request root CA if we don't already have it
+        print("Security.get_client_context(%s)" % node_name)
+        if not node_name in self.client_contexts_:
+            self.client_contexts_[node_name] = self.create_context('server', node_name)
+        return self.client_contexts_[node_name]
+
     def create_certs_if_needed(self):
         if not os.path.exists(self.kpath):
             print("creating keys path: %s" % self.kpath)
@@ -201,6 +247,8 @@ extendedKeyUsage = serverAuth
 '''.format(self.root_cert_path, root_db_path, self.root_key_path, root_serial_path))
         self.create_cert('master','server')
         self.create_cert('master','client')
+        self.create_cert('roslaunch','server')
+        self.create_cert('roslaunch','client')
 
     def create_cert(self, node_name, suffix):
         if not names.is_legal_base_name(node_name):
@@ -238,27 +286,26 @@ extendedKeyUsage = serverAuth
         if not names.is_legal_base_name(node_name):
             raise ValueError("security.wrap_socket() received illegal node name: %s" % node_name)
 
-        if (node_name == 'roslaunch'):
+        #if (node_name == 'roslaunch'):
             # TODO: not sure how to handle this, since roscore fires 
             # off a roslaunch xmlrpc server to bring up master, so it's
             # kind of a chicken-and-egg. Maybe special-case this socket
             # so it can only receive from localhost?
-            return sock
+        #    return sock
 
-        if (node_name == 'master'):
+        if node_name == 'master' or node_name == 'roslaunch':
             self.create_certs_if_needed()
 
-        keyfile  = os.path.join(self.kpath, node_name + '.server.key' )
-        certfile = os.path.join(self.kpath, node_name + '.server.cert')
+        context = self.get_server_context(node_name)
+        return context.wrap_socket(sock, server_side=True)
 
-        # TODO: request root CA if we don't already have it
-        
-        cert_reqs = ssl.CERT_OPTIONAL # TODO: this needs to be an option somehow; this is what distinguishes "learning mode" from "strict mode"
-        ssl_version = ssl.PROTOCOL_TLSv1 # TODO: update as we move to newer distros
-        return ssl.wrap_socket(sock, keyfile=keyfile, certfile=certfile,
-            server_side=True, cert_reqs = cert_reqs,
-            ca_certs = self.root_ca_path,
-            ssl_version = ssl_version)
+    def xmlrpcapi(self, uri, node_name):
+        print("SSLSecurity.xmlrpcapi(%s, %s)" % (uri, node_name))
+        context = self.get_client_context(node_name)
+        return xmlrpcclient.ServerProxy(uri, context=context)
+
+    def xmlrpc_protocol(self):
+        return 'https'
 
 #########################################################################
 _security = None

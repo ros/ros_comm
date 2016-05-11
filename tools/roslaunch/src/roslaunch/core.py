@@ -38,6 +38,7 @@ Core roslaunch model and lower-level utility routines.
 
 import os
 import logging
+import rosgraph.security
 
 import socket
 import sys
@@ -266,6 +267,7 @@ class Master(object):
         self.auto = None # no longer used
         self.type = type_ or Master.ROSMASTER
         self.uri = uri or get_master_uri_env()
+        print("roslaunch.Master().uri = %s" % self.uri)
         
     def get_host(self):
         # parse from the URI
@@ -290,7 +292,9 @@ class Master(object):
         """
         :returns:: XMLRPC proxy for communicating with master, ``xmlrpc.client.ServerProxy``
         """
-        return ServerProxy(self.uri)
+        print("roslaunch about to try to call master at [%s]" % repr(self.uri))
+        return rosgraph.security.get_security().xmlrpcapi(self.uri, 'roslaunch')
+        #return ServerProxy(self.uri)
     
     def get_multi(self):
         """

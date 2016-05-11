@@ -67,6 +67,7 @@ except ImportError:
     import urlparse
 
 from rosgraph.xmlrpc import XmlRpcHandler
+import rosgraph.security as security
 
 import rospy.names
 import rospy.rostime
@@ -444,7 +445,7 @@ class ROSHandler(XmlRpcHandler):
             tries += 1
             try:
                 code, msg, result = \
-                      xmlrpcapi(pub_uri).requestTopic(caller_id, topic, protocols)
+                      security.get_security().xmlrpcapi(pub_uri, self.name).requestTopic(caller_id, topic, protocols)
                 success = True
             except Exception as e:
                 if tries >= max_num_tries:
