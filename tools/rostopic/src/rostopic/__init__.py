@@ -189,8 +189,6 @@ class ROSTopicHz(object):
         """
         print the average publishing rate to screen
         """
-        if not any(self.times[topic] for topic in topics):
-            return
         if len(topics) == 1:
             ret = self.get_hz(topics[0])
             if ret is None:
