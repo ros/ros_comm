@@ -138,26 +138,41 @@ class SSLSecurity(Security):
         self.kpath = os.path.join(os.path.expanduser('~'), '.ros', 'keys')
         self.openssl_conf_path = os.path.join(self.kpath, 'openssl.conf')
         self.root_ca_path = os.path.join(self.kpath, 'root.ca')
+        self.root_cert_path = os.path.join(self.kpath, 'root.cer')
 
         # TODO: be able to change this, for "strict mode" at some point
         self.cert_verify_mode = ssl.CERT_OPTIONAL
 
         self.server_context_ = None
         self.client_contexts_ = {}
+        self.certs = {}
+
+    def node_name_to_cert_stem(self, node_name):
+        # TODO: convert anonymous names into something consistent, so we
+        # don't end up generating arbitrary numbers of them
+        stem = node_name
+        if (stem[0] == '/'):
+            stem = stem[1:]
+        return stem.replace('/', '__')
 
     def request_cert(self, node_name, mode):
-        print("requesting certificate for node [%s] as %s" % (node_name, mode))
-        self.master_proxy = rosgraph.masterapi.Master(node_name)
-        print("about to query master PID...")
-        master_pid = self.master_proxy.getPid()
-        print("security master pid query: %d" % master_pid)
-
-        raise Exception
+        print("request_cert(%s, %s)" % (node_name, mode))
+        stem = self.node_name_to_cert_stem(node_name)
+        cert_name = "%s.%s" % (node_name, mode)
+        if not cert_name in self.certs:
+            print("requesting certificate %s from master..." % cert_name)
+            master_proxy = rosgraph.masterapi.Master(node_name)
+            response = master_proxy.getCertificates(node_name)
+            #print("getCertificates response: %s" % repr(response))
+            # todo: error checking would be good
+            self.certs[cert_name] = response[cert_name + '.cert']
+        return self.certs[cert_name]
 
     def create_context(self, mode, node_name):
         print("Security.create_context(%s, %s)" % (mode, node_name))
         context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
         context.verify_mode = self.cert_verify_mode
+        context.load_verify_locations(cafile=self.root_cert_path)
         if mode != 'server' and mode != 'client':
             raise ValueError("unknown SSL context mode: [%s]" % mode)
         keyfile  = os.path.join(self.kpath, node_name + '.' + mode + '.key')
@@ -178,14 +193,25 @@ class SSLSecurity(Security):
         # TODO: request root CA if we don't already have it
         print("Security.get_client_context(%s)" % node_name)
         if not node_name in self.client_contexts_:
-            self.client_contexts_[node_name] = self.create_context('server', node_name)
+            #self.client_contexts_[node_name] = self.create_context('server', node_name)
+            print("creating client context for %s" % node_name)
+            context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+            context.verify_mode = self.cert_verify_mode
+            context.load_verify_locations(cafile=self.root_cert_path)
+            #keyfile  = os.path.join(self.kpath, node_name + '.' + mode + '.key')
+            #certfile = os.path.join(self.kpath, node_name + '.' + mode + '.cert')
+            #if not os.path.isfile(keyfile) or not os.path.isfile(certfile):
+            #    self.request_cert(node_name, mode)
+            #print("loading %s and %s" % (certfile, keyfile))
+            #context.load_cert_chain(certfile, keyfile=keyfile)
+            self.client_contexts_[node_name] = context
+            # TODO: add our client certificate here to allow the server to authenticate us
         return self.client_contexts_[node_name]
 
     def create_certs_if_needed(self):
         if not os.path.exists(self.kpath):
             print("creating keys path: %s" % self.kpath)
             os.makedirs(self.kpath)
-        self.root_cert_path = os.path.join(self.kpath, 'root.cer')
         self.root_key_path = os.path.join(self.kpath, 'root.key')
         if not os.path.isfile(self.root_cert_path) or \
            not os.path.isfile(self.root_key_path):
@@ -209,6 +235,7 @@ class SSLSecurity(Security):
             with open(root_serial_path, 'w') as f:
                 f.write('000a')
 
+        # TODO: need to set extendedKeyUsage to clientAuth for client certs
         if not os.path.isfile(self.openssl_conf_path):
             with open(self.openssl_conf_path, 'w') as f:
                 f.write('''\
@@ -242,8 +269,12 @@ organizationalUnitName = optional
 basicConstraints = CA:false
 subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid:always
-keyUsage = digitalSignature,keyEncipherment
+keyUsage = digitalSignature,keyEncipherment,keyAgreement
 extendedKeyUsage = serverAuth
+#subjectAltName = @alt_names
+#
+#[ alt_names ]
+#DNS.1 = localhost
 '''.format(self.root_cert_path, root_db_path, self.root_key_path, root_serial_path))
         self.create_cert('master','server')
         self.create_cert('master','client')
@@ -306,6 +337,41 @@ extendedKeyUsage = serverAuth
 
     def xmlrpc_protocol(self):
         return 'https'
+
+    def cert_path(self, node_name, mode):
+        path = os.path.join(self.kpath, '%s.%s.cert' % (node_name, mode))
+        if not os.path.isfile(path):
+            self.create_cert(node_name, mode)
+        return path
+
+    def key_path(self, node_name, mode):
+        path = os.path.join(self.kpath, '%s.%s.key' % (node_name, mode))
+        if not os.path.isfile(path):
+            self.create_cert(node_name, mode)
+        return path
+
+    def getCertificates(self, caller_id, node_name):
+        """
+        This function is only called by the Master XML-RPC handler, and only
+        should be available during "permissive mode." A strict deployment
+        will/should disable this function to prevent unauthorized creation or
+        distribution of certificates and keys.
+        """
+        print("security.getCertificates(caller_id=%s, node_name=%s)" % (caller_id, node_name))
+        # first, transform the node name into a legal certificate name stem
+        stem = self.node_name_to_cert_stem(node_name)
+        print('   using stem = [%s]' % stem)
+        response = { }
+        with open(self.cert_path(stem, 'server'), 'r') as f:
+            response['server.cert'] = f.read()
+        with open(self.cert_path(stem, 'client'), 'r') as f:
+            response['client.cert'] = f.read()
+        if caller_id == node_name:
+            with open(self.key_path(stem, 'server'), 'r') as f:
+                response['server.key'] = f.read()
+            with open(self.key_path(stem, 'client'), 'r') as f:
+                response['client.key'] = f.read()
+        return response
 
 #########################################################################
 _security = None

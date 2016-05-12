@@ -51,6 +51,7 @@ from rospy.core import is_shutdown, is_shutdown_requested, xmlrpcapi, \
     logfatal, logwarn, loginfo, logerr, logdebug, \
     signal_shutdown, add_preshutdown_hook
 from rospy.names import get_caller_id, get_namespace
+import rosgraph.security as security
 
 # topic manager and service manager singletons
 
@@ -220,7 +221,7 @@ class RegManager(RegistrationListener):
             master = None
         else:
             registered = False
-            master = xmlrpcapi(master_uri)
+            master = security.get_security().xmlrpcapi(master_uri, 'master')
             self.logger.info("Registering with master node %s", master_uri)
 
         while not registered and not is_shutdown():
@@ -341,12 +342,13 @@ class RegManager(RegistrationListener):
         if not self.master_uri:
             return
         
-        master = xmlrpcapi(self.master_uri)
+        caller_id = get_caller_id()
+
+        master = security.get_security().xmlrpcapi(self.master_uri, 'master')
         # we never successfully initialized master
         if master is None:
             return
         
-        caller_id = get_caller_id()
 
         # clear the registration listeners as we are going to do a quick unregister here
         rl = get_registration_listeners()
@@ -403,7 +405,7 @@ class RegManager(RegistrationListener):
             self.logger.error("Registrar: master_uri is not set yet, cannot inform master of deregistration")
         else:
             try:
-                master = xmlrpcapi(master_uri)
+                master = security.get_security().xmlrpcapi(master_uri, 'master')
                 if reg_type == Registration.PUB:
                     self.logger.debug("unregisterPublisher(%s, %s)", resolved_name, self.uri)
                     master.unregisterPublisher(get_caller_id(), resolved_name, self.uri)
@@ -432,7 +434,7 @@ class RegManager(RegistrationListener):
         if not master_uri:
             self.logger.error("Registrar: master_uri is not set yet, cannot inform master of registration")
         else:
-            master = xmlrpcapi(master_uri)
+            master = security.get_security().xmlrpcapi(master_uri, 'master')
             args = (get_caller_id(), resolved_name, data_type_or_uri, self.uri)
             registered = False
             first = True

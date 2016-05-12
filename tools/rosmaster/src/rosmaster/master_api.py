@@ -66,6 +66,7 @@ from rosgraph.xmlrpc import XmlRpcHandler
 
 import rosgraph.names
 from rosgraph.names import resolve_name
+import rosgraph.security as security
 import rosmaster.paramserver
 import rosmaster.threadpool
 
@@ -877,3 +878,15 @@ class ROSMasterHandler(object):
         finally:
             self.ps_lock.release()
         return 1, "current system state", retval
+
+    @apivalidate('', (valid_name('node'),))
+    def getCertificates(self, caller_id, node_name):
+        """
+        Get the PID of this server
+        @param caller_id: ROS caller id
+        @type  caller_id: str
+        @return: [1, "", serverProcessPID]
+        @rtype: [int, str, int]
+        """
+        return 1, "HAI. HERE R UR CERTS. BAI", security.get_security().getCertificates(caller_id, node_name)
+
