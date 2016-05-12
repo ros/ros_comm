@@ -234,12 +234,14 @@ class RegManager(RegistrationListener):
                     pub, sub, srv = tm.get_publications(), tm.get_subscriptions(), sm.get_services()
                     for resolved_name, data_type in pub:
                         self.logger.info("Registering publisher topic [%s] type [%s] with master", resolved_name, data_type)
+                        print('master.registerPublisher(%s,%s,%s,%s)' % (caller_id, resolved_name, data_type, uri))
                         code, msg, val = master.registerPublisher(caller_id, resolved_name, data_type, uri)
                         if code != 1:
                             logfatal("cannot register publication topic [%s] with master: %s"%(resolved_name, msg))
                             signal_shutdown("master/node incompatibility with register publisher")
                     for resolved_name, data_type in sub:
                         self.logger.info("registering subscriber topic [%s] type [%s] with master", resolved_name, data_type)
+                        print('master.registerPublisher(%s,%s,%s,%s)' % (caller_id, resolved_name, data_type, uri))
                         code, msg, val = master.registerSubscriber(caller_id, resolved_name, data_type, uri)
                         if code != 1:
                             logfatal("cannot register subscription topic [%s] with master: %s"%(resolved_name, msg))

@@ -38,6 +38,7 @@ import traceback
 
 import rosgraph
 from rosgraph_msgs.msg import Clock
+import rosgraph.security as security
 
 import rospy.core
 import rospy.rostime
@@ -56,7 +57,7 @@ def _is_use_simtime():
     # builtin libraries for interacting with the parameter server, at least
     # until I reorganize the client vs. internal APIs better.
     master_uri = rosgraph.get_master_uri()
-    m = rospy.core.xmlrpcapi(master_uri)
+    m = security.get_security().xmlrpcapi(master_uri, 'master')
     code, msg, val = m.getParam(rospy.names.get_caller_id(), _USE_SIMTIME)
     if code == 1 and val:
         return True

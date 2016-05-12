@@ -53,7 +53,7 @@ import select
 
 import rosgraph
 import rosgraph.network
-import rosgraph.security
+import rosgraph.security as security
 from genpy import DeserializationError, Message
 from rosgraph.network import read_ros_handshake_header, write_ros_handshake_header
 
@@ -86,7 +86,7 @@ def _is_use_tcp_keepalive():
             return _use_tcp_keepalive
         # in order to prevent circular dependencies, this does not use the
         # builtin libraries for interacting with the parameter server
-        m = rospy.core.xmlrpcapi(rosgraph.get_master_uri())
+        m = security.get_security().xmlrpcapi(rosgraph.get_master_uri(), 'master')
         code, msg, val = m.getParam(rospy.names.get_caller_id(), _PARAM_TCP_KEEPALIVE)
         _use_tcp_keepalive = val if code == 1 else True
         return _use_tcp_keepalive 
@@ -554,7 +554,7 @@ class TCPROSTransport(Transport):
         if timeout is not None:
             s.settimeout(timeout)
 
-        rosgraph.security.get_security().connect(s, dest_addr, dest_port, endpoint_id, timeout)
+        security.get_security().connect(s, dest_addr, dest_port, endpoint_id, timeout)
         self.socket = s
 
         try:

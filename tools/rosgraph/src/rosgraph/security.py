@@ -165,7 +165,7 @@ class SSLSecurity(Security):
             response = master_proxy.getCertificates(node_name)
             #print("getCertificates response: %s" % repr(response))
             # todo: error checking would be good
-            self.certs[cert_name] = response[cert_name + '.cert']
+            self.certs[cert_name] = response['server.cert']
         return self.certs[cert_name]
 
     def create_context(self, mode, node_name):
@@ -372,6 +372,10 @@ extendedKeyUsage = serverAuth
             with open(self.key_path(stem, 'client'), 'r') as f:
                 response['client.key'] = f.read()
         return response
+
+    def connect(self, sock, dest_addr, dest_port, endpoint_id, timeout=None):
+        print('SSLSecurity.connect() to %s:%d for %s' % (dest_addr, dest_port, endpoint_id))
+        raise ValueError('oh noes')
 
 #########################################################################
 _security = None

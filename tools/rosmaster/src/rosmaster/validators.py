@@ -94,7 +94,7 @@ def is_api(paramName):
     def validator(param_value, callerId):
         if not param_value or not isstring(param_value):
             raise ParameterInvalid("ERROR: parameter [%s] is not an XMLRPC URI"%paramName)
-        if not param_value.startswith("http://") and not param_value.startswith(ROSRPC):
+        if not param_value.startswith("http://") and not param_value.startswith("https://") and not param_value.startswith(ROSRPC):
             raise ParameterInvalid("ERROR: parameter [%s] is not an RPC URI"%paramName)
         #could do more fancy parsing, but the above catches the major cases well enough
         return param_value
