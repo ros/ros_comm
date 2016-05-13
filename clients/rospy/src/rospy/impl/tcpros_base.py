@@ -153,7 +153,8 @@ class TCPServer(object):
             raise ROSInternalException("%s did not connect"%self.__class__.__name__)
         while not self.is_shutdown:
             try:
-                (client_sock, client_addr) = self.server_sock.accept()
+                #(client_sock, client_addr) = self.server_sock.accept()
+                (client_sock, client_addr) = security.get_security().accept(self.server_sock, rospy.get_name())
             except socket.timeout:
                 continue
             except IOError as e:
@@ -506,7 +507,7 @@ class TCPROSTransport(Transport):
         self._fileno = sock.fileno()
         self.local_endpoint = self.socket.getsockname()
 
-    def connect(self, dest_addr, dest_port, endpoint_id, timeout=None):
+    def connect(self, dest_addr, dest_port, endpoint_id, pub_node_name, timeout=None):
         """
         Establish TCP connection to the specified
         address/port. connect() always calls L{write_header()} and
@@ -523,6 +524,7 @@ class TCPROSTransport(Transport):
         """
         # first make sure that if ROS_HOSTNAME=localhost, we will not attempt
         # to connect to anything other than localhost
+        print("TCPROSTransport(pub_node_name=%s)" % pub_node_name)
         if ("ROS_HOSTNAME" in os.environ) and (os.environ["ROS_HOSTNAME"] == "localhost"):
           if not rosgraph.network.is_local_address(dest_addr):
             msg = "attempted to connect to non-local host [%s] from a node launched with ROS_HOSTNAME=localhost" % (dest_addr)
@@ -554,7 +556,7 @@ class TCPROSTransport(Transport):
         if timeout is not None:
             s.settimeout(timeout)
 
-        security.get_security().connect(s, dest_addr, dest_port, endpoint_id, timeout)
+        s = security.get_security().connect(s, dest_addr, dest_port, endpoint_id, pub_node_name, timeout)
         self.socket = s
 
         try:

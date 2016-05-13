@@ -178,7 +178,7 @@ class ProtocolHandler(object): #interface
     ## @param pub_uri str: publisher API URI
     ## @param topic str: topic name
     ## @return int, str, int: code, message, debug
-    def create_transport(self, topic, pub_uri, protocol_params):
+    def create_transport(self, topic, pub_uri, pub_node_name, protocol_params):
         raise Exception("interface impl")
 
     ## @param self
