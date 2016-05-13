@@ -238,12 +238,12 @@ class ROSHandler(XmlRpcHandler):
         @return: new value for parameter, after validation
         """
         if validation == 'is_publishers_list':
-            if not type(param_value) == list:
-                raise ParameterInvalid("ERROR: param [%s] must be a list"%param_name)
-            for v in param_value:
-                if not isinstance(v, str):
-                    raise ParameterInvalid("ERROR: param [%s] must be a list of strings"%param_name)
-                parsed = urlparse.urlparse(v)
+            if not type(param_value) == dict:
+                raise ParameterInvalid("ERROR: param [%s] must be a dict"%param_name)
+            for k, v in param_value.items():
+                if not isinstance(k, str) or not isinstance(v, str):
+                    raise ParameterInvalid("ERROR: param [%s] must be a dict of strings->strings"%param_name)
+                parsed = urlparse.urlparse(k)
                 if not parsed[0] or not parsed[1]: #protocol and host
                     raise ParameterInvalid("ERROR: param [%s] does not contain valid URLs [%s]"%(param_name, v))
             return param_value
@@ -402,7 +402,7 @@ class ROSHandler(XmlRpcHandler):
         """
         return 1, "publications", get_topic_manager().get_publications()
     
-    def _connect_topic(self, topic, pub_uri): 
+    def _connect_topic(self, topic, pub_uri, pub_node_name): 
         """
         Connect subscriber to topic.
         @param topic: Topic name to connect.
@@ -413,6 +413,7 @@ class ROSHandler(XmlRpcHandler):
            of subscribers connected to the topic.
         @rtype: [int, str, int]
         """
+        print("ROSHandler._connect_topic(%s, %s, %s)" % (topic, pub_uri, pub_node_name))
         caller_id = rospy.names.get_caller_id()
         sub = get_topic_manager().get_subscriber_impl(topic)
         if not sub:
@@ -444,10 +445,12 @@ class ROSHandler(XmlRpcHandler):
         while not success:
             tries += 1
             try:
+                print("starting xmlrpc connection sequence to node %s at %s" % (pub_node_name, pub_uri))
                 code, msg, result = \
-                      security.get_security().xmlrpcapi(pub_uri, self.name).requestTopic(caller_id, topic, protocols)
+                      security.get_security().xmlrpcapi(pub_uri, pub_node_name).requestTopic(caller_id, topic, protocols)
                 success = True
             except Exception as e:
+                print("requestTopic exception: %s" % e)
                 if tries >= max_num_tries:
                     return 0, "unable to requestTopic: %s"%str(e), 0
                 else:
@@ -456,14 +459,16 @@ class ROSHandler(XmlRpcHandler):
         #Create the connection (if possible)
         if code <= 0:
             _logger.debug("connect[%s]: requestTopic did not succeed %s, %s", pub_uri, code, msg)
+            print("connect[%s]: requestTopic did not succeed %s, %s", pub_uri, code, msg)
             return code, msg, 0
         elif not result or type(protocols) != list:
             return 0, "ERROR: publisher returned invalid protocol choice: %s"%(str(result)), 0
         _logger.debug("connect[%s]: requestTopic returned protocol list %s", topic, result)
+        print("connect[%s]: requestTopic returned protocol list %s", topic, result)
         protocol = result[0]
         for h in self.protocol_handlers:
             if h.supports(protocol):
-                return h.create_transport(topic, pub_uri, result)
+                return h.create_transport(topic, pub_uri, pub_node_name, result)
         return 0, "ERROR: publisher returned unsupported protocol choice: %s"%result, 0
 
     @apivalidate(-1, (global_name('parameter_key'), None))
@@ -500,6 +505,7 @@ class ROSHandler(XmlRpcHandler):
         @rtype: [int, str, int]
         """
         if self.reg_man:
+            print("publisherUpdate(%s, %s, %s)" % (caller_id, topic, repr(publishers)))
             for uri in publishers:
                 self.reg_man.publisher_update(topic, publishers)
         return 1, "", 0

@@ -71,7 +71,7 @@ class SSHSecurity(Security):
         _logger.info("  rospy.security.SSHSecurity init")
         self.ssh_tunnels = { }
 
-    def xmlrpcapi(self, uri):
+    def xmlrpcapi(self, uri, node_name):
         uriValidate = urlparse.urlparse(uri)
         if not uriValidate[0] or not uriValidate[1]:
             return None

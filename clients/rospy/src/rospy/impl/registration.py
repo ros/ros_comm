@@ -301,6 +301,7 @@ class RegManager(RegistrationListener):
                 if self.updates:
                     #work from the end as these are the most up-to-date
                     topic, uris = self.updates.pop()
+                    print("RegManager.run() just popped topic=%s, uris=%s" % (topic, uris))
                     #filter out older updates for same topic
                     self.updates = [x for x in self.updates if x[0] != topic]
                 else:
@@ -312,15 +313,16 @@ class RegManager(RegistrationListener):
             #call _connect_topic on all URIs as it can check to see whether
             #or not a connection exists.
             if uris and not self.handler.done:
-                for uri in uris:
+                for uri, node_name in uris.items():
                     # #1141: have to multithread this to prevent a bad publisher from hanging us
-                    t = threading.Thread(target=self._connect_topic_thread, args=(topic, uri))
+                    t = threading.Thread(target=self._connect_topic_thread, args=(topic, uri, node_name))
                     t.setDaemon(True)
                     t.start()
 
-    def _connect_topic_thread(self, topic, uri):
+    def _connect_topic_thread(self, topic, uri, node_name):
         try:
-            code, msg, _ = self.handler._connect_topic(topic, uri)
+            print("_connect_topic_thread(%s, %s, %s)" % (topic, uri, node_name))
+            code, msg, _ = self.handler._connect_topic(topic, uri, node_name)
             if code != 1:
                 logdebug("Unable to connect subscriber to publisher [%s] for topic [%s]: %s", uri, topic, msg)
         except Exception as e:
@@ -479,8 +481,9 @@ class RegManager(RegistrationListener):
         @param resolved_name: resolved topic name
         @type  resolved_name: str
         @param uris: list of all publishers uris for topic
-        @type  uris: [str]
+        @type  uris: {str->str}
         """
+        print("RegManager.publisher_update(%s, %s)" % (resolved_name, repr(uris)))
         try:
             self.cond.acquire()
             self.updates.append((resolved_name, uris))
