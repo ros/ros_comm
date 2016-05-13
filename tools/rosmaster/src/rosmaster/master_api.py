@@ -703,7 +703,7 @@ class ROSMasterHandler(object):
         @type  caller_api: str
         @return: (code, message, publishers). Publishers is a list of XMLRPC API URIs
            for nodes currently publishing the specified topic.
-        @rtype: (int, str, [str])
+        @rtype: (int, str, {str->str})
         """
         #NOTE: subscribers do not get to set topic type
         try:
@@ -717,9 +717,26 @@ class ROSMasterHandler(object):
 
             mloginfo("+SUB [%s] %s %s",topic, caller_id, caller_api)
             pub_uris = self.publishers.get_apis(topic)
+            # (MQ 5/12/2016): this is bad. we need to find the correct certificate
+            # to talk to the node, so we need to reverse lookup the node name from
+            # the API that is stored everywhere else in master. so we'll look up 
+            # the api and return the first match. similar to 
+            # Registrations.reverse_lookup() but finds at most one match. Probably 
+            # should put this in RegistrationManager someday, or (even better)
+            # rework all these data structures so it always holds the node name along with
+            # its XMLRPC URI, since this nested-loop is so ugly. But usually there
+            # are less than a few dozen nodes, so this n^2 shouldn't be too bad; it's
+            # just embarrassing.
+            pub_uris_and_names = {}
+            for pub_uri in pub_uris:
+                for iter_node_name, iter_node in self.reg_manager.nodes.items():
+                    if pub_uri == iter_node.api:
+                        pub_uris_and_names[pub_uri] = iter_node_name
+                        #print("hooray, it does!")
+                        #thread_pool.queue_task(node_api, task, (node_api, iter_node_name, key, value))
         finally:
             self.ps_lock.release()
-        return 1, "Subscribed to [%s]"%topic, pub_uris
+        return 1, "Subscribed to [%s]"%topic, pub_uris_and_names
 
     @apivalidate(0, (is_topic('topic'), is_api('caller_api')))
     def unregisterSubscriber(self, caller_id, topic, caller_api):

@@ -57,6 +57,8 @@ bool splitURI(const std::string& uri, std::string& host, uint32_t& port)
   // skip over the protocol if it's there
   if (uri.substr(0, 7) == std::string("http://"))
     host = uri.substr(7);
+  else if (uri.substr(0, 8) == std::string("https://"))
+    host = uri.substr(8);
   else if (uri.substr(0, 9) == std::string("rosrpc://"))
     host = uri.substr(9);
   // split out the port

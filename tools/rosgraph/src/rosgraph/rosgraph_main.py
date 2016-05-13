@@ -64,8 +64,8 @@ def rosgraph_main():
     master = masterapi.Master('rosgraph')
     try:
         master.getPid()
-    except:
-        print("ERROR: Unable to communicate with master!", file=sys.stderr)
+    except Exception as e:
+        print("ERROR: Unable to communicate with master! [%s]" % e, file=sys.stderr)
         return
         
     g = graph.Graph()

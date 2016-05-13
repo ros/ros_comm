@@ -45,7 +45,7 @@ class NoSecurity(Security):
     def __init__(self):
         super(NoSecurity, self).__init__()
         _logger.info("  rospy.security.NoSecurity init")
-    def xmlrpcapi(self, uri):
+    def xmlrpcapi(self, uri, node_name):
         uriValidate = urlparse.urlparse(uri)
         if not uriValidate[0] or not uriValidate[1]:
             return None
@@ -141,7 +141,8 @@ class SSLSecurity(Security):
         self.root_cert_path = os.path.join(self.kpath, 'root.cer')
 
         # TODO: be able to change this, for "strict mode" at some point
-        self.cert_verify_mode = ssl.CERT_OPTIONAL
+        self.server_cert_verify_mode = ssl.CERT_OPTIONAL
+        self.client_cert_verify_mode = ssl.CERT_REQUIRED
 
         self.server_context_ = None
         self.client_contexts_ = {}
@@ -168,35 +169,30 @@ class SSLSecurity(Security):
             self.certs[cert_name] = response['server.cert']
         return self.certs[cert_name]
 
-    def create_context(self, mode, node_name):
-        print("Security.create_context(%s, %s)" % (mode, node_name))
-        context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-        context.verify_mode = self.cert_verify_mode
-        context.load_verify_locations(cafile=self.root_cert_path)
-        if mode != 'server' and mode != 'client':
-            raise ValueError("unknown SSL context mode: [%s]" % mode)
-        keyfile  = os.path.join(self.kpath, node_name + '.' + mode + '.key')
-        certfile = os.path.join(self.kpath, node_name + '.' + mode + '.cert')
-        if not os.path.isfile(keyfile) or not os.path.isfile(certfile):
-            self.request_cert(node_name, mode)
-        print("loading %s and %s" % (certfile, keyfile))
-        context.load_cert_chain(certfile, keyfile=keyfile)
-        return context
-
     def get_server_context(self, node_name):
         # TODO: request root CA and cert if we don't already have them
+        print("Security.get_server_context(%s)" % node_name)
         if self.server_context_ is None:
-            self.server_context_ = self.create_context('server', node_name)
+            print("creating server context for %s" % node_name)
+            context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+            context.verify_mode = self.server_cert_verify_mode
+            context.load_verify_locations(cafile=self.root_cert_path)
+            keyfile  = os.path.join(self.kpath, node_name+'.server.key')
+            certfile = os.path.join(self.kpath, node_name+'.server.cert')
+            if not os.path.isfile(keyfile) or not os.path.isfile(certfile):
+                self.request_cert(node_name, 'server')
+            print("loading %s and %s" % (certfile, keyfile))
+            context.load_cert_chain(certfile, keyfile=keyfile)
+            self.server_context_ = context
         return self.server_context_
 
     def get_client_context(self, node_name):
         # TODO: request root CA and cert if we don't already have them
         print("Security.get_client_context(%s)" % node_name)
         if not node_name in self.client_contexts_:
-            #self.client_contexts_[node_name] = self.create_context('server', node_name)
             print("creating client context for %s" % node_name)
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-            context.verify_mode = self.cert_verify_mode
+            context.verify_mode = self.client_cert_verify_mode
             context.load_verify_locations(cafile=self.root_cert_path)
             #keyfile  = os.path.join(self.kpath, node_name + '.' + mode + '.key')
             #certfile = os.path.join(self.kpath, node_name + '.' + mode + '.cert')
