@@ -4,25 +4,8 @@ services:
   master:
     build: .
     environment:
-      - "ROS_HOSTNAME=master.sdemo_default"
       - "ROS_SECURITY=ssl"
-    command: srosmaster
-
-  talker:
-    build: .
-    environment:
-      - "ROS_HOSTNAME=talker.sdemo_default"
-      - "ROS_MASTER_URI=http://master.sdemo_default:11311"
-      - "ROS_SECURITY=ssl"
-    command: rosrun rospy_tutorials talker
-
-  listener:
-    build: .
-    environment:
-      - "ROS_HOSTNAME=listener.sdemo_default"
-      - "ROS_MASTER_URI=http://master.sdemo_default:11311"
-      - "ROS_SECURITY=ssl"
-    command: rosrun rospy_tutorials listener
+    command: bash -c "sroscore & rosrun rospy_tutorials listener & rosrun rospy_tutorials talker"
 
   # resolvable:
   #   image: mgood/resolvable
