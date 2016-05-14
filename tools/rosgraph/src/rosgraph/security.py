@@ -50,7 +50,7 @@ class NoSecurity(Security):
         if not uriValidate[0] or not uriValidate[1]:
             return None
         return xmlrpcclient.ServerProxy(uri)
-    def connect(self, sock, dest_addr, dest_port, endpoint_id, timeout=None):
+    def connect(self, sock, dest_addr, dest_port, endpoint_id, pub_node_name, timeout=None):
         try:
             _logger.info('connecting to '+str(dest_addr)+' '+str(dest_port))
             sock.connect((dest_addr, dest_port))
@@ -71,7 +71,7 @@ class SSHSecurity(Security):
         _logger.info("  rospy.security.SSHSecurity init")
         self.ssh_tunnels = { }
 
-    def xmlrpcapi(self, uri):
+    def xmlrpcapi(self, uri, node_name):
         uriValidate = urlparse.urlparse(uri)
         if not uriValidate[0] or not uriValidate[1]:
             return None
@@ -111,7 +111,7 @@ class SSHSecurity(Security):
         _logger.info("remapped xmlrpcapi request: %s => %s" % (requested_uri, uri))
         return xmlrpcclient.ServerProxy(uri)
 
-    def connect(self, sock, dest_addr, dest_port, endpoint_id, timeout=None):
+    def connect(self, sock, dest_addr, dest_port, endpoint_id, pub_node_name, timeout=None):
         # TODO: if we are connecting locally, don't worry about it
         # for now, let's tunnel everything to easily test its functionality.
         # if dest_addr != 'localhost' and dest_addr != '127.0.0.1':
@@ -184,13 +184,13 @@ class SSLSecurity(Security):
         return context
 
     def get_server_context(self, node_name):
-        # TODO: request root CA if we don't already have it
+        # TODO: request root CA and cert if we don't already have them
         if self.server_context_ is None:
             self.server_context_ = self.create_context('server', node_name)
         return self.server_context_
 
     def get_client_context(self, node_name):
-        # TODO: request root CA if we don't already have it
+        # TODO: request root CA and cert if we don't already have them
         print("Security.get_client_context(%s)" % node_name)
         if not node_name in self.client_contexts_:
             #self.client_contexts_[node_name] = self.create_context('server', node_name)
@@ -373,9 +373,28 @@ extendedKeyUsage = serverAuth
                 response['client.key'] = f.read()
         return response
 
-    def connect(self, sock, dest_addr, dest_port, endpoint_id, timeout=None):
-        print('SSLSecurity.connect() to %s:%d for %s' % (dest_addr, dest_port, endpoint_id))
-        raise ValueError('oh noes')
+    def connect(self, sock, dest_addr, dest_port, endpoint_id, pub_node_name, timeout=None):
+        print('SSLSecurity.connect() to node %s at %s:%d which is endpoint %s' % (pub_node_name, dest_addr, dest_port, endpoint_id))
+        context = self.get_client_context(pub_node_name)
+        conn = context.wrap_socket(sock)
+        try:
+            conn.connect((dest_addr, dest_port))
+        except Exception as e:
+            print("SSLSecurity.connect() exception: %s" % e)
+            raise
+        return conn
+
+    def accept(self, server_sock, server_node_name):
+        print("SSLSecurity.accept(server_node_name=%s)" % server_node_name)
+        context = self.get_server_context(server_node_name)
+        (client_sock, client_addr) = server_sock.accept()
+        client_stream = None
+        try:
+            client_stream = context.wrap_socket(client_sock, server_side=True)
+        except Exception as e:
+            print("SSLSecurity.accept() wrap_socket exception: %s" % e)
+            raise
+        return (client_stream, client_addr)
 
 #########################################################################
 _security = None

@@ -193,11 +193,13 @@ def apivalidate(error_return_value, validators=()):
         return validated_f
     return check_validates
 
-def publisher_update_task(api, topic, pub_uris):
+def publisher_update_task(api, node_name, topic, pub_uris):
     """
     Contact api.publisherUpdate with specified parameters
     @param api: XML-RPC URI of node to contact
     @type  api: str
+    @param name: node name corresponding to this XML-RPC URI
+    @type  name: str
     @param topic: Topic name to send to node
     @type  topic: str
     @param pub_uris: list of publisher APIs to send to node
@@ -206,7 +208,7 @@ def publisher_update_task(api, topic, pub_uris):
     
     mloginfo("publisherUpdate[%s] -> %s", topic, api)
     #TODO: check return value for errors so we can unsubscribe if stale
-    xmlrpcapi(api).publisherUpdate('/master', topic, pub_uris)
+    security.get_security().xmlrpcapi(api, node_name).publisherUpdate('/master', topic, pub_uris)
 
 def service_update_task(api, service, uri):
     """
@@ -533,7 +535,21 @@ class ROSMasterHandler(object):
         try:            
             for node_api in node_apis:
                 # use the api as a marker so that we limit one thread per subscriber
-                thread_pool.queue_task(node_api, task, (node_api, key, value))
+                # (MQ 5/12/2016): this is bad. we need to find the correct certificate
+                # to talk to the node, so we need to reverse lookup the node name from
+                # the API that is stored everywhere else in master. so we'll look up 
+                # the api and return the first match. similar to 
+                # Registrations.reverse_lookup() but finds at most one match. Probably 
+                # should put this in RegistrationManager someday, or (even better)
+                # rework all these data structures so it always holds the node name along with
+                # its XMLRPC URI, since this nested-loop is so ugly. But usually there
+                # are less than a few dozen nodes, so this n^2 shouldn't be too bad; it's
+                # just embarrassing.
+                for iter_node_name, iter_node in self.reg_manager.nodes.items():
+                    print("notify() is checking if %s == %s" % (node_api, iter_node.api))
+                    if node_api == iter_node.api:
+                        print("hooray, it does!")
+                        thread_pool.queue_task(node_api, task, (node_api, iter_node_name, key, value))
         except KeyError:
             _logger.warn('subscriber data stale (key [%s], listener [%s]): node API unknown'%(key, s))
         
@@ -586,7 +602,16 @@ class ROSMasterHandler(object):
         @param pub_uris: list of URIs of publishers.
         @type  pub_uris: [str]
         """
-        self._notify(self.subscribers, publisher_update_task, topic, pub_uris, sub_uris)
+        # sometime we should be smarter about this, but for now, we'll reverse-lookup
+        # all of the pub_uri node_names so that the peers will know which certificate
+        # to use.
+        pub_uris_and_names = {}
+        for u in pub_uris:
+            for iter_node_name, iter_node in self.reg_manager.nodes.items():
+                if u == iter_node.api:
+                    pub_uris_and_names[u] = iter_node_name
+                    break
+        self._notify(self.subscribers, publisher_update_task, topic, pub_uris_and_names, sub_uris)
 
     ##################################################################################
     # SERVICE PROVIDER
