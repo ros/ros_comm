@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <name>rosoutpy</name>
+  <version>0.0.1</version>
+  <description>
+    A minimal rosout implementation in python
+  </description>
+  <maintainer email="roxfoxpox@gmail.com">Ruffin White</maintainer>
+  <license>BSD</license>
+
+  <author email="roxfoxpox@gmail.com">Ruffin White</author>
+
+  <buildtool_depend version_gte="0.5.68">catkin</buildtool_depend>
+
+  <run_depend>rospy</run_depend>
+  <run_depend>rosgraph_msgs</run_depend>
+</package>
