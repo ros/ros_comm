@@ -160,15 +160,18 @@ def load_file(filename, default_namespace=None, verbose=False):
       corresponding namespaces for each YAML document in the file
     :raises: :exc:`RosParamException`: if unable to load contents of filename
     """
-    if not os.path.isfile(filename):
-        raise RosParamException("file [%s] does not exist"%filename)
-    if verbose:
-        print("reading parameters from [%s]"%filename)
-    f = open(filename, 'r')
-    try:
+    if not filename or filename == '-':
+        f = sys.stdin
+        if verbose:
+            print("reading parameters from stdin")
         return load_str(f.read(), filename, default_namespace=default_namespace, verbose=verbose)
-    finally:
-        f.close()
+    else:
+        if not os.path.isfile(filename):
+            raise RosParamException("file [%s] does not exist"%filename)
+        if verbose:
+            print("reading parameters from [%s]"%filename)
+        with open(filename, 'r') as f:
+            return load_str(f.read(), filename, default_namespace=default_namespace, verbose=verbose)
         
 def load_str(str, filename, default_namespace=None, verbose=False):
     """
@@ -293,11 +296,15 @@ def dump_params(filename, param, verbose=False):
     tree = get_param(param)
     if verbose:
         print_params(tree, param)
-    f = open(filename, 'w')
-    try:
+    if not filename:
+        f = sys.stdout
         yaml.dump(tree, f)
-    finally:
-        f.close()
+    else:
+        f = open(filename, 'w')
+        try:
+            yaml.dump(tree, f)
+        finally:
+            f.close()
 
 
 def delete_param(param, verbose=False):
@@ -423,9 +430,7 @@ def _rosparam_cmd_get_dump(cmd, argv):
     ns = ''
     
     if len(args) == 0:
-        if cmd == 'dump':
-            parser.error("invalid arguments. Please specify a file name")
-        elif cmd == 'get':
+        if cmd == 'get':
             parser.error("invalid arguments. Please specify a parameter name")
     elif len(args) == 1:
         arg = args[0]
@@ -491,15 +496,17 @@ def _rosparam_cmd_set_load(cmd, argv):
 
     parser.add_option("-v", dest="verbose", default=False,
                       action="store_true", help="turn on verbose output")
-    options, args = _set_optparse_neg_args(parser, argv)
     if cmd == 'set':
+        options, args = _set_optparse_neg_args(parser, argv)
         if options.text_file and options.bin_file:
             parser.error("you may only specify one of --textfile or --binfile")
+    else:
+        options, args = parser.parse_args(argv[2:])
 
     arg2 = None
     if len(args) == 0:
         if cmd == 'load':
-            parser.error("invalid arguments. Please specify a file name")
+            parser.error("invalid arguments. Please specify a file name or - for stdin")
         elif cmd == 'set':
             parser.error("invalid arguments. Please specify a parameter name")
     elif len(args) == 1:

@@ -185,8 +185,8 @@ void Subscription::addLocalConnection(const PublicationPtr& pub)
 
   ROSCPP_LOG_DEBUG("Creating intraprocess link for topic [%s]", name_.c_str());
 
-  IntraProcessPublisherLinkPtr pub_link(new IntraProcessPublisherLink(shared_from_this(), XMLRPCManager::instance()->getServerURI(), transport_hints_));
-  IntraProcessSubscriberLinkPtr sub_link(new IntraProcessSubscriberLink(pub));
+  IntraProcessPublisherLinkPtr pub_link(boost::make_shared<IntraProcessPublisherLink>(shared_from_this(), XMLRPCManager::instance()->getServerURI(), transport_hints_));
+  IntraProcessSubscriberLinkPtr sub_link(boost::make_shared<IntraProcessSubscriberLink>(pub));
   pub_link->setPublisher(sub_link);
   sub_link->setSubscriber(pub_link);
 
@@ -355,7 +355,7 @@ bool Subscription::negotiateConnection(const std::string& xmlrpc_uri)
     if (*it == "UDP")
     {
       int max_datagram_size = transport_hints_.getMaxDatagramSize();
-      udp_transport = TransportUDPPtr(new TransportUDP(&PollManager::instance()->getPollSet()));
+      udp_transport = boost::make_shared<TransportUDP>(&PollManager::instance()->getPollSet());
       if (!max_datagram_size)
         max_datagram_size = udp_transport->getMaxDatagramSize();
       udp_transport->createIncoming(0, false);
@@ -419,7 +419,7 @@ bool Subscription::negotiateConnection(const std::string& xmlrpc_uri)
 
   // The PendingConnectionPtr takes ownership of c, and will delete it on
   // destruction.
-  PendingConnectionPtr conn(new PendingConnection(c, udp_transport, shared_from_this(), xmlrpc_uri));
+  PendingConnectionPtr conn(boost::make_shared<PendingConnection>(c, udp_transport, shared_from_this(), xmlrpc_uri));
 
   XMLRPCManager::instance()->addASyncConnection(conn);
   // Put this connection on the list that we'll look at later.
@@ -505,11 +505,11 @@ void Subscription::pendingConnectionDone(const PendingConnectionPtr& conn, XmlRp
     int pub_port = proto[2];
     ROSCPP_LOG_DEBUG("Connecting via tcpros to topic [%s] at host [%s:%d]", name_.c_str(), pub_host.c_str(), pub_port);
 
-    TransportTCPPtr transport(new TransportTCP(&PollManager::instance()->getPollSet()));
+    TransportTCPPtr transport(boost::make_shared<TransportTCP>(&PollManager::instance()->getPollSet()));
     if (transport->connect(pub_host, pub_port))
     {
-      ConnectionPtr connection(new Connection());
-      TransportPublisherLinkPtr pub_link(new TransportPublisherLink(shared_from_this(), xmlrpc_uri, transport_hints_));
+      ConnectionPtr connection(boost::make_shared<Connection>());
+      TransportPublisherLinkPtr pub_link(boost::make_shared<TransportPublisherLink>(shared_from_this(), xmlrpc_uri, transport_hints_));
 
       connection->initialize(transport, false, HeaderReceivedFunc());
       pub_link->initialize(connection);
@@ -545,7 +545,7 @@ void Subscription::pendingConnectionDone(const PendingConnectionPtr& conn, XmlRp
     int conn_id = proto[3];
     int max_datagram_size = proto[4];
     std::vector<char> header_bytes = proto[5];
-    boost::shared_array<uint8_t> buffer = boost::shared_array<uint8_t>(new uint8_t[header_bytes.size()]);
+    boost::shared_array<uint8_t> buffer(new uint8_t[header_bytes.size()]);
     memcpy(buffer.get(), &header_bytes[0], header_bytes.size());
     Header h;
     std::string err;
@@ -565,10 +565,10 @@ void Subscription::pendingConnectionDone(const PendingConnectionPtr& conn, XmlRp
       return;
     }
 
-    TransportPublisherLinkPtr pub_link(new TransportPublisherLink(shared_from_this(), xmlrpc_uri, transport_hints_));
+    TransportPublisherLinkPtr pub_link(boost::make_shared<TransportPublisherLink>(shared_from_this(), xmlrpc_uri, transport_hints_));
     if (pub_link->setHeader(h))
     {
-      ConnectionPtr connection(new Connection());
+      ConnectionPtr connection(boost::make_shared<Connection>());
       connection->initialize(udp_transport, false, NULL);
       connection->setHeader(h);
       pub_link->initialize(connection);
@@ -700,10 +700,10 @@ bool Subscription::addCallback(const SubscriptionCallbackHelperPtr& helper, cons
   {
     boost::mutex::scoped_lock lock(callbacks_mutex_);
 
-    CallbackInfoPtr info(new CallbackInfo);
+    CallbackInfoPtr info(boost::make_shared<CallbackInfo>());
     info->helper_ = helper;
     info->callback_queue_ = queue;
-    info->subscription_queue_.reset(new SubscriptionQueue(name_, queue_size, allow_concurrent_callbacks));
+    info->subscription_queue_ = boost::make_shared<SubscriptionQueue>(name_, queue_size, allow_concurrent_callbacks);
     info->tracked_object_ = tracked_object;
     info->has_tracked_object_ = false;
     if (tracked_object)
@@ -736,7 +736,7 @@ bool Subscription::addCallback(const SubscriptionCallbackHelperPtr& helper, cons
           {
             const LatchInfo& latch_info = des_it->second;
 
-            MessageDeserializerPtr des(new MessageDeserializer(helper, latch_info.message, latch_info.connection_header));
+            MessageDeserializerPtr des(boost::make_shared<MessageDeserializer>(helper, latch_info.message, latch_info.connection_header));
             bool was_full = false;
             info->subscription_queue_->push(info->helper_, des, info->has_tracked_object_, info->tracked_object_, true, latch_info.receipt_time, &was_full);
             if (!was_full)
@@ -784,6 +784,7 @@ void Subscription::removeCallback(const SubscriptionCallbackHelperPtr& helper)
 
 void Subscription::headerReceived(const PublisherLinkPtr& link, const Header& h)
 {
+  (void)h;
   boost::mutex::scoped_lock lock(md5sum_mutex_);
   if (md5sum_ == "*")
   {

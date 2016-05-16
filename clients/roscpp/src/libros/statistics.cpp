@@ -45,7 +45,7 @@ void StatisticsLogger::init(const SubscriptionCallbackHelperPtr& helper) {
   hasHeader_ = helper->hasHeader();
   param::param("/enable_statistics", enable_statistics, false);
   param::param("/statistics_window_min_elements", min_elements, 10);
-  param::param("/statistics_window_max_elements", min_elements, 100);
+  param::param("/statistics_window_max_elements", max_elements, 100);
   param::param("/statistics_window_min_size", min_window, 4);
   param::param("/statistics_window_max_size", max_window, 64);
 }
@@ -54,6 +54,7 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
                                 const std::string& topic, const std::string& callerid, const SerializedMessage& m, const uint64_t& bytes_sent,
                                 const ros::Time& received_time, bool dropped)
 {
+  (void)connection_header;
   struct StatData stats;
 
   if (!enable_statistics)
@@ -232,11 +233,11 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
     pub_.publish(msg);
 
     // dynamic window resizing
-    if (stats.arrival_time_list.size() > max_elements && pub_frequency_ * 2 <= max_window)
+    if (stats.arrival_time_list.size() > static_cast<size_t>(max_elements) && pub_frequency_ * 2 <= max_window)
     {
       pub_frequency_ *= 2;
     }
-    if (stats.arrival_time_list.size() < min_elements && pub_frequency_ / 2 >= min_window)
+    if (stats.arrival_time_list.size() < static_cast<size_t>(min_elements) && pub_frequency_ / 2 >= min_window)
     {
       pub_frequency_ /= 2;
     }

@@ -78,7 +78,11 @@ TransportPublisherLink::~TransportPublisherLink()
 bool TransportPublisherLink::initialize(const ConnectionPtr& connection)
 {
   connection_ = connection;
-  connection_->addDropListener(boost::bind(&TransportPublisherLink::onConnectionDropped, this, _1, _2));
+  // slot_type is used to automatically track the TransporPublisherLink class' existence
+  // and disconnect when this class' reference count is decremented to 0. It increments
+  // then decrements the shared_from_this reference count around calls to the
+  // onConnectionDropped function, preventing a coredump in the middle of execution.
+  connection_->addDropListener(Connection::DropSignal::slot_type(&TransportPublisherLink::onConnectionDropped, this, _1, _2).track(shared_from_this()));
 
   if (connection_->getTransport()->requiresHeader())
   {
@@ -115,6 +119,7 @@ void TransportPublisherLink::drop()
 
 void TransportPublisherLink::onHeaderWritten(const ConnectionPtr& conn)
 {
+  (void)conn;
   // Do nothing
 }
 
@@ -217,10 +222,10 @@ void TransportPublisherLink::onRetryTimer(const ros::WallTimerEvent&)
 
       ROSCPP_LOG_DEBUG("Retrying connection to [%s:%d] for topic [%s]", host.c_str(), port, topic.c_str());
 
-      TransportTCPPtr transport(new TransportTCP(&PollManager::instance()->getPollSet()));
+      TransportTCPPtr transport(boost::make_shared<TransportTCP>(&PollManager::instance()->getPollSet()));
       if (transport->connect(host, port))
       {
-        ConnectionPtr connection(new Connection);
+        ConnectionPtr connection(boost::make_shared<Connection>());
         connection->initialize(transport, false, HeaderReceivedFunc());
         initialize(connection);
 
@@ -265,9 +270,11 @@ void TransportPublisherLink::onConnectionDropped(const ConnectionPtr& conn, Conn
     {
       retry_period_ = WallDuration(0.1);
       next_retry_ = WallTime::now() + retry_period_;
+      // shared_from_this() shared_ptr is used to ensure TransportPublisherLink is not
+      // destroyed in the middle of onRetryTimer execution
       retry_timer_handle_ = getInternalTimerManager()->add(WallDuration(retry_period_),
           boost::bind(&TransportPublisherLink::onRetryTimer, this, _1), getInternalCallbackQueue().get(),
-          VoidConstPtr(), false);
+          shared_from_this(), false);
     }
     else
     {

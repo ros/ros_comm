@@ -2,6 +2,34 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.11.19 (2016-04-18)
+--------------------
+* promote the result of read_messages to a namedtuple (`#777 <https://github.com/ros/ros_comm/pull/777>`_)
+* use directory specific compiler flags (`#785 <https://github.com/ros/ros_comm/pull/785>`_)
+
+1.11.18 (2016-03-17)
+--------------------
+
+1.11.17 (2016-03-11)
+--------------------
+* use boost::make_shared instead of new for constructing boost::shared_ptr (`#740 <https://github.com/ros/ros_comm/issues/740>`_)
+
+1.11.16 (2015-11-09)
+--------------------
+* show size unit for --size of rosbag record in help string (`#697 <https://github.com/ros/ros_comm/pull/697>`_)
+
+1.11.15 (2015-10-13)
+--------------------
+* add option --prefix for prefixing output topics (`#626 <https://github.com/ros/ros_comm/pull/626>`_)
+
+1.11.14 (2015-09-19)
+--------------------
+* reduce memory usage by using slots for IndexEntry types (`#613 <https://github.com/ros/ros_comm/pull/613>`_)
+* remove duplicate topics (`#647 <https://github.com/ros/ros_comm/issues/647>`_)
+* better exception when calling get_start_time / get_end_time on empty bags (`#657 <https://github.com/ros/ros_comm/pull/657>`_)
+* make support for lz4 in rosbag optional (`#642 <https://github.com/ros/ros_comm/pull/642>`_)
+* fix handling of "play --topics" (`#620 <https://github.com/ros/ros_comm/issues/620>`_)
+
 1.11.13 (2015-04-28)
 --------------------
 

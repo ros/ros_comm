@@ -172,6 +172,7 @@ void ServiceClientLink::onConnectionDropped(const ConnectionPtr& conn)
 
 void ServiceClientLink::onHeaderWritten(const ConnectionPtr& conn)
 {
+  (void)conn;
   connection_->read(4, boost::bind(&ServiceClientLink::onRequestLength, this, _1, _2, _3, _4));
 }
 
@@ -231,6 +232,7 @@ void ServiceClientLink::onResponseWritten(const ConnectionPtr& conn)
 
 void ServiceClientLink::processResponse(bool ok, const SerializedMessage& res)
 {
+  (void)ok;
   connection_->write(res.buf, res.num_bytes, boost::bind(&ServiceClientLink::onResponseWritten, this, _1));
 }
 

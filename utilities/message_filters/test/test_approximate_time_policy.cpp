@@ -120,13 +120,13 @@ public:
     {
       if (input_[i].second == 0)
       {
-        MsgPtr p(new Msg);
+        MsgPtr p(boost::make_shared<Msg>());
         p->header.stamp = input_[i].first;
         sync_.add<0>(p);
       }
       else
       {
-        MsgPtr q(new Msg);
+        MsgPtr q(boost::make_shared<Msg>());
         q->header.stamp = input_[i].first;
         sync_.add<1>(q);
       }
@@ -180,7 +180,7 @@ public:
   {
     for (unsigned int i = 0; i < input_.size(); i++)
     {
-      MsgPtr p(new Msg);
+      MsgPtr p(boost::make_shared<Msg>());
       p->header.stamp = input_[i].first;
       switch (input_[i].second)
       {

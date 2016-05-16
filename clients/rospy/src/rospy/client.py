@@ -261,10 +261,7 @@ def init_node(name, argv=None, anonymous=False, log_level=None, disable_rostime=
     # this test can be eliminated once we change from warning to error in the next check
     if rosgraph.names.SEP in name:
         raise ValueError("namespaces are not allowed in node names")
-    if not rosgraph.names.is_legal_base_name(name):
-        import warnings
-        warnings.warn("'%s' is not a legal ROS base name. This may cause problems with other ROS tools"%name, stacklevel=2)
-    
+
     global _init_node_args
 
     # #972: allow duplicate init_node args if calls are identical
@@ -289,8 +286,7 @@ def init_node(name, argv=None, anonymous=False, log_level=None, disable_rostime=
     # check for name override
     mappings = rospy.names.get_mappings()
     if '__name' in mappings:
-        # use rosgraph version of resolve_name to avoid remapping
-        name = rosgraph.names.resolve_name(mappings['__name'], rospy.core.get_caller_id())
+        name = mappings['__name']
         if anonymous:
             logdebug("[%s] WARNING: due to __name setting, anonymous setting is being changed to false"%name)
             anonymous = False
@@ -300,7 +296,13 @@ def init_node(name, argv=None, anonymous=False, log_level=None, disable_rostime=
         # hostname as that is not guaranteed to be a legal ROS name
         name = "%s_%s_%s"%(name, os.getpid(), int(time.time()*1000))
 
-    resolved_node_name = rospy.names.resolve_name(name)
+    # check for legal base name once all changes have been made to the name
+    if not rosgraph.names.is_legal_base_name(name):
+        import warnings
+        warnings.warn("'%s' is not a legal ROS base name. This may cause problems with other ROS tools."%name, stacklevel=2)
+
+    # use rosgraph version of resolve_name to avoid remapping
+    resolved_node_name = rosgraph.names.resolve_name(name, rospy.core.get_caller_id())
     rospy.core.configure_logging(resolved_node_name)
     # #1810
     rospy.names.initialize_mappings(resolved_node_name)

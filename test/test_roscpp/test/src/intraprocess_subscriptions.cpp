@@ -90,18 +90,18 @@ template<>
 struct Serializer<Msg>
 {
   template<typename Stream>
-  inline static void write(Stream& stream, const Msg& v)
+  inline static void write(Stream&, const Msg& v)
   {
     v.serialized = true;
   }
 
   template<typename Stream>
-  inline static void read(Stream& stream, Msg& v)
+  inline static void read(Stream&, Msg& v)
   {
     v.deserialized = true;
   }
 
-  inline static uint32_t serializedLength(const Msg& v)
+  inline static uint32_t serializedLength(const Msg&)
   {
     return 0;
   }
@@ -157,18 +157,18 @@ template<>
 struct Serializer<Msg2>
 {
   template<typename Stream>
-  inline static void write(Stream& stream, const Msg2& v)
+  inline static void write(Stream&, const Msg2& v)
   {
     v.serialized = true;
   }
 
   template<typename Stream>
-  inline static void read(Stream& stream, Msg2& v)
+  inline static void read(Stream&, Msg2& v)
   {
     v.deserialized = true;
   }
 
-  inline static uint32_t serializedLength(const Msg2& v)
+  inline static uint32_t serializedLength(const Msg2&)
   {
     return 0;
   }
@@ -190,7 +190,7 @@ TEST(IntraprocessSubscriptions, noCopy)
   ros::Subscriber sub = nh.subscribe("test", 0, messageCallback);
   ros::Publisher pub = nh.advertise<Msg>("test", 0);
 
-  MsgConstPtr msg(new Msg);
+  MsgConstPtr msg(boost::make_shared<Msg>());
 
   while (pub.getNumSubscribers() == 0)
   {
@@ -221,7 +221,7 @@ TEST(IntraprocessSubscriptions, differentRTTI)
   ros::Subscriber sub = nh.subscribe("test", 0, messageCallback);
   ros::Publisher pub = nh.advertise<Msg2>("test", 0);
 
-  Msg2ConstPtr msg(new Msg2);
+  Msg2ConstPtr msg(boost::make_shared<Msg2>());
 
   while (pub.getNumSubscribers() == 0)
   {
@@ -259,7 +259,7 @@ TEST(IntraprocessSubscriptions, noCopyAndDifferentRTTI)
   ros::Subscriber sub2 = nh.subscribe("test", 0, messageCallback2);
   ros::Publisher pub = nh.advertise<Msg2>("test", 0);
 
-  Msg2ConstPtr msg(new Msg2);
+  Msg2ConstPtr msg(boost::make_shared<Msg2>());
 
   while (pub.getNumSubscribers() == 0)
   {

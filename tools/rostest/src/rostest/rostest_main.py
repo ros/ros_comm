@@ -98,7 +98,16 @@ def rostestmain():
     parser.add_option("--results-base-dir", metavar="RESULTS_BASE_DIR",
                       help="The base directory of the test results. The test result file is " +
                            "created in a subfolder name PKG_DIR.")
+    parser.add_option("-r", "--reuse-master", action="store_true",
+                      help="Connect to an existing ROS master instead of spawning a new ROS master on a custom port")
+    parser.add_option("-c", "--clear", action="store_true",
+                      help="Clear all parameters when connecting to an existing ROS master (only works with --reuse-master)")
     (options, args) = parser.parse_args()
+
+    if options.clear and not options.reuse_master:
+        print("The --clear option is only valid with --reuse-master", file=sys.stderr)
+        sys.exit(1)
+
     try:
         args = roslaunch.rlutil.resolve_launch_arguments(args)
     except roslaunch.core.RLException as e:
@@ -147,7 +156,7 @@ def rostestmain():
         parser.error("test file is invalid. Generated failure case result file in %s"%results_file)
         
     try:
-        testCase = rostest.runner.createUnitTest(pkg, test_file)
+        testCase = rostest.runner.createUnitTest(pkg, test_file, options.reuse_master, options.clear, options.results_base_dir)
         suite = unittest.TestLoader().loadTestsFromTestCase(testCase)
 
         if options.text_mode:

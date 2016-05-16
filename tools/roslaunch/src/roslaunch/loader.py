@@ -172,6 +172,8 @@ class LoaderContext(object):
         self.arg_names = arg_names or []
         # special scoped resolve dict for processing in <include> tag
         self.include_resolve_dict = include_resolve_dict or None
+        # when this context was created via include, was pass_all_args set?
+        self.pass_all_args = False
 
     def add_param(self, p):
         """
@@ -214,8 +216,11 @@ class LoaderContext(object):
         Add 'arg' to existing context. Args are only valid for their immediate context.
         """
         if name in self.arg_names:
-            raise LoadException("arg '%s' has already been declared"%name)
-        self.arg_names.append(name)
+            # Ignore the duplication if pass_all_args was set
+            if not self.pass_all_args:
+                raise LoadException("arg '%s' has already been declared"%name)
+        else:
+            self.arg_names.append(name)
 
         resolve_dict = self.resolve_dict if self.include_resolve_dict is None else self.include_resolve_dict
 
@@ -228,7 +233,9 @@ class LoaderContext(object):
         if value is not None:
             # value is set, error if declared in our arg dict as args
             # with set values are constant/grounded.
-            if name in arg_dict:
+            # But don't error if pass_all_args was used to include this
+            # context; rather just override the passed-in value.
+            if name in arg_dict and not self.pass_all_args:
                 raise LoadException("cannot override arg '%s', which has already been set"%name)
             arg_dict[name] = value
         elif default is not None:

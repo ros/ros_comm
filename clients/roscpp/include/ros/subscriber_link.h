@@ -69,7 +69,7 @@ public:
   /**
    * \brief Queue up a message for publication.  Throws out old messages if we've reached our Publication's max queue size
    */
-  virtual void enqueueMessage(const SerializedMessage& m, bool nocopy, bool ser) = 0;
+  virtual void enqueueMessage(const SerializedMessage& m, bool ser, bool nocopy) = 0;
 
   virtual void drop() = 0;
 
@@ -77,7 +77,7 @@ public:
   virtual std::string getTransportInfo() = 0;
 
   virtual bool isIntraprocess() { return false; }
-  virtual void getPublishTypes(bool& ser, bool& nocopy, const std::type_info& ti) { ser = true; nocopy = false; }
+  virtual void getPublishTypes(bool& ser, bool& nocopy, const std::type_info& ti) { (void)ti; ser = true; nocopy = false; }
 
   const std::string& getMD5Sum();
   const std::string& getDataType();

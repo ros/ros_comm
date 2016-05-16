@@ -112,9 +112,15 @@ namespace ros
     /**
      * \brief Parent constructor
      *
-     * This version of the constructor takes a "parent" NodeHandle, and is equivalent to:
+     * This version of the constructor takes a "parent" NodeHandle.
+     * If the passed "ns" is relative (does not start with a slash), it is equivalent to calling:
      \verbatim
      NodeHandle child(parent.getNamespace() + "/" + ns);
+     \endverbatim
+     *
+     * If the passed "ns" is absolute (does start with a slash), it is equivalent to calling:
+     \verbatim
+     NodeHandle child(ns);
      \endverbatim
      *
      * When a NodeHandle is copied, it inherits the namespace of the
@@ -128,9 +134,15 @@ namespace ros
     /**
      * \brief Parent constructor
      *
-     * This version of the constructor takes a "parent" NodeHandle, and is equivalent to:
+     * This version of the constructor takes a "parent" NodeHandle.
+     * If the passed "ns" is relative (does not start with a slash), it is equivalent to calling:
      \verbatim
      NodeHandle child(parent.getNamespace() + "/" + ns, remappings);
+     \endverbatim
+     *
+     * If the passed "ns" is absolute (does start with a slash), it is equivalent to calling:
+     \verbatim
+     NodeHandle child(ns, remappings);
      \endverbatim
      *
      * This version also lets you pass in name remappings that are specific to this NodeHandle
@@ -375,7 +387,7 @@ ros::Subscriber sub = handle.subscribe("my_topic", 1, &Foo::callback, &foo_objec
 \verbatim
 ros::NodeHandle nodeHandle;
 void Foo::callback(const std_msgs::Empty::ConstPtr& message) {}
-boost::shared_ptr<Foo> foo_object(new Foo);
+boost::shared_ptr<Foo> foo_object(boost::make_shared<Foo>());
 ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, &Foo::callback, foo_object);
 if (sub)  // Enter if subscriber is valid
 {
@@ -438,7 +450,7 @@ ros::Subscriber sub = handle.subscribe("my_topic", 1, &Foo::callback, &foo_objec
 \verbatim
 ros::NodeHandle nodeHandle;
 void Foo::callback(const std_msgs::Empty::ConstPtr& message) {}
-boost::shared_ptr<Foo> foo_object(new Foo);
+boost::shared_ptr<Foo> foo_object(boost::make_shared<Foo>());
 ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, &Foo::callback, foo_object);
 if (sub)  // Enter if subscriber is valid
 {
@@ -484,7 +496,7 @@ void Foo::callback(const std_msgs::Empty::ConstPtr& message)
 {
 }
 
-boost::shared_ptr<Foo> foo_object(new Foo);
+boost::shared_ptr<Foo> foo_object(boost::make_shared<Foo>());
 ros::Subscriber sub = handle.subscribe("my_topic", 1, &Foo::callback, foo_object);
 \endverbatim
    *
@@ -502,7 +514,7 @@ ros::Subscriber sub = handle.subscribe("my_topic", 1, &Foo::callback, foo_object
 \verbatim
 ros::NodeHandle nodeHandle;
 void Foo::callback(const std_msgs::Empty::ConstPtr& message) {}
-boost::shared_ptr<Foo> foo_object(new Foo);
+boost::shared_ptr<Foo> foo_object(boost::make_shared<Foo>());
 ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, &Foo::callback, foo_object);
 if (sub)  // Enter if subscriber is valid
 {
@@ -549,7 +561,7 @@ void Foo::callback(const std_msgs::Empty::ConstPtr& message)
 {
 }
 
-boost::shared_ptr<Foo> foo_object(new Foo);
+boost::shared_ptr<Foo> foo_object(boost::make_shared<Foo>());
 ros::Subscriber sub = handle.subscribe("my_topic", 1, &Foo::callback, foo_object);
 \endverbatim
    *
@@ -567,7 +579,7 @@ ros::Subscriber sub = handle.subscribe("my_topic", 1, &Foo::callback, foo_object
 \verbatim
 ros::NodeHandle nodeHandle;
 void Foo::callback(const std_msgs::Empty::ConstPtr& message) {}
-boost::shared_ptr<Foo> foo_object(new Foo);
+boost::shared_ptr<Foo> foo_object(boost::make_shared<Foo>());
 ros::Subscriber sub = nodeHandle.subscribe("my_topic", 1, &Foo::callback, foo_object);
 if (sub)  // Enter if subscriber is valid
 {
@@ -928,7 +940,7 @@ bool Foo::callback(std_srvs::Empty& request, std_srvs::Empty& response)
   return true;
 }
 
-boost::shared_ptr<Foo> foo_object(new Foo);
+boost::shared_ptr<Foo> foo_object(boost::make_shared<Foo>());
 ros::ServiceServer service = handle.advertiseService("my_service", &Foo::callback, foo_object);
 \endverbatim
    *
@@ -975,7 +987,7 @@ bool Foo::callback(ros::ServiceEvent<std_srvs::Empty, std_srvs::Empty>& event)
   return true;
 }
 
-boost::shared_ptr<Foo> foo_object(new Foo);
+boost::shared_ptr<Foo> foo_object(boost::make_shared<Foo>());
 ros::ServiceServer service = handle.advertiseService("my_service", &Foo::callback, foo_object);
 \endverbatim
    *
@@ -2004,6 +2016,12 @@ if (service)  // Enter if advertised service is valid
    * \throws InvalidNameException If the parameter key begins with a tilde, or is an otherwise invalid graph resource name
    */
   bool deleteParam(const std::string& key) const;
+
+  /** \brief Get the keys for all the parameters in the parameter server.
+   * \param keys The keys retrieved.
+   * \return true if the query succeeded, false otherwise.
+   */
+  bool getParamNames(std::vector<std::string>& keys) const;
 
   /** \brief Assign value from parameter server, with default.
    *

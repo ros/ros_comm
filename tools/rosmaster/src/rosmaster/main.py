@@ -41,6 +41,7 @@ import time
 import optparse
 
 import rosmaster.master
+from rosmaster.master_api import NUM_WORKERS
 
 def configure_logging():
     """
@@ -64,6 +65,12 @@ def rosmaster_main(argv=sys.argv, stdout=sys.stdout, env=os.environ):
     parser.add_option("-p", "--port", 
                       dest="port", default=0,
                       help="override port", metavar="PORT")
+    parser.add_option("-w", "--numworkers",
+                      dest="num_workers", default=NUM_WORKERS, type=int,
+                      help="override number of worker threads", metavar="NUM_WORKERS")
+    parser.add_option("-t", "--timeout",
+                      dest="timeout",
+                      help="override the socket connection timeout (in seconds).", metavar="TIMEOUT")
     options, args = parser.parse_args(argv[1:])
 
     # only arg that zenmaster supports is __log remapping of logfilename
@@ -95,9 +102,15 @@ WARNING ACHTUNG WARNING ACHTUNG WARNING
 
     logger = logging.getLogger("rosmaster.main")
     logger.info("initialization complete, waiting for shutdown")
+
+    if options.timeout is not None and float(options.timeout) >= 0.0:
+        logger.info("Setting socket timeout to %s" % options.timeout)
+        import socket
+        socket.setdefaulttimeout(float(options.timeout))
+
     try:
         logger.info("Starting ROS Master Node")
-        master = rosmaster.master.Master(port)
+        master = rosmaster.master.Master(port, options.num_workers)
         master.start()
 
         import time

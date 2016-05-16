@@ -247,7 +247,7 @@ def remap_localhost_uri(uri, force_localhost=False):
 ##################################################################
 # DATA STRUCTURES
 
-class Master:
+class Master(object):
     """
     Data structure for representing and querying state of master 
     """

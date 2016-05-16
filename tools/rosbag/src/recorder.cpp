@@ -209,19 +209,17 @@ shared_ptr<ros::Subscriber> Recorder::subscribe(string const& topic) {
 	ROS_INFO("Subscribing to %s", topic.c_str());
 
     ros::NodeHandle nh;
-    shared_ptr<int> count(new int(options_.limit));
-    shared_ptr<ros::Subscriber> sub(new ros::Subscriber);
+    shared_ptr<int> count(boost::make_shared<int>(options_.limit));
+    shared_ptr<ros::Subscriber> sub(boost::make_shared<ros::Subscriber>());
 
     ros::SubscribeOptions ops;
     ops.topic = topic;
     ops.queue_size = 100;
     ops.md5sum = ros::message_traits::md5sum<topic_tools::ShapeShifter>();
     ops.datatype = ros::message_traits::datatype<topic_tools::ShapeShifter>();
-    ops.helper = ros::SubscriptionCallbackHelperPtr(
-        new ros::SubscriptionCallbackHelperT<const ros::MessageEvent<topic_tools::ShapeShifter const>& >(
-            boost::bind(&Recorder::doQueue, this, _1, topic, sub, count)
-        )
-    );
+    ops.helper = boost::make_shared<ros::SubscriptionCallbackHelperT<
+        const ros::MessageEvent<topic_tools::ShapeShifter const> &> >(
+            boost::bind(&Recorder::doQueue, this, _1, topic, sub, count));
     *sub = nh.subscribe(ops);
 
     currently_recording_.insert(topic);
@@ -270,6 +268,7 @@ bool Recorder::shouldSubscribeToTopic(std::string const& topic, bool from_node) 
 template<class T>
 std::string Recorder::timeToStr(T ros_t)
 {
+    (void)ros_t;
     std::stringstream msg;
     const boost::posix_time::ptime now=
         boost::posix_time::second_clock::local_time();
@@ -333,9 +332,9 @@ void Recorder::updateFilenames() {
     vector<string> parts;
 
     std::string prefix = options_.prefix;
-    uint32_t ind = prefix.rfind(".bag");
+    size_t ind = prefix.rfind(".bag");
 
-    if (ind != -1 && ind == prefix.size() - 4)
+    if (ind != std::string::npos && ind == prefix.size() - 4)
     {
       prefix.erase(ind);
     }
@@ -357,6 +356,7 @@ void Recorder::updateFilenames() {
 
 //! Callback to be invoked to actually do the recording
 void Recorder::snapshotTrigger(std_msgs::Empty::ConstPtr trigger) {
+    (void)trigger;
     updateFilenames();
     
     ROS_INFO("Triggered snapshot recording with name %s.", target_filename_.c_str());
@@ -537,6 +537,8 @@ void Recorder::doRecordSnapshotter() {
 }
 
 void Recorder::doCheckMaster(ros::TimerEvent const& e, ros::NodeHandle& node_handle) {
+    (void)e;
+    (void)node_handle;
     ros::master::V_TopicInfo topics;
     if (ros::master::getTopics(topics)) {
 		foreach(ros::master::TopicInfo const& t, topics) {

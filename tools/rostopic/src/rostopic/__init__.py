@@ -97,7 +97,7 @@ class ROSTopicHz(object):
     """
     ROSTopicHz receives messages for a topic and computes frequency stats
     """
-    def __init__(self, window_size, filter_expr=None):
+    def __init__(self, window_size, filter_expr=None, use_wtime=False):
         import threading
         self.lock = threading.Lock()
         self.last_printed_tn = 0
@@ -105,6 +105,7 @@ class ROSTopicHz(object):
         self.msg_tn = 0
         self.times =[]
         self.filter_expr = filter_expr
+        self.use_wtime = use_wtime
         
         # can't have infinite window size due to memory restrictions
         if window_size < 0:
@@ -120,7 +121,8 @@ class ROSTopicHz(object):
         if self.filter_expr is not None and not self.filter_expr(m):
             return
         with self.lock:
-            curr_rostime = rospy.get_rostime()
+            curr_rostime = rospy.get_rostime() if not self.use_wtime else \
+                    rospy.Time.from_sec(time.time())
 
             # time reset
             if curr_rostime.is_zero():
@@ -129,7 +131,8 @@ class ROSTopicHz(object):
                     self.times = []
                 return
             
-            curr = curr_rostime.to_sec()
+            curr = curr_rostime.to_sec() if not self.use_wtime else \
+                    rospy.Time.from_sec(time.time()).to_sec()
             if self.msg_t0 < 0 or self.msg_t0 > curr:
                 self.msg_t0 = curr
                 self.msg_tn = curr
@@ -179,7 +182,7 @@ class ROSTopicHz(object):
 def _sleep(duration):
     rospy.rostime.wallsleep(duration)
 
-def _rostopic_hz(topic, window_size=-1, filter_expr=None):
+def _rostopic_hz(topic, window_size=-1, filter_expr=None, use_wtime=False):
     """
     Periodically print the publishing rate of a topic to console until
     shutdown
@@ -191,7 +194,7 @@ def _rostopic_hz(topic, window_size=-1, filter_expr=None):
     if rospy.is_shutdown():
         return
     rospy.init_node(NAME, anonymous=True)
-    rt = ROSTopicHz(window_size, filter_expr=filter_expr)
+    rt = ROSTopicHz(window_size, filter_expr=filter_expr, use_wtime=use_wtime)
     # we use a large buffer size as we don't know what sort of messages we're dealing with.
     # may parameterize this in the future
     if filter_expr is not None:
@@ -200,10 +203,114 @@ def _rostopic_hz(topic, window_size=-1, filter_expr=None):
     else:
         sub = rospy.Subscriber(real_topic, rospy.AnyMsg, rt.callback_hz)        
     print("subscribed to [%s]"%real_topic)
+
+    if rospy.get_param('use_sim_time', False):
+        print("WARNING: may be using simulated time",file=sys.stderr)
+
     while not rospy.is_shutdown():
         _sleep(1.0)
         rt.print_hz()
-    
+
+
+class ROSTopicDelay(object):
+
+    def __init__(self, window_size):
+        import threading
+        self.lock = threading.Lock()
+        self.last_msg_tn = 0
+        self.msg_t0 = -1.
+        self.msg_tn = 0
+        self.delays = []
+
+        # can't have infinite window size due to memory restrictions
+        if window_size < 0:
+            window_size = 50000
+        self.window_size = window_size
+
+    def callback_delay(self, msg):
+        if not msg._has_header:
+            rospy.logerr('msg does not have header')
+            return
+        with self.lock:
+            curr_rostime = rospy.get_rostime()
+
+            # time reset
+            if curr_rostime.is_zero():
+                if len(self.delays) > 0:
+                    print("time has reset, resetting counters")
+                    self.delays = []
+                return
+
+            curr = curr_rostime.to_sec()
+            if self.msg_t0 < 0 or self.msg_t0 > curr:
+                self.msg_t0 = curr
+                self.msg_tn = curr
+                self.delays = []
+            else:
+                self.delays.append(curr_rostime.to_time() -
+                                   msg.header.stamp.to_time())
+                self.msg_tn = curr
+
+            if len(self.delays) > self.window_size - 1:
+                self.delays.pop(0)
+
+    def get_delay(self):
+        if self.msg_tn == self.last_msg_tn:
+            return
+        with self.lock:
+            if not self.delays:
+                return
+            n = len(self.delays)
+
+            mean = sum(self.delays) / n
+            rate = 1. / mean if mean > 0 else 0
+
+            std_dev = math.sqrt(sum((x - mean)**2 for x in self.delays) / n)
+
+            max_delta = max(self.delays)
+            min_delta = min(self.delays)
+
+            self.last_msg_tn = self.msg_tn
+        return mean, min_delta, max_delta, std_dev, n + 1
+
+    def print_delay(self):
+        """
+        print the average publishing delay to screen
+        """
+        if not self.delays:
+            return
+        ret = self.get_delay()
+        if ret is None:
+            print("no new messages")
+            return
+        delay, min_delta, max_delta, std_dev, window = ret
+        print("average delay: %.3f\n\tmin: %.3fs max: %.3fs std dev: %.5fs window: %s"%(delay, min_delta, max_delta, std_dev, window))
+
+
+def _rostopic_delay(topic, window_size=-1):
+    """
+    Periodically print the publishing delay of a topic to console until
+    shutdown
+    :param topic: topic name, ``str``
+    :param window_size: number of messages to average over, -1 for infinite, ``int``
+    """
+    # pause hz until topic is published
+    msg_class, real_topic, _ = get_topic_class(topic, blocking=True)
+    if rospy.is_shutdown():
+        return
+    rospy.init_node(NAME, anonymous=True)
+    rt = ROSTopicDelay(window_size)
+    sub = rospy.Subscriber(real_topic, msg_class, rt.callback_delay)
+    print("subscribed to [%s]" % real_topic)
+
+    if rospy.get_param('use_sim_time', False):
+        print("WARNING: may be using simulated time",file=sys.stderr)
+
+    while not rospy.is_shutdown():
+        _sleep(1.0)
+        rt.print_delay()
+
+
 class ROSTopicBandwidth(object):
     def __init__(self, window_size=100):
         import threading
@@ -1187,6 +1294,9 @@ def _rostopic_cmd_hz(argv):
     parser.add_option("--filter",
                       dest="filter_expr", default=None,
                       help="only measure messages matching the specified Python expression", metavar="EXPR")
+    parser.add_option("--wall-time",
+                      dest="use_wtime", default=False, action="store_true",
+                      help="calculates rate using wall time which can be helpful when clock isnt published during simulation")
 
     (options, args) = parser.parse_args(args)
     if len(args) == 0:
@@ -1212,7 +1322,25 @@ def _rostopic_cmd_hz(argv):
         filter_expr = expr_eval(options.filter_expr)
     else:
         filter_expr = None
-    _rostopic_hz(topic, window_size=window_size, filter_expr=filter_expr)
+    _rostopic_hz(topic, window_size=window_size, filter_expr=filter_expr,
+                 use_wtime=options.use_wtime)
+
+
+def _rostopic_cmd_delay(argv):
+    args = argv[2:]
+    import argparse
+    parser = argparse.ArgumentParser(usage="%(prog)s delay [options] /topic", prog=NAME)
+    parser.add_argument("topic", help="topic name to be calcurated the delay")
+    parser.add_argument("-w", "--window",
+                        dest="window_size", default=-1, type=int,
+                        help="window size, in # of messages, for calculating rate")
+
+    args = parser.parse_args(args)
+    topic_name = args.topic
+    window_size = args.window_size
+    topic = rosgraph.names.script_resolve_name('rostopic', topic_name)
+    _rostopic_delay(topic, window_size=window_size)
+
 
 def _rostopic_cmd_bw(argv=sys.argv):
     args = argv[2:]
@@ -1302,7 +1430,7 @@ def create_publisher(topic_name, topic_type, latch):
     pub = rospy.Publisher(topic_name, msg_class, latch=latch, queue_size=100)
     return pub, msg_class
 
-def _publish_at_rate(pub, msg, rate, verbose=False):
+def _publish_at_rate(pub, msg, rate, verbose=False, substitute_keywords=False, pub_args=None):
     """
     Publish message at specified rate. Subroutine of L{publish_message()}.
     
@@ -1316,6 +1444,8 @@ def _publish_at_rate(pub, msg, rate, verbose=False):
     except ValueError:
         raise ROSTopicException("Rate must be a number")
     while not rospy.is_shutdown():
+        if substitute_keywords:
+            _fillMessageArgs(msg, pub_args)
         if verbose:
             print("publishing %s"%msg)
         pub.publish(msg)
@@ -1339,7 +1469,7 @@ def _publish_latched(pub, msg, once=False, verbose=False):
     if not once:
         rospy.spin()        
 
-def publish_message(pub, msg_class, pub_args, rate=None, once=False, verbose=False):
+def publish_message(pub, msg_class, pub_args, rate=None, once=False, verbose=False, substitute_keywords=False):
     """
     Create new instance of msg_class, populate with pub_args, and publish. This may
     print output to screen.
@@ -1352,6 +1482,30 @@ def publish_message(pub, msg_class, pub_args, rate=None, once=False, verbose=Fal
     :param verbose: If ``True``, print more verbose output to stdout, ``bool``
     """
     msg = msg_class()
+
+    _fillMessageArgs(msg, pub_args)
+
+    try:
+        
+        if rate is None:
+            s = "publishing and latching [%s]"%(msg) if verbose else "publishing and latching message"
+            if once:
+                s = s + " for %s seconds"%_ONCE_DELAY
+            else:
+                s = s + ". Press ctrl-C to terminate"
+            print(s)
+
+            _publish_latched(pub, msg, once, verbose)
+        else:
+            _publish_at_rate(pub, msg, rate, verbose=verbose, substitute_keywords=substitute_keywords, pub_args=pub_args)
+            
+    except rospy.ROSSerializationException as e:
+        import rosmsg
+        # we could just print the message definition, but rosmsg is more readable
+        raise ROSTopicException("Unable to publish message. One of the fields has an incorrect type:\n"+\
+                                "  %s\n\nmsg file:\n%s"%(e, rosmsg.get_msg_text(msg_class._type)))
+
+def _fillMessageArgs(msg, pub_args):
     try:
         # Populate the message and enable substitution keys for 'now'
         # and 'auto'. There is a corner case here: this logic doesn't
@@ -1362,34 +1516,14 @@ def publish_message(pub, msg_class, pub_args, rate=None, once=False, verbose=Fal
         # do more reasoning over types. to avoid ambiguous cases
         # (e.g. a std_msgs/String type, which only has a single string
         # field).
-        
+
         # allow the use of the 'now' string with timestamps and 'auto' with header
-        now = rospy.get_rostime() 
+        now = rospy.get_rostime()
         import std_msgs.msg
         keys = { 'now': now, 'auto': std_msgs.msg.Header(stamp=now) }
         genpy.message.fill_message_args(msg, pub_args, keys=keys)
     except genpy.MessageException as e:
         raise ROSTopicException(str(e)+"\n\nArgs are: [%s]"%genpy.message.get_printable_message_args(msg))
-    try:
-        
-        if rate is None:
-            s = "publishing and latching [%s]"%(msg) if verbose else "publishing and latching message"
-            if once:
-                s = s + " for %s seconds"%_ONCE_DELAY
-            else:
-                s = s + ". Press ctrl-C to terminate"
-            print(s)
-        
-        if rate is None:
-            _publish_latched(pub, msg, once, verbose)
-        else:
-            _publish_at_rate(pub, msg, rate, verbose)
-            
-    except rospy.ROSSerializationException as e:
-        import rosmsg
-        # we could just print the message definition, but rosmsg is more readable
-        raise ROSTopicException("Unable to publish message. One of the fields has an incorrect type:\n"+\
-                                "  %s\n\nmsg file:\n%s"%(e, rosmsg.get_msg_text(msg_class._type)))
     
 def _rostopic_cmd_pub(argv):
     """
@@ -1413,6 +1547,8 @@ def _rostopic_cmd_pub(argv):
                       help="read args from YAML file (Bagy)")
     parser.add_option("-l", '--latch', dest="latch", default=False, action="store_true",
                       help="enable latching for -f, -r and piped input.  This latches the first message.")
+    parser.add_option("-s", '--substitute-keywords', dest="substitute_keywords", default=False, action="store_true",
+                      help="When publishing with a rate, performs keyword ('now' or 'auto') substitution for each message")
     #parser.add_option("-p", '--param', dest="parameter", metavar='/PARAM', default=None,
     #                  help="read args from ROS parameter (Bagy format)")
     
@@ -1473,7 +1609,7 @@ def _rostopic_cmd_pub(argv):
             rate = 10.
         stdin_publish(pub, msg_class, rate, options.once, options.file, options.verbose)
     else:
-        argv_publish(pub, msg_class, pub_args, rate, options.once, options.verbose)
+        argv_publish(pub, msg_class, pub_args, rate, options.once, options.verbose, substitute_keywords=options.substitute_keywords)
         
 
 def file_yaml_arg(filename):
@@ -1496,8 +1632,8 @@ def file_yaml_arg(filename):
             raise ROSTopicException("invalid YAML in file: %s"%(str(e)))
     return bagy_iter
     
-def argv_publish(pub, msg_class, pub_args, rate, once, verbose):
-    publish_message(pub, msg_class, pub_args, rate, once, verbose=verbose)
+def argv_publish(pub, msg_class, pub_args, rate, once, verbose, substitute_keywords=False):
+    publish_message(pub, msg_class, pub_args, rate, once, verbose=verbose, substitute_keywords=substitute_keywords)
 
     if once:
         # stick around long enough for others to grab
@@ -1751,6 +1887,7 @@ def _fullusage():
 
 Commands:
 \trostopic bw\tdisplay bandwidth used by topic
+\trostopic delay\tdisplay delay of topic from timestamp in header
 \trostopic echo\tprint messages to screen
 \trostopic find\tfind topics by type
 \trostopic hz\tdisplay publishing rate of topic    
@@ -1791,6 +1928,8 @@ def rostopicmain(argv=None):
             _rostopic_cmd_bw(argv)
         elif command == 'find':
             _rostopic_cmd_find(argv)
+        elif command == 'delay':
+            _rostopic_cmd_delay(argv)
         else:
             _fullusage()
     except socket.error:

@@ -53,7 +53,7 @@ using namespace ros;
 int argc_;
 char** argv_;
 
-void fire_shutdown(const ros::WallTimerEvent& event) {
+void fire_shutdown(const ros::WallTimerEvent&) {
   ROS_INFO("Asking for shutdown");
   ros::shutdown();
 }

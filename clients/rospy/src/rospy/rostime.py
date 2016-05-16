@@ -87,7 +87,7 @@ class Duration(genpy.Duration):
         @param nsecs: nanoseconds
         @type  nsecs: int
         """
-        genpy.Duration.__init__(self, secs, nsecs)
+        super(Duration, self).__init__(secs, nsecs)
 
     def __repr__(self):
         return 'rospy.Duration[%d]' % self.to_nsec()
@@ -135,7 +135,7 @@ class Time(genpy.Time):
         @param nsecs: nanoseconds since seconds (since epoch)
         @type  nsecs: int
         """
-        genpy.Time.__init__(self, secs, nsecs)
+        super(Time, self).__init__(secs, nsecs)
         
     def __repr__(self):
         return 'rospy.Time[%d]' % self.to_nsec()

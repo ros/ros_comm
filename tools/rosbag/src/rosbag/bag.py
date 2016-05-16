@@ -62,7 +62,14 @@ import genpy.message
 
 import roslib.names # still needed for roslib.names.canonicalize_name()
 import rospy
-import roslz4
+try:
+    import roslz4
+    found_lz4 = True
+except ImportError:
+    rospy.logwarn(
+        'Failed to load Python extension for LZ4 support. '
+        'LZ4 compression will not be available.')
+    found_lz4 = False
 
 class ROSBagException(Exception):
     """
@@ -95,6 +102,8 @@ class Compression:
     NONE = 'none'
     BZ2  = 'bz2'
     LZ4  = 'lz4'
+
+BagMessage = collections.namedtuple('BagMessage', 'topic message timestamp')
 
 class Bag(object):
     """
@@ -137,7 +146,9 @@ class Bag(object):
         self._filename = None
         self._version  = None
 
-        allowed_compressions = [Compression.NONE, Compression.BZ2, Compression.LZ4]
+        allowed_compressions = [Compression.NONE, Compression.BZ2]
+        if found_lz4:
+            allowed_compressions.append(Compression.LZ4)
         if compression not in allowed_compressions:
             raise ValueError('compression must be one of: %s' % ', '.join(allowed_compressions))  
         self._compression = compression      
@@ -212,7 +223,9 @@ class Bag(object):
     
     def _set_compression(self, compression):
         """Set the compression method to use for writing."""
-        allowed_compressions = [Compression.NONE, Compression.BZ2, Compression.LZ4]
+        allowed_compressions = [Compression.NONE, Compression.BZ2]
+        if found_lz4:
+            allowed_compressions.append(Compression.LZ4)
         if compression not in allowed_compressions:
             raise ValueError('compression must be one of: %s' % ', '.join(allowed_compressions))        
         
@@ -240,7 +253,7 @@ class Bag(object):
     def read_messages(self, topics=None, start_time=None, end_time=None, connection_filter=None, raw=False):
         """
         Read messages from the bag, optionally filtered by topic, timestamp and connection details.
-        @param topics: list of topics or a single topic [optional]
+        @param topics: list of topics or a single topic. if an empty list is given all topics will be read [optional]
         @type  topics: list(str) or str
         @param start_time: earliest timestamp of message to return [optional]
         @type  start_time: U{genpy.Time}
@@ -250,7 +263,7 @@ class Bag(object):
         @type  connection_filter: function taking (topic, datatype, md5sum, msg_def, header) and returning bool
         @param raw: if True, then generate tuples of (datatype, (data, md5sum, position), pytype)
         @type  raw: bool
-        @return: generator of (topic, message, timestamp) tuples for each message in the bag file
+        @return: generator of BagMessage(topic, message, timestamp) namedtuples for each message in the bag file
         @rtype:  generator of tuples of (str, U{genpy.Message}, U{genpy.Time}) [not raw] or (str, (str, str, str, tuple, class), U{genpy.Time}) [raw]
         """
         self.flush()
@@ -481,6 +494,8 @@ class Bag(object):
         if self._chunks:
             start_stamp = self._chunks[0].start_time.to_sec()
         else:
+            if not self._connection_indexes:
+                raise ROSBagException('Bag contains no message')
             start_stamp = min([index[0].time.to_sec() for index in self._connection_indexes.values()])
         
         return start_stamp
@@ -495,6 +510,8 @@ class Bag(object):
         if self._chunks:
             end_stamp = self._chunks[-1].end_time.to_sec()
         else:
+            if not self._connection_indexes:
+                raise ROSBagException('Bag contains no message')
             end_stamp = max([index[-1].time.to_sec() for index in self._connection_indexes.values()])
         
         return end_stamp
@@ -1315,7 +1332,7 @@ class Bag(object):
         # Create the compressor
         if compression == Compression.BZ2:
             self._output_file = _CompressorFileFacade(self._file, bz2.BZ2Compressor())
-        elif compression == Compression.LZ4:
+        elif compression == Compression.LZ4 and found_lz4:
             self._output_file = _CompressorFileFacade(self._file, roslz4.LZ4Compressor())
         elif compression == Compression.NONE:
             self._output_file = self._file
@@ -1827,7 +1844,7 @@ class _BagReader102_Unindexed(_BagReader):
                 msg = msg_type()
                 msg.deserialize(data)
 
-            yield (topic, msg, t)
+            yield BagMessage(topic, msg, t)
 
         self.bag._connection_indexes_read = True
 
@@ -2046,7 +2063,7 @@ class _BagReader102_Indexed(_BagReader102_Unindexed):
             msg = msg_type()
             msg.deserialize(data)
         
-        return (topic, msg, t)
+        return BagMessage(topic, msg, t)
 
 class _BagReader200(_BagReader):
     """
@@ -2114,7 +2131,7 @@ class _BagReader200(_BagReader):
             # Decompress it
             if chunk_header.compression == Compression.BZ2:
                 self.decompressed_chunk = bz2.decompress(compressed_chunk)
-            elif chunk_header.compression == Compression.LZ4:
+            elif chunk_header.compression == Compression.LZ4 and found_lz4:
                 self.decompressed_chunk = roslz4.decompress(compressed_chunk)
             else:
                 raise ROSBagException('unsupported compression type: %s' % chunk_header.compression)
@@ -2417,7 +2434,7 @@ class _BagReader200(_BagReader):
 
                 if chunk_header.compression == Compression.BZ2:
                     self.decompressed_chunk = bz2.decompress(compressed_chunk)
-                elif chunk_header.compression == Compression.LZ4:
+                elif chunk_header.compression == Compression.LZ4 and found_lz4:
                     self.decompressed_chunk = roslz4.decompress(compressed_chunk)
                 else:
                     raise ROSBagException('unsupported compression type: %s' % chunk_header.compression)
@@ -2463,7 +2480,7 @@ class _BagReader200(_BagReader):
             msg = msg_type()
             msg.deserialize(data)
         
-        return (connection_info.topic, msg, t)
+        return BagMessage(connection_info.topic, msg, t)
 
 def _time_to_str(secs):
     secs_frac = secs - int(secs) 

@@ -44,6 +44,7 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
 
     desc.add_options()
       ("help,h", "produce help message")
+      ("prefix,p", po::value<std::string>()->default_value(""), "prefixes all output topics in replay")
       ("quiet,q", "suppress console output")
       ("immediate,i", "play back all messages without waiting")
       ("pause", "start in paused mode")
@@ -83,6 +84,8 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
       exit(0);
     }
 
+    if (vm.count("prefix"))
+      opts.prefix = vm["prefix"].as<std::string>();
     if (vm.count("quiet"))
       opts.quiet = true;
     if (vm.count("immediate"))

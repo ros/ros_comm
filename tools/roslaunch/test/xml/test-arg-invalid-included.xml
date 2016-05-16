@@ -1,0 +1,3 @@
+<launch>
+  <arg name="grounded" value="set"/>
+</launch>

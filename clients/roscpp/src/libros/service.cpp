@@ -47,7 +47,7 @@ bool service::exists(const std::string& service_name, bool print_failure_reason)
 
   if (ServiceManager::instance()->lookupService(mapped_name, host, port))
   {
-    TransportTCPPtr transport(new TransportTCP(0, TransportTCP::SYNCHRONOUS));
+    TransportTCPPtr transport(boost::make_shared<TransportTCP>(static_cast<ros::PollSet*>(NULL), TransportTCP::SYNCHRONOUS));
 
     if (transport->connect(host, port))
     {

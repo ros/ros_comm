@@ -295,8 +295,8 @@ Publisher NodeHandle::advertise(AdvertiseOptions& ops)
     }
   }
 
-  SubscriberCallbacksPtr callbacks(new SubscriberCallbacks(ops.connect_cb, ops.disconnect_cb, 
-							   ops.tracked_object, ops.callback_queue));
+  SubscriberCallbacksPtr callbacks(boost::make_shared<SubscriberCallbacks>(ops.connect_cb, ops.disconnect_cb, 
+                                                                           ops.tracked_object, ops.callback_queue));
 
   if (TopicManager::instance()->advertise(ops, callbacks))
   {
@@ -590,6 +590,11 @@ bool NodeHandle::hasParam(const std::string& key) const
 bool NodeHandle::deleteParam(const std::string& key) const
 {
   return param::del(resolveName(key));
+}
+
+bool NodeHandle::getParamNames(std::vector<std::string>& keys) const
+{
+  return param::getParamNames(keys);
 }
 
 bool NodeHandle::getParam(const std::string& key, XmlRpc::XmlRpcValue& v) const

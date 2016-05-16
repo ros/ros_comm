@@ -202,6 +202,9 @@ def _launch_prefix_args(node):
     else:
         return []
 
+_rospack = None
+
+
 def create_local_process_args(node, machine, env=None):
     """
     Subroutine for creating node arguments.
@@ -212,10 +215,17 @@ def create_local_process_args(node, machine, env=None):
     :raises: :exc:`NodeParamsException` If args cannot be constructed for Node
       as specified (e.g. the node type does not exist)
     """
+    global _rospack
     if not node.name:
         raise ValueError("node name must be defined")
-    if env is None:
-        env = os.environ
+    # create rospack instance if no cached value is available or for custom environments
+    if not _rospack or env is not None:
+        rospack = rospkg.RosPack(rospkg.get_ros_paths(env=env))
+        # cache rospack instance for default environment
+        if env is None:
+            _rospack = rospack
+    else:
+        rospack = _rospack
     
     # - Construct rosrun command
     remap_args = ["%s:=%s"%(src,dst) for src, dst in node.remap_args]
@@ -238,8 +248,7 @@ def create_local_process_args(node, machine, env=None):
     args = shlex.split(resolved) + remap_args
     try:
         #TODO:fuerte: pass through rospack and catkin cache
-        rospack = rospkg.RosPack(rospkg.get_ros_paths(env=env))
-        matches = roslib.packages.find_node(node.package, node.type, rospack)
+        matches = roslib.packages.find_node(node.package, node.type, rospack=rospack)
     except rospkg.ResourceNotFound as e:
         # multiple nodes, invalid package
         raise NodeParamsException(str(e))

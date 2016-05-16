@@ -54,7 +54,7 @@ public:
   ros::NodeHandle nh_;
   ros::Subscriber sub_;
 
-  void messageCallback(const test_roscpp::TestArrayConstPtr& msg)
+  void messageCallback(const test_roscpp::TestArrayConstPtr&)
   {
     ROS_INFO("in callback");
 
@@ -65,7 +65,7 @@ public:
     }
   }
 
-  void autoUnsubscribeCallback(const test_roscpp::TestArrayConstPtr& msg)
+  void autoUnsubscribeCallback(const test_roscpp::TestArrayConstPtr&)
   {
     ROS_INFO("in autounsub callback");
     sub_.shutdown();

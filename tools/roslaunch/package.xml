@@ -1,6 +1,6 @@
 <package>
   <name>roslaunch</name>
-  <version>1.11.13</version>
+  <version>1.11.19</version>
   <description>
     roslaunch is a tool for easily launching multiple ROS <a
     href="http://ros.org/wiki/Nodes">nodes</a> locally and remotely
@@ -21,12 +21,12 @@
   <buildtool_depend version_gte="0.5.78">catkin</buildtool_depend>
 
   <run_depend>python-paramiko</run_depend>
-  <run_depend>python-rospkg</run_depend>
+  <run_depend version_gte="1.0.37">python-rospkg</run_depend>
   <run_depend>python-yaml</run_depend>
   <run_depend>rosclean</run_depend>
   <run_depend>rosgraph_msgs</run_depend>
   <run_depend>roslib</run_depend>
-  <run_depend>rosmaster</run_depend>
+  <run_depend version_gte="1.11.16">rosmaster</run_depend>
   <run_depend>rosout</run_depend>
   <run_depend>rosparam</run_depend>
   <run_depend>rosunit</run_depend>

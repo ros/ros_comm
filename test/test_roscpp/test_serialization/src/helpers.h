@@ -95,6 +95,7 @@ public:
   template<class U>
   Allocator(const Allocator<U>& u) throw ()
   {
+    (void)u;
   }
 
   ~Allocator() throw ()
@@ -115,10 +116,12 @@ public:
   }
   pointer allocate(size_type n, Allocator<void>::const_pointer hint = 0)
   {
+    (void)hint;
     return reinterpret_cast<pointer> (malloc(n * sizeof(T)));
   }
   void deallocate(pointer p, size_type n)
   {
+    (void)n;
     free(p);
   }
 
@@ -133,13 +136,13 @@ public:
 };
 
 template<class T1, class T2>
-inline bool operator==(const Allocator<T1>& a1, const Allocator<T2>& a2) throw ()
+inline bool operator==(const Allocator<T1>&, const Allocator<T2>&) throw ()
 {
   return true;
 }
 
 template<class T1, class T2>
-inline bool operator!=(const Allocator<T1>& a1, const Allocator<T2>& a2) throw ()
+inline bool operator!=(const Allocator<T1>&, const Allocator<T2>&) throw ()
 {
   return false;
 }

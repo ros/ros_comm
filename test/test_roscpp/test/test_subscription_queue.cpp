@@ -53,7 +53,7 @@ public:
   virtual const std::string __getMD5Sum() const { return ""; }
   virtual const std::string __getMessageDefinition() const { return ""; }
   virtual uint32_t serializationLength() const { return 0; }
-  virtual uint8_t *serialize(uint8_t *write_ptr, uint32_t seq) const { return write_ptr; }
+  virtual uint8_t *serialize(uint8_t *write_ptr, uint32_t seq) const { (void)seq; return write_ptr; }
   virtual uint8_t *deserialize(uint8_t *read_ptr) { return read_ptr; }
 };
 
@@ -66,7 +66,7 @@ public:
 
   virtual VoidConstPtr deserialize(const SubscriptionCallbackHelperDeserializeParams&)
   {
-    return VoidConstPtr(new FakeMessage);
+    return boost::make_shared<FakeMessage>();
   }
 
   virtual std::string getMD5Sum() { return ""; }
@@ -74,6 +74,7 @@ public:
 
   virtual void call(SubscriptionCallbackHelperCallParams& params)
   {
+    (void)params;
     {
       boost::mutex::scoped_lock lock(mutex_);
       ++calls_;
@@ -100,8 +101,8 @@ TEST(SubscriptionQueue, queueSize)
 {
   SubscriptionQueue queue("blah", 1, false);
 
-  FakeSubHelperPtr helper(new FakeSubHelper);
-  MessageDeserializerPtr des(new MessageDeserializer(helper, SerializedMessage(), boost::shared_ptr<M_string>()));
+  FakeSubHelperPtr helper(boost::make_shared<FakeSubHelper>());
+  MessageDeserializerPtr des(boost::make_shared<MessageDeserializer>(helper, SerializedMessage(), boost::shared_ptr<M_string>()));
 
   ASSERT_FALSE(queue.full());
 
@@ -133,8 +134,8 @@ TEST(SubscriptionQueue, infiniteQueue)
 {
   SubscriptionQueue queue("blah", 0, false);
 
-  FakeSubHelperPtr helper(new FakeSubHelper);
-  MessageDeserializerPtr des(new MessageDeserializer(helper, SerializedMessage(), boost::shared_ptr<M_string>()));
+  FakeSubHelperPtr helper(boost::make_shared<FakeSubHelper>());
+  MessageDeserializerPtr des(boost::make_shared<MessageDeserializer>(helper, SerializedMessage(), boost::shared_ptr<M_string>()));
 
   ASSERT_FALSE(queue.full());
 
@@ -164,8 +165,8 @@ TEST(SubscriptionQueue, clearCall)
 {
   SubscriptionQueue queue("blah", 1, false);
 
-  FakeSubHelperPtr helper(new FakeSubHelper);
-  MessageDeserializerPtr des(new MessageDeserializer(helper, SerializedMessage(), boost::shared_ptr<M_string>()));
+  FakeSubHelperPtr helper(boost::make_shared<FakeSubHelper>());
+  MessageDeserializerPtr des(boost::make_shared<MessageDeserializer>(helper, SerializedMessage(), boost::shared_ptr<M_string>()));
 
   queue.push(helper, des, false, VoidConstWPtr(), true);
   queue.clear();
@@ -176,8 +177,8 @@ TEST(SubscriptionQueue, clearThenAddAndCall)
 {
   SubscriptionQueue queue("blah", 1, false);
 
-  FakeSubHelperPtr helper(new FakeSubHelper);
-  MessageDeserializerPtr des(new MessageDeserializer(helper, SerializedMessage(), boost::shared_ptr<M_string>()));
+  FakeSubHelperPtr helper(boost::make_shared<FakeSubHelper>());
+  MessageDeserializerPtr des(boost::make_shared<MessageDeserializer>(helper, SerializedMessage(), boost::shared_ptr<M_string>()));
 
   queue.push(helper, des, false, VoidConstWPtr(), true);
   queue.clear();
@@ -194,8 +195,8 @@ TEST(SubscriptionQueue, clearInCallback)
 {
   SubscriptionQueue queue("blah", 1, false);
 
-  FakeSubHelperPtr helper(new FakeSubHelper);
-  MessageDeserializerPtr des(new MessageDeserializer(helper, SerializedMessage(), boost::shared_ptr<M_string>()));
+  FakeSubHelperPtr helper(boost::make_shared<FakeSubHelper>());
+  MessageDeserializerPtr des(boost::make_shared<MessageDeserializer>(helper, SerializedMessage(), boost::shared_ptr<M_string>()));
 
   helper->cb_ = boost::bind(clearInCallbackCallback, boost::ref(queue));
   queue.push(helper, des, false, VoidConstWPtr(), true);
@@ -218,8 +219,8 @@ TEST(SubscriptionQueue, clearWhileThreadIsBlocking)
 {
   SubscriptionQueue queue("blah", 1, false);
 
-  FakeSubHelperPtr helper(new FakeSubHelper);
-  MessageDeserializerPtr des(new MessageDeserializer(helper, SerializedMessage(), boost::shared_ptr<M_string>()));
+  FakeSubHelperPtr helper(boost::make_shared<FakeSubHelper>());
+  MessageDeserializerPtr des(boost::make_shared<MessageDeserializer>(helper, SerializedMessage(), boost::shared_ptr<M_string>()));
 
   bool done = false;
   boost::barrier barrier(2);
@@ -241,8 +242,8 @@ void waitForBarrier(boost::barrier* bar)
 TEST(SubscriptionQueue, concurrentCallbacks)
 {
   SubscriptionQueue queue("blah", 0, true);
-  FakeSubHelperPtr helper(new FakeSubHelper);
-  MessageDeserializerPtr des(new MessageDeserializer(helper, SerializedMessage(), boost::shared_ptr<M_string>()));
+  FakeSubHelperPtr helper(boost::make_shared<FakeSubHelper>());
+  MessageDeserializerPtr des(boost::make_shared<MessageDeserializer>(helper, SerializedMessage(), boost::shared_ptr<M_string>()));
 
   boost::barrier bar(2);
   helper->cb_ = boost::bind(waitForBarrier, &bar);
@@ -264,8 +265,8 @@ void waitForASecond()
 TEST(SubscriptionQueue, nonConcurrentOrdering)
 {
   SubscriptionQueue queue("blah", 0, false);
-  FakeSubHelperPtr helper(new FakeSubHelper);
-  MessageDeserializerPtr des(new MessageDeserializer(helper, SerializedMessage(), boost::shared_ptr<M_string>()));
+  FakeSubHelperPtr helper(boost::make_shared<FakeSubHelper>());
+  MessageDeserializerPtr des(boost::make_shared<MessageDeserializer>(helper, SerializedMessage(), boost::shared_ptr<M_string>()));
 
   helper->cb_ = waitForASecond;
   queue.push(helper, des, false, VoidConstWPtr(), true);

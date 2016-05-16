@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 2.8.3)
 
 project(rosbag_storage)
 
+if(NOT WIN32)
+  set_directory_properties(PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra")
+endif()
+
 find_package(console_bridge REQUIRED)
 find_package(catkin REQUIRED COMPONENTS cpp_common roscpp_serialization roscpp_traits rostime roslz4)
 find_package(Boost REQUIRED COMPONENTS date_time filesystem program_options regex)

@@ -39,13 +39,13 @@
 class CompressATest :public testing::Test {
 protected:
   void SetUp() {
-    for (int i = 0; i < sizeof(input); ++i) {
+    for (size_t i = 0; i < sizeof(input); ++i) {
       input[i] = 'a';
     }
-    for (int i = 0; i < sizeof(output); ++i) {
+    for (size_t i = 0; i < sizeof(output); ++i) {
       output[i] = 0;
     }
-    for (int i = 0; i < sizeof(other); ++i) {
+    for (size_t i = 0; i < sizeof(other); ++i) {
       other[i] = 0;
     }
   }
@@ -90,7 +90,7 @@ TEST_F(CompressATest, Stream) {
 
   roslz4_decompressEnd(&stream);
 
-  for (int i = 0; i < sizeof(other); ++i) {
+  for (size_t i = 0; i < sizeof(other); ++i) {
     ASSERT_EQ(input[i], other[i]) <<  "Original and uncompressed data differ at index " << i;
   }
 }
@@ -108,7 +108,7 @@ TEST_F(CompressATest, Oneshot) {
   ASSERT_EQ(ROSLZ4_OK, ret);
   ASSERT_EQ(sizeof(input), decomp_size);
 
-  for (int i = 0; i < sizeof(other); ++i) {
+  for (size_t i = 0; i < sizeof(other); ++i) {
     ASSERT_EQ(input[i], other[i]) << "Original and uncompressed data differ at index " << i;
   }
 }

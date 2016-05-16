@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(rosout)
-find_package(catkin REQUIRED COMPONENTS roscpp)
+
+if(NOT WIN32)
+  set_directory_properties(PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra")
+endif()
+
+find_package(catkin REQUIRED COMPONENTS roscpp rosgraph_msgs)
 
 catkin_package()
 

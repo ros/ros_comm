@@ -394,7 +394,8 @@ class QueuedConnection(object):
         self._thread.start()
 
     def _closed_connection_callback(self, connection):
-        self._cond_data_available.notify()
+        with self._lock:
+            self._cond_data_available.notify()
 
     def __getattr__(self, name):
         if name.startswith('__'):

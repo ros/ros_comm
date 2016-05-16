@@ -938,4 +938,115 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEquals(param_d['/include3/include_test/p3_test'], 'set')
         self.assertEquals(param_d['/include3/include_test/p4_test'], 'new3')
         
+    # Test the new attribute <include pass_all_args={"true"|"false"}>
+    def test_arg_all(self):
+        loader = roslaunch.xmlloader.XmlLoader()
+        filename = os.path.join(self.xml_dir, 'test-arg-all.xml')
 
+        # Test suite A: load without an optional arg set externally
+        mock = RosLaunchMock()
+        loader.load(filename, mock, argv=["required:=test_arg"])
+
+        param_d = {}
+        for p in mock.params:
+            param_d[p.key] = p.value
+
+        # Sanity check: Parent namespace
+        self.assertEquals(param_d['/p1_test'], 'test_arg')
+        self.assertEquals(param_d['/p2_test'], 'not_set')
+        self.assertEquals(param_d['/p3_test'], 'parent')
+
+        # Test case 1: include without pass_all_args
+        self.assertEquals(param_d['/notall/include_test/p1_test'], 'test_arg')
+        self.assertEquals(param_d['/notall/include_test/p2_test'], 'not_set')
+        self.assertEquals(param_d['/notall/include_test/p3_test'], 'set')
+
+        # Test case 2: include without pass_all_args attribute, and pass optional arg
+        # internally
+        self.assertEquals(param_d['/notall_optional/include_test/p1_test'], 'test_arg')
+        self.assertEquals(param_d['/notall_optional/include_test/p2_test'], 'not_set')
+        self.assertEquals(param_d['/notall_optional/include_test/p3_test'], 'set')
+
+        # Test case 3: include with pass_all_args attribute, instead of passing individual
+        # args
+        self.assertEquals(param_d['/all/include_test/p1_test'], 'test_arg')
+        self.assertEquals(param_d['/all/include_test/p2_test'], 'not_set')
+        self.assertEquals(param_d['/all/include_test/p3_test'], 'set')
+
+        # Test case 4: include with pass_all_args attribute, and override one
+        # arg inside the include tag
+        self.assertEquals(param_d['/all_override/include_test/p1_test'], 'override')
+        self.assertEquals(param_d['/all_override/include_test/p2_test'], 'not_set')
+        self.assertEquals(param_d['/all_override/include_test/p3_test'], 'set')
+
+        # Test suite B: load with an optional arg set externally
+        mock = RosLaunchMock()
+        loader.load(filename, mock, argv=["required:=test_arg", "optional:=test_arg2"])
+
+        param_d = {}
+        for p in mock.params:
+            param_d[p.key] = p.value
+
+        # Sanity check: Parent namespace
+        self.assertEquals(param_d['/p1_test'], 'test_arg')
+        self.assertEquals(param_d['/p2_test'], 'test_arg2')
+        self.assertEquals(param_d['/p3_test'], 'parent')
+
+        # Test case 1: include without pass_all_args attribute
+        self.assertEquals(param_d['/notall/include_test/p1_test'], 'test_arg')
+        self.assertEquals(param_d['/notall/include_test/p2_test'], 'not_set')
+        self.assertEquals(param_d['/notall/include_test/p3_test'], 'set')
+
+        # Test case 2: include without pass_all_args attribute, and pass optional arg
+        # internally
+        self.assertEquals(param_d['/notall_optional/include_test/p1_test'], 'test_arg')
+        self.assertEquals(param_d['/notall_optional/include_test/p2_test'], 'test_arg2')
+        self.assertEquals(param_d['/notall_optional/include_test/p3_test'], 'set')
+
+        # Test case 3: include with pass_all_args attribute, instead of passing individual
+        # args
+        self.assertEquals(param_d['/all/include_test/p1_test'], 'test_arg')
+        self.assertEquals(param_d['/all/include_test/p2_test'], 'test_arg2')
+        self.assertEquals(param_d['/all/include_test/p3_test'], 'set')
+
+        # Test case 4: include with pass_all_args attribute, and override one
+        # arg inside the include tag
+        self.assertEquals(param_d['/all_override/include_test/p1_test'], 'override')
+        self.assertEquals(param_d['/all_override/include_test/p2_test'], 'test_arg2')
+        self.assertEquals(param_d['/all_override/include_test/p3_test'], 'set')
+
+    def test_arg_all_includes(self):
+        loader = roslaunch.xmlloader.XmlLoader()
+        # Test 1:
+        # Can't explicitly set an arg when including a file that sets the same
+        # arg as constant.
+        mock = RosLaunchMock()
+        filename = os.path.join(self.xml_dir, 'test-arg-invalid-include.xml')
+        try:
+            loader.load(filename, mock)            
+            self.fail('should have thrown an exception')
+        except roslaunch.xmlloader.XmlParseException:
+            pass
+
+        # Test 2:
+        # Can have arg set in parent launch file, then include a file that sets
+        # it constant, with pass_all_args="true"
+        mock = RosLaunchMock()
+        filename = os.path.join(self.xml_dir, 'test-arg-valid-include.xml')
+        # Just make sure there's no exception
+        loader.load(filename, mock)            
+
+        # This test checks for exception behavior that would be nice to have,
+        # but would require intrusive changes to how roslaunch passes arguments
+        # to included contexts. It currently fails. I'm leaving it here as a
+        # reference for potential future work.
+        ## Test 3:
+        ## Can't do explicit override of arg during inclusion of file that sets
+        ## it constant, even when pass_all_args="true"
+        #mock = RosLaunchMock()
+        #filename = os.path.join(self.xml_dir, 'test-arg-invalid-include2.xml')
+        #try:
+        #    loader.load(filename, mock)            
+        #    self.fail('should have thrown an exception')
+        #except roslaunch.xmlloader.XmlParseException:
+        #    pass

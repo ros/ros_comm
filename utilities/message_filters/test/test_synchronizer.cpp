@@ -75,12 +75,12 @@ struct NullPolicy : public PolicyBase<M0, M1, M2, M3, M4, M5, M6, M7, M8>
     }
   }
 
-  void initParent(Sync* parent)
+  void initParent(Sync*)
   {
   }
 
   template<int i>
-  void add(const typename mpl::at_c<Events, i>::type& evt)
+  void add(const typename mpl::at_c<Events, i>::type&)
   {
     ++added_.at(i);
   }
@@ -265,7 +265,7 @@ TEST(Synchronizer, compileMethod8)
 TEST(Synchronizer, add2)
 {
   Synchronizer<Policy2> sync;
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
 
   ASSERT_EQ(sync.added_[0], 0);
   sync.add<0>(m);
@@ -278,7 +278,7 @@ TEST(Synchronizer, add2)
 TEST(Synchronizer, add3)
 {
   Synchronizer<Policy3> sync;
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
 
   ASSERT_EQ(sync.added_[0], 0);
   sync.add<0>(m);
@@ -294,7 +294,7 @@ TEST(Synchronizer, add3)
 TEST(Synchronizer, add4)
 {
   Synchronizer<Policy4> sync;
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
 
   ASSERT_EQ(sync.added_[0], 0);
   sync.add<0>(m);
@@ -313,7 +313,7 @@ TEST(Synchronizer, add4)
 TEST(Synchronizer, add5)
 {
   Synchronizer<Policy5> sync;
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
 
   ASSERT_EQ(sync.added_[0], 0);
   sync.add<0>(m);
@@ -335,7 +335,7 @@ TEST(Synchronizer, add5)
 TEST(Synchronizer, add6)
 {
   Synchronizer<Policy6> sync;
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
 
   ASSERT_EQ(sync.added_[0], 0);
   sync.add<0>(m);
@@ -360,7 +360,7 @@ TEST(Synchronizer, add6)
 TEST(Synchronizer, add7)
 {
   Synchronizer<Policy7> sync;
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
 
   ASSERT_EQ(sync.added_[0], 0);
   sync.add<0>(m);
@@ -388,7 +388,7 @@ TEST(Synchronizer, add7)
 TEST(Synchronizer, add8)
 {
   Synchronizer<Policy8> sync;
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
 
   ASSERT_EQ(sync.added_[0], 0);
   sync.add<0>(m);
@@ -419,7 +419,7 @@ TEST(Synchronizer, add8)
 TEST(Synchronizer, add9)
 {
   Synchronizer<Policy9> sync;
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
 
   ASSERT_EQ(sync.added_[0], 0);
   sync.add<0>(m);

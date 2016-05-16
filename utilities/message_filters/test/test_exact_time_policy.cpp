@@ -106,13 +106,13 @@ TEST(ExactTime, multipleTimes)
   Sync3 sync(2);
   Helper h;
   sync.registerCallback(boost::bind(&Helper::cb, &h));
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
   m->header.stamp = ros::Time();
 
   sync.add<0>(m);
   ASSERT_EQ(h.count_, 0);
 
-  m.reset(new Msg);
+  m = boost::make_shared<Msg>();
   m->header.stamp = ros::Time(0.1);
   sync.add<1>(m);
   ASSERT_EQ(h.count_, 0);
@@ -127,7 +127,7 @@ TEST(ExactTime, queueSize)
   Sync3 sync(1);
   Helper h;
   sync.registerCallback(boost::bind(&Helper::cb, &h));
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
   m->header.stamp = ros::Time();
 
   sync.add<0>(m);
@@ -135,12 +135,12 @@ TEST(ExactTime, queueSize)
   sync.add<1>(m);
   ASSERT_EQ(h.count_, 0);
 
-  m.reset(new Msg);
+  m = boost::make_shared<Msg>();
   m->header.stamp = ros::Time(0.1);
   sync.add<1>(m);
   ASSERT_EQ(h.count_, 0);
 
-  m.reset(new Msg);
+  m = boost::make_shared<Msg>();
   m->header.stamp = ros::Time(0);
   sync.add<1>(m);
   ASSERT_EQ(h.count_, 0);
@@ -154,7 +154,7 @@ TEST(ExactTime, dropCallback)
   Helper h;
   sync.registerCallback(boost::bind(&Helper::cb, &h));
   sync.getPolicy()->registerDropCallback(boost::bind(&Helper::dropcb, &h));
-  MsgPtr m(new Msg);
+  MsgPtr m(boost::make_shared<Msg>());
   m->header.stamp = ros::Time();
 
   sync.add<0>(m);
@@ -182,7 +182,7 @@ TEST(ExactTime, eventInEventOut)
   Sync2 sync(2);
   EventHelper h;
   sync.registerCallback(&EventHelper::callback, &h);
-  ros::MessageEvent<Msg const> evt(MsgPtr(new Msg), ros::Time(4));
+  ros::MessageEvent<Msg const> evt(boost::make_shared<Msg>(), ros::Time(4));
 
   sync.add<0>(evt);
   sync.add<1>(evt);

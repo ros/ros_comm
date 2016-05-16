@@ -41,8 +41,8 @@
 #include "ros/service.h"
 #include <test_roscpp/TestStringString.h>
 
-bool srvCallback(test_roscpp::TestStringString::Request  &req,
-                 test_roscpp::TestStringString::Response &res)
+bool srvCallback(test_roscpp::TestStringString::Request &,
+                 test_roscpp::TestStringString::Response &)
 {
   return true;
 }

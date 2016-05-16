@@ -57,6 +57,8 @@ from roslaunch.pmon import start_process_monitor, ProcessListener
 
 from roslaunch.rlutil import update_terminal_name
 
+from rosmaster.master_api import NUM_WORKERS
+
 _TIMEOUT_MASTER_START = 10.0 #seconds
 _TIMEOUT_MASTER_STOP  = 10.0 #seconds
 
@@ -233,7 +235,7 @@ class ROSLaunchRunner(object):
     monitored.
     """
     
-    def __init__(self, run_id, config, server_uri=None, pmon=None, is_core=False, remote_runner=None, is_child=False, is_rostest=False):
+    def __init__(self, run_id, config, server_uri=None, pmon=None, is_core=False, remote_runner=None, is_child=False, is_rostest=False, num_workers=NUM_WORKERS, timeout=None):
         """
         @param run_id: /run_id for this launch. If the core is not
             running, this value will be used to initialize /run_id. If
@@ -258,7 +260,11 @@ class ROSLaunchRunner(object):
         @param is_rostest: if True, this runner is a rostest
             instance. This affects certain validation checks.
         @type  is_rostest: bool
-        """            
+        @param num_workers: If this is the core, the number of worker-threads to use.
+        @type num_workers: int
+        @param timeout: If this is the core, the socket-timeout to use.
+        @type timeout: Float or None
+        """
         if run_id is None:
             raise RLException("run_id is None")
         self.run_id = run_id
@@ -273,6 +279,8 @@ class ROSLaunchRunner(object):
         self.is_child = is_child
         self.is_core = is_core
         self.is_rostest = is_rostest
+        self.num_workers = num_workers
+        self.timeout = timeout
         self.logger = logging.getLogger('roslaunch')
         self.pm = pmon or start_process_monitor()
 
@@ -386,7 +394,7 @@ class ROSLaunchRunner(object):
             validate_master_launch(m, self.is_core, self.is_rostest)
 
             printlog("auto-starting new master")
-            p = create_master_process(self.run_id, m.type, get_ros_root(), m.get_port())
+            p = create_master_process(self.run_id, m.type, get_ros_root(), m.get_port(), self.num_workers, self.timeout)
             self.pm.register_core_proc(p)
             success = p.start()
             if not success:
@@ -668,7 +676,9 @@ class ROSLaunchRunner(object):
         while pm.mainthread_spin_once() and self.is_node_running(test):
             #test fails on timeout
             if time.time() > timeout_t:
-                raise RLTestTimeoutException("test max time allotted")
+                raise RLTestTimeoutException(
+                    "max time [%ss] allotted for test [%s] of type [%s/%s]" %
+                    (test.time_limit, test.test_name, test.package, test.type))
             time.sleep(0.1)
         
 # NOTE: the mainly exists to prevent implicit circular dependency as

@@ -2,6 +2,32 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.11.19 (2016-04-18)
+--------------------
+
+1.11.18 (2016-03-17)
+--------------------
+
+1.11.17 (2016-03-11)
+--------------------
+* improve roslaunch-check to not fail if recursive dependencies lack dependencies (`#730 <https://github.com/ros/ros_comm/pull/730>`_)
+* add "pass_all_args" attribute to roslaunch "include" tag (`#710 <https://github.com/ros/ros_comm/pull/710>`_)
+* fix a typo in unknown host error message (`#735 <https://github.com/ros/ros_comm/pull/735>`_)
+* wait for param server to be available before trying to get param (`#711 <https://github.com/ros/ros_comm/pull/711>`_)
+
+1.11.16 (2015-11-09)
+--------------------
+* add `-w` and `-t` options (`#687 <https://github.com/ros/ros_comm/pull/687>`_)
+* fix missing minimum version for rospkg dependency (`#693 <https://github.com/ros/ros_comm/issues/693>`_)
+
+1.11.15 (2015-10-13)
+--------------------
+* improve performance by reusing the rospack instance across nodes with the same default environment (`#682 <https://github.com/ros/ros_comm/pull/682>`_)
+
+1.11.14 (2015-09-19)
+--------------------
+* add more information when test times out
+
 1.11.13 (2015-04-28)
 --------------------
 

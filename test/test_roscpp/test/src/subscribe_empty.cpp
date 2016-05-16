@@ -56,7 +56,7 @@ class Subscriptions : public testing::Test
     int msg_i;
     ros::Duration dt;
 
-    void messageCallback(const test_roscpp::TestEmptyConstPtr& msg)
+    void messageCallback(const test_roscpp::TestEmptyConstPtr&)
     {
       if(failure || success)
         return;

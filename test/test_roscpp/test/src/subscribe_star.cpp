@@ -79,7 +79,7 @@ template<>
 struct Serializer<AnyMessage>
 {
   template<typename Stream, typename T>
-  static void allInOne(Stream s, T t)
+  static void allInOne(Stream, T)
   {
   }
 
@@ -95,7 +95,7 @@ struct AnyHelper
   {
   }
 
-  void cb(const AnyMessageConstPtr& msg)
+  void cb(const AnyMessageConstPtr&)
   {
     ++count;
   }
@@ -114,7 +114,7 @@ TEST(SubscribeStar, simpleSubFirstIntra)
   EXPECT_EQ(pub.getNumSubscribers(), 1U);
   EXPECT_EQ(sub.getNumPublishers(), 1U);
 
-  AnyMessagePtr msg(new AnyMessage);
+  AnyMessagePtr msg(boost::make_shared<AnyMessage>());
   pub.publish(msg);
   ros::spinOnce();
   EXPECT_EQ(h.count, 1U);
@@ -130,7 +130,7 @@ TEST(SubscribeStar, simplePubFirstIntra)
   EXPECT_EQ(pub.getNumSubscribers(), 1U);
   EXPECT_EQ(sub.getNumPublishers(), 1U);
 
-  AnyMessagePtr msg(new AnyMessage);
+  AnyMessagePtr msg(boost::make_shared<AnyMessage>());
   pub.publish(msg);
   ros::spinOnce();
   EXPECT_EQ(h.count, 1U);

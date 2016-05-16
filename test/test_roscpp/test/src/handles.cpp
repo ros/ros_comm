@@ -122,7 +122,7 @@ TEST(RoscppHandles, nodeHandleParentWithRemappings)
 }
 
 int32_t g_recv_count = 0;
-void subscriberCallback(const test_roscpp::TestArray::ConstPtr& msg)
+void subscriberCallback(const test_roscpp::TestArray::ConstPtr&)
 {
   ++g_recv_count;
 }
@@ -134,7 +134,7 @@ public:
   : recv_count_(0)
   {}
 
-  void callback(const test_roscpp::TestArray::ConstPtr& msg)
+  void callback(const test_roscpp::TestArray::ConstPtr&)
   {
     ++recv_count_;
   }
@@ -350,7 +350,7 @@ TEST(RoscppHandles, publisherMultiple)
   ASSERT_TRUE(std::find(topics.begin(), topics.end(), "/test") == topics.end());
 }
 
-bool serviceCallback(TestStringString::Request& req, TestStringString::Response& res)
+bool serviceCallback(TestStringString::Request&, TestStringString::Response&)
 {
   return true;
 }
@@ -433,7 +433,7 @@ TEST(RoscppHandles, serviceAdvMultiple)
 }
 
 int32_t g_sub_count = 0;
-void connectedCallback(const ros::SingleSubscriberPublisher& pub)
+void connectedCallback(const ros::SingleSubscriberPublisher&)
 {
   ++g_sub_count;
 }
@@ -442,7 +442,7 @@ TEST(RoscppHandles, trackedObjectWithAdvertiseSubscriberCallback)
 {
   ros::NodeHandle n;
 
-  boost::shared_ptr<char> tracked(new char);
+  boost::shared_ptr<char> tracked(boost::make_shared<char>());
 
   ros::Publisher pub = n.advertise<test_roscpp::TestArray>("/test", 0, connectedCallback, SubscriberStatusCallback(), tracked);
 
@@ -519,7 +519,7 @@ TEST(RoscppHandles, multiplePublishersWithSubscriberConnectCallback)
 class ServiceClass
 {
 public:
-  bool serviceCallback(TestStringString::Request& req, TestStringString::Response& res)
+  bool serviceCallback(TestStringString::Request&, TestStringString::Response&)
   {
     return true;
   }
@@ -533,7 +533,7 @@ TEST(RoscppHandles, trackedObjectWithServiceCallback)
   n.setCallbackQueue(&queue);
   boost::thread th(boost::bind(pump, &queue));
 
-  boost::shared_ptr<ServiceClass> tracked(new ServiceClass);
+  boost::shared_ptr<ServiceClass> tracked(boost::make_shared<ServiceClass>());
   ros::ServiceServer srv = n.advertiseService("/test_srv", &ServiceClass::serviceCallback, tracked);
 
   TestStringString t;
@@ -551,7 +551,7 @@ TEST(RoscppHandles, trackedObjectWithSubscriptionCallback)
 {
   ros::NodeHandle n;
 
-  boost::shared_ptr<SubscribeHelper> tracked(new SubscribeHelper);
+  boost::shared_ptr<SubscribeHelper> tracked(boost::make_shared<SubscribeHelper>());
 
   g_recv_count = 0;
   ros::Subscriber sub = n.subscribe("/test", 0, &SubscribeHelper::callback, tracked);

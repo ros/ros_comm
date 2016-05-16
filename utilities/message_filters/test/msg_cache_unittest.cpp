@@ -209,7 +209,7 @@ TEST(Cache, eventInEventOut)
   EventHelper h;
   c1.registerCallback(&EventHelper::cb, &h);
 
-  ros::MessageEvent<Msg const> evt(MsgConstPtr(new Msg), ros::Time(4));
+  ros::MessageEvent<Msg const> evt(boost::make_shared<Msg const>(), ros::Time(4));
   c0.add(evt);
 
   EXPECT_EQ(h.event_.getReceiptTime(), evt.getReceiptTime());

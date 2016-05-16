@@ -2,6 +2,30 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.11.19 (2016-04-18)
+--------------------
+
+1.11.18 (2016-03-17)
+--------------------
+
+1.11.17 (2016-03-11)
+--------------------
+* add "rostopic delay" to measure message delay compared to the input from real world (`#719 <https://github.com/ros/ros_comm/pull/719>`_)
+* add option to perform keyword substitution for messages published with "rostopic pub" (`#702 <https://github.com/ros/ros_comm/pull/702>`_)
+* add wall-time option for rostopic hz (`#674 <https://github.com/ros/ros_comm/pull/674>`_)
+
+1.11.16 (2015-11-09)
+--------------------
+
+1.11.15 (2015-10-13)
+--------------------
+* add warning to rostopic hz about simulated time (`#672 <https://github.com/ros/ros_comm/pull/672>`_)
+
+1.11.14 (2015-09-19)
+--------------------
+* support specifying multiple array indices (`#606 <https://github.com/ros/ros_comm/pull/606>`_)
+* fix string type check if variable is unicode
+
 1.11.13 (2015-04-28)
 --------------------
 

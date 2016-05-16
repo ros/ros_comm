@@ -2,6 +2,36 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.11.19 (2016-04-18)
+--------------------
+* use directory specific compiler flags (`#785 <https://github.com/ros/ros_comm/pull/785>`_)
+
+1.11.18 (2016-03-17)
+--------------------
+* fix CMake warning about non-existing targets
+
+1.11.17 (2016-03-11)
+--------------------
+* fix order of argument in SubscriberLink interface to match actual implemenation (`#701 <https://github.com/ros/ros_comm/issues/701>`_)
+* add method for getting all the parameters from the parameter server as implemented in the rospy client (`#739 <https://github.com/ros/ros_comm/issues/739>`_)
+* use boost::make_shared instead of new for constructing boost::shared_ptr (`#740 <https://github.com/ros/ros_comm/issues/740>`_)
+* fix max elements param for statistics window (`#750 <https://github.com/ros/ros_comm/issues/750>`_)
+* improve NodeHandle constructor documentation (`#692 <https://github.com/ros/ros_comm/issues/692>`_)
+
+1.11.16 (2015-11-09)
+--------------------
+* add getROSArg function (`#694 <https://github.com/ros/ros_comm/pull/694>`_)
+
+1.11.15 (2015-10-13)
+--------------------
+* fix crash in onRetryTimer() callback (`#577 <https://github.com/ros/ros_comm/issues/577>`_)
+
+1.11.14 (2015-09-19)
+--------------------
+* add optional reset argument to Timer::setPeriod() (`#590 <https://github.com/ros/ros_comm/issues/590>`_)
+* add getParam() and getParamCached() for float (`#621 <https://github.com/ros/ros_comm/issues/621>`_, `#623 <https://github.com/ros/ros_comm/issues/623>`_)
+* use explicit bool cast to compile with C++11 (`#632 <https://github.com/ros/ros_comm/pull/632>`_)
+
 1.11.13 (2015-04-28)
 --------------------
 

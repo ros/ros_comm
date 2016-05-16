@@ -43,7 +43,7 @@ typedef log4cxx::helpers::ObjectPtrT<ListAppender> ListAppenderPtr;
 
 static const char EXCEPTION[] = "custom exception message";
 
-bool throwingService(std_srvs::Empty::Request& req, std_srvs::Empty::Request& res)
+bool throwingService(std_srvs::Empty::Request&, std_srvs::Empty::Request&)
 {
   throw std::runtime_error(EXCEPTION);
   return true;

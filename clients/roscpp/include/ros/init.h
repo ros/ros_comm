@@ -196,6 +196,16 @@ ROSCPP_DECL bool isStarted();
 ROSCPP_DECL CallbackQueue* getGlobalCallbackQueue();
 
 /**
+ * \brief searches the command line arguments for the given arg parameter. In case this argument is not found
+ * an empty string is returned.
+ *
+ * \param argc the number of command-line arguments
+ * \param argv the command-line arguments
+ * \param arg argument to search for
+ */
+ROSCPP_DECL std::string getROSArg(int argc, const char* const* argv, const std::string& arg);
+
+/**
  * \brief returns a vector of program arguments that do not include any ROS remapping arguments.  Useful if you need
  * to parse your arguments to determine your node name
  *

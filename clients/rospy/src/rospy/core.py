@@ -156,17 +156,16 @@ logfatal = logging.getLogger('rosout').critical
 MASTER_NAME = "master" #master is a reserved node name for the central master
 
 import warnings
+import functools
 def deprecated(func):
     """This is a decorator which can be used to mark functions
     as deprecated. It will result in a warning being emmitted
     when the function is used."""
+    @functools.wraps(func)
     def newFunc(*args, **kwargs):
         warnings.warn("Call to deprecated function %s." % func.__name__,
                       category=DeprecationWarning, stacklevel=2)
         return func(*args, **kwargs)
-    newFunc.__name__ = func.__name__
-    newFunc.__doc__ = func.__doc__
-    newFunc.__dict__.update(func.__dict__)
     return newFunc
 
 @deprecated
@@ -305,7 +304,7 @@ def is_shutdown_requested():
     """
     return _in_shutdown
 
-def _add_shutdown_hook(h, hooks):
+def _add_shutdown_hook(h, hooks, pass_reason_argument=True):
     """
     shared implementation of add_shutdown_hook and add_preshutdown_hook
     """
@@ -313,7 +312,10 @@ def _add_shutdown_hook(h, hooks):
         raise TypeError("shutdown hook [%s] must be a function or callable object: %s"%(h, type(h)))
     if _shutdown_flag:
         _logger.warn("add_shutdown_hook called after shutdown")
-        h("already shutdown")
+        if pass_reason_argument:
+            h("already shutdown")
+        else:
+            h()
         return
     with _shutdown_lock:
         if hooks is None:
@@ -349,7 +351,7 @@ def add_client_shutdown_hook(h):
     @param h: function with zero args
     @type  h: fn()
     """
-    _add_shutdown_hook(h, _client_shutdown_hooks)
+    _add_shutdown_hook(h, _client_shutdown_hooks, pass_reason_argument=False)
 
 def add_preshutdown_hook(h):
     """

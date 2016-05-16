@@ -67,8 +67,9 @@ public:
 
   /**
    * \brief Set the period of this timer
+   * \param reset Whether to reset the timer. If true, timer ignores elapsed time and next cb occurs at now()+period
    */
-  void setPeriod(const WallDuration& period);
+  void setPeriod(const WallDuration& period, bool reset=true);
 
   bool isValid() { return impl_ && impl_->isValid(); }
   operator void*() { return isValid() ? (void*)1 : (void*)0; }
@@ -99,7 +100,7 @@ private:
 
     bool isValid();
     bool hasPending();
-    void setPeriod(const WallDuration& period);
+    void setPeriod(const WallDuration& period, bool reset=true);
 
     void start();
     void stop();

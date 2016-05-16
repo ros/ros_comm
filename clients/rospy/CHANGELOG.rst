@@ -2,6 +2,30 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.11.19 (2016-04-18)
+--------------------
+
+1.11.18 (2016-03-17)
+--------------------
+
+1.11.17 (2016-03-11)
+--------------------
+* preserve identity of numpy_msg(T) (`#758 <https://github.com/ros/ros_comm/pull/758>`_)
+
+1.11.16 (2015-11-09)
+--------------------
+* catch ROSInterruptException from rospy timers when shutting down (`#690 <https://github.com/ros/ros_comm/pull/690>`_)
+
+1.11.15 (2015-10-13)
+--------------------
+* validate name after remapping (`#669 <https://github.com/ros/ros_comm/pull/669>`_)
+
+1.11.14 (2015-09-19)
+--------------------
+* fix memory/thread leak with QueuedConnection (`#661 <https://github.com/ros/ros_comm/pull/661>`_)
+* fix signaling already shutdown to client hooks with the appropriate signature (`#651 <https://github.com/ros/ros_comm/issues/651>`_)
+* fix bug with missing current logger levels (`#631 <https://github.com/ros/ros_comm/pull/631>`_)
+
 1.11.13 (2015-04-28)
 --------------------
 

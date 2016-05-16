@@ -64,42 +64,42 @@ public:
     counts_.assign(0);
   }
 
-  void cb0(const MsgConstPtr& msg)
+  void cb0(const MsgConstPtr&)
   {
     ++counts_[0];
   }
 
-  void cb1(const Msg& msg)
+  void cb1(const Msg&)
   {
     ++counts_[1];
   }
 
-  void cb2(MsgConstPtr msg)
+  void cb2(MsgConstPtr)
   {
     ++counts_[2];
   }
 
-  void cb3(const ros::MessageEvent<Msg const>& evt)
+  void cb3(const ros::MessageEvent<Msg const>&)
   {
     ++counts_[3];
   }
 
-  void cb4(Msg msg)
+  void cb4(Msg)
   {
     ++counts_[4];
   }
 
-  void cb5(const MsgPtr& msg)
+  void cb5(const MsgPtr&)
   {
     ++counts_[5];
   }
 
-  void cb6(MsgPtr msg)
+  void cb6(MsgPtr)
   {
     ++counts_[6];
   }
 
-  void cb7(const ros::MessageEvent<Msg>& evt)
+  void cb7(const ros::MessageEvent<Msg>&)
   {
     ++counts_[7];
   }
@@ -120,7 +120,7 @@ TEST(SimpleFilter, callbackTypes)
   f.registerCallback<MsgPtr>(boost::bind(&Helper::cb6, &h, _1));
   f.registerCallback<const ros::MessageEvent<Msg>&>(boost::bind(&Helper::cb7, &h, _1));
 
-  f.add(Filter::EventType(MsgPtr(new Msg)));
+  f.add(Filter::EventType(boost::make_shared<Msg>()));
   EXPECT_EQ(h.counts_[0], 1);
   EXPECT_EQ(h.counts_[1], 1);
   EXPECT_EQ(h.counts_[2], 1);
@@ -133,7 +133,7 @@ TEST(SimpleFilter, callbackTypes)
 
 struct OldFilter
 {
-  Connection registerCallback(const boost::function<void(const MsgConstPtr&)>& func)
+  Connection registerCallback(const boost::function<void(const MsgConstPtr&)>&)
   {
     return Connection();
   }

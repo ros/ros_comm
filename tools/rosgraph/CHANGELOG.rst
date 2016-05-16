@@ -2,6 +2,29 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.11.19 (2016-04-18)
+--------------------
+* fix str conversion in encode_ros_handshake_header (`#792 <https://github.com/ros/ros_comm/pull/792>`_)
+
+1.11.18 (2016-03-17)
+--------------------
+
+1.11.17 (2016-03-11)
+--------------------
+* fix raising classes not derived from `Exception` which caused a TypeError (`#761 <https://github.com/ros/ros_comm/pull/761>`_)
+* fix handshake header with Python 3 (`#759 <https://github.com/ros/ros_comm/issues/759>`_)
+* fix encoding of header fields (`#704 <https://github.com/ros/ros_comm/issues/704>`_)
+
+1.11.16 (2015-11-09)
+--------------------
+
+1.11.15 (2015-10-13)
+--------------------
+
+1.11.14 (2015-09-19)
+--------------------
+* create a symlink to the latest log directory (`#659 <https://github.com/ros/ros_comm/pull/659>`_)
+
 1.11.13 (2015-04-28)
 --------------------
 

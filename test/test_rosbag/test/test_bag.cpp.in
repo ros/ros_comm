@@ -131,8 +131,8 @@ TEST_F(BagTest, different_writes) {
     b1.open(filename, rosbag::bagmode::Write | rosbag::bagmode::Read);
 
     std_msgs::String msg1;
-    std_msgs::String::Ptr msg2 = boost::shared_ptr<std_msgs::String>(new std_msgs::String);
-    std_msgs::String::ConstPtr msg3 = boost::shared_ptr<std_msgs::String const>(new std_msgs::String);
+    std_msgs::String::Ptr msg2 = boost::make_shared<std_msgs::String>();
+    std_msgs::String::ConstPtr msg3 = boost::make_shared<std_msgs::String const>();
     
     rosbag::View view;
     view.addQuery(b1);
