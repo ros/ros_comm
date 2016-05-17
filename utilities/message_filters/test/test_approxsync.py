@@ -49,6 +49,10 @@ class MockMessage:
         self.header.stamp = stamp
         self.data = data
 
+class MockHeaderlessMessage:
+    def __init__(self, data):
+        self.data = data
+
 class MockFilter(message_filters.SimpleFilter):
     pass
 
@@ -89,6 +93,28 @@ class TestApproxSync(unittest.TestCase):
                 m0.signalMessage(msg)
             self.assertEqual(self.collector, [])
             for msg in random.sample(seq1, N):
+                m1.signalMessage(msg)
+            self.assertEqual(set(self.collector), set(zip(seq0, seq1)))
+
+        # Scramble sequences of length N of headerless and header-having messages.
+        # Make sure that TimeSequencer recombines them.
+        rospy.rostime.set_rostime_initialized(True)
+        random.seed(0)
+        for N in range(1, 10):
+            m0 = MockFilter()
+            m1 = MockFilter()
+            seq0 = [MockMessage(rospy.Time(t), random.random()) for t in range(N)]
+            seq1 = [MockHeaderlessMessage(random.random()) for t in range(N)]
+            # random.shuffle(seq0)
+            ts = ApproximateTimeSynchronizer([m0, m1], N, 0.1, allow_headerless=True)
+            ts.registerCallback(self.cb_collector_2msg)
+            self.collector = []
+            for msg in random.sample(seq0, N):
+                m0.signalMessage(msg)
+            self.assertEqual(self.collector, [])
+            for i in random.sample(range(N), N):
+                msg = seq1[i]
+                rospy.rostime._set_rostime(rospy.Time(i+0.05))
                 m1.signalMessage(msg)
             self.assertEqual(set(self.collector), set(zip(seq0, seq1)))
 
