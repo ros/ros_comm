@@ -3,7 +3,7 @@ from __future__ import print_function
 import os
 import subprocess
 import sys
-import rosgraph.security
+import rosgraph.security as security
 
 def check_security_model():
     if not 'ROS_SECURITY' in os.environ:
@@ -12,12 +12,12 @@ def check_security_model():
 
 def rosmaster_main(argv = sys.argv):
     check_security_model()
-    rosgraph.security.get_security() # will create certs if needed
+    #security.get() # will create certs if needed
     import rosmaster
     rosmaster.rosmaster_main()
 
 def roscore_main(argv = sys.argv):
     check_security_model()
-    rosgraph.security.get_security() # will create certs if needed
+    #security.init('roscore') # will create certs if needed
     import roslaunch
     roslaunch.main(['roscore', '--core'] + sys.argv[1:])

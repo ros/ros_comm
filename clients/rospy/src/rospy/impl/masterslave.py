@@ -447,7 +447,7 @@ class ROSHandler(XmlRpcHandler):
             try:
                 print("starting xmlrpc connection sequence to node %s at %s" % (pub_node_name, pub_uri))
                 code, msg, result = \
-                      security.get_security().xmlrpcapi(pub_uri, pub_node_name).requestTopic(caller_id, topic, protocols)
+                      security.get().xmlrpcapi(pub_uri, pub_node_name).requestTopic(caller_id, topic, protocols)
                 success = True
             except Exception as e:
                 print("requestTopic exception: %s" % e)

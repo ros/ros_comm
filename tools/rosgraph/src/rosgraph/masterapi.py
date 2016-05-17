@@ -95,7 +95,7 @@ class Master(object):
         :param master_uri: (optional) override default ROS master URI, ``str``
         :raises: :exc:`ValueError` If ROS master uri not set properly
         """
-
+        security.init(caller_id)
         if master_uri is None:
             master_uri = get_master_uri()
         self._reinit(master_uri)
@@ -120,12 +120,10 @@ class Master(object):
 
         self.master_uri = master_uri
         try:
-            self.handle = security.get_security().xmlrpcapi(self.master_uri, node_name='master')
+            self.handle = security.get().xmlrpcapi(self.master_uri, node_name='master')
         except Exception as e:
             print("woah! couldn't create xmlrpcapi to master: %s" % e)
-            import sys
-            sys.exit(1)
-#ServerProxy(self.master_uri)
+            raise
         
     def is_online(self):
         """

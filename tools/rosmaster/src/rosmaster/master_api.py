@@ -208,7 +208,7 @@ def publisher_update_task(api, node_name, topic, pub_uris):
     
     mloginfo("publisherUpdate[%s] -> %s", topic, api)
     #TODO: check return value for errors so we can unsubscribe if stale
-    security.get_security().xmlrpcapi(api, node_name).publisherUpdate('/master', topic, pub_uris)
+    security.get().xmlrpcapi(api, node_name).publisherUpdate('/master', topic, pub_uris)
 
 def service_update_task(api, service, uri):
     """
@@ -930,5 +930,5 @@ class ROSMasterHandler(object):
         @return: [1, "", serverProcessPID]
         @rtype: [int, str, int]
         """
-        return 1, "HAI. HERE R UR CERTS. BAI", security.get_security().getCertificates(caller_id, node_name)
+        return 1, "HAI. HERE R UR CERTS. BAI", security.get().getCertificates(caller_id, node_name)
 

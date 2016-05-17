@@ -132,10 +132,15 @@ class SSHSecurity(Security):
 
 #########################################################################
 class SSLSecurity(Security):
-    def __init__(self):
+    def __init__(self, node_name):
+        self.node_name = self.node_name_to_cert_stem(node_name)
         super(SSLSecurity, self).__init__()
         _logger.info("  rospy.security.SSLSecurity init")
-        self.kpath = os.path.join(os.path.expanduser('~'), '.ros', 'keys')
+        self.kpath = os.path.join(os.path.expanduser('~'), '.ros', 'keys', self.node_name)
+        if not os.path.exists(self.kpath):
+            print("creating keys path: %s" % self.kpath)
+            os.makedirs(self.kpath)
+
         self.openssl_conf_path = os.path.join(self.kpath, 'openssl.conf')
         self.root_ca_path = os.path.join(self.kpath, 'root.ca')
         self.root_cert_path = os.path.join(self.kpath, 'root.cer')
@@ -147,6 +152,9 @@ class SSLSecurity(Security):
         self.server_context_ = None
         self.client_contexts_ = {}
         self.certs = {}
+
+        if self.node_name == 'master': # or self.node_name == 'roslaunch':
+            self.create_certs_if_needed()
 
     def node_name_to_cert_stem(self, node_name):
         # TODO: convert anonymous names into something consistent, so we
@@ -205,9 +213,6 @@ class SSLSecurity(Security):
         return self.client_contexts_[node_name]
 
     def create_certs_if_needed(self):
-        if not os.path.exists(self.kpath):
-            print("creating keys path: %s" % self.kpath)
-            os.makedirs(self.kpath)
         self.root_key_path = os.path.join(self.kpath, 'root.key')
         if not os.path.isfile(self.root_cert_path) or \
            not os.path.isfile(self.root_key_path):
@@ -320,9 +325,6 @@ extendedKeyUsage = serverAuth
             # so it can only receive from localhost?
         #    return sock
 
-        if node_name == 'master' or node_name == 'roslaunch':
-            self.create_certs_if_needed()
-
         context = self.get_server_context(node_name)
         return context.wrap_socket(sock, server_side=True)
 
@@ -394,18 +396,24 @@ extendedKeyUsage = serverAuth
 
 #########################################################################
 _security = None
-def get_security():
+def init(node_name):
+    print('security.init(%s)' % node_name)
     global _security
-    _logger.info("security.get_security()")
     if _security is None:
         _logger.info("choosing security model...")
         if 'ROS_SECURITY' in os.environ:
             if os.environ['ROS_SECURITY'] == 'ssh':
                 _security = SSHSecurity()
             elif os.environ['ROS_SECURITY'] == 'ssl':
-                _security = SSLSecurity()
+                _security = SSLSecurity(node_name)
             else:
                 raise ValueError("unknown ROS security model: [%s]" % os.environ['ROS_SECURITY'])
         else:
             _security = NoSecurity()
+
+def get():
+    if _security is None:
+        import traceback
+        traceback.print_stack()
+        raise ValueError("woah there partner. security.init() wasn't called before security.get()")
     return _security
