@@ -192,8 +192,8 @@ class SSLSecurity(Security):
             ftp = FTP()
             ftp.connect(self.get_rosmaster_ftp_host(), self.get_rosmaster_ftp_port())
             ftp.login()
-            ftp.retrlines('RETR root.ca', open(self.root_ca_path, 'w').write)
-            ftp.retrlines('RETR master.server.cert', open(self.root_cert_path, 'w').write)
+            ftp.retrbinary('RETR root.ca', open(self.root_ca_path, 'w').write)
+            ftp.retrbinary('RETR master.server.cert', open(self.root_cert_path, 'w').write)
             ftp.quit()
 
     def get_server_context(self, node_name):
@@ -220,6 +220,7 @@ class SSLSecurity(Security):
             print("creating client context for %s" % node_name)
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
             context.verify_mode = self.client_cert_verify_mode
+            print("loading cafile from %s" % self.root_cert_path)
             context.load_verify_locations(cafile=self.root_cert_path)
             #keyfile  = os.path.join(self.kpath, node_name + '.' + mode + '.key')
             #certfile = os.path.join(self.kpath, node_name + '.' + mode + '.cert')
