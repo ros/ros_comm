@@ -93,7 +93,7 @@ class Cache(SimpleFilter):
     much as you can, since the delays are unpredictable.
     """
 
-    def __init__(self, f, cache_size = 1, allow_headerless = False):
+    def __init__(self, f, cache_size=1, allow_headerless=False):
         SimpleFilter.__init__(self)
         self.connectInput(f)
         self.cache_size = cache_size
@@ -104,20 +104,19 @@ class Cache(SimpleFilter):
         self.cache_times = []
         # Whether to allow storing headerless messages with current ROS
         # time instead of timestamp.
-        self._allow_headerless = allow_headerless
+        self.allow_headerless = allow_headerless
 
     def connectInput(self, f):
         self.incoming_connection = f.registerCallback(self.add)
 
     def add(self, msg):
         if not hasattr(msg, 'header') or not hasattr(msg.header, 'stamp'):
-            if self._allow_headerless:
-                stamp = rospy.Time.now()
-            else:
+            if not self.allow_headerless:
                 rospy.logwarn("Cannot use message filters with non-stamped messages. "
                               "Use the 'allow_headerless' constructor option to "
                               "auto-assign ROS time to headerless messages.")
                 return
+            stamp = rospy.Time.now()
         else:
             stamp = msg.header.stamp
 
@@ -236,17 +235,16 @@ class ApproximateTimeSynchronizer(TimeSynchronizer):
     def __init__(self, fs, queue_size, slop, allow_headerless=False):
         TimeSynchronizer.__init__(self, fs, queue_size)
         self.slop = rospy.Duration.from_sec(slop)
-        self._allow_headerless = allow_headerless
+        self.allow_headerless = allow_headerless
 
     def add(self, msg, my_queue):
         if not hasattr(msg, 'header') or not hasattr(msg.header, 'stamp'):
-            if self._allow_headerless:
-                stamp = rospy.Time.now()
-            else:
+            if not self.allow_headerless:
                 rospy.logwarn("Cannot use message filters with non-stamped messages. "
                               "Use the 'allow_headerless' constructor option to "
                               "auto-assign ROS time to headerless messages.")
                 return
+            stamp = rospy.Time.now()
         else:
             stamp = msg.header.stamp
 
