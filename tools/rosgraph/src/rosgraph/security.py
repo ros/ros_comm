@@ -145,7 +145,8 @@ class SSLSecurity(Security):
 
         self.openssl_conf_path = os.path.join(self.kpath, 'openssl.conf')
         self.root_ca_path = os.path.join(self.kpath, 'root.ca')
-        self.root_cert_path = os.path.join(self.kpath, 'root.cer')
+        self.root_cert_path = os.path.join(self.kpath, 'root.cert')
+        self.master_server_cert_path = os.path.join(self.kpath, 'master.server.cert')
 
         # TODO: be able to change this, for "strict mode" at some point
         self.server_cert_verify_mode = ssl.CERT_OPTIONAL
@@ -188,12 +189,12 @@ class SSLSecurity(Security):
 
     def get_master_cert(self):
         print("get_rosmaster_cert()")
-        if not os.path.isfile(self.root_ca_path) or not os.path.isfile(self.root_cert_path):
+        if not os.path.isfile(self.root_cert_path) or not os.path.isfile(self.master_server_cert_path):
             ftp = FTP()
             ftp.connect(self.get_rosmaster_ftp_host(), self.get_rosmaster_ftp_port())
             ftp.login()
-            ftp.retrbinary('RETR root.ca', open(self.root_ca_path, 'w').write)
-            ftp.retrbinary('RETR master.server.cert', open(self.root_cert_path, 'w').write)
+            ftp.retrbinary('RETR root.cert', open(self.root_cert_path, 'w').write)
+            ftp.retrbinary('RETR master.server.cert', open(self.master_server_cert_path, 'w').write)
             ftp.quit()
 
     def get_server_context(self, node_name):
@@ -220,7 +221,7 @@ class SSLSecurity(Security):
             print("creating client context for %s" % node_name)
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
             context.verify_mode = self.client_cert_verify_mode
-            print("loading cafile from %s" % self.root_cert_path)
+            print("loading root certificate from %s" % self.root_cert_path)
             context.load_verify_locations(cafile=self.root_cert_path)
             #keyfile  = os.path.join(self.kpath, node_name + '.' + mode + '.key')
             #certfile = os.path.join(self.kpath, node_name + '.' + mode + '.cert')
@@ -309,13 +310,14 @@ extendedKeyUsage = serverAuth
         if not os.path.exists(public_path):
             print("creating public keys path: %s" % public_path)
             os.makedirs(public_path)
-        public_root_ca_path = os.path.join(public_path, 'root.ca')
-        if not os.path.isfile(public_root_ca_path):
-            print("linking %s to %s" % (self.root_ca_path, public_root_ca_path))
-            shutil.copyfile(self.root_ca_path, public_root_ca_path)
+        public_root_cert_path = os.path.join(public_path, 'root.cert')
+        if not os.path.isfile(public_root_cert_path):
+            print("copying %s to %s" % (self.root_cert_path, public_root_cert_path))
+            shutil.copyfile(self.root_cert_path, public_root_cert_path)
         public_master_cert_path = os.path.join(public_path, 'master.server.cert')
         if not os.path.isfile(public_master_cert_path):
-            shutil.copyfile(self.root_cert_path, public_master_cert_path)
+            print("copying %s to %s" % (self.master_server_cert_path, public_master_cert_path))
+            shutil.copyfile(self.master_server_cert_path, public_master_cert_path)
 
     def create_cert(self, node_name, suffix):
         if not names.is_legal_base_name(node_name):
