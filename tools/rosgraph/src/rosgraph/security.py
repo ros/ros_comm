@@ -177,8 +177,12 @@ class SSLSecurity(Security):
             self.certs[cert_name] = response['server.cert']
         return self.certs[cert_name]
 
+    def get_master_cert(self):
+        print("get_rosmaster_cert()")
+        # TODO: use ftplib.FTP and do something intelligent
+
     def get_server_context(self, node_name):
-        # TODO: request root CA and cert if we don't already have them
+        self.get_master_cert()
         print("Security.get_server_context(%s)" % node_name)
         if self.server_context_ is None:
             print("creating server context for %s" % node_name)
@@ -196,6 +200,7 @@ class SSLSecurity(Security):
 
     def get_client_context(self, node_name):
         # TODO: request root CA and cert if we don't already have them
+        self.get_master_cert()
         print("Security.get_client_context(%s)" % node_name)
         if not node_name in self.client_contexts_:
             print("creating client context for %s" % node_name)
@@ -404,7 +409,7 @@ def init(node_name):
         if 'ROS_SECURITY' in os.environ:
             if os.environ['ROS_SECURITY'] == 'ssh':
                 _security = SSHSecurity()
-            elif os.environ['ROS_SECURITY'] == 'ssl':
+            elif os.environ['ROS_SECURITY'] == 'ssl' or os.environ['ROS_SECURITY'] == 'ssl_setup':
                 _security = SSLSecurity(node_name)
             else:
                 raise ValueError("unknown ROS security model: [%s]" % os.environ['ROS_SECURITY'])
@@ -417,3 +422,20 @@ def get():
         traceback.print_stack()
         raise ValueError("woah there partner. security.init() wasn't called before security.get()")
     return _security
+
+def start_ftp_cert_server():
+    from pyftpdlib.authorizers import DummyAuthorizer
+    from pyftpdlib.handlers import FTPHandler
+    from pyftpdlib.servers import FTPServer
+    print("starting ftp setup server...")
+    pub_cert_path = os.path.join(os.path.expanduser('~'), '.ros', 'keys', '__PUBLIC')
+    if not os.path.exists(pub_cert_path):
+        print("creating public certificates path: %s" % pub_cert_path)
+        os.makedirs(pub_cert_path)
+    authorizer = DummyAuthorizer()
+    authorizer.add_anonymous(pub_cert_path)
+    handler = FTPHandler
+    handler.authorizer = authorizer
+    server = FTPServer(('127.0.0.1', 11310), handler)
+    from threading import Thread
+    Thread(target=server.serve_forever).start()

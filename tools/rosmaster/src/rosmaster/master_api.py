@@ -605,13 +605,13 @@ class ROSMasterHandler(object):
         # sometime we should be smarter about this, but for now, we'll reverse-lookup
         # all of the pub_uri node_names so that the peers will know which certificate
         # to use.
-        pub_uris_and_names = {}
-        for u in pub_uris:
-            for iter_node_name, iter_node in self.reg_manager.nodes.items():
-                if u == iter_node.api:
-                    pub_uris_and_names[u] = iter_node_name
-                    break
-        self._notify(self.subscribers, publisher_update_task, topic, pub_uris_and_names, sub_uris)
+        #pub_uris_and_names = {}
+        #for u in pub_uris:
+        #    for iter_node_name, iter_node in self.reg_manager.nodes.items():
+        #        if u == iter_node.api:
+        #            pub_uris_and_names[u] = iter_node_name
+        #            break
+        self._notify(self.subscribers, publisher_update_task, topic, pub_uris, sub_uris)
 
     ##################################################################################
     # SERVICE PROVIDER
@@ -703,7 +703,7 @@ class ROSMasterHandler(object):
         @type  caller_api: str
         @return: (code, message, publishers). Publishers is a list of XMLRPC API URIs
            for nodes currently publishing the specified topic.
-        @rtype: (int, str, {str->str})
+        @rtype: (int, str, [str])
         """
         #NOTE: subscribers do not get to set topic type
         try:
@@ -727,16 +727,16 @@ class ROSMasterHandler(object):
             # its XMLRPC URI, since this nested-loop is so ugly. But usually there
             # are less than a few dozen nodes, so this n^2 shouldn't be too bad; it's
             # just embarrassing.
-            pub_uris_and_names = {}
-            for pub_uri in pub_uris:
-                for iter_node_name, iter_node in self.reg_manager.nodes.items():
-                    if pub_uri == iter_node.api:
-                        pub_uris_and_names[pub_uri] = iter_node_name
-                        #print("hooray, it does!")
-                        #thread_pool.queue_task(node_api, task, (node_api, iter_node_name, key, value))
+            #pub_uris_and_names = {}
+            #for pub_uri in pub_uris:
+            #    for iter_node_name, iter_node in self.reg_manager.nodes.items():
+            #        if pub_uri == iter_node.api:
+            #            pub_uris_and_names[pub_uri] = iter_node_name
+            #            #print("hooray, it does!")
+            #            #thread_pool.queue_task(node_api, task, (node_api, iter_node_name, key, value))
         finally:
             self.ps_lock.release()
-        return 1, "Subscribed to [%s]"%topic, pub_uris_and_names
+        return 1, "Subscribed to [%s]"%topic, pub_uris
 
     @apivalidate(0, (is_topic('topic'), is_api('caller_api')))
     def unregisterSubscriber(self, caller_id, topic, caller_api):
