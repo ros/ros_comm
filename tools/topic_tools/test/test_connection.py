@@ -52,6 +52,7 @@ class TestConnection(unittest.TestCase):
                     break
             else:
                 raise ValueError('Not found topic: {}'.format(check_topic))
+        sub.unregister()
 
     def _cb_test_subscriber_appears(self, msg):
         pass
