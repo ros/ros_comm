@@ -9,6 +9,8 @@ import subprocess
 import traceback
 import ssl
 import rosgraph.masterapi
+import shutil
+from ftplib import FTP
 #from rospy.exceptions import TransportInitError
 
 try:
@@ -177,9 +179,22 @@ class SSLSecurity(Security):
             self.certs[cert_name] = response['server.cert']
         return self.certs[cert_name]
 
+    def get_rosmaster_ftp_host(self):
+        print("get_rosmaster_ftp_url()")
+        return "localhost" # todo: not this
+
+    def get_rosmaster_ftp_port(self):
+        return 11310 # todo: not this
+
     def get_master_cert(self):
         print("get_rosmaster_cert()")
-        # TODO: use ftplib.FTP and do something intelligent
+        if not os.path.isfile(self.root_ca_path) or not os.path.isfile(self.root_cert_path):
+            ftp = FTP()
+            ftp.connect(self.get_rosmaster_ftp_host(), self.get_rosmaster_ftp_port())
+            ftp.login()
+            ftp.retrlines('RETR root.ca', open(self.root_ca_path, 'w').write)
+            ftp.retrlines('RETR master.server.cert', open(self.root_cert_path, 'w').write)
+            ftp.quit()
 
     def get_server_context(self, node_name):
         self.get_master_cert()
@@ -199,7 +214,6 @@ class SSLSecurity(Security):
         return self.server_context_
 
     def get_client_context(self, node_name):
-        # TODO: request root CA and cert if we don't already have them
         self.get_master_cert()
         print("Security.get_client_context(%s)" % node_name)
         if not node_name in self.client_contexts_:
@@ -286,6 +300,21 @@ extendedKeyUsage = serverAuth
         self.create_cert('master','client')
         self.create_cert('roslaunch','server')
         self.create_cert('roslaunch','client')
+
+
+        # if root.ca and master.server.cert are not present in the __PUBLIC
+        # FTP-accessible directory, copy them there
+        public_path = os.path.join(os.path.expanduser('~'), '.ros', 'keys', '__PUBLIC')
+        if not os.path.exists(public_path):
+            print("creating public keys path: %s" % public_path)
+            os.makedirs(public_path)
+        public_root_ca_path = os.path.join(public_path, 'root.ca')
+        if not os.path.isfile(public_root_ca_path):
+            print("linking %s to %s" % (self.root_ca_path, public_root_ca_path))
+            shutil.copyfile(self.root_ca_path, public_root_ca_path)
+        public_master_cert_path = os.path.join(public_path, 'master.server.cert')
+        if not os.path.isfile(public_master_cert_path):
+            shutil.copyfile(self.root_cert_path, public_master_cert_path)
 
     def create_cert(self, node_name, suffix):
         if not names.is_legal_base_name(node_name):
@@ -399,6 +428,16 @@ extendedKeyUsage = serverAuth
             raise
         return (client_stream, client_addr)
 
+# this is tricky... there is a chicken-and-egg problem when starting the
+# SSL subsystem because we need to have the root CA and master cert ready
+# before anybody else (e.g., roslaunch) can use it. So this function has
+# to be called on the box running roscore before basically anything works,
+# which is why this function is called from sroscore
+def ssl_bootstrap():
+    print("ssl_bootstrap()")
+    s = SSLSecurity('master')
+
+
 #########################################################################
 _security = None
 def init(node_name):
@@ -423,10 +462,15 @@ def get():
         raise ValueError("woah there partner. security.init() wasn't called before security.get()")
     return _security
 
-def start_ftp_cert_server():
-    from pyftpdlib.authorizers import DummyAuthorizer
-    from pyftpdlib.handlers import FTPHandler
-    from pyftpdlib.servers import FTPServer
+def ftp_cert_server():
+    try:
+        from pyftpdlib.authorizers import DummyAuthorizer
+        from pyftpdlib.handlers import FTPHandler
+        from pyftpdlib.servers import FTPServer
+    except Exception as e:
+        import sys
+        print("\033[91mWOAH THERE! I was unable to start an FTP server. On Ubuntu, please run:\n\nsudo apt-get install python-pyftpdlib\033[0m\n")
+        sys.exit(1)
     print("starting ftp setup server...")
     pub_cert_path = os.path.join(os.path.expanduser('~'), '.ros', 'keys', '__PUBLIC')
     if not os.path.exists(pub_cert_path):
@@ -438,4 +482,10 @@ def start_ftp_cert_server():
     handler.authorizer = authorizer
     server = FTPServer(('127.0.0.1', 11310), handler)
     from threading import Thread
-    Thread(target=server.serve_forever).start()
+    server.serve_forever()
+    #Thread(target=server.serve_forever).start()
+
+def fork_ftp_cert_server():
+    from multiprocessing import Process
+    p = Process(target=ftp_cert_server)
+    p.start()
