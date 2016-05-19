@@ -11,6 +11,7 @@ import ssl
 import rosgraph.masterapi
 import shutil
 from ftplib import FTP
+import httplib
 #from rospy.exceptions import TransportInitError
 
 try:
@@ -133,6 +134,15 @@ class SSHSecurity(Security):
                 raise
 
 #########################################################################
+class XMLRPCTimeoutSafeTransport(xmlrpcclient.SafeTransport):
+    def __init__(self, context=None, timeout=2.0):
+        xmlrpcclient.SafeTransport.__init__(self, context=context)
+        self.timeout = timeout
+    def make_connection(self, host):
+        chost, self._extra_headers, x509 = self.get_host_info(host)
+        self._connection = host, httplib.HTTPSConnection(chost, None, timeout=self.timeout, context=self.context, **(x509 or {}))
+        return self._connection[1]
+#########################################################################
 class SSLSecurity(Security):
     def __init__(self, node_name):
         self.node_name = self.node_name_to_cert_stem(node_name)
@@ -156,8 +166,13 @@ class SSLSecurity(Security):
         self.client_contexts_ = {}
         self.certs = {}
 
-        if self.node_name == 'master': # or self.node_name == 'roslaunch':
+        if self.node_name == 'master':
             self.create_certs_if_needed()
+        elif self.node_name == 'roslaunch':
+            # this is tricky because roscore uses roslaunch to start master,
+            # so we can't call master's getCertificates() for roslaunch,
+            # instead we have to get them through FTP to bootstrap everything
+            self.download_certs_over_ftp()
 
     def node_name_to_cert_stem(self, node_name):
         # TODO: convert anonymous names into something consistent, so we
@@ -186,6 +201,25 @@ class SSLSecurity(Security):
 
     def get_rosmaster_ftp_port(self):
         return 11310 # todo: not this
+
+    def download_certs_over_ftp(self):
+        fn = [ self.node_name + '.server.cert',
+               self.node_name + '.server.key',
+               self.node_name + '.client.cert',
+               self.node_name + '.client.key' ]
+        all_exist = True
+        for f in fn:
+            if not os.path.isfile(os.path.join(self.kpath, f)):
+                all_exist = False
+        if not all_exist:
+            # we need to try to download these certs+keys over FTP
+            ftp = FTP()
+            ftp.connect(self.get_rosmaster_ftp_host(), self.get_rosmaster_ftp_port())
+            ftp.login()
+            for f in fn:
+                p = os.path.join(self.kpath, f)
+                if not os.path.isfile(p):
+                    ftp.retrbinary("RETR %s" % f, open(p, 'w').write)
 
     def get_master_cert(self):
         print("get_rosmaster_cert()")
@@ -232,6 +266,16 @@ class SSLSecurity(Security):
             self.client_contexts_[node_name] = context
             # TODO: add our client certificate here to allow the server to authenticate us
         return self.client_contexts_[node_name]
+    def copy_to_public_ftp(self, filename):
+        public_dir = os.path.join(os.path.expanduser('~'), '.ros', 'keys', '__PUBLIC')
+        public_path = os.path.join(public_dir, filename)
+        if not os.path.isfile(public_path):
+            if not os.path.exists(public_dir):
+                print("creating public keys directory: %s" % public_path)
+                os.makedirs(public_dir)
+            private_path = os.path.join(self.kpath, filename)
+            print("copying %s to %s" % (private_path, public_path))
+            shutil.copyfile(private_path, public_path)
 
     def create_certs_if_needed(self):
         self.root_key_path = os.path.join(self.kpath, 'root.key')
@@ -303,21 +347,14 @@ extendedKeyUsage = serverAuth
         self.create_cert('roslaunch','server')
         self.create_cert('roslaunch','client')
 
-
         # if root.ca and master.server.cert are not present in the __PUBLIC
-        # FTP-accessible directory, copy them there
-        public_path = os.path.join(os.path.expanduser('~'), '.ros', 'keys', '__PUBLIC')
-        if not os.path.exists(public_path):
-            print("creating public keys path: %s" % public_path)
-            os.makedirs(public_path)
-        public_root_cert_path = os.path.join(public_path, 'root.cert')
-        if not os.path.isfile(public_root_cert_path):
-            print("copying %s to %s" % (self.root_cert_path, public_root_cert_path))
-            shutil.copyfile(self.root_cert_path, public_root_cert_path)
-        public_master_cert_path = os.path.join(public_path, 'master.server.cert')
-        if not os.path.isfile(public_master_cert_path):
-            print("copying %s to %s" % (self.master_server_cert_path, public_master_cert_path))
-            shutil.copyfile(self.master_server_cert_path, public_master_cert_path)
+        # FTP-accessible directory, copy them there. Also roslaunch keys.
+        self.copy_to_public_ftp('root.cert')
+        self.copy_to_public_ftp('master.server.cert')
+        self.copy_to_public_ftp('roslaunch.server.cert')
+        self.copy_to_public_ftp('roslaunch.server.key')
+        self.copy_to_public_ftp('roslaunch.client.cert')
+        self.copy_to_public_ftp('roslaunch.client.key')
 
     def create_cert(self, node_name, suffix):
         if not names.is_legal_base_name(node_name):
@@ -368,7 +405,8 @@ extendedKeyUsage = serverAuth
     def xmlrpcapi(self, uri, node_name):
         print("SSLSecurity.xmlrpcapi(%s, %s)" % (uri, node_name))
         context = self.get_client_context(node_name)
-        return xmlrpcclient.ServerProxy(uri, context=context)
+        st = XMLRPCTimeoutSafeTransport(context=context, timeout=2.0)
+        return xmlrpcclient.ServerProxy(uri, transport=st, context=context)
 
     def xmlrpc_protocol(self):
         return 'https'
