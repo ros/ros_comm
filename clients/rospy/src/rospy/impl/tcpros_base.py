@@ -86,7 +86,7 @@ def _is_use_tcp_keepalive():
             return _use_tcp_keepalive
         # in order to prevent circular dependencies, this does not use the
         # builtin libraries for interacting with the parameter server
-        m = security.get_security().xmlrpcapi(rosgraph.get_master_uri(), 'master')
+        m = security.get().xmlrpcapi(rosgraph.get_master_uri(), 'master')
         code, msg, val = m.getParam(rospy.names.get_caller_id(), _PARAM_TCP_KEEPALIVE)
         _use_tcp_keepalive = val if code == 1 else True
         return _use_tcp_keepalive 
@@ -154,7 +154,7 @@ class TCPServer(object):
         while not self.is_shutdown:
             try:
                 #(client_sock, client_addr) = self.server_sock.accept()
-                (client_sock, client_addr) = security.get_security().accept(self.server_sock, rospy.get_name())
+                (client_sock, client_addr) = security.get().accept(self.server_sock, rospy.get_name())
             except socket.timeout:
                 continue
             except IOError as e:
@@ -556,7 +556,7 @@ class TCPROSTransport(Transport):
         if timeout is not None:
             s.settimeout(timeout)
 
-        s = security.get_security().connect(s, dest_addr, dest_port, endpoint_id, pub_node_name, timeout)
+        s = security.get().connect(s, dest_addr, dest_port, endpoint_id, pub_node_name, timeout)
         self.socket = s
 
         try:

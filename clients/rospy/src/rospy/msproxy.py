@@ -86,7 +86,7 @@ class MasterProxy(object):
         @param uri: XML-RPC URI of master
         @type  uri: str
         """
-        self.target = security.get_security().xmlrpcapi(uri, 'master')
+        self.target = security.get().xmlrpcapi(uri, 'master')
         self._lock = Lock()
 
     def __getattr__(self, key): #forward api calls to target

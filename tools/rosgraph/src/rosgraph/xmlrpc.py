@@ -180,6 +180,7 @@ class XmlRpcNode(object):
         self.node_name = node_name 
         if node_name is None:
             raise ValueError('node_name not passed to XmlRpcNode.__init__()')
+        security.init(node_name)
 
     def shutdown(self, reason):
         """
@@ -248,29 +249,29 @@ class XmlRpcNode(object):
             uri = None
             override = rosgraph.network.get_address_override()
             if override:
-                uri = '%s://%s:%s/'%(security.get_security().xmlrpc_protocol(),override, self.port)
+                uri = '%s://%s:%s/'%(security.get().xmlrpc_protocol(),override, self.port)
             else:
                 try:
                     hostname = socket.gethostname()
                     if hostname and not hostname == 'localhost' and not hostname.startswith('127.') and hostname != '::':
-                        uri = '%s://%s:%s/'%(security.get_security().xmlrpc_protocol(),hostname, self.port)
+                        uri = '%s://%s:%s/'%(security.get().xmlrpc_protocol(),hostname, self.port)
                 except:
                     pass
             if not uri:
-                uri = '%s://%s:%s/'%(security.get_security().xmlrpc_protocol(),rosgraph.network.get_local_address(), self.port)
+                uri = '%s://%s:%s/'%(security.get().xmlrpc_protocol(),rosgraph.network.get_local_address(), self.port)
             self.set_uri(uri)
             
-            print("Started XML-RPC server [%s]", self.uri)
+            print("Started XML-RPC server [%s]" % self.uri)
 
             self.server.register_multicall_functions()
             self.server.register_instance(self.handler)
 
             print("wrapping TLS socket on port %d" % self.port)
-            self.server.socket = security.get_security().wrap_socket(self.server.socket, self.node_name)
+            self.server.socket = security.get().wrap_socket(self.server.socket, self.node_name)
 
         except socket.error as e:
             if e.errno == 98:
-                msg = "ERROR: Unable to start XML-RPC server, port %s is already in use"%self.port
+                msg = "ERROR: Unable to start XML-RPC server, port %s is already in use" % self.port
             else:
                 msg = "ERROR: Unable to start XML-RPC server: %s" % e.strerror
             logger.error(msg)

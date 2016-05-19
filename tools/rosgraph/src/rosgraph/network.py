@@ -84,7 +84,7 @@ def parse_http_host_and_port(url):
     :raises: :exc:`ValueError` If the url does not validate
     """
     # can't use p.port because that's only available in Python 2.5
-    print("rosgraph.network.parse_http_host_and_port(%s)" % url)
+    #print("rosgraph.network.parse_http_host_and_port(%s)" % url)
     if not url:
         raise ValueError('not a valid URL')        
     p = urlparse.urlparse(url)
