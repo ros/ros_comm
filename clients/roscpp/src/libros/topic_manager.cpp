@@ -656,6 +656,11 @@ bool TopicManager::requestTopic(const string &topic,
       int max_datagram_size = proto[4];
       int conn_id = connection_manager_->getNewConnectionID();
       TransportUDPPtr transport = connection_manager_->getUDPServerTransport()->createOutgoing(host, port, conn_id, max_datagram_size);
+      if (!transport)
+      {
+        ROSCPP_LOG_DEBUG("Error creating outgoing transport for [%s:%d]", host.c_str(), port);
+        return false;
+      }
       connection_manager_->udprosIncomingConnection(transport, h);
 
       XmlRpcValue udpros_params;
