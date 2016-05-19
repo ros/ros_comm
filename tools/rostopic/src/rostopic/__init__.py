@@ -113,7 +113,7 @@ class ROSTopicHz(object):
             window_size = 50000
         self.window_size = window_size
                 
-    def callback_hz(self, m, topic):
+    def callback_hz(self, m, topic=None):
         """
         ros sub callback
         :param m: Message instance
@@ -147,7 +147,7 @@ class ROSTopicHz(object):
             if len(self.times[topic]) > self.window_size - 1:
                 self.times[topic].pop(0)
 
-    def get_hz(self, topic):
+    def get_hz(self, topic=None):
         """
         calculate the average publising rate
 
@@ -185,7 +185,7 @@ class ROSTopicHz(object):
 
         return rate, min_delta, max_delta, std_dev, n+1
 
-    def print_hz(self, topics):
+    def print_hz(self, topics=(None,)):
         """
         print the average publishing rate to screen
         """
