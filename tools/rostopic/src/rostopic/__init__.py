@@ -1281,16 +1281,25 @@ def create_value_transform(echo_nostr, echo_noarr):
         field_types = val._slot_types
         transformed = []
         for index, (f, t) in enumerate(zip(fields, field_types)):
+            f_val = val.__getattribute__(f)
             if echo_noarr and '[' in t:
-                f_val = val.__getattribute__(f)
                 transformed.append((index, t, f, f_val))
                 val.__setattr__(f, '<array type: %s, length: %s>' %
                                 (t.rstrip('[]'), len(f_val)))
                 val._slot_types[index] = 'string'
             elif echo_nostr and 'string' in t:
-                f_val = val.__getattribute__(f)
                 transformed.append((index, t, f, f_val))
                 val.__setattr__(f, '<string length: %s>' % len(f_val))
+            else:
+                try:
+                    msg_class = genpy.message.get_message_class(t)
+                    if msg_class is None:
+                        continue
+                    nested_transformed, _ = value_transform(f_val)
+                    val.__setattr__(f, nested_transformed)
+                    transformed.append((index, t, f, f_val))
+                except ValueError:
+                    pass
         def untransform_fn(val):
             for index, type_, f, f_val in transformed:
                 val._slot_types[index] = type_
