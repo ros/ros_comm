@@ -47,6 +47,7 @@ import rospy.names
 
 import rospy.impl.paramserver
 import rospy.impl.masterslave
+import rosgraph.security as security
 
 _master_arg_remap = { 
     'deleteParam': [0], # remap key
