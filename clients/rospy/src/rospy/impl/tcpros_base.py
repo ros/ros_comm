@@ -555,14 +555,16 @@ class TCPROSTransport(Transport):
         if timeout is not None:
             s.settimeout(timeout)
 
-        s = security.get().connect(s, dest_addr, dest_port, endpoint_id, timeout)
-        self.socket = s
-
         try:
+            s = security.get().connect(s, dest_addr, dest_port, endpoint_id, timeout)
+            self.socket = s
             self.write_header()
             self.read_header()
             self.local_endpoint = self.socket.getsockname()
             self.remote_endpoint = (dest_addr, dest_port)
+        except TransportInitError as tie:
+            rospyerr("Unable to initiate TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, traceback.format_exc()))            
+            raise
         except Exception as e:
             #logerr("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, str(e)))
             rospywarn("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, traceback.format_exc()))

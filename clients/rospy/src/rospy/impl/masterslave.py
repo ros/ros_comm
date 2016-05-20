@@ -238,12 +238,12 @@ class ROSHandler(XmlRpcHandler):
         @return: new value for parameter, after validation
         """
         if validation == 'is_publishers_list':
-            if not type(param_value) == dict:
-                raise ParameterInvalid("ERROR: param [%s] must be a dict"%param_name)
-            for k, v in param_value.items():
-                if not isinstance(k, str) or not isinstance(v, str):
-                    raise ParameterInvalid("ERROR: param [%s] must be a dict of strings->strings"%param_name)
-                parsed = urlparse.urlparse(k)
+            if not type(param_value) == list:
+                raise ParameterInvalid("ERROR: param [%s] must be a list"%param_name)
+            for v in param_value:
+                if not isinstance(v, str):
+                    raise ParameterInvalid("ERROR: param [%s] must be a list of strings"%param_name)
+                parsed = urlparse.urlparse(v)
                 if not parsed[0] or not parsed[1]: #protocol and host
                     raise ParameterInvalid("ERROR: param [%s] does not contain valid URLs [%s]"%(param_name, v))
             return param_value

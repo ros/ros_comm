@@ -243,11 +243,11 @@ class SSLSecurity(Security):
             self.server_context_ = context
         return self.server_context_
 
-    def get_client_context(self, node_name):
+    def get_client_context(self, server):
         self.get_master_cert()
-        print("Security.get_client_context(%s)" % node_name)
-        if not node_name in self.client_contexts_:
-            print("creating client context for %s" % node_name)
+        print("Security.get_client_context(%s)" % server)
+        if not server in self.client_contexts_:
+            print("creating client context for %s" % server)
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
             context.verify_mode = self.client_cert_verify_mode
             print("loading root certificate from %s" % self.root_cert_path)
@@ -258,9 +258,9 @@ class SSLSecurity(Security):
             #    self.request_cert(node_name, mode)
             #print("loading %s and %s" % (certfile, keyfile))
             #context.load_cert_chain(certfile, keyfile=keyfile)
-            self.client_contexts_[node_name] = context
+            self.client_contexts_[server] = context
             # TODO: add our client certificate here to allow the server to authenticate us
-        return self.client_contexts_[node_name]
+        return self.client_contexts_[server]
 
     def copy_to_public_ftp(self, filename):
         public_dir = os.path.join(os.path.expanduser('~'), '.ros', 'keys', '__PUBLIC')
@@ -391,8 +391,8 @@ extendedKeyUsage = serverAuth
         print("             SSLSecurity.xmlrpcapi(%s, %s)" % (uri, node_name or "[UNKNOWN]"))
         #if not node_name:
         #    print("      now i will call master.getCaller
-        context = self.get_client_context(node_name)
-        st = XMLRPCTimeoutSafeTransport(context=context, timeout=2.0)
+        context = self.get_client_context(node_name or uri)
+        st = XMLRPCTimeoutSafeTransport(context=context, timeout=10.0)
         return xmlrpcclient.ServerProxy(uri, transport=st, context=context)
 
     def xmlrpc_protocol(self):
@@ -435,12 +435,12 @@ extendedKeyUsage = serverAuth
     def connect(self, sock, dest_addr, dest_port, endpoint_id, timeout=None):
         print('SSLSecurity.connect() to node at %s:%d which is endpoint %s' % (dest_addr, dest_port, endpoint_id))
         # TODO: get certificates to talk to this URI
-        context = self.get_client_context('bar')
+        context = self.get_client_context("%s:%d" % (dest_addr, dest_port))
         conn = context.wrap_socket(sock)
         try:
             conn.connect((dest_addr, dest_port))
         except Exception as e:
-            print("SSLSecurity.connect() exception: %s" % e)
+            print("  AHHH node %s SSLSecurity.connect() exception: %s" % (self.node_name, e))
             raise
         return conn
 
