@@ -402,7 +402,7 @@ class ROSHandler(XmlRpcHandler):
         """
         return 1, "publications", get_topic_manager().get_publications()
     
-    def _connect_topic(self, topic, pub_uri, pub_node_name): 
+    def _connect_topic(self, topic, pub_uri): 
         """
         Connect subscriber to topic.
         @param topic: Topic name to connect.
@@ -413,7 +413,7 @@ class ROSHandler(XmlRpcHandler):
            of subscribers connected to the topic.
         @rtype: [int, str, int]
         """
-        print("ROSHandler._connect_topic(%s, %s, %s)" % (topic, pub_uri, pub_node_name))
+        print("ROSHandler._connect_topic(%s, %s)" % (topic, pub_uri))
         caller_id = rospy.names.get_caller_id()
         sub = get_topic_manager().get_subscriber_impl(topic)
         if not sub:
@@ -445,9 +445,9 @@ class ROSHandler(XmlRpcHandler):
         while not success:
             tries += 1
             try:
-                print("starting xmlrpc connection sequence to node %s at %s" % (pub_node_name, pub_uri))
+                print("starting xmlrpc connection sequence to node at %s" % pub_uri)
                 code, msg, result = \
-                      security.get().xmlrpcapi(pub_uri, pub_node_name).requestTopic(caller_id, topic, protocols)
+                      security.get().xmlrpcapi(pub_uri).requestTopic(caller_id, topic, protocols)
                 success = True
             except Exception as e:
                 print("requestTopic exception: %s" % e)
@@ -464,11 +464,11 @@ class ROSHandler(XmlRpcHandler):
         elif not result or type(protocols) != list:
             return 0, "ERROR: publisher returned invalid protocol choice: %s"%(str(result)), 0
         _logger.debug("connect[%s]: requestTopic returned protocol list %s", topic, result)
-        print("connect[%s]: requestTopic returned protocol list %s", topic, result)
+        print("connect[%s]: requestTopic returned protocol list %s" % (topic, result))
         protocol = result[0]
         for h in self.protocol_handlers:
             if h.supports(protocol):
-                return h.create_transport(topic, pub_uri, pub_node_name, result)
+                return h.create_transport(topic, pub_uri, result)
         return 0, "ERROR: publisher returned unsupported protocol choice: %s"%result, 0
 
     @apivalidate(-1, (global_name('parameter_key'), None))

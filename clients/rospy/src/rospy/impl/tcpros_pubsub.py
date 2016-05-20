@@ -154,7 +154,7 @@ class TCPROSPub(TCPROSTransportProtocol):
             base.update(self.headers)
         return base
 
-def robust_connect_subscriber(conn, dest_addr, dest_port, pub_uri, pub_node_name, receive_cb, resolved_topic_name):
+def robust_connect_subscriber(conn, dest_addr, dest_port, pub_uri, receive_cb, resolved_topic_name):
     """
     Keeps trying to create connection for subscriber.  Then passes off to receive_loop once connected.
     """
@@ -165,7 +165,7 @@ def robust_connect_subscriber(conn, dest_addr, dest_port, pub_uri, pub_node_name
     interval = 0.5
     while conn.socket is None and not conn.done and not rospy.is_shutdown():
         try:
-            conn.connect(dest_addr, dest_port, pub_uri, pub_node_name, timeout=60.)
+            conn.connect(dest_addr, dest_port, pub_uri, timeout=60.)
         except rospy.exceptions.TransportInitError as e:
             # if the connection was closed intentionally
             # because of an unknown error, stop trying
@@ -223,7 +223,7 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
         """
         pass
 
-    def create_transport(self, resolved_name, pub_uri, pub_node_name, protocol_params):
+    def create_transport(self, resolved_name, pub_uri, protocol_params):
         """
         Connect to topic resolved_name on Publisher pub_uri using TCPROS.
         @param resolved_name str: resolved topic name
@@ -236,7 +236,7 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
         @rtype: (int, str, int)
         """
         
-        print("TCPROSHandler.create_transport(%s, %s, %s, %s)" % (resolved_name, pub_uri, pub_node_name, repr(protocol_params)))
+        print("TCPROSHandler.create_transport(%s, %s, %s)" % (resolved_name, pub_uri, repr(protocol_params)))
         #Validate protocol params = [TCPROS, address, port]
         if type(protocol_params) != list or len(protocol_params) != 3:
             return 0, "ERROR: invalid TCPROS parameters", 0
@@ -253,7 +253,7 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
         conn = TCPROSTransport(protocol, resolved_name)
         conn.set_endpoint_id(pub_uri);
 
-        t = threading.Thread(name=resolved_name, target=robust_connect_subscriber, args=(conn, dest_addr, dest_port, pub_uri, pub_node_name, sub.receive_callback, resolved_name))
+        t = threading.Thread(name=resolved_name, target=robust_connect_subscriber, args=(conn, dest_addr, dest_port, pub_uri, sub.receive_callback, resolved_name))
         # don't enable this just yet, need to work on this logic
         #rospy.core._add_shutdown_thread(t)
 

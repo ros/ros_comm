@@ -164,7 +164,6 @@ class SSLSecurity(Security):
 
         self.server_context_ = None
         self.client_contexts_ = {}
-        self.certs = {}
 
         if self.node_name == 'master':
             self.create_certs_if_needed()
@@ -181,19 +180,6 @@ class SSLSecurity(Security):
         if (stem[0] == '/'):
             stem = stem[1:]
         return stem.replace('/', '__')
-
-    def request_cert(self, node_name, mode):
-        print("request_cert(%s, %s)" % (node_name, mode))
-        stem = self.node_name_to_cert_stem(node_name)
-        cert_name = "%s.%s" % (node_name, mode)
-        if not cert_name in self.certs:
-            print("requesting certificate %s from master..." % cert_name)
-            master_proxy = rosgraph.masterapi.Master(node_name)
-            response = master_proxy.getCertificates(node_name)
-            #print("getCertificates response: %s" % repr(response))
-            # todo: error checking would be good
-            self.certs[cert_name] = response['server.cert']
-        return self.certs[cert_name]
 
     def get_rosmaster_ftp_host(self):
         print("get_rosmaster_ftp_url()")
@@ -231,18 +217,27 @@ class SSLSecurity(Security):
             ftp.retrbinary('RETR master.server.cert', open(self.master_server_cert_path, 'w').write)
             ftp.quit()
 
-    def get_server_context(self, node_name):
+    def get_server_context(self):
         self.get_master_cert()
-        print("Security.get_server_context(%s)" % node_name)
+        print("Security.get_server_context() for node %s" % self.node_name)
         if self.server_context_ is None:
-            print("creating server context for %s" % node_name)
+            print("creating server context for %s" % self.node_name)
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
             context.verify_mode = self.server_cert_verify_mode
             context.load_verify_locations(cafile=self.root_cert_path)
-            keyfile  = os.path.join(self.kpath, node_name+'.server.key')
-            certfile = os.path.join(self.kpath, node_name+'.server.cert')
+            stem = self.node_name_to_cert_stem(self.node_name)
+            keyfile  = os.path.join(self.kpath, stem + '.server.key')
+            certfile = os.path.join(self.kpath, stem + '.server.cert')
             if not os.path.isfile(keyfile) or not os.path.isfile(certfile):
-                self.request_cert(node_name, 'server')
+                print("requesting certificates for %s" % self.node_name)
+                master_proxy = rosgraph.masterapi.Master(self.node_name)
+                response = master_proxy.getMyCertificates()
+                # todo: error checking would be good
+                #print("getCertificates response: %s" % repr(response))
+                # save everything the server gives back to us
+                for k, v in response.items():
+                    with open(os.path.join(self.kpath, '%s.%s' % (stem, k)), 'w') as f:
+                        f.write(v)
             print("loading %s and %s" % (certfile, keyfile))
             context.load_cert_chain(certfile, keyfile=keyfile)
             self.server_context_ = context
@@ -266,6 +261,7 @@ class SSLSecurity(Security):
             self.client_contexts_[node_name] = context
             # TODO: add our client certificate here to allow the server to authenticate us
         return self.client_contexts_[node_name]
+
     def copy_to_public_ftp(self, filename):
         public_dir = os.path.join(os.path.expanduser('~'), '.ros', 'keys', '__PUBLIC')
         public_path = os.path.join(public_dir, filename)
@@ -387,23 +383,14 @@ extendedKeyUsage = serverAuth
         """
         Called whenever there is an opportunity to wrap a server socket
         """
-
         print("SSLSecurity.wrap_socket() called for node %s" % node_name)
-        if not names.is_legal_base_name(node_name):
-            raise ValueError("security.wrap_socket() received illegal node name: %s" % node_name)
-
-        #if (node_name == 'roslaunch'):
-            # TODO: not sure how to handle this, since roscore fires 
-            # off a roslaunch xmlrpc server to bring up master, so it's
-            # kind of a chicken-and-egg. Maybe special-case this socket
-            # so it can only receive from localhost?
-        #    return sock
-
-        context = self.get_server_context(node_name)
+        context = self.get_server_context()
         return context.wrap_socket(sock, server_side=True)
 
-    def xmlrpcapi(self, uri, node_name):
-        print("SSLSecurity.xmlrpcapi(%s, %s)" % (uri, node_name))
+    def xmlrpcapi(self, uri, node_name=None):
+        print("             SSLSecurity.xmlrpcapi(%s, %s)" % (uri, node_name or "[UNKNOWN]"))
+        #if not node_name:
+        #    print("      now i will call master.getCaller
         context = self.get_client_context(node_name)
         st = XMLRPCTimeoutSafeTransport(context=context, timeout=2.0)
         return xmlrpcclient.ServerProxy(uri, transport=st, context=context)
@@ -423,32 +410,32 @@ extendedKeyUsage = serverAuth
             self.create_cert(node_name, mode)
         return path
 
-    def getCertificates(self, caller_id, node_name):
+    def getMyCertificates(self, caller_id):
         """
         This function is only called by the Master XML-RPC handler, and only
         should be available during "permissive mode." A strict deployment
         will/should disable this function to prevent unauthorized creation or
         distribution of certificates and keys.
         """
-        print("security.getCertificates(caller_id=%s, node_name=%s)" % (caller_id, node_name))
+        print("security.getMyCertificates(caller_id=%s)" % caller_id)
         # first, transform the node name into a legal certificate name stem
-        stem = self.node_name_to_cert_stem(node_name)
+        stem = self.node_name_to_cert_stem(caller_id)
         print('   using stem = [%s]' % stem)
         response = { }
         with open(self.cert_path(stem, 'server'), 'r') as f:
             response['server.cert'] = f.read()
+        with open(self.key_path (stem, 'server'), 'r') as f:
+            response['server.key'] = f.read()
         with open(self.cert_path(stem, 'client'), 'r') as f:
             response['client.cert'] = f.read()
-        if caller_id == node_name:
-            with open(self.key_path(stem, 'server'), 'r') as f:
-                response['server.key'] = f.read()
-            with open(self.key_path(stem, 'client'), 'r') as f:
-                response['client.key'] = f.read()
+        with open(self.key_path (stem, 'client'), 'r') as f:
+            response['client.key'] = f.read()
         return response
 
-    def connect(self, sock, dest_addr, dest_port, endpoint_id, pub_node_name, timeout=None):
-        print('SSLSecurity.connect() to node %s at %s:%d which is endpoint %s' % (pub_node_name, dest_addr, dest_port, endpoint_id))
-        context = self.get_client_context(pub_node_name)
+    def connect(self, sock, dest_addr, dest_port, endpoint_id, timeout=None):
+        print('SSLSecurity.connect() to node at %s:%d which is endpoint %s' % (dest_addr, dest_port, endpoint_id))
+        # TODO: get certificates to talk to this URI
+        context = self.get_client_context('bar')
         conn = context.wrap_socket(sock)
         try:
             conn.connect((dest_addr, dest_port))
@@ -459,7 +446,7 @@ extendedKeyUsage = serverAuth
 
     def accept(self, server_sock, server_node_name):
         print("SSLSecurity.accept(server_node_name=%s)" % server_node_name)
-        context = self.get_server_context(server_node_name)
+        context = self.get_server_context()
         (client_sock, client_addr) = server_sock.accept()
         client_stream = None
         try:

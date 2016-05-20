@@ -485,12 +485,11 @@ class Master(object):
         """
         return self._succeed(self.handle.getSystemState(self.caller_id))
 
-    def getCertificates(self, node_name):
+    def getMyCertificates(self):
         """
         Retrieve server-side and client-side TLS certificates for a node.
         These will be generated if necessary. This call will fail if the 
         master is running in 'strict' mode, which assumes that certificate
         distribution has already been completed.
-        successfully if the master is in
         """
-        return self._succeed(self.handle.getCertificates(self.caller_id, node_name))
+        return self._succeed(self.handle.getMyCertificates(self.caller_id))

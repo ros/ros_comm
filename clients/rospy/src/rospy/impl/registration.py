@@ -313,16 +313,16 @@ class RegManager(RegistrationListener):
             #call _connect_topic on all URIs as it can check to see whether
             #or not a connection exists.
             if uris and not self.handler.done:
-                for uri, node_name in uris.items():
+                for uri in uris:
                     # #1141: have to multithread this to prevent a bad publisher from hanging us
-                    t = threading.Thread(target=self._connect_topic_thread, args=(topic, uri, node_name))
+                    t = threading.Thread(target=self._connect_topic_thread, args=(topic, uri))
                     t.setDaemon(True)
                     t.start()
 
-    def _connect_topic_thread(self, topic, uri, node_name):
+    def _connect_topic_thread(self, topic, uri):
         try:
-            print("_connect_topic_thread(%s, %s, %s)" % (topic, uri, node_name))
-            code, msg, _ = self.handler._connect_topic(topic, uri, node_name)
+            print("_connect_topic_thread(%s, %s)" % (topic, uri))
+            code, msg, _ = self.handler._connect_topic(topic, uri)
             if code != 1:
                 logdebug("Unable to connect subscriber to publisher [%s] for topic [%s]: %s", uri, topic, msg)
         except Exception as e:
