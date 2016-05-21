@@ -546,9 +546,8 @@ class ROSMasterHandler(object):
                 # are less than a few dozen nodes, so this n^2 shouldn't be too bad; it's
                 # just embarrassing.
                 for iter_node_name, iter_node in self.reg_manager.nodes.items():
-                    print("notify() is checking if %s == %s" % (node_api, iter_node.api))
+                    #print("notify() is checking if %s == %s" % (node_api, iter_node.api))
                     if node_api == iter_node.api:
-                        print("hooray, it does!")
                         thread_pool.queue_task(node_api, task, (node_api, iter_node_name, key, value))
         except KeyError:
             _logger.warn('subscriber data stale (key [%s], listener [%s]): node API unknown'%(key, s))

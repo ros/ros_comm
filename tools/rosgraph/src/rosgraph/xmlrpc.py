@@ -261,12 +261,12 @@ class XmlRpcNode(object):
                 uri = '%s://%s:%s/'%(security.get().xmlrpc_protocol(),rosgraph.network.get_local_address(), self.port)
             self.set_uri(uri)
             
-            print("Started XML-RPC server [%s]" % self.uri)
+            #print("Started XML-RPC server [%s]" % self.uri)
 
             self.server.register_multicall_functions()
             self.server.register_instance(self.handler)
 
-            print("wrapping TLS socket on port %d" % self.port)
+            #print("wrapping TLS socket on port %d" % self.port)
             self.server.socket = security.get().wrap_socket(self.server.socket, self.node_name)
 
         except socket.error as e:

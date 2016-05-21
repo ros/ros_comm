@@ -236,7 +236,7 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
         @rtype: (int, str, int)
         """
         
-        print("TCPROSHandler.create_transport(%s, %s, %s)" % (resolved_name, pub_uri, repr(protocol_params)))
+        #print("TCPROSHandler.create_transport(%s, %s, %s)" % (resolved_name, pub_uri, repr(protocol_params)))
         #Validate protocol params = [TCPROS, address, port]
         if type(protocol_params) != list or len(protocol_params) != 3:
             return 0, "ERROR: invalid TCPROS parameters", 0

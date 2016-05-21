@@ -93,14 +93,14 @@ class SSHSecurity(Security):
             if uri in self.ssh_tunnels:
                 uri = self.ssh_tunnels[uri]['local_uri']
             else:
-                print(" need to create a tunnel!")
+                #print(" need to create a tunnel!")
                 # first, ask the OS for a free port to listen on
                 port_probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 port_probe.bind(('', 0))
                 local_port = port_probe.getsockname()[1]
                 port_probe.close() # the OS won't re-allocate this port anytime soon
                 ssh_incantation = ["ssh", "-nNT", "-L", "%d:localhost:%d" % (local_port, dest_port), str(dest_hostname)]
-                print("spawning ssh tunnel with: %s" % " ".join(ssh_incantation))
+                #print("spawning ssh tunnel with: %s" % " ".join(ssh_incantation))
                 try:
                     self.ssh_tunnels[uri] = {}
                     self.ssh_tunnels[uri]['local_uri'] = "http://localhost:%d" % local_port
@@ -124,7 +124,7 @@ class SSHSecurity(Security):
             local_port = port_probe.getsockname()[1]
             port_probe.close() # the OS won't re-allocate this port anytime soon
             ssh_incantation = ["ssh", "-nNT", "-L", "%d:localhost:%d" % (local_port, dest_port), str(dest_addr)]
-            print("spawning ssh tunnel with: %s" % " ".join(ssh_incantation))
+            #print("spawning ssh tunnel with: %s" % " ".join(ssh_incantation))
             try:
                 subprocess.Popen(ssh_incantation, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 time.sleep(1) # HAXX. do a retry-loop
@@ -147,10 +147,10 @@ class SSLSecurity(Security):
     def __init__(self, node_name):
         self.node_name = self.node_name_to_cert_stem(node_name)
         super(SSLSecurity, self).__init__()
-        _logger.info("  rospy.security.SSLSecurity init")
+        _logger.info("rospy.security.SSLSecurity init")
         self.kpath = os.path.join(os.path.expanduser('~'), '.ros', 'keys', self.node_name)
         if not os.path.exists(self.kpath):
-            print("creating keys path: %s" % self.kpath)
+            #print("creating keys path: %s" % self.kpath)
             os.makedirs(self.kpath)
 
         self.openssl_conf_path = os.path.join(self.kpath, 'openssl.conf')
@@ -182,7 +182,7 @@ class SSLSecurity(Security):
         return stem.replace('/', '__')
 
     def get_rosmaster_ftp_host(self):
-        print("get_rosmaster_ftp_url()")
+        #print("get_rosmaster_ftp_url()")
         return "localhost" # todo: not this
 
     def get_rosmaster_ftp_port(self):
@@ -208,7 +208,7 @@ class SSLSecurity(Security):
                     ftp.retrbinary("RETR %s" % f, open(p, 'w').write)
 
     def get_master_cert(self):
-        print("get_rosmaster_cert()")
+        #print("get_rosmaster_cert()")
         if not os.path.isfile(self.root_cert_path) or not os.path.isfile(self.master_server_cert_path):
             ftp = FTP()
             ftp.connect(self.get_rosmaster_ftp_host(), self.get_rosmaster_ftp_port())
@@ -219,9 +219,9 @@ class SSLSecurity(Security):
 
     def get_server_context(self):
         self.get_master_cert()
-        print("Security.get_server_context() for node %s" % self.node_name)
+        #print("Security.get_server_context() for node %s" % self.node_name)
         if self.server_context_ is None:
-            print("creating server context for %s" % self.node_name)
+            #print("creating server context for %s" % self.node_name)
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
             context.verify_mode = self.server_cert_verify_mode
             context.load_verify_locations(cafile=self.root_cert_path)
@@ -229,7 +229,7 @@ class SSLSecurity(Security):
             keyfile  = os.path.join(self.kpath, stem + '.server.key')
             certfile = os.path.join(self.kpath, stem + '.server.cert')
             if not os.path.isfile(keyfile) or not os.path.isfile(certfile):
-                print("requesting certificates for %s" % self.node_name)
+                #print("requesting certificates for %s" % self.node_name)
                 master_proxy = rosgraph.masterapi.Master(self.node_name)
                 response = master_proxy.getMyCertificates()
                 # todo: error checking would be good
@@ -238,19 +238,19 @@ class SSLSecurity(Security):
                 for k, v in response.items():
                     with open(os.path.join(self.kpath, '%s.%s' % (stem, k)), 'w') as f:
                         f.write(v)
-            print("loading %s and %s" % (certfile, keyfile))
+            #print("loading %s and %s" % (certfile, keyfile))
             context.load_cert_chain(certfile, keyfile=keyfile)
             self.server_context_ = context
         return self.server_context_
 
     def get_client_context(self, server):
         self.get_master_cert()
-        print("Security.get_client_context(%s)" % server)
+        #print("Security.get_client_context(%s)" % server)
         if not server in self.client_contexts_:
-            print("creating client context for %s" % server)
+            #print("creating client context for %s" % server)
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
             context.verify_mode = self.client_cert_verify_mode
-            print("loading root certificate from %s" % self.root_cert_path)
+            #print("loading root certificate from %s" % self.root_cert_path)
             context.load_verify_locations(cafile=self.root_cert_path)
             #keyfile  = os.path.join(self.kpath, node_name + '.' + mode + '.key')
             #certfile = os.path.join(self.kpath, node_name + '.' + mode + '.cert')
@@ -267,10 +267,10 @@ class SSLSecurity(Security):
         public_path = os.path.join(public_dir, filename)
         if not os.path.isfile(public_path):
             if not os.path.exists(public_dir):
-                print("creating public keys directory: %s" % public_path)
+                #print("creating public keys directory: %s" % public_path)
                 os.makedirs(public_dir)
             private_path = os.path.join(self.kpath, filename)
-            print("copying %s to %s" % (private_path, public_path))
+            #print("copying %s to %s" % (private_path, public_path))
             shutil.copyfile(private_path, public_path)
 
     def create_certs_if_needed(self):
@@ -278,7 +278,7 @@ class SSLSecurity(Security):
         if not os.path.isfile(self.root_cert_path) or \
            not os.path.isfile(self.root_key_path):
             openssl_incantation = "openssl req -batch -newkey rsa:4096 -subj /C=US/ST=CA/O=ros -days 3650 -x509 -sha256 -nodes -out %s -keyout %s" % (self.root_cert_path, self.root_key_path)
-            print("creating root certificate and key: %s" % openssl_incantation)
+            #print("creating root certificate and key: %s" % openssl_incantation)
             subprocess.check_call(openssl_incantation.split(' '))
 
         if not os.path.isfile(self.root_ca_path):
@@ -361,13 +361,13 @@ extendedKeyUsage = serverAuth
         key_path = os.path.join(self.kpath, '%s.key' % cert_name)
         if not os.path.isfile(csr_path):
             openssl_incantation = r'openssl req -batch -subj /C=US/ST=CA/O=ros/CN={0} -newkey rsa:4096 -sha256 -nodes -out {1} -keyout {2}'.format(cert_name, csr_path, key_path)
-            print("creating master certificate signing request and key: %s" % openssl_incantation)
+            #print("creating master certificate signing request and key: %s" % openssl_incantation)
             subprocess.check_call(openssl_incantation.split(' '))
 
         cert_path = os.path.join(self.kpath, '%s.cert' % cert_name)
         if not os.path.isfile(cert_path):
             openssl_incantation = "openssl ca -batch -config {0} -notext -in {1} -out {2}".format(self.openssl_conf_path, csr_path, cert_path)
-            print("creating master certificate: %s" % openssl_incantation)
+            #print("creating master certificate: %s" % openssl_incantation)
             subprocess.check_call(openssl_incantation.split(' '))
 
         # TODO: for python >= 2.7.9, create an SSL context which will
@@ -383,12 +383,12 @@ extendedKeyUsage = serverAuth
         """
         Called whenever there is an opportunity to wrap a server socket
         """
-        print("SSLSecurity.wrap_socket() called for node %s" % node_name)
+        #print("SSLSecurity.wrap_socket() called for node %s" % node_name)
         context = self.get_server_context()
         return context.wrap_socket(sock, server_side=True)
 
     def xmlrpcapi(self, uri, node_name=None):
-        print("             SSLSecurity.xmlrpcapi(%s, %s)" % (uri, node_name or "[UNKNOWN]"))
+        #print("             SSLSecurity.xmlrpcapi(%s, %s)" % (uri, node_name or "[UNKNOWN]"))
         #if not node_name:
         #    print("      now i will call master.getCaller
         context = self.get_client_context(node_name or uri)
@@ -417,10 +417,10 @@ extendedKeyUsage = serverAuth
         will/should disable this function to prevent unauthorized creation or
         distribution of certificates and keys.
         """
-        print("security.getMyCertificates(caller_id=%s)" % caller_id)
+        #print("security.getMyCertificates(caller_id=%s)" % caller_id)
         # first, transform the node name into a legal certificate name stem
         stem = self.node_name_to_cert_stem(caller_id)
-        print('   using stem = [%s]' % stem)
+        #print('   using stem = [%s]' % stem)
         response = { }
         with open(self.cert_path(stem, 'server'), 'r') as f:
             response['server.cert'] = f.read()
@@ -433,7 +433,7 @@ extendedKeyUsage = serverAuth
         return response
 
     def connect(self, sock, dest_addr, dest_port, endpoint_id, timeout=None):
-        print('SSLSecurity.connect() to node at %s:%d which is endpoint %s' % (dest_addr, dest_port, endpoint_id))
+        #print('SSLSecurity.connect() to node at %s:%d which is endpoint %s' % (dest_addr, dest_port, endpoint_id))
         # TODO: get certificates to talk to this URI
         context = self.get_client_context("%s:%d" % (dest_addr, dest_port))
         conn = context.wrap_socket(sock)
@@ -445,7 +445,7 @@ extendedKeyUsage = serverAuth
         return conn
 
     def accept(self, server_sock, server_node_name):
-        print("SSLSecurity.accept(server_node_name=%s)" % server_node_name)
+        #print("SSLSecurity.accept(server_node_name=%s)" % server_node_name)
         context = self.get_server_context()
         (client_sock, client_addr) = server_sock.accept()
         client_stream = None
@@ -462,14 +462,14 @@ extendedKeyUsage = serverAuth
 # to be called on the box running roscore before basically anything works,
 # which is why this function is called from sroscore
 def ssl_bootstrap():
-    print("ssl_bootstrap()")
+    #print("ssl_bootstrap()")
     s = SSLSecurity('master')
 
 
 #########################################################################
 _security = None
 def init(node_name):
-    print('security.init(%s)' % node_name)
+    #print('security.init(%s)' % node_name)
     global _security
     if _security is None:
         _logger.info("choosing security model...")
@@ -499,10 +499,10 @@ def ftp_cert_server():
         import sys
         print("\033[91mWOAH THERE! I was unable to start an FTP server. On Ubuntu, please run:\n\nsudo apt-get install python-pyftpdlib\033[0m\n")
         sys.exit(1)
-    print("starting ftp setup server...")
+    print("starting ftp setup server to bootstrap key distribution...")
     pub_cert_path = os.path.join(os.path.expanduser('~'), '.ros', 'keys', '__PUBLIC')
     if not os.path.exists(pub_cert_path):
-        print("creating public certificates path: %s" % pub_cert_path)
+        #print("creating public certificates path: %s" % pub_cert_path)
         os.makedirs(pub_cert_path)
     authorizer = DummyAuthorizer()
     authorizer.add_anonymous(pub_cert_path)

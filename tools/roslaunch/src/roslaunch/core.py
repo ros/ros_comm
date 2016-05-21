@@ -267,7 +267,6 @@ class Master(object):
         self.auto = None # no longer used
         self.type = type_ or Master.ROSMASTER
         self.uri = uri or get_master_uri_env()
-        print("roslaunch.Master().uri = %s" % self.uri)
         
     def get_host(self):
         # parse from the URI
@@ -292,7 +291,7 @@ class Master(object):
         """
         :returns:: XMLRPC proxy for communicating with master, ``xmlrpc.client.ServerProxy``
         """
-        print("roslaunch about to try to call master at [%s]" % repr(self.uri))
+        #print("roslaunch about to try to call master at [%s]" % repr(self.uri))
         return security.get().xmlrpcapi(self.uri, 'roslaunch')
     
     def get_multi(self):
