@@ -12,6 +12,7 @@ import rosgraph.masterapi
 import shutil
 from ftplib import FTP
 import httplib
+import sys
 #from rospy.exceptions import TransportInitError
 
 try:
@@ -273,13 +274,30 @@ class SSLSecurity(Security):
             #print("copying %s to %s" % (private_path, public_path))
             shutil.copyfile(private_path, public_path)
 
+    def run_and_print_abnormal_output(self, cmd, status_text=None):
+        #subprocess.check_call(cmd.split(' '))
+        popen = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdoutdata, stderrdata = popen.communicate()
+        if status_text is not None:
+            sys.stdout.write("%s..." % status_text)
+            sys.stdout.flush()
+        #print("running command: %s" % cmd)
+        if popen.returncode != 0:
+            print("error running command: [%s]" % cmd)
+            print("    stdout:\n%s\n" % stdoutdata)
+            print("    stderr:\n%s\n" % stderrdata)
+            raise Exception("ahhh")
+        if status_text is not None:
+            print("done")
+
     def create_certs_if_needed(self):
         self.root_key_path = os.path.join(self.kpath, 'root.key')
         if not os.path.isfile(self.root_cert_path) or \
            not os.path.isfile(self.root_key_path):
             openssl_incantation = "openssl req -batch -newkey rsa:4096 -subj /C=US/ST=CA/O=ros -days 3650 -x509 -sha256 -nodes -out %s -keyout %s" % (self.root_cert_path, self.root_key_path)
             #print("creating root certificate and key: %s" % openssl_incantation)
-            subprocess.check_call(openssl_incantation.split(' '))
+            #subprocess.check_call(openssl_incantation.split(' '))
+            self.run_and_print_abnormal_output(openssl_incantation, "creating self-signed root certificate authority")
 
         if not os.path.isfile(self.root_ca_path):
             with open(self.root_ca_path, 'w') as root_ca_file:
@@ -362,13 +380,15 @@ extendedKeyUsage = serverAuth
         if not os.path.isfile(csr_path):
             openssl_incantation = r'openssl req -batch -subj /C=US/ST=CA/O=ros/CN={0} -newkey rsa:4096 -sha256 -nodes -out {1} -keyout {2}'.format(cert_name, csr_path, key_path)
             #print("creating master certificate signing request and key: %s" % openssl_incantation)
-            subprocess.check_call(openssl_incantation.split(' '))
+            #subprocess.check_call(openssl_incantation.split(' '))
+            self.run_and_print_abnormal_output(openssl_incantation)
 
         cert_path = os.path.join(self.kpath, '%s.cert' % cert_name)
         if not os.path.isfile(cert_path):
             openssl_incantation = "openssl ca -batch -config {0} -notext -in {1} -out {2}".format(self.openssl_conf_path, csr_path, cert_path)
             #print("creating master certificate: %s" % openssl_incantation)
-            subprocess.check_call(openssl_incantation.split(' '))
+            #subprocess.check_call(openssl_incantation.split(' '))
+            self.run_and_print_abnormal_output(openssl_incantation, "creating certificates for node %s as %s" % (node_name, suffix))
 
         # TODO: for python >= 2.7.9, create an SSL context which will
         # cache ssl sessions to speed up repeated connections
