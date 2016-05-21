@@ -388,7 +388,7 @@ extendedKeyUsage = serverAuth
             openssl_incantation = "openssl ca -batch -config {0} -notext -in {1} -out {2}".format(self.openssl_conf_path, csr_path, cert_path)
             #print("creating master certificate: %s" % openssl_incantation)
             #subprocess.check_call(openssl_incantation.split(' '))
-            self.run_and_print_abnormal_output(openssl_incantation, "creating certificates for node %s as %s" % (node_name, suffix))
+            self.run_and_print_abnormal_output(openssl_incantation, "creating %s certificates for node [%s]" % (suffix, node_name))
 
         # TODO: for python >= 2.7.9, create an SSL context which will
         # cache ssl sessions to speed up repeated connections
@@ -515,11 +515,10 @@ def ftp_cert_server():
         from pyftpdlib.authorizers import DummyAuthorizer
         from pyftpdlib.handlers import FTPHandler
         from pyftpdlib.servers import FTPServer
+        import pyftpdlib.log
     except Exception as e:
-        import sys
-        print("\033[91mWOAH THERE! I was unable to start an FTP server. On Ubuntu, please run:\n\nsudo apt-get install python-pyftpdlib\033[0m\n")
+        print("\033[91mWOAH THERE! I was unable to import the pyftpd library to start the bootstrap FTP server. On Ubuntu, please run:\n\nsudo apt-get install python-pyftpdlib\033[0m\n")
         sys.exit(1)
-    print("starting ftp setup server to bootstrap key distribution...")
     pub_cert_path = os.path.join(os.path.expanduser('~'), '.ros', 'keys', '__PUBLIC')
     if not os.path.exists(pub_cert_path):
         #print("creating public certificates path: %s" % pub_cert_path)
@@ -529,11 +528,11 @@ def ftp_cert_server():
     handler = FTPHandler
     handler.authorizer = authorizer
     server = FTPServer(('127.0.0.1', 11310), handler)
-    from threading import Thread
+    pyftpdlib.log.LEVEL = logging.WARNING
     server.serve_forever()
-    #Thread(target=server.serve_forever).start()
 
 def fork_ftp_cert_server():
+    print("forking an FTP server to bootstrap SSL certificate distribution...")
     from multiprocessing import Process
     p = Process(target=ftp_cert_server)
     p.start()
