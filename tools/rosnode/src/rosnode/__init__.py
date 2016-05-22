@@ -554,7 +554,7 @@ def get_node_connection_info_description(node_api, master):
         raise ROSNodeIOException("Communication with node[%s] failed!"%(node_api))
     return buff
 
-def rosnode_info(node_name):
+def rosnode_info(node_name, quiet=False):
     """
     Print information about node, including subscriptions and other debugging information. This will query the node over the network.
     
@@ -578,10 +578,10 @@ def rosnode_info(node_name):
     if not node_api:
         print("cannot contact [%s]: unknown node"%node_name, file=sys.stderr)
         return
-    
-    print("\ncontacting node %s ..."%node_api)
 
-    print(get_node_connection_info_description(node_api, master))
+    if not quiet:
+        print("\ncontacting node %s ..." % node_api)
+        print(get_node_connection_info_description(node_api, master))
 
 # backwards compatibility (deprecated)
 rosnode_debugnode = rosnode_info
@@ -613,12 +613,17 @@ def _rosnode_cmd_info(argv):
     Implements rosnode 'info' command.
     """
     args = argv[2:]
-    parser = OptionParser(usage="usage: %prog info node1 [node2...]", prog=NAME)
+    parser = OptionParser(usage="usage: %prog info [options] node1 [node2...]",
+                          prog=NAME)
+    parser.add_option("-q", "--quiet",
+                      dest="quiet", default=False,
+                      action="store_true",
+                      help="Prints only basic information such as pubs/subs and does not contact nodes for more information")
     (options, args) = parser.parse_args(args)
     if not args:
         parser.error("You must specify at least one node name")        
     for node in args:
-        rosnode_info(node)
+        rosnode_info(node, options.quiet)
 
 def _rosnode_cmd_machine(argv):
     """
