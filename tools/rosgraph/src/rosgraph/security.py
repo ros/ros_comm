@@ -161,7 +161,7 @@ class SSLSecurity(Security):
 
         # TODO: be able to change this, for "strict mode" at some point
         self.server_cert_verify_mode = ssl.CERT_OPTIONAL
-        self.client_cert_verify_mode = ssl.CERT_REQUIRED
+        self.client_cert_verify_mode = ssl.CERT_OPTIONAL
 
         self.server_context_ = None
         self.client_contexts_ = {}
@@ -220,7 +220,7 @@ class SSLSecurity(Security):
 
     def get_server_context(self):
         self.get_master_cert()
-        #print("Security.get_server_context() for node %s" % self.node_name)
+        print("Security.get_server_context() for node %s" % self.node_name)
         if self.server_context_ is None:
             #print("creating server context for %s" % self.node_name)
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
@@ -246,21 +246,21 @@ class SSLSecurity(Security):
 
     def get_client_context(self, server):
         self.get_master_cert()
-        #print("Security.get_client_context(%s)" % server)
+        print("Security.get_client_context(%s) for node %s" % (server, self.node_name))
         if not server in self.client_contexts_:
             #print("creating client context for %s" % server)
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
             context.verify_mode = self.client_cert_verify_mode
+            stem = self.node_name_to_cert_stem(self.node_name)
             #print("loading root certificate from %s" % self.root_cert_path)
             context.load_verify_locations(cafile=self.root_cert_path)
-            #keyfile  = os.path.join(self.kpath, node_name + '.' + mode + '.key')
-            #certfile = os.path.join(self.kpath, node_name + '.' + mode + '.cert')
+            keyfile  = os.path.join(self.kpath, stem + '.client.key')
+            certfile = os.path.join(self.kpath, stem + '.client.cert')
             #if not os.path.isfile(keyfile) or not os.path.isfile(certfile):
             #    self.request_cert(node_name, mode)
             #print("loading %s and %s" % (certfile, keyfile))
-            #context.load_cert_chain(certfile, keyfile=keyfile)
+            context.load_cert_chain(certfile, keyfile=keyfile)
             self.client_contexts_[server] = context
-            # TODO: add our client certificate here to allow the server to authenticate us
         return self.client_contexts_[server]
 
     def copy_to_public_ftp(self, filename):
