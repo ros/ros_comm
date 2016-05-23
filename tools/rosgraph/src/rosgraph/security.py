@@ -10,7 +10,6 @@ import traceback
 import ssl
 import rosgraph.masterapi
 import shutil
-from ftplib import FTP
 import httplib
 import sys
 #from rospy.exceptions import TransportInitError
@@ -150,29 +149,28 @@ class SSLSecurity(Security):
         super(SSLSecurity, self).__init__()
         _logger.info("rospy.security.SSLSecurity init")
         self.kpath = os.path.join(os.path.expanduser('~'), '.ros', 'keys', self.node_name)
-        if not os.path.exists(self.kpath):
-            #print("creating keys path: %s" % self.kpath)
-            os.makedirs(self.kpath)
 
         self.openssl_conf_path = os.path.join(self.kpath, 'openssl.conf')
         self.root_ca_path = os.path.join(self.kpath, 'root.ca')
         self.root_cert_path = os.path.join(self.kpath, 'root.cert')
         self.master_server_cert_path = os.path.join(self.kpath, 'master.server.cert')
-
-        # TODO: be able to change this, for "strict mode" at some point
-        self.server_cert_verify_mode = ssl.CERT_OPTIONAL
-        self.client_cert_verify_mode = ssl.CERT_OPTIONAL
+        self.client_cert_verify_mode = ssl.CERT_REQUIRED 
+        self.server_cert_verify_mode = ssl.CERT_REQUIRED
 
         self.server_context_ = None
         self.client_contexts_ = {}
 
         if self.node_name == 'master':
-            self.create_certs_if_needed()
-        elif self.node_name == 'roslaunch':
-            # this is tricky because roscore uses roslaunch to start master,
-            # so we can't call master's getCertificates() for roslaunch,
-            # instead we have to get them through FTP to bootstrap everything
-            self.download_certs_over_ftp()
+            self.create_roscore_certs_if_needed()
+
+        if not os.path.exists(self.kpath):
+            print("initializing empty node keystore: %s" % self.kpath)
+            os.makedirs(self.kpath)
+            keyserver_addr = 'http://localhost:11310' # todo: not this
+            keyserver_proxy = xmlrpcclient.ServerProxy(keyserver_addr)
+            print("calling keyserver_proxy.getCertificates()")
+            response = keyserver_proxy.getCertificates(self.node_name)
+            print("response: %s" % response)
 
     def node_name_to_cert_stem(self, node_name):
         # TODO: convert anonymous names into something consistent, so we
@@ -181,7 +179,7 @@ class SSLSecurity(Security):
         if (stem[0] == '/'):
             stem = stem[1:]
         return stem.replace('/', '__')
-
+    '''
     def get_rosmaster_ftp_host(self):
         #print("get_rosmaster_ftp_url()")
         return "localhost" # todo: not this
@@ -207,6 +205,8 @@ class SSLSecurity(Security):
                 p = os.path.join(self.kpath, f)
                 if not os.path.isfile(p):
                     ftp.retrbinary("RETR %s" % f, open(p, 'w').write)
+    '''
+
 
     def get_master_cert(self):
         #print("get_rosmaster_cert()")
@@ -290,7 +290,10 @@ class SSLSecurity(Security):
         if status_text is not None:
             print("done")
 
-    def create_certs_if_needed(self):
+    def create_roscore_certs_if_needed(self):
+        if not os.path.exists(self.kpath):
+            print("initializing empty roscore keystore: %s" % self.kpath)
+            os.makedirs(self.kpath)
         self.root_key_path = os.path.join(self.kpath, 'root.key')
         if not os.path.isfile(self.root_cert_path) or \
            not os.path.isfile(self.root_key_path):
@@ -350,7 +353,7 @@ basicConstraints = CA:false
 subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid:always
 keyUsage = digitalSignature,keyEncipherment,keyAgreement
-extendedKeyUsage = serverAuth
+extendedKeyUsage = serverAuth,clientAuth
 #subjectAltName = @alt_names
 #
 #[ alt_names ]
@@ -363,12 +366,12 @@ extendedKeyUsage = serverAuth
 
         # if root.ca and master.server.cert are not present in the __PUBLIC
         # FTP-accessible directory, copy them there. Also roslaunch keys.
-        self.copy_to_public_ftp('root.cert')
-        self.copy_to_public_ftp('master.server.cert')
-        self.copy_to_public_ftp('roslaunch.server.cert')
-        self.copy_to_public_ftp('roslaunch.server.key')
-        self.copy_to_public_ftp('roslaunch.client.cert')
-        self.copy_to_public_ftp('roslaunch.client.key')
+        #self.copy_to_public_ftp('root.cert')
+        #self.copy_to_public_ftp('master.server.cert')
+        #self.copy_to_public_ftp('roslaunch.server.cert')
+        #self.copy_to_public_ftp('roslaunch.server.key')
+        #self.copy_to_public_ftp('roslaunch.client.cert')
+        #self.copy_to_public_ftp('roslaunch.client.key')
 
     def create_cert(self, node_name, suffix):
         if not names.is_legal_base_name(node_name):
@@ -510,29 +513,23 @@ def get():
         raise ValueError("woah there partner. security.init() wasn't called before security.get()")
     return _security
 
-def ftp_cert_server():
-    try:
-        from pyftpdlib.authorizers import DummyAuthorizer
-        from pyftpdlib.handlers import FTPHandler
-        from pyftpdlib.servers import FTPServer
-        import pyftpdlib.log
-    except Exception as e:
-        print("\033[91mWOAH THERE! I was unable to import the pyftpd library to start the bootstrap FTP server. On Ubuntu, please run:\n\nsudo apt-get install python-pyftpdlib\033[0m\n")
-        sys.exit(1)
-    pub_cert_path = os.path.join(os.path.expanduser('~'), '.ros', 'keys', '__PUBLIC')
-    if not os.path.exists(pub_cert_path):
-        #print("creating public certificates path: %s" % pub_cert_path)
-        os.makedirs(pub_cert_path)
-    authorizer = DummyAuthorizer()
-    authorizer.add_anonymous(pub_cert_path)
-    handler = FTPHandler
-    handler.authorizer = authorizer
-    server = FTPServer(('127.0.0.1', 11310), handler)
-    pyftpdlib.log.LEVEL = logging.WARNING
+###############################################################
+def keyserver_getCertificates(node_name):
+    print('keyserver: getCertificates(%s)' % node_name)
+    keypath = os.path.join(os.path.expanduser('~'), '.ros', 'keys', 'master')
+    return { 'foo': 'bar' }
+
+def xmlrpc_keyserver():
+    from SimpleXMLRPCServer import SimpleXMLRPCServer
+    from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
+    # todo: set this port to one below the ROS_MASTER_URI port
+    server = SimpleXMLRPCServer(('localhost', 11310), SimpleXMLRPCRequestHandler, False)
+    server.register_function(keyserver_getCertificates, 'getCertificates')
+    print('entering xmlrpc_keyserver spin loop...')
     server.serve_forever()
 
-def fork_ftp_cert_server():
-    print("forking an FTP server to bootstrap SSL certificate distribution...")
+def fork_xmlrpc_keyserver():
+    print("forking an unsecured XML-RPC server to bootstrap SSL key distribution...")
     from multiprocessing import Process
-    p = Process(target=ftp_cert_server)
+    p = Process(target=xmlrpc_keyserver)
     p.start()

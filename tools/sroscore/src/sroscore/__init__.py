@@ -12,10 +12,10 @@ def roscore_main(argv = sys.argv):
     # creating root and master certificates if they don't exist
     if sm == 'ssl' or sm == 'ssl_setup':
         security.ssl_bootstrap()
-    # if we're in setup mode, we need to start an ftp server that will
-    # hand out our ca.cert and master.server.cert files
+    # if we're in setup mode, we need to start an unsecured server that will
+    # hand out the SSL certificates and keys so that nodes can talk to roscore
     if sm == 'ssl_setup':
-        security.fork_ftp_cert_server()
+        security.fork_xmlrpc_keyserver()
     
     import roslaunch
     roslaunch.main(['roscore', '--core'] + sys.argv[1:])
