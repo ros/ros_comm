@@ -143,157 +143,30 @@ class XMLRPCTimeoutSafeTransport(xmlrpcclient.SafeTransport):
         self._connection = host, httplib.HTTPSConnection(chost, None, timeout=self.timeout, context=self.context, **(x509 or {}))
         return self._connection[1]
 #########################################################################
-class SSLSecurity(Security):
-    def __init__(self, node_name):
-        self.node_name = self.node_name_to_cert_stem(node_name)
-        super(SSLSecurity, self).__init__()
-        _logger.info("rospy.security.SSLSecurity init")
-        self.kpath = os.path.join(os.path.expanduser('~'), '.ros', 'keys', self.node_name)
+# global functions used by SSLSecurity and friends
+def node_name_to_cert_stem(node_name):
+    # TODO: convert anonymous names into something consistent, so we
+    # don't end up generating arbitrary numbers of them
+    stem = node_name
+    if (stem[0] == '/'):
+        stem = stem[1:]
+    if '..' in node_name:
+        raise ValueError('woah there. node_name [%s] has a double-dot. OH NOES.' % node_name)
+    return stem.replace('/', '__')
 
-        self.openssl_conf_path = os.path.join(self.kpath, 'openssl.conf')
-        self.root_ca_path = os.path.join(self.kpath, 'root.ca')
-        self.root_cert_path = os.path.join(self.kpath, 'root.cert')
-        self.master_server_cert_path = os.path.join(self.kpath, 'master.server.cert')
-        self.client_cert_verify_mode = ssl.CERT_REQUIRED 
-        self.server_cert_verify_mode = ssl.CERT_REQUIRED
-
-        self.server_context_ = None
-        self.client_contexts_ = {}
-
-        if self.node_name == 'master':
-            self.create_roscore_certs_if_needed()
-
-        if not os.path.exists(self.kpath):
-            print("initializing empty node keystore: %s" % self.kpath)
-            os.makedirs(self.kpath)
-            keyserver_addr = 'http://localhost:11310' # todo: not this
-            keyserver_proxy = xmlrpcclient.ServerProxy(keyserver_addr)
-            print("calling keyserver_proxy.getCertificates()")
-            response = keyserver_proxy.getCertificates(self.node_name)
-            print("response: %s" % response)
-
-    def node_name_to_cert_stem(self, node_name):
-        # TODO: convert anonymous names into something consistent, so we
-        # don't end up generating arbitrary numbers of them
-        stem = node_name
-        if (stem[0] == '/'):
-            stem = stem[1:]
-        return stem.replace('/', '__')
-    '''
-    def get_rosmaster_ftp_host(self):
-        #print("get_rosmaster_ftp_url()")
-        return "localhost" # todo: not this
-
-    def get_rosmaster_ftp_port(self):
-        return 11310 # todo: not this
-
-    def download_certs_over_ftp(self):
-        fn = [ self.node_name + '.server.cert',
-               self.node_name + '.server.key',
-               self.node_name + '.client.cert',
-               self.node_name + '.client.key' ]
-        all_exist = True
-        for f in fn:
-            if not os.path.isfile(os.path.join(self.kpath, f)):
-                all_exist = False
-        if not all_exist:
-            # we need to try to download these certs+keys over FTP
-            ftp = FTP()
-            ftp.connect(self.get_rosmaster_ftp_host(), self.get_rosmaster_ftp_port())
-            ftp.login()
-            for f in fn:
-                p = os.path.join(self.kpath, f)
-                if not os.path.isfile(p):
-                    ftp.retrbinary("RETR %s" % f, open(p, 'w').write)
-    '''
-
-
-    def get_master_cert(self):
-        #print("get_rosmaster_cert()")
-        if not os.path.isfile(self.root_cert_path) or not os.path.isfile(self.master_server_cert_path):
-            ftp = FTP()
-            ftp.connect(self.get_rosmaster_ftp_host(), self.get_rosmaster_ftp_port())
-            ftp.login()
-            ftp.retrbinary('RETR root.cert', open(self.root_cert_path, 'w').write)
-            ftp.retrbinary('RETR master.server.cert', open(self.master_server_cert_path, 'w').write)
-            ftp.quit()
-
-    def get_server_context(self):
-        self.get_master_cert()
-        print("Security.get_server_context() for node %s" % self.node_name)
-        if self.server_context_ is None:
-            #print("creating server context for %s" % self.node_name)
-            context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-            context.verify_mode = self.server_cert_verify_mode
-            context.load_verify_locations(cafile=self.root_cert_path)
-            stem = self.node_name_to_cert_stem(self.node_name)
-            keyfile  = os.path.join(self.kpath, stem + '.server.key')
-            certfile = os.path.join(self.kpath, stem + '.server.cert')
-            if not os.path.isfile(keyfile) or not os.path.isfile(certfile):
-                #print("requesting certificates for %s" % self.node_name)
-                master_proxy = rosgraph.masterapi.Master(self.node_name)
-                response = master_proxy.getMyCertificates()
-                # todo: error checking would be good
-                #print("getCertificates response: %s" % repr(response))
-                # save everything the server gives back to us
-                for k, v in response.items():
-                    with open(os.path.join(self.kpath, '%s.%s' % (stem, k)), 'w') as f:
-                        f.write(v)
-            #print("loading %s and %s" % (certfile, keyfile))
-            context.load_cert_chain(certfile, keyfile=keyfile)
-            self.server_context_ = context
-        return self.server_context_
-
-    def get_client_context(self, server):
-        self.get_master_cert()
-        print("Security.get_client_context(%s) for node %s" % (server, self.node_name))
-        if not server in self.client_contexts_:
-            #print("creating client context for %s" % server)
-            context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-            context.verify_mode = self.client_cert_verify_mode
-            stem = self.node_name_to_cert_stem(self.node_name)
-            #print("loading root certificate from %s" % self.root_cert_path)
-            context.load_verify_locations(cafile=self.root_cert_path)
-            keyfile  = os.path.join(self.kpath, stem + '.client.key')
-            certfile = os.path.join(self.kpath, stem + '.client.cert')
-            #if not os.path.isfile(keyfile) or not os.path.isfile(certfile):
-            #    self.request_cert(node_name, mode)
-            #print("loading %s and %s" % (certfile, keyfile))
-            context.load_cert_chain(certfile, keyfile=keyfile)
-            self.client_contexts_[server] = context
-        return self.client_contexts_[server]
-
-    def copy_to_public_ftp(self, filename):
-        public_dir = os.path.join(os.path.expanduser('~'), '.ros', 'keys', '__PUBLIC')
-        public_path = os.path.join(public_dir, filename)
-        if not os.path.isfile(public_path):
-            if not os.path.exists(public_dir):
-                #print("creating public keys directory: %s" % public_path)
-                os.makedirs(public_dir)
-            private_path = os.path.join(self.kpath, filename)
-            #print("copying %s to %s" % (private_path, public_path))
-            shutil.copyfile(private_path, public_path)
-
-    def run_and_print_abnormal_output(self, cmd, status_text=None):
-        #subprocess.check_call(cmd.split(' '))
-        popen = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdoutdata, stderrdata = popen.communicate()
-        if status_text is not None:
-            sys.stdout.write("%s..." % status_text)
-            sys.stdout.flush()
-        #print("running command: %s" % cmd)
-        if popen.returncode != 0:
-            print("error running command: [%s]" % cmd)
-            print("    stdout:\n%s\n" % stdoutdata)
-            print("    stderr:\n%s\n" % stderrdata)
-            raise Exception("ahhh")
-        if status_text is not None:
-            print("done")
-
-    def create_roscore_certs_if_needed(self):
+#########################################################################
+class SSLCertificateCreator(object):
+    def __init__(self):
+        self.kpath = os.path.join(os.path.expanduser('~'), '.ros', 'keys', 'master')
         if not os.path.exists(self.kpath):
             print("initializing empty roscore keystore: %s" % self.kpath)
             os.makedirs(self.kpath)
+        self.openssl_conf_path = os.path.join(self.kpath, 'openssl.conf')
+        self.root_ca_path = os.path.join(self.kpath, 'root.ca')
+        self.root_cert_path = os.path.join(self.kpath, 'root.cert')
+        self.create_roscore_certs_if_needed()
+
+    def create_roscore_certs_if_needed(self):
         self.root_key_path = os.path.join(self.kpath, 'root.key')
         if not os.path.isfile(self.root_cert_path) or \
            not os.path.isfile(self.root_key_path):
@@ -373,6 +246,164 @@ extendedKeyUsage = serverAuth,clientAuth
         #self.copy_to_public_ftp('roslaunch.client.cert')
         #self.copy_to_public_ftp('roslaunch.client.key')
 
+class SSLSecurity(Security):
+    def __init__(self, node_name):
+        self.node_name = node_name_to_cert_stem(node_name)
+        super(SSLSecurity, self).__init__()
+        _logger.info("rospy.security.SSLSecurity init")
+        self.kpath = os.path.join(os.path.expanduser('~'), '.ros', 'keys', self.node_name)
+
+        self.master_server_cert_path = os.path.join(self.kpath, 'master.server.cert')
+        self.client_cert_verify_mode = ssl.CERT_REQUIRED 
+        self.server_cert_verify_mode = ssl.CERT_REQUIRED
+
+        self.server_context_ = None
+        self.client_contexts_ = {}
+
+        if self.node_name == 'master':
+            self.create_roscore_certs_if_needed()
+
+        if not self.all_certs_present():
+            if not os.path.exists(self.kpath):
+                print("initializing empty node keystore: %s" % self.kpath)
+                os.makedirs(self.kpath)
+            keyserver_addr = 'http://localhost:11310' # todo: not this
+            keyserver_proxy = xmlrpcclient.ServerProxy(keyserver_addr)
+            print("calling keyserver_proxy.getCertificates()")
+            response = keyserver_proxy.getCertificates(self.node_name)
+            print("response: %s" % response)
+            for fn, contents in response.iteritems():
+                path = os.path.join(self.kpath, fn)
+                if os.path.isfile(path):
+                    continue
+                with open(path, 'w') as f:
+                    f.write(contents)
+    
+    def all_certs_present(self):
+        if not os.path.exists(self.kpath):
+            return False
+        fn = [ 'root.cert', 'master.server.cert',
+               self.node_name + '.server.cert',
+               self.node_name + '.server.key',
+               self.node_name + '.client.cert',
+               self.node_name + '.client.key' ]
+        for f in fn:
+            if not os.path.isfile(os.path.join(self.kpath, f)):
+                return False
+        return True
+
+    '''
+    def get_rosmaster_ftp_host(self):
+        #print("get_rosmaster_ftp_url()")
+        return "localhost" # todo: not this
+
+    def get_rosmaster_ftp_port(self):
+        return 11310 # todo: not this
+
+    def download_certs_over_ftp(self):
+        fn = [ self.node_name + '.server.cert',
+               self.node_name + '.server.key',
+               self.node_name + '.client.cert',
+               self.node_name + '.client.key' ]
+        all_exist = True
+        for f in fn:
+            if not os.path.isfile(os.path.join(self.kpath, f)):
+                all_exist = False
+        if not all_exist:
+            # we need to try to download these certs+keys over FTP
+            ftp = FTP()
+            ftp.connect(self.get_rosmaster_ftp_host(), self.get_rosmaster_ftp_port())
+            ftp.login()
+            for f in fn:
+                p = os.path.join(self.kpath, f)
+                if not os.path.isfile(p):
+                    ftp.retrbinary("RETR %s" % f, open(p, 'w').write)
+
+
+    def get_master_cert(self):
+        #print("get_rosmaster_cert()")
+        if not os.path.isfile(self.root_cert_path) or not os.path.isfile(self.master_server_cert_path):
+            ftp = FTP()
+            ftp.connect(self.get_rosmaster_ftp_host(), self.get_rosmaster_ftp_port())
+            ftp.login()
+            ftp.retrbinary('RETR root.cert', open(self.root_cert_path, 'w').write)
+            ftp.retrbinary('RETR master.server.cert', open(self.master_server_cert_path, 'w').write)
+            ftp.quit()
+    '''
+
+    def get_server_context(self):
+        #self.get_master_cert()
+        print("Security.get_server_context() for node %s" % self.node_name)
+        if self.server_context_ is None:
+            #print("creating server context for %s" % self.node_name)
+            context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+            context.verify_mode = self.server_cert_verify_mode
+            context.load_verify_locations(cafile=self.root_cert_path)
+            stem = node_name_to_cert_stem(self.node_name)
+            keyfile  = os.path.join(self.kpath, stem + '.server.key')
+            certfile = os.path.join(self.kpath, stem + '.server.cert')
+            if not os.path.isfile(keyfile) or not os.path.isfile(certfile):
+                #print("requesting certificates for %s" % self.node_name)
+                master_proxy = rosgraph.masterapi.Master(self.node_name)
+                response = master_proxy.getMyCertificates()
+                # todo: error checking would be good
+                #print("getCertificates response: %s" % repr(response))
+                # save everything the server gives back to us
+                for k, v in response.items():
+                    with open(os.path.join(self.kpath, '%s.%s' % (stem, k)), 'w') as f:
+                        f.write(v)
+            #print("loading %s and %s" % (certfile, keyfile))
+            context.load_cert_chain(certfile, keyfile=keyfile)
+            self.server_context_ = context
+        return self.server_context_
+
+    def get_client_context(self, server):
+        #self.get_master_cert()
+        print("Security.get_client_context(%s) for node %s" % (server, self.node_name))
+        if not server in self.client_contexts_:
+            #print("creating client context for %s" % server)
+            context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+            context.verify_mode = self.client_cert_verify_mode
+            stem = node_name_to_cert_stem(self.node_name)
+            #print("loading root certificate from %s" % self.root_cert_path)
+            context.load_verify_locations(cafile=self.root_cert_path)
+            keyfile  = os.path.join(self.kpath, stem + '.client.key')
+            certfile = os.path.join(self.kpath, stem + '.client.cert')
+            #if not os.path.isfile(keyfile) or not os.path.isfile(certfile):
+            #    self.request_cert(node_name, mode)
+            #print("loading %s and %s" % (certfile, keyfile))
+            context.load_cert_chain(certfile, keyfile=keyfile)
+            self.client_contexts_[server] = context
+        return self.client_contexts_[server]
+
+    def copy_to_public_ftp(self, filename):
+        public_dir = os.path.join(os.path.expanduser('~'), '.ros', 'keys', '__PUBLIC')
+        public_path = os.path.join(public_dir, filename)
+        if not os.path.isfile(public_path):
+            if not os.path.exists(public_dir):
+                #print("creating public keys directory: %s" % public_path)
+                os.makedirs(public_dir)
+            private_path = os.path.join(self.kpath, filename)
+            #print("copying %s to %s" % (private_path, public_path))
+            shutil.copyfile(private_path, public_path)
+
+    def run_and_print_abnormal_output(self, cmd, status_text=None):
+        #subprocess.check_call(cmd.split(' '))
+        popen = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdoutdata, stderrdata = popen.communicate()
+        if status_text is not None:
+            sys.stdout.write("%s..." % status_text)
+            sys.stdout.flush()
+        #print("running command: %s" % cmd)
+        if popen.returncode != 0:
+            print("error running command: [%s]" % cmd)
+            print("    stdout:\n%s\n" % stdoutdata)
+            print("    stderr:\n%s\n" % stderrdata)
+            raise Exception("ahhh")
+        if status_text is not None:
+            print("done")
+
+
     def create_cert(self, node_name, suffix):
         if not names.is_legal_base_name(node_name):
             raise ValueError("security.create_certs() received illegal node name: %s" % node_name)
@@ -442,7 +473,7 @@ extendedKeyUsage = serverAuth,clientAuth
         """
         #print("security.getMyCertificates(caller_id=%s)" % caller_id)
         # first, transform the node name into a legal certificate name stem
-        stem = self.node_name_to_cert_stem(caller_id)
+        stem = node_name_to_cert_stem(caller_id)
         #print('   using stem = [%s]' % stem)
         response = { }
         with open(self.cert_path(stem, 'server'), 'r') as f:
@@ -514,12 +545,28 @@ def get():
     return _security
 
 ###############################################################
+def keyserver_create_certificates(node_name):
+    pass
+
 def keyserver_getCertificates(node_name):
+    node_name = node_name_to_cert_stem(node_name) # sanitize and de-anonymize
+
     print('keyserver: getCertificates(%s)' % node_name)
     keypath = os.path.join(os.path.expanduser('~'), '.ros', 'keys', 'master')
-    return { 'foo': 'bar' }
+    resp = {}
 
-def xmlrpc_keyserver():
+    fns = [ 'root.cert',
+            'master.server.cert',
+            node_name + '.server.cert',
+            node_name + '.server.key',
+            node_name + '.client.cert',
+            node_name + '.client.key' ]
+    for fn in fns:
+        with open(os.path.join(keypath, fn), 'r') as f:
+            resp[fn] = f.read()
+    return resp
+
+def keyserver_main():
     from SimpleXMLRPCServer import SimpleXMLRPCServer
     from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
     # todo: set this port to one below the ROS_MASTER_URI port
@@ -531,5 +578,5 @@ def xmlrpc_keyserver():
 def fork_xmlrpc_keyserver():
     print("forking an unsecured XML-RPC server to bootstrap SSL key distribution...")
     from multiprocessing import Process
-    p = Process(target=xmlrpc_keyserver)
+    p = Process(target=keyserver_main)
     p.start()
