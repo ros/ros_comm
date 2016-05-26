@@ -293,8 +293,6 @@ class SSLSecurity(Security):
         self.kpath = os.path.join(os.path.expanduser('~'), '.ros', 'keys', self.node_name)
 
         self.master_server_cert_path = self.keystore_path('master', '.server.cert')
-        self.client_cert_verify_mode = ssl.CERT_REQUIRED 
-        self.server_cert_verify_mode = ssl.CERT_REQUIRED
 
         self.server_context_ = None
         self.client_contexts_ = {}
@@ -335,7 +333,7 @@ class SSLSecurity(Security):
         #print("Security.get_server_context() for node %s" % self.node_name)
         if self.server_context_ is None:
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-            context.verify_mode = self.server_cert_verify_mode
+            context.verify_mode = ssl.CERT_REQUIRED
             context.load_verify_locations(cafile=self.keystore_path('root','.cert'))
             stem = node_name_to_cert_stem(self.node_name)
             keyfile  = os.path.join(self.kpath, stem + '.server.key')
@@ -350,7 +348,7 @@ class SSLSecurity(Security):
         #print("Security.get_client_context(%s) for node %s" % (server, self.node_name))
         if not server in self.client_contexts_:
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-            context.verify_mode = self.client_cert_verify_mode
+            context.verify_mode = ssl.CERT_REQUIRED
             stem = node_name_to_cert_stem(self.node_name)
             context.load_verify_locations(cafile=self.keystore_path('root', '.cert'))
             keyfile  = os.path.join(self.kpath, stem + '.client.key')
@@ -473,8 +471,10 @@ def keyserver_main():
     server = SimpleXMLRPCServer((keyserver_host(), keyserver_port()), SimpleXMLRPCRequestHandler, False)
     server.register_function(keyserver_getCertificates, 'getCertificates')
     server.register_function(keyserver_hello, 'hello') # it answers just to say it's alive
-    print('entering xmlrpc_keyserver spin loop...')
-    server.serve_forever()
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
 
 def fork_xmlrpc_keyserver():
     print("forking an unsecured XML-RPC server to bootstrap SSL key distribution...")

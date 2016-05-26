@@ -1,5 +1,5 @@
 <package>
-  <name>sroscore</name>
+  <name>sros</name>
   <version>1.12.0</version>
   <description>
     provides some tools to automate security in ROS systems
@@ -7,7 +7,7 @@
   <maintainer email="mquigley@osrfoundation.org">Morgan Quigley</maintainer>
   <license>BSD</license>
 
-  <url>http://ros.org/wiki/sroscore</url>
+  <url>http://ros.org/wiki/sros</url>
   <author>Morgan Quigley</author>
 
   <buildtool_depend version_gte="0.5.78">catkin</buildtool_depend>

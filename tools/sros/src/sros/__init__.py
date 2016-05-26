@@ -16,3 +16,7 @@ def roscore_main(argv = sys.argv):
     
     import roslaunch
     roslaunch.main(['roscore', '--core'] + sys.argv[1:])
+
+def sros_main(argv = sys.argv):
+    print(repr(argv))
+    #if len(argv) 

@@ -3,9 +3,9 @@ from distutils.core import setup
 from catkin_pkg.python_setup import generate_distutils_setup
 
 d = generate_distutils_setup(
-    packages=['sroscore'],
+    packages=['sros'],
     package_dir={'': 'src'},
-    scripts=['scripts/sroscore'],
+    scripts=['scripts/sroscore', 'scripts/sros'],
     requires=[]
 )
 #requires=['genmsg', 'genpy', 'roslib', 'rospkg']
