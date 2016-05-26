@@ -920,14 +920,3 @@ class ROSMasterHandler(object):
             self.ps_lock.release()
         return 1, "current system state", retval
 
-    @apivalidate([])
-    def getMyCertificates(self, caller_id):
-        """
-        Get the PID of this server
-        @param caller_id: ROS caller id
-        @type  caller_id: str
-        @return: [1, "", serverProcessPID]
-        @rtype: [int, str, int]
-        """
-        return 1, "HAI. HERE R UR CERTS. BAI", security.get().getMyCertificates(caller_id)
-
