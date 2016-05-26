@@ -332,10 +332,8 @@ class SSLSecurity(Security):
         return os.path.join(self.kpath, cert_name + suffix)
 
     def get_server_context(self):
-        #self.get_master_cert()
-        print("Security.get_server_context() for node %s" % self.node_name)
+        #print("Security.get_server_context() for node %s" % self.node_name)
         if self.server_context_ is None:
-            #print("creating server context for %s" % self.node_name)
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
             context.verify_mode = self.server_cert_verify_mode
             context.load_verify_locations(cafile=self.keystore_path('root','.cert'))
@@ -343,35 +341,20 @@ class SSLSecurity(Security):
             keyfile  = os.path.join(self.kpath, stem + '.server.key')
             certfile = os.path.join(self.kpath, stem + '.server.cert')
             if not os.path.isfile(keyfile) or not os.path.isfile(certfile):
-                #print("requesting certificates for %s" % self.node_name)
-                master_proxy = rosgraph.masterapi.Master(self.node_name)
-                response = master_proxy.getMyCertificates()
-                # todo: error checking would be good
-                #print("getCertificates response: %s" % repr(response))
-                # save everything the server gives back to us
-                for k, v in response.items():
-                    with open(os.path.join(self.kpath, '%s.%s' % (stem, k)), 'w') as f:
-                        f.write(v)
-            #print("loading %s and %s" % (certfile, keyfile))
+                raise Exception("ahhhhhhHHHHHHHHHHHH where did all the certs go?")
             context.load_cert_chain(certfile, keyfile=keyfile)
             self.server_context_ = context
         return self.server_context_
 
     def get_client_context(self, server):
-        #self.get_master_cert()
-        print("Security.get_client_context(%s) for node %s" % (server, self.node_name))
+        #print("Security.get_client_context(%s) for node %s" % (server, self.node_name))
         if not server in self.client_contexts_:
-            #print("creating client context for %s" % server)
             context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
             context.verify_mode = self.client_cert_verify_mode
             stem = node_name_to_cert_stem(self.node_name)
-            #print("loading root certificate from %s" % self.root_cert_path)
             context.load_verify_locations(cafile=self.keystore_path('root', '.cert'))
             keyfile  = os.path.join(self.kpath, stem + '.client.key')
             certfile = os.path.join(self.kpath, stem + '.client.cert')
-            #if not os.path.isfile(keyfile) or not os.path.isfile(certfile):
-            #    self.request_cert(node_name, mode)
-            #print("loading %s and %s" % (certfile, keyfile))
             context.load_cert_chain(certfile, keyfile=keyfile)
             self.client_contexts_[server] = context
         return self.client_contexts_[server]
@@ -394,28 +377,6 @@ class SSLSecurity(Security):
 
     def xmlrpc_protocol(self):
         return 'https'
-
-    def getMyCertificates(self, caller_id):
-        """
-        This function is only called by the Master XML-RPC handler, and only
-        should be available during "permissive mode." A strict deployment
-        will/should disable this function to prevent unauthorized creation or
-        distribution of certificates and keys.
-        """
-        #print("security.getMyCertificates(caller_id=%s)" % caller_id)
-        # first, transform the node name into a legal certificate name stem
-        stem = node_name_to_cert_stem(caller_id)
-        #print('   using stem = [%s]' % stem)
-        response = { }
-        with open(self.keystore_path(stem, 'server.cert'), 'r') as f:
-            response['server.cert'] = f.read()
-        with open(self.keystore_path (stem, 'server.key'), 'r') as f:
-            response['server.key'] = f.read()
-        with open(self.keystore_path(stem, 'client.cert'), 'r') as f:
-            response['client.cert'] = f.read()
-        with open(self.keystore_path (stem, 'client.key'), 'r') as f:
-            response['client.key'] = f.read()
-        return response
 
     def connect(self, sock, dest_addr, dest_port, endpoint_id, timeout=None):
         #print('SSLSecurity.connect() to node at %s:%d which is endpoint %s' % (dest_addr, dest_port, endpoint_id))
@@ -440,16 +401,6 @@ class SSLSecurity(Security):
             print("SSLSecurity.accept() wrap_socket exception: %s" % e)
             raise
         return (client_stream, client_addr)
-
-# this is tricky... there is a chicken-and-egg problem when starting the
-# SSL subsystem because we need to have the root CA and master cert ready
-# before anybody else (e.g., roslaunch) can use it. So this function has
-# to be called on the box running roscore before basically anything works,
-# which is why this function is called from sroscore
-def ssl_bootstrap():
-    #print("ssl_bootstrap()")
-    s = SSLSecurity('master')
-
 
 #########################################################################
 _security = None
