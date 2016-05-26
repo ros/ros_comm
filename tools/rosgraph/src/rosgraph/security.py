@@ -283,14 +283,7 @@ extendedKeyUsage = serverAuth,clientAuth
         self.create_cert('roslaunch','server')
         self.create_cert('roslaunch','client')
 
-        # if root.ca and master.server.cert are not present in the __PUBLIC
-        # FTP-accessible directory, copy them there. Also roslaunch keys.
-        #self.copy_to_public_ftp('root.cert')
-        #self.copy_to_public_ftp('master.server.cert')
-        #self.copy_to_public_ftp('roslaunch.server.cert')
-        #self.copy_to_public_ftp('roslaunch.server.key')
-        #self.copy_to_public_ftp('roslaunch.client.cert')
-        #self.copy_to_public_ftp('roslaunch.client.key')
+##########################################################################
 
 class SSLSecurity(Security):
     def __init__(self, node_name):
@@ -338,45 +331,6 @@ class SSLSecurity(Security):
     def keystore_path(self, cert_name, suffix='.cert'):
         return os.path.join(self.kpath, cert_name + suffix)
 
-    '''
-    def get_rosmaster_ftp_host(self):
-        #print("get_rosmaster_ftp_url()")
-        return "localhost" # todo: not this
-
-    def get_rosmaster_ftp_port(self):
-        return 11310 # todo: not this
-
-    def download_certs_over_ftp(self):
-        fn = [ self.node_name + '.server.cert',
-               self.node_name + '.server.key',
-               self.node_name + '.client.cert',
-               self.node_name + '.client.key' ]
-        all_exist = True
-        for f in fn:
-            if not os.path.isfile(os.path.join(self.kpath, f)):
-                all_exist = False
-        if not all_exist:
-            # we need to try to download these certs+keys over FTP
-            ftp = FTP()
-            ftp.connect(self.get_rosmaster_ftp_host(), self.get_rosmaster_ftp_port())
-            ftp.login()
-            for f in fn:
-                p = os.path.join(self.kpath, f)
-                if not os.path.isfile(p):
-                    ftp.retrbinary("RETR %s" % f, open(p, 'w').write)
-
-
-    def get_master_cert(self):
-        #print("get_rosmaster_cert()")
-        if not os.path.isfile(self.root_cert_path) or not os.path.isfile(self.master_server_cert_path):
-            ftp = FTP()
-            ftp.connect(self.get_rosmaster_ftp_host(), self.get_rosmaster_ftp_port())
-            ftp.login()
-            ftp.retrbinary('RETR root.cert', open(self.root_cert_path, 'w').write)
-            ftp.retrbinary('RETR master.server.cert', open(self.master_server_cert_path, 'w').write)
-            ftp.quit()
-    '''
-
     def get_server_context(self):
         #self.get_master_cert()
         print("Security.get_server_context() for node %s" % self.node_name)
@@ -421,19 +375,6 @@ class SSLSecurity(Security):
             context.load_cert_chain(certfile, keyfile=keyfile)
             self.client_contexts_[server] = context
         return self.client_contexts_[server]
-
-    def copy_to_public_ftp(self, filename):
-        public_dir = os.path.join(os.path.expanduser('~'), '.ros', 'keys', '__PUBLIC')
-        public_path = os.path.join(public_dir, filename)
-        if not os.path.isfile(public_path):
-            if not os.path.exists(public_dir):
-                #print("creating public keys directory: %s" % public_path)
-                os.makedirs(public_dir)
-            private_path = os.path.join(self.kpath, filename)
-            #print("copying %s to %s" % (private_path, public_path))
-            shutil.copyfile(private_path, public_path)
-
-
 
     def wrap_socket(self, sock, node_name):
         """
