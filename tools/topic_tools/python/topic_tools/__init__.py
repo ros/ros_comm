@@ -30,7 +30,7 @@ class LazyTransport(rospy.SubscribeListener):
                     self._warn_never_subscribed_cb, oneshot=True)
 
     def _post_init(self):
-        if rospy.get_param('~always_subscribe', False):
+        if not rospy.get_param('~lazy', True):
             self.subscribe()
             self._connection_status = True
 
@@ -38,8 +38,9 @@ class LazyTransport(rospy.SubscribeListener):
         if self._connection_status is None:
             rospy.logwarn(
                 '[{name}] subscribes topics only with'
-                " child subscribers. Set '~always_subscribe' as True"
-                ' to have it subscribe always.'.format(name=rospy.get_name()))
+                " child subscribers. Set '~lazy' as False"
+                ' to have it always transport message.'
+                .format(name=rospy.get_name()))
 
     def subscribe(self):
         raise NotImplementedError('Please overwrite this method')
@@ -55,7 +56,7 @@ class LazyTransport(rospy.SubscribeListener):
 
     def peer_unsubscribe(self, *args, **kwargs):
         rospy.logdebug('[{topic}] is unsubscribed'.format(topic=args[0]))
-        if rospy.get_param('~always_subscribe', False):
+        if not rospy.get_param('~lazy', True):
             return  # do not unsubscribe
         if self._connection_status in [None, False]:
             return  # no need to unsubscribe
