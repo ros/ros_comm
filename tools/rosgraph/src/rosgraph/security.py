@@ -154,6 +154,10 @@ def node_name_to_cert_stem(node_name):
         raise ValueError('woah there. node_name [%s] has a double-dot. OH NOES.' % node_name)
     return stem.replace('/', '__')
 
+def open_private_output_file(fn):
+    flags = os.O_WRONLY | os.O_CREAT
+    return os.fdopen(os.open(fn, flags, 0o600), 'w')
+
 #########################################################################
 class SSLCertificateCreator(object):
     def __init__(self):
@@ -193,11 +197,14 @@ class SSLCertificateCreator(object):
         if not os.path.isfile(csr_path):
             openssl_incantation = r'openssl req -batch -subj /C=US/ST=CA/O=ros/CN={0} -newkey rsa:4096 -sha256 -nodes -out {1} -keyout {2}'.format(cert_name, csr_path, key_path)
             self.run_and_print_abnormal_output(openssl_incantation)
+            os.chmod(csr_path, 0o600)
 
         cert_path = os.path.join(self.kpath, '%s.cert' % cert_name)
         if not os.path.isfile(cert_path):
             openssl_incantation = "openssl ca -batch -config {0} -notext -in {1} -out {2}".format(self.openssl_conf_path, csr_path, cert_path)
             self.run_and_print_abnormal_output(openssl_incantation, "creating %s certificates for node [%s]" % (suffix, node_name))
+            os.chmod(key_path, 0o600)
+            os.chmod(cert_path, 0o600)
 
     def create_certs_if_needed(self, node_name):
         fn = [ node_name + '.server.cert',
@@ -222,24 +229,25 @@ class SSLCertificateCreator(object):
             self.run_and_print_abnormal_output(openssl_incantation, "creating self-signed root certificate authority")
 
         if not os.path.isfile(self.root_ca_path):
-            with open(self.root_ca_path, 'w') as root_ca_file:
+            with open_private_output_file(self.root_ca_path) as root_ca_file:
                 with open(self.root_key_path, 'r') as root_key_file:
                     root_ca_file.write(root_key_file.read())
+                os.chmod(self.root_key_path, 0o600)
                 with open(self.root_cert_path, 'r') as root_cert_file:
                     root_ca_file.write(root_cert_file.read())
+                os.chmod(self.root_cert_path, 0o600)
 
         root_db_path = os.path.join(self.kpath, 'certindex')
         if not os.path.isfile(root_db_path):
-            open(root_db_path, 'w').close() # creates an empty file
+            open_private_output_file(root_db_path).close() # creates an empty file
 
         root_serial_path = os.path.join(self.kpath, 'serial')
         if not os.path.isfile(root_serial_path):
-            with open(root_serial_path, 'w') as f:
+            with open_private_output_file(root_serial_path) as f:
                 f.write('000a')
 
-        # TODO: need to set extendedKeyUsage to clientAuth for client certs
         if not os.path.isfile(self.openssl_conf_path):
-            with open(self.openssl_conf_path, 'w') as f:
+            with open_private_output_file(self.openssl_conf_path) as f:
                 f.write('''\
 [ ca ]
 default_ca = ros_ca
@@ -310,7 +318,7 @@ class SSLSecurity(Security):
                 print("  writing [%s]" % path)
                 if os.path.isfile(path):
                     continue
-                with open(path, 'w') as f:
+                with open_private_output_file(path) as f:
                     f.write(contents)
     
     def all_certs_present(self):
