@@ -50,7 +50,7 @@ class LazyTransport(rospy.SubscribeListener):
 
     def peer_subscribe(self, *args, **kwargs):
         rospy.logdebug('[{topic}] is subscribed'.format(topic=args[0]))
-        if self._connection_status == False:
+        if self._connection_status is not True:
             self.subscribe()
             self._connection_status = True
 
