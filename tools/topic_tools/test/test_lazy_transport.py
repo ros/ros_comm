@@ -12,13 +12,13 @@ import roslib
 
 
 PKG = 'topic_tools'
-NAME = 'test_connection'
+NAME = 'test_lazy_transport'
 
 
-class TestConnection(unittest.TestCase):
+class TestLazyTransport(unittest.TestCase):
 
     def __init__(self, *args):
-        super(TestConnection, self).__init__(*args)
+        super(self.__class__, self).__init__(*args)
         rospy.init_node(NAME)
 
     def test_no_subscribers(self):
@@ -51,7 +51,8 @@ class TestConnection(unittest.TestCase):
                 if topic == rospy.get_namespace() + check_topic:
                     break
             else:
-                raise ValueError('Not found topic: {}'.format(check_topic))
+                raise ValueError('Topic Not Found: {}'
+                                 .format(rospy.get_namespace() + check_topic))
         sub.unregister()
 
     def _cb_test_subscriber_appears(self, msg):
@@ -60,4 +61,4 @@ class TestConnection(unittest.TestCase):
 
 if __name__ == "__main__":
     import rostest
-    rostest.rosrun(PKG, NAME, TestConnection)
+    rostest.rosrun(PKG, NAME, TestLazyTransport)

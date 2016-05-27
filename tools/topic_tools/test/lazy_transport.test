@@ -4,25 +4,25 @@
         args="pub /input std_msgs/String 'data: spam' -r 10">
   </node>
 
-  <node name="simple_string_transport"
-        pkg="topic_tools" type="simple_transport.py">
+  <node name="simple_lazy_string_transport"
+        pkg="topic_tools" type="simple_lazy_transport.py">
     <remap from="~input" to="input" />
-    <param name="~always_subscribe" value="true" />
+    <param name="~lazy" value="true" />
     <rosparam>
       msg_name: std_msgs/String
     </rosparam>
   </node>
 
-  <test test-name="test_connection"
-        name="test_connection"
-        pkg="topic_tools" type="test_connection.py"
+  <test test-name="test_lazy_transport"
+        name="test_lazy_transport"
+        pkg="topic_tools" type="test_lazy_transport.py"
         retry="3">
+    <remap from="~input" to="simple_lazy_string_transport/output" />
     <rosparam>
       input_topic_type: std_msgs/String
-      check_connected_topics: [simple_string_transport/output, input]
+      check_connected_topics: [simple_lazy_string_transport/output, input]
       wait_for_connection: 3
     </rosparam>
-    <remap from="~input" to="simple_string_transport/output" />
   </test>
 
 </launch>

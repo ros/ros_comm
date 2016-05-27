@@ -6,7 +6,7 @@ import rospy
 from topic_tools import LazyTransport
 
 
-class SimpleTransport(LazyTransport):
+class SimpleLazyTransport(LazyTransport):
     def __init__(self):
         super(self.__class__, self).__init__()
         msg_name = rospy.get_param('~msg_name')
@@ -25,5 +25,5 @@ class SimpleTransport(LazyTransport):
 
 if __name__ == '__main__':
     rospy.init_node('simple_transport')
-    img_trans = SimpleTransport()
+    app = SimpleLazyTransport()
     rospy.spin()
