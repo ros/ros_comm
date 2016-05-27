@@ -34,6 +34,7 @@
 
 #include "ros/callback_queue.h"
 #include "ros/assert.h"
+#include <boost/scope_exit.hpp>
 
 namespace ros
 {
@@ -371,7 +372,17 @@ CallbackQueue::CallOneResult CallbackQueue::callOneCB(TLS* tls)
     tls->calling_in_this_thread = id_info->id;
 
     CallbackInterface::CallResult result = CallbackInterface::Invalid;
-    try {
+
+    {
+      // Ensure that thread id gets restored, even if callback throws.
+      // This is done with RAII rather than try-catch so that the source
+      // of the original exception is not masked in a crash report.
+      BOOST_SCOPE_EXIT(&tls, &last_calling)
+      {
+        tls->calling_in_this_thread = last_calling;
+      }
+      BOOST_SCOPE_EXIT_END
+
       if (info.marked_for_removal)
       {
         tls->cb_it = tls->callbacks.erase(tls->cb_it);
@@ -382,14 +393,6 @@ CallbackQueue::CallOneResult CallbackQueue::callOneCB(TLS* tls)
         result = cb->call();
       }
     }
-    catch (std::exception&)
-    {
-      // ensure that thread id gets restored, even in case of an exception
-      tls->calling_in_this_thread = last_calling;
-      throw;
-    }
-
-    tls->calling_in_this_thread = last_calling;
 
     // Push TryAgain callbacks to the back of the shared queue
     if (result == CallbackInterface::TryAgain && !info.marked_for_removal)
