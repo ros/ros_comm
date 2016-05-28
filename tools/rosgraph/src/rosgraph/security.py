@@ -12,6 +12,7 @@ import rosgraph.masterapi
 import shutil
 import httplib
 import sys
+import base64
 #from rospy.exceptions import TransportInitError
 
 try:
@@ -312,7 +313,6 @@ class SSLSecurity(Security):
             keyserver_proxy = xmlrpcclient.ServerProxy(keyserver_addr())
             print("calling keyserver_proxy.getCertificates()")
             response = keyserver_proxy.getCertificates(self.node_name)
-            print("response: %s" % response)
             for fn, contents in response.iteritems():
                 path = os.path.join(self.kpath, fn)
                 print("  writing [%s]" % path)
@@ -371,7 +371,7 @@ class SSLSecurity(Security):
         """
         #print("SSLSecurity.wrap_socket() called for node %s" % node_name)
         context = self.get_server_context()
-        return context.wrap_socket(sock, server_side=True)
+        return context.wrap_socket(sock, server_side=True) #connstream
 
     def xmlrpcapi(self, uri, node_name=None):
         #print("             SSLSecurity.xmlrpcapi(%s, %s)" % (uri, node_name or "[UNKNOWN]"))
@@ -403,10 +403,40 @@ class SSLSecurity(Security):
         client_stream = None
         try:
             client_stream = context.wrap_socket(client_sock, server_side=True)
+            client_cert = client_stream.getpeercert()
+            print("SSLSecurity.accept(server_node_name=%s) getpeercert = %s" % (server_node_name, repr(client_cert)))
         except Exception as e:
             print("SSLSecurity.accept() wrap_socket exception: %s" % e)
             raise
         return (client_stream, client_addr)
+
+    def cert_cn(self, cert):
+        """
+        perhaps this function should be promoted to module-level
+        """
+        if cert is None:
+            return None
+        if not 'subject' in cert:
+            return None
+        for subject in cert['subject']:
+            key = subject[0][0]
+            if key == 'commonName':
+                return subject[0][1]
+        return None
+
+    def allow_xmlrpc_request(self, cert_text, cert_binary):
+        cn = self.cert_cn(cert_text)
+        if cn is None:
+            return False
+        print("allow_xmlrpc_request() node=%s commonName=%s" % (self.node_name, cn))
+        # sanity-check to ensure that it ends in '.client'
+        if not cn.endswith('.client'):
+            return False
+        # todo: if we're master, make sure this key exists in our keystore
+        #print("allow_xmlrpc_request() node=%s commonName=%s  binary=%s" % (self.node_name, cn, base64.b64encode(cert_binary)))
+        #if self.name == 'master':
+        #    self.kpath
+        return True
 
 #########################################################################
 _security = None

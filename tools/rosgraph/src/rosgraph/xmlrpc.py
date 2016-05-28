@@ -80,6 +80,22 @@ class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
     def log_message(self, format, *args):
         if 0:
             SimpleXMLRPCRequestHandler.log_message(self, format, *args)
+        self.allowed_clients = {}
+
+    def parse_request(self):
+        """
+        We want to do client authentication, so we need to override this
+        method of BaseHTTPRequestHandler, which is an ancestor of
+        SimpleXMLRPCRequestHandler, so we can call the ssl functions before
+        any data is exchanged.
+        """
+        # first, we'll call the parent implementation to sanity-check syntax
+        if not SimpleXMLRPCRequestHandler.parse_request(self):
+            return False
+        # see who's calling. bail if not in out list of allowed clients
+        text = self.request.getpeercert(binary_form=False)
+        binary = self.request.getpeercert(binary_form=True)
+        return security.get().allow_xmlrpc_request(text, binary)
     
 class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
     """
