@@ -37,6 +37,11 @@
 
 
 import atexit
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+import inspect
 import logging
 import os
 import signal
@@ -149,6 +154,67 @@ logerr = logging.getLogger('rosout').error
 logerror = logerr # alias logerr
 
 logfatal = logging.getLogger('rosout').critical
+
+
+class LoggingThrottle(object):
+
+    last_logging_time_table = {}
+
+    def __call__(self, caller_id, logging_func, period, msg):
+        """Do logging specified message periodically.
+
+        - caller_id (str): Id to identify the caller
+        - logging_func (function): Function to do logging.
+        - period (float): Period to do logging in second unit.
+        - msg (object): Message to do logging.
+        """
+        now = rospy.Time.now()
+
+        last_logging_time = self.last_logging_time_table.get(caller_id)
+
+        if (last_logging_time is None or
+              (now - last_logging_time) > rospy.Duration(period)):
+            logging_func(msg)
+            self.last_logging_time_table[caller_id] = now
+
+
+_logging_throttle = LoggingThrottle()
+
+
+def _frame_record_to_caller_id(frame_record):
+    frame, _, lineno, _, code, _ = frame_record
+    caller_id = (
+        inspect.getabsfile(frame),
+        lineno,
+        frame.f_lasti,
+    )
+    return pickle.dumps(caller_id)
+
+
+def logdebug_throttle(period, msg):
+    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+    _logging_throttle(caller_id, logdebug, period, msg)
+
+
+def loginfo_throttle(period, msg):
+    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+    _logging_throttle(caller_id, loginfo, period, msg)
+
+
+def logwarn_throttle(period, msg):
+    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+    _logging_throttle(caller_id, logwarn, period, msg)
+
+
+def logerr_throttle(period, msg):
+    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+    _logging_throttle(caller_id, logerr, period, msg)
+
+
+def logfatal_throttle(period, msg):
+    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+    _logging_throttle(caller_id, logfatal, period, msg)
+
 
 #########################################################
 # CONSTANTS
