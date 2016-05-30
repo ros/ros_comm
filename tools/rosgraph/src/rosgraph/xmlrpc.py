@@ -76,6 +76,8 @@ def isstring(s):
         return isinstance(s, str)
 
 class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
+    protocol_version = 'HTTP/1.1'
+
     def log_message(self, format, *args):
         if 0:
             SimpleXMLRPCRequestHandler.log_message(self, format, *args)
