@@ -546,7 +546,7 @@ def get():
 _ssl_certificate_creator = None
 
 def keyserver_host():
-    return 'localhost' # todo: not this
+    return rosgraph.network.get_bind_address()
 
 def keyserver_port():
     return 11310 # todo: not this
