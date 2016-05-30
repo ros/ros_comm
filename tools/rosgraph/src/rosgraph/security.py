@@ -310,13 +310,14 @@ class SSLSecurity(Security):
         self.server_context_ = None
         self.client_contexts_ = {}
         self.allowed_clients = set()
+        self.keyserver_addr_ = None
 
         if not self.all_certs_present():
             if not os.path.exists(self.kpath):
                 print("initializing empty node keystore: %s" % self.kpath)
                 os.makedirs(self.kpath)
-            keyserver_proxy = xmlrpcclient.ServerProxy(keyserver_addr())
-            print("calling keyserver_proxy.getCertificates()")
+            print("calling keyserver_proxy.getCertificates() on %s" % self.ssl_keyserver_addr())
+            keyserver_proxy = xmlrpcclient.ServerProxy(self.ssl_keyserver_addr())
             response = keyserver_proxy.getCertificates(self.node_name)
             for fn, contents in response.iteritems():
                 path = os.path.join(self.kpath, fn)
@@ -325,6 +326,26 @@ class SSLSecurity(Security):
                     continue
                 with open_private_output_file(path) as f:
                     f.write(contents)
+        else:
+            print('all startup certificates are already present')
+
+    def ssl_keyserver_addr(self):
+        print('ssl_keyserver_addr()')
+        if self.keyserver_addr_ is not None:
+            return self.keyserver_addr_
+        if not 'ROS_MASTER_URI' in os.environ:
+            self.keyserver_addr_ = 'http://localhost:11310/'
+        else:
+            # split up the ROS_MASTER_URI and subtract one from its port
+            rmu = os.environ['ROS_MASTER_URI']
+            host = ':'.join(rmu.split(':')[0:-1])
+            port = rmu.split(':')[-1]
+            if port[-1] == '/':
+                port = port[:-1]
+            port = int(port)
+            self.keyserver_addr_ = '%s:%d' % (host, port-1)
+        print('ssl_keyserver_addr=%s' % self.keyserver_addr_)
+        return self.keyserver_addr_
     
     def all_certs_present(self):
         if not os.path.exists(self.kpath):
