@@ -80,7 +80,6 @@ class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
     def log_message(self, format, *args):
         if 0:
             SimpleXMLRPCRequestHandler.log_message(self, format, *args)
-        self.allowed_clients = {}
 
     def parse_request(self):
         """
@@ -281,6 +280,7 @@ class XmlRpcNode(object):
 
             self.server.register_multicall_functions()
             self.server.register_instance(self.handler)
+            self.server.register_function(security.get().allowClients)
 
             #print("wrapping TLS socket on port %d" % self.port)
             self.server.socket = security.get().wrap_socket(self.server.socket, self.node_name)

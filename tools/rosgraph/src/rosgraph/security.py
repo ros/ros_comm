@@ -146,13 +146,17 @@ class XMLRPCTimeoutSafeTransport(xmlrpcclient.SafeTransport):
 #########################################################################
 # global functions used by SSLSecurity and friends
 def node_name_to_cert_stem(node_name):
-    # TODO: convert anonymous names into something consistent, so we
-    # don't end up generating arbitrary numbers of them
     stem = node_name
     if (stem[0] == '/'):
         stem = stem[1:]
     if '..' in node_name:
         raise ValueError('woah there. node_name [%s] has a double-dot. OH NOES.' % node_name)
+    # check for anonymous node names. remove any long numeric suffix.
+    # anonymous nodes will have numeric suffix tokens at the end (PID and time)
+    tok = stem.split('_')
+    if len(tok) >= 3 and tok[-2].isdigit() and \
+       len(tok[-1]) > 8 and tok[-1].isdigit():
+        stem = '_'.join(tok[0:-2])
     return stem.replace('/', '__')
 
 def open_private_output_file(fn):
@@ -305,6 +309,7 @@ class SSLSecurity(Security):
 
         self.server_context_ = None
         self.client_contexts_ = {}
+        self.allowed_clients = set()
 
         if not self.all_certs_present():
             if not os.path.exists(self.kpath):
@@ -324,7 +329,7 @@ class SSLSecurity(Security):
     def all_certs_present(self):
         if not os.path.exists(self.kpath):
             return False
-        fn = [ 'root.cert', 'master.server.cert',
+        fn = [ 'root.cert', 'master.server.cert', 'master.client.cert',
                self.node_name + '.server.cert',
                self.node_name + '.server.key',
                self.node_name + '.client.cert',
@@ -375,8 +380,6 @@ class SSLSecurity(Security):
 
     def xmlrpcapi(self, uri, node_name=None):
         #print("             SSLSecurity.xmlrpcapi(%s, %s)" % (uri, node_name or "[UNKNOWN]"))
-        #if not node_name:
-        #    print("      now i will call master.getCaller
         context = self.get_client_context(node_name or uri)
         st = XMLRPCTimeoutSafeTransport(context=context, timeout=10.0)
         return xmlrpcclient.ServerProxy(uri, transport=st, context=context)
@@ -397,6 +400,7 @@ class SSLSecurity(Security):
         return conn
 
     def accept(self, server_sock, server_node_name):
+        # this is where peer-to-peer TCPROS connections try to be accepted
         #print("SSLSecurity.accept(server_node_name=%s)" % server_node_name)
         context = self.get_server_context()
         (client_sock, client_addr) = server_sock.accept()
@@ -404,10 +408,20 @@ class SSLSecurity(Security):
         try:
             client_stream = context.wrap_socket(client_sock, server_side=True)
             client_cert = client_stream.getpeercert()
-            print("SSLSecurity.accept(server_node_name=%s) getpeercert = %s" % (server_node_name, repr(client_cert)))
+            #print("SSLSecurity.accept(server_node_name=%s) getpeercert = %s" % (server_node_name, repr(client_cert)))
+            cn = self.cert_cn(client_cert)
+            if cn is None:
+                raise Exception("unknown certificate format")
+            if not cn.endswith('.client'):
+                raise Exception("unexpected commonName format: %s" % cn)
+            # get rid of the '.client' suffix
+            cn = '.'.join(cn.split('.')[0:-1])
+            if not cn in self.allowed_clients:
+                raise Exception("unknown client [%s] is trying to connect!" % cn)
         except Exception as e:
             print("SSLSecurity.accept() wrap_socket exception: %s" % e)
             raise
+        print("%s is allowing inbound connection from %s" % (self.node_name, cn))
         return (client_stream, client_addr)
 
     def cert_cn(self, cert):
@@ -424,18 +438,81 @@ class SSLSecurity(Security):
                 return subject[0][1]
         return None
 
+    # only ever called by master
+    def allowClients(self, clients):
+        #print("node=%s allowClients(%s)" % (self.node_name, repr(clients)))
+        for client in clients:
+            sanitized_name = node_name_to_cert_stem(client)
+            #print("  allowed_clients.add(%s)" % sanitized_name)
+            self.allowed_clients.add(sanitized_name)
+        # todo: save certificate in our keystore?
+        # todo: allow only for specific topics, not always all-access?
+        return 1, "", 0
+
     def allow_xmlrpc_request(self, cert_text, cert_binary):
         cn = self.cert_cn(cert_text)
         if cn is None:
             return False
-        print("allow_xmlrpc_request() node=%s commonName=%s" % (self.node_name, cn))
+        #print("allow_xmlrpc_request() node=%s commonName=%s" % (self.node_name, cn))
         # sanity-check to ensure that it ends in '.client'
         if not cn.endswith('.client'):
             return False
-        # todo: if we're master, make sure this key exists in our keystore
-        #print("allow_xmlrpc_request() node=%s commonName=%s  binary=%s" % (self.node_name, cn, base64.b64encode(cert_binary)))
-        #if self.name == 'master':
-        #    self.kpath
+        try:
+            # if we're master, make sure this cert exists in our keystore
+            if self.node_name == 'master': # NOW I AM THE MASTER
+                path = os.path.join(self.kpath, cn + '.cert')
+                if '..' in path:
+                    print('HEY WHAT ARE YOU TRYING TO DO WITH THOSE DOTS')
+                    return False
+                #print('looking for client cert in [%s]' % path)
+                if not os.path.isfile(path):
+                    print("WOAH THERE PARTNER. I DON'T KNOW [%s]" % cn)
+                    return False
+                with open(path, 'r') as client_cert_file:
+                    file_contents = client_cert_file.read()
+                    # remove header and footer lines
+                    file_contents = ''.join(file_contents.split('\n')[1:-2])
+                #print('file contents: %s' % file_contents)
+                client_cert = base64.b64encode(cert_binary)
+                #print('cert transmitted: %s' % client_cert)
+                if file_contents != client_cert:
+                    print('WOAH. cert mismatch!')
+                    return False
+                else:
+                    #print('    cert matches OK')
+                    return True
+            else: # we're not the master. life is more complicated.
+                # see if it's the master
+                if cn == 'master.client':
+                    # we have this one in our keystore; we can verify it
+                    cert_path = os.path.join(self.kpath, 'master.client.cert')
+                    with open(cert_path, 'r') as cert_file:
+                        saved_cert = cert_file.read()
+                        # remove header and footer lines
+                        saved_cert = ''.join(saved_cert.split('\n')[1:-2])
+                    presented_cert = base64.b64encode(cert_binary)
+                    if saved_cert != presented_cert:
+                        print("WOAH. master client certificate mismatch!")
+                        return False
+                    else:
+                        #print("   master client cert matches OK")
+                        return True
+                # see if we are talking to ourselves
+                cn_without_suffix = '.'.join(cn.split('.')[0:-1])
+                if cn_without_suffix == self.node_name:
+                    #print("    I'm talking to myself again.")
+                    return True # it's always healthy to talk to yourself
+                if cn_without_suffix in self.allowed_clients:
+                    #print("    client %s is OK; it's in %s's allowed_clients list: %s" % (cn_without_suffix, self.node_name, repr(self.allowed_clients)))
+                    return True
+                else:
+                    print("    client %s xmlrpc connection denied; it's not in %s's allowed list of clients: %s" % (cn_without_suffix, self.node_name, repr(self.allowed_clients)))
+                    return False
+
+        except Exception as e:
+            print('oh noes: %s' % e)
+            return False
+        print("WOAH WOAH WOAH i'm accepting this just because i'm too trusting")
         return True
 
 #########################################################################
@@ -488,6 +565,7 @@ def keyserver_getCertificates(node_name):
     resp = {}
     fns = [ 'root.cert',
             'master.server.cert',
+            'master.client.cert',
             node_name + '.server.cert',
             node_name + '.server.key',
             node_name + '.client.cert',
