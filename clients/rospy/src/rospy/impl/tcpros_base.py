@@ -328,7 +328,7 @@ class TCPROSServer(object):
 
             if 'callerid' in header:
                 callerid = security.node_name_to_cert_stem(header['callerid'])
-                if callerid != cert_name:
+                if cert_name is not 'unknown' and callerid != cert_name:
                     print('OH NOES callerid=[%s] but cert_name=[%s]' % (callerid, cert_name))
                     raise ValueError('OH NOES callerid=[%s] but cert_name=[%s]' % (callerid, cert_name))
                 else:
@@ -583,7 +583,7 @@ class TCPROSTransport(Transport):
             self.close()
             raise TransportInitError(str(e)) #re-raise i/o error
 
-    def _validate_header(self, header):
+    def _validate_header(self, header, sock):
         """
         Validate header and initialize fields accordingly
         @param header: header fields from publisher
@@ -600,6 +600,21 @@ class TCPROSTransport(Transport):
         self.md5sum = header['md5sum']
         if 'callerid' in header:
             self.callerid_pub = header['callerid']
+            # we can only authenticate if we're in SSL mode...
+            gpc = getattr(sock, 'getpeercert', None)
+            if callable(gpc):
+                #print('transport validate_header callerid = %s' % self.callerid_pub)
+                caller_id_name = security.node_name_to_cert_stem(self.callerid_pub)
+                expected_cert_name = caller_id_name + '.server'
+                cert_name = security.cert_cn(sock.getpeercert())
+                if expected_cert_name != cert_name:
+                    print('OH NOES, expected %s but node certificate was %s instead' % (expected_cert_name, cert_name))
+                    raise TransportInitError('OH NOES, expected %s but node certificate was %s instead' % (expected_cert_name, cert_name))
+                else:
+                    #print('header callerid matches cert_name %s' % cert_name)
+                    pass
+        else:
+            raise TransportInitError('no callerid provided in TCPROS header! Authentication is impossible')
         if header.get('latching', '0') == '1':
             self.is_latched = True
 
@@ -631,7 +646,7 @@ class TCPROSTransport(Transport):
             return
         sock.setblocking(1)
 	# TODO: add bytes received to self.stat_bytes
-        self._validate_header(read_ros_handshake_header(sock, self.read_buff, self.protocol.buff_size))
+        self._validate_header(read_ros_handshake_header(sock, self.read_buff, self.protocol.buff_size), sock)
                 
     def send_message(self, msg, seq):
         """

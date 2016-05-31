@@ -156,7 +156,7 @@ class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
                     for call in params[0]:
                         #print("call: %s" % repr(call))
                         caller_id_name = security.node_name_to_cert_stem(call['params'][0])
-                        if self.caller_name != caller_id_name:
+                        if self.caller_name is not None and self.caller_name != caller_id_name:
                             print("oh noes! certificate-based name = [%s] for multicall method [%s] but caller_id = [%s]" % (self.caller_name, call['method'], caller_id_name))
                             raise ValueError("oh noes! certificate-based name = [%s] for multicall method [%s] but caller_id = [%s]" % (self.caller_name, call['method'], caller_id_name))
 
@@ -164,7 +164,7 @@ class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
                 #print('  params[0] = %s' % params[0])
                 # first parameter of every call is suppoesd to be caller_id
                 caller_id_name = security.node_name_to_cert_stem(params[0])
-                if self.caller_name != caller_id_name:
+                if self.caller_name is not None and self.caller_name != caller_id_name:
                     print("oh noes! certificate-based name = [%s] for method [%s] but caller_id = [%s]" % (self.caller_name, method, caller_id_name))
                     raise ValueError("oh noes! certificate-based name = [%s] for method [%s] but caller_id = [%s]" % (self.caller_name, method, caller_id_name))
                 else:

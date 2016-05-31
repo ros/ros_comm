@@ -50,7 +50,7 @@ class Security(object):
         return True
     def allow_xmlrpc_request(self, cert_text, cert_binary):
         return True
-    def allowClients(self, clients):
+    def allowClients(self, caller_id, clients):
         return 1, "", 0
 
 #########################################################################
@@ -182,6 +182,20 @@ def node_name_to_cert_stem(node_name):
 def open_private_output_file(fn):
     flags = os.O_WRONLY | os.O_CREAT
     return os.fdopen(os.open(fn, flags, 0o600), 'w')
+
+def cert_cn(cert):
+    """
+    extract the commonName from this certificate
+    """
+    if cert is None:
+        return None
+    if not 'subject' in cert:
+        return None
+    for subject in cert['subject']:
+        key = subject[0][0]
+        if key == 'commonName':
+            return subject[0][1]
+    return None
 
 #########################################################################
 class SSLCertificateCreator(object):
@@ -480,7 +494,6 @@ class SSLSecurity(Security):
 
     def connect(self, sock, dest_addr, dest_port, endpoint_id, timeout=None):
         #print('SSLSecurity.connect() to node at %s:%d which is endpoint %s' % (dest_addr, dest_port, endpoint_id))
-        # TODO: get certificates to talk to this URI
         context = self.get_client_context("%s:%d" % (dest_addr, dest_port))
         conn = context.wrap_socket(sock)
         try:
@@ -500,7 +513,7 @@ class SSLSecurity(Security):
             client_stream = context.wrap_socket(client_sock, server_side=True)
             client_cert = client_stream.getpeercert()
             #print("SSLSecurity.accept(server_node_name=%s) getpeercert = %s" % (server_node_name, repr(client_cert)))
-            cn = self.cert_cn(client_cert)
+            cn = cert_cn(client_cert)
             if cn is None:
                 raise Exception("unknown certificate format")
             if not cn.endswith('.client'):
@@ -515,19 +528,6 @@ class SSLSecurity(Security):
         print("%s is allowing inbound connection from %s" % (self.node_name, cn))
         return (client_stream, client_addr, cn)
 
-    def cert_cn(self, cert):
-        """
-        perhaps this function should be promoted to module-level
-        """
-        if cert is None:
-            return None
-        if not 'subject' in cert:
-            return None
-        for subject in cert['subject']:
-            key = subject[0][0]
-            if key == 'commonName':
-                return subject[0][1]
-        return None
 
     # only ever called by master
     def allowClients(self, caller_id, clients):
@@ -541,7 +541,7 @@ class SSLSecurity(Security):
         return 1, "", 0
 
     def allow_xmlrpc_request(self, cert_text, cert_binary):
-        cn = self.cert_cn(cert_text)
+        cn = cert_cn(cert_text)
         if cn is None:
             return None
         #print("allow_xmlrpc_request() node=%s commonName=%s" % (self.node_name, cn))
