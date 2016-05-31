@@ -40,16 +40,13 @@ import itertools
 import socket
 import sys
 import time
-try:
-    from xmlrpc.client import ServerProxy
-except ImportError:
-    from xmlrpclib import ServerProxy
 
 import rospkg.environment
 
 import rosgraph
 import rosgraph.rosenv
 import rosgraph.network
+import rosgraph.xmlrpc
 
 import rosnode
 import rosservice
@@ -291,7 +288,7 @@ class NodeInfoThread(threading.Thread):
                     ctx.errors.append(WtfError("Master does not have lookup information for node [%s]"%n))
                 return
                 
-            node = ServerProxy(node_api)
+            node = rosgraph.xmlrpc.ServerProxy(node_api)
             start = time.time()
             socket.setdefaulttimeout(3.0)            
             code, msg, bus_info = node.getBusInfo('/roswtf')
