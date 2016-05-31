@@ -34,11 +34,11 @@ import os
 import sys
 import rospkg
 try:
-    from xmlrpc.client import MultiCall, ServerProxy
+    from xmlrpc.client import MultiCall
 except ImportError:
-    from xmlrpclib import MultiCall, ServerProxy
+    from xmlrpclib import MultiCall
 
-
+import rosgraph.xmlrpc
 import roslaunch.core
 
 def test_Executable():
@@ -246,7 +246,7 @@ def test_Master():
     m.get_host() == 'localhost'
     m.get_port() == 11311
     assert m.is_running() in [True, False]
-    assert isinstance(m.get(), ServerProxy)
+    assert isinstance(m.get(), rosgraph.xmlrpc.ServerProxy)
     assert isinstance(m.get_multi(), MultiCall)
     
     m = Master(uri='http://badhostname:11312')

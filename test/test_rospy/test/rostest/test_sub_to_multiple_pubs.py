@@ -43,12 +43,9 @@ import socket
 import sys
 import time
 import unittest
-try:
-    from xmlrpc.client import ServerProxy
-except ImportError:
-    from xmlrpclib import ServerProxy
 
 import rosgraph
+import rosgraph.xmlrpc
 import rospy
 import rostest
 
@@ -84,7 +81,7 @@ class TestPubSubToMultiplePubs(unittest.TestCase):
             self.assert_(False, 'cannot contact [%s]: unknown node' % LISTENER_NODE)
 
         socket.setdefaulttimeout(5.0)
-        node = ServerProxy(node_api)
+        node = rosgraph.xmlrpc.ServerProxy(node_api)
         code, _, businfo = node.getBusInfo(NAME)
         if code != 1:
             self.assert_(False, 'cannot get node information')

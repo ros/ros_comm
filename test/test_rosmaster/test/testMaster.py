@@ -40,11 +40,12 @@ To run, invoke nodes/testMaster
 import os, sys, getopt, traceback, logging, socket
 import datetime, math, random
 try:
-    from xmlrpc.client import DateTime, ServerProxy
+    from xmlrpc.client import DateTime
 except ImportError:
-    from xmlrpclib import DateTime, ServerProxy
+    from xmlrpclib import DateTime
 import unittest
 import rospy
+import rosgraph.xmlrpc
 from rostest import *
 from testSlave import msMain
 
@@ -75,7 +76,7 @@ def verifyNodeAddress(master, callerId, name, machine, addr, port):
         raddrinfo = socket.getaddrinfo(raddr, 0, 0, 0, socket.SOL_TCP)
         assert raddrinfo == addrinfo, "%s!=%s" % (raddrinfo, addrinfo)
     #ping the node
-    apiSuccess(ServerProxy("http://%s:%s/"%(raddr, rport)).getPid(''))
+    apiSuccess(rosgraph.xmlrpc.ServerProxy("http://%s:%s/"%(raddr, rport)).getPid(''))
 
 def testGraphState(master, graphNodes, graphFlows):
     graph = apiSuccess(master.getGraph(''))
@@ -572,7 +573,7 @@ class MasterTestCase(ROSGraphTestCase):
     def _verifyNodeDead(self, port):
         testUri = "http://localhost:%s/"%port
         try:
-            ServerProxy(testUri).getPid('node')
+            rosgraph.xmlrpc.ServerProxy(testUri).getPid('node')
             self.fail("test node is still running")
         except:
             pass

@@ -36,13 +36,10 @@ import os
 import sys
 import string
 import time
-try:
-    from xmlrpc.client import ServerProxy
-except ImportError:
-    from xmlrpclib import ServerProxy
 
 import rospy
 import rosgraph
+import rosgraph.xmlrpc
 
 from rosclient import *
 
@@ -75,7 +72,7 @@ class _MasterTestCase(TestRosClient):
         super(_MasterTestCase, self).setUp()
         self.master_uri = os.environ.get(rosgraph.ROS_MASTER_URI, None)
         self._checkUri(self.master_uri)
-        self.master = ServerProxy(self.master_uri)
+        self.master = rosgraph.xmlrpc.ServerProxy(self.master_uri)
 
     ## validates a URI as being http(s)
     def _checkUri(self, uri):

@@ -46,6 +46,7 @@ import weakref
 
 import rospy
 import rostest
+import rosgraph.xmlrpc
 from std_msgs.msg import String
 from test_rospy.srv import EmptySrv
 
@@ -61,15 +62,11 @@ def callback(data):
     print("message received", data.data)
     _last_callback = data
 
-try:
-    from xmlrpc.client import ServerProxy
-except ImportError:
-    from xmlrpclib import ServerProxy
 
 class TestDeregister(unittest.TestCase):
         
     def test_unpublish(self):
-        node_proxy = ServerProxy(rospy.get_node_uri())
+        node_proxy = rosgraph.xmlrpc.ServerProxy(rospy.get_node_uri())
         
         _, _, pubs = node_proxy.getPublications('/foo')
         pubs = [p for p in pubs if p[0] != '/rosout']
@@ -112,7 +109,7 @@ class TestDeregister(unittest.TestCase):
         global _last_callback
 
         uri = rospy.get_node_uri()
-        node_proxy = ServerProxy(uri)
+        node_proxy = rosgraph.xmlrpc.ServerProxy(uri)
         _, _, subscriptions = node_proxy.getSubscriptions('/foo')
         self.assert_(not subscriptions, 'subscriptions present: %s'%str(subscriptions))
         
