@@ -186,6 +186,12 @@ def open_private_output_file(fn):
 class SSLCertificateCreator(object):
     def __init__(self):
         print("SSLCertificateCreator()")
+        keystore = os.path.join(os.path.expanduser('~'), '.ros', 'keys')
+        if not os.path.exists(keystore):
+            print("initializing empty keystore: %s" % keystore)
+            os.makedirs(keystore)
+            os.chmod(keystore, 0o700)
+
         self.kpath = os.path.join(os.path.expanduser('~'), '.ros', 'keys', 'master')
         if not os.path.exists(self.kpath):
             print("initializing empty roscore keystore: %s" % self.kpath)
@@ -374,19 +380,22 @@ class SSLSecurity(Security):
 
     def load_graph(self, graph_path):
         print("loading graph from %s" % graph_path)
+        if not os.path.exists(graph_path):
+            print("Requested graph file doesn't exist: [%s]" % graph_path)
+            sys.exit(1)
         with open(graph_path, 'r') as f:
             graph = yaml.load(f)
             self.allowed_publishers  = graph['publishers']
             self.allowed_subscribers = graph['subscribers']
-        print('allowed_publishers = %s' % repr(self.allowed_publishers))
-        print('allowed_subscribers = %s' % repr(self.allowed_subscribers))
+        #print('allowed_publishers = %s' % repr(self.allowed_publishers))
+        #print('allowed_subscribers = %s' % repr(self.allowed_subscribers))
 
     def save_graph(self, graph_path):
-        print("saving graph to %s" % graph_path)
+        #print("saving graph to %s" % graph_path)
         graph = {}
         graph['publishers']  = self.allowed_publishers
         graph['subscribers'] = self.allowed_subscribers
-        print('graph yaml:\n%s' % yaml.dump(graph))
+        #print('graph yaml:\n%s' % yaml.dump(graph))
         with open(graph_path, 'w') as f:
             f.write(yaml.dump(graph))
 
@@ -520,7 +529,7 @@ class SSLSecurity(Security):
         return None
 
     # only ever called by master
-    def allowClients(self, clients):
+    def allowClients(self, caller_id, clients):
         #print("node=%s allowClients(%s)" % (self.node_name, repr(clients)))
         for client in clients:
             sanitized_name = node_name_to_cert_stem(client)
@@ -533,22 +542,22 @@ class SSLSecurity(Security):
     def allow_xmlrpc_request(self, cert_text, cert_binary):
         cn = self.cert_cn(cert_text)
         if cn is None:
-            return False
+            return None
         #print("allow_xmlrpc_request() node=%s commonName=%s" % (self.node_name, cn))
         # sanity-check to ensure that it ends in '.client'
         if not cn.endswith('.client'):
-            return False
+            return None
         try:
             # if we're master, make sure this cert exists in our keystore
             if self.node_name == 'master': # NOW I AM THE MASTER
                 path = os.path.join(self.kpath, cn + '.cert')
                 if '..' in path:
                     print('HEY WHAT ARE YOU TRYING TO DO WITH THOSE DOTS')
-                    return False
+                    return None
                 #print('looking for client cert in [%s]' % path)
                 if not os.path.isfile(path):
                     print("WOAH THERE PARTNER. I DON'T KNOW [%s]" % cn)
-                    return False
+                    return None
                 with open(path, 'r') as client_cert_file:
                     file_contents = client_cert_file.read()
                     # remove header and footer lines
@@ -558,10 +567,10 @@ class SSLSecurity(Security):
                 #print('cert transmitted: %s' % client_cert)
                 if file_contents != client_cert:
                     print('WOAH. cert mismatch!')
-                    return False
+                    return None
                 else:
                     #print('    cert matches OK')
-                    return True
+                    return cn[:-7]
             else: # we're not the master. life is more complicated.
                 # see if it's the master
                 if cn == 'master.client':
@@ -574,30 +583,30 @@ class SSLSecurity(Security):
                     presented_cert = base64.b64encode(cert_binary)
                     if saved_cert != presented_cert:
                         print("WOAH. master client certificate mismatch!")
-                        return False
+                        return None
                     else:
                         #print("   master client cert matches OK")
-                        return True
+                        return 'master'
                 # see if we are talking to ourselves
                 cn_without_suffix = '.'.join(cn.split('.')[0:-1])
                 if cn_without_suffix == self.node_name:
                     #print("    I'm talking to myself again.")
-                    return True # it's always healthy to talk to yourself
+                    return cn_without_suffix # it's always healthy to talk to yourself
                 if cn_without_suffix in self.allowed_clients:
                     #print("    client %s is OK; it's in %s's allowed_clients list: %s" % (cn_without_suffix, self.node_name, repr(self.allowed_clients)))
-                    return True
+                    return cn_without_suffix
                 else:
                     print("    client %s xmlrpc connection denied; it's not in %s's allowed list of clients: %s" % (cn_without_suffix, self.node_name, repr(self.allowed_clients)))
-                    return False
+                    return None
 
         except Exception as e:
             print('oh noes: %s' % e)
-            return False
-        print("WOAH WOAH WOAH i'm accepting this just because i'm too trusting")
-        return True
+            return None
+        print("WOAH WOAH WOAH how did i get here?")
+        return 'ahhhhhhhhhhhh'
 
     def allow_registerPublisher(self, caller_id, topic, topic_type):
-        print("SSLSecurity.allow_registerPublisher(%s, %s, %s)" % (caller_id, topic, topic_type))
+        #print("SSLSecurity.allow_registerPublisher(%s, %s, %s)" % (caller_id, topic, topic_type))
         name = node_name_to_cert_stem(caller_id)
         if self.enforce_graph:
             for pub in self.allowed_publishers:
@@ -610,7 +619,7 @@ class SSLSecurity(Security):
         return True
 
     def allow_registerSubscriber(self, caller_id, topic, topic_type):
-        print("SSLSecurity.allow_registerSubscriber(%s, %s, %s)" % (caller_id, topic, topic_type))
+        #print("SSLSecurity.allow_registerSubscriber(%s, %s, %s)" % (caller_id, topic, topic_type))
         name = node_name_to_cert_stem(caller_id)
         if self.enforce_graph:
             for sub in self.allowed_subscribers:

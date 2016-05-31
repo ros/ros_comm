@@ -66,6 +66,7 @@ except ImportError:
 
 import rosgraph.network
 import rosgraph.security as security
+import xmlrpclib
 
 def isstring(s):
     """Small helper version to check an object is a string in a way that works
@@ -93,13 +94,121 @@ class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
             return False
         # see who's calling. bail if not in out list of allowed clients
         # the getpeercert() method will only exist if we're in SSL mode
+        self.caller_name = None
         gpc = getattr(self.request, 'getpeercert', None)
         if callable(gpc):
             text = self.request.getpeercert(binary_form=False)
             binary = self.request.getpeercert(binary_form=True)
-            return security.get().allow_xmlrpc_request(text, binary)
+            self.caller_name = security.get().allow_xmlrpc_request(text, binary)
+            #print("parse_request() from %s" % self.caller_name)
+            return self.caller_name is not None
         else:
             return True # we're not in SSL mode, so just let it through
+
+    def do_POST(self):
+        """
+        Have to override this method from SimpleXMLRPCRequestHandler in
+        order to enforce our goal of authenticating requests, so we can
+        know that the "caller_id" parameter is not being spoofed. The
+        vast majority of this function is copied verbatim from
+        SimpleXMLRPCRequestHandler, with just a bit in the middle added
+        for authentication. At some point it would be more efficient to
+        override SimpleXMLRPCDispatcher (and therefore also
+        SimpleXMLRPCServer) in order to avoid parsing the data twice,
+        but unfortunately we still would have to override this do_POST
+        method in order to pass the certificate-based name along with
+        the XML of the request to the dispatcher.
+        """
+        # Check that the path is legal
+        if not self.is_rpc_path_valid():
+            self.report_404()
+            return
+
+        try:
+            # Get arguments by reading body of request.
+            # We read this in chunks to avoid straining
+            # socket.read(); around the 10 or 15Mb mark, some platforms
+            # begin to have problems (bug #792570).
+            max_chunk_size = 10*1024*1024
+            size_remaining = int(self.headers["content-length"])
+            L = []
+            while size_remaining:
+                chunk_size = min(size_remaining, max_chunk_size)
+                chunk = self.rfile.read(chunk_size)
+                if not chunk:
+                    break
+                L.append(chunk)
+                size_remaining -= len(L[-1])
+            data = ''.join(L)
+
+            data = self.decode_request_content(data)
+            if data is None:
+                return #response has been sent
+
+            #print('do_POST() certificate name: [%s]' % self.caller_name)
+            #print('  %s' % repr(data))
+            # now, enforce that caller_id matches the certificate name!
+            params, method = xmlrpclib.loads(data)
+            #print("method = [%s] params len = %d" % (method, len(params)))
+            if method == 'system.multicall':
+                #print("system.multicall params: %s" % repr(params))
+                if len(params) > 0:
+                    for call in params[0]:
+                        #print("call: %s" % repr(call))
+                        caller_id_name = security.node_name_to_cert_stem(call['params'][0])
+                        if self.caller_name != caller_id_name:
+                            print("oh noes! certificate-based name = [%s] for multicall method [%s] but caller_id = [%s]" % (self.caller_name, call['method'], caller_id_name))
+                            raise ValueError("oh noes! certificate-based name = [%s] for multicall method [%s] but caller_id = [%s]" % (self.caller_name, call['method'], caller_id_name))
+
+            elif len(params) > 0:
+                #print('  params[0] = %s' % params[0])
+                # first parameter of every call is suppoesd to be caller_id
+                caller_id_name = security.node_name_to_cert_stem(params[0])
+                if self.caller_name != caller_id_name:
+                    print("oh noes! certificate-based name = [%s] for method [%s] but caller_id = [%s]" % (self.caller_name, method, caller_id_name))
+                    raise ValueError("oh noes! certificate-based name = [%s] for method [%s] but caller_id = [%s]" % (self.caller_name, method, caller_id_name))
+                else:
+                    #print("client %s matches OK" % caller_id_name)
+                    pass
+                #print('  caller_id_name = %s' % caller_id_name) #params[0] = [%s]' % params[0])
+
+            # In previous versions of SimpleXMLRPCServer, _dispatch
+            # could be overridden in this class, instead of in
+            # SimpleXMLRPCDispatcher. To maintain backwards compatibility,
+            # check to see if a subclass implements _dispatch and dispatch
+            # using that method if present.
+            response = self.server._marshaled_dispatch(
+                    data, getattr(self, '_dispatch', None), self.path
+                )
+        except Exception, e: # This should only happen if the module is buggy
+            # internal error, report as HTTP server error
+            self.send_response(500)
+
+            # Send information about the exception if requested
+            if hasattr(self.server, '_send_traceback_header') and \
+                    self.server._send_traceback_header:
+                self.send_header("X-exception", str(e))
+                self.send_header("X-traceback", traceback.format_exc())
+
+            self.send_header("Content-length", "0")
+            self.end_headers()
+        else:
+            # got a valid XML RPC response
+            self.send_response(200)
+            self.send_header("Content-type", "text/xml")
+            if self.encode_threshold is not None:
+                if len(response) > self.encode_threshold:
+                    q = self.accept_encodings().get("gzip", 0)
+                    if q:
+                        try:
+                            response = xmlrpclib.gzip_encode(response)
+                            self.send_header("Content-Encoding", "gzip")
+                        except NotImplementedError:
+                            pass
+            self.send_header("Content-length", str(len(response)))
+            self.end_headers()
+            self.wfile.write(response)
+
     
 class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
     """

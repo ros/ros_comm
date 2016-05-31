@@ -621,7 +621,7 @@ class ROSMasterHandler(object):
                 for iter_node_name, iter_node in self.reg_manager.nodes.items():
                     if pub_uri == iter_node.api:
                         #print('master is telling %s to allow clients %s' % (iter_node_name, repr(sub_names)))
-                        security.get().xmlrpcapi(iter_node.api, iter_node_name).allowClients(sub_names)
+                        security.get().xmlrpcapi(iter_node.api, iter_node_name).allowClients('master', sub_names)
                         break
 
         self._notify(self.subscribers, publisher_update_task, topic, pub_uris, sub_uris)
@@ -745,7 +745,7 @@ class ROSMasterHandler(object):
             for pub_uri in pub_uris:
                 for iter_node_name, iter_node in self.reg_manager.nodes.items():
                     if pub_uri == iter_node.api:
-                        security.get().xmlrpcapi(pub_uri, iter_node_name).allowClients([caller_id])
+                        security.get().xmlrpcapi(pub_uri, iter_node_name).allowClients('master', [caller_id])
                         #security.get().xmlrpcapi(caller_api, caller_id).allowClients([iter_node_name])
                         break
             # pub_uris_and_names[pub_uri] = iter_node_name
