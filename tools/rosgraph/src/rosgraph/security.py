@@ -13,6 +13,7 @@ import shutil
 import httplib
 import sys
 import base64
+import yaml
 #from rospy.exceptions import TransportInitError
 
 try:
@@ -41,20 +42,32 @@ class Security(object):
         return sock
     def xmlrpc_protocol(self):
         return 'http'
-
+    def allow_registerPublisher(self, caller_id, topic, topic_type):
+        print('Security.allow_registerPublisher()')
+        return True
+    def allow_registerSubscriber(self, caller_id, topic, topic_type):
+        print('Security.allow_registerSubscriber()')
+        return True
+    def allow_xmlrpc_request(self, cert_text, cert_binary):
+        return True
+    def allowClients(self, clients):
+        return 1, "", 0
 
 #########################################################################
 
 class NoSecurity(Security):
+
     def __init__(self):
         super(NoSecurity, self).__init__()
         _logger.info("  rospy.security.NoSecurity init")
-    def xmlrpcapi(self, uri, node_name):
+
+    def xmlrpcapi(self, uri, node_name = None):
         uriValidate = urlparse.urlparse(uri)
         if not uriValidate[0] or not uriValidate[1]:
             return None
         return xmlrpcclient.ServerProxy(uri)
-    def connect(self, sock, dest_addr, dest_port, endpoint_id, pub_node_name, timeout=None):
+
+    def connect(self, sock, dest_addr, dest_port, endpoint_id, timeout=None):
         try:
             _logger.info('connecting to '+str(dest_addr)+' '+str(dest_port))
             sock.connect((dest_addr, dest_port))
@@ -66,6 +79,11 @@ class NoSecurity(Security):
             # TODO: figure out how to bubble up and trigger the full close/release behavior in TCPROSTransport
             sock.close() # no reconnection as error is unknown
             raise TransportInitError(str(e)) #re-raise i/o error
+        return sock
+
+    def accept(self, server_sock, server_node_name):
+        return server_sock.accept()
+
 
 #########################################################################
 
@@ -75,7 +93,7 @@ class SSHSecurity(Security):
         _logger.info("  rospy.security.SSHSecurity init")
         self.ssh_tunnels = { }
 
-    def xmlrpcapi(self, uri, node_name):
+    def xmlrpcapi(self, uri, node_name = None):
         uriValidate = urlparse.urlparse(uri)
         if not uriValidate[0] or not uriValidate[1]:
             return None
@@ -115,7 +133,7 @@ class SSHSecurity(Security):
         _logger.info("remapped xmlrpcapi request: %s => %s" % (requested_uri, uri))
         return xmlrpcclient.ServerProxy(uri)
 
-    def connect(self, sock, dest_addr, dest_port, endpoint_id, pub_node_name, timeout=None):
+    def connect(self, sock, dest_addr, dest_port, endpoint_id, timeout=None):
         # TODO: if we are connecting locally, don't worry about it
         # for now, let's tunnel everything to easily test its functionality.
         # if dest_addr != 'localhost' and dest_addr != '127.0.0.1':
@@ -133,6 +151,7 @@ class SSHSecurity(Security):
             except Exception as e:
                 print("OH NOES couldn't connect through tunnel: %s" % str(e))
                 raise
+            return sock
 
 #########################################################################
 class XMLRPCTimeoutSafeTransport(xmlrpcclient.SafeTransport):
@@ -306,11 +325,31 @@ class SSLSecurity(Security):
         self.kpath = os.path.join(os.path.expanduser('~'), '.ros', 'keys', self.node_name)
 
         self.master_server_cert_path = self.keystore_path('master', '.server.cert')
-
         self.server_context_ = None
         self.client_contexts_ = {}
         self.allowed_clients = set()
         self.keyserver_addr_ = None
+
+        if node_name == 'master':
+            # some extra initialization steps for graph saving/loading
+            self.graphs_path = os.path.join(os.path.expanduser('~'), '.ros', 'graphs')
+            if not os.path.exists(self.graphs_path):
+                print("initializing empty graph store: %s" % self.graphs_path)
+                os.makedirs(self.graphs_path)
+
+            # ugly... need to figure out a graceful way to pass the graph
+            self.allowed_publishers = []
+            self.allowed_subscribers = []
+            self.enforce_graph = False
+            if 'ROS_GRAPH_NAME' in os.environ:
+                if '..' in os.environ['ROS_GRAPH_NAME'] or '/' in os.environ['ROS_GRAPH_NAME']:
+                    raise ValueError("graph name must be a simple string. saw [%s] instead" % os.environ['ROS_GRAPH_NAME'])
+                self.graph_path = os.path.join(os.path.expanduser('~'), '.ros', 'graphs', os.environ['ROS_GRAPH_NAME'] + '.yaml')
+                if 'ROS_GRAPH_MODE' in os.environ and os.environ['ROS_GRAPH_MODE'] == 'strict':
+                    self.enforce_graph = True
+                    self.load_graph(self.graph_path)
+                else:
+                    self.save_graph(self.graph_path)
 
         if not self.all_certs_present():
             if not os.path.exists(self.kpath):
@@ -329,8 +368,25 @@ class SSLSecurity(Security):
         else:
             print('all startup certificates are already present')
 
+    def load_graph(self, graph_path):
+        print("loading graph from %s" % self.graph_path)
+        with open(self.graph_path, 'r') as f:
+            graph = yaml.load(f)
+            self.allowed_publishers  = graph['publishers']
+            self.allowed_subscribers = graph['subscribers']
+        print('allowed_publishers = %s' % repr(self.allowed_publishers))
+        print('allowed_subscribers = %s' % repr(self.allowed_subscribers))
+
+    def save_graph(self, graph_path):
+        print("saving graph to %s" % self.graph_path)
+        graph = {}
+        graph['publishers']  = self.allowed_publishers
+        graph['subscribers'] = self.allowed_subscribers
+        print('graph yaml:\n%s' % yaml.dump(graph))
+        with open(self.graph_path, 'w') as f:
+            f.write(yaml.dump(graph))
+
     def ssl_keyserver_addr(self):
-        print('ssl_keyserver_addr()')
         if self.keyserver_addr_ is not None:
             return self.keyserver_addr_
         if not 'ROS_MASTER_URI' in os.environ:
@@ -400,7 +456,7 @@ class SSLSecurity(Security):
         return context.wrap_socket(sock, server_side=True) #connstream
 
     def xmlrpcapi(self, uri, node_name=None):
-        #print("             SSLSecurity.xmlrpcapi(%s, %s)" % (uri, node_name or "[UNKNOWN]"))
+        #print("SSLSecurity.xmlrpcapi(%s, %s)" % (uri, node_name or "[UNKNOWN]"))
         context = self.get_client_context(node_name or uri)
         st = XMLRPCTimeoutSafeTransport(context=context, timeout=10.0)
         return xmlrpcclient.ServerProxy(uri, transport=st, context=context)
@@ -534,6 +590,32 @@ class SSLSecurity(Security):
             print('oh noes: %s' % e)
             return False
         print("WOAH WOAH WOAH i'm accepting this just because i'm too trusting")
+        return True
+
+    def allow_registerPublisher(self, caller_id, topic, topic_type):
+        print("SSLSecurity.allow_registerPublisher(%s, %s, %s)" % (caller_id, topic, topic_type))
+        name = node_name_to_cert_stem(caller_id)
+        if self.enforce_graph:
+            for pub in self.allowed_publishers:
+                if pub['node_name'] == name and pub['topic'] == topic and pub['topic_type'] == topic_type:
+                    return True
+            return False # never found it. NO SOUP FOR YOU
+        else:
+            self.allowed_publishers += [{'node_name':name, 'topic':topic, 'topic_type':topic_type }]
+            self.save_graph(self.graph_path)
+        return True
+
+    def allow_registerSubscriber(self, caller_id, topic, topic_type):
+        print("SSLSecurity.allow_registerSubscriber(%s, %s, %s)" % (caller_id, topic, topic_type))
+        name = node_name_to_cert_stem(caller_id)
+        if self.enforce_graph:
+            for sub in self.allowed_subscribers:
+                if sub['node_name'] == name and sub['topic'] == topic and sub['topic_type'] == topic_type:
+                    return True
+            return False # never found it. NO SOUP FOR YOU
+        else:
+            self.allowed_subscribers += [{'node_name':name, 'topic':topic, 'topic_type':topic_type }]
+            self.save_graph(self.graph_path)
         return True
 
 #########################################################################

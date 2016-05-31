@@ -92,9 +92,14 @@ class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
         if not SimpleXMLRPCRequestHandler.parse_request(self):
             return False
         # see who's calling. bail if not in out list of allowed clients
-        text = self.request.getpeercert(binary_form=False)
-        binary = self.request.getpeercert(binary_form=True)
-        return security.get().allow_xmlrpc_request(text, binary)
+        # the getpeercert() method will only exist if we're in SSL mode
+        gpc = getattr(self.request, 'getpeercert', None)
+        if callable(gpc):
+            text = self.request.getpeercert(binary_form=False)
+            binary = self.request.getpeercert(binary_form=True)
+            return security.get().allow_xmlrpc_request(text, binary)
+        else:
+            return True # we're not in SSL mode, so just let it through
     
 class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
     """

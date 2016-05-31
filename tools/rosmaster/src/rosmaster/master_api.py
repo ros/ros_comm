@@ -718,6 +718,8 @@ class ROSMasterHandler(object):
            for nodes currently publishing the specified topic.
         @rtype: (int, str, [str])
         """
+        if not security.get().allow_registerSubscriber(caller_id, topic, topic_type):
+            return 0, "request denied by security policy", []
         #NOTE: subscribers do not get to set topic type
         try:
             self.ps_lock.acquire()
@@ -794,6 +796,8 @@ class ROSMasterHandler(object):
         List of current subscribers of topic in the form of XMLRPC URIs.
         @rtype: (int, str, [str])
         """
+        if not security.get().allow_registerPublisher(caller_id, topic, topic_type):
+            return 0, "request denied by security policy", []
         #NOTE: we need topic_type for getPublishedTopics.
         try:
             self.ps_lock.acquire()
