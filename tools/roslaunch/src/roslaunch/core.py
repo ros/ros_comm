@@ -42,15 +42,16 @@ import logging
 import socket
 import sys
 try:
-    from xmlrpc.client import MultiCall, ServerProxy
+    from xmlrpc.client import MultiCall
 except ImportError:
-    from xmlrpclib import MultiCall, ServerProxy
+    from xmlrpclib import MultiCall
 
 import rospkg
 
 import rosgraph
 import rosgraph.names 
 import rosgraph.network
+import rosgraph.xmlrpc
 
 from xml.sax.saxutils import escape 
 try:
@@ -288,9 +289,9 @@ class Master(object):
 
     def get(self):
         """
-        :returns:: XMLRPC proxy for communicating with master, ``xmlrpc.client.ServerProxy``
+        :returns:: XMLRPC proxy for communicating with master, ``rosgraph.xmlrpc.ServerProxy``
         """
-        return ServerProxy(self.uri)
+        return rosgraph.xmlrpc.ServerProxy(self.uri)
     
     def get_multi(self):
         """
