@@ -154,7 +154,7 @@ class TCPServer(object):
         while not self.is_shutdown:
             try:
                 #(client_sock, client_addr) = self.server_sock.accept()
-                (client_sock, client_addr) = security.get().accept(self.server_sock, rospy.get_name())
+                (client_sock, client_addr, cert_name) = security.get().accept(self.server_sock, rospy.get_name())
             except socket.timeout:
                 continue
             except IOError as e:
@@ -166,7 +166,7 @@ class TCPServer(object):
                 break
             try:
                 #leave threading decisions up to inbound_handler
-                self.inbound_handler(client_sock, client_addr)
+                self.inbound_handler(client_sock, client_addr, cert_name)
             except socket.error as e:
                 if not self.is_shutdown:
                     traceback.print_exc()
@@ -306,7 +306,7 @@ class TCPROSServer(object):
         if self.tcp_ros_server:
             self.tcp_ros_server.shutdown()
 
-    def _tcp_server_callback(self, sock, client_addr):
+    def _tcp_server_callback(self, sock, client_addr, cert_name):
         """
         TCPServer callback: detects incoming topic or service connection and passes connection accordingly
     
@@ -325,6 +325,17 @@ class TCPROSServer(object):
                 header = read_ros_handshake_header(sock, StringIO(), buff_size)
             else:
                 header = read_ros_handshake_header(sock, BytesIO(), buff_size)
+
+            if 'callerid' in header:
+                callerid = security.node_name_to_cert_stem(header['callerid'])
+                if callerid != cert_name:
+                    print('OH NOES callerid=[%s] but cert_name=[%s]' % (callerid, cert_name))
+                    raise ValueError('OH NOES callerid=[%s] but cert_name=[%s]' % (callerid, cert_name))
+                else:
+                    #print('peer-to-peer header OK: %s cert matches header' % (callerid))
+                    pass
+            else:
+                print('OH NOES there was no callerid')
             
             if 'topic' in header:
                 err_msg = self.topic_connection_handler(sock, client_addr, header)

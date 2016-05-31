@@ -82,7 +82,8 @@ class NoSecurity(Security):
         return sock
 
     def accept(self, server_sock, server_node_name):
-        return server_sock.accept()
+        s = server_sock.accept()
+        return (s[0], s[1], 'unknown')
 
 
 #########################################################################
@@ -512,7 +513,7 @@ class SSLSecurity(Security):
             print("SSLSecurity.accept() wrap_socket exception: %s" % e)
             raise
         print("%s is allowing inbound connection from %s" % (self.node_name, cn))
-        return (client_stream, client_addr)
+        return (client_stream, client_addr, cn)
 
     def cert_cn(self, cert):
         """
