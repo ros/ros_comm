@@ -190,6 +190,7 @@ class SSLCertificateCreator(object):
         if not os.path.exists(self.kpath):
             print("initializing empty roscore keystore: %s" % self.kpath)
             os.makedirs(self.kpath)
+            os.chmod(self.kpath, 0o700)
         self.openssl_conf_path = os.path.join(self.kpath, 'openssl.conf')
         self.root_ca_path = os.path.join(self.kpath, 'root.ca')
         self.root_cert_path = os.path.join(self.kpath, 'root.cert')
@@ -336,11 +337,13 @@ class SSLSecurity(Security):
             if not os.path.exists(self.graphs_path):
                 print("initializing empty graph store: %s" % self.graphs_path)
                 os.makedirs(self.graphs_path)
+                os.chmod(self.graphs_path, 0o700)
 
             # ugly... need to figure out a graceful way to pass the graph
             self.allowed_publishers = []
             self.allowed_subscribers = []
             self.enforce_graph = False
+            self.graph_path = None
             if 'ROS_GRAPH_NAME' in os.environ:
                 if '..' in os.environ['ROS_GRAPH_NAME'] or '/' in os.environ['ROS_GRAPH_NAME']:
                     raise ValueError("graph name must be a simple string. saw [%s] instead" % os.environ['ROS_GRAPH_NAME'])
@@ -355,6 +358,7 @@ class SSLSecurity(Security):
             if not os.path.exists(self.kpath):
                 print("initializing empty node keystore: %s" % self.kpath)
                 os.makedirs(self.kpath)
+                os.chmod(self.kpath, 0o700)
             print("calling keyserver_proxy.getCertificates() on %s" % self.ssl_keyserver_addr())
             keyserver_proxy = xmlrpcclient.ServerProxy(self.ssl_keyserver_addr())
             response = keyserver_proxy.getCertificates(self.node_name)
@@ -369,8 +373,8 @@ class SSLSecurity(Security):
             print('all startup certificates are already present')
 
     def load_graph(self, graph_path):
-        print("loading graph from %s" % self.graph_path)
-        with open(self.graph_path, 'r') as f:
+        print("loading graph from %s" % graph_path)
+        with open(graph_path, 'r') as f:
             graph = yaml.load(f)
             self.allowed_publishers  = graph['publishers']
             self.allowed_subscribers = graph['subscribers']
@@ -378,12 +382,12 @@ class SSLSecurity(Security):
         print('allowed_subscribers = %s' % repr(self.allowed_subscribers))
 
     def save_graph(self, graph_path):
-        print("saving graph to %s" % self.graph_path)
+        print("saving graph to %s" % graph_path)
         graph = {}
         graph['publishers']  = self.allowed_publishers
         graph['subscribers'] = self.allowed_subscribers
         print('graph yaml:\n%s' % yaml.dump(graph))
-        with open(self.graph_path, 'w') as f:
+        with open(graph_path, 'w') as f:
             f.write(yaml.dump(graph))
 
     def ssl_keyserver_addr(self):
@@ -600,7 +604,7 @@ class SSLSecurity(Security):
                 if pub['node_name'] == name and pub['topic'] == topic and pub['topic_type'] == topic_type:
                     return True
             return False # never found it. NO SOUP FOR YOU
-        else:
+        elif self.graph_path is not None:
             self.allowed_publishers += [{'node_name':name, 'topic':topic, 'topic_type':topic_type }]
             self.save_graph(self.graph_path)
         return True
@@ -613,7 +617,7 @@ class SSLSecurity(Security):
                 if sub['node_name'] == name and sub['topic'] == topic and sub['topic_type'] == topic_type:
                     return True
             return False # never found it. NO SOUP FOR YOU
-        else:
+        elif self.graph_path is not None:
             self.allowed_subscribers += [{'node_name':name, 'topic':topic, 'topic_type':topic_type }]
             self.save_graph(self.graph_path)
         return True
