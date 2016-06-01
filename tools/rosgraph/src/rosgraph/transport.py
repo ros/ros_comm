@@ -26,6 +26,8 @@ class RequestsTransport(xmlrpc.Transport):
                                                    handler=handler)
         try:
             resp = requests.post(url, data=request_body, headers=headers)
+        except requests.RequestException as exc:
+            raise exc.args[0].reason
         except (ValueError, Exception):
             raise
         else:
