@@ -32,10 +32,26 @@ function(roslaunch_add_file_check path)
     message(FATAL_ERROR "roslaunch_add_file_check() path '${abspath}' was not found")
   endif()
 
-  string(REPLACE "/" "_" testname ${path})
+  set(testname ${path})
+
+  # to support registering the same test with different ARGS
+  # append the args to the test name
+  if(_roslaunch_UNPARSED_ARGUMENTS)
+    get_filename_component(_ext ${testname} EXT)
+    get_filename_component(testname ${testname} NAME_WE)
+    foreach(arg ${_roslaunch_UNPARSED_ARGUMENTS})
+      string(REPLACE ":=" "_" arg_string "${arg}")
+      string(REPLACE "=" "_" arg_string "${arg_string}")
+      set(testname "${testname}__${arg_string}")
+    endforeach()
+    set(testname "${testname}${_ext}")
+  endif()
+
+  string(REPLACE "/" "_" testname ${testname})
   set(output_path ${CATKIN_TEST_RESULTS_DIR}/${PROJECT_NAME})
   set(cmd "${CMAKE_COMMAND} -E make_directory ${output_path}")
   set(output_file_name "roslaunch-check_${testname}.xml")
+  string(REPLACE ";" " " _roslaunch_UNPARSED_ARGUMENTS "${_roslaunch_UNPARSED_ARGUMENTS}")
   set(cmd ${cmd} "${roslaunch_check_script} -o '${output_path}/${output_file_name}' '${abspath}' ${_roslaunch_UNPARSED_ARGUMENTS}")
   catkin_run_tests_target("roslaunch-check" ${testname} "${output_file_name}" COMMAND ${cmd} DEPENDENCIES ${_roslaunch_DEPENDENCIES})
 endfunction()
