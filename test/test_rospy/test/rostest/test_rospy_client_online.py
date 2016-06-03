@@ -102,7 +102,7 @@ class TestRospyClientOnline(unittest.TestCase):
             self.assert_("test 4" in sys.stderr.getvalue())            
 
             # logXXX_throttle
-            for i in xrange(3):
+            for i in range(3):
                 sys.stdout = StringIO()
                 rospy.loginfo_throttle(3, "test 1")
                 if i == 0:
@@ -114,7 +114,7 @@ class TestRospyClientOnline(unittest.TestCase):
                 else:
                     self.assert_("test 1" in sys.stdout.getvalue())
 
-            for i in xrange(3):
+            for i in range(3):
                 sys.stderr = StringIO()
                 rospy.logwarn_throttle(3, "test 2")
                 if i == 0:
@@ -126,7 +126,7 @@ class TestRospyClientOnline(unittest.TestCase):
                 else:
                     self.assert_("test 2" in sys.stderr.getvalue())
 
-            for i in xrange(3):
+            for i in range(3):
                 sys.stderr = StringIO()
                 rospy.logerr_throttle(3, "test 3")
                 if i == 0:
@@ -138,7 +138,7 @@ class TestRospyClientOnline(unittest.TestCase):
                 else:
                     self.assert_("test 3" in sys.stderr.getvalue())
 
-            for i in xrange(3):
+            for i in range(3):
                 sys.stderr = StringIO()
                 rospy.logfatal_throttle(3, "test 4")
                 if i == 0:

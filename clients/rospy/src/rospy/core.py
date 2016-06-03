@@ -37,7 +37,10 @@
 
 
 import atexit
-import cPickle as pickle
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 import inspect
 import logging
 import os
