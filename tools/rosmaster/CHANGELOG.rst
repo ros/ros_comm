@@ -2,6 +2,9 @@
 Changelog for package rosmaster
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.12.1 (2016-04-18)
 -------------------
 * use defusedxml to prevent common xml issues (`#782 <https://github.com/ros/ros_comm/pull/782>`_)

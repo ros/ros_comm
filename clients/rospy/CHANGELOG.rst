@@ -2,6 +2,10 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add logXXX_throttle functions (`#812 <https://github.com/ros/ros_comm/pull/812>`_)
+
 1.12.1 (2016-04-18)
 -------------------
 

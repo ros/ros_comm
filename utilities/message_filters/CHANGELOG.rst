@@ -2,6 +2,10 @@
 Changelog for package message_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* allow saving timestamp-less messages to Cache, add getLast method (`#806 <https://github.com/ros/ros_comm/pull/806>`_)
+
 1.12.1 (2016-04-18)
 -------------------
 * use directory specific compiler flags (`#785 <https://github.com/ros/ros_comm/pull/785>`_)

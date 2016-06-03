@@ -2,6 +2,10 @@
 Changelog for package rosnode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add --quiet option (`#809 <https://github.com/ros/ros_comm/pull/809>`_)
+
 1.12.1 (2016-04-18)
 -------------------
 
