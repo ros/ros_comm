@@ -619,7 +619,7 @@ def _sub_str_plot_fields(val, f, field_filter):
     return None
 
 
-def _str_plot(val, time_offset=None, current_time=None, field_filter=None, type_information=None, fixed_numeric_width=None):
+def _str_plot(val, time_offset=None, current_time=None, field_filter=None, type_information=None, fixed_numeric_width=None, value_transform_fn=None):
     """
     Convert value to matlab/octave-friendly CSV string representation.
 
@@ -627,6 +627,7 @@ def _str_plot(val, time_offset=None, current_time=None, field_filter=None, type_
     :param current_time: current :class:`genpy.Time` to use if message does not contain its own timestamp.
     :param time_offset: (optional) for time printed for message, print as offset against this :class:`genpy.Time`
     :param field_filter: filter the fields that are stringified for Messages, ``fn(Message)->iter(str)``
+    :param value_transform_fn: Not used but for same API as CallbackEcho.custom_strify_message
     :returns: comma-separated list of field values in val, ``str``
     """
         
@@ -1263,11 +1264,18 @@ def _rostopic_cmd_echo(argv):
     except ValueError:
         parser.error("NUM_WIDTH must be an integer")
 
-    value_transform_fn = create_value_transform(options.nostr, options.noarr)
+    if options.plot:
+        field_filter_fn = create_field_filter(options.nostr, options.noarr)
+        value_transform_fn = None
+    else:
+        field_filter_fn = None
+        value_transform_fn = create_value_transform(options.nostr, options.noarr)
+
     callback_echo = CallbackEcho(topic, None, plot=options.plot,
                                  filter_fn=filter_fn,
                                  echo_clear=options.clear, echo_all_topics=options.all_topics,
                                  offset_time=options.offset_time, count=msg_count,
+                                 field_filter_fn=field_filter_fn,
                                  value_transform_fn=value_transform_fn,
                                  fixed_numeric_width=fixed_numeric_width)
     try:
