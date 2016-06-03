@@ -182,28 +182,28 @@ _logging_throttle = LoggingThrottle()
 
 
 def logdebug_throttle(period, msg):
-    id = pickle.dumps(inspect.stack()[1][1:])
-    _logging_throttle(id, logdebug, period, msg)
+    id_ = pickle.dumps(inspect.stack()[1][1:])
+    _logging_throttle(id_, logdebug, period, msg)
 
 
 def loginfo_throttle(period, msg):
-    id = pickle.dumps(inspect.stack()[1][1:])
-    _logging_throttle(id, loginfo, period, msg)
+    id_ = pickle.dumps(inspect.stack()[1][1:])
+    _logging_throttle(id_, loginfo, period, msg)
 
 
 def logwarn_throttle(period, msg):
-    id = pickle.dumps(inspect.stack()[1][1:])
-    _logging_throttle(id, logwarn, period, msg)
+    id_ = pickle.dumps(inspect.stack()[1][1:])
+    _logging_throttle(id_, logwarn, period, msg)
 
 
 def logerr_throttle(period, msg):
-    id = pickle.dumps(inspect.stack()[1][1:])
-    _logging_throttle(id, logerr, period, msg)
+    id_ = pickle.dumps(inspect.stack()[1][1:])
+    _logging_throttle(id_, logerr, period, msg)
 
 
 def logfatal_throttle(period, msg):
-    id = pickle.dumps(inspect.stack()[1][1:])
-    _logging_throttle(id, logfatal, period, msg)
+    id_ = pickle.dumps(inspect.stack()[1][1:])
+    _logging_throttle(id_, logfatal, period, msg)
 
 
 #########################################################
