@@ -2,8 +2,8 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.2 (2016-06-03)
+-------------------
 * support registering the same test multiple times with different arguments (`#814 <https://github.com/ros/ros_comm/pull/814>`_)
 * fix passing multiple args to roslaunch_add_file_check (`#814 <https://github.com/ros/ros_comm/pull/814>`_)
 
