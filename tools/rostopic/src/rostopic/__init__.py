@@ -769,14 +769,9 @@ class CallbackEcho(object):
         # ensure to print uint8[] as array of numbers instead of string
         if type_information and type_information.startswith('uint8['):
             val = [ord(x) for x in val]
-        value_untransform_fn = None
         if value_transform is not None:
-            val, value_untransform_fn = value_transform(val)
+            val = value_transform(val)
         text = genpy.message.strify_message(val, indent=indent, time_offset=time_offset, current_time=current_time, field_filter=field_filter, fixed_numeric_width=fixed_numeric_width)
-        if value_untransform_fn is not None:
-            # this operation is necessary because value_transform does change the type of message
-            # and that causes not stringified values next time
-            val = value_untransform_fn(val)
         return text
 
     def callback(self, data, callback_args, current_time=None):
@@ -1285,35 +1280,35 @@ def _rostopic_cmd_echo(argv):
 
 def create_value_transform(echo_nostr, echo_noarr):
     def value_transform(val):
+
+        class TransformedMessage(genpy.Message):
+            # These should be copy because changing these variables
+            # in transforming is problematic without its untransforming.
+            __slots__ = val.__slots__[:]
+            _slot_types = val._slot_types[:]
+
+        val_trans = TransformedMessage()
+
         fields = val.__slots__
         field_types = val._slot_types
-        transformed = []
         for index, (f, t) in enumerate(zip(fields, field_types)):
-            f_val = val.__getattribute__(f)
+            f_val = getattr(val, f)
             if echo_noarr and '[' in t:
-                transformed.append((index, t, f, f_val))
-                val.__setattr__(f, '<array type: %s, length: %s>' %
+                setattr(val_trans, f, '<array type: %s, length: %s>' %
                                 (t.rstrip('[]'), len(f_val)))
-                val._slot_types[index] = 'string'
+                val_trans._slot_types[index] = 'string'
             elif echo_nostr and 'string' in t:
-                transformed.append((index, t, f, f_val))
-                val.__setattr__(f, '<string length: %s>' % len(f_val))
+                setattr(val_trans, f, '<string length: %s>' % len(f_val))
             else:
                 try:
                     msg_class = genpy.message.get_message_class(t)
                     if msg_class is None:
                         continue
-                    nested_transformed, _ = value_transform(f_val)
-                    val.__setattr__(f, nested_transformed)
-                    transformed.append((index, t, f, f_val))
+                    nested_transformed = value_transform(f_val)
+                    setattr(val_trans, f, nested_transformed)
                 except ValueError:
-                    pass
-        def untransform_fn(val):
-            for index, type_, f, f_val in transformed:
-                val._slot_types[index] = type_
-                val.__setattr__(f, f_val)
-            return val
-        return val, untransform_fn
+                    setattr(val_trans, f, f_val)
+        return val_trans
     return value_transform
 
 def create_field_filter(echo_nostr, echo_noarr):
