@@ -6,7 +6,9 @@ try:
 except ImportError:
     import xmlrpclib as xmlrpc
 
+import socket
 import requests
+import urllib3.exceptions
 
 
 class RequestsTransport(xmlrpc.Transport):
@@ -26,8 +28,20 @@ class RequestsTransport(xmlrpc.Transport):
                                                    handler=handler)
         try:
             resp = requests.post(url, data=request_body, headers=headers)
+        except requests.exceptions.Timeout:
+            raise socket.timeout('timed out')
         except requests.RequestException as exc:
-            raise exc.args[0].reason
+            if isinstance(exc.args[0], urllib3.exceptions.HTTPError):
+                # Rethrow urllib3 exception.reason. That are e.g. socket.error
+                # Or other exceptions that the default xmlrpclib implementation
+                # would throw.
+                raise exc.args[0].reason
+            else:
+                # otherwise, rethrow the exc
+                # We could add more exception mappings here:
+                #  - requests.exceptions.InvalidURL    -> socket.gaierror?
+                #  - requests.exceptions.InvalidSchema -> socket.gaierror?
+                raise exc
         except (ValueError, Exception):
             raise
         else:
