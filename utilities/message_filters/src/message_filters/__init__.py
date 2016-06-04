@@ -207,7 +207,7 @@ class TimeSynchronizer(SimpleFilter):
             f.registerCallback(self.add, q, i_q)
             for i_q, (f, q) in enumerate(zip(fs, self.queues))]
 
-    def add(self, msg, my_queue, my_queue_index):
+    def add(self, msg, my_queue, my_queue_index=None):
         self.lock.acquire()
         my_queue[msg.header.stamp] = msg
         while len(my_queue) > self.queue_size:
@@ -240,7 +240,7 @@ class ApproximateTimeSynchronizer(TimeSynchronizer):
         self.slop = rospy.Duration.from_sec(slop)
         self.allow_headerless = allow_headerless
 
-    def add(self, msg, my_queue, my_queue_index):
+    def add(self, msg, my_queue, my_queue_index=None):
         if not hasattr(msg, 'header') or not hasattr(msg.header, 'stamp'):
             if not self.allow_headerless:
                 rospy.logwarn("Cannot use message filters with non-stamped messages. "
@@ -256,11 +256,14 @@ class ApproximateTimeSynchronizer(TimeSynchronizer):
         while len(my_queue) > self.queue_size:
             del my_queue[min(my_queue)]
         # self.queues = [topic_0 {stamp: msg}, topic_1 {stamp: msg}, ...]
-        other_queues = self.queues[:my_queue_index] + \
-            self.queues[my_queue_index+1:]
+        if my_queue_index is None:
+            search_queues = self.queues
+        else:
+            search_queues = self.queues[:my_queue_index] + \
+                self.queues[my_queue_index+1:]
         # sort and leave only reasonable stamps for synchronization
         stamps = []
-        for queue in other_queues:
+        for queue in search_queues:
             topic_stamps = []
             for stamp in queue:
                 stamp_delta = abs(stamp - msg.header.stamp)
@@ -275,7 +278,8 @@ class ApproximateTimeSynchronizer(TimeSynchronizer):
         for vv in itertools.product(*[zip(*s)[0] for s in stamps]):
             vv = list(vv)
             # insert the new message
-            vv.insert(my_queue_index, msg.header.stamp)
+            if my_queue_index is not None:
+                vv.insert(my_queue_index, msg.header.stamp)
             qt = list(zip(self.queues, vv))
             if ( ((max(vv) - min(vv)) < self.slop) and
                 (len([1 for q,t in qt if t not in q]) == 0) ):
