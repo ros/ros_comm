@@ -265,11 +265,11 @@ class ApproximateTimeSynchronizer(TimeSynchronizer):
         stamps = []
         for queue in search_queues:
             topic_stamps = []
-            for stamp in queue:
-                stamp_delta = abs(stamp - msg.header.stamp)
+            for s in queue:
+                stamp_delta = abs(s - stamp)
                 if stamp_delta > self.slop:
                     continue  # far over the slop
-                topic_stamps.append((stamp, stamp_delta))
+                topic_stamps.append((s, stamp_delta))
             if not topic_stamps:
                 self.lock.release()
                 return
@@ -279,7 +279,7 @@ class ApproximateTimeSynchronizer(TimeSynchronizer):
             vv = list(vv)
             # insert the new message
             if my_queue_index is not None:
-                vv.insert(my_queue_index, msg.header.stamp)
+                vv.insert(my_queue_index, stamp)
             qt = list(zip(self.queues, vv))
             if ( ((max(vv) - min(vv)) < self.slop) and
                 (len([1 for q,t in qt if t not in q]) == 0) ):
