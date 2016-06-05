@@ -713,7 +713,7 @@ class CallbackEcho(object):
                  offset_time=False, count=None,
                  field_filter_fn=None, fixed_numeric_width=None):
         """
-        :param plot: if ``True``, echo in plotting-friendly format, ``bool``
+        :param plot: if ``True``, echo in plotting-friendly format (csv), ``bool``
         :param filter_fn: function that evaluates to ``True`` if message is to be echo'd, ``fn(topic, msg)``
         :param echo_all_topics: (optional) if ``True``, echo all messages in bag, ``bool``
         :param offset_time: (optional) if ``True``, display time as offset from current time, ``bool``
