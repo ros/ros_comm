@@ -374,7 +374,7 @@ struct Serializer<AllInOneSerializer>
     stream.next(t.a);
   }
 
-  ROS_DECLARE_ALLINONE_SERIALIZER;
+  ROS_DECLARE_ALLINONE_SERIALIZER
 };
 } // namespace serialization
 } // namespace ros
