@@ -670,7 +670,7 @@ def write_serialization(s, spec, cpp_name_prefix):
         s.write('    stream.next(m.%s);\n'%(field.name))
     s.write('  }\n\n')
     
-    s.write('  ROS_DECLARE_ALLINONE_SERIALIZER;\n')
+    s.write('  ROS_DECLARE_ALLINONE_SERIALIZER\n')
     
     s.write('}; // struct %s_\n'%(spec.short_name))
         

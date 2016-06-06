@@ -83,7 +83,7 @@ struct Serializer<AnyMessage>
   {
   }
 
-  ROS_DECLARE_ALLINONE_SERIALIZER;
+  ROS_DECLARE_ALLINONE_SERIALIZER
 };
 }
 }
