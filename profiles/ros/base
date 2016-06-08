@@ -12,13 +12,14 @@
 #include <abstractions/base>
 #include <abstractions/nameservice>
 
-# Include basic permissions for ROS and every vHost
 # Allow unconfined processes to send us signals by default
-#signal (receive) peer=unconfined,
-# Allow apache to send us signals by default
-#signal (receive) peer=/usr/sbin/apache2,
+signal (receive) peer=unconfined,
+
+# Allow us to receive signals from ros tools
+signal (receive) peer=@{ROS_INSTALL_BIN}/roslaunch,
+
 # Allow us to signal ourselves
-#signal peer=@{profile_name},
+signal peer=@{profile_name},
 
 # Network permissions
 #network inet stream,
