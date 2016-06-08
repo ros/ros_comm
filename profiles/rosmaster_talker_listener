@@ -27,10 +27,11 @@
   /usr/sbin/arp rix,
   /var/tmp/* rmw,
   @{ROS_INSTALL_BIN}/roslaunch rix,
-  @{ROS_INSTALL_BIN}/rosmaster rix,
-  @{ROS_INSTALL_LIB}/** Px,
-  @{ROS_INSTALL_SHARE}/** Px,
+  @{ROS_INSTALL_BIN}/rosmaster rpx,
+  @{ROS_INSTALL_LIB}/** px,
+  @{ROS_INSTALL_SHARE}/** px,
   @{ROS_INSTALL}/** r,
+
 
   ^/usr/bin/du {
     owner @{ROS_LOCAL}{,/}** rw,
@@ -45,14 +46,14 @@
   @{ROS_INSTALL_BIN}/rosmaster rix,
 
 }
-/opt/ros/kinetic/lib/rosout/rosout flags=(audit) {
+/opt/ros/kinetic/lib/rosout/rosout {
   #include <ros/base>
   #include <ros/node>
 
-  /lib*{,/}** r,
-  /usr/lib*{,/}** r,
+  /lib*{,/}** rix,
+  /usr/lib*{,/}** rix,
   @{ROS_INSTALL_LIB}/rosout/rosout rix,
-  @{ROS_INSTALL_LIB}{,/}** r,
+  @{ROS_INSTALL_LIB}{,/}** rix,
 
 }
 /opt/ros/kinetic/share/rospy_tutorials/001_talker_listener/listener.py {
