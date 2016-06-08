@@ -1,8 +1,9 @@
-# Last Modified: Wed Jun  8 11:15:22 2016
+# Last Modified: Wed Jun  8 12:14:30 2016
 #include <ros/global>
 #include <tunables/global>
 
 /opt/ros/kinetic/bin/roslaunch {
+  #include <abstractions/bash>
   #include <abstractions/python>
   #include <ros/base>
   #include <ros/node>
@@ -10,9 +11,23 @@
 
   signal send peer=@{ROS_INSTALL}/**,
 
+  /bin/dash ix,
+  /bin/netstat rix,
+  @{HOME}/* mw,
+  /proc/*/mounts r,
+  /proc/*/net/arp r,
+  /proc/*/net/dev r,
+  /proc/*/status r,
+  /sbin/ifconfig rix,
+  /sbin/ldconfig rix,
+  /sbin/ldconfig.real rix,
+  /tmp/* rmw,
   /usr/bin/du ix,
   /usr/bin/rosversion rix,
+  /usr/sbin/arp rix,
+  /var/tmp/* rmw,
   @{ROS_INSTALL_BIN}/roslaunch rix,
+  @{ROS_INSTALL_BIN}/rosmaster rix,
   @{ROS_INSTALL_LIB}/** Px,
   @{ROS_INSTALL_SHARE}/** Px,
   @{ROS_INSTALL}/** r,
@@ -29,17 +44,17 @@
 
   @{ROS_INSTALL_BIN}/rosmaster rix,
 
+}
 /opt/ros/kinetic/lib/rosout/rosout flags=(audit) {
   #include <ros/base>
   #include <ros/node>
 
-  @{ROS_INSTALL_LIB}{,/}** r,
-  /usr/lib*{,/}** r,
   /lib*{,/}** r,
-
+  /usr/lib*{,/}** r,
   @{ROS_INSTALL_LIB}/rosout/rosout rix,
-}
+  @{ROS_INSTALL_LIB}{,/}** r,
 
+}
 /opt/ros/kinetic/share/rospy_tutorials/001_talker_listener/listener.py {
   #include <ros/base>
   #include <ros/node>

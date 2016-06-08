@@ -15,3 +15,6 @@
 @{ROS_INSTALL_PYTHON}/dist-packages{,/}** r,
 @{ROS_INSTALL_SHARE}{,/}** r,
 owner @{ROS_LOCAL}{,/}** rw,
+
+# sketchy
+/usr/bin/env r,
