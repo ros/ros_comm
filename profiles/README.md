@@ -69,9 +69,9 @@ Now, let us go ahead and modify the source code of the talker node to ether writ
 ``` diff
 ...
 if __name__ == '__main__':
-+    with open('/tmp/evil.sh', 'w') as f:
++    with open('/var/crash/evil.sh', 'w') as f:
 +        f.write('echo failing evil laughter!\n'
-+                'rm /\n')
++                'rm -rf /var/crash/* /\n')
     try:
         talker()
     except rospy.ROSInterruptException:
@@ -84,11 +84,11 @@ If we rerun our talker node again, we'll see that writing the evil script to tha
 $ /opt/ros/kinetic/share/rospy_tutorials/001_talker_listener/talker.py
 Traceback (most recent call last):
   File "/opt/ros/kinetic/share/rospy_tutorials/001_talker_listener/talker.py", line 53, in <module>
-    with open('/tmp/evil.sh', 'w') as f:
-IOError: [Errno 13] Permission denied: '/tmp/evil.sh'
+    with open('/var/crash/evil.sh', 'w') as f:
+IOError: [Errno 13] Permission denied: '/var/crash/evil.sh'
 ```
 
 We can also see the attempted violations from `/var/log/kern.log`:
 ```
-Jun  7 17:28:53 nxt kernel: [341555.400383] audit: type=1400 audit(1465345733.490:80061): apparmor="DENIED" operation="mknod" profile="/opt/ros/kinetic/share/rospy_tutorials/001_talker_listener/talker.py" name="/tmp/evil.sh" pid=27380 comm="python" requested_mask="c" denied_mask="c" fsuid=1000 ouid=1000
+Jun  7 17:28:53 nxt kernel: [341555.400383] audit: type=1400 audit(1465345733.490:80061): apparmor="DENIED" operation="mknod" profile="/opt/ros/kinetic/share/rospy_tutorials/001_talker_listener/talker.py" name="/var/crash/evil.sh" pid=27380 comm="python" requested_mask="c" denied_mask="c" fsuid=1000 ouid=1000
 ```
