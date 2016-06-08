@@ -1,0 +1,15 @@
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2016 Open Source Robotics Foundation
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+# All the tunables definitions that should be available to every profile
+# should be included here
+
+#include <ros/home>
+#include <ros/alias>
