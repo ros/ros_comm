@@ -11,6 +11,7 @@
 # Include base and networking abstractions needed for ros
 #include <abstractions/base>
 #include <abstractions/nameservice>
+#include <abstractions/user-tmp>
 
 # Allow unconfined processes to send us signals by default
 signal (receive) peer=unconfined,
