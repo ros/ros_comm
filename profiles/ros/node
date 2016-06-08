@@ -10,8 +10,10 @@
 
 # Include basic node abstractions and excutables needed for ros nodes
 
-/bin/dash rix,
-/bin/uname rix,
-@{ROS_INSTALL_PYTHON}/dist-packages{,/}** r,
+/{,usr/}bin/dash ixr,
+/{,usr/}bin/uname ixr,
+@{ROS_INSTALL_LIB}{,/}** r,
 @{ROS_INSTALL_SHARE}{,/}** r,
 owner @{ROS_LOCAL}{,/}** rw,
+
+/usr/bin/env r,
