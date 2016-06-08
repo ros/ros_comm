@@ -1,0 +1,17 @@
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2016 Open Source Robotics Foundation
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+# Include basic node abstractions and excutables needed for ros nodes
+
+/bin/dash rix,
+/bin/uname rix,
+@{ROS_INSTALL_PYTHON}/dist-packages{,/}** r,
+@{ROS_INSTALL_SHARE}{,/}** r,
+owner @{ROS_LOCAL}{,/}** rw,

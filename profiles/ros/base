@@ -1,0 +1,25 @@
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2016 Open Source Robotics Foundation
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+# Include base and networking abstractions needed for ros
+#include <abstractions/base>
+#include <abstractions/nameservice>
+
+# Include basic permissions for ROS and every vHost
+# Allow unconfined processes to send us signals by default
+#signal (receive) peer=unconfined,
+# Allow apache to send us signals by default
+#signal (receive) peer=/usr/sbin/apache2,
+# Allow us to signal ourselves
+#signal peer=@{profile_name},
+
+# Network permissions
+#network inet stream,
+#network inet6 stream,
