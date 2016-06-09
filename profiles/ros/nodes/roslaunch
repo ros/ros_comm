@@ -1,0 +1,34 @@
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2016 Open Source Robotics Foundation
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+# Include basic node abstractions and excutables needed for ros nodes
+#include <ros/base>
+#include <ros/node>
+#include <ros/python>
+
+signal send peer=@{ROS_INSTALL}/**,
+
+/bin/dash ix,
+/bin/netstat rix,
+/sbin/ifconfig rix,
+/sbin/ldconfig* rix,
+/usr/bin/du ix,
+/usr/bin/env ix,
+/usr/bin/rosversion rix,
+/usr/sbin/arp rix,
+owner @{HOME}/* mw,
+@{PROC}*/mounts r,
+@{PROC}*/net/arp r,
+@{PROC}*/net/dev r,
+@{PROC}*/status r,
+@{ROS_INSTALL_BIN}/rosmaster rpx,
+@{ROS_INSTALL_LIB}/** px,
+@{ROS_INSTALL_SHARE}/** px,
+@{ROS_INSTALL}/** r,

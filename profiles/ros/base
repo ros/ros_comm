@@ -18,6 +18,7 @@ signal (receive) peer=unconfined,
 
 # Allow us to receive signals from ros tools
 signal (receive) peer=@{ROS_INSTALL_BIN}/roslaunch,
+signal (receive) peer=@{ROS_INSTALL_BIN}/{,s}roscore,
 
 # Allow us to signal ourselves
 signal peer=@{profile_name},
