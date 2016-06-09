@@ -1,38 +1,14 @@
-# Last Modified: Wed Jun  8 12:14:30 2016
+# Last Modified: Wed Jun  8 16:23:41 2016
 #include <ros/global>
 #include <tunables/global>
 
-/opt/ros/kinetic/bin/roslaunch {
-  #include <ros/base>
-  #include <ros/node>
-  #include <ros/python>
+/opt/ros/*/bin/roslaunch {
+  #include <ros/nodes/roslaunch>
 
-  signal send peer=@{ROS_INSTALL}/**,
-
-  /bin/dash ix,
-  /bin/netstat rix,
-  owner @{HOME}/* mw,
-  @{PROC}*/mounts r,
-  @{PROC}*/net/arp r,
-  @{PROC}*/net/dev r,
-  @{PROC}*/status r,
-  /sbin/ifconfig rix,
-  /sbin/ldconfig* rix,
-  /usr/bin/du ix,
-  /usr/bin/rosversion rix,
-  /usr/sbin/arp rix,
   @{ROS_INSTALL_BIN}/roslaunch rix,
-  @{ROS_INSTALL_BIN}/rosmaster rpx,
-  @{ROS_INSTALL_LIB}/** px,
-  @{ROS_INSTALL_SHARE}/** px,
-  @{ROS_INSTALL}/** r,
 
-  ^/usr/bin/du {
-    owner @{ROS_LOCAL}{,/}** rw,
-
-  }
 }
-/opt/ros/kinetic/bin/rosmaster {
+/opt/ros/*/bin/rosmaster {
   #include <ros/base>
   #include <ros/node>
   #include <ros/python>
@@ -40,14 +16,32 @@
   @{ROS_INSTALL_BIN}/rosmaster rix,
 
 }
-/opt/ros/kinetic/lib/rosout/rosout {
+/opt/ros/*/bin/{,s}roscore {
+  #include <abstractions/openssl>
+  #include <ros/nodes/roslaunch>
+
+  @{HOME}/.rnd r,
+  /usr/bin/openssl rix,
+  @{ROS_INSTALL_BIN}/roslaunch rix,
+  @{ROS_INSTALL_BIN}/{,s}roscore rix,
+
+}
+/opt/ros/*/lib/rosout/rosout {
   #include <ros/base>
   #include <ros/node>
 
   @{ROS_INSTALL_LIB}/rosout/rosout rix,
 
 }
-/opt/ros/kinetic/share/rospy_tutorials/001_talker_listener/listener.py {
+/opt/ros/*/share/rosoutpy/scripts/rosoutpy {
+  #include <ros/base>
+  #include <ros/node>
+  #include <ros/python>
+
+  @{ROS_INSTALL_SHARE}/rosoutpy/scripts/rosoutpy rix,
+
+}
+/opt/ros/*/share/rospy_tutorials/001_talker_listener/listener.py {
   #include <ros/base>
   #include <ros/node>
   #include <ros/python>
@@ -55,7 +49,7 @@
   @{ROS_INSTALL_SHARE}/rospy_tutorials/001_talker_listener/listener.py r,
 
 }
-/opt/ros/kinetic/share/rospy_tutorials/001_talker_listener/talker.py {
+/opt/ros/*/share/rospy_tutorials/001_talker_listener/talker.py {
   #include <ros/base>
   #include <ros/node>
   #include <ros/python>
