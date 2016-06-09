@@ -2,13 +2,13 @@
 #include <ros/global>
 #include <tunables/global>
 
-/opt/ros/kinetic/bin/roslaunch {
+/opt/ros/*/bin/roslaunch {
   #include <ros/nodes/roslaunch>
 
   @{ROS_INSTALL_BIN}/roslaunch rix,
 
 }
-/opt/ros/kinetic/bin/rosmaster {
+/opt/ros/*/bin/rosmaster {
   #include <ros/base>
   #include <ros/node>
   #include <ros/python>
@@ -16,7 +16,7 @@
   @{ROS_INSTALL_BIN}/rosmaster rix,
 
 }
-/opt/ros/kinetic/bin/{,s}roscore {
+/opt/ros/*/bin/{,s}roscore {
   #include <abstractions/openssl>
   #include <ros/nodes/roslaunch>
 
@@ -26,14 +26,14 @@
   @{ROS_INSTALL_BIN}/{,s}roscore rix,
 
 }
-/opt/ros/kinetic/lib/rosout/rosout {
+/opt/ros/*/lib/rosout/rosout {
   #include <ros/base>
   #include <ros/node>
 
   @{ROS_INSTALL_LIB}/rosout/rosout rix,
 
 }
-/opt/ros/kinetic/share/rosoutpy/scripts/rosoutpy {
+/opt/ros/*/share/rosoutpy/scripts/rosoutpy {
   #include <ros/base>
   #include <ros/node>
   #include <ros/python>
@@ -41,7 +41,7 @@
   @{ROS_INSTALL_SHARE}/rosoutpy/scripts/rosoutpy rix,
 
 }
-/opt/ros/kinetic/share/rospy_tutorials/001_talker_listener/listener.py {
+/opt/ros/*/share/rospy_tutorials/001_talker_listener/listener.py {
   #include <ros/base>
   #include <ros/node>
   #include <ros/python>
@@ -49,7 +49,7 @@
   @{ROS_INSTALL_SHARE}/rospy_tutorials/001_talker_listener/listener.py r,
 
 }
-/opt/ros/kinetic/share/rospy_tutorials/001_talker_listener/talker.py {
+/opt/ros/*/share/rospy_tutorials/001_talker_listener/talker.py {
   #include <ros/base>
   #include <ros/node>
   #include <ros/python>
