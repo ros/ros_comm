@@ -59,9 +59,6 @@ void SubscriptionQueue::push(const SubscriptionCallbackHelperPtr& helper, const 
 
   if(fullNoLock())
   {
-    queue_.pop_front();
-    --queue_size_;
-
     if (!full_)
     {
       ROS_DEBUG("Incoming queue full for topic \"%s\".  Discarding oldest message (current queue size [%d])", topic_.c_str(), (int)queue_.size());
@@ -73,6 +70,9 @@ void SubscriptionQueue::push(const SubscriptionCallbackHelperPtr& helper, const 
     {
       *was_full = true;
     }
+
+    queue_.pop_front();
+    --queue_size_;
   }
   else
   {
