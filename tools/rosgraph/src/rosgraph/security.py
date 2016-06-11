@@ -590,10 +590,10 @@ class SSLSecurity(Security):
 
     def allow_register(self, caller_id, topic, topic_type, mode):
         node_name = node_name_to_cert_stem(caller_id)
-        graph = self.graph.graph
+        allowed_nodes = self.graph.graph['nodes']
         if self.enforce_graph:
-            if (node_name in graph):
-                allowed_modes = graph[node_name]
+            if (node_name in allowed_nodes):
+                allowed_modes = allowed_nodes[node_name]
                 if mode in allowed_modes:
                     allowed_topics = allowed_modes[mode]
                     if (topic in allowed_topics):
@@ -602,7 +602,7 @@ class SSLSecurity(Security):
                             return True
             return False # never found it. NO SOUP FOR YOU
         elif self.graph.graph_path is not None:
-            self.graph.graph[node_name][mode][topic]['type'] = topic_type
+            self.graph.graph['nodes'][node_name][mode][topic]['type'] = topic_type
             self.graph.save_graph()
             info = (mode, node_name, topic, topic_type, self.graph.graph_path)
             _logger.info("Registering {}:{} for topic:{} of type:{} to graph:{}".format(*info))
