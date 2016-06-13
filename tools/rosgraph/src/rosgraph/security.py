@@ -13,7 +13,7 @@ import shutil
 import httplib
 import sys
 import base64
-import yaml
+import rosgraph_helper
 #from rospy.exceptions import TransportInitError
 
 try:
@@ -84,7 +84,6 @@ class NoSecurity(Security):
     def accept(self, server_sock, server_node_name):
         s = server_sock.accept()
         return (s[0], s[1], 'unknown')
-
 
 #########################################################################
 
@@ -361,19 +360,23 @@ class SSLSecurity(Security):
                 os.chmod(self.graphs_path, 0o700)
 
             # ugly... need to figure out a graceful way to pass the graph
-            self.allowed_publishers = []
-            self.allowed_subscribers = []
             self.enforce_graph = False
-            self.graph_path = None
+            self.graph = rosgraph_helper.GraphStructure()
             if 'ROS_GRAPH_NAME' in os.environ:
                 if '..' in os.environ['ROS_GRAPH_NAME'] or '/' in os.environ['ROS_GRAPH_NAME']:
                     raise ValueError("graph name must be a simple string. saw [%s] instead" % os.environ['ROS_GRAPH_NAME'])
-                self.graph_path = os.path.join(os.path.expanduser('~'), '.ros', 'graphs', os.environ['ROS_GRAPH_NAME'] + '.yaml')
+                self.graph.graph_path = os.path.join(os.path.expanduser('~'), '.ros', 'graphs', os.environ['ROS_GRAPH_NAME'] + '.yaml')
+                try:
+                    self.graph.load_graph()
+                except:
+                    pass
                 if 'ROS_GRAPH_MODE' in os.environ and os.environ['ROS_GRAPH_MODE'] == 'strict':
                     self.enforce_graph = True
-                    self.load_graph(self.graph_path)
                 else:
-                    self.save_graph(self.graph_path)
+                    try:
+                        self.graph.load_graph()
+                    except:
+                        pass
 
         if not self.all_certs_present():
             if not os.path.exists(self.kpath):
@@ -393,27 +396,6 @@ class SSLSecurity(Security):
         else:
             print('all startup certificates are already present')
 
-    def load_graph(self, graph_path):
-        print("loading graph from %s" % graph_path)
-        if not os.path.exists(graph_path):
-            print("Requested graph file doesn't exist: [%s]" % graph_path)
-            sys.exit(1)
-        with open(graph_path, 'r') as f:
-            graph = yaml.load(f)
-            self.allowed_publishers  = graph['publishers']
-            self.allowed_subscribers = graph['subscribers']
-        #print('allowed_publishers = %s' % repr(self.allowed_publishers))
-        #print('allowed_subscribers = %s' % repr(self.allowed_subscribers))
-
-    def save_graph(self, graph_path):
-        #print("saving graph to %s" % graph_path)
-        graph = {}
-        graph['publishers']  = self.allowed_publishers
-        graph['subscribers'] = self.allowed_subscribers
-        #print('graph yaml:\n%s' % yaml.dump(graph))
-        with open(graph_path, 'w') as f:
-            f.write(yaml.dump(graph))
-
     def ssl_keyserver_addr(self):
         if self.keyserver_addr_ is not None:
             return self.keyserver_addr_
@@ -430,7 +412,7 @@ class SSLSecurity(Security):
             self.keyserver_addr_ = '%s:%d' % (host, port-1)
         print('ssl_keyserver_addr=%s' % self.keyserver_addr_)
         return self.keyserver_addr_
-    
+
     def all_certs_present(self):
         if not os.path.exists(self.kpath):
             return False
@@ -606,31 +588,31 @@ class SSLSecurity(Security):
         print("WOAH WOAH WOAH how did i get here?")
         return 'ahhhhhhhhhhhh'
 
-    def allow_registerPublisher(self, caller_id, topic, topic_type):
-        #print("SSLSecurity.allow_registerPublisher(%s, %s, %s)" % (caller_id, topic, topic_type))
-        name = node_name_to_cert_stem(caller_id)
+    def allow_register(self, caller_id, topic, topic_type, mode):
+        node_name = node_name_to_cert_stem(caller_id)
+        allowed_nodes = self.graph.graph['nodes']
         if self.enforce_graph:
-            for pub in self.allowed_publishers:
-                if pub['node_name'] == name and pub['topic'] == topic and pub['topic_type'] == topic_type:
-                    return True
+            if (node_name in allowed_nodes):
+                allowed_modes = allowed_nodes[node_name]
+                if mode in allowed_modes:
+                    allowed_topics = allowed_modes[mode]
+                    if (topic in allowed_topics):
+                        allowed_topic_type = allowed_topics[topic]['type']
+                        if (topic_type == allowed_topic_type):
+                            return True
             return False # never found it. NO SOUP FOR YOU
-        elif self.graph_path is not None:
-            self.allowed_publishers += [{'node_name':name, 'topic':topic, 'topic_type':topic_type }]
-            self.save_graph(self.graph_path)
+        elif self.graph.graph_path is not None:
+            self.graph.graph['nodes'][node_name][mode][topic]['type'] = topic_type
+            self.graph.save_graph()
+            info = (mode, node_name, topic, topic_type, self.graph.graph_path)
+            _logger.info("Registering {}:{} for topic:{} of type:{} to graph:{}".format(*info))
         return True
 
+    def allow_registerPublisher(self, caller_id, topic, topic_type):
+        return self.allow_register(caller_id, topic, topic_type, 'publications')
+
     def allow_registerSubscriber(self, caller_id, topic, topic_type):
-        #print("SSLSecurity.allow_registerSubscriber(%s, %s, %s)" % (caller_id, topic, topic_type))
-        name = node_name_to_cert_stem(caller_id)
-        if self.enforce_graph:
-            for sub in self.allowed_subscribers:
-                if sub['node_name'] == name and sub['topic'] == topic and sub['topic_type'] == topic_type:
-                    return True
-            return False # never found it. NO SOUP FOR YOU
-        elif self.graph_path is not None:
-            self.allowed_subscribers += [{'node_name':name, 'topic':topic, 'topic_type':topic_type }]
-            self.save_graph(self.graph_path)
-        return True
+        return self.allow_register(caller_id, topic, topic_type, 'subscriptions')
 
 #########################################################################
 _security = None
@@ -724,4 +706,3 @@ def fork_xmlrpc_keyserver():
         except Exception as e:
             time.sleep(0.01)
     print("horray, the keyserver is now open for business.")
- 
