@@ -1,7 +1,7 @@
 # AppArmor Profile for ROS
 This folder contains AppArmor profiles for ROS. [AppArmor](http://wiki.apparmor.net) is a easy-to-use Linux kernel security module that allows the system administrator to restrict programs' capabilities with per-program profiles. AppArmor proactively protects the operating system and applications from external or internal threats, even zero-day attacks, by enforcing good behavior and preventing even unknown application flaws from being exploited. AppArmor security policies completely define what system resources individual applications can access, and with what privileges. Profiles can allow capabilities like network access, raw socket access, and the permission to read, write, or execute files on matching paths.
 
-## Instillation
+## Installation
 
 To install, copy the `ros` folder from within this directory to `/etc/apparmor.d/ros`. This will place the necessary ROS profiles where AppArmor can load them, allowing you to easily reference them from within your own custom profiles.
 
@@ -44,10 +44,10 @@ Once you've installed the ROS AppArmor profiles, you can start using them in oth
 }
 ```
 
-Then use apparmor_parser to load a profile into the kernel. It can also be used to reload a currently loaded profile using the -r option instead:
+Then use apparmor_parser to load a profile into the kernel.
 
 ```
-cat /etc/apparmor.d/rosmaster_talker_listener | sudo apparmor_parser -a
+sudo apparmor_parser -r /etc/apparmor.d/rosmaster_talker_listener
 ```
 
 Finally we can simply run the ROS nodes with the enforced security profile by calling them all directly from three separate terminals:
