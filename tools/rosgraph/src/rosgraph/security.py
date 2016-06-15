@@ -16,6 +16,9 @@ import base64
 import rosgraph_helper
 #from rospy.exceptions import TransportInitError
 
+from apparmor.aare import re
+from apparmor.common import convert_regexp
+
 try:
     import urllib.parse as urlparse #Python 3.x
 except ImportError:
@@ -594,26 +597,20 @@ class SSLSecurity(Security):
         print("WOAH WOAH WOAH how did i get here?")
         return 'ahhhhhhhhhhhh'
 
-    def allow_register(self, caller_id, topic, topic_type, mask):
+
+    def allow_register(self, caller_id, topic_name, topic_type, mask):
         node_name = caller_id_to_node_name(caller_id)
-        allowed_nodes = self.graph.graph['nodes']
         if self.enforce_graph:
-            if node_name in allowed_nodes:
-                allowed_topics = allowed_nodes[node_name]['topics']
-                if topic in allowed_topics:
-                    allowed_topic_masks = allowed_topics[topic]
-                    if mask in allowed_topic_masks:
-                        return True
-            return False # never found it. NO SOUP FOR YOU
+            return self.graph.is_allowed(node_name, topic_name, mask)
         elif self.graph.graph_path is not None:
-            allowed_topic_masks = self.graph.graph['nodes'][node_name]['topics'][topic]
-            if type(allowed_topic_masks) is not str:
-                allowed_topic_masks = ''
-            allowed_topic_masks = ''.join(sorted(set((allowed_topic_masks + mask).lower())))
-            self.graph.graph['nodes'][node_name]['topics'][topic] = allowed_topic_masks
-            self.graph.save_graph()
-            info = (node_name, mask, topic, topic_type, self.graph.graph_path)
-            _logger.info("Registering {}:{} for topic:{} of type:{} to graph:{}".format(*info))
+            if not self.graph.is_allowed(node_name, topic_name, mask):
+                try:
+                    self.graph.add_allowed(node_name, topic_name, mask)
+                except:
+                    traceback.print_exc()
+                self.graph.save_graph()
+                info = (topic_name, mask, node_name, self.graph.graph_path)
+                _logger.info("+REG [{}]:{} {} to graph:[{}]".format(*info))
         return True
 
     def allow_registerPublisher(self, caller_id, topic, topic_type):
