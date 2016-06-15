@@ -165,18 +165,24 @@ class XMLRPCTimeoutSafeTransport(xmlrpcclient.SafeTransport):
 #########################################################################
 # global functions used by SSLSecurity and friends
 def node_name_to_cert_stem(node_name):
+    node_name = caller_id_to_node_name(node_name)
     stem = node_name
     if (stem[0] == '/'):
         stem = stem[1:]
     if '..' in node_name:
         raise ValueError('woah there. node_name [%s] has a double-dot. OH NOES.' % node_name)
+    return stem.replace('/', '__')
+
+def caller_id_to_node_name(caller_id):
+    stem = caller_id
     # check for anonymous node names. remove any long numeric suffix.
     # anonymous nodes will have numeric suffix tokens at the end (PID and time)
     tok = stem.split('_')
-    if len(tok) >= 3 and tok[-2].isdigit() and \
-       len(tok[-1]) > 8 and tok[-1].isdigit():
-        stem = '_'.join(tok[0:-2])
-    return stem.replace('/', '__')
+    if len(tok) >= 3: # check if pid and epoch suffix posable
+        if tok[-2].isdigit() and tok[-1].isdigit(): # check for pid and epoch
+            if len(tok[-1]) == 13: # check for epoch 13 uses milliseconds
+                stem = '_'.join(tok[0:-2])
+    return stem
 
 def open_private_output_file(fn):
     flags = os.O_WRONLY | os.O_CREAT
@@ -588,31 +594,33 @@ class SSLSecurity(Security):
         print("WOAH WOAH WOAH how did i get here?")
         return 'ahhhhhhhhhhhh'
 
-    def allow_register(self, caller_id, topic, topic_type, mode):
-        node_name = node_name_to_cert_stem(caller_id)
+    def allow_register(self, caller_id, topic, topic_type, mask):
+        node_name = caller_id_to_node_name(caller_id)
         allowed_nodes = self.graph.graph['nodes']
         if self.enforce_graph:
-            if (node_name in allowed_nodes):
-                allowed_modes = allowed_nodes[node_name]
-                if mode in allowed_modes:
-                    allowed_topics = allowed_modes[mode]
-                    if (topic in allowed_topics):
-                        allowed_topic_type = allowed_topics[topic]['type']
-                        if (topic_type == allowed_topic_type):
-                            return True
+            if node_name in allowed_nodes:
+                allowed_topics = allowed_nodes[node_name]['topics']
+                if topic in allowed_topics:
+                    allowed_topic_masks = allowed_topics[topic]
+                    if mask in allowed_topic_masks:
+                        return True
             return False # never found it. NO SOUP FOR YOU
         elif self.graph.graph_path is not None:
-            self.graph.graph['nodes'][node_name][mode][topic]['type'] = topic_type
+            allowed_topic_masks = self.graph.graph['nodes'][node_name]['topics'][topic]
+            if type(allowed_topic_masks) is not str:
+                allowed_topic_masks = ''
+            allowed_topic_masks = ''.join(sorted(set((allowed_topic_masks + mask).lower())))
+            self.graph.graph['nodes'][node_name]['topics'][topic] = allowed_topic_masks
             self.graph.save_graph()
-            info = (mode, node_name, topic, topic_type, self.graph.graph_path)
+            info = (node_name, mask, topic, topic_type, self.graph.graph_path)
             _logger.info("Registering {}:{} for topic:{} of type:{} to graph:{}".format(*info))
         return True
 
     def allow_registerPublisher(self, caller_id, topic, topic_type):
-        return self.allow_register(caller_id, topic, topic_type, 'publications')
+        return self.allow_register(caller_id, topic, topic_type, 'w')
 
     def allow_registerSubscriber(self, caller_id, topic, topic_type):
-        return self.allow_register(caller_id, topic, topic_type, 'subscriptions')
+        return self.allow_register(caller_id, topic, topic_type, 'r')
 
 #########################################################################
 _security = None
