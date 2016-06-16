@@ -16,8 +16,11 @@ import base64
 import rosgraph_helper
 #from rospy.exceptions import TransportInitError
 
-from apparmor.aare import re
-from apparmor.common import convert_regexp
+class GraphMode:
+    audit = 'audit'
+    complain = 'complain'
+    enforce = 'enforce'
+    train = 'train'
 
 try:
     import urllib.parse as urlparse #Python 3.x
@@ -369,23 +372,23 @@ class SSLSecurity(Security):
                 os.chmod(self.graphs_path, 0o700)
 
             # ugly... need to figure out a graceful way to pass the graph
-            self.enforce_graph = False
+            self.graph_mode = GraphMode.enforce
             self.graph = rosgraph_helper.GraphStructure()
             if 'ROS_GRAPH_NAME' in os.environ:
                 if '..' in os.environ['ROS_GRAPH_NAME'] or '/' in os.environ['ROS_GRAPH_NAME']:
                     raise ValueError("graph name must be a simple string. saw [%s] instead" % os.environ['ROS_GRAPH_NAME'])
                 self.graph.graph_path = os.path.join(os.path.expanduser('~'), '.ros', 'graphs', os.environ['ROS_GRAPH_NAME'] + '.yaml')
-                try:
+                if os.path.exists(self.graph.graph_path):
                     self.graph.load_graph()
-                except:
-                    pass
-                if 'ROS_GRAPH_MODE' in os.environ and os.environ['ROS_GRAPH_MODE'] == 'strict':
-                    self.enforce_graph = True
-                else:
-                    try:
-                        self.graph.load_graph()
-                    except:
-                        pass
+                if 'ROS_GRAPH_MODE' in os.environ:
+                    if os.environ['ROS_GRAPH_MODE'] == 'enforce':
+                        self.graph_mode = GraphMode.enforce
+                    elif os.environ['ROS_GRAPH_MODE'] == 'train':
+                        self.graph_mode = GraphMode.train
+                    elif os.environ['ROS_GRAPH_MODE'] == 'complain':
+                        self.graph_mode = GraphMode.complain
+                    elif os.environ['ROS_GRAPH_MODE'] == 'audit':
+                        self.graph_mode = GraphMode.audit
 
         if not self.all_certs_present():
             if not os.path.exists(self.kpath):
@@ -600,18 +603,30 @@ class SSLSecurity(Security):
 
     def allow_register(self, caller_id, topic_name, topic_type, mask):
         node_name = caller_id_to_node_name(caller_id)
-        if self.enforce_graph:
-            return self.graph.is_allowed(node_name, topic_name, mask)
-        elif self.graph.graph_path is not None:
+        info = (topic_name, mask, node_name, self.graph.graph_path)
+        if self.graph_mode is GraphMode.enforce:
             if not self.graph.is_allowed(node_name, topic_name, mask):
-                try:
-                    self.graph.add_allowed(node_name, topic_name, mask)
-                except:
-                    traceback.print_exc()
-                self.graph.save_graph()
-                info = (topic_name, mask, node_name, self.graph.graph_path)
-                _logger.info("+REG [{}]:{} {} to graph:[{}]".format(*info))
-        return True
+                _logger.info("!REG [{}]:{} {} to graph:[{}]".format(*info))
+                return False
+            else:
+                return True
+        elif self.graph_mode is GraphMode.train:
+            if self.graph.graph_path is not None:
+                if not self.graph.is_allowed(node_name, topic_name, mask):
+                    try:
+                        self.graph.add_allowed(node_name, topic_name, mask)
+                    except:
+                        traceback.print_exc()
+                    self.graph.save_graph()
+                    info = (topic_name, mask, node_name, self.graph.graph_path)
+                    _logger.info("+REG [{}]:{} {} to graph:[{}]".format(*info))
+            return True
+        elif self.graph_mode is GraphMode.complain or self.graph_mode is GraphMode.audit:
+            if self.graph.graph_path is not None:
+                _logger.info("!REG [{}]:{} {} to graph:[{}]".format(*info))
+            elif self.graph_mode is GraphMode.audit:
+                _logger.info("REG [{}]:{} {} to graph:[{}]".format(*info))
+            return True
 
     def allow_registerPublisher(self, caller_id, topic, topic_type):
         return self.allow_register(caller_id, topic, topic_type, 'w')
