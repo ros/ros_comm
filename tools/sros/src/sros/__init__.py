@@ -7,7 +7,7 @@ import sys
 import rosgraph.security as security
 import shutil
 
-def get_parser():
+def get_sroscore_parser():
 
     class CondAction(argparse.Action):
         def __init__(self, option_strings, dest, nargs=None, **kwargs):
@@ -19,6 +19,8 @@ def get_parser():
         def __call__(self, parser, namespace, values, option_string=None):
             for x in self.make_required:
                 x.required = True
+            if values not in security.GraphModes:
+                parser.error("Unknown MODE [{}] specified".format(values))
             setattr(namespace, self.dest, values)
 
     parser = argparse.ArgumentParser(prog='sroscore',
@@ -38,8 +40,8 @@ def get_parser():
                         version='%(prog)s 0.0')
     return parser
 
-def roscore_main(argv = sys.argv):
-    parser = get_parser()
+def sroscore_main(argv = sys.argv):
+    parser = get_sroscore_parser()
     args, roscore_argv = parser.parse_known_args(argv)
     print('roscore_argv: ', roscore_argv)
 
@@ -80,25 +82,40 @@ command-specific help can be obtained by:
 sros COMMAND --help\n""")
         return 1
 
+
+class SrosParser(argparse.ArgumentParser):
+    """Argument parser class sros"""
+
+    def set(self):
+        """Setup parser for sros"""
+
+        # create the top-level parser
+        subparsers = self.add_subparsers(help='help for subcommand', dest='subparser_name')
+
+        # create the parser for the "key" command
+        key_subparser = subparsers.add_parser(
+            'keys',
+            help='keys --help')
+        key_subparser.add_argument(
+            '-D', '--delete',
+            action='store_true',
+            help='delete keys')
+
 def sros_main(argv = sys.argv):
-    if len(argv) <= 1 or argv[1] == '--help':
-        return usage()
-    cmd = argv[1]
-    if cmd == 'keys':
-        return sros_keys(argv)
-    else:
-        return usage()
+    sros_parser = SrosParser(
+        description="sros tools")
+    sros_parser.set()
 
-def sros_keys(argv):
-    if len(argv) <= 2 or argv[2] == '--help':
-        return usage('keys')
-    subcmd = argv[2]
-    if subcmd == 'delete':
-        return sros_keys_delete(argv)
-    else:
-        return usage('keys')
+    args = sros_parser.parse_args(argv[1:])
 
-def sros_keys_delete(argv):
+    if args.subparser_name == 'keys':
+        return sros_keys(args)
+
+def sros_keys(args):
+    if args.delete:
+        return sros_keys_delete(args)
+
+def sros_keys_delete(args):
     # todo: parameterize keystore location, if we expand to multiple keyrings
     keypath = os.path.join(os.path.expanduser('~'), '.ros', 'keys')
     # do a tiny bit of sanity check...

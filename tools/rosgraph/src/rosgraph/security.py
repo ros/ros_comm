@@ -16,11 +16,15 @@ import base64
 import rosgraph_helper
 #from rospy.exceptions import TransportInitError
 
-class GraphMode:
+class GraphModes:
     audit = 'audit'
     complain = 'complain'
     enforce = 'enforce'
     train = 'train'
+
+    class __metaclass__(type):
+        def __contains__(self, item):
+            return hasattr(self, item)
 
 try:
     import urllib.parse as urlparse #Python 3.x
@@ -372,7 +376,7 @@ class SSLSecurity(Security):
                 os.chmod(self.graphs_path, 0o700)
 
             # ugly... need to figure out a graceful way to pass the graph
-            self.graph_mode = GraphMode.enforce
+            self.graph_mode = GraphModes.enforce
             self.graph = rosgraph_helper.GraphStructure()
             if 'ROS_GRAPH_NAME' in os.environ:
                 if '..' in os.environ['ROS_GRAPH_NAME'] or '/' in os.environ['ROS_GRAPH_NAME']:
@@ -381,14 +385,8 @@ class SSLSecurity(Security):
                 if os.path.exists(self.graph.graph_path):
                     self.graph.load_graph()
                 if 'ROS_GRAPH_MODE' in os.environ:
-                    if os.environ['ROS_GRAPH_MODE'] == 'enforce':
-                        self.graph_mode = GraphMode.enforce
-                    elif os.environ['ROS_GRAPH_MODE'] == 'train':
-                        self.graph_mode = GraphMode.train
-                    elif os.environ['ROS_GRAPH_MODE'] == 'complain':
-                        self.graph_mode = GraphMode.complain
-                    elif os.environ['ROS_GRAPH_MODE'] == 'audit':
-                        self.graph_mode = GraphMode.audit
+                    graph_mode = os.environ['ROS_GRAPH_MODE']
+                    self.graph_mode = getattr(GraphModes, graph_mode, GraphModes.enforce)
 
         if not self.all_certs_present():
             if not os.path.exists(self.kpath):
@@ -604,13 +602,13 @@ class SSLSecurity(Security):
     def allow_register(self, caller_id, topic_name, topic_type, mask):
         node_name = caller_id_to_node_name(caller_id)
         info = (topic_name, mask, node_name, self.graph.graph_path)
-        if self.graph_mode is GraphMode.enforce:
+        if self.graph_mode is GraphModes.enforce:
             if not self.graph.is_allowed(node_name, topic_name, mask):
                 _logger.info("!REG [{}]:{} {} to graph:[{}]".format(*info))
                 return False
             else:
                 return True
-        elif self.graph_mode is GraphMode.train:
+        elif self.graph_mode is GraphModes.train:
             if self.graph.graph_path is not None:
                 if not self.graph.is_allowed(node_name, topic_name, mask):
                     try:
@@ -621,10 +619,10 @@ class SSLSecurity(Security):
                     info = (topic_name, mask, node_name, self.graph.graph_path)
                     _logger.info("+REG [{}]:{} {} to graph:[{}]".format(*info))
             return True
-        elif self.graph_mode is GraphMode.complain or self.graph_mode is GraphMode.audit:
+        elif self.graph_mode is GraphModes.complain or self.graph_mode is GraphModes.audit:
             if self.graph.graph_path is not None:
                 _logger.info("!REG [{}]:{} {} to graph:[{}]".format(*info))
-            elif self.graph_mode is GraphMode.audit:
+            elif self.graph_mode is GraphModes.audit:
                 _logger.info("REG [{}]:{} {} to graph:[{}]".format(*info))
             return True
 

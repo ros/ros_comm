@@ -64,7 +64,7 @@ class GraphStructure:
         if graph_path is None:
             graph_path = self.graph_path
         with open(graph_path, 'r') as f:
-            self.graph = ViviDict(yaml.load(f))
+            self.graph = yaml.load(f)
         self.interpret_graph()
 
     def save_graph(self, graph_path=None, sort_graph=True):
