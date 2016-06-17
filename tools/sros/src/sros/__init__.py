@@ -90,6 +90,10 @@ class SrosParser(argparse.ArgumentParser):
             '-D', '--delete',
             action='store_true',
             help='delete keys')
+        key_subparser.add_argument(
+            '-A', '--all',
+            action='store_true',
+            help='all keys')
 
 
 def sros_main(argv = sys.argv):
@@ -105,7 +109,8 @@ def sros_main(argv = sys.argv):
 
 def sros_keys(args):
     if args.delete:
-        return sros_keys_delete(args)
+        if args.all:
+            return sros_keys_delete(args)
 
 
 def sros_keys_delete(args):
