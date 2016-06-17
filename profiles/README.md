@@ -13,6 +13,42 @@ sudo service apparmor restart
 
 ## Example
 
+This example requires a ROS installation including the tutorial package. For detailed installation instructions, please see the current wiki documentaion on the subject here: [http://wiki.ros.org/ROS/Installation](http://wiki.ros.org/ROS/Installation)
+
+As a minimal example for Ubuntu 16.04 and ROS Kinetic release:
+
+> Setup your sources.list
+
+``` terminal
+sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+```
+
+> Set up your keys
+
+``` terminal
+sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 0xB01FA116
+```
+
+> Installation
+
+``` terminal
+sudo apt-get update
+sudo apt-get install ros-kinetic-ros-tutorials
+```
+
+> Initialize rosdep
+
+``` terminal
+sudo rosdep init
+rosdep update
+```
+
+> Environment setup
+
+``` terminal
+source /opt/ros/kinetic/setup.bash
+```
+
 Once you've installed the ROS AppArmor profiles, you can start using them in other profiles you create. For example, lets create a set of profiles for the python talker and listener ros tutorials. Create a file at `/etc/apparmor.d/rosmaster_talker_listener`, and paste in the fallowing profiles within the new file:
 
 ``` terminal
