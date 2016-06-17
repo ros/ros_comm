@@ -82,8 +82,17 @@ class GraphStructure:
         with open(graph_path, 'w') as f:
             f.write(yaml.dump(self.graph, default_flow_style=False))
 
+    def check_for_mask(self, mask, masks, audit):
+        index = masks.lower().find(mask)
+        if index >= 0:
+            return True, masks[index].isupper() or audit
+        else:
+            return False, audit
+
     def is_allowed(self, node_name, topic_name, mask):
-        allowed = False
+        allow = False
+        deny  = False
+        audit = False
         allowed_nodes = self.graph['nodes']
         for node in allowed_nodes:
             allowed_node = allowed_nodes[node]
@@ -94,21 +103,23 @@ class GraphStructure:
                         allowed_topic = allowed_topics[topic]
                         if 'regex' in allowed_topic:
                             if allowed_topic['regex'].search(topic_name):
-                                masks = allowed_topics[topic]
-                                if 'deny' in masks:
-                                    if mask in masks['deny']:
-                                        return False
-                                if 'allow' in masks:
-                                    if mask in masks['allow']:
-                                        allowed = True
-        return allowed
+                                rules = allowed_topics[topic]
+                                if 'deny' in rules:
+                                    masks = rules['deny']
+                                    deny, audit = self.check_for_mask(mask, masks, audit)
+                                if 'allow' in rules:
+                                    masks = rules['allow']
+                                    allow, audit = self.check_for_mask(mask, masks, audit)
+
+        allowed = allow and not deny
+        return allowed, audit
 
     def add_allowed(self, node_name, topic_name, mask):
         allowed_node = self.graph['nodes'][node_name]
         allowed_topic_masks = allowed_node['topics'][topic_name]['allow']
         if type(allowed_topic_masks) is not str:
             allowed_topic_masks = ''
-        allowed_topic_masks = ''.join(sorted(set((allowed_topic_masks + mask).lower())))
+        allowed_topic_masks = ''.join(sorted(set((allowed_topic_masks + mask))))
         allowed_node['topics'][topic_name]['allow'] = allowed_topic_masks
 
         if 'regex' not in allowed_node:

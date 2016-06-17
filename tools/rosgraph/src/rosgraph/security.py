@@ -387,6 +387,8 @@ class SSLSecurity(Security):
                 if 'ROS_GRAPH_MODE' in os.environ:
                     graph_mode = os.environ['ROS_GRAPH_MODE']
                     self.graph_mode = getattr(GraphModes, graph_mode, GraphModes.enforce)
+            else:
+                self.graph_mode = None
 
         if not self.all_certs_present():
             if not os.path.exists(self.kpath):
@@ -598,39 +600,58 @@ class SSLSecurity(Security):
         print("WOAH WOAH WOAH how did i get here?")
         return 'ahhhhhhhhhhhh'
 
+    def log_register(self, enable, flag, info):
+        if enable:
+            _logger.info("{}REG [{}]:{} {} to graph:[{}]".format(flag, *info))
 
     def allow_register(self, caller_id, topic_name, topic_type, mask):
         node_name = caller_id_to_node_name(caller_id)
         info = (topic_name, mask, node_name, self.graph.graph_path)
         if self.graph_mode is GraphModes.enforce:
-            if not self.graph.is_allowed(node_name, topic_name, mask):
-                _logger.info("!REG [{}]:{} {} to graph:[{}]".format(*info))
-                return False
-            else:
-                return True
+            allowed, audit = self.graph.is_allowed(node_name, topic_name, mask)
+            flag = '*' if allowed else '!'
+            self.log_register(audit, flag, info)
+            return allowed
         elif self.graph_mode is GraphModes.train:
             if self.graph.graph_path is not None:
-                if not self.graph.is_allowed(node_name, topic_name, mask):
-                    try:
-                        self.graph.add_allowed(node_name, topic_name, mask)
-                    except:
-                        traceback.print_exc()
+                allowed, audit = self.graph.is_allowed(node_name, topic_name, mask)
+                if not allowed:
+                    self.graph.add_allowed(node_name, topic_name, mask)
                     self.graph.save_graph()
-                    info = (topic_name, mask, node_name, self.graph.graph_path)
-                    _logger.info("+REG [{}]:{} {} to graph:[{}]".format(*info))
+                flag = '*' if allowed else '+'
+                self.log_register((audit or not allowed), flag, info)
             return True
-        elif self.graph_mode is GraphModes.complain or self.graph_mode is GraphModes.audit:
-            if self.graph.graph_path is not None:
-                _logger.info("!REG [{}]:{} {} to graph:[{}]".format(*info))
-            elif self.graph_mode is GraphModes.audit:
-                _logger.info("REG [{}]:{} {} to graph:[{}]".format(*info))
+        elif self.graph_mode is GraphModes.complain:
+            if self.graph.graph is not None:
+                allowed, audit = self.graph.is_allowed(node_name, topic_name, mask)
+                flag = '*' if allowed else '!'
+                self.log_register((audit or not allowed), flag, info)
+            else:
+                self.log_register(True, '!', info)
             return True
+        elif self.graph_mode is GraphModes.audit:
+            if self.graph.graph is not None:
+                allowed, audit = self.graph.is_allowed(node_name, topic_name, mask)
+                flag = '*' if allowed else '!'
+                self.log_register(True, flag, info)
+                return allowed
+            else:
+                self.log_register(True, '', info)
+                return True
+        else:
+            return False
 
     def allow_registerPublisher(self, caller_id, topic, topic_type):
-        return self.allow_register(caller_id, topic, topic_type, 'w')
+        if self.graph_mode is None:
+            return True
+        else:
+            return self.allow_register(caller_id, topic, topic_type, 'w')
 
     def allow_registerSubscriber(self, caller_id, topic, topic_type):
-        return self.allow_register(caller_id, topic, topic_type, 'r')
+        if self.graph_mode is None:
+            return True
+        else:
+            return self.allow_register(caller_id, topic, topic_type, 'r')
 
 #########################################################################
 _security = None
