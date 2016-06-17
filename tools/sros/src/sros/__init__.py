@@ -1,81 +1,119 @@
 from __future__ import print_function
 
+import argparse
 import os
 import subprocess
 import sys
 import rosgraph.security as security
 import shutil
 
-def roscore_main(argv = sys.argv):
-    if not 'ROS_SECURITY' in os.environ:
-        if '--no-keyserver' in argv:
-            os.environ['ROS_SECURITY'] = 'ssl'
-            argv.remove('--no-keyserver') # remove from args to pass roscore
-        else:
-            os.environ['ROS_SECURITY'] = 'ssl_setup' # default: ssl setup mode
-    sm = os.environ['ROS_SECURITY']
-    # if we're in setup mode, we need to start an unsecured server that will
-    # hand out the SSL certificates and keys so that nodes can talk to roscore
-    if sm == 'ssl_setup':
+
+class SroscoreParser(argparse.ArgumentParser):
+    """Argument parser class sroscore"""
+
+    def set(self):
+        """Setup parser for sroscore"""
+
+        class CondAction(argparse.Action):
+            def __init__(self, option_strings, dest, nargs=None, **kwargs):
+                x = kwargs.pop('to_be_required', [])
+                super(CondAction, self).__init__(option_strings, dest, **kwargs)
+                self.make_required = x
+                self.dest = dest
+
+            def __call__(self, parser, namespace, values, option_string=None):
+                for x in self.make_required:
+                    x.required = True
+                if values not in security.GraphModes:
+                    parser.error("Unknown MODE [{}] specified".format(values))
+                setattr(namespace, self.dest, values)
+
+        self.add_argument(
+            '-k','--keyserver',
+            action='store_true',
+            help='enable keyserver')
+        graph_argument = self.add_argument(
+            '-g','--graph',
+            action='store',
+            help='access control graph')
+        self.add_argument(
+            '-m','--mode',
+            action=CondAction,
+            to_be_required=[self._option_string_actions['--graph']],
+            help='access control mode (audit|complain|[enforce]|train)')
+        self.add_argument(
+            '--version',
+            action='version',
+            version='%(prog)s 0.0')
+
+
+def sroscore_main(argv = sys.argv):
+    sroscore_parser = SroscoreParser(
+        prog='sroscore',
+        description='secure roscore')
+    sroscore_parser.set()
+    args, roscore_argv = sroscore_parser.parse_known_args(argv)
+
+    if args.keyserver:
+        # if we're in setup mode, we need to start an unsecured server that will
+        # hand out the SSL certificates and keys so that nodes can talk to roscore
+        os.environ['ROS_SECURITY'] = 'ssl_setup'
         security.fork_xmlrpc_keyserver()
+    else:
+        os.environ['ROS_SECURITY'] = 'ssl'
 
-    if not 'ROS_GRAPH_NAME' in os.environ:
-        graph_arg = None
-        for arg in argv:
-            if '--graph=' in arg:
-                graphname = arg.split('=')[1]
-                print('graphname = [%s]' % graphname)
-                os.environ['ROS_GRAPH_NAME'] = graphname
-                graph_arg = arg 
-        if graph_arg is not None:
-            argv.remove(graph_arg) # remove from list of args to pass roscore
-
-    if not 'ROS_GRAPH_MODE' in os.environ:
-        if '--enforce-graph' in argv:
-            os.environ['ROS_GRAPH_MODE'] = 'strict'
-            argv.remove('--enforce-graph')
+    if args.graph is not None:
+        os.environ['ROS_GRAPH_NAME'] = args.graph
+    if args.mode is not None:
+        os.environ['ROS_GRAPH_MODE'] = args.mode
+    else:
+        os.environ['ROS_GRAPH_MODE'] = 'enforce'
     
     import roslaunch
-    roslaunch.main(['roscore', '--core'] + argv[1:])
+    roslaunch.main(['roscore', '--core'] + roscore_argv[1:])
 
-def usage(subcmd=None):
-    if subcmd == 'keys':
-        print("""
-usage: sros keys SUBCOMMAND [OPTIONS]
 
-where SUBCOMMAND is one of:
-  delete\n""")
-    else:
-        print("""
-usage: sros COMMAND [OPTIONS]
+class SrosParser(argparse.ArgumentParser):
+    """Argument parser class sros"""
 
-where COMMAND is one of:
-  keys
+    def set(self):
+        """Setup parser for sros"""
 
-command-specific help can be obtained by:
+        # create the top-level parser
+        subparsers = self.add_subparsers(help='help for subcommand', dest='subparser_name')
 
-sros COMMAND --help\n""")
-        return 1
+        # create the parser for the "key" command
+        key_subparser = subparsers.add_parser(
+            'keys',
+            help='keys --help')
+        key_subparser.add_argument(
+            '-D', '--delete',
+            action='store_true',
+            help='delete keys')
+        key_subparser.add_argument(
+            '-A', '--all',
+            action='store_true',
+            help='all keys')
+
 
 def sros_main(argv = sys.argv):
-    if len(argv) <= 1 or argv[1] == '--help':
-        return usage()
-    cmd = argv[1]
-    if cmd == 'keys':
-        return sros_keys(argv)
-    else:
-        return usage()
+    sros_parser = SrosParser(
+        prog='sros',
+        description="sros tools")
+    sros_parser.set()
+    args = sros_parser.parse_args(argv[1:])
 
-def sros_keys(argv):
-    if len(argv) <= 2 or argv[2] == '--help':
-        return usage('keys')
-    subcmd = argv[2]
-    if subcmd == 'delete':
-        return sros_keys_delete(argv)
-    else:
-        return usage('keys')
+    if args.subparser_name == 'keys':
+        return sros_keys(args)
 
-def sros_keys_delete(argv):
+
+def sros_keys(args):
+    if args.delete:
+        if args.all:
+            return sros_keys_delete(args)
+
+
+def sros_keys_delete(args):
     # todo: parameterize keystore location, if we expand to multiple keyrings
     keypath = os.path.join(os.path.expanduser('~'), '.ros', 'keys')
     # do a tiny bit of sanity check...

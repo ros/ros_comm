@@ -16,6 +16,16 @@ import base64
 import rosgraph_helper
 #from rospy.exceptions import TransportInitError
 
+class GraphModes:
+    audit = 'audit'
+    complain = 'complain'
+    enforce = 'enforce'
+    train = 'train'
+
+    class __metaclass__(type):
+        def __contains__(self, item):
+            return hasattr(self, item)
+
 try:
     import urllib.parse as urlparse #Python 3.x
 except ImportError:
@@ -165,18 +175,24 @@ class XMLRPCTimeoutSafeTransport(xmlrpcclient.SafeTransport):
 #########################################################################
 # global functions used by SSLSecurity and friends
 def node_name_to_cert_stem(node_name):
+    node_name = caller_id_to_node_name(node_name)
     stem = node_name
     if (stem[0] == '/'):
         stem = stem[1:]
     if '..' in node_name:
         raise ValueError('woah there. node_name [%s] has a double-dot. OH NOES.' % node_name)
+    return stem.replace('/', '__')
+
+def caller_id_to_node_name(caller_id):
+    stem = caller_id
     # check for anonymous node names. remove any long numeric suffix.
     # anonymous nodes will have numeric suffix tokens at the end (PID and time)
     tok = stem.split('_')
-    if len(tok) >= 3 and tok[-2].isdigit() and \
-       len(tok[-1]) > 8 and tok[-1].isdigit():
-        stem = '_'.join(tok[0:-2])
-    return stem.replace('/', '__')
+    if len(tok) >= 3: # check if pid and epoch suffix posable
+        if tok[-2].isdigit() and tok[-1].isdigit(): # check for pid and epoch
+            if len(tok[-1]) == 13: # check for epoch 13 uses milliseconds
+                stem = '_'.join(tok[0:-2])
+    return stem
 
 def open_private_output_file(fn):
     flags = os.O_WRONLY | os.O_CREAT
@@ -360,23 +376,19 @@ class SSLSecurity(Security):
                 os.chmod(self.graphs_path, 0o700)
 
             # ugly... need to figure out a graceful way to pass the graph
-            self.enforce_graph = False
+            self.graph_mode = GraphModes.enforce
             self.graph = rosgraph_helper.GraphStructure()
             if 'ROS_GRAPH_NAME' in os.environ:
                 if '..' in os.environ['ROS_GRAPH_NAME'] or '/' in os.environ['ROS_GRAPH_NAME']:
                     raise ValueError("graph name must be a simple string. saw [%s] instead" % os.environ['ROS_GRAPH_NAME'])
                 self.graph.graph_path = os.path.join(os.path.expanduser('~'), '.ros', 'graphs', os.environ['ROS_GRAPH_NAME'] + '.yaml')
-                try:
+                if os.path.exists(self.graph.graph_path):
                     self.graph.load_graph()
-                except:
-                    pass
-                if 'ROS_GRAPH_MODE' in os.environ and os.environ['ROS_GRAPH_MODE'] == 'strict':
-                    self.enforce_graph = True
-                else:
-                    try:
-                        self.graph.load_graph()
-                    except:
-                        pass
+                if 'ROS_GRAPH_MODE' in os.environ:
+                    graph_mode = os.environ['ROS_GRAPH_MODE']
+                    self.graph_mode = getattr(GraphModes, graph_mode, GraphModes.enforce)
+            else:
+                self.graph_mode = None
 
         if not self.all_certs_present():
             if not os.path.exists(self.kpath):
@@ -588,31 +600,58 @@ class SSLSecurity(Security):
         print("WOAH WOAH WOAH how did i get here?")
         return 'ahhhhhhhhhhhh'
 
-    def allow_register(self, caller_id, topic, topic_type, mode):
-        node_name = node_name_to_cert_stem(caller_id)
-        allowed_nodes = self.graph.graph['nodes']
-        if self.enforce_graph:
-            if (node_name in allowed_nodes):
-                allowed_modes = allowed_nodes[node_name]
-                if mode in allowed_modes:
-                    allowed_topics = allowed_modes[mode]
-                    if (topic in allowed_topics):
-                        allowed_topic_type = allowed_topics[topic]['type']
-                        if (topic_type == allowed_topic_type):
-                            return True
-            return False # never found it. NO SOUP FOR YOU
-        elif self.graph.graph_path is not None:
-            self.graph.graph['nodes'][node_name][mode][topic]['type'] = topic_type
-            self.graph.save_graph()
-            info = (mode, node_name, topic, topic_type, self.graph.graph_path)
-            _logger.info("Registering {}:{} for topic:{} of type:{} to graph:{}".format(*info))
-        return True
+    def log_register(self, enable, flag, info):
+        if enable:
+            _logger.info("{}REG [{}]:{} {} to graph:[{}]".format(flag, *info))
+
+    def allow_register(self, caller_id, topic_name, topic_type, mask):
+        node_name = caller_id_to_node_name(caller_id)
+        info = (topic_name, mask, node_name, self.graph.graph_path)
+        if self.graph_mode is GraphModes.enforce:
+            allowed, audit = self.graph.is_allowed(node_name, topic_name, mask)
+            flag = '*' if allowed else '!'
+            self.log_register(audit, flag, info)
+            return allowed
+        elif self.graph_mode is GraphModes.train:
+            if self.graph.graph_path is not None:
+                allowed, audit = self.graph.is_allowed(node_name, topic_name, mask)
+                if not allowed:
+                    self.graph.add_allowed(node_name, topic_name, mask)
+                    self.graph.save_graph()
+                flag = '*' if allowed else '+'
+                self.log_register((audit or not allowed), flag, info)
+            return True
+        elif self.graph_mode is GraphModes.complain:
+            if self.graph.graph is not None:
+                allowed, audit = self.graph.is_allowed(node_name, topic_name, mask)
+                flag = '*' if allowed else '!'
+                self.log_register((audit or not allowed), flag, info)
+            else:
+                self.log_register(True, '!', info)
+            return True
+        elif self.graph_mode is GraphModes.audit:
+            if self.graph.graph is not None:
+                allowed, audit = self.graph.is_allowed(node_name, topic_name, mask)
+                flag = '*' if allowed else '!'
+                self.log_register(True, flag, info)
+                return allowed
+            else:
+                self.log_register(True, '', info)
+                return True
+        else:
+            return False
 
     def allow_registerPublisher(self, caller_id, topic, topic_type):
-        return self.allow_register(caller_id, topic, topic_type, 'publications')
+        if self.graph_mode is None:
+            return True
+        else:
+            return self.allow_register(caller_id, topic, topic_type, 'w')
 
     def allow_registerSubscriber(self, caller_id, topic, topic_type):
-        return self.allow_register(caller_id, topic, topic_type, 'subscriptions')
+        if self.graph_mode is None:
+            return True
+        else:
+            return self.allow_register(caller_id, topic, topic_type, 'r')
 
 #########################################################################
 _security = None
