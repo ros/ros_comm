@@ -1,12 +1,15 @@
 import collections
 import os
 import yaml
+import copy
+import pickle
 
 from apparmor.aare import re
 from apparmor.common import convert_regexp
 
 # Extend OrderedDict to support auto vivification
 class ViviDict(collections.OrderedDict):
+    #TODO: Fix deepcopy
     def __missing__(self, key):
         value = self[key] = type(self)()
         return value
@@ -40,7 +43,7 @@ class GraphStructure:
                 res[k] = v
         return res
 
-    def interpret_graph(self):
+    def compile_graph(self):
         if 'nodes' in self.graph:
             for node_name, node_dict in self.graph['nodes'].iteritems():
                 if 'regex' not in node_dict:
@@ -51,36 +54,36 @@ class GraphStructure:
                         topic_regex = re.compile(convert_regexp(topic_name))
                         topic_dict['regex'] = topic_regex
 
-    def un_interpret_graph(self, graph):
+    def uncompile_graph(self, graph):
         if 'nodes' in graph:
-            for node_name, node_dict in self.graph['nodes'].iteritems():
+            for node_name, node_dict in graph['nodes'].iteritems():
                 if 'regex' in node_dict:
-                    del node_dict['regex']
+                    node_dict.pop('regex')
                 for topic_name, topic_dict in node_dict['topics'].iteritems():
                     if 'regex' in topic_dict:
-                        del topic_dict['regex']
+                        topic_dict.pop('regex')
 
     def load_graph(self, graph_path=None):
         if graph_path is None:
             graph_path = self.graph_path
         with open(graph_path, 'r') as f:
             self.graph = yaml.load(f)
-        self.interpret_graph()
+        self.compile_graph()
 
-    def save_graph(self, graph_path=None, sort_graph=True):
+    def save_graph(self, graph_path=None, sort_graph=True, save_regex=False):
         if graph_path is None:
             graph_path = self.graph_path
         if sort_graph:
             self.graph = self.sortOD(self.graph)
-        #print("saving graph to %s" % graph_path)
-        #print('graph yaml:\n%s' % yaml.dump(graph))
         self.graph['version'] = '0'
 
-        graph_dump = self.graph.copy()
-        self.un_interpret_graph(graph_dump)
+        graph_dump = pickle.loads(pickle.dumps(self.graph))
+
+        if not save_regex:
+            self.uncompile_graph(graph_dump)
 
         with open(graph_path, 'w') as f:
-            f.write(yaml.dump(self.graph, default_flow_style=False))
+            f.write(yaml.dump(graph_dump, default_flow_style=False))
 
     def check_for_mask(self, mask, masks, audit):
         index = masks.lower().find(mask)
@@ -119,7 +122,7 @@ class GraphStructure:
         allowed_topic_masks = allowed_node['topics'][topic_name]['allow']
         if type(allowed_topic_masks) is not str:
             allowed_topic_masks = ''
-        allowed_topic_masks = ''.join(sorted(set((allowed_topic_masks + mask))))
+        allowed_topic_masks = ''.join(sorted(set(allowed_topic_masks + mask)))
         allowed_node['topics'][topic_name]['allow'] = allowed_topic_masks
 
         if 'regex' not in allowed_node:
