@@ -2,8 +2,8 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.20 (2016-06-27)
+--------------------
 * fix roslaunch check for multiple tests with multiple args (`#814 <https://github.com/ros/ros_comm/pull/814>`_)
 
 1.11.19 (2016-04-18)

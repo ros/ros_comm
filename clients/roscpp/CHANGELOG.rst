@@ -2,8 +2,8 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.20 (2016-06-27)
+--------------------
 * fix segfault if connection fails (`#807 <https://github.com/ros/ros_comm/pull/807>`_)
 
 1.11.19 (2016-04-18)

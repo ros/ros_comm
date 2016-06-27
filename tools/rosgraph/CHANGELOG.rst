@@ -2,8 +2,8 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.20 (2016-06-27)
+--------------------
 * fix symlink of the log dir itself as latest (`#795 <https://github.com/ros/ros_comm/pull/795>`_)
 
 1.11.19 (2016-04-18)
