@@ -2,6 +2,10 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix symlink of the log dir itself as latest (`#795 <https://github.com/ros/ros_comm/pull/795>`_)
+
 1.11.19 (2016-04-18)
 --------------------
 * fix str conversion in encode_ros_handshake_header (`#792 <https://github.com/ros/ros_comm/pull/792>`_)
