@@ -1,0 +1,4 @@
+test_rosmaster/String s1
+  string data
+test_rosmaster/String s2
+  string data
