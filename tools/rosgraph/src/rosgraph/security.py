@@ -96,74 +96,6 @@ class NoSecurity(Security):
         return (s[0], s[1], 'unknown')
 
 #########################################################################
-
-class SSHSecurity(Security):
-    def __init__(self):
-        super(SSHSecurity, self).__init__()
-        _logger.info("  rospy.security.SSHSecurity init")
-        self.ssh_tunnels = { }
-
-    def xmlrpcapi(self, uri, node_name = None):
-        uriValidate = urlparse.urlparse(uri)
-        if not uriValidate[0] or not uriValidate[1]:
-            return None
-        requested_uri = uri
-        _logger.info("rospy.security.xmlrpcapi(%s) host = %s" % (uri, uriValidate.hostname))
-
-        # see if we should connect directly to this URI,
-        # or instead fork an SSH tunnel and go through that
-        dest_hostname = uriValidate.hostname
-        dest_port = uriValidate.port
-        # TODO: if we are connecting locally, don't worry about it
-        # for now, let's tunnel everything to easily test its functionality.
-        # if uriValidate.hostname != 'localhost' and uriValidate.hostname != '127.0.0.1':
-        if True:
-            # see if we already have a tunnel to this URI
-            if uri in self.ssh_tunnels:
-                uri = self.ssh_tunnels[uri]['local_uri']
-            else:
-                #print(" need to create a tunnel!")
-                # first, ask the OS for a free port to listen on
-                port_probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                port_probe.bind(('', 0))
-                local_port = port_probe.getsockname()[1]
-                port_probe.close() # the OS won't re-allocate this port anytime soon
-                ssh_incantation = ["ssh", "-nNT", "-L", "%d:localhost:%d" % (local_port, dest_port), str(dest_hostname)]
-                #print("spawning ssh tunnel with: %s" % " ".join(ssh_incantation))
-                try:
-                    self.ssh_tunnels[uri] = {}
-                    self.ssh_tunnels[uri]['local_uri'] = "http://localhost:%d" % local_port
-                    self.ssh_tunnels[uri]['local_port'] = local_port
-                    self.ssh_tunnels[uri]['process'] = subprocess.Popen(ssh_incantation, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                    time.sleep(1) # HAXX. do a retry-loop
-                    uri = self.ssh_tunnels[uri]['local_uri']
-                except Exception as e:
-                    print("OH NOES couldn't create tunnel: %s" % str(e))
-                    raise
-        _logger.info("remapped xmlrpcapi request: %s => %s" % (requested_uri, uri))
-        return xmlrpcclient.ServerProxy(uri)
-
-    def connect(self, sock, dest_addr, dest_port, endpoint_id, timeout=None):
-        # TODO: if we are connecting locally, don't worry about it
-        # for now, let's tunnel everything to easily test its functionality.
-        # if dest_addr != 'localhost' and dest_addr != '127.0.0.1':
-        if True:
-            port_probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            port_probe.bind(('', 0))
-            local_port = port_probe.getsockname()[1]
-            port_probe.close() # the OS won't re-allocate this port anytime soon
-            ssh_incantation = ["ssh", "-nNT", "-L", "%d:localhost:%d" % (local_port, dest_port), str(dest_addr)]
-            #print("spawning ssh tunnel with: %s" % " ".join(ssh_incantation))
-            try:
-                subprocess.Popen(ssh_incantation, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                time.sleep(1) # HAXX. do a retry-loop
-                sock.connect(('127.0.0.1', local_port))
-            except Exception as e:
-                print("OH NOES couldn't connect through tunnel: %s" % str(e))
-                raise
-            return sock
-
-#########################################################################
 class XMLRPCTimeoutSafeTransport(xmlrpcclient.SafeTransport):
     def __init__(self, context=None, timeout=2.0):
         xmlrpcclient.SafeTransport.__init__(self, context=context)
@@ -661,9 +593,7 @@ def init(node_name):
     if _security is None:
         _logger.info("choosing security model...")
         if 'ROS_SECURITY' in os.environ:
-            if os.environ['ROS_SECURITY'] == 'ssh':
-                _security = SSHSecurity()
-            elif os.environ['ROS_SECURITY'] == 'ssl' or os.environ['ROS_SECURITY'] == 'ssl_setup':
+            if os.environ['ROS_SECURITY'] == 'ssl' or os.environ['ROS_SECURITY'] == 'ssl_setup':
                 _security = SSLSecurity(node_name)
             else:
                 raise ValueError("illegal ROS_SECURITY value: [%s]" % os.environ['ROS_SECURITY'])
