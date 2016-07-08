@@ -18,10 +18,10 @@ class ViviDict(collections.OrderedDict):
 _mapping_tag = yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG
 def dict_representer(dumper, data):
     return dumper.represent_dict(data.iteritems())
+def ViviDict_constructor(loader, node):
+    return ViviDict(loader.construct_pairs(node))
 def dict_constructor(loader, node):
     return ViviDict(loader.construct_pairs(node))
-yaml.add_representer(ViviDict, dict_representer)
-yaml.add_constructor(_mapping_tag, dict_constructor)
 
 ###############################################################
 # GRAPH STUFF
@@ -67,23 +67,34 @@ class GraphStructure:
         if graph_path is None:
             graph_path = self.graph_path
         with open(graph_path, 'r') as f:
+            yaml.add_representer(ViviDict, dict_representer)
+            yaml.add_constructor(_mapping_tag, ViviDict_constructor)
             self.graph = yaml.load(f)
+            yaml.add_representer(dict, dict_representer)
+            yaml.add_constructor(_mapping_tag, dict_constructor)
         self.compile_graph()
 
     def save_graph(self, graph_path=None, sort_graph=True, save_regex=False):
-        if graph_path is None:
-            graph_path = self.graph_path
-        if sort_graph:
-            self.graph = self.sortOD(self.graph)
-        self.graph['version'] = '0'
+        dump_graph = pickle.loads(pickle.dumps(self.graph))
+        with open(graph_path, 'w') as f:
+            f.write(self.graph_dump(dump_graph, sort_graph, save_regex))
 
-        graph_dump = pickle.loads(pickle.dumps(self.graph))
+    def graph_dump(self, dump_graph, sort_graph=True, save_regex=False):
+        if sort_graph:
+            dump_graph = self.sortOD(dump_graph)
 
         if not save_regex:
-            self.uncompile_graph(graph_dump)
+            self.uncompile_graph(dump_graph)
 
-        with open(graph_path, 'w') as f:
-            f.write(yaml.dump(graph_dump, default_flow_style=False))
+        self.graph['version'] = '0'
+
+        yaml.add_representer(ViviDict, dict_representer)
+        yaml.add_constructor(_mapping_tag, ViviDict_constructor)
+        dump = yaml.dump(dump_graph, default_flow_style=False)
+        yaml.add_representer(dict, dict_representer)
+        yaml.add_constructor(_mapping_tag, dict_constructor)
+
+        return dump
 
     def check_for_mask(self, mask, masks, audit):
         index = masks.lower().find(mask)
@@ -132,3 +143,69 @@ class GraphStructure:
         if 'regex' not in allowed_node['topics'][topic_name]:
             topic_regex = re.compile(convert_regexp(topic_name))
             allowed_node['topics'][topic_name]['regex'] = topic_regex
+
+    def filter_nodes(self, namespace_filter):
+        if 'nodes' not in self.graph:
+            return None
+        else:
+           return self.filter_namespaces(self.graph['nodes'], namespace_filter)
+
+    def filter_namespaces(self, graph, namespace_filter):
+        if graph is None:
+            return None
+        else:
+            filtered_graph = pickle.loads(pickle.dumps(graph))
+            for namespace, policy in filtered_graph.iteritems():
+                if not policy['regex'].search(namespace_filter):
+                    filtered_graph.pop(namespace)
+            return filtered_graph
+
+    def filter_policies(self, graph, policy_filter):
+        if graph is None:
+            return None
+        else:
+           filtered_graph = pickle.loads(pickle.dumps(graph))
+           for namespace, policy in filtered_graph.iteritems():
+               for policy_type, policy_type_data in policy.iteritems():
+                   if policy_type != policy_filter:
+                       policy.pop(policy_type)
+           return filtered_graph
+
+    def filter_modes(self, graph, mode_filter):
+        if graph is None:
+            return None
+        else:
+           filtered_graph = pickle.loads(pickle.dumps(graph))
+           for namespace, policy in filtered_graph.iteritems():
+               for policy_type, policy_type_data in policy.iteritems():
+                   for policy_namespace, policy_namespace_data in policy_type_data.iteritems():
+                       if mode_filter not in policy_namespace_data:
+                           policy_type_data.pop(policy_namespace)
+           return filtered_graph
+
+    def filter_masks(self, graph, mask_filter):
+        if graph is None:
+            return None
+        else:
+           filtered_graph = pickle.loads(pickle.dumps(graph))
+           for namespace, policy in filtered_graph.iteritems():
+               for policy_type, policy_type_data in policy.iteritems():
+                   for policy_namespace, policy_namespace_data in policy_type_data.iteritems():
+                       for policy_mode, policy_mode_data in policy_namespace_data.iteritems():
+                           try:
+                               if mask_filter not in policy_mode_data.lower():
+                                   policy_type_data.pop(policy_namespace)
+                           except:
+                               pass
+           return filtered_graph
+
+    def list_policy_namespaces(self, graph):
+        if graph is None:
+            return None
+        else:
+            policy_namespaces_list = []
+            for namespace, policy in graph.iteritems():
+                for policy_type, policy_type_data in policy.iteritems():
+                    for policy_namespace, policy_namespace_data in policy_type_data.iteritems():
+                        policy_namespaces_list.append(policy_namespace)
+            return policy_namespaces_list
