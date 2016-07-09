@@ -1,0 +1,25 @@
+# http://wiki.apparmor.net/index.php/QuickProfileLanguage#File_Globbing
+
+nodes:
+  /**: # all nodes namespaces
+    topics: # for topic transport
+      /rosout: # for the topic namspace /rosout
+        allow: p # can publish to /rosout for logging
+  /listener:
+    topics:
+      /chatter: # for the topic /chatter
+        allow: s # can subscribe
+  /rosout*: # for all nodes starting with rosout
+    topics:
+      /rosout:
+        allow: s # allow /rosout to subscribe the logs
+      /rosout_agg:
+        allow: p # allow to publish and aggregate logs
+    parameters:
+      /use_sim_time:
+        allow: r # allow to read peramter
+  /talker:
+    topics:
+      /chatter:
+        allow: p # allow /talker to publish onto or anythong under /chatter
+version: '0'

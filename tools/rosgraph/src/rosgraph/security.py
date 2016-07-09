@@ -14,6 +14,7 @@ import httplib
 import sys
 import base64
 import rosgraph_helper
+import key_helper
 #from rospy.exceptions import TransportInitError
 
 class GraphModes:
@@ -104,6 +105,7 @@ class XMLRPCTimeoutSafeTransport(xmlrpcclient.SafeTransport):
         chost, self._extra_headers, x509 = self.get_host_info(host)
         self._connection = host, httplib.HTTPSConnection(chost, None, timeout=self.timeout, context=self.context, **(x509 or {}))
         return self._connection[1]
+
 #########################################################################
 # global functions used by SSLSecurity and friends
 def node_name_to_cert_stem(node_name):
@@ -144,146 +146,6 @@ def cert_cn(cert):
             return subject[0][1]
     return None
 
-#########################################################################
-class SSLCertificateCreator(object):
-    def __init__(self):
-        print("SSLCertificateCreator()")
-        keystore = os.path.join(os.path.expanduser('~'), '.ros', 'keys')
-        if not os.path.exists(keystore):
-            print("initializing empty keystore: %s" % keystore)
-            os.makedirs(keystore)
-            os.chmod(keystore, 0o700)
-
-        self.kpath = os.path.join(os.path.expanduser('~'), '.ros', 'keys', 'master')
-        if not os.path.exists(self.kpath):
-            print("initializing empty roscore keystore: %s" % self.kpath)
-            os.makedirs(self.kpath)
-            os.chmod(self.kpath, 0o700)
-        self.openssl_conf_path = os.path.join(self.kpath, 'openssl.conf')
-        self.root_ca_path = os.path.join(self.kpath, 'root.ca')
-        self.root_cert_path = os.path.join(self.kpath, 'root.cert')
-        self.create_roscore_certs_if_needed()
-
-    def run_and_print_abnormal_output(self, cmd, status_text=None):
-        #subprocess.check_call(cmd.split(' '))
-        popen = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdoutdata, stderrdata = popen.communicate()
-        if status_text is not None:
-            sys.stdout.write("%s..." % status_text)
-            sys.stdout.flush()
-        #print("running command: %s" % cmd)
-        if popen.returncode != 0:
-            print("error running command: [%s]" % cmd)
-            print("    stdout:\n%s\n" % stdoutdata)
-            print("    stderr:\n%s\n" % stderrdata)
-            raise Exception("ahhh")
-        if status_text is not None:
-            print("done")
-
-    def create_cert(self, node_name, suffix):
-        _logger.info("SSLCertificateCreator.create_cert(%s, %s)" % (node_name, suffix))
-        if not names.is_legal_base_name(node_name):
-            raise ValueError("SSLCertificateCreator.create_cert() illegal node name: %s" % node_name)
-        cert_name = node_name + '.' + suffix
-        csr_path = os.path.join(self.kpath, '%s.csr' % cert_name)
-        key_path = os.path.join(self.kpath, '%s.key' % cert_name)
-        if not os.path.isfile(csr_path):
-            openssl_incantation = r'openssl req -batch -subj /C=US/ST=CA/O=ros/CN={0} -newkey rsa:4096 -sha256 -nodes -out {1} -keyout {2}'.format(cert_name, csr_path, key_path)
-            self.run_and_print_abnormal_output(openssl_incantation)
-            os.chmod(csr_path, 0o600)
-
-        cert_path = os.path.join(self.kpath, '%s.cert' % cert_name)
-        if not os.path.isfile(cert_path):
-            openssl_incantation = "openssl ca -batch -config {0} -notext -in {1} -out {2}".format(self.openssl_conf_path, csr_path, cert_path)
-            self.run_and_print_abnormal_output(openssl_incantation, "creating %s certificates for node [%s]" % (suffix, node_name))
-            os.chmod(key_path, 0o600)
-            os.chmod(cert_path, 0o600)
-
-    def create_certs_if_needed(self, node_name):
-        fn = [ node_name + '.server.cert',
-               node_name + '.server.key',
-               node_name + '.client.cert',
-               node_name + '.client.key' ]
-        all_found = True
-        for f in fn:
-            if not os.path.isfile(os.path.join(self.kpath, f)):
-                all_found = False
-        if all_found:
-            return # nothing to do
-        # otherwise, we need to generate certificates for this node
-        self.create_cert(node_name, 'server')
-        self.create_cert(node_name, 'client')
-
-    def create_roscore_certs_if_needed(self):
-        self.root_key_path = os.path.join(self.kpath, 'root.key')
-        if not os.path.isfile(self.root_cert_path) or \
-           not os.path.isfile(self.root_key_path):
-            openssl_incantation = "openssl req -batch -newkey rsa:4096 -subj /C=US/ST=CA/O=ros -days 3650 -x509 -sha256 -nodes -out %s -keyout %s" % (self.root_cert_path, self.root_key_path)
-            self.run_and_print_abnormal_output(openssl_incantation, "creating self-signed root certificate authority")
-
-        if not os.path.isfile(self.root_ca_path):
-            with open_private_output_file(self.root_ca_path) as root_ca_file:
-                with open(self.root_key_path, 'r') as root_key_file:
-                    root_ca_file.write(root_key_file.read())
-                os.chmod(self.root_key_path, 0o600)
-                with open(self.root_cert_path, 'r') as root_cert_file:
-                    root_ca_file.write(root_cert_file.read())
-                os.chmod(self.root_cert_path, 0o600)
-
-        root_db_path = os.path.join(self.kpath, 'certindex')
-        if not os.path.isfile(root_db_path):
-            open_private_output_file(root_db_path).close() # creates an empty file
-
-        root_serial_path = os.path.join(self.kpath, 'serial')
-        if not os.path.isfile(root_serial_path):
-            with open_private_output_file(root_serial_path) as f:
-                f.write('000a')
-
-        if not os.path.isfile(self.openssl_conf_path):
-            with open_private_output_file(self.openssl_conf_path) as f:
-                f.write('''\
-[ ca ]
-default_ca = ros_ca
-
-[ crl_ext ]
-authorityKeyIdentifier=keyid:always
-
-[ ros_ca ]
-new_certs_dir = /tmp
-unique_subject = no
-certificate = {0}
-database = {1}
-private_key = {2}
-serial = {3}
-default_days = 3650
-default_md = sha512
-policy = ros_ca_policy
-x509_extensions = ros_ca_extensions
-
-[ ros_ca_policy ]
-commonName = supplied
-stateOrProvinceName = optional
-countryName = optional
-emailAddress = optional
-organizationName = optional
-organizationalUnitName = optional
-
-[ ros_ca_extensions ]
-basicConstraints = CA:false
-subjectKeyIdentifier = hash
-authorityKeyIdentifier = keyid:always
-keyUsage = digitalSignature,keyEncipherment,keyAgreement
-extendedKeyUsage = serverAuth,clientAuth
-#subjectAltName = @alt_names
-#
-#[ alt_names ]
-#DNS.1 = localhost
-'''.format(self.root_cert_path, root_db_path, self.root_key_path, root_serial_path))
-        self.create_cert('master','server')
-        self.create_cert('master','client')
-        self.create_cert('roslaunch','server')
-        self.create_cert('roslaunch','client')
-
 ##########################################################################
 
 class SSLSecurity(Security):
@@ -291,7 +153,8 @@ class SSLSecurity(Security):
         self.node_name = node_name_to_cert_stem(node_name)
         super(SSLSecurity, self).__init__()
         _logger.info("rospy.security.SSLSecurity init")
-        self.kpath = os.path.join(os.path.expanduser('~'), '.ros', 'keys', self.node_name)
+
+        self.kpath = os.path.join(os.environ['ROS_KEYSTORE_PATH'], 'nodes', self.node_name)
 
         self.master_server_cert_path = self.keystore_path('master', '.server.cert')
         self.server_context_ = None
@@ -606,72 +469,3 @@ def get():
         traceback.print_stack()
         raise ValueError("woah there partner. security.init() wasn't called before security.get()")
     return _security
-
-###############################################################
-# KEYSERVER STUFF
-###############################################################
-
-_ssl_certificate_creator = None
-
-def keyserver_host():
-    return rosgraph.network.get_bind_address()
-
-def keyserver_port():
-    return 11310 # todo: not this
-
-def keyserver_addr():
-    return 'http://%s:%d' % (keyserver_host(), keyserver_port())
-
-def keyserver_getCertificates(node_name):
-    node_name = node_name_to_cert_stem(node_name) # sanitize and de-anonymize
-
-    print('keyserver: getCertificates(%s)' % node_name)
-    keypath = os.path.join(os.path.expanduser('~'), '.ros', 'keys', 'master')
-
-    _ssl_certificate_creator.create_certs_if_needed(node_name)
-
-    resp = {}
-    fns = [ 'root.cert',
-            'master.server.cert',
-            'master.client.cert',
-            node_name + '.server.cert',
-            node_name + '.server.key',
-            node_name + '.client.cert',
-            node_name + '.client.key' ]
-    for fn in fns:
-        with open(os.path.join(keypath, fn), 'r') as f:
-            resp[fn] = f.read()
-    return resp
-
-def keyserver_hello():
-    return "I'm alive!"
-
-def keyserver_main():
-    global _ssl_certificate_creator
-    from SimpleXMLRPCServer import SimpleXMLRPCServer
-    from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
-    # todo: set this port to one below the ROS_MASTER_URI port
-    _ssl_certificate_creator = SSLCertificateCreator()
-    server = SimpleXMLRPCServer((keyserver_host(), keyserver_port()), SimpleXMLRPCRequestHandler, False)
-    server.register_function(keyserver_getCertificates, 'getCertificates')
-    server.register_function(keyserver_hello, 'hello') # it answers just to say it's alive
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        pass
-
-def fork_xmlrpc_keyserver():
-    print("forking an unsecured XML-RPC server to bootstrap SSL key distribution...")
-    from multiprocessing import Process
-    p = Process(target=keyserver_main)
-    p.start()
-    # spin until the keyserver is responding to requests
-    keyserver_proxy = xmlrpcclient.ServerProxy(keyserver_addr())
-    print("sleeping until keyserver has generated the initial keyring...")
-    while True:
-        try:
-            keyserver_proxy.hello()
-            break
-        except Exception as e:
-            time.sleep(0.01)
-    print("horray, the keyserver is now open for business.")

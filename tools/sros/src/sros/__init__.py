@@ -5,6 +5,7 @@ import os
 import subprocess
 import sys
 import rosgraph.security as security
+import rosgraph.keyserver as keyserver
 import shutil
 
 
@@ -32,6 +33,15 @@ class SroscoreParser(argparse.ArgumentParser):
             '-k','--keyserver',
             action='store_true',
             help='enable keyserver')
+        self.add_argument(
+            '--config',
+            action=CondAction,
+            to_be_required=[self._option_string_actions['--keyserver']],
+            help='path to custom config file')
+        self.add_argument(
+            '--keystore',
+            action='store',
+            help='path to custom keystore directory')
         graph_argument = self.add_argument(
             '-g','--graph',
             action='store',
@@ -54,11 +64,28 @@ def sroscore_main(argv = sys.argv):
     sroscore_parser.set()
     args, roscore_argv = sroscore_parser.parse_known_args(argv)
 
+    if args.config is not None:
+        os.environ['ROS_CONFIG_PATH'] = args.config
+    if args.keystore is not None:
+        os.environ['ROS_KEYSTORE_PATH'] = args.keystore
+
     if args.keyserver:
         # if we're in setup mode, we need to start an unsecured server that will
         # hand out the SSL certificates and keys so that nodes can talk to roscore
         os.environ['ROS_SECURITY'] = 'ssl_setup'
-        security.fork_xmlrpc_keyserver()
+
+        if 'ROS_KEYSTORE_PATH' in os.environ:
+            keys_dir = os.environ['ROS_KEYSTORE_PATH']
+        else:
+            keys_dir = os.path.join(os.path.expanduser('~'), '.ros', 'keys')
+
+        if 'ROS_CONFIG_PATH' in os.environ:
+            config_path = os.path.abspath(os.environ['ROS_CONFIG_PATH'])
+        else:
+            # config_path = os.path.join(os.path.expanduser('~'), '.ros', 'keys','sros_config.yaml')
+            config_path = os.path.abspath('/home/ruffsl/sros/src/ruffsl/ros_comm/tools/sros/conf/sros_config.yaml')
+
+        keyserver.fork_xmlrpc_keyserver(config_path, keys_dir)
     else:
         os.environ['ROS_SECURITY'] = 'ssl'
 
