@@ -109,6 +109,10 @@ Message = genpy.Message
 # for interfacing with topics, while _TopicImpl implements the
 # underlying connection details. 
 
+if not 'EPOLLRDHUP' in dir(select):
+    select.EPOLLRDHUP = 0x2000
+
+
 class Topic(object):
     """Base class of L{Publisher} and L{Subscriber}"""
     
@@ -189,7 +193,7 @@ class Poller(object):
     """
     def __init__(self):
         try:
-            self.poller = select.poll()
+            self.poller = select.epoll()
             self.add_fd = self.add_poll
             self.remove_fd = self.remove_poll
             self.error_iter = self.error_poll_iter
@@ -217,7 +221,7 @@ class Poller(object):
             yield x
 
     def add_poll(self, fd):
-        self.poller.register(fd)
+        self.poller.register(fd, select.EPOLLHUP|select.EPOLLERR|select.EPOLLRDHUP)
 
     def remove_poll(self, fd):
         self.poller.unregister(fd)
@@ -225,7 +229,7 @@ class Poller(object):
     def error_poll_iter(self):
         events = self.poller.poll(0)
         for fd, event in events:
-            if event & (select.POLLHUP | select.POLLERR):
+            if event & (select.EPOLLHUP | select.EPOLLERR | select.EPOLLRDHUP):
                 yield fd
 
     def add_kqueue(self, fd):
@@ -438,6 +442,21 @@ class _TopicImpl(object):
                 c.set_cleanup_callback(cleanup_cb_wrapper)
             
             return True
+
+    def check(self):
+        new_connections = self.connections[:]
+        removed_connection = False
+
+        for fd in self.connection_poll.error_iter():
+            to_remove = [x for x in new_connections if x.fileno() == fd]
+
+            for x in to_remove:
+                removed_connection = True
+                rospydebug("removing connection to %s, connection error detected"%(x.endpoint_id))
+                self._remove_connection(new_connections, x)
+
+        if removed_connection:
+            self.connections = new_connections
 
     def remove_connection(self, c):
         """
@@ -1136,6 +1155,15 @@ class _TopicManager(object):
                 t.close()
             self.pubs.clear()
             self.subs.clear()        
+
+            
+    def check_all(self):
+        """
+        Check all registered publication and subscriptions.
+        """
+        with self.lock:
+            for t in chain(iter(self.pubs.values()), iter(self.subs.values())):
+                t.check()
         
     def _add(self, ps, rmap, reg_type):
         """
