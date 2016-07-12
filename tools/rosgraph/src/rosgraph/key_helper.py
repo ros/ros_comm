@@ -17,37 +17,14 @@ import datetime
 import uuid
 import rospkg
 
+from sros_consts import ROLE_STRUCT
+
 from copy import deepcopy
 
 from rosgraph_helper import GraphStructure
 
 SROS_ROOT_PASSPHRASE = 'SROS_ROOT_PASSPHRASE'
 SROS_PASSPHRASE = 'SROS_PASSPHRASE'
-
-MODE_POLICY_TYPE_MAPPING = {
-    'topic_subscriber': 'topics',
-    'topic_publisher':  'topics',
-    'service_client':   'services',
-    'service_server':   'services',
-    'parameter_reader': 'parameters',
-    'parameter_writer': 'parameters',
-}
-MODE_MASK_MAPPING = {
-    'topic_subscriber': 's', # subscribe
-    'topic_publisher':  'p', # publish
-    'service_client':   'c', # call
-    'service_server':   'x', # execute
-    'parameter_reader': 'r', # read
-    'parameter_writer': 'w', # write
-}
-MODE_KEY_USAGE_MAPPING = {
-    'topic_subscriber': 'CLIENT_AUTH',
-    'topic_publisher':  'SERVER_AUTH',
-    'service_client':   'TIME_STAMPING',
-    'service_server':   'CODE_SIGNING',
-    'parameter_reader': '1.3.6.1.5.5.7.3.21', # secureShellClient
-    'parameter_writer': '1.3.6.1.5.5.7.3.22', # secureShellServer
-}
 
 class KeyBlob:
     '''
@@ -424,7 +401,7 @@ class KeyHelper:
         hash_dir = os.path.join(keys_dir, 'ca_path')
         rehash(hash_dir, self.keys, clean=True)
 
-    def get_certificates(self, node_name):
+    def get_nodestore(self, node_name):
         '''
         get certificate responce
         @return:
@@ -433,41 +410,43 @@ class KeyHelper:
         config = self.config
         keys_dir = self.keys_dir
 
-        mode_names = ['topic_subscriber',
-                      'topic_publisher',
-                      'service_client',
-                      'service_server',
-                      'parameter_reader',
-                      'parameter_writer']
         key_config = config['keys']['nodes']
 
-        resp = {'nodes':{node_name:{}}}
+        resp = {'topics':{}, 'services':{}, 'parameters':{}}
 
         node_dir = os.path.join(keys_dir, 'nodes', node_name.lstrip('/'))
-        for mode_name in mode_names:
-            key_name = node_name + '.' + mode_name
-            node_config = deepcopy(key_config)
-            node_config['key_mode'] = mode_name
-            if 'cert' in node_config:
-                node_config['cert']['subject']['COMMON_NAME'] = key_name
-                graph_path = os.path.join(os.path.dirname(config_path), node_config['cert']['graph_path'])
-            else:
-                graph_path = None
-            node_config = extention_parsing(node_name, node_config, graph_path)
-            node_blob = KeyBlob(os.path.basename(key_name), node_config)
-            get_keys(None, node_blob, self.keys["master"])
-            # self.keys[key_name] = node_blob
-            print("Certificate generated: {}".format(key_name))
-            resp['nodes'][node_name][node_blob.name + '.pem'] = node_blob.key.private_bytes(
-                encoding=serialization.Encoding.PEM,
-                format=serialization.PrivateFormat.TraditionalOpenSSL,
-                encryption_algorithm=serialization.NoEncryption())
-            resp['nodes'][node_name][node_blob.name + '.cert'] = node_blob.cert.public_bytes(
-                encoding=serialization.Encoding.PEM)
+        for role_name, role_struct in ROLE_STRUCT.iteritems():
+            for mode_name, mode_struct in role_struct.iteritems():
+                key_mode = role_name + '.' + mode_name
+                key_name = node_name + '.' + key_mode
+                node_config = deepcopy(key_config)
+                node_config['key_mode'] = key_mode
+                if 'cert' in node_config:
+                    node_config['cert']['subject']['COMMON_NAME'] = key_name
+                    graph_path = os.path.join(os.path.dirname(config_path), node_config['cert']['graph_path'])
+                else:
+                    graph_path = None
+                node_config = extention_parsing(node_name, node_config, graph_path)
+                node_blob = KeyBlob(os.path.basename(key_name), node_config)
+                get_keys(None, node_blob, self.keys["master"])
+                # self.keys[key_name] = node_blob
+                print("Certificate generated: {}".format(key_name))
+                resp[role_name][node_blob.name + '.pem'] = node_blob.key.private_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PrivateFormat.TraditionalOpenSSL,
+                    encryption_algorithm=serialization.NoEncryption())
+                resp[role_name][node_blob.name + '.cert'] = node_blob.cert.public_bytes(
+                    encoding=serialization.Encoding.PEM)
 
-        hash_dir = os.path.join(keys_dir, 'ca_path')
-        resp['ca_path'] = get_hash_certs(hash_dir)
+        return resp
 
+    def get_ca(self):
+        '''
+        get Certificate Authorities
+        @return:
+        '''
+        hash_dir = os.path.join(self.keys_dir, 'ca_path')
+        resp = get_hash_certs(hash_dir)
         return resp
 
 
@@ -590,8 +569,8 @@ def rehash(hash_dir, keys_dict, clean=False):
 
 
 def get_policy_constraints(node_name, node_config, graph):
-    policy_type = MODE_POLICY_TYPE_MAPPING[node_config['key_mode']]
-    mask_type = MODE_MASK_MAPPING[node_config['key_mode']]
+    policy_type, mode_name = node_config['key_mode'].split('.')
+    mask_type = ROLE_STRUCT[policy_type][mode_name]['mask']
 
     applicable_nodes = graph.filter_nodes(node_name)
     if applicable_nodes:
@@ -637,7 +616,8 @@ def set_extention(extension_name, extensions_config, node_config, default):
 
 
 def extention_parsing(node_name, node_config, graph_path):
-    mode_type = MODE_KEY_USAGE_MAPPING[node_config['key_mode']]
+    role_name, mode_name = node_config['key_mode'].split('.')
+    mode_type = ROLE_STRUCT[role_name][mode_name]['OID']
 
     if node_config['cert']['x509_extensions'] is not None:
         extensions_config = node_config['cert']['x509_extensions']
@@ -661,103 +641,3 @@ def extention_parsing(node_name, node_config, graph_path):
             set_extention(extension_name, extensions_config, node_config, default)
 
     return node_config
-
-
-def simple_key_generation(keys_dir, config_path):
-    '''
-    Generates structure keys and certificates using configuration file
-    :param keys_dir: path to directory to store generated files
-    :param config_path: path to configuration file
-    :return:
-    '''
-    keys_dir = os.path.abspath(keys_dir)
-    config_path = os.path.abspath(config_path)
-    check_path(keys_dir)
-
-    config = load_config(config_path)
-    master_name = "master"
-    master_config = config['keys'][master_name]
-    master_dir = os.path.join(keys_dir, master_name)
-    master_blob = KeyBlob(master_name, master_config)
-    keys = dict()
-
-    if (config['keys'][master_name]['issuer_name'] is None):
-        get_keys(master_dir, master_blob)
-        keys[master_name] = master_blob
-
-    elif (config['keys'][master_name]['issuer_name'] in config['keys']):
-        root_name = config['keys']['master']['issuer_name']
-        root_config = config['keys'][root_name]
-        root_blob = KeyBlob(root_name, root_config)
-        root_dir = os.path.join(keys_dir, root_name)
-        get_keys(root_dir, root_blob)
-        print("Certificate generated: {}".format(root_name))
-        keys[root_name] = root_blob
-
-        get_keys(master_dir, master_blob, root_blob)
-        print("Certificate generated: {}".format(master_name))
-        keys[master_name] = master_blob
-
-    hash_dir = os.path.join(keys_dir, 'ca_path')
-    rehash(hash_dir, keys, clean=True)
-
-    node_names = ['/master',
-                  '/talker',
-                  '/listener',
-                  '/rosout']
-    mode_names = ['topic_subscriber',
-                  'topic_publisher',
-                  'service_client',
-                  'service_server',
-                  'parameter_client',
-                  'parameter_server']
-    key_config = config['keys']['nodes']
-
-    for node_name in node_names:
-        node_dir = os.path.join(keys_dir, 'nodes', node_name.lstrip('/'))
-        for mode_name in mode_names:
-            key_name = node_name + '.' + mode_name
-            node_config = deepcopy(key_config)
-            node_config['key_mode'] = mode_name
-            if 'cert' in node_config:
-                node_config['cert']['subject']['COMMON_NAME'] = key_name
-                graph_path = os.path.join(os.path.dirname(config_path), node_config['cert']['graph_path'])
-            else:
-                graph_path = None
-            node_config = extention_parsing(node_name, node_config, graph_path)
-            node_blob = KeyBlob(os.path.basename(key_name), node_config)
-            get_keys(node_dir, node_blob, master_blob)
-            keys[key_name] = node_blob
-            print("Certificate generated: {}".format(key_name))
-
-
-def _get_parser():
-    '''
-    Construct and configure an Argument Parser
-    :return: configured ArgumentParser
-    '''
-    import argparse
-    parser = argparse.ArgumentParser(description='Generate keystore directory from configuration file.')
-
-    parser.add_argument("-k","--keys_dir",
-                      dest="keys_dir", default="./tmp/good", action="store",
-                      help="Define keystore directory to write to", metavar="DIR")
-    parser.add_argument("-c","--config_file",
-                      dest="config_file", default="sros_config.yml", action="store",
-                      help="Define configuration file to load from", metavar="CONFIG")
-    return parser
-
-
-def main(argv=sys.argv):
-    '''
-    Generate keystore directory from configuration file
-    :param argv: arguments for keystore configuration
-    :return: None
-    '''
-    parser = _get_parser()
-    args = parser.parse_args(argv[1:])
-    simple_key_generation(args.keys_dir, args.config_file)
-
-
-if __name__ == '__main__':
-    main()

@@ -69,10 +69,16 @@ def get_keyserver_uri():
     return keyserver_uri
 
 
-def keyserver_getCertificates(node_name):
+def keyserver_requestNodeStore(node_name):
     node_name = node_name_to_cert_stem(node_name) # sanitize and de-anonymize
-    print('keyserver: getCertificates(%s)' % node_name)
-    resp = _key_helper.get_certificates(node_name)
+    print('keyserver: requestNodeStore(%s)' % node_name)
+    resp = _key_helper.get_nodestore(node_name)
+    return resp
+
+
+def keyserver_getCA():
+    print('keyserver: getCA()')
+    resp = _key_helper.get_ca()
     return resp
 
 
@@ -89,7 +95,8 @@ def keyserver_main(config_path, keys_dir):
     _key_helper.init_ca()
 
     server = SimpleXMLRPCServer(parse_uri(get_keyserver_uri()), SimpleXMLRPCRequestHandler, False)
-    server.register_function(keyserver_getCertificates, 'getCertificates')
+    server.register_function(keyserver_requestNodeStore, 'requestNodeStore')
+    server.register_function(keyserver_getCA, 'getCA')
     server.register_function(keyserver_hello, 'hello') # it answers just to say it's alive
     try:
         server.serve_forever()

@@ -78,6 +78,7 @@ def sroscore_main(argv = sys.argv):
             keys_dir = os.environ['ROS_KEYSTORE_PATH']
         else:
             keys_dir = os.path.join(os.path.expanduser('~'), '.ros', 'keys')
+            os.environ['ROS_KEYSTORE_PATH'] = keys_dir
 
         if 'ROS_CONFIG_PATH' in os.environ:
             config_path = os.path.abspath(os.environ['ROS_CONFIG_PATH'])
