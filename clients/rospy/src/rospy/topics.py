@@ -109,7 +109,7 @@ Message = genpy.Message
 # for interfacing with topics, while _TopicImpl implements the
 # underlying connection details. 
 
-if not 'EPOLLRDHUP' in dir(select):
+if not hasattr(select, 'EPOLLRDHUP'):
     select.EPOLLRDHUP = 0x2000
 
 
