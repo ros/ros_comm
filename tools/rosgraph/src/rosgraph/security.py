@@ -178,7 +178,7 @@ class TLSSecurity(Security):
         return True
 
     def ca_present(self):
-        return os.path.exists(self.ca_path)
+        return os.path.exists(self.capath)
 
     def init_nodestore(self):
         if not os.path.exists(self.nodestore_path):
@@ -200,14 +200,14 @@ class TLSSecurity(Security):
                     f.write(file_data)
 
     def init_ca(self):
-        print("initializing node's ca_path: %s" % self.ca_path)
-        os.makedirs(self.ca_path)
-        os.chmod(self.ca_path, 0o700)
+        print("initializing node's capath: %s" % self.capath)
+        os.makedirs(self.capath)
+        os.chmod(self.capath, 0o700)
 
         keyserver_proxy = xmlrpcclient.ServerProxy(get_keyserver_uri())
         response = keyserver_proxy.getCA()
         for file_name, file_data in response.iteritems():
-            file_path = os.path.join(self.ca_path, file_name)
+            file_path = os.path.join(self.capath, file_name)
             # print("Saving {} to: {}".format(file_name, file_path))
             if os.path.isfile(file_path):
                 continue
@@ -248,7 +248,7 @@ class TLSSecurity(Security):
 
                 context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
                 context.verify_mode = ssl.CERT_REQUIRED
-                context.load_verify_locations(capath=self.ca_path)
+                context.load_verify_locations(capath=self.capath)
                 context.load_cert_chain(certfile=certfile, keyfile=keyfile)
                 role_struct[mode_name] = context
 
@@ -258,7 +258,7 @@ class TLSSecurity(Security):
         _logger.info("rospy.security.TLSSecurity init")
 
         self.keystore_path  = os.environ['ROS_KEYSTORE_PATH']
-        self.ca_path   = os.path.join(self.keystore_path, 'ca_path')
+        self.capath   = os.path.join(self.keystore_path, 'capath')
         self.nodestore_path = os.path.join(self.keystore_path, 'nodes', self.node_name)
         self.nodestore_paths = self.get_nodestore_paths()
 
@@ -338,16 +338,6 @@ class TLSSecurity(Security):
             raise
         return (client_stream, client_addr)
 
-    # only ever called by master
-    def allowClients(self, caller_id, clients):
-        # print("node=%s allowClients(%s)" % (self.node_name, repr(clients)))
-        # for client in clients:
-        #     sanitized_name = node_name_to_cert_stem(client)
-        #     # print("  allowed_clients.add(%s)" % sanitized_name)
-        #     self.allowed_clients.add(sanitized_name)
-        # # todo: save certificate in our keystore?
-        # # todo: allow only for specific topics, not always all-access?
-        return 1, "", 0
 
     # def allow_xmlrpc_request(self, cert_text, cert_binary):
     #     cn = cert_cn(cert_text)

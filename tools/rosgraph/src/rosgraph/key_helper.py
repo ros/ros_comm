@@ -398,7 +398,7 @@ class KeyHelper:
             print("Certificate generated: {}".format(master_name))
             self.keys[master_name] = master_blob
 
-        hash_dir = os.path.join(keys_dir, 'ca_path')
+        hash_dir = os.path.join(keys_dir, 'capath')
         rehash(hash_dir, self.keys, clean=True)
 
     def get_nodestore(self, node_name):
@@ -445,7 +445,7 @@ class KeyHelper:
         get Certificate Authorities
         @return:
         '''
-        hash_dir = os.path.join(self.keys_dir, 'ca_path')
+        hash_dir = os.path.join(self.keys_dir, 'capath')
         resp = get_hash_certs(hash_dir)
         return resp
 
