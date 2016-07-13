@@ -64,8 +64,9 @@ keys:
       key_peram: 4096 # key length; commonly a power of 2, and usually no less than 2048 for security https://cryptography.io/en/latest/hazmat/primitives/asymmetric/rsa/?highlight=2048#generation
       # key_type: ec # {rsa,dsa,ec}; type of asymmetric cryptographic key to use https://cryptography.io/en/latest/hazmat/primitives/asymmetric/
       # key_peram: SECP384R1 # key curve; https://cryptography.io/en/latest/hazmat/primitives/asymmetric/ec/#elliptic-curves
-    fingerprint_algorithm: SHA256 # fingerprint method used for singing child certificate requests https://cryptography.io/en/latest/hazmat/primitives/cryptographic-hashes/?highlight=sha256#cryptography.hazmat.primitives.hashes.Hash
     encryption_algorithm: BestAvailableEncryption # private key cipher; leave blank to save keyfile unencrypted https://cryptography.io/en/latest/hazmat/primitives/asymmetric/serialization/#serialization-encryption-types
+    password_env: SROS_ROOT_PASSWORD # environment variable to use acquire secret private key cipher password; leave to be propted to save keyfile unencrypted
+    fingerprint_algorithm: SHA256 # fingerprint method used for singing child certificate requests https://cryptography.io/en/latest/hazmat/primitives/cryptographic-hashes/?highlight=sha256#cryptography.hazmat.primitives.hashes.Hash
     cert: &default_cert # certificate specifications; leave blank to load public certificate from keystore
       subject: &default_subject # change subject content accordingly for your use; must be somehow unique for each CA, https://cryptography.io/en/latest/x509/reference/#object-identifiers
         COUNTRY_NAME             : "ZZ" # uses two-letter country code https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
@@ -85,6 +86,8 @@ keys:
     key:
       key_type: rsa
       key_peram: 2048 # overide key length inherited from root
+    encryption_algorithm: BestAvailableEncryption
+    password_env: SROS_MASTER_PASSWORD
     cert:
       <<: *default_cert # forking from root cert, so include cert defaults
       subject: # change subject content accordingly for your use
@@ -101,6 +104,8 @@ keys:
     key: # overide key length inherited from master
       key_type: ec # computationally lighter for for signing
       key_peram: SECP384R1 # overide key length inherited from root
+    encryption_algorithm: BestAvailableEncryption
+    password_env: SROS_NODE_PASSWORD
     cert:
       <<: *default_cert # forking from master cert, so include cert defaults
       serial_number: # if no value provided, then UUID4 is used https://cryptography.io/en/latest/x509/reference/?highlight=uuid4#cryptography.x509.CertificateBuilder.serial_number

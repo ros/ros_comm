@@ -240,6 +240,11 @@ class TLSSecurity(Security):
             self.graph_mode = None
 
     def init_contexts(self):
+        if 'SROS_PASSWORD' in os.environ:
+            password = os.environ['SROS_PASSWORD']
+        else:
+            password = None
+
         self.nodestore_contexts = deepcopy(self.nodestore_paths)
         for role_name, role_struct in self.nodestore_contexts.iteritems():
             for mode_name, mode_struct in role_struct.iteritems():
@@ -249,7 +254,7 @@ class TLSSecurity(Security):
                 context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
                 context.verify_mode = ssl.CERT_REQUIRED
                 context.load_verify_locations(capath=self.capath)
-                context.load_cert_chain(certfile=certfile, keyfile=keyfile)
+                context.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
                 role_struct[mode_name] = context
 
     def __init__(self, node_name):

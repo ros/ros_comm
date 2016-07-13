@@ -23,9 +23,6 @@ from copy import deepcopy
 
 from rosgraph_helper import GraphStructure
 
-SROS_ROOT_PASSPHRASE = 'SROS_ROOT_PASSPHRASE'
-SROS_PASSPHRASE = 'SROS_PASSPHRASE'
-
 class KeyBlob:
     '''
     This class is used to load or generate keys and certificates with openssl
@@ -38,7 +35,7 @@ class KeyBlob:
         '''
         self.name = name
         self.config = config
-        self.passphrase = None
+        self.password = None
         self.cert_path = None
         self.key_path = None
         self.cert = None
@@ -262,7 +259,15 @@ class KeyBlob:
             ).sign(ca_blob.key, ca_blob._get_fingerprint_algorithm(), default_backend())
 
 
-    def dump_cert(self, cert_path=None):
+    def dump_cert(self):
+        '''
+        Get PEM Encoded certificate serialization
+        @return: serialization of certificate
+        '''
+        return self.cert.public_bytes(serialization.Encoding.PEM)
+
+
+    def save_cert(self, cert_path=None):
         '''
         Save certificate to disk
         :param cert_path: full certificate file path to write to
@@ -271,10 +276,27 @@ class KeyBlob:
         if cert_path is None:
             cert_path = self.cert_path
         with open(cert_path, "wb") as f:
-            f.write(self.cert.public_bytes(serialization.Encoding.PEM))
+            f.write(self.dump_cert())
 
 
-    def dump_key(self, key_path=None):
+    def dump_key(self):
+        '''
+        Get PEM Encoded/Encrypted key serialization
+        @return: serialization of key
+        '''
+        if self.config['encryption_algorithm'] is None:
+            encryption_algorithm = serialization.NoEncryption()
+        else:
+            encryption_algorithm = getattr(serialization, self.config['encryption_algorithm'])(self.password)
+
+        return self.key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.TraditionalOpenSSL,
+                encryption_algorithm=encryption_algorithm,
+            )
+
+
+    def save_key(self, key_path=None):
         '''
         Save private key to disk
         :param key_path: full key file path to write to
@@ -283,17 +305,8 @@ class KeyBlob:
         if key_path is None:
             key_path = self.key_path
 
-        if self.config['encryption_algorithm'] is None:
-            encryption_algorithm = serialization.NoEncryption
-        else:
-            encryption_algorithm = getattr(serialization, self.config['encryption_algorithm'])(self.passphrase)
-
         with open(key_path, "wb") as f:
-            f.write(self.key.private_bytes(
-                encoding=serialization.Encoding.PEM,
-                format=serialization.PrivateFormat.TraditionalOpenSSL,
-                encryption_algorithm=encryption_algorithm,
-            ))
+            f.write(self.dump_key())
 
 
     def load_cert(self, cert_path=None):
@@ -319,29 +332,32 @@ class KeyBlob:
         with open(key_path, 'rb') as f:
             self.key = serialization.load_pem_private_key(
                 f.read(),
-                password = self.passphrase,
+                password = self.password,
                 backend = default_backend())
 
 
-    def get_new_passphrase(self, env):
+    def init_password(self):
         '''
-        Get new passphrase either from matching environment variable or promt from user input.
+        Get password either from matching environment variable or promt from user input.
         Only does so if encryption_algorithm has been specified.
-        :param env: name of environment variable to check for passphrase
+        :param env: name of environment variable to check for password
         :return: None
         '''
-        if 'encryption_algorithm' not in self.config:
-            self.passphrase = None
-        elif (env in os.environ):
-            self.passphrase = os.environ[env]
+        encryption_algorithm = self.config['encryption_algorithm']
+        if encryption_algorithm is not None:
+            password_env = self.config['password_env']
+            if password_env is not None:
+                self.password = os.environ[password_env]
+            else:
+                while (True):
+                    password = getpass.getpass(prompt='Enter pass phrase for {}: '.format(self.name), stream=None)
+                    password = getpass.getpass(prompt='Verifying - Enter pass phrase for {}: '.format(self.name),
+                                                  stream=None)
+                    if (password == password):
+                        break
+                self.password = password
         else:
-            while (True):
-                passphrase = getpass.getpass(prompt='Enter pass phrase for {}: '.format(self.name), stream=None)
-                passphrase_ = getpass.getpass(prompt='Verifying - Enter pass phrase for {}: '.format(self.name),
-                                              stream=None)
-                if (passphrase == passphrase_):
-                    break
-            self.passphrase = passphrase
+            self.password = None
 
 
     def check_keys_match(self):
@@ -428,15 +444,11 @@ class KeyHelper:
                     graph_path = None
                 node_config = extention_parsing(node_name, node_config, graph_path)
                 node_blob = KeyBlob(os.path.basename(key_name), node_config)
-                get_keys(None, node_blob, self.keys["master"])
+                get_keys(None, node_blob, self.keys[node_blob.config['issuer_name']])
                 # self.keys[key_name] = node_blob
                 print("Certificate generated: {}".format(key_name))
-                resp[role_name][node_blob.name + '.pem'] = node_blob.key.private_bytes(
-                    encoding=serialization.Encoding.PEM,
-                    format=serialization.PrivateFormat.TraditionalOpenSSL,
-                    encryption_algorithm=serialization.NoEncryption())
-                resp[role_name][node_blob.name + '.cert'] = node_blob.cert.public_bytes(
-                    encoding=serialization.Encoding.PEM)
+                resp[role_name][node_blob.name + '.pem'] = node_blob.dump_key()
+                resp[role_name][node_blob.name + '.cert'] = node_blob.dump_cert()
 
         return resp
 
@@ -509,30 +521,25 @@ def get_keys(key_dir, key_blob, ca_blob=None):
     # over_write_cert = key_blob.config['key'] is not None
     # over_write_key = key_blob.config['cert'] is not None
 
-    if ca_blob is None:
-        env = SROS_ROOT_PASSPHRASE
-    else:
-        env = SROS_PASSPHRASE
-
     if key_dir:
         if over_write_key:
             key_blob.generate_key()
-            if key_dir:
-                key_blob.get_new_passphrase(env)
-                key_blob.dump_key()
-        elif key_dir:
+            key_blob.init_password()
+            key_blob.save_key()
+        else:
             if 'encryption_algorithm' in key_blob.config:
-                key_blob.get_new_passphrase(env)
+                key_blob.init_password()
             key_blob.load_key()
     else:
         key_blob.generate_key()
+        if 'encryption_algorithm' in key_blob.config:
+            key_blob.init_password()
 
     if key_dir:
         if over_write_cert:
             key_blob.create_cert(ca_blob)
-            if key_dir:
-                key_blob.dump_cert()
-        elif key_dir:
+            key_blob.save_cert()
+        else:
             key_blob.load_cert()
     else:
         key_blob.create_cert(ca_blob)
