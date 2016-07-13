@@ -1,0 +1,7 @@
+<launch>
+  <node name="listener_once_1" pkg="test_rospy" type="listener_once.py" output="screen" />
+  <node name="listener_once_2" pkg="test_rospy" type="listener_once.py" output="screen">
+    <param name="delay" value="1.0" type="double" />
+  </node>
+  <test test-name="test_latch_unsubscribe" pkg="test_rospy" type="test_latch_unsubscribe.py" />
+</launch>
