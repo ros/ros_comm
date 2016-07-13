@@ -291,13 +291,12 @@ class TLSSecurity(Security):
             mode = 'subscriber'
         return self.nodestore_contexts[role][mode]
 
-    def wrap_socket(self, sock, node_name, role=None, mode=None):
+    def wrap_socket(self, sock, role=None, mode=None):
         """
         Called whenever there is an opportunity to wrap a server socket
         """
-        # print("SSLSecurity.wrap_socket() called for node %s" % node_name)
         context = self.get_server_context(role, mode)
-        return context.wrap_socket(sock, server_side=True)  # connstream
+        return context.wrap_socket(sock, server_side=True)
 
     def xmlrpcapi(self, uri, role=None, mode=None):
         # print("SSLSecurity.xmlrpcapi(%s, %s)" % (uri, node_name or "[UNKNOWN]"))
@@ -306,7 +305,6 @@ class TLSSecurity(Security):
         return xmlrpcclient.ServerProxy(uri, transport=st, context=context)
 
     def connect(self, sock, dest_addr, dest_port, endpoint_id, timeout=None, role=None, mode=None):
-        # print('SSLSecurity.connect() to node at %s:%d which is endpoint %s' % (dest_addr, dest_port, endpoint_id))
         context = self.get_client_context(role, mode)
         conn = context.wrap_socket(sock)
         try:
@@ -326,7 +324,7 @@ class TLSSecurity(Security):
             client_stream = context.wrap_socket(client_sock, server_side=True)
             client_cert = client_stream.getpeercert()
             # print("SSLSecurity.accept(server_node_name=%s) getpeercert = %s" % (server_node_name, repr(client_cert)))
-            cn = cert_cn(client_cert)
+            # cn = cert_cn(client_cert)
             # if cn is None:
             #     raise Exception("unknown certificate format")
             # if not cn.endswith('.client'):
@@ -338,8 +336,7 @@ class TLSSecurity(Security):
         except Exception as e:
             print("SSLSecurity.accept() wrap_socket exception: %s" % e)
             raise
-        print("%s is allowing inbound connection from %s" % (self.node_name, cn))
-        return (client_stream, client_addr, cn)
+        return (client_stream, client_addr)
 
     # only ever called by master
     def allowClients(self, caller_id, clients):

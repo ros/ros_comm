@@ -58,10 +58,6 @@ try:
     from urllib.parse import urlparse
 except ImportError:
     from urlparse import urlparse
-#try:
-#    from xmlrpc.client import ServerProxy
-#except ImportError:
-#    from xmlrpclib import ServerProxy
 
 import rosgraph.network as network
 import rosgraph.xmlrpc as xmlrpc
@@ -378,15 +374,13 @@ class ROSLaunchNode(xmlrpc.XmlRpcNode):
                 if val != os.getpid():
                     raise RLException("Server at [%s] did not respond with correct PID. There appears to be something wrong with the networking configuration"%self.uri)
                 server_up = True
-            except IOError as e:
+            except IOError:
                 # presumably this can occur if we call in a small time
                 # interval between the server socket port being
                 # assigned and the XMLRPC server initializing, but it
                 # is highly unlikely and unconfirmed
-                print("  ioerror: %s" % e.strerror)
                 time.sleep(0.1)
             except socket.error as e:
-                print(e)
                 if e.errno == 113:
                     p = urlparse(self.uri)
                     raise RLException("Unable to contact the address [%s], which should be local.\nThis is generally caused by:\n * bad local network configuration\n * bad ROS_IP environment variable\n * bad ROS_HOSTNAME environment variable\nCan you ping %s?"%(self.uri, p.hostname))

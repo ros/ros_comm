@@ -413,7 +413,6 @@ class ROSHandler(XmlRpcHandler):
            of subscribers connected to the topic.
         @rtype: [int, str, int]
         """
-        #print("ROSHandler._connect_topic(%s, %s)" % (topic, pub_uri))
         caller_id = rospy.names.get_caller_id()
         sub = get_topic_manager().get_subscriber_impl(topic)
         if not sub:
@@ -445,12 +444,10 @@ class ROSHandler(XmlRpcHandler):
         while not success:
             tries += 1
             try:
-                #print("starting xmlrpc connection sequence to node at %s" % pub_uri)
                 code, msg, result = \
                       security.get().xmlrpcapi(pub_uri).requestTopic(caller_id, topic, protocols)
                 success = True
             except Exception as e:
-                print("requestTopic exception: %s" % e)
                 if tries >= max_num_tries:
                     return 0, "unable to requestTopic: %s"%str(e), 0
                 else:
@@ -459,12 +456,10 @@ class ROSHandler(XmlRpcHandler):
         #Create the connection (if possible)
         if code <= 0:
             _logger.debug("connect[%s]: requestTopic did not succeed %s, %s", pub_uri, code, msg)
-            print("connect[%s]: requestTopic did not succeed %s, %s", pub_uri, code, msg)
             return code, msg, 0
         elif not result or type(protocols) != list:
             return 0, "ERROR: publisher returned invalid protocol choice: %s"%(str(result)), 0
         _logger.debug("connect[%s]: requestTopic returned protocol list %s", topic, result)
-        #print("connect[%s]: requestTopic returned protocol list %s" % (topic, result))
         protocol = result[0]
         for h in self.protocol_handlers:
             if h.supports(protocol):
@@ -505,7 +500,6 @@ class ROSHandler(XmlRpcHandler):
         @rtype: [int, str, int]
         """
         if self.reg_man:
-            #print("publisherUpdate(%s, %s, %s)" % (caller_id, topic, repr(publishers)))
             for uri in publishers:
                 self.reg_man.publisher_update(topic, publishers)
         return 1, "", 0

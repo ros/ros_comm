@@ -72,7 +72,7 @@ def get_master_uri(env=None, argv=None):
         if 'ROS_SECURITY' in env and \
             env['ROS_SECURITY'] == 'ssl' and \
             env[ROS_MASTER_URI].split('://')[0] == 'http':
-            #print("INFO: ROS_SECURITY is set to SSL but ROS_MASTER_URI is not HTTPS. I'll fix that for you.")
+            # ROS_SECURITY is set to SSL but ROS_MASTER_URI is not HTTPS. I'll fix that for you
             return 'https://' + env[ROS_MASTER_URI].split('://')[1]
             
         return env[ROS_MASTER_URI]

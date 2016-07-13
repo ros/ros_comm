@@ -484,4 +484,3 @@ class Master(object):
         @raise rosgraph.masterapi.Failure: if Master returns FAILURE.
         """
         return self._succeed(self.handle.getSystemState(self.caller_id))
-

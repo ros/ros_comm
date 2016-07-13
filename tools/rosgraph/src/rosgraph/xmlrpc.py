@@ -66,7 +66,6 @@ except ImportError:
 
 import rosgraph.network
 import rosgraph.security as security
-import xmlrpclib
 
 def isstring(s):
     """Small helper version to check an object is a string in a way that works
@@ -390,14 +389,11 @@ class XmlRpcNode(object):
                 uri = '%s://%s:%s/'%(security.get().xmlrpc_protocol(),rosgraph.network.get_local_address(), self.port)
             self.set_uri(uri)
             
-            #print("Started XML-RPC server [%s]" % self.uri)
+            logger.info("Started XML-RPC server [%s]", self.uri)
 
             self.server.register_multicall_functions()
             self.server.register_instance(self.handler)
-            self.server.register_function(security.get().allowClients)
-
-            #print("wrapping TLS socket on port %d" % self.port)
-            self.server.socket = security.get().wrap_socket(self.server.socket, self.node_name)
+            self.server.socket = security.get().wrap_socket(self.server.socket)
 
         except socket.error as e:
             if e.errno == 98:

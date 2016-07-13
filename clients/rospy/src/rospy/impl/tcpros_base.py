@@ -44,7 +44,6 @@ except ImportError:
 import socket
 import logging
 import os
-import subprocess
 
 import threading
 import time
@@ -153,8 +152,7 @@ class TCPServer(object):
             raise ROSInternalException("%s did not connect"%self.__class__.__name__)
         while not self.is_shutdown:
             try:
-                #(client_sock, client_addr) = self.server_sock.accept()
-                (client_sock, client_addr, cert_name) = security.get().accept(self.server_sock, rospy.get_name())
+                (client_sock, client_addr) = security.get().accept(self.server_sock, rospy.get_name())
             except socket.timeout:
                 continue
             except IOError as e:
@@ -166,7 +164,7 @@ class TCPServer(object):
                 break
             try:
                 #leave threading decisions up to inbound_handler
-                self.inbound_handler(client_sock, client_addr, cert_name)
+                self.inbound_handler(client_sock, client_addr)
             except socket.error as e:
                 if not self.is_shutdown:
                     traceback.print_exc()
@@ -306,7 +304,7 @@ class TCPROSServer(object):
         if self.tcp_ros_server:
             self.tcp_ros_server.shutdown()
 
-    def _tcp_server_callback(self, sock, client_addr, cert_name):
+    def _tcp_server_callback(self, sock, client_addr):
         """
         TCPServer callback: detects incoming topic or service connection and passes connection accordingly
     
@@ -325,7 +323,6 @@ class TCPROSServer(object):
                 header = read_ros_handshake_header(sock, StringIO(), buff_size)
             else:
                 header = read_ros_handshake_header(sock, BytesIO(), buff_size)
-
             
             if 'topic' in header:
                 err_msg = self.topic_connection_handler(sock, client_addr, header)
@@ -531,9 +528,10 @@ class TCPROSTransport(Transport):
             logwarn(msg)
             self.close()
             raise TransportInitError(msg)  # bubble up
-
+ 
+        # now we can proceed with trying to connect.
         self.endpoint_id = endpoint_id
-        self.dest_address = (dest_addr, dest_port) # TODO(codebot): port/addr will change if tunneled
+        self.dest_address = (dest_addr, dest_port)
 
         if rosgraph.network.use_ipv6():
             s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
@@ -569,11 +567,12 @@ class TCPROSTransport(Transport):
         except Exception as e:
             #logerr("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, str(e)))
             rospywarn("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, traceback.format_exc()))
+
             # FATAL: no reconnection as error is unknown
             self.close()
             raise TransportInitError(str(e)) #re-raise i/o error
-
-    def _validate_header(self, header, sock):
+                
+    def _validate_header(self, header):
         """
         Validate header and initialize fields accordingly
         @param header: header fields from publisher
@@ -588,6 +587,8 @@ class TCPROSTransport(Transport):
                 raise TransportInitError("header missing required field [%s]"%required)
         self.type = header['type']
         self.md5sum = header['md5sum']
+        if 'callerid' in header:
+            self.callerid_pub = header['callerid']
         if header.get('latching', '0') == '1':
             self.is_latched = True
 
@@ -619,7 +620,7 @@ class TCPROSTransport(Transport):
             return
         sock.setblocking(1)
 	# TODO: add bytes received to self.stat_bytes
-        self._validate_header(read_ros_handshake_header(sock, self.read_buff, self.protocol.buff_size), sock)
+        self._validate_header(read_ros_handshake_header(sock, self.read_buff, self.protocol.buff_size))
                 
     def send_message(self, msg, seq):
         """
