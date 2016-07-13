@@ -86,7 +86,7 @@ def _is_use_tcp_keepalive():
             return _use_tcp_keepalive
         # in order to prevent circular dependencies, this does not use the
         # builtin libraries for interacting with the parameter server
-        m = security.get().xmlrpcapi(rosgraph.get_master_uri(), 'master')
+        m = security.get().xmlrpcapi(rosgraph.get_master_uri())
         code, msg, val = m.getParam(rospy.names.get_caller_id(), _PARAM_TCP_KEEPALIVE)
         _use_tcp_keepalive = val if code == 1 else True
         return _use_tcp_keepalive 
@@ -326,16 +326,6 @@ class TCPROSServer(object):
             else:
                 header = read_ros_handshake_header(sock, BytesIO(), buff_size)
 
-            if 'callerid' in header:
-                callerid = security.node_name_to_cert_stem(header['callerid'])
-                if cert_name is not 'unknown' and callerid != cert_name:
-                    print('OH NOES callerid=[%s] but cert_name=[%s]' % (callerid, cert_name))
-                    raise ValueError('OH NOES callerid=[%s] but cert_name=[%s]' % (callerid, cert_name))
-                else:
-                    #print('peer-to-peer header OK: %s cert matches header' % (callerid))
-                    pass
-            else:
-                print('OH NOES there was no callerid')
             
             if 'topic' in header:
                 err_msg = self.topic_connection_handler(sock, client_addr, header)
@@ -598,23 +588,6 @@ class TCPROSTransport(Transport):
                 raise TransportInitError("header missing required field [%s]"%required)
         self.type = header['type']
         self.md5sum = header['md5sum']
-        if 'callerid' in header:
-            self.callerid_pub = header['callerid']
-            # we can only authenticate if we're in SSL mode...
-            gpc = getattr(sock, 'getpeercert', None)
-            if callable(gpc):
-                #print('transport validate_header callerid = %s' % self.callerid_pub)
-                caller_id_name = security.node_name_to_cert_stem(self.callerid_pub)
-                expected_cert_name = caller_id_name + '.server'
-                cert_name = security.cert_cn(sock.getpeercert())
-                if expected_cert_name != cert_name:
-                    print('OH NOES, expected %s but node certificate was %s instead' % (expected_cert_name, cert_name))
-                    raise TransportInitError('OH NOES, expected %s but node certificate was %s instead' % (expected_cert_name, cert_name))
-                else:
-                    #print('header callerid matches cert_name %s' % cert_name)
-                    pass
-        else:
-            raise TransportInitError('no callerid provided in TCPROS header! Authentication is impossible')
         if header.get('latching', '0') == '1':
             self.is_latched = True
 

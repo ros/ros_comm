@@ -120,7 +120,7 @@ class Master(object):
 
         self.master_uri = master_uri
         try:
-            self.handle = security.get().xmlrpcapi(self.master_uri, node_name='master')
+            self.handle = security.get().xmlrpcapi(self.master_uri)
         except Exception as e:
             print("woah! couldn't create xmlrpcapi to master: %s" % e)
             raise

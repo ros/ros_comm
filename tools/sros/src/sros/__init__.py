@@ -68,17 +68,13 @@ def sroscore_main(argv = sys.argv):
         os.environ['ROS_CONFIG_PATH'] = args.config
     if args.keystore is not None:
         os.environ['ROS_KEYSTORE_PATH'] = args.keystore
+    else:
+        os.environ['ROS_KEYSTORE_PATH'] = os.path.join(os.path.expanduser('~'), '.ros', 'keys')
 
     if args.keyserver:
         # if we're in setup mode, we need to start an unsecured server that will
         # hand out the SSL certificates and keys so that nodes can talk to roscore
         os.environ['ROS_SECURITY'] = 'ssl_setup'
-
-        if 'ROS_KEYSTORE_PATH' in os.environ:
-            keys_dir = os.environ['ROS_KEYSTORE_PATH']
-        else:
-            keys_dir = os.path.join(os.path.expanduser('~'), '.ros', 'keys')
-            os.environ['ROS_KEYSTORE_PATH'] = keys_dir
 
         if 'ROS_CONFIG_PATH' in os.environ:
             config_path = os.path.abspath(os.environ['ROS_CONFIG_PATH'])
@@ -86,6 +82,7 @@ def sroscore_main(argv = sys.argv):
             # config_path = os.path.join(os.path.expanduser('~'), '.ros', 'keys','sros_config.yaml')
             config_path = os.path.abspath('/home/ruffsl/sros/src/ruffsl/ros_comm/tools/sros/conf/sros_config.yaml')
 
+        keys_dir = os.environ['ROS_KEYSTORE_PATH']
         keyserver.fork_xmlrpc_keyserver(config_path, keys_dir)
     else:
         os.environ['ROS_SECURITY'] = 'ssl'

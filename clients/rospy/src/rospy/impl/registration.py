@@ -221,7 +221,7 @@ class RegManager(RegistrationListener):
             master = None
         else:
             registered = False
-            master = security.get().xmlrpcapi(master_uri, 'master')
+            master = security.get().xmlrpcapi(master_uri)
             self.logger.info("Registering with master node %s", master_uri)
 
         while not registered and not is_shutdown():
@@ -348,7 +348,7 @@ class RegManager(RegistrationListener):
         
         caller_id = get_caller_id()
 
-        master = security.get().xmlrpcapi(self.master_uri, 'master')
+        master = security.get().xmlrpcapi(self.master_uri)
         # we never successfully initialized master
         if master is None:
             return
@@ -409,7 +409,7 @@ class RegManager(RegistrationListener):
             self.logger.error("Registrar: master_uri is not set yet, cannot inform master of deregistration")
         else:
             try:
-                master = security.get().xmlrpcapi(master_uri, 'master')
+                master = security.get().xmlrpcapi(master_uri)
                 if reg_type == Registration.PUB:
                     self.logger.debug("unregisterPublisher(%s, %s)", resolved_name, self.uri)
                     master.unregisterPublisher(get_caller_id(), resolved_name, self.uri)
@@ -438,7 +438,7 @@ class RegManager(RegistrationListener):
         if not master_uri:
             self.logger.error("Registrar: master_uri is not set yet, cannot inform master of registration")
         else:
-            master = security.get().xmlrpcapi(master_uri, 'master')
+            master = security.get().xmlrpcapi(master_uri)
             args = (get_caller_id(), resolved_name, data_type_or_uri, self.uri)
             registered = False
             first = True

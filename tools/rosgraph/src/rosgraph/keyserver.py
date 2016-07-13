@@ -58,14 +58,17 @@ _key_helper = None
 
 def parse_uri(uri):
     address_port = uri.split('://')[1]
-    address, port = address_port.split(':')
+    address, port = address_port.rstrip('/').split(':')
     return address, int(port)
 
 
 def get_keyserver_uri():
     master_uri = rosenv.get_master_uri()
     address, port = parse_uri(master_uri)
-    keyserver_uri = 'http://%s:%d' % (address, port - 1)
+    # keyserver_uri = 'http://%s:%d' % (address, port - 1)
+    #TODO: Fix uri fetching
+    keyserver_uri = 'http://%s:%d' % ('127.0.0.1', port - 1)
+    print("##########################################\nkeyserver_uri: {}\n######################################".format(keyserver_uri))
     return keyserver_uri
 
 

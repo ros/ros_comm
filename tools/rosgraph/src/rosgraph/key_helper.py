@@ -500,31 +500,42 @@ def get_keys(key_dir, key_blob, ca_blob=None):
         check_path(key_dir)
         key_blob.cert_path = os.path.join(key_dir, key_blob.name + '.cert')
         key_blob.key_path  = os.path.join(key_dir, key_blob.name + '.pem')
+        over_write_cert = not os.path.exists(key_blob.cert_path)
+        over_write_key = not os.path.exists(key_blob.key_path)
+    else:
+        over_write_cert = False
+        over_write_key = False
 
-    over_write_cert = key_blob.config['key'] is not None
-    over_write_key = key_blob.config['cert'] is not None
+    # over_write_cert = key_blob.config['key'] is not None
+    # over_write_key = key_blob.config['cert'] is not None
 
     if ca_blob is None:
         env = SROS_ROOT_PASSPHRASE
     else:
         env = SROS_PASSPHRASE
 
-    if over_write_key:
+    if key_dir:
+        if over_write_key:
+            key_blob.generate_key()
+            if key_dir:
+                key_blob.get_new_passphrase(env)
+                key_blob.dump_key()
+        elif key_dir:
+            if 'encryption_algorithm' in key_blob.config:
+                key_blob.get_new_passphrase(env)
+            key_blob.load_key()
+    else:
         key_blob.generate_key()
-        if key_dir:
-            key_blob.get_new_passphrase(env)
-            key_blob.dump_key()
-    elif key_dir:
-        if 'encryption_algorithm' in key_blob.config:
-            key_blob.get_new_passphrase(env)
-        key_blob.load_key()
 
-    if over_write_cert:
+    if key_dir:
+        if over_write_cert:
+            key_blob.create_cert(ca_blob)
+            if key_dir:
+                key_blob.dump_cert()
+        elif key_dir:
+            key_blob.load_cert()
+    else:
         key_blob.create_cert(ca_blob)
-        if key_dir:
-            key_blob.dump_cert()
-    elif key_dir:
-        key_blob.load_cert()
 
     if not key_blob.check_keys_match():
         raise ValueError("\nFailed to load certificate, does not match private key!\n"

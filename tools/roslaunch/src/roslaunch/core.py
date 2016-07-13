@@ -292,7 +292,7 @@ class Master(object):
         :returns:: XMLRPC proxy for communicating with master, ``xmlrpc.client.ServerProxy``
         """
         #print("roslaunch about to try to call master at [%s]" % repr(self.uri))
-        return security.get().xmlrpcapi(self.uri, 'roslaunch')
+        return security.get().xmlrpcapi(self.uri)
     
     def get_multi(self):
         """
@@ -674,4 +674,3 @@ def generate_run_id():
     """    
     import uuid
     return str(uuid.uuid1())
-

@@ -33,7 +33,7 @@ ROLE_STRUCT = {
 
 EXTENSION_MAPPING = {
     'key': '.pem',
-    'certificate': '.cert',
+    'cert': '.cert',
 }
 
 # MODE_POLICY_TYPE_MAPPING = {

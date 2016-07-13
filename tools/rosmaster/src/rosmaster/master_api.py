@@ -193,7 +193,7 @@ def apivalidate(error_return_value, validators=()):
         return validated_f
     return check_validates
 
-def publisher_update_task(api, node_name, topic, pub_uris):
+def publisher_update_task(api, topic, pub_uris):
     """
     Contact api.publisherUpdate with specified parameters
     @param api: XML-RPC URI of node to contact
@@ -208,7 +208,7 @@ def publisher_update_task(api, node_name, topic, pub_uris):
     
     mloginfo("publisherUpdate[%s] -> %s", topic, api)
     #TODO: check return value for errors so we can unsubscribe if stale
-    security.get().xmlrpcapi(api, node_name).publisherUpdate('/master', topic, pub_uris)
+    security.get().xmlrpcapi(api, 'topic', 'publisher').publisherUpdate('/master', topic, pub_uris)
 
 def service_update_task(api, service, uri):
     """
@@ -535,20 +535,7 @@ class ROSMasterHandler(object):
         try:            
             for node_api in node_apis:
                 # use the api as a marker so that we limit one thread per subscriber
-                # (MQ 5/12/2016): this is bad. we need to find the correct certificate
-                # to talk to the node, so we need to reverse lookup the node name from
-                # the API that is stored everywhere else in master. so we'll look up 
-                # the api and return the first match. similar to 
-                # Registrations.reverse_lookup() but finds at most one match. Probably 
-                # should put this in RegistrationManager someday, or (even better)
-                # rework all these data structures so it always holds the node name along with
-                # its XMLRPC URI, since this nested-loop is so ugly. But usually there
-                # are less than a few dozen nodes, so this n^2 shouldn't be too bad; it's
-                # just embarrassing.
-                for iter_node_name, iter_node in self.reg_manager.nodes.items():
-                    #print("notify() is checking if %s == %s" % (node_api, iter_node.api))
-                    if node_api == iter_node.api:
-                        thread_pool.queue_task(node_api, task, (node_api, iter_node_name, key, value))
+                thread_pool.queue_task(node_api, task, (node_api, key, value))
         except KeyError:
             _logger.warn('subscriber data stale (key [%s], listener [%s]): node API unknown'%(key, s))
         
@@ -601,29 +588,6 @@ class ROSMasterHandler(object):
         @param pub_uris: list of URIs of publishers.
         @type  pub_uris: [str]
         """
-        # sometime we should be smarter about this, but for now, we'll reverse-lookup
-        # all of the pub_uri node_names so that the peers will know which certificate
-        # to use.
-        #pub_uris_and_names = {}
-        #for u in pub_uris:
-        #    for iter_node_name, iter_node in self.reg_manager.nodes.items():
-        #        if u == iter_node.api:
-        #            pub_uris_and_names[u] = iter_node_name
-        #            break
-        sub_names = []
-        for sub_uri in sub_uris:
-            for sub_name, sub_node in self.reg_manager.nodes.items():
-                if sub_uri == sub_node.api:
-                    sub_names += [sub_name]
-
-        if len(sub_names) > 0:
-            for pub_uri in pub_uris:
-                for iter_node_name, iter_node in self.reg_manager.nodes.items():
-                    if pub_uri == iter_node.api:
-                        #print('master is telling %s to allow clients %s' % (iter_node_name, repr(sub_names)))
-                        security.get().xmlrpcapi(iter_node.api, iter_node_name).allowClients('master', sub_names)
-                        break
-
         self._notify(self.subscribers, publisher_update_task, topic, pub_uris, sub_uris)
 
     ##################################################################################
@@ -732,25 +696,6 @@ class ROSMasterHandler(object):
 
             mloginfo("+SUB [%s] %s %s",topic, caller_id, caller_api)
             pub_uris = self.publishers.get_apis(topic)
-            # (MQ 5/12/2016): this is bad. we need to find the correct certificate
-            # to talk to the node, so we need to reverse lookup the node name from
-            # the API that is stored everywhere else in master. so we'll look up 
-            # the api and return the first match. similar to 
-            # Registrations.reverse_lookup() but finds at most one match. Probably 
-            # should put this in RegistrationManager someday, or (even better)
-            # rework all these data structures so it always holds the node name along with
-            # its XMLRPC URI, since this nested-loop is so ugly. But usually there
-            # are less than a few dozen nodes, so this n^2 shouldn't be too bad; it's
-            # just embarrassing.
-            for pub_uri in pub_uris:
-                for iter_node_name, iter_node in self.reg_manager.nodes.items():
-                    if pub_uri == iter_node.api:
-                        security.get().xmlrpcapi(pub_uri, iter_node_name).allowClients('master', [caller_id])
-                        #security.get().xmlrpcapi(caller_api, caller_id).allowClients([iter_node_name])
-                        break
-            # pub_uris_and_names[pub_uri] = iter_node_name
-            #            #print("hooray, it does!")
-            #            #thread_pool.queue_task(node_api, task, (node_api, iter_node_name, key, value))
         finally:
             self.ps_lock.release()
         return 1, "Subscribed to [%s]"%topic, pub_uris
