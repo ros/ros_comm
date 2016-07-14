@@ -99,9 +99,9 @@ XmlRpcDispatch::work(double timeout)
     for (it=_sources.begin(); it!=_sources.end(); ++it, ++i) {
       int fd = it->getSource()->getfd();
       fds[i].fd = fd;
+      fds[i].events = 0;
       if (it->getMask() & ReadableEvent) fds[i].events |= POLLIN;
       if (it->getMask() & WritableEvent) fds[i].events |= POLLOUT;
-      if (it->getMask() & Exception)     fds[i].events |= POLLERR;
     }
 
     // Check for events
@@ -126,7 +126,7 @@ XmlRpcDispatch::work(double timeout)
         newMask &= src->handleEvent(ReadableEvent);
       if (fds[i].revents & POLLOUT)
         newMask &= src->handleEvent(WritableEvent);
-      if (fds[i].revents & POLLERR)
+      if (fds[i].revents & (POLLERR|POLLHUP|POLLNVAL))
         newMask &= src->handleEvent(Exception);
 
       // Find the source again.  It may have moved as a result of the way
