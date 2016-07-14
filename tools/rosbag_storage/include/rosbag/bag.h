@@ -95,7 +95,7 @@ public:
      *
      * Can throw BagException
      */
-    Bag(std::string const& filename, uint32_t mode = bagmode::Read);
+    explicit Bag(std::string const& filename, uint32_t mode = bagmode::Read);
 
     ~Bag();
 
