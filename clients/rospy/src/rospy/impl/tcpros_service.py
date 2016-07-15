@@ -46,6 +46,7 @@ import genpy
 import rosgraph
 import rosgraph.names
 import rosgraph.network
+import rosgraph.security as security
 
 from rospy.exceptions import TransportInitError, TransportTerminated, ROSException, ROSInterruptException
 from rospy.service import _Service, ServiceException
@@ -109,7 +110,7 @@ def wait_for_service(service, timeout=None):
             # to a down service.
             s.settimeout(timeout)
             logdebug('connecting to ' + str(addr))
-            s.connect(addr)
+            s = security.get().connect(s, addr[0], addr[1], endpoint_id=None)
             h = { 'probe' : '1', 'md5sum' : '*',
                   'callerid' : rospy.core.get_caller_id(),
                   'service': resolved_name }
