@@ -635,7 +635,7 @@ def set_extention(extension_name, extensions_config, node_config, default):
 
 def extention_parsing(node_name, node_config, graph_path):
     role_name, mode_name = node_config['key_mode'].split('.')
-    mode_type = ROLE_STRUCT[role_name][mode_name]['OID']
+    mode_types = ROLE_STRUCT[role_name][mode_name]['OID']
 
     if node_config['cert']['x509_extensions'] is not None:
         extensions_config = node_config['cert']['x509_extensions']
@@ -646,7 +646,7 @@ def extention_parsing(node_name, node_config, graph_path):
 
         extension_name = 'ExtendedKeyUsage'
         if extension_name in extensions_config:
-            set_extention(extension_name, extensions_config, node_config, [mode_type])
+            set_extention(extension_name, extensions_config, node_config, mode_types)
 
         extension_name = 'NameConstraints'
         if extension_name in extensions_config:

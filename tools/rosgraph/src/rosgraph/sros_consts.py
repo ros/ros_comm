@@ -2,31 +2,31 @@ ROLE_STRUCT = {
     'topics':{
         'subscriber':{
             'mask':'s', # subscribe
-            'OID':'CLIENT_AUTH',
+            'OID':['CLIENT_AUTH', '1.3.6.1.5.5.7.3.4'], # emailProtection
         },
         'publisher':{
             'mask':'p', # publish
-            'OID':'SERVER_AUTH',
+            'OID':['SERVER_AUTH', '1.3.6.1.5.5.7.3.3'], # codeSigning
         },
     },
     'services':{
         'client':{
             'mask':'c', # call
-            'OID':'TIME_STAMPING',
+            'OID':['CLIENT_AUTH', '1.3.6.1.5.5.7.3.21'], # secureShellClient
         },
         'server':{
             'mask':'x', # execute
-            'OID':'CODE_SIGNING',
+            'OID':['SERVER_AUTH', '1.3.6.1.5.5.7.3.22'], # secureShellServer
         },
     },
     'parameters':{
         'reader':{
             'mask':'r', # read
-            'OID':'1.3.6.1.5.5.7.3.21', # secureShellClient
+            'OID':['CLIENT_AUTH', '1.3.6.1.5.5.7.3.16'], # id-kp-scvpClient
         },
         'writer':{
             'mask':'w', # write
-            'OID':'1.3.6.1.5.5.7.3.22', # secureShellServer
+            'OID':['CLIENT_AUTH', '1.3.6.1.5.5.7.3.15'], # id-kp-scvpServer
         },
     }
 }
