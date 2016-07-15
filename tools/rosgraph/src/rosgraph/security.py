@@ -112,43 +112,52 @@ class XMLRPCTimeoutSafeTransport(xmlrpcclient.SafeTransport):
 
 #########################################################################
 # global functions used by SSLSecurity and friends
-def node_name_to_cert_stem(node_name):
-    node_name = caller_id_to_node_name(node_name)
-    stem = node_name
-    if (stem[0] == '/'):
-        stem = stem[1:]
-    if '..' in node_name:
-        raise ValueError('woah there. node_name [%s] has a double-dot. OH NOES.' % node_name)
-    return stem.replace('/', '__')
 
-def caller_id_to_node_name(caller_id):
-    stem = caller_id
+def node_stem_to_node_name(node_stem):
+    # get name from last element in stem
+    node_name = node_stem.split('/')[-1]
+    return node_name
+    
+
+def caller_id_to_node_stem(caller_id):
+    # TODO: Check all practices that ROS uses to name nodes unique
+    from rospy.names import canonicalize_name
+    stem = canonicalize_name(caller_id)
     # check for anonymous node names. remove any long numeric suffix.
     # anonymous nodes will have numeric suffix tokens at the end (PID and time)
-    tok = stem.split('_')
+    tok = stem.split('_')    
     if len(tok) >= 3: # check if pid and epoch suffix posable
         if tok[-2].isdigit() and tok[-1].isdigit(): # check for pid and epoch
             if len(tok[-1]) == 13: # check for epoch 13 uses milliseconds
                 stem = '_'.join(tok[0:-2])
+    
+    tok = stem.split('-')
+    if len(tok) == 2: # check if for just hyphenated pid
+        if tok[-1].isdigit(): # check if pid
+            stem = tok[0]
+    if len(tok) >= 3: # check if for just hyphenated pid
+        if tok[-1].isdigit(): # check if pid
+            stem = '-'.join(tok[0:-1])
+    
     return stem
 
 def open_private_output_file(fn):
     flags = os.O_WRONLY | os.O_CREAT
     return os.fdopen(os.open(fn, flags, 0o600), 'w')
 
-def cert_cn(cert):
-    """
-    extract the commonName from this certificate
-    """
-    if cert is None:
-        return None
-    if not 'subject' in cert:
-        return None
-    for subject in cert['subject']:
-        key = subject[0][0]
-        if key == 'commonName':
-            return subject[0][1]
-    return None
+# def cert_cn(cert):
+#     """
+#     extract the commonName from this certificate
+#     """
+#     if cert is None:
+#         return None
+#     if not 'subject' in cert:
+#         return None
+#     for subject in cert['subject']:
+#         key = subject[0][0]
+#         if key == 'commonName':
+#             return subject[0][1]
+#     return None
 
 ##########################################################################
 
@@ -186,16 +195,13 @@ class TLSSecurity(Security):
             os.makedirs(self.nodestore_path)
             os.chmod(self.nodestore_path, 0o700)
         keyserver_proxy = xmlrpcclient.ServerProxy(get_keyserver_uri())
-        response = keyserver_proxy.requestNodeStore(self.node_name)
+        response = keyserver_proxy.requestNodeStore(self.node_stem)
         for type_name, type_data in response.iteritems():
             type_path = os.path.join(self.nodestore_path, type_name)
             if not os.path.exists(type_path):
                 os.makedirs(type_path)
             for file_name, file_data in type_data.iteritems():
                 file_path = os.path.join(type_path, file_name)
-                # print("Saving {} to: {}".format(file_name, file_path))
-                if os.path.isfile(file_path):
-                    continue
                 with open_private_output_file(file_path) as f:
                     f.write(file_data)
 
@@ -208,9 +214,6 @@ class TLSSecurity(Security):
         response = keyserver_proxy.getCA()
         for file_name, file_data in response.iteritems():
             file_path = os.path.join(self.capath, file_name)
-            # print("Saving {} to: {}".format(file_name, file_path))
-            if os.path.isfile(file_path):
-                continue
             with open_private_output_file(file_path) as f:
                 f.write(file_data)
 
@@ -248,23 +251,24 @@ class TLSSecurity(Security):
         self.nodestore_contexts = deepcopy(self.nodestore_paths)
         for role_name, role_struct in self.nodestore_contexts.iteritems():
             for mode_name, mode_struct in role_struct.iteritems():
-                keyfile = mode_struct['key']
-                certfile = mode_struct['cert']
-
                 context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
                 context.verify_mode = ssl.CERT_REQUIRED
                 context.load_verify_locations(capath=self.capath)
+                keyfile = mode_struct['key']
+                certfile = mode_struct['cert']
                 context.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
                 role_struct[mode_name] = context
 
-    def __init__(self, node_name):
-        self.node_name = node_name_to_cert_stem(node_name)
+    def __init__(self, caller_id):
+        self.node_id = caller_id
+        self.node_stem = caller_id_to_node_stem(self.node_id)
+        self.node_name = node_stem_to_node_name(self.node_stem)
         super(TLSSecurity, self).__init__()
         _logger.info("rospy.security.TLSSecurity init")
 
         self.keystore_path  = os.environ['ROS_KEYSTORE_PATH']
         self.capath   = os.path.join(self.keystore_path, 'capath')
-        self.nodestore_path = os.path.join(self.keystore_path, 'nodes', self.node_name)
+        self.nodestore_path = os.path.join(self.keystore_path, 'nodes', self.node_stem.lstrip('/'))
         self.nodestore_paths = self.get_nodestore_paths()
 
         self.client_contexts_= {}
@@ -279,7 +283,7 @@ class TLSSecurity(Security):
 
         print('all startup certificates are present')
 
-        if node_name == 'master':
+        if self.node_name == 'master':
             self.init_graph()
 
     def get_server_context(self, role, mode):
@@ -304,7 +308,7 @@ class TLSSecurity(Security):
         return context.wrap_socket(sock, server_side=True)
 
     def xmlrpcapi(self, uri, role=None, mode=None):
-        # print("SSLSecurity.xmlrpcapi(%s, %s)" % (uri, node_name or "[UNKNOWN]"))
+        # print("SSLSecurity.xmlrpcapi(%s, %s)" % (uri, node_stem or "[UNKNOWN]"))
         context = self.get_client_context(role, mode)
         st = XMLRPCTimeoutSafeTransport(context=context, timeout=10.0)
         return xmlrpcclient.ServerProxy(uri, transport=st, context=context)
@@ -315,7 +319,7 @@ class TLSSecurity(Security):
         try:
             conn.connect((dest_addr, dest_port))
         except Exception as e:
-            print("  AHHH node %s SSLSecurity.connect() exception: %s" % (self.node_name, e))
+            print("  AHHH node %s SSLSecurity.connect() exception: %s" % (self.node_stem, e))
             raise
         return conn
 
@@ -348,13 +352,13 @@ class TLSSecurity(Security):
     #     cn = cert_cn(cert_text)
     #     if cn is None:
     #         return None
-    #     # print("allow_xmlrpc_request() node=%s commonName=%s" % (self.node_name, cn))
+    #     # print("allow_xmlrpc_request() node=%s commonName=%s" % (self.node_stem, cn))
     #     # sanity-check to ensure that it ends in '.client'
     #     if not cn.endswith('.client'):
     #         return None
     #     try:
     #         # if we're master, make sure this cert exists in our keystore
-    #         if self.node_name == 'master':  # NOW I AM THE MASTER
+    #         if self.node_stem == 'master':  # NOW I AM THE MASTER
     #             path = os.path.join(self.keystore, cn + '.cert')
     #             if '..' in path:
     #                 print('HEY WHAT ARE YOU TRYING TO DO WITH THOSE DOTS')
@@ -394,16 +398,16 @@ class TLSSecurity(Security):
     #                     return 'master'
     #             # see if we are talking to ourselves
     #             cn_without_suffix = '.'.join(cn.split('.')[0:-1])
-    #             if cn_without_suffix == self.node_name:
+    #             if cn_without_suffix == self.node_stem:
     #                 # print("    I'm talking to myself again.")
     #                 return cn_without_suffix  # it's always healthy to talk to yourself
     #             if cn_without_suffix in self.allowed_clients:
-    #                 # print("    client %s is OK; it's in %s's allowed_clients list: %s" % (cn_without_suffix, self.node_name, repr(self.allowed_clients)))
+    #                 # print("    client %s is OK; it's in %s's allowed_clients list: %s" % (cn_without_suffix, self.node_stem, repr(self.allowed_clients)))
     #                 return cn_without_suffix
     #             else:
     #                 print(
     #                     "    client %s xmlrpc connection denied; it's not in %s's allowed list of clients: %s" % (
-    #                     cn_without_suffix, self.node_name, repr(self.allowed_clients)))
+    #                     cn_without_suffix, self.node_stem, repr(self.allowed_clients)))
     #                 return None
     #
     #     except Exception as e:
@@ -417,25 +421,25 @@ class TLSSecurity(Security):
             _logger.info("{}REG [{}]:{} {} to graph:[{}]".format(flag, *info))
 
     def allow_register(self, caller_id, topic_name, topic_type, mask):
-        node_name = caller_id_to_node_name(caller_id)
-        info = (topic_name, mask, node_name, self.graph.graph_path)
+        node_stem = caller_id_to_node_stem(caller_id)
+        info = (topic_name, mask, self.node_stem, self.graph.graph_path)
         if self.graph_mode is GraphModes.enforce:
-            allowed, audit = self.graph.is_allowed(node_name, topic_name, mask)
+            allowed, audit = self.graph.is_allowed(node_stem, topic_name, mask)
             flag = '*' if allowed else '!'
             self.log_register(audit, flag, info)
             return allowed
         elif self.graph_mode is GraphModes.train:
             if self.graph.graph_path is not None:
-                allowed, audit = self.graph.is_allowed(node_name, topic_name, mask)
+                allowed, audit = self.graph.is_allowed(node_stem, topic_name, mask)
                 if not allowed:
-                    self.graph.add_allowed(node_name, topic_name, mask)
+                    self.graph.add_allowed(node_stem, topic_name, mask)
                     self.graph.save_graph()
                 flag = '*' if allowed else '+'
                 self.log_register((audit or not allowed), flag, info)
             return True
         elif self.graph_mode is GraphModes.complain:
             if self.graph.graph is not None:
-                allowed, audit = self.graph.is_allowed(node_name, topic_name, mask)
+                allowed, audit = self.graph.is_allowed(node_stem, topic_name, mask)
                 flag = '*' if allowed else '!'
                 self.log_register((audit or not allowed), flag, info)
             else:
@@ -443,7 +447,7 @@ class TLSSecurity(Security):
             return True
         elif self.graph_mode is GraphModes.audit:
             if self.graph.graph is not None:
-                allowed, audit = self.graph.is_allowed(node_name, topic_name, mask)
+                allowed, audit = self.graph.is_allowed(node_stem, topic_name, mask)
                 flag = '*' if allowed else '!'
                 self.log_register(True, flag, info)
                 return allowed
@@ -470,14 +474,14 @@ class TLSSecurity(Security):
 
 #########################################################################
 _security = None
-def init(node_name):
-    #print('security.init(%s)' % node_name)
+def init(caller_id):
+    #print('security.init(%s)' % node_stem)
     global _security
     if _security is None:
         _logger.info("choosing security model...")
         if 'ROS_SECURITY' in os.environ:
             if os.environ['ROS_SECURITY'] == 'ssl' or os.environ['ROS_SECURITY'] == 'ssl_setup':
-                _security = TLSSecurity(node_name)
+                _security = TLSSecurity(caller_id)
             else:
                 raise ValueError("illegal ROS_SECURITY value: [%s]" % os.environ['ROS_SECURITY'])
         else:

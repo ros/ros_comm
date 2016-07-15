@@ -72,10 +72,9 @@ def get_keyserver_uri():
     return keyserver_uri
 
 
-def keyserver_requestNodeStore(node_name):
-    node_name = node_name_to_cert_stem(node_name) # sanitize and de-anonymize
-    print('keyserver: requestNodeStore(%s)' % node_name)
-    resp = _key_helper.get_nodestore(node_name)
+def keyserver_requestNodeStore(node_stem):
+    print('keyserver: requestNodeStore(%s)' % node_stem)
+    resp = _key_helper.get_nodestore(node_stem)
     return resp
 
 

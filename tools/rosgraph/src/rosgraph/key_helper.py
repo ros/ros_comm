@@ -417,20 +417,20 @@ class KeyHelper:
         hash_dir = os.path.join(keys_dir, 'capath')
         rehash(hash_dir, self.keys, clean=True)
 
-    def get_nodestore(self, node_name):
+    def get_nodestore(self, node_stem):
         '''
-        get certificate responce
+        get certificate response
         @return:
         '''
         config_path = self.config_path
         config = self.config
-        keys_dir = self.keys_dir
+        #TODO: use security.node_stem_to_node_name for this
+        node_name = node_stem.split('/')[-1]
 
         key_config = config['keys']['nodes']
 
         resp = {'topics':{}, 'services':{}, 'parameters':{}}
 
-        node_dir = os.path.join(keys_dir, 'nodes', node_name.lstrip('/'))
         for role_name, role_struct in ROLE_STRUCT.iteritems():
             for mode_name, mode_struct in role_struct.iteritems():
                 key_mode = role_name + '.' + mode_name
@@ -442,7 +442,7 @@ class KeyHelper:
                     graph_path = os.path.join(os.path.dirname(config_path), node_config['cert']['graph_path'])
                 else:
                     graph_path = None
-                node_config = extention_parsing(node_name, node_config, graph_path)
+                node_config = extention_parsing(node_stem, node_config, graph_path)
                 node_blob = KeyBlob(os.path.basename(key_name), node_config)
                 get_keys(None, node_blob, self.keys[node_blob.config['issuer_name']])
                 # self.keys[key_name] = node_blob
@@ -586,11 +586,11 @@ def rehash(hash_dir, keys_dict, clean=False):
                              "Offending hash: {}\n".format(hash_dict['hash']))
 
 
-def get_policy_constraints(node_name, node_config, graph):
+def get_policy_constraints(node_stem, node_config, graph):
     policy_type, mode_name = node_config['key_mode'].split('.')
     mask_type = ROLE_STRUCT[policy_type][mode_name]['mask']
 
-    applicable_nodes = graph.filter_nodes(node_name)
+    applicable_nodes = graph.filter_nodes(node_stem)
     if applicable_nodes:
         applicable_policies = graph.filter_policies(applicable_nodes, policy_type)
         if applicable_policies:
@@ -633,7 +633,7 @@ def set_extention(extension_name, extensions_config, node_config, default):
             raise ValueError("\nImproper value for {} extension specified in config!\n".format(extension_name))
 
 
-def extention_parsing(node_name, node_config, graph_path):
+def extention_parsing(node_stem, node_config, graph_path):
     role_name, mode_name = node_config['key_mode'].split('.')
     mode_types = ROLE_STRUCT[role_name][mode_name]['OID']
 
@@ -642,7 +642,7 @@ def extention_parsing(node_name, node_config, graph_path):
 
         extension_name = 'SubjectAlternativeName'
         if extension_name in extensions_config:
-            set_extention(extension_name, extensions_config, node_config, [node_name])
+            set_extention(extension_name, extensions_config, node_config, [node_stem])
 
         extension_name = 'ExtendedKeyUsage'
         if extension_name in extensions_config:
@@ -653,7 +653,7 @@ def extention_parsing(node_name, node_config, graph_path):
             if graph_path is not None:
                 graph = GraphStructure()
                 graph.load_graph(graph_path)
-                default = get_policy_constraints(node_name, node_config, graph)
+                default = get_policy_constraints(node_stem, node_config, graph)
             else:
                 default = None
             set_extention(extension_name, extensions_config, node_config, default)
