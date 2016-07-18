@@ -297,7 +297,7 @@ def create_local_xmlrpc_uri(port):
     """
     #TODO: merge logic in rosgraph.xmlrpc with this routine
     # in the future we may not want to be locked to http protocol nor root path
-    if 'ROS_SECURITY' in os.environ and os.environ['ROS_SECURITY'] == 'ssl':
+    if 'SROS_SECURITY' in os.environ and os.environ['SROS_SECURITY'] == 'ssl':
         return 'https://%s:%s/'%(get_host_name(), port)
     else:
         return 'http://%s:%s/'%(get_host_name(), port)

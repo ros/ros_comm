@@ -228,16 +228,16 @@ class TLSSecurity(Security):
         # ugly... need to figure out a graceful way to pass the graph
         self.graph_mode = GraphModes.enforce
         self.graph = rosgraph_helper.GraphStructure()
-        if 'ROS_GRAPH_NAME' in os.environ:
-            if '..' in os.environ['ROS_GRAPH_NAME'] or '/' in os.environ['ROS_GRAPH_NAME']:
+        if 'SROS_GRAPH_NAME' in os.environ:
+            if '..' in os.environ['SROS_GRAPH_NAME'] or '/' in os.environ['SROS_GRAPH_NAME']:
                 raise ValueError(
-                    "graph name must be a simple string. saw [%s] instead" % os.environ['ROS_GRAPH_NAME'])
+                    "graph name must be a simple string. saw [%s] instead" % os.environ['SROS_GRAPH_NAME'])
             self.graph.graph_path = os.path.join(os.path.expanduser('~'), '.ros', 'graphs',
-                                                 os.environ['ROS_GRAPH_NAME'] + '.yaml')
+                                                 os.environ['SROS_GRAPH_NAME'] + '.yaml')
             if os.path.exists(self.graph.graph_path):
                 self.graph.load_graph()
-            if 'ROS_GRAPH_MODE' in os.environ:
-                graph_mode = os.environ['ROS_GRAPH_MODE']
+            if 'SROS_GRAPH_MODE' in os.environ:
+                graph_mode = os.environ['SROS_GRAPH_MODE']
                 self.graph_mode = getattr(GraphModes, graph_mode, GraphModes.enforce)
         else:
             self.graph_mode = None
@@ -266,7 +266,7 @@ class TLSSecurity(Security):
         super(TLSSecurity, self).__init__()
         _logger.info("rospy.security.TLSSecurity init")
 
-        self.keystore_path  = os.environ['ROS_KEYSTORE_PATH']
+        self.keystore_path  = os.environ['SROS_KEYSTORE_PATH']
         self.capath   = os.path.join(self.keystore_path, 'capath')
         self.nodestore_path = os.path.join(self.keystore_path, 'nodes', self.node_stem.lstrip('/'))
         self.nodestore_paths = self.get_nodestore_paths()
@@ -479,11 +479,11 @@ def init(caller_id):
     global _security
     if _security is None:
         _logger.info("choosing security model...")
-        if 'ROS_SECURITY' in os.environ:
-            if os.environ['ROS_SECURITY'] == 'ssl' or os.environ['ROS_SECURITY'] == 'ssl_setup':
+        if 'SROS_SECURITY' in os.environ:
+            if os.environ['SROS_SECURITY'] == 'ssl' or os.environ['SROS_SECURITY'] == 'ssl_setup':
                 _security = TLSSecurity(caller_id)
             else:
-                raise ValueError("illegal ROS_SECURITY value: [%s]" % os.environ['ROS_SECURITY'])
+                raise ValueError("illegal SROS_SECURITY value: [%s]" % os.environ['SROS_SECURITY'])
         else:
             _security = NoSecurity()
 

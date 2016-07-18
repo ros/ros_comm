@@ -65,34 +65,34 @@ def sroscore_main(argv = sys.argv):
     args, roscore_argv = sroscore_parser.parse_known_args(argv)
 
     if args.config is not None:
-        os.environ['ROS_CONFIG_PATH'] = args.config
+        os.environ['SROS_CONFIG_PATH'] = args.config
     if args.keystore is not None:
-        os.environ['ROS_KEYSTORE_PATH'] = args.keystore
+        os.environ['SROS_KEYSTORE_PATH'] = args.keystore
     else:
-        os.environ['ROS_KEYSTORE_PATH'] = os.path.join(os.path.expanduser('~'), '.ros', 'keys')
+        os.environ['SROS_KEYSTORE_PATH'] = os.path.join(os.path.expanduser('~'), '.ros', 'keys')
 
     if args.keyserver:
         # if we're in setup mode, we need to start an unsecured server that will
         # hand out the SSL certificates and keys so that nodes can talk to roscore
-        os.environ['ROS_SECURITY'] = 'ssl_setup'
+        os.environ['SROS_SECURITY'] = 'ssl_setup'
 
-        if 'ROS_CONFIG_PATH' in os.environ:
-            config_path = os.path.abspath(os.environ['ROS_CONFIG_PATH'])
+        if 'SROS_CONFIG_PATH' in os.environ:
+            config_path = os.path.abspath(os.environ['SROS_CONFIG_PATH'])
         else:
             # config_path = os.path.join(os.path.expanduser('~'), '.ros', 'keys','sros_config.yaml')
             config_path = os.path.abspath('/home/ruffsl/sros/src/ruffsl/ros_comm/tools/sros/conf/sros_config.yaml')
 
-        keys_dir = os.environ['ROS_KEYSTORE_PATH']
+        keys_dir = os.environ['SROS_KEYSTORE_PATH']
         keyserver.fork_xmlrpc_keyserver(config_path, keys_dir)
     else:
-        os.environ['ROS_SECURITY'] = 'ssl'
+        os.environ['SROS_SECURITY'] = 'ssl'
 
     if args.graph is not None:
-        os.environ['ROS_GRAPH_NAME'] = args.graph
+        os.environ['SROS_GRAPH_NAME'] = args.graph
     if args.mode is not None:
-        os.environ['ROS_GRAPH_MODE'] = args.mode
+        os.environ['SROS_GRAPH_MODE'] = args.mode
     else:
-        os.environ['ROS_GRAPH_MODE'] = 'enforce'
+        os.environ['SROS_GRAPH_MODE'] = 'enforce'
     
     import roslaunch
     roslaunch.main(['roscore', '--core'] + roscore_argv[1:])
