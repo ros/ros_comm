@@ -41,7 +41,7 @@ include_directories(${PYTHON_INCLUDE_PATH})
 add_library(roslz4_py src/_roslz4module.c)
 set_source_files_properties(
   src/_roslz4module.c
-PROPERTIES COMPILE_FLAGS "-Wno-missing-field-initializers -Wno-unused-variable -Wstrict-aliasing")
+PROPERTIES COMPILE_FLAGS "-Wno-missing-field-initializers -Wno-unused-variable -Wno-strict-aliasing")
 set_target_properties(
   roslz4_py PROPERTIES OUTPUT_NAME roslz4 PREFIX "_" SUFFIX ".so"
   LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${PYTHON_INSTALL_DIR}/roslz4)
