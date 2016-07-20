@@ -376,8 +376,8 @@ class KeyHelper:
         :param config: dict of key configuration
         '''
 
-        print("config_path: ", config_path)
-        print("keys_dir: ", keys_dir)
+        # print("config_path: ", config_path)
+        # print("keys_dir: ", keys_dir)
 
         self.config_path = config_path
         self.config = load_config(config_path)
@@ -417,6 +417,25 @@ class KeyHelper:
         hash_dir = os.path.join(keys_dir, 'capath')
         rehash(hash_dir, self.keys, clean=True)
 
+    def init_keyserver(self):
+        '''
+        Initializes keystore certificate
+        @return: 
+        '''
+        config = self.config
+        keys_dir = self.keys_dir
+
+        keyserver_name = 'keyserver'
+        keyserver_config = config['keys'][keyserver_name]
+        keyserver_dir = os.path.join(keys_dir, keyserver_name)
+        keyserver_blob = KeyBlob(keyserver_name, keyserver_config)
+        ca_blob = self.keys[keyserver_config['issuer_name']]
+
+        get_keys(keyserver_dir, keyserver_blob, ca_blob)
+        # print("Certificate generated: {}".format(keyserver_name))
+
+        return keyserver_blob.cert_path, keyserver_blob.key_path
+
     def get_nodestore(self, node_stem):
         '''
         get certificate response
@@ -446,7 +465,7 @@ class KeyHelper:
                 node_blob = KeyBlob(os.path.basename(key_name), node_config)
                 get_keys(None, node_blob, self.keys[node_blob.config['issuer_name']])
                 # self.keys[key_name] = node_blob
-                print("Certificate generated: {}".format(key_name))
+                # print("Certificate generated: {}".format(key_name))
                 resp[role_name][node_blob.name + '.pem'] = node_blob.dump_key()
                 resp[role_name][node_blob.name + '.cert'] = node_blob.dump_cert()
 

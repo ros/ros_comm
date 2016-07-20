@@ -194,7 +194,7 @@ class TLSSecurity(Security):
             print("initializing node's keystore: %s" % self.nodestore_path)
             os.makedirs(self.nodestore_path)
             os.chmod(self.nodestore_path, 0o700)
-        keyserver_proxy = xmlrpcclient.ServerProxy(get_keyserver_uri())
+        keyserver_proxy = self.xmlrpcapi(get_keyserver_uri(), context=self.get_keyserver_context())
         response = keyserver_proxy.requestNodeStore(self.node_stem)
         for type_name, type_data in response.iteritems():
             type_path = os.path.join(self.nodestore_path, type_name)
@@ -210,7 +210,7 @@ class TLSSecurity(Security):
         os.makedirs(self.capath)
         os.chmod(self.capath, 0o700)
 
-        keyserver_proxy = xmlrpcclient.ServerProxy(get_keyserver_uri())
+        keyserver_proxy = self.xmlrpcapi(get_keyserver_uri(), context=self.get_keyserver_context())
         response = keyserver_proxy.getCA()
         for file_name, file_data in response.iteritems():
             file_path = os.path.join(self.capath, file_name)
@@ -300,6 +300,13 @@ class TLSSecurity(Security):
             mode = 'subscriber'
         return self.nodestore_contexts[role][mode]
 
+    def get_keyserver_context(self):
+        context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+        context.verify_mode = ssl.CERT_REQUIRED
+        context.verify_mode = getattr(ssl, os.environ['SROS_KEYSERVER_VERIFY'])
+        context.load_verify_locations(capath=self.capath)
+        return context
+
     def wrap_socket(self, sock, role=None, mode=None):
         """
         Called whenever there is an opportunity to wrap a server socket
@@ -307,9 +314,10 @@ class TLSSecurity(Security):
         context = self.get_server_context(role, mode)
         return context.wrap_socket(sock, server_side=True)
 
-    def xmlrpcapi(self, uri, role=None, mode=None):
+    def xmlrpcapi(self, uri, role=None, mode=None, context=None):
         # print("SSLSecurity.xmlrpcapi(%s, %s)" % (uri, node_stem or "[UNKNOWN]"))
-        context = self.get_client_context(role, mode)
+        if context is None:
+            context = self.get_client_context(role, mode)
         st = XMLRPCTimeoutSafeTransport(context=context, timeout=10.0)
         return xmlrpcclient.ServerProxy(uri, transport=st, context=context)
 

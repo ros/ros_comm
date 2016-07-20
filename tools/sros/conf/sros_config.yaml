@@ -55,6 +55,20 @@ x509_extensions: # https://access.redhat.com/documentation/en-US/Red_Hat_Certifi
       value: # no value needed, auto pulled from node name
       # value: alternative_names # can be a key to value in key_config
       #   - /rosout # or can be list of strings
+  keyserver_extensions: &keyserver_extensions
+    <<: *node_extensions
+    ExtendedKeyUsage: # Extended Key Usage extension indicates the purposes for which the certified public key may be used
+      critical: False # PKIX Part 1 recommends that this extension be marked noncritical
+      value: # list of Extended Key Usage OID names
+        - SERVER_AUTH # used for a server end authentication
+        - CLIENT_AUTH # used for a client end authentication
+    NameConstraints: # PKIX recommends that this extension used in CA certificates only, but we'll abuse this for now for namespace access control
+      critical: True
+      value: # can be a dict of two URI lists
+        permitted_subtrees:  # list of permited namespaces
+        excluded_subtrees: # list of excluded namespaces
+          - "**" # keyserver cert should not be allowed for any other perpose
+    SubjectAlternativeName: # Alternative Name extension will not be used
 
 keys:
   root: &root
@@ -114,3 +128,21 @@ keys:
       graph_path: graph.yml
       x509_extensions:
         <<: *node_extensions
+  keyserver:
+    <<: *master
+    issuer_name: master # inherit key config defaults from master lable
+    key: # overide key length inherited from master
+      key_type: ec # computationally lighter for for signing
+      key_peram: SECP384R1 # overide key length inherited from root
+    encryption_algorithm: BestAvailableEncryption
+    password_env: SROS_KEYSERVER_PASSWORD
+    cert:
+      <<: *default_cert # forking from root cert, so include cert defaults
+      subject: # change subject content accordingly for your use
+        <<: *default_subject # forking from root cert, so include cert defaults
+        COMMON_NAME         : "keyserver"
+      serial_number: 2
+      not_valid_before : 0 # or iso8601 dates format
+      not_valid_after  : 2020-12-14t21:59:43.10-05:00 # or 2020-12-14 21:59:43.10 -5
+      x509_extensions:
+        <<: *keyserver_extensions

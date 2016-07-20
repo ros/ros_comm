@@ -50,69 +50,104 @@ def caller_id_to_node_name(caller_id):
                 stem = '_'.join(tok[0:-2])
     return stem
 
-
-
-
-_key_helper = None
-
-
 def parse_uri(uri):
     address_port = uri.split('://')[1]
     address, port = address_port.rstrip('/').split(':')
     return address, int(port)
 
-
 def get_keyserver_uri():
+    #TODO: Fix uri fetching
     master_uri = rosenv.get_master_uri()
     address, port = parse_uri(master_uri)
-    # keyserver_uri = 'http://%s:%d' % (address, port - 1)
-    #TODO: Fix uri fetching
-    keyserver_uri = 'http://%s:%d' % ('127.0.0.1', port - 1)
-    print("##########################################\nkeyserver_uri: {}\n######################################".format(keyserver_uri))
+    keyserver_uri = 'https://%s:%d' % (address, port - 1)
     return keyserver_uri
 
+class Keyserver(object):
 
-def keyserver_requestNodeStore(node_stem):
-    print('keyserver: requestNodeStore(%s)' % node_stem)
-    resp = _key_helper.get_nodestore(node_stem)
-    return resp
+    def __init__(self, keyserver_config, keystore_path, keyserver_mode):
+        self.keyserver_config = keyserver_config
+        self.keystore_path = keystore_path
+        self.keyserver_mode = keyserver_mode
 
+        self.uri = get_keyserver_uri()
 
-def keyserver_getCA():
-    print('keyserver: getCA()')
-    resp = _key_helper.get_ca()
-    return resp
+        self.key_helper = key_helper.KeyHelper(self.keyserver_config, self.keystore_path)
+        self.key_helper.init_ca()
+        self.init_context()
 
+        from rosgraph.xmlrpc import XmlRpcHandler
+        class KeyserverHandler(XmlRpcHandler):
+            """
+            Base handler API for handlers used with XmlRpcNode. Public methods will be 
+            exported as XML RPC methods.
+            """
 
-def keyserver_hello():
-    return "I'm alive!"
+            def __init__(self, key_helper):
+                self.key_helper = key_helper
 
+            def requestNodeStore(self, node_stem):
+                print('keyserver: requestNodeStore(%s)' % node_stem)
+                resp = self.key_helper.get_nodestore(node_stem)
+                return resp
 
-def keyserver_main(config_path, keys_dir):
-    global _key_helper
-    from SimpleXMLRPCServer import SimpleXMLRPCServer
-    from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
+            def getCA(self):
+                print('keyserver: getCA()')
+                resp = self.key_helper.get_ca()
+                return resp
 
-    _key_helper = key_helper.KeyHelper(config_path, keys_dir)
-    _key_helper.init_ca()
+            def hello(self):
+                return "I'm alive!"
 
-    server = SimpleXMLRPCServer(parse_uri(get_keyserver_uri()), SimpleXMLRPCRequestHandler, False)
-    server.register_function(keyserver_requestNodeStore, 'requestNodeStore')
-    server.register_function(keyserver_getCA, 'getCA')
-    server.register_function(keyserver_hello, 'hello') # it answers just to say it's alive
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
+        self.keyserver_handler = KeyserverHandler(self.key_helper)
+
+    def init_context(self):
+        capath = os.path.join(self.keystore_path, 'capath')
+        certfile, keyfile = self.key_helper.init_keyserver()
+        password = os.environ['SROS_KEYSERVER_PASSWORD']
+        self.context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+        self.context.verify_mode = getattr(ssl, self.keyserver_mode)
+        self.context.load_verify_locations(capath=capath)
+        self.context.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
+
+    def run(self):
+        from rosgraph.xmlrpc import XmlRpcNode
+
+        address, port = parse_uri(self.uri)
+
+        keyserver_node = XmlRpcNode(
+            port=port,
+            rpc_handler=self.keyserver_handler,
+            node_name='keyserver',
+            context=self.context)
+
+        try:
+            keyserver_node.run()
+        except KeyboardInterrupt:
+            pass
+
+def check_verify_mode(keyserver_mode):
+    valid_modes = ['CERT_NONE','CERT_OPTIONAL','CERT_REQUIRED']
+    if keyserver_mode in valid_modes:
         pass
+    else:
+        raise ValueError("\nFailed to fork keyserver, keyserver verify mode is invalid!\n" +
+                         "User specified: {}".format(keyserver_mode)) 
 
-
-def fork_xmlrpc_keyserver(config_path, keys_dir):
+def fork_xmlrpc_keyserver(keyserver_config, keystore_path, keyserver_mode):
     print("forking an unsecured XML-RPC server to bootstrap SSL key distribution...")
+
+    check_verify_mode(keyserver_mode)
+
+    keyserver = Keyserver(keyserver_config, keystore_path, keyserver_mode)
+
     from multiprocessing import Process
-    p = Process(target=keyserver_main,args=(config_path, keys_dir))
+    p = Process(target=keyserver.run)
     p.start()
-    # spin until the keyserver is responding to requests
-    keyserver_proxy = xmlrpcclient.ServerProxy(get_keyserver_uri())
+    # spin until the keyserver is responding to requests    
+    from rosgraph.security import XMLRPCTimeoutSafeTransport
+    st = XMLRPCTimeoutSafeTransport(context=keyserver.context, timeout=10.0)
+    keyserver_proxy = xmlrpcclient.ServerProxy(keyserver.uri, transport=st, context=keyserver.context)
+
     print("sleeping until keyserver has generated the initial keyring...")
     while True:
         try:
@@ -120,4 +155,5 @@ def fork_xmlrpc_keyserver(config_path, keys_dir):
             break
         except Exception as e:
             time.sleep(0.01)
+    logging.getLogger('rosmaster.keyserver').info("Keyserver initialized: uri[%s]", keyserver.uri)
     print("horray, the keyserver is now open for business.")
