@@ -82,9 +82,11 @@ class KeyBlob:
                     policies = []
                     for policy_identifier, policy_qualifiers in value.iteritems():
                         policy_identifier = x509.ObjectIdentifier(policy_identifier)
+                        policy_qualifiers.sort(key=lambda x: x)
                         policy_qualifiers = [unicode(x) for x in policy_qualifiers]
                         policies.append(x509.PolicyInformation(policy_identifier, policy_qualifiers))
                     extension_type = getattr(x509, extension_name)
+                    policies.sort(key=lambda x: x.policy_identifier.dotted_string)
                     extension = extension_type(policies)
                     critical = x509_extensions[extension_name]['critical']
                     cert_builder = cert_builder.add_extension(extension, critical)

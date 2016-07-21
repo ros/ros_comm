@@ -244,6 +244,8 @@ class TLSSecurity(Security):
         self.context.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
 
     def __init__(self, caller_id):
+        if caller_id[0] is not '/':
+            caller_id = '/' + caller_id
         self.node_id = caller_id
         self.node_stem = caller_id_to_node_stem(self.node_id)
         self.node_name = node_stem_to_node_name(self.node_stem)
