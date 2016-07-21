@@ -75,6 +75,20 @@ class KeyBlob:
                     critical = x509_extensions[extension_name]['critical']
                     cert_builder = cert_builder.add_extension(extension, critical)
 
+            extension_name = 'CertificatePolicies'
+            if extension_name in x509_extensions:
+                if x509_extensions[extension_name] is not None:
+                    value = x509_extensions[extension_name]['value']
+                    policies = []
+                    for policy_identifier, policy_qualifiers in value.iteritems():
+                        policy_identifier = x509.ObjectIdentifier(policy_identifier)
+                        policy_qualifiers = [unicode(x) for x in policy_qualifiers]
+                        policies.append(x509.PolicyInformation(policy_identifier, policy_qualifiers))
+                    extension_type = getattr(x509, extension_name)
+                    extension = extension_type(policies)
+                    critical = x509_extensions[extension_name]['critical']
+                    cert_builder = cert_builder.add_extension(extension, critical)
+
             extension_name = 'ExtendedKeyUsage'
             if extension_name in x509_extensions:
                 if x509_extensions[extension_name] is not None:
@@ -407,11 +421,11 @@ class KeyHelper:
             root_blob = KeyBlob(root_name, root_config)
             root_dir = os.path.join(keys_dir, root_name)
             get_keys(root_dir, root_blob)
-            print("Certificate generated: {}".format(root_name))
+            # print("Certificate generated: {}".format(root_name))
             self.keys[root_name] = root_blob
 
             get_keys(master_dir, master_blob, root_blob)
-            print("Certificate generated: {}".format(master_name))
+            # print("Certificate generated: {}".format(master_name))
             self.keys[master_name] = master_blob
 
         hash_dir = os.path.join(keys_dir, 'capath')
@@ -446,28 +460,21 @@ class KeyHelper:
         #TODO: use security.node_stem_to_node_name for this
         node_name = node_stem.split('/')[-1]
 
-        key_config = config['keys']['nodes']
+        node_config = deepcopy(config['keys']['nodes'])
+        if 'cert' in node_config:
+            node_config['cert']['subject']['COMMON_NAME'] = node_name
+            graph_path = os.path.join(os.path.dirname(config_path), node_config['cert']['graph_path'])
+        else:
+            graph_path = None
+        node_config = extention_parsing(node_stem, node_config, graph_path)
+        node_blob = KeyBlob(os.path.basename(node_name), node_config)
+        get_keys(None, node_blob, self.keys[node_blob.config['issuer_name']])
+        # self.keys[node_name] = node_blob
+        # print("Certificate generated: {}".format(node_name))
 
-        resp = {'topics':{}, 'services':{}, 'parameters':{}}
-
-        for role_name, role_struct in ROLE_STRUCT.iteritems():
-            for mode_name, mode_struct in role_struct.iteritems():
-                key_mode = role_name + '.' + mode_name
-                key_name = node_name + '.' + key_mode
-                node_config = deepcopy(key_config)
-                node_config['key_mode'] = key_mode
-                if 'cert' in node_config:
-                    node_config['cert']['subject']['COMMON_NAME'] = key_name
-                    graph_path = os.path.join(os.path.dirname(config_path), node_config['cert']['graph_path'])
-                else:
-                    graph_path = None
-                node_config = extention_parsing(node_stem, node_config, graph_path)
-                node_blob = KeyBlob(os.path.basename(key_name), node_config)
-                get_keys(None, node_blob, self.keys[node_blob.config['issuer_name']])
-                # self.keys[key_name] = node_blob
-                # print("Certificate generated: {}".format(key_name))
-                resp[role_name][node_blob.name + '.pem'] = node_blob.dump_key()
-                resp[role_name][node_blob.name + '.cert'] = node_blob.dump_cert()
+        resp = {}
+        resp[node_blob.name + '.pem'] = node_blob.dump_key()
+        resp[node_blob.name + '.cert'] = node_blob.dump_cert()
 
         return resp
 
@@ -605,39 +612,32 @@ def rehash(hash_dir, keys_dict, clean=False):
                              "Offending hash: {}\n".format(hash_dict['hash']))
 
 
-def get_policy_constraints(node_stem, node_config, graph):
-    policy_type, mode_name = node_config['key_mode'].split('.')
-    mask_type = ROLE_STRUCT[policy_type][mode_name]['mask']
-
+def get_certificate_policies(node_stem, node_config, graph):
+    policies = {}
     applicable_nodes = graph.filter_nodes(node_stem)
     if applicable_nodes:
-        applicable_policies = graph.filter_policies(applicable_nodes, policy_type)
-        if applicable_policies:
-            applicable_allow = graph.filter_modes(applicable_policies, 'allow')
-            applicable_deny  = graph.filter_modes(applicable_policies, 'deny')
+        for role_name, role_struct in ROLE_STRUCT.iteritems():
+            for mode_name, mode_struct in role_struct.iteritems():
+                applicable_policies = graph.filter_policies(applicable_nodes, role_name)
+                if applicable_policies:
+                    applicable_allow = graph.filter_modes(applicable_policies, 'allow')
+                    applicable_deny  = graph.filter_modes(applicable_policies, 'deny')
 
-            allow_subtrees = graph.filter_masks(applicable_allow, mask_type)
-            deny_subtrees  = graph.filter_masks(applicable_deny,  mask_type)
-
-            permitted_subtrees = graph.list_policy_namespaces(allow_subtrees)
-            excluded_subtrees  = graph.list_policy_namespaces(deny_subtrees)
-
-            if not permitted_subtrees:
-                permitted_subtrees = None
-            if not excluded_subtrees:
-                excluded_subtrees = None
-
-            applicable_name_spaces = {
-                'permitted_subtrees': permitted_subtrees,
-                'excluded_subtrees':  excluded_subtrees,
-            }
-            return applicable_name_spaces
-
-    applicable_name_spaces = {
-        'permitted_subtrees': None,
-        'excluded_subtrees' : None
-    }
-    return applicable_name_spaces
+                    mask_type = mode_struct['mask']
+                    allow_subtrees = graph.filter_masks(applicable_allow, mask_type)
+                    deny_subtrees  = graph.filter_masks(applicable_deny,  mask_type)
+        
+                    permitted_subtrees = graph.list_policy_namespaces(allow_subtrees)
+                    excluded_subtrees  = graph.list_policy_namespaces(deny_subtrees)
+                    
+                    if not permitted_subtrees:
+                        excluded_subtrees = ['**']
+        
+                    if permitted_subtrees:
+                        policies[mode_struct['allow']['OID']] = permitted_subtrees
+                    if excluded_subtrees:
+                        policies[mode_struct['deny']['OID']]  = excluded_subtrees
+    return policies
 
 
 def set_extention(extension_name, extensions_config, node_config, default):
@@ -653,11 +653,19 @@ def set_extention(extension_name, extensions_config, node_config, default):
 
 
 def extention_parsing(node_stem, node_config, graph_path):
-    role_name, mode_name = node_config['key_mode'].split('.')
-    mode_types = ROLE_STRUCT[role_name][mode_name]['OID']
 
     if node_config['cert']['x509_extensions'] is not None:
         extensions_config = node_config['cert']['x509_extensions']
+
+        extension_name = 'CertificatePolicies'
+        if extension_name in extensions_config:
+            if graph_path is not None:
+                graph = GraphStructure()
+                graph.load_graph(graph_path)
+                default = get_certificate_policies(node_stem, node_config, graph)
+            else:
+                default = None
+            set_extention(extension_name, extensions_config, node_config, default)
 
         extension_name = 'SubjectAlternativeName'
         if extension_name in extensions_config:
@@ -665,16 +673,12 @@ def extention_parsing(node_stem, node_config, graph_path):
 
         extension_name = 'ExtendedKeyUsage'
         if extension_name in extensions_config:
-            set_extention(extension_name, extensions_config, node_config, mode_types)
+            default = None
+            set_extention(extension_name, extensions_config, node_config, default)
 
         extension_name = 'NameConstraints'
         if extension_name in extensions_config:
-            if graph_path is not None:
-                graph = GraphStructure()
-                graph.load_graph(graph_path)
-                default = get_policy_constraints(node_stem, node_config, graph)
-            else:
-                default = None
+            default = None
             set_extention(extension_name, extensions_config, node_config, default)
 
     return node_config

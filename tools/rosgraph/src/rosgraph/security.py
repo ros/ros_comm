@@ -49,7 +49,7 @@ class Security(object):
     # TODO: add security logging stuff here
     def __init__(self):
         _logger.info("security init")
-    def wrap_socket(self, sock, node_name):
+    def wrap_socket(self, sock):
         """
         Called whenever there is an opportunity to wrap a server socket.
         The default implementation doesn't do anything.
@@ -164,26 +164,18 @@ def open_private_output_file(fn):
 class TLSSecurity(Security):
 
     def get_nodestore_paths(self):
-
-        nodestore_paths = deepcopy(ROLE_STRUCT)
-        for role_name, role_struct in nodestore_paths.iteritems():
-            for mode_name, mode_struct in role_struct.iteritems():
-                file_mode = role_name + '.' + mode_name
-                file_name = self.node_name + '.' + file_mode
-                role_struct[mode_name] = {}
-                for key_cert, extension in EXTENSION_MAPPING.iteritems():
-                    file_path = os.path.join(self.nodestore_path, role_name, file_name + extension)
-                    role_struct[mode_name][key_cert] = file_path
+        nodestore_paths = {}
+        for key_cert, extension in EXTENSION_MAPPING.iteritems():
+            file_name = self.node_name + extension
+            nodestore_paths[key_cert] = os.path.join(self.nodestore_path, file_name)
         return nodestore_paths
 
     def nodestore_present(self):
         if not os.path.exists(self.nodestore_path):
             return False
-        for role_name, role_struct in self.nodestore_paths.iteritems():
-            for mode_name, mode_struct in role_struct.iteritems():
-                for key_cert, file_path in mode_struct.iteritems():
-                    if not os.path.isfile(file_path):
-                        return False
+        for key_cert, file_path in self.nodestore_paths.iteritems():
+            if not os.path.isfile(file_path):
+                return False
         return True
 
     def ca_present(self):
@@ -196,14 +188,10 @@ class TLSSecurity(Security):
             os.chmod(self.nodestore_path, 0o700)
         keyserver_proxy = self.xmlrpcapi(get_keyserver_uri(), context=self.get_keyserver_context())
         response = keyserver_proxy.requestNodeStore(self.node_stem)
-        for type_name, type_data in response.iteritems():
-            type_path = os.path.join(self.nodestore_path, type_name)
-            if not os.path.exists(type_path):
-                os.makedirs(type_path)
-            for file_name, file_data in type_data.iteritems():
-                file_path = os.path.join(type_path, file_name)
-                with open_private_output_file(file_path) as f:
-                    f.write(file_data)
+        for file_name, file_data in response.iteritems():
+            file_path = os.path.join(self.nodestore_path, file_name)
+            with open_private_output_file(file_path) as f:
+                f.write(file_data)
 
     def init_ca(self):
         print("initializing node's capath: %s" % self.capath)
@@ -242,22 +230,18 @@ class TLSSecurity(Security):
         else:
             self.graph_mode = None
 
-    def init_contexts(self):
+    def init_context(self):
         if 'SROS_PASSWORD' in os.environ:
             password = os.environ['SROS_PASSWORD']
         else:
             password = None
 
-        self.nodestore_contexts = deepcopy(self.nodestore_paths)
-        for role_name, role_struct in self.nodestore_contexts.iteritems():
-            for mode_name, mode_struct in role_struct.iteritems():
-                context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-                context.verify_mode = ssl.CERT_REQUIRED
-                context.load_verify_locations(capath=self.capath)
-                keyfile = mode_struct['key']
-                certfile = mode_struct['cert']
-                context.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
-                role_struct[mode_name] = context
+        keyfile = self.nodestore_paths['key']
+        certfile = self.nodestore_paths['cert']
+        self.context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+        self.context.verify_mode = ssl.CERT_REQUIRED
+        self.context.load_verify_locations(capath=self.capath)
+        self.context.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
 
     def __init__(self, caller_id):
         self.node_id = caller_id
@@ -271,34 +255,17 @@ class TLSSecurity(Security):
         self.nodestore_path = os.path.join(self.keystore_path, 'nodes', self.node_stem.lstrip('/'))
         self.nodestore_paths = self.get_nodestore_paths()
 
-        self.client_contexts_= {}
-        self.server_context_ = None
-
         if not self.nodestore_present():
             self.init_nodestore()
         if not self.ca_present():
             self.init_ca()
 
-        self.init_contexts()
+        self.init_context()
 
         print('all startup certificates are present')
 
         if self.node_name == 'master':
             self.init_graph()
-
-    def get_server_context(self, role, mode):
-        if role is None:
-            role = 'topics'
-        if mode is None:
-            mode = 'publisher'
-        return self.nodestore_contexts[role][mode]
-
-    def get_client_context(self, role, mode):
-        if role is None:
-            role = 'topics'
-        if mode is None:
-            mode = 'subscriber'
-        return self.nodestore_contexts[role][mode]
 
     def get_keyserver_context(self):
         context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
@@ -307,23 +274,21 @@ class TLSSecurity(Security):
         context.load_verify_locations(capath=self.capath)
         return context
 
-    def wrap_socket(self, sock, role=None, mode=None):
+    def wrap_socket(self, sock):
         """
         Called whenever there is an opportunity to wrap a server socket
         """
-        context = self.get_server_context(role, mode)
-        return context.wrap_socket(sock, server_side=True)
+        return self.context.wrap_socket(sock, server_side=True)
 
-    def xmlrpcapi(self, uri, role=None, mode=None, context=None):
+    def xmlrpcapi(self, uri, context=None):
         # print("SSLSecurity.xmlrpcapi(%s, %s)" % (uri, node_stem or "[UNKNOWN]"))
         if context is None:
-            context = self.get_client_context(role, mode)
+            context = self.context
         st = XMLRPCTimeoutSafeTransport(context=context, timeout=10.0)
         return xmlrpcclient.ServerProxy(uri, transport=st, context=context)
 
-    def connect(self, sock, dest_addr, dest_port, endpoint_id, timeout=None, role=None, mode=None):
-        context = self.get_client_context(role, mode)
-        conn = context.wrap_socket(sock)
+    def connect(self, sock, dest_addr, dest_port, endpoint_id, timeout=None):
+        conn = self.context.wrap_socket(sock)
         try:
             conn.connect((dest_addr, dest_port))
         except Exception as e:
@@ -331,14 +296,13 @@ class TLSSecurity(Security):
             raise
         return conn
 
-    def accept(self, server_sock, server_node_name, role=None, mode=None):
+    def accept(self, server_sock, server_node_name):
         # this is where peer-to-peer TCPROS connections try to be accepted
         # print("SSLSecurity.accept(server_node_name=%s)" % server_node_name)
-        context = self.get_server_context(role, mode)
         (client_sock, client_addr) = server_sock.accept()
         client_stream = None
         try:
-            client_stream = context.wrap_socket(client_sock, server_side=True)
+            client_stream = self.context.wrap_socket(client_sock, server_side=True)
             client_cert = client_stream.getpeercert()
             # print("SSLSecurity.accept(server_node_name=%s) getpeercert = %s" % (server_node_name, repr(client_cert)))
             # cn = cert_cn(client_cert)
