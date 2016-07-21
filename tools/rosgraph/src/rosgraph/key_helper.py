@@ -637,6 +637,14 @@ def get_certificate_policies(node_stem, node_config, graph):
                         policies[mode_struct['allow']['OID']] = permitted_subtrees
                     if excluded_subtrees:
                         policies[mode_struct['deny']['OID']]  = excluded_subtrees
+                else:
+                    excluded_subtrees = ['**']
+                    policies[mode_struct['deny']['OID']]  = excluded_subtrees
+    else:
+        for role_name, role_struct in ROLE_STRUCT.iteritems():
+            for mode_name, mode_struct in role_struct.iteritems():
+                excluded_subtrees = ['**']
+                policies[mode_struct['deny']['OID']] = excluded_subtrees
     return policies
 
 
