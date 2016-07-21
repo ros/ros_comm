@@ -132,7 +132,7 @@ def fork_xmlrpc_keyserver(keyserver_config, keystore_path, keyserver_mode):
             break
         except Exception as e:
             time.sleep(0.01)
-    # TODO: Not sure why this changes from 127.0.0.1 to <hostname> 
+    # TODO: Not sure why this changes from localhost to <hostname> 
     # if value != keyserver.uri:
     #     raise ValueError("Keyserver URI does not match what was expexted:" + 
     #                      "getUri returned {} instead of {}".format(value, keyserver.uri))
