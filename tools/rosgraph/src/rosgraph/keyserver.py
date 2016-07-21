@@ -75,29 +75,7 @@ class Keyserver(object):
         self.key_helper.init_ca()
         self.init_context()
 
-        from rosgraph.xmlrpc import XmlRpcHandler
-        class KeyserverHandler(XmlRpcHandler):
-            """
-            Base handler API for handlers used with XmlRpcNode. Public methods will be 
-            exported as XML RPC methods.
-            """
-
-            def __init__(self, key_helper):
-                self.key_helper = key_helper
-
-            def requestNodeStore(self, node_stem):
-                print('keyserver: requestNodeStore(%s)' % node_stem)
-                resp = self.key_helper.get_nodestore(node_stem)
-                return resp
-
-            def getCA(self):
-                print('keyserver: getCA()')
-                resp = self.key_helper.get_ca()
-                return resp
-
-            def hello(self):
-                return "I'm alive!"
-
+        from rosgraph.keyserver_handler import KeyserverHandler
         self.keyserver_handler = KeyserverHandler(self.key_helper)
 
     def init_context(self):
@@ -110,10 +88,9 @@ class Keyserver(object):
         self.context.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
 
     def run(self):
-        from rosgraph.xmlrpc import XmlRpcNode
-
         address, port = parse_uri(self.uri)
 
+        from rosgraph.xmlrpc import XmlRpcNode
         keyserver_node = XmlRpcNode(
             port=port,
             rpc_handler=self.keyserver_handler,
@@ -151,9 +128,13 @@ def fork_xmlrpc_keyserver(keyserver_config, keystore_path, keyserver_mode):
     print("sleeping until keyserver has generated the initial keyring...")
     while True:
         try:
-            keyserver_proxy.hello()
+            code, msg, value = keyserver_proxy.getUri('/keyserver')
             break
         except Exception as e:
             time.sleep(0.01)
+    # TODO: Not sure why this changes from 127.0.0.1 to <hostname> 
+    # if value != keyserver.uri:
+    #     raise ValueError("Keyserver URI does not match what was expexted:" + 
+    #                      "getUri returned {} instead of {}".format(value, keyserver.uri))
     logging.getLogger('rosmaster.keyserver').info("Keyserver initialized: uri[%s]", keyserver.uri)
-    print("horray, the keyserver is now open for business.")
+    print("Horray, the keyserver is now open for business.")

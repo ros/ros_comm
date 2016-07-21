@@ -182,25 +182,27 @@ class TLSSecurity(Security):
         return os.path.exists(self.capath)
 
     def init_nodestore(self):
+        #TODO break this out into ksproxy like with rospy.msproxy?
         if not os.path.exists(self.nodestore_path):
             print("initializing node's keystore: %s" % self.nodestore_path)
             os.makedirs(self.nodestore_path)
             os.chmod(self.nodestore_path, 0o700)
         keyserver_proxy = self.xmlrpcapi(get_keyserver_uri(), context=self.get_keyserver_context())
-        response = keyserver_proxy.requestNodeStore(self.node_stem)
-        for file_name, file_data in response.iteritems():
+        code, msg, value = keyserver_proxy.requestNodeStore(self.node_id, self.node_stem)
+        for file_name, file_data in value.iteritems():
             file_path = os.path.join(self.nodestore_path, file_name)
             with open_private_output_file(file_path) as f:
                 f.write(file_data)
 
     def init_ca(self):
+        #TODO break this out into ksproxy like with rospy.msproxy?
         print("initializing node's capath: %s" % self.capath)
         os.makedirs(self.capath)
         os.chmod(self.capath, 0o700)
 
         keyserver_proxy = self.xmlrpcapi(get_keyserver_uri(), context=self.get_keyserver_context())
-        response = keyserver_proxy.getCA()
-        for file_name, file_data in response.iteritems():
+        code, msg, value = keyserver_proxy.getCA(self.node_id)
+        for file_name, file_data in value.iteritems():
             file_path = os.path.join(self.capath, file_name)
             with open_private_output_file(file_path) as f:
                 f.write(file_data)
