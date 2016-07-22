@@ -21,6 +21,13 @@ from keyserver import get_keyserver_uri
 from copy import deepcopy
 from sros_consts import ROLE_STRUCT, EXTENSION_MAPPING
 
+from cryptography import hazmat, x509
+from cryptography.x509.oid import NameOID
+from cryptography.hazmat.backends import default_backend
+
+from apparmor.aare import re
+from apparmor.common import convert_regexp
+
 class GraphModes:
     audit = 'audit'
     complain = 'complain'
@@ -67,6 +74,18 @@ class Security(object):
         return True
     def allowClients(self, caller_id, clients):
         return 1, "", 0
+    
+    def allow_connect_subscriber(self, sock, dest_addr, dest_port, pub_uri, receive_cb, resolved_topic_name):
+        return True
+    
+    def allow_topic_connection(self, sock, client_addr, header):
+        return True
+    
+    def allow_call(self, sock, dest_addr, dest_port, service_uri):
+        return True
+    
+    def allow_service_connection(self, sock, client_addr, header):
+        return True
 
 #########################################################################
 
@@ -447,6 +466,60 @@ class TLSSecurity(Security):
 
     def xmlrpc_protocol(self):
         return 'https'
+    
+    def allow_policies(self, role, action): 
+
+        if 'policy_qualifiers' in role['deny']:
+            for qualifiers in role['deny']['policy_qualifiers']:
+                action_regex = re.compile(convert_regexp(qualifiers))
+                if action_regex.search(action):
+                    return False
+
+        if 'policy_qualifiers' in role['allow']:
+            for qualifiers in role['allow']['policy_qualifiers']:
+                action_regex = re.compile(convert_regexp(qualifiers))
+                if action_regex.search(action):
+                    return True
+
+        return True
+
+    def extract_policies(self, cert, role):
+        certificate_policies = cert.extensions.get_extension_for_class(x509.CertificatePolicies)
+        for policy_information in certificate_policies.value:
+            for mode in ['allow', 'deny']:
+                if role[mode]['OID'] == policy_information.policy_identifier.dotted_string:
+                    role[mode]['policy_qualifiers'] = policy_information.policy_qualifiers
+
+    def extract_cert(self, sock):
+        cert_binary = sock.getpeercert(binary_form=True)
+        cert = x509.load_der_x509_certificate(cert_binary, default_backend())
+        return cert
+
+    def allow_connect_subscriber(self, sock, dest_addr, dest_port, pub_uri, receive_cb, resolved_topic_name):
+        cert = self.extract_cert(sock)
+        role = deepcopy(ROLE_STRUCT['topics']['publisher'])
+        self.extract_policies(cert, role)
+        allowed = self.allow_policies(role, resolved_topic_name)
+        print('##################################################')
+        print('allow_connect_subscriber: ', allowed)
+        print('##################################################')     
+        return allowed
+
+    def allow_topic_connection(self, sock, client_addr, header):
+        cert = self.extract_cert(sock)
+        role = deepcopy(ROLE_STRUCT['topics']['subscriber'])
+        self.extract_policies(cert, role)
+        allowed = self.allow_policies(role, header['topic'])
+        print('##################################################')
+        print('allow_topic_connection: ', allowed)
+        print('##################################################')     
+        return allowed
+
+    def allow_call(self, sock, dest_addr, dest_port, service_uri):
+        return True
+
+    def allow_service_connection(self, sock, client_addr, header):
+        return True
 
 #########################################################################
 _security = None
