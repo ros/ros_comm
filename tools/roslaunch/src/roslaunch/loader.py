@@ -479,7 +479,7 @@ class Loader(object):
         elif command is not None:
             try:
                 if type(command) == unicode:
-                    command = command.encode('UTF-8') #attempt to force to string for shlex/subprocess
+                    command = command.encode('utf-8') #attempt to force to string for shlex/subprocess
             except NameError:
                 pass
             if verbose:
@@ -488,6 +488,8 @@ class Loader(object):
             try:
                 p = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
                 c_value = p.communicate()[0]
+                if not isinstance(c_value, str):
+                    c_value = c_value.decode('utf-8')
                 if p.returncode != 0:
                     raise ValueError("Cannot load command parameter [%s]: command [%s] returned with code [%s]"%(name, command, p.returncode))
             except OSError as e:
