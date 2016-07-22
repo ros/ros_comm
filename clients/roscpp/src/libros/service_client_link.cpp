@@ -162,6 +162,7 @@ bool ServiceClientLink::handleHeader(const Header& header)
 
 void ServiceClientLink::onConnectionDropped(const ConnectionPtr& conn)
 {
+  (void)conn;
   ROS_ASSERT(conn == connection_);
 
   if (ServicePublicationPtr parent = parent_.lock())
@@ -178,6 +179,7 @@ void ServiceClientLink::onHeaderWritten(const ConnectionPtr& conn)
 
 void ServiceClientLink::onRequestLength(const ConnectionPtr& conn, const boost::shared_array<uint8_t>& buffer, uint32_t size, bool success)
 {
+  (void)size;
   if (!success)
     return;
 
@@ -201,6 +203,7 @@ void ServiceClientLink::onRequestLength(const ConnectionPtr& conn, const boost::
 
 void ServiceClientLink::onRequest(const ConnectionPtr& conn, const boost::shared_array<uint8_t>& buffer, uint32_t size, bool success)
 {
+  (void)conn;
   if (!success)
     return;
 
@@ -218,6 +221,7 @@ void ServiceClientLink::onRequest(const ConnectionPtr& conn, const boost::shared
 
 void ServiceClientLink::onResponseWritten(const ConnectionPtr& conn)
 {
+  (void)conn;
   ROS_ASSERT(conn == connection_);
 
   if (persistent_)

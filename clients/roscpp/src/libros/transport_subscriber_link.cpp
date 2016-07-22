@@ -121,6 +121,7 @@ bool TransportSubscriberLink::handleHeader(const Header& header)
 
 void TransportSubscriberLink::onConnectionDropped(const ConnectionPtr& conn)
 {
+  (void)conn;
   ROS_ASSERT(conn == connection_);
 
   PublicationPtr parent = parent_.lock();

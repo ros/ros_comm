@@ -98,6 +98,7 @@ void Connection::removeDropListener(const boost::signals2::connection& c)
 
 void Connection::onReadable(const TransportPtr& transport)
 {
+  (void)transport;
   ROS_ASSERT(transport == transport_);
 
   readTransport();
@@ -254,6 +255,7 @@ void Connection::writeTransport()
 
 void Connection::onWriteable(const TransportPtr& transport)
 {
+  (void)transport;
   ROS_ASSERT(transport == transport_);
 
   writeTransport();
@@ -314,6 +316,7 @@ void Connection::write(const boost::shared_array<uint8_t>& buffer, uint32_t size
 
 void Connection::onDisconnect(const TransportPtr& transport)
 {
+  (void)transport;
   ROS_ASSERT(transport == transport_);
 
   drop(TransportDisconnect);
@@ -379,6 +382,7 @@ void Connection::sendHeaderError(const std::string& error_msg)
 
 void Connection::onHeaderLengthRead(const ConnectionPtr& conn, const boost::shared_array<uint8_t>& buffer, uint32_t size, bool success)
 {
+  (void)size;
   ROS_ASSERT(conn.get() == this);
   ROS_ASSERT(size == 4);
 
