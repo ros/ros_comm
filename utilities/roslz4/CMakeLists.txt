@@ -17,6 +17,7 @@ find_library(lz4_LIBRARIES NAMES lz4)
 if (NOT lz4_LIBRARIES)
   message(FATAL_ERROR "lz4 library not found")
 endif()
+set(lz4_FOUND TRUE)
 
 catkin_python_setup()
 
