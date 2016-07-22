@@ -125,6 +125,7 @@ void TransportPublisherLink::onHeaderWritten(const ConnectionPtr& conn)
 
 bool TransportPublisherLink::onHeaderReceived(const ConnectionPtr& conn, const Header& header)
 {
+  (void)conn;
   ROS_ASSERT(conn == connection_);
 
   if (!setHeader(header))
@@ -146,6 +147,8 @@ bool TransportPublisherLink::onHeaderReceived(const ConnectionPtr& conn, const H
 
 void TransportPublisherLink::onMessageLength(const ConnectionPtr& conn, const boost::shared_array<uint8_t>& buffer, uint32_t size, bool success)
 {
+  (void)conn;
+  (void)size;
   if (retry_timer_handle_ != -1)
   {
     getInternalTimerManager()->remove(retry_timer_handle_);
@@ -247,6 +250,7 @@ CallbackQueuePtr getInternalCallbackQueue();
 
 void TransportPublisherLink::onConnectionDropped(const ConnectionPtr& conn, Connection::DropReason reason)
 {
+  (void)conn;
   if (dropping_)
   {
     return;

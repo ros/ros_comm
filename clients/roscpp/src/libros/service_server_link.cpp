@@ -186,6 +186,7 @@ void ServiceServerLink::onRequestWritten(const ConnectionPtr& conn)
 
 void ServiceServerLink::onResponseOkAndLength(const ConnectionPtr& conn, const boost::shared_array<uint8_t>& buffer, uint32_t size, bool success)
 {
+  (void)size;
   ROS_ASSERT(conn == connection_);
   ROS_ASSERT(size == 5);
 
@@ -227,6 +228,7 @@ void ServiceServerLink::onResponseOkAndLength(const ConnectionPtr& conn, const b
 
 void ServiceServerLink::onResponse(const ConnectionPtr& conn, const boost::shared_array<uint8_t>& buffer, uint32_t size, bool success)
 {
+  (void)conn;
   ROS_ASSERT(conn == connection_);
 
   if (!success)

@@ -170,11 +170,10 @@ void set(const std::string& key, const std::vector<bool>& vec)
 template <class T>
   void setImpl(const std::string& key, const std::map<std::string, T>& map)
 {
-  // Note: the XmlRpcValue starts off as "invalid" and assertArray turns it
-  // into an array type with the given size
+  // Note: the XmlRpcValue starts off as "invalid" and assertStruct turns it
+  // into a struct type
   XmlRpc::XmlRpcValue xml_value;
-  const XmlRpc::XmlRpcValue::ValueStruct& xml_map = (const XmlRpc::XmlRpcValue::ValueStruct &)(xml_value);
-  (void)xml_map;
+  xml_value.begin();
 
   // Copy the contents into the XmlRpcValue
   for(typename std::map<std::string, T>::const_iterator it = map.begin(); it != map.end(); ++it) {
