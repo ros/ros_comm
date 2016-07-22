@@ -98,7 +98,7 @@ class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
         # if callable(gpc):
         #     text = self.request.getpeercert(binary_form=False)
         #     binary = self.request.getpeercert(binary_form=True)
-        #     self.caller_name = security.get().allow_xmlrpc_request(text, binary)
+        #     self.caller_name = security.get().policy.allow_xmlrpc_request(text, binary)
         #     #print("parse_request() from %s" % self.caller_name)
         #     return self.caller_name is not None
         # else:

@@ -2,41 +2,18 @@ from __future__ import print_function
 
 import logging
 import os
-import names
-import time
-import socket
-import subprocess
+# import names
+# import time
+# import socket
+# import subprocess
 import traceback
 import ssl
-import rosgraph.masterapi
-import shutil
+# import shutil
 import httplib
-import sys
-import base64
-import rosgraph_helper
-import key_helper
+# import sys
 from keyserver import get_keyserver_uri
-#from rospy.exceptions import TransportInitError
 
-from copy import deepcopy
-from sros_consts import ROLE_STRUCT, EXTENSION_MAPPING
-
-from cryptography import hazmat, x509
-from cryptography.x509.oid import NameOID
-from cryptography.hazmat.backends import default_backend
-
-from apparmor.aare import re
-from apparmor.common import convert_regexp
-
-class GraphModes:
-    audit = 'audit'
-    complain = 'complain'
-    enforce = 'enforce'
-    train = 'train'
-
-    class __metaclass__(type):
-        def __contains__(self, item):
-            return hasattr(self, item)
+from sros_consts import EXTENSION_MAPPING
 
 try:
     import urllib.parse as urlparse #Python 3.x
@@ -64,28 +41,6 @@ class Security(object):
         return sock
     def xmlrpc_protocol(self):
         return 'http'
-    def allow_registerPublisher(self, caller_id, topic, topic_type):
-        print('Security.allow_registerPublisher()')
-        return True
-    def allow_registerSubscriber(self, caller_id, topic, topic_type):
-        print('Security.allow_registerSubscriber()')
-        return True
-    def allow_xmlrpc_request(self, cert_text, cert_binary):
-        return True
-    def allowClients(self, caller_id, clients):
-        return 1, "", 0
-    
-    def allow_connect_subscriber(self, sock, dest_addr, dest_port, pub_uri, receive_cb, resolved_topic_name):
-        return True
-    
-    def allow_topic_connection(self, sock, client_addr, header):
-        return True
-    
-    def allow_call(self, sock, dest_addr, dest_port, service_uri):
-        return True
-    
-    def allow_service_connection(self, sock, client_addr, header):
-        return True
 
 #########################################################################
 
@@ -94,6 +49,9 @@ class NoSecurity(Security):
     def __init__(self):
         super(NoSecurity, self).__init__()
         _logger.info("  rospy.security.NoSecurity init")
+
+        from policy import NoPolicy
+        self.policy = NoPolicy()
 
     def xmlrpcapi(self, uri, node_name = None):
         uriValidate = urlparse.urlparse(uri)
@@ -120,6 +78,7 @@ class NoSecurity(Security):
         return (s[0], s[1], 'unknown')
 
 #########################################################################
+
 class XMLRPCTimeoutSafeTransport(xmlrpcclient.SafeTransport):
     def __init__(self, context=None, timeout=2.0):
         xmlrpcclient.SafeTransport.__init__(self, context=context)
@@ -136,7 +95,6 @@ def node_stem_to_node_name(node_stem):
     # get name from last element in stem
     node_name = node_stem.split('/')[-1]
     return node_name
-    
 
 def caller_id_to_node_stem(caller_id):
     # TODO: Check all practices that ROS uses to name nodes unique
@@ -163,22 +121,6 @@ def caller_id_to_node_stem(caller_id):
 def open_private_output_file(fn):
     flags = os.O_WRONLY | os.O_CREAT
     return os.fdopen(os.open(fn, flags, 0o600), 'w')
-
-# def cert_cn(cert):
-#     """
-#     extract the commonName from this certificate
-#     """
-#     if cert is None:
-#         return None
-#     if not 'subject' in cert:
-#         return None
-#     for subject in cert['subject']:
-#         key = subject[0][0]
-#         if key == 'commonName':
-#             return subject[0][1]
-#     return None
-
-##########################################################################
 
 class TLSSecurity(Security):
 
@@ -226,31 +168,6 @@ class TLSSecurity(Security):
             with open_private_output_file(file_path) as f:
                 f.write(file_data)
 
-    def init_graph(self):
-        # some extra initialization steps for graph saving/loading
-        self.graphs_path = os.path.join(os.path.expanduser('~'), '.ros', 'graphs')
-        if not os.path.exists(self.graphs_path):
-            print("initializing empty graph store: %s" % self.graphs_path)
-            os.makedirs(self.graphs_path)
-            os.chmod(self.graphs_path, 0o700)
-
-        # ugly... need to figure out a graceful way to pass the graph
-        self.graph_mode = GraphModes.enforce
-        self.graph = rosgraph_helper.GraphStructure()
-        if 'SROS_GRAPH_NAME' in os.environ:
-            if '..' in os.environ['SROS_GRAPH_NAME'] or '/' in os.environ['SROS_GRAPH_NAME']:
-                raise ValueError(
-                    "graph name must be a simple string. saw [%s] instead" % os.environ['SROS_GRAPH_NAME'])
-            self.graph.graph_path = os.path.join(os.path.expanduser('~'), '.ros', 'graphs',
-                                                 os.environ['SROS_GRAPH_NAME'] + '.yaml')
-            if os.path.exists(self.graph.graph_path):
-                self.graph.load_graph()
-            if 'SROS_GRAPH_MODE' in os.environ:
-                graph_mode = os.environ['SROS_GRAPH_MODE']
-                self.graph_mode = getattr(GraphModes, graph_mode, GraphModes.enforce)
-        else:
-            self.graph_mode = None
-
     def init_context(self):
         if 'SROS_PASSWORD' in os.environ:
             password = os.environ['SROS_PASSWORD']
@@ -286,9 +203,9 @@ class TLSSecurity(Security):
         self.init_context()
 
         print('all startup certificates are present')
-
-        if self.node_name == 'master':
-            self.init_graph()
+        
+        from policy import NameSpacePolicy
+        self.policy = NameSpacePolicy(self.node_name)
 
     def get_keyserver_context(self):
         context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
@@ -411,115 +328,6 @@ class TLSSecurity(Security):
     #     print("WOAH WOAH WOAH how did i get here?")
     #     return 'ahhhhhhhhhhhh'
 
-    def log_register(self, enable, flag, info):
-        if enable:
-            _logger.info("{}REG [{}]:{} {} to graph:[{}]".format(flag, *info))
-
-    def allow_register(self, caller_id, topic_name, topic_type, mask):
-        node_stem = caller_id_to_node_stem(caller_id)
-        info = (topic_name, mask, self.node_stem, self.graph.graph_path)
-        if self.graph_mode is GraphModes.enforce:
-            allowed, audit = self.graph.is_allowed(node_stem, topic_name, mask)
-            flag = '*' if allowed else '!'
-            self.log_register(audit, flag, info)
-            return allowed
-        elif self.graph_mode is GraphModes.train:
-            if self.graph.graph_path is not None:
-                allowed, audit = self.graph.is_allowed(node_stem, topic_name, mask)
-                if not allowed:
-                    self.graph.add_allowed(node_stem, topic_name, mask)
-                    self.graph.save_graph()
-                flag = '*' if allowed else '+'
-                self.log_register((audit or not allowed), flag, info)
-            return True
-        elif self.graph_mode is GraphModes.complain:
-            if self.graph.graph is not None:
-                allowed, audit = self.graph.is_allowed(node_stem, topic_name, mask)
-                flag = '*' if allowed else '!'
-                self.log_register((audit or not allowed), flag, info)
-            else:
-                self.log_register(True, '!', info)
-            return True
-        elif self.graph_mode is GraphModes.audit:
-            if self.graph.graph is not None:
-                allowed, audit = self.graph.is_allowed(node_stem, topic_name, mask)
-                flag = '*' if allowed else '!'
-                self.log_register(True, flag, info)
-                return allowed
-            else:
-                self.log_register(True, '', info)
-                return True
-        else:
-            return False
-
-    def allow_registerPublisher(self, caller_id, topic, topic_type):
-        if self.graph_mode is None:
-            return True
-        else:
-            return self.allow_register(caller_id, topic, topic_type, 'w')
-
-    def allow_registerSubscriber(self, caller_id, topic, topic_type):
-        if self.graph_mode is None:
-            return True
-        else:
-            return self.allow_register(caller_id, topic, topic_type, 'r')
-
-    def xmlrpc_protocol(self):
-        return 'https'
-    
-    def allow_policies(self, role, action): 
-
-        if 'policy_qualifiers' in role['deny']:
-            for qualifiers in role['deny']['policy_qualifiers']:
-                action_regex = re.compile(convert_regexp(qualifiers))
-                if action_regex.search(action):
-                    return False
-
-        if 'policy_qualifiers' in role['allow']:
-            for qualifiers in role['allow']['policy_qualifiers']:
-                action_regex = re.compile(convert_regexp(qualifiers))
-                if action_regex.search(action):
-                    return True
-
-        return True
-
-    def extract_policies(self, cert, role):
-        certificate_policies = cert.extensions.get_extension_for_class(x509.CertificatePolicies)
-        for policy_information in certificate_policies.value:
-            for mode in ['allow', 'deny']:
-                if role[mode]['OID'] == policy_information.policy_identifier.dotted_string:
-                    role[mode]['policy_qualifiers'] = policy_information.policy_qualifiers
-
-    def extract_cert(self, sock):
-        cert_binary = sock.getpeercert(binary_form=True)
-        cert = x509.load_der_x509_certificate(cert_binary, default_backend())
-        return cert
-
-    def allow_connect_subscriber(self, sock, dest_addr, dest_port, pub_uri, receive_cb, resolved_topic_name):
-        cert = self.extract_cert(sock)
-        role = deepcopy(ROLE_STRUCT['topics']['publisher'])
-        self.extract_policies(cert, role)
-        allowed = self.allow_policies(role, resolved_topic_name)
-        print('##################################################')
-        print('allow_connect_subscriber: ', allowed)
-        print('##################################################')     
-        return allowed
-
-    def allow_topic_connection(self, sock, client_addr, header):
-        cert = self.extract_cert(sock)
-        role = deepcopy(ROLE_STRUCT['topics']['subscriber'])
-        self.extract_policies(cert, role)
-        allowed = self.allow_policies(role, header['topic'])
-        print('##################################################')
-        print('allow_topic_connection: ', allowed)
-        print('##################################################')     
-        return allowed
-
-    def allow_call(self, sock, dest_addr, dest_port, service_uri):
-        return True
-
-    def allow_service_connection(self, sock, client_addr, header):
-        return True
 
 #########################################################################
 _security = None

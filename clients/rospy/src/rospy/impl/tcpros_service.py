@@ -226,7 +226,7 @@ def service_connection_handler(sock, client_addr, header):
         if not required in header:
             return "Missing required '%s' field"%required
 
-    if not security.get().allow_service_connection(sock, client_addr, header):
+    if not security.get().policy.allow_service_connection(sock, client_addr, header):
         return "Client policy violation"
     else:
         logger.debug("connection from %s:%s", client_addr[0], client_addr[1])
@@ -506,7 +506,7 @@ class ServiceProxy(_Service):
             transport.buff_size = self.buff_size
             try:
                 transport.connect(dest_addr, dest_port, service_uri)
-                if not security.get().allow_call(transport.socket, dest_addr, dest_port, service_uri):
+                if not security.get().policy.allow_call(transport.socket, dest_addr, dest_port, self.resolved_name):
                     raise rospy.exceptions.TransportInitError("Server policy violation")
             except TransportInitError as e:
                 # can be a connection or md5sum mismatch

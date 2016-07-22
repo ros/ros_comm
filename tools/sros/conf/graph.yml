@@ -22,4 +22,12 @@ nodes:
     topics:
       /chatter:
         allow: p # allow /talker to publish onto or anythong under /chatter
+  /add_two_ints_server:
+    services:
+      /add_two_ints:
+        allow: x # allow to exicute service
+  /unnamed:
+    services:
+      /add_two_ints:
+        allow: c # allow to call service
 version: '0'
