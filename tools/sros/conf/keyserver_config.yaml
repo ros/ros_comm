@@ -131,7 +131,7 @@ keys:
       serial_number: # if no value provided, then UUID4 is used https://cryptography.io/en/latest/x509/reference/?highlight=uuid4#cryptography.x509.CertificateBuilder.serial_number
       not_valid_before : 0 # or iso8601 dates format
       not_valid_after  : 2020-12-14 21:59:43.10 -5
-      graph_path: graph.yml
+      graph_path: policy_config.yaml
       x509_extensions:
         <<: *node_extensions
   keyserver:
