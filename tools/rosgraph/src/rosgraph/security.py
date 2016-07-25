@@ -2,34 +2,18 @@ from __future__ import print_function
 
 import logging
 import os
-import names
-import time
-import socket
-import subprocess
+# import names
+# import time
+# import socket
+# import subprocess
 import traceback
 import ssl
-import rosgraph.masterapi
-import shutil
+# import shutil
 import httplib
-import sys
-import base64
-import rosgraph_helper
-import key_helper
+# import sys
 from keyserver import get_keyserver_uri
-#from rospy.exceptions import TransportInitError
 
-from copy import deepcopy
-from sros_consts import ROLE_STRUCT, EXTENSION_MAPPING
-
-class GraphModes:
-    audit = 'audit'
-    complain = 'complain'
-    enforce = 'enforce'
-    train = 'train'
-
-    class __metaclass__(type):
-        def __contains__(self, item):
-            return hasattr(self, item)
+from sros_consts import EXTENSION_MAPPING
 
 try:
     import urllib.parse as urlparse #Python 3.x
@@ -49,7 +33,7 @@ class Security(object):
     # TODO: add security logging stuff here
     def __init__(self):
         _logger.info("security init")
-    def wrap_socket(self, sock, node_name):
+    def wrap_socket(self, sock):
         """
         Called whenever there is an opportunity to wrap a server socket.
         The default implementation doesn't do anything.
@@ -57,16 +41,6 @@ class Security(object):
         return sock
     def xmlrpc_protocol(self):
         return 'http'
-    def allow_registerPublisher(self, caller_id, topic, topic_type):
-        print('Security.allow_registerPublisher()')
-        return True
-    def allow_registerSubscriber(self, caller_id, topic, topic_type):
-        print('Security.allow_registerSubscriber()')
-        return True
-    def allow_xmlrpc_request(self, cert_text, cert_binary):
-        return True
-    def allowClients(self, caller_id, clients):
-        return 1, "", 0
 
 #########################################################################
 
@@ -75,6 +49,9 @@ class NoSecurity(Security):
     def __init__(self):
         super(NoSecurity, self).__init__()
         _logger.info("  rospy.security.NoSecurity init")
+
+        from policy import NoPolicy
+        self.policy = NoPolicy()
 
     def xmlrpcapi(self, uri, node_name = None):
         uriValidate = urlparse.urlparse(uri)
@@ -101,6 +78,7 @@ class NoSecurity(Security):
         return (s[0], s[1], 'unknown')
 
 #########################################################################
+
 class XMLRPCTimeoutSafeTransport(xmlrpcclient.SafeTransport):
     def __init__(self, context=None, timeout=2.0):
         xmlrpcclient.SafeTransport.__init__(self, context=context)
@@ -117,7 +95,6 @@ def node_stem_to_node_name(node_stem):
     # get name from last element in stem
     node_name = node_stem.split('/')[-1]
     return node_name
-    
 
 def caller_id_to_node_stem(caller_id):
     # TODO: Check all practices that ROS uses to name nodes unique
@@ -145,121 +122,68 @@ def open_private_output_file(fn):
     flags = os.O_WRONLY | os.O_CREAT
     return os.fdopen(os.open(fn, flags, 0o600), 'w')
 
-# def cert_cn(cert):
-#     """
-#     extract the commonName from this certificate
-#     """
-#     if cert is None:
-#         return None
-#     if not 'subject' in cert:
-#         return None
-#     for subject in cert['subject']:
-#         key = subject[0][0]
-#         if key == 'commonName':
-#             return subject[0][1]
-#     return None
-
-##########################################################################
-
 class TLSSecurity(Security):
 
     def get_nodestore_paths(self):
-
-        nodestore_paths = deepcopy(ROLE_STRUCT)
-        for role_name, role_struct in nodestore_paths.iteritems():
-            for mode_name, mode_struct in role_struct.iteritems():
-                file_mode = role_name + '.' + mode_name
-                file_name = self.node_name + '.' + file_mode
-                role_struct[mode_name] = {}
-                for key_cert, extension in EXTENSION_MAPPING.iteritems():
-                    file_path = os.path.join(self.nodestore_path, role_name, file_name + extension)
-                    role_struct[mode_name][key_cert] = file_path
+        nodestore_paths = {}
+        for key_cert, extension in EXTENSION_MAPPING.iteritems():
+            file_name = self.node_name + extension
+            nodestore_paths[key_cert] = os.path.join(self.nodestore_path, file_name)
         return nodestore_paths
 
     def nodestore_present(self):
         if not os.path.exists(self.nodestore_path):
             return False
-        for role_name, role_struct in self.nodestore_paths.iteritems():
-            for mode_name, mode_struct in role_struct.iteritems():
-                for key_cert, file_path in mode_struct.iteritems():
-                    if not os.path.isfile(file_path):
-                        return False
+        for key_cert, file_path in self.nodestore_paths.iteritems():
+            if not os.path.isfile(file_path):
+                return False
         return True
 
     def ca_present(self):
         return os.path.exists(self.capath)
 
     def init_nodestore(self):
+        #TODO break this out into ksproxy like with rospy.msproxy?
         if not os.path.exists(self.nodestore_path):
             print("initializing node's keystore: %s" % self.nodestore_path)
             os.makedirs(self.nodestore_path)
             os.chmod(self.nodestore_path, 0o700)
         keyserver_proxy = self.xmlrpcapi(get_keyserver_uri(), context=self.get_keyserver_context())
-        response = keyserver_proxy.requestNodeStore(self.node_stem)
-        for type_name, type_data in response.iteritems():
-            type_path = os.path.join(self.nodestore_path, type_name)
-            if not os.path.exists(type_path):
-                os.makedirs(type_path)
-            for file_name, file_data in type_data.iteritems():
-                file_path = os.path.join(type_path, file_name)
-                with open_private_output_file(file_path) as f:
-                    f.write(file_data)
+        code, msg, value = keyserver_proxy.requestNodeStore(self.node_id, self.node_stem)
+        for file_name, file_data in value.iteritems():
+            file_path = os.path.join(self.nodestore_path, file_name)
+            with open_private_output_file(file_path) as f:
+                f.write(file_data)
 
     def init_ca(self):
+        #TODO break this out into ksproxy like with rospy.msproxy?
         print("initializing node's capath: %s" % self.capath)
         os.makedirs(self.capath)
         os.chmod(self.capath, 0o700)
 
         keyserver_proxy = self.xmlrpcapi(get_keyserver_uri(), context=self.get_keyserver_context())
-        response = keyserver_proxy.getCA()
-        for file_name, file_data in response.iteritems():
+        code, msg, value = keyserver_proxy.getCA(self.node_id)
+        for file_name, file_data in value.iteritems():
             file_path = os.path.join(self.capath, file_name)
             with open_private_output_file(file_path) as f:
                 f.write(file_data)
 
-    def init_graph(self):
-        # some extra initialization steps for graph saving/loading
-        self.graphs_path = os.path.join(os.path.expanduser('~'), '.ros', 'graphs')
-        if not os.path.exists(self.graphs_path):
-            print("initializing empty graph store: %s" % self.graphs_path)
-            os.makedirs(self.graphs_path)
-            os.chmod(self.graphs_path, 0o700)
-
-        # ugly... need to figure out a graceful way to pass the graph
-        self.graph_mode = GraphModes.enforce
-        self.graph = rosgraph_helper.GraphStructure()
-        if 'SROS_GRAPH_NAME' in os.environ:
-            if '..' in os.environ['SROS_GRAPH_NAME'] or '/' in os.environ['SROS_GRAPH_NAME']:
-                raise ValueError(
-                    "graph name must be a simple string. saw [%s] instead" % os.environ['SROS_GRAPH_NAME'])
-            self.graph.graph_path = os.path.join(os.path.expanduser('~'), '.ros', 'graphs',
-                                                 os.environ['SROS_GRAPH_NAME'] + '.yaml')
-            if os.path.exists(self.graph.graph_path):
-                self.graph.load_graph()
-            if 'SROS_GRAPH_MODE' in os.environ:
-                graph_mode = os.environ['SROS_GRAPH_MODE']
-                self.graph_mode = getattr(GraphModes, graph_mode, GraphModes.enforce)
-        else:
-            self.graph_mode = None
-
-    def init_contexts(self):
+    def init_context(self):
         if 'SROS_PASSWORD' in os.environ:
             password = os.environ['SROS_PASSWORD']
         else:
             password = None
 
-        self.nodestore_contexts = deepcopy(self.nodestore_paths)
-        for role_name, role_struct in self.nodestore_contexts.iteritems():
-            for mode_name, mode_struct in role_struct.iteritems():
-                context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-                context.verify_mode = ssl.CERT_REQUIRED
-                context.load_verify_locations(capath=self.capath)
-                keyfile = mode_struct['key']
-                certfile = mode_struct['cert']
-                context.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
-                role_struct[mode_name] = context
+        keyfile = self.nodestore_paths['key']
+        certfile = self.nodestore_paths['cert']
+        self.context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+        self.context.verify_mode = ssl.CERT_REQUIRED
+        self.context.load_verify_locations(capath=self.capath)
+        self.context.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
 
     def __init__(self, caller_id):
+        if caller_id[0] is not '/':
+            caller_id = '/' + caller_id
         self.node_id = caller_id
         self.node_stem = caller_id_to_node_stem(self.node_id)
         self.node_name = node_stem_to_node_name(self.node_stem)
@@ -271,34 +195,18 @@ class TLSSecurity(Security):
         self.nodestore_path = os.path.join(self.keystore_path, 'nodes', self.node_stem.lstrip('/'))
         self.nodestore_paths = self.get_nodestore_paths()
 
-        self.client_contexts_= {}
-        self.server_context_ = None
-
         if not self.nodestore_present():
             self.init_nodestore()
         if not self.ca_present():
             self.init_ca()
 
-        self.init_contexts()
+        self.init_context()
 
         print('all startup certificates are present')
-
-        if self.node_name == 'master':
-            self.init_graph()
-
-    def get_server_context(self, role, mode):
-        if role is None:
-            role = 'topics'
-        if mode is None:
-            mode = 'publisher'
-        return self.nodestore_contexts[role][mode]
-
-    def get_client_context(self, role, mode):
-        if role is None:
-            role = 'topics'
-        if mode is None:
-            mode = 'subscriber'
-        return self.nodestore_contexts[role][mode]
+        
+        import rosgraph.policy as policy
+        policy.init(self.node_id, self.node_stem, self.node_name)
+        self.policy = policy.get()
 
     def get_keyserver_context(self):
         context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
@@ -307,23 +215,21 @@ class TLSSecurity(Security):
         context.load_verify_locations(capath=self.capath)
         return context
 
-    def wrap_socket(self, sock, role=None, mode=None):
+    def wrap_socket(self, sock):
         """
         Called whenever there is an opportunity to wrap a server socket
         """
-        context = self.get_server_context(role, mode)
-        return context.wrap_socket(sock, server_side=True)
+        return self.context.wrap_socket(sock, server_side=True)
 
-    def xmlrpcapi(self, uri, role=None, mode=None, context=None):
+    def xmlrpcapi(self, uri, context=None):
         # print("SSLSecurity.xmlrpcapi(%s, %s)" % (uri, node_stem or "[UNKNOWN]"))
         if context is None:
-            context = self.get_client_context(role, mode)
+            context = self.context
         st = XMLRPCTimeoutSafeTransport(context=context, timeout=10.0)
         return xmlrpcclient.ServerProxy(uri, transport=st, context=context)
 
-    def connect(self, sock, dest_addr, dest_port, endpoint_id, timeout=None, role=None, mode=None):
-        context = self.get_client_context(role, mode)
-        conn = context.wrap_socket(sock)
+    def connect(self, sock, dest_addr, dest_port, endpoint_id, timeout=None):
+        conn = self.context.wrap_socket(sock)
         try:
             conn.connect((dest_addr, dest_port))
         except Exception as e:
@@ -331,14 +237,13 @@ class TLSSecurity(Security):
             raise
         return conn
 
-    def accept(self, server_sock, server_node_name, role=None, mode=None):
+    def accept(self, server_sock, server_node_name):
         # this is where peer-to-peer TCPROS connections try to be accepted
         # print("SSLSecurity.accept(server_node_name=%s)" % server_node_name)
-        context = self.get_server_context(role, mode)
         (client_sock, client_addr) = server_sock.accept()
         client_stream = None
         try:
-            client_stream = context.wrap_socket(client_sock, server_side=True)
+            client_stream = self.context.wrap_socket(client_sock, server_side=True)
             client_cert = client_stream.getpeercert()
             # print("SSLSecurity.accept(server_node_name=%s) getpeercert = %s" % (server_node_name, repr(client_cert)))
             # cn = cert_cn(client_cert)
@@ -424,61 +329,6 @@ class TLSSecurity(Security):
     #     print("WOAH WOAH WOAH how did i get here?")
     #     return 'ahhhhhhhhhhhh'
 
-    def log_register(self, enable, flag, info):
-        if enable:
-            _logger.info("{}REG [{}]:{} {} to graph:[{}]".format(flag, *info))
-
-    def allow_register(self, caller_id, topic_name, topic_type, mask):
-        node_stem = caller_id_to_node_stem(caller_id)
-        info = (topic_name, mask, self.node_stem, self.graph.graph_path)
-        if self.graph_mode is GraphModes.enforce:
-            allowed, audit = self.graph.is_allowed(node_stem, topic_name, mask)
-            flag = '*' if allowed else '!'
-            self.log_register(audit, flag, info)
-            return allowed
-        elif self.graph_mode is GraphModes.train:
-            if self.graph.graph_path is not None:
-                allowed, audit = self.graph.is_allowed(node_stem, topic_name, mask)
-                if not allowed:
-                    self.graph.add_allowed(node_stem, topic_name, mask)
-                    self.graph.save_graph()
-                flag = '*' if allowed else '+'
-                self.log_register((audit or not allowed), flag, info)
-            return True
-        elif self.graph_mode is GraphModes.complain:
-            if self.graph.graph is not None:
-                allowed, audit = self.graph.is_allowed(node_stem, topic_name, mask)
-                flag = '*' if allowed else '!'
-                self.log_register((audit or not allowed), flag, info)
-            else:
-                self.log_register(True, '!', info)
-            return True
-        elif self.graph_mode is GraphModes.audit:
-            if self.graph.graph is not None:
-                allowed, audit = self.graph.is_allowed(node_stem, topic_name, mask)
-                flag = '*' if allowed else '!'
-                self.log_register(True, flag, info)
-                return allowed
-            else:
-                self.log_register(True, '', info)
-                return True
-        else:
-            return False
-
-    def allow_registerPublisher(self, caller_id, topic, topic_type):
-        if self.graph_mode is None:
-            return True
-        else:
-            return self.allow_register(caller_id, topic, topic_type, 'w')
-
-    def allow_registerSubscriber(self, caller_id, topic, topic_type):
-        if self.graph_mode is None:
-            return True
-        else:
-            return self.allow_register(caller_id, topic, topic_type, 'r')
-
-    def xmlrpc_protocol(self):
-        return 'https'
 
 #########################################################################
 _security = None

@@ -46,22 +46,24 @@ class GraphStructure:
     def compile_graph(self):
         if 'nodes' in self.graph:
             for node_name, node_dict in self.graph['nodes'].iteritems():
+                for role_name, role_dict in node_dict.iteritems():
+                    for action_name, action_dict in role_dict.iteritems():
+                        if 'regex' not in action_dict:
+                            action_regex = re.compile(convert_regexp(action_name))
+                            action_dict['regex'] = action_regex
                 if 'regex' not in node_dict:
                     node_regex = re.compile(convert_regexp(node_name))
                     node_dict['regex'] = node_regex
-                for topic_name, topic_dict in node_dict['topics'].iteritems():
-                    if 'regex' not in topic_dict:
-                        topic_regex = re.compile(convert_regexp(topic_name))
-                        topic_dict['regex'] = topic_regex
 
     def uncompile_graph(self, graph):
         if 'nodes' in graph:
             for node_name, node_dict in graph['nodes'].iteritems():
                 if 'regex' in node_dict:
                     node_dict.pop('regex')
-                for topic_name, topic_dict in node_dict['topics'].iteritems():
-                    if 'regex' in topic_dict:
-                        topic_dict.pop('regex')
+                for role_name, role_dict in node_dict.iteritems():
+                    for action_name, action_dict in role_dict.iteritems():
+                        if 'regex' in action_dict:
+                            action_dict.pop('regex')
 
     def load_graph(self, graph_path=None):
         if graph_path is None:
@@ -75,6 +77,8 @@ class GraphStructure:
         self.compile_graph()
 
     def save_graph(self, graph_path=None, sort_graph=True, save_regex=False):
+        if graph_path is None:
+            graph_path = self.graph_path
         dump_graph = pickle.loads(pickle.dumps(self.graph))
         with open(graph_path, 'w') as f:
             f.write(self.graph_dump(dump_graph, sort_graph, save_regex))
@@ -103,7 +107,7 @@ class GraphStructure:
         else:
             return False, audit
 
-    def is_allowed(self, node_name, topic_name, mask):
+    def is_allowed(self, node_name, role_name, action_name, mask):
         allow = False
         deny  = False
         audit = False
@@ -112,12 +116,12 @@ class GraphStructure:
             allowed_node = allowed_nodes[node]
             if 'regex' in allowed_node:
                 if allowed_node['regex'].search(node_name):
-                    allowed_topics = allowed_node['topics']
-                    for topic in allowed_topics:
-                        allowed_topic = allowed_topics[topic]
-                        if 'regex' in allowed_topic:
-                            if allowed_topic['regex'].search(topic_name):
-                                rules = allowed_topics[topic]
+                    allowed_actions = allowed_node[role_name]
+                    for action in allowed_actions:
+                        allowed_action = allowed_actions[action]
+                        if 'regex' in allowed_action:
+                            if allowed_action['regex'].search(action_name):
+                                rules = allowed_actions[action]
                                 if 'deny' in rules:
                                     masks = rules['deny']
                                     deny, audit = self.check_for_mask(mask, masks, audit)
@@ -128,21 +132,21 @@ class GraphStructure:
         allowed = allow and not deny
         return allowed, audit
 
-    def add_allowed(self, node_name, topic_name, mask):
+    def add_allowed(self, node_name, role_name, action_name, mask):
         allowed_node = self.graph['nodes'][node_name]
-        allowed_topic_masks = allowed_node['topics'][topic_name]['allow']
-        if type(allowed_topic_masks) is not str:
-            allowed_topic_masks = ''
-        allowed_topic_masks = ''.join(sorted(set(allowed_topic_masks + mask)))
-        allowed_node['topics'][topic_name]['allow'] = allowed_topic_masks
+        allowed_action_masks = allowed_node[role_name][action_name]['allow']
+        if type(allowed_action_masks) is not str:
+            allowed_action_masks = ''
+        allowed_action_masks = ''.join(sorted(set(allowed_action_masks + mask)))
+        allowed_node[role_name][action_name]['allow'] = allowed_action_masks
 
         if 'regex' not in allowed_node:
             node_regex = re.compile(convert_regexp(node_name))
             allowed_node['regex'] = node_regex
 
-        if 'regex' not in allowed_node['topics'][topic_name]:
-            topic_regex = re.compile(convert_regexp(topic_name))
-            allowed_node['topics'][topic_name]['regex'] = topic_regex
+        if 'regex' not in allowed_node[role_name][action_name]:
+            action_regex = re.compile(convert_regexp(action_name))
+            allowed_node[role_name][action_name]['regex'] = action_regex
 
     def filter_nodes(self, namespace_filter):
         if 'nodes' not in self.graph:

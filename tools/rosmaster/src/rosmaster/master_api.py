@@ -608,6 +608,8 @@ class ROSMasterHandler(object):
         @return: (code, message, ignore)
         @rtype: (int, str, int)
         """        
+        if not security.get().policy.allow_registerService(caller_id, service):
+            return 0, "request denied by security policy", []
         try:
             self.ps_lock.acquire()
             self.reg_manager.register_service(service, caller_id, caller_api, service_api)
@@ -628,6 +630,8 @@ class ROSMasterHandler(object):
            ROSRPC URI with address and port.  Fails if there is no provider.
         @rtype: (int, str, str)
         """
+        if not security.get().policy.allow_lookupService(caller_id, service):
+            return 0, "request denied by security policy", []
         try:
             self.ps_lock.acquire()
             service_url = self.services.get_service_api(service)
@@ -682,7 +686,7 @@ class ROSMasterHandler(object):
            for nodes currently publishing the specified topic.
         @rtype: (int, str, [str])
         """
-        if not security.get().allow_registerSubscriber(caller_id, topic, topic_type):
+        if not security.get().policy.allow_registerSubscriber(caller_id, topic):
             return 0, "request denied by security policy", []
         #NOTE: subscribers do not get to set topic type
         try:
@@ -741,7 +745,7 @@ class ROSMasterHandler(object):
         List of current subscribers of topic in the form of XMLRPC URIs.
         @rtype: (int, str, [str])
         """
-        if not security.get().allow_registerPublisher(caller_id, topic, topic_type):
+        if not security.get().policy.allow_registerPublisher(caller_id, topic):
             return 0, "request denied by security policy", []
         #NOTE: we need topic_type for getPublishedTopics.
         try:
