@@ -5,7 +5,7 @@ import os
 # import names
 # import time
 # import socket
-# import traceback
+import traceback
 # import ssl
 import rosgraph_helper
 
@@ -39,12 +39,20 @@ class Policy(object):
     def __init__(self):
         _logger.info("policy init")
 
-    def allow_registerPublisher(self, caller_id, topic, topic_type):
+    def allow_registerPublisher(self, caller_id, topic):
         print('Policy.allow_registerPublisher()')
         return True
 
-    def allow_registerSubscriber(self, caller_id, topic, topic_type):
+    def allow_registerSubscriber(self, caller_id, topic):
         print('Policy.allow_registerSubscriber()')
+        return True
+
+    def allow_registerService(self, caller_id, service):
+        print('Policy.allow_registerService()')
+        return True
+
+    def allow_lookupService(self, caller_id, service):
+        print('Policy.allow_lookupService()')
         return True
 
     def allow_xmlrpc_request(self, cert_text, cert_binary):
@@ -74,65 +82,54 @@ class NoPolicy(Policy):
 class NameSpacePolicy(Policy):
 
     def init_graph(self):
-        # some extra initialization steps for graph saving/loading
-        self.graphs_path = os.path.join(os.path.expanduser('~'), '.ros', 'graphs')
-        if not os.path.exists(self.graphs_path):
-            print("initializing empty graph store: %s" % self.graphs_path)
-            os.makedirs(self.graphs_path)
-            os.chmod(self.graphs_path, 0o700)
-
         # ugly... need to figure out a graceful way to pass the graph
-        self.graph_mode = GraphModes.enforce
-        self.graph = rosgraph_helper.GraphStructure()
-        if 'SROS_GRAPH_NAME' in os.environ:
-            if '..' in os.environ['SROS_GRAPH_NAME'] or '/' in os.environ['SROS_GRAPH_NAME']:
-                raise ValueError(
-                    "graph name must be a simple string. saw [%s] instead" % os.environ['SROS_GRAPH_NAME'])
-            self.graph.graph_path = os.path.join(os.path.expanduser('~'), '.ros', 'graphs',
-                                                 os.environ['SROS_GRAPH_NAME'] + '.yaml')
-            if os.path.exists(self.graph.graph_path):
-                self.graph.load_graph()
-            if 'SROS_GRAPH_MODE' in os.environ:
-                graph_mode = os.environ['SROS_GRAPH_MODE']
-                self.graph_mode = getattr(GraphModes, graph_mode, GraphModes.enforce)
-        else:
-            self.graph_mode = None
+        self.graph_mode = None
+        if 'SROS_POLICY_MODE' in os.environ:
+            graph_mode = os.environ['SROS_POLICY_MODE']
+            self.graph_mode = getattr(GraphModes, graph_mode, GraphModes.enforce)
 
-    def __init__(self, node_name):
+        if self.node_name == 'master':
+            self.graph = rosgraph_helper.GraphStructure()
+            if 'SROS_POLICY_CONFIG' in os.environ:
+                self.graph.graph_path = os.environ['SROS_POLICY_CONFIG']
+                self.graph.load_graph()
+
+    def __init__(self, node_id, node_stem, node_name):
+        self.node_id = node_id
+        self.node_stem = node_stem
         self.node_name = node_name
         super(NameSpacePolicy, self).__init__()
         _logger.info("rospy.policy.NameSpacePolicy init")
 
-        if self.node_name == 'master':
-            self.init_graph()
+        self.init_graph()
 
     def log_register(self, enable, flag, info):
         if enable:
             _logger.info("{}REG [{}]:{} {} to graph:[{}]".format(flag, *info))
 
-    def allow_register(self, caller_id, topic_name, topic_type, mask):
+    def allow_register(self, caller_id, role_name, action_name, mask):
         # TODO fix crazy imports
         from security import caller_id_to_node_stem
         
         node_stem = caller_id_to_node_stem(caller_id)
-        info = (topic_name, mask, self.node_stem, self.graph.graph_path)
+        info = (action_name, mask, self.node_stem, self.graph.graph_path)
         if self.graph_mode is GraphModes.enforce:
-            allowed, audit = self.graph.is_allowed(node_stem, topic_name, mask)
+            allowed, audit = self.graph.is_allowed(node_stem, role_name, action_name, mask)
             flag = '*' if allowed else '!'
             self.log_register(audit, flag, info)
             return allowed
         elif self.graph_mode is GraphModes.train:
             if self.graph.graph_path is not None:
-                allowed, audit = self.graph.is_allowed(node_stem, topic_name, mask)
+                allowed, audit = self.graph.is_allowed(node_stem, role_name, action_name, mask)
                 if not allowed:
-                    self.graph.add_allowed(node_stem, topic_name, mask)
+                    self.graph.add_allowed(node_stem, role_name, action_name, mask)
                     self.graph.save_graph()
                 flag = '*' if allowed else '+'
                 self.log_register((audit or not allowed), flag, info)
             return True
         elif self.graph_mode is GraphModes.complain:
             if self.graph.graph is not None:
-                allowed, audit = self.graph.is_allowed(node_stem, topic_name, mask)
+                allowed, audit = self.graph.is_allowed(node_stem, role_name, action_name, mask)
                 flag = '*' if allowed else '!'
                 self.log_register((audit or not allowed), flag, info)
             else:
@@ -140,7 +137,7 @@ class NameSpacePolicy(Policy):
             return True
         elif self.graph_mode is GraphModes.audit:
             if self.graph.graph is not None:
-                allowed, audit = self.graph.is_allowed(node_stem, topic_name, mask)
+                allowed, audit = self.graph.is_allowed(node_stem, role_name, action_name, mask)
                 flag = '*' if allowed else '!'
                 self.log_register(True, flag, info)
                 return allowed
@@ -150,17 +147,54 @@ class NameSpacePolicy(Policy):
         else:
             return False
 
-    def allow_registerPublisher(self, caller_id, topic, topic_type):
+    def allow_registerPublisher(self, caller_id, topic):
         if self.graph_mode is None:
             return True
         else:
-            return self.allow_register(caller_id, topic, topic_type, 'w')
+            role_name = 'topics'
+            mask = ROLE_STRUCT[role_name]['publisher']['mask']
+            return self.allow_register(caller_id, role_name, topic, mask)
+            
+    def allow_registerSubscriber(self, caller_id, topic):
+        if self.graph_mode is None:
+            return True
+        else:
+            role_name = 'topics'
+            mask = ROLE_STRUCT[role_name]['subscriber']['mask']
+            return self.allow_register(caller_id, role_name, topic, mask)
 
-    def allow_registerSubscriber(self, caller_id, topic, topic_type):
+    def allow_registerService(self, caller_id, service):
         if self.graph_mode is None:
             return True
         else:
-            return self.allow_register(caller_id, topic, topic_type, 'r')
+            role_name = 'services'
+            mask = ROLE_STRUCT[role_name]['server']['mask']
+            return self.allow_register(caller_id, role_name, service, mask)
+
+    def allow_lookupService(self, caller_id, service):
+        if self.graph_mode is None:
+            return True
+        else:
+            role_name = 'services'
+            mask = ROLE_STRUCT[role_name]['client']['mask']
+            return self.allow_register(caller_id, role_name, service, mask)
+
+    def allow_action(self, allowed, role=None, action=None):
+        # info = (action, mask, self.node_stem, self.graph.graph_path)
+        if self.graph_mode is GraphModes.enforce:
+            # pass the judgment through
+            return allowed
+        elif self.graph_mode is GraphModes.train:
+            # log any violation but let them slide
+            return True
+        elif self.graph_mode is GraphModes.complain:
+            # pass the judgment through but log violations
+            return allowed
+        elif self.graph_mode is GraphModes.audit:
+            # pass the judgment through but log everything
+            return allowed
+        else:
+            return False
 
     def allow_policies(self, role, action):
 
@@ -199,7 +233,7 @@ class NameSpacePolicy(Policy):
         print("role:\n",json.dumps(role, sort_keys=True, indent=4))
         print('Callback: {}\n action: {}\n allowed: {}'.format('allow_connect_subscriber', resolved_topic_name, allowed))
         print('##################################################')
-        return allowed
+        return self.allow_action(allowed)
 
     def allow_topic_connection(self, sock, client_addr, header):
         cert = self.extract_cert(sock)
@@ -210,7 +244,7 @@ class NameSpacePolicy(Policy):
         print("role:\n",json.dumps(role, sort_keys=True, indent=4))
         print('Callback: {}\n action: {}\n allowed: {}'.format('allow_topic_connection', header['topic'], allowed))
         print('##################################################')
-        return allowed
+        return self.allow_action(allowed)
 
     def allow_call(self, sock, dest_addr, dest_port, resolved_name):
         cert = self.extract_cert(sock)
@@ -221,7 +255,7 @@ class NameSpacePolicy(Policy):
         print("role:\n",json.dumps(role, sort_keys=True, indent=4))
         print('Callback: {}\n action: {}\n allowed: {}'.format('allow_call', resolved_name, allowed))
         print('##################################################')
-        return allowed
+        return self.allow_action(allowed)
 
     def allow_service_connection(self, sock, client_addr, header):
         cert = self.extract_cert(sock)
@@ -232,30 +266,32 @@ class NameSpacePolicy(Policy):
         print("role:\n",json.dumps(role, sort_keys=True, indent=4))
         print('Callback: {}\n action: {}\n allowed: {}'.format('allow_service_connection', header['service'], allowed))
         print('##################################################')
-        return allowed
+        return self.allow_action(allowed)
 
 
 #########################################################################
-# _policy = None
-# 
-# 
-# def init(caller_id):
-#     # print('security.init(%s)' % node_stem)
-#     global _policy
-#     if _policy is None:
-#         _logger.info("choosing policy model...")
-#         if 'SROS_SECURITY' in os.environ:
-#             if os.environ['SROS_SECURITY'] == 'ssl' or os.environ['SROS_SECURITY'] == 'ssl_setup':
-#                 _policy = NameSpacePolicy(caller_id)
-#             else:
-#                 raise ValueError("illegal SROS_SECURITY value: [%s]" % os.environ['SROS_SECURITY'])
-#         else:
-#             _policy = NoPolicy()
-# 
-# 
-# def get():
-#     if _policy is None:
-#         import traceback
-#         traceback.print_stack()
-#         raise ValueError("woah there partner. policy.init() wasn't called before policy.get()")
-#     return _policy
+_policy = None
+
+
+def init(node_id, node_stem, node_name):
+    # print('security.init(%s)' % node_stem)
+    global _policy
+    if _policy is None:
+        _logger.info("choosing policy model...")
+        if 'SROS_POLICY' in os.environ:
+            if os.environ['SROS_POLICY'] == 'namespace':
+                _policy = NameSpacePolicy(node_id, node_stem, node_name)
+            elif os.environ['SROS_POLICY'] == 'none':
+                _policy = NoPolicy()
+            else:
+                raise ValueError("illegal SROS_POLICY value: [%s]" % os.environ['SROS_POLICY'])
+        else:
+            _policy = NoPolicy()
+
+
+def get():
+    if _policy is None:
+        import traceback
+        traceback.print_stack()
+        raise ValueError("woah there partner. policy.init() wasn't called before policy.get()")
+    return _policy

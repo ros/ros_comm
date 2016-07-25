@@ -204,8 +204,9 @@ class TLSSecurity(Security):
 
         print('all startup certificates are present')
         
-        from policy import NameSpacePolicy
-        self.policy = NameSpacePolicy(self.node_name)
+        import rosgraph.policy as policy
+        policy.init(self.node_id, self.node_stem, self.node_name)
+        self.policy = policy.get()
 
     def get_keyserver_context(self):
         context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)

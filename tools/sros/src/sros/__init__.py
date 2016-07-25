@@ -5,8 +5,10 @@ import os
 import subprocess
 import sys
 import rosgraph.security as security
+import rosgraph.policy as policy
 import rosgraph.keyserver as keyserver
 import shutil
+import rospkg
 
 
 class SroscoreParser(argparse.ArgumentParser):
@@ -25,7 +27,7 @@ class SroscoreParser(argparse.ArgumentParser):
             def __call__(self, parser, namespace, values, option_string=None):
                 for x in self.make_required:
                     x.required = True
-                if values not in security.GraphModes:
+                if values not in policy.GraphModes:
                     parser.error("Unknown MODE [{}] specified".format(values))
                 setattr(namespace, self.dest, values)
 
@@ -49,18 +51,18 @@ class SroscoreParser(argparse.ArgumentParser):
             to_be_required=[self._option_string_actions['--keyserver']],
             help='verify mode *of* keyserver (CERT_NONE|CERT_OPTIONAL|[CERT_REQUIRED])')
         self.add_argument(
-            '--keystore',
+            '--keystore_path',
             action='store',
-            help='path to custom keystore directory')
+            help='path to custom keystore directory path')
         self.add_argument(
-            '-g','--graph',
+            '--policy_config',
             action='store',
-            help='access control graph')
+            help='policy config for access control')
         self.add_argument(
-            '--graph_mode',
+            '--policy_mode',
             action=CondAction,
-            to_be_required=[self._option_string_actions['--graph']],
-            help='access control mode (audit|complain|[enforce]|train)')
+            # to_be_required=[self._option_string_actions['--policy_config']],
+            help='policy mode for access control (audit|complain|[enforce]|train)')
         self.add_argument(
             '--version',
             action='version',
@@ -82,11 +84,11 @@ def sroscore_main(argv = sys.argv):
     check_set_environ(
         'SROS_KEYSERVER_CONFIG',
         args.keyserver_config,
-        os.path.abspath('/home/ruffsl/sros/src/ruffsl/ros_comm/tools/sros/conf/sros_config.yaml'))
+        os.path.join(os.path.expanduser('~'), '.ros', 'sros', 'keyserver_config.yaml'))
     
     check_set_environ(
         'SROS_KEYSTORE_PATH',
-        args.keystore,
+        args.keystore_path,
         os.path.join(os.path.expanduser('~'), '.ros', 'keys'))
     
     check_set_environ(
@@ -99,24 +101,38 @@ def sroscore_main(argv = sys.argv):
         args.keyserver_mode,
         'CERT_OPTIONAL')
 
+    check_set_environ(
+        'SROS_POLICY_CONFIG',
+        args.policy_config,
+        os.path.join(os.path.expanduser('~'), '.ros', 'sros', 'policy_config.yaml'))
+    
+    check_set_environ(
+        'SROS_POLICY_MODE',
+        args.policy_mode,
+        'enforce')
+
     if args.keyserver:
         # if we're in setup mode, we need to start an unsecured server that will
         # hand out the SSL certificates and keys so that nodes can talk to roscore
         os.environ['SROS_SECURITY'] = 'ssl_setup'
-
+        os.environ['SROS_POLICY'] = 'namespace'
+        
         keyserver_config = os.path.abspath(os.environ['SROS_KEYSERVER_CONFIG'])
         keystore_path = os.path.abspath(os.environ['SROS_KEYSTORE_PATH'])
         keyserver_mode = os.environ['SROS_KEYSERVER_MODE']
+        if not os.path.isfile(keyserver_config):
+            keyserver_config_default = os.path.join(rospkg.get_etc_ros_dir(), 'keyserver_config.yaml')
+            shutil.copy(keyserver_config_default, keyserver_config)
+
+        policy_config = os.path.abspath(os.environ['SROS_POLICY_CONFIG'])
+        if not os.path.isfile(policy_config):
+            policy_config_default = os.path.join(rospkg.get_etc_ros_dir(), 'policy_config.yaml')
+            shutil.copy(policy_config_default, policy_config)
+        
         keyserver.fork_xmlrpc_keyserver(keyserver_config, keystore_path, keyserver_mode)
     else:
         os.environ['SROS_SECURITY'] = 'ssl'
-
-    if args.graph is not None:
-        os.environ['SROS_GRAPH_NAME'] = args.graph
-    if args.graph_mode is not None:
-        os.environ['SROS_GRAPH_MODE'] = args.graph_mode
-    else:
-        os.environ['SROS_GRAPH_MODE'] = 'enforce'
+        os.environ['SROS_POLICY'] = 'namespace'
     
     import roslaunch
     roslaunch.main(['roscore', '--core'] + roscore_argv[1:])
