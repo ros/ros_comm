@@ -16,6 +16,11 @@ import getpass
 import datetime
 import uuid
 import rospkg
+import traceback
+import pickle
+
+from apparmor.aare import re
+from apparmor.common import convert_regexp
 
 from sros_consts import ROLE_STRUCT
 
@@ -398,52 +403,40 @@ class KeyHelper:
         self.config_path = config_path
         self.config = load_config(config_path)
         self.keys_dir = keys_dir
+        self.keys = dict()
+        self.init_ca()
 
     def init_ca(self):
         '''
-        Initializes Certificate Authority
+        Initializes Certificate Authorities
         @return:
         '''
-        config = self.config
-        keys_dir = self.keys_dir
+        certificate_authorities = self.config['keys']['ca']
+        for ca_name, ca_config in certificate_authorities.iteritems():
+            ca_blob = KeyBlob(ca_name, ca_config)
+            ca_dir = os.path.join(self.keys_dir, 'ca', ca_name)
+            issuer_name = ca_config['issuer_name']
+            if issuer_name is not None:
+                get_keys(ca_dir, ca_blob, self.keys[issuer_name])
+            else:
+                get_keys(ca_dir, ca_blob)
+            print("Certificate generated: {}".format(ca_name))
+            self.keys[ca_name] = ca_blob
 
-        master_name = "master"
-        master_config = config['keys'][master_name]
-        master_dir = os.path.join(keys_dir, master_name)
-        master_blob = KeyBlob(master_name, master_config)
-        self.keys = dict()
-
-        if (config['keys'][master_name]['issuer_name'] is None):
-            get_keys(master_dir, master_blob)
-            self.keys[master_name] = master_blob
-
-        elif (config['keys'][master_name]['issuer_name'] in config['keys']):
-            root_name = config['keys']['master']['issuer_name']
-            root_config = config['keys'][root_name]
-            root_blob = KeyBlob(root_name, root_config)
-            root_dir = os.path.join(keys_dir, root_name)
-            get_keys(root_dir, root_blob)
-            # print("Certificate generated: {}".format(root_name))
-            self.keys[root_name] = root_blob
-
-            get_keys(master_dir, master_blob, root_blob)
-            # print("Certificate generated: {}".format(master_name))
-            self.keys[master_name] = master_blob
-
-        hash_dir = os.path.join(keys_dir, 'capath')
+        hash_dir = os.path.join(self.keys_dir, 'capath')
         rehash(hash_dir, self.keys, clean=True)
 
     def init_keyserver(self):
         '''
-        Initializes keystore certificate
+        Initializes keyserver key pair
         @return: 
         '''
         config = self.config
         keys_dir = self.keys_dir
 
         keyserver_name = 'keyserver'
-        keyserver_config = config['keys'][keyserver_name]
-        keyserver_dir = os.path.join(keys_dir, keyserver_name)
+        keyserver_config = config['keys']['utils'][keyserver_name]
+        keyserver_dir = os.path.join(keys_dir, 'utils', keyserver_name)
         keyserver_blob = KeyBlob(keyserver_name, keyserver_config)
         ca_blob = self.keys[keyserver_config['issuer_name']]
 
@@ -457,28 +450,34 @@ class KeyHelper:
         get certificate response
         @return:
         '''
-        config_path = self.config_path
-        config = self.config
         #TODO: use security.node_stem_to_node_name for this
+        if node_stem[0] is not '/':
+            node_stem = '/' + node_stem
         node_name = node_stem.split('/')[-1]
-
-        node_config = deepcopy(config['keys']['nodes'])
-        if 'cert' in node_config:
-            node_config['cert']['subject']['COMMON_NAME'] = node_name
-            graph_path = os.path.join(os.path.dirname(config_path), node_config['cert']['graph_path'])
-        else:
-            graph_path = None
-        node_config = extention_parsing(node_stem, node_config, graph_path)
-        node_blob = KeyBlob(os.path.basename(node_name), node_config)
-        get_keys(None, node_blob, self.keys[node_blob.config['issuer_name']])
-        # self.keys[node_name] = node_blob
-        # print("Certificate generated: {}".format(node_name))
-
-        resp = {}
-        resp[node_blob.name + '.pem'] = node_blob.dump_key()
-        resp[node_blob.name + '.cert'] = node_blob.dump_cert()
-
-        return resp
+        
+        namespaces = self.config['keys']['nodes']
+        for namespace, namespace_dict in namespaces.iteritems():
+            if namespace_dict['regex'].search(node_stem):
+                node_config = pickle.loads(pickle.dumps(namespace_dict))
+                if 'cert' in node_config:
+                    node_config['cert']['subject']['COMMON_NAME'] = node_name
+                    graph_path = os.path.join(
+                        os.path.dirname(self.config_path),
+                        node_config['cert']['policy_config'])
+                else:
+                    graph_path = None
+                node_config = extention_parsing(node_stem, node_config, graph_path)
+                node_blob = KeyBlob(os.path.basename(node_name), node_config)
+                get_keys(None, node_blob, self.keys[node_blob.config['issuer_name']])
+                # self.keys[node_name] = node_blob
+                print("Certificate generated: {}".format(node_name))
+        
+                resp = {}
+                resp[node_blob.name + '.pem'] = node_blob.dump_key()
+                resp[node_blob.name + '.cert'] = node_blob.dump_cert()
+        
+                return resp
+        return {}
 
     def get_ca(self):
         '''
@@ -524,8 +523,20 @@ def load_config(path):
     '''
     with open(path, 'r') as stream:
         config = yaml.load(stream)
+    compile_config(config)
     return config
 
+def compile_config(config):
+    '''
+    Compile regex for searching applicable node namespace
+    :param config: dict representation of config structure
+    :return: dict representation of compiled config structure
+    '''
+    namespaces = config['keys']['nodes']
+    for namespace, namespace_dict in namespaces.iteritems():
+        if 'regex' not in namespace_dict:
+            namespace_regex = re.compile(convert_regexp(namespace))
+            namespace_dict['regex'] = namespace_regex
 
 def get_keys(key_dir, key_blob, ca_blob=None):
     '''

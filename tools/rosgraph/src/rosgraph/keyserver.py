@@ -72,7 +72,6 @@ class Keyserver(object):
         self.uri = get_keyserver_uri()
 
         self.key_helper = key_helper.KeyHelper(self.keyserver_config, self.keystore_path)
-        self.key_helper.init_ca()
         self.init_context()
 
         from rosgraph.keyserver_handler import KeyserverHandler
