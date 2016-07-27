@@ -93,6 +93,9 @@ class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
         # to True to allow quick restart on the same port.  This is equivalent 
         # to calling setsockopt(SOL_SOCKET,SO_REUSEADDR,1)
         self.allow_reuse_address = True
+        # Increase request_queue_size to handle issues with many simultaneous
+        # connections in OSX 10.11
+        self.request_queue_size = 128
         if rosgraph.network.use_ipv6():
             logger = logging.getLogger('xmlrpc')
             # The XMLRPC library does not support IPv6 out of the box
