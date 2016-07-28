@@ -333,7 +333,11 @@ class TLSSecurity(Security):
 #########################################################################
 _security = None
 def init(caller_id):
-    #print('security.init(%s)' % node_stem)
+    #TODO: sort out why we need this catch-all for master and roslaunch
+    if caller_id.lstrip('/') not in ['master', 'roslaunch']:
+        import rospy.names as names
+        caller_id = names.get_caller_id()
+
     global _security
     if _security is None:
         _logger.info("choosing security model...")
