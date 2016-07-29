@@ -740,7 +740,7 @@ class TCPROSTransport(Transport):
             except TransportInitError:
                 self.socket = None
                 
-            if self.socket is None:
+            if self.socket is None and interval < 30.:
                 # exponential backoff
                 interval = interval * 2
                 
