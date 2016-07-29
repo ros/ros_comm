@@ -563,9 +563,12 @@ class TCPROSTransport(Transport):
         except Exception as e:
             #logerr("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, str(e)))
             rospywarn("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, traceback.format_exc()))            
-
-            # FATAL: no reconnection as error is unknown
-            self.close()
+            if isinstance(e, socket.error):
+                if not isinstance(e, socket.timeout) and e.errno not in [100, 101, 102, 103, 110, 112, 113]:
+                    # 100: 'ENETDOWN', 101: 'ENETUNREACH', 102: 'ENETRESET', 103: 'ECONNABORTED'
+                    # 110: 'ETIMEDOUT', 112: 'EHOSTDOWN', 113: 'EHOSTUNREACH'
+                    # FATAL: no reconnection as error is unknown
+                    self.close()
             raise TransportInitError(str(e)) #re-raise i/o error
                 
     def _validate_header(self, header):
