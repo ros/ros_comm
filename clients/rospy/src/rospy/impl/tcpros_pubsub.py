@@ -173,7 +173,9 @@ def robust_connect_subscriber(conn, dest_addr, dest_port, pub_uri, receive_cb, r
                 conn.done = True
                 break
             rospyerr("unable to create subscriber transport: %s.  Will try again in %ss", e, interval)
-            interval = interval * 2
+            if interval < 30.0:
+              # exponential backoff (maximum 32 seconds)
+              interval = interval * 2
             time.sleep(interval)
             
             # check to see if publisher state has changed
