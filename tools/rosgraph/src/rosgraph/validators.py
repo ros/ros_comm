@@ -168,12 +168,171 @@ class NameSpaceMasterAPI(object):
     def __init__(self, engine, _logger):
         self.engine = engine
         self._logger = _logger
+
+    ###############################################################################
+    # EXTERNAL API
     
+    #TODO: How should external api calls be treated?
+    # def shutdown(self, context, f):
+    #     def check_permitted(instance, caller_id, msg):
+    #         policy, allowed = self.engine.check_profile(context, '?', '?', ?, caller_id)
+    #         if allowed:
+    #             return f(instance, caller_id, msg)
+    #         else:
+    #             raise PolicyInvalid("ERROR: policy invalid for given action")
+    # 
+    #     return check_permitted
+    # 
+    # def getUri(self, context, f):
+    #     def check_permitted(instance, caller_id):
+    #         policy, allowed = self.engine.check_profile(context, '?', '?', ?, caller_id)
+    #         if allowed:
+    #             return f(instance, caller_id)
+    #         else:
+    #             raise PolicyInvalid("ERROR: policy invalid for given action")
+    # 
+    #     return check_permitted
+    # 
+    # def getPid(self, context, f):
+    #     def check_permitted(instance, caller_id):
+    #         policy, allowed = self.engine.check_profile(context, '?', '?', ?, caller_id)
+    #         if allowed:
+    #             return f(instance, caller_id)
+    #         else:
+    #             raise PolicyInvalid("ERROR: policy invalid for given action")
+    # 
+    #     return check_permitted
+
+    ################################################################
+    # PARAMETER SERVER ROUTINES
+
+    #TODO add mutex locks in policy engine before enabling these high frequency calls 
+    # def deleteParam(self, context, f):
+    #     def check_permitted(instance, caller_id, key):
+    #         policy, allowed = self.engine.check_profile(context, 'parameters', 'writer', key, caller_id)
+    #         if allowed:
+    #             return f(instance, caller_id, key)
+    #         else:
+    #             raise PolicyInvalid("ERROR: policy invalid for given action")
+    #     return check_permitted
+    # 
+    # def setParam(self, context, f):
+    #     def check_permitted(instance, caller_id, key, value):
+    #         policy, allowed = self.engine.check_profile(context, 'parameters', 'writer', key, caller_id)
+    #         if allowed:
+    #             return f(instance, caller_id, key, value)
+    #         else:
+    #             raise PolicyInvalid("ERROR: policy invalid for given action")
+    #     return check_permitted
+    # 
+    # def getParam(self, context, f):
+    #     def check_permitted(instance, caller_id, key):
+    #         policy, allowed = self.engine.check_profile(context, 'parameters', 'reader', key, caller_id)
+    #         if allowed:
+    #             return f(instance, caller_id, key)
+    #         else:
+    #             raise PolicyInvalid("ERROR: policy invalid for given action")
+    #     return check_permitted
+    # 
+    # def searchParam(self, context, f):
+    #     def check_permitted(instance, caller_id, key):
+    #         policy, allowed = self.engine.check_profile(context, 'parameters', 'reader', key, caller_id)
+    #         if allowed:
+    #             return f(instance, caller_id, key)
+    #         else:
+    #             raise PolicyInvalid("ERROR: policy invalid for given action")
+    #     return check_permitted
+    # 
+    # def subscribeParam(self, context, f):
+    #     def check_permitted(instance, caller_id, caller_api, key):
+    #         policy, allowed = self.engine.check_profile(context, 'parameters', 'reader', key, caller_id)
+    #         if allowed:
+    #             return f(instance, caller_id, caller_api, key)
+    #         else:
+    #             raise PolicyInvalid("ERROR: policy invalid for given action")
+    #     return check_permitted
+    # 
+    # #TODO: Should one only be able to un{subscribe,register} using one's own caller_id?
+    # def unsubscribeParam(self, context, f):
+    #     def check_permitted(instance, caller_id, caller_api, key):
+    #         policy, allowed = self.engine.check_profile(context, 'parameters', 'reader', key, caller_id)
+    #         if allowed:
+    #             return f(instance, caller_id, caller_api, key)
+    #         else:
+    #             raise PolicyInvalid("ERROR: policy invalid for given action")
+    #     return check_permitted
+    # 
+    # #TODO: filter response through policy engine
+    # # def hasParam(self, context, f):
+    # #     def check_permitted(instance, caller_id, key):
+    # #         policy, allowed = self.engine.check_profile(context, 'parameters', 'reader', key, caller_id)
+    # #         if allowed:
+    # #             return f(instance, caller_id, key)
+    # #         else:
+    # #             raise PolicyInvalid("ERROR: policy invalid for given action")
+    # #     return check_permitted
+    # # 
+    # # def getParamNames(self, context, f):
+    # #     def check_permitted(instance, caller_id):
+    # #         policy, allowed = self.engine.check_profile(context, 'parameters', 'reader', key, caller_id)
+    # #         if allowed:
+    # #             return f(instance, caller_id)
+    # #         else:
+    # #             raise PolicyInvalid("ERROR: policy invalid for given action")
+    # #     return check_permitted
+    
+    
+    ##################################################################################
+    # SERVICE PROVIDER
+    
+    def registerService(self, context, f):
+        def check_permitted(instance, caller_id, service, service_api, caller_api):
+            policy, allowed = self.engine.check_profile(context, 'services', 'server', service, caller_id)
+            if allowed:
+                return f(instance, caller_id, service, service_api, caller_api)
+            else:
+                raise PolicyInvalid("ERROR: policy invalid for given action")
+    
+        return check_permitted
+    
+    def lookupService(self, context, f):
+        def check_permitted(instance, caller_id, service):
+            policy, allowed = self.engine.check_profile(context, 'services', 'client', service, caller_id)
+            if allowed:
+                return f(instance, caller_id, service)
+            else:
+                raise PolicyInvalid("ERROR: policy invalid for given action")
+    
+        return check_permitted
+    
+    def unregisterService(self, context, f):
+        def check_permitted(instance, caller_id, service, service_api):
+            policy, allowed = self.engine.check_profile(context, 'services', 'server', service, caller_id)
+            if allowed:
+                return f(instance, caller_id, service, service_api)
+            else:
+                raise PolicyInvalid("ERROR: policy invalid for given action")
+    
+        return check_permitted
+
+
+    ##################################################################################
+    # PUBLISH/SUBSCRIBE
+
     def registerSubscriber(self, context, f):
         def check_permitted(instance, caller_id, topic, topic_type, caller_api):
             policy, allowed = self.engine.check_profile(context, 'topics', 'subscriber', topic, caller_id)
             if allowed:
                 return f(instance, caller_id, topic, topic_type, caller_api)
+            else:
+                raise PolicyInvalid("ERROR: policy invalid for given action")
+        return check_permitted
+
+    def unregisterSubscriber(self, context, f):
+        def check_permitted(instance, caller_id, topic, topic_type):
+            policy, allowed = self.engine.check_profile(context, 'topics', 'subscriber', topic, caller_id)
+            if allowed:
+                return f(instance, caller_id, topic, topic_type)
             else:
                 raise PolicyInvalid("ERROR: policy invalid for given action")
         return check_permitted
@@ -187,24 +346,56 @@ class NameSpaceMasterAPI(object):
                 raise PolicyInvalid("ERROR: policy invalid for given action")
         return check_permitted
     
-    def registerService(self, context, f):
-        def check_permitted(instance, caller_id, service, service_api, caller_api):
-            policy, allowed = self.engine.check_profile(context, 'services', 'server', service, caller_id)
+    def unregisterPublisher(self, context, f):
+        def check_permitted(instance, caller_id, topic, topic_type):
+            policy, allowed = self.engine.check_profile(context, 'topics', 'publisher', topic, caller_id)
             if allowed:
-                return f(instance, caller_id, service, service_api, caller_api)
+                return f(instance, caller_id, topic, topic_type)
             else:
                 raise PolicyInvalid("ERROR: policy invalid for given action")
         return check_permitted
 
-    def lookupService(self, context, f):
-        def check_permitted(instance, caller_id, service):
-            policy, allowed = self.engine.check_profile(context, 'services', 'client', service, caller_id)
-            if allowed:
-                return f(instance, caller_id, service)
-            else:
-                raise PolicyInvalid("ERROR: policy invalid for given action")
-        return check_permitted
 
+    ##################################################################################
+    # GRAPH STATE APIS
+    
+    #TODO: How should graph state api calls be treated?
+    # def lookupNode(self, context, f):
+    #     def check_permitted(instance, caller_id, node_name):
+    #         policy, allowed = self.engine.check_profile(context, '?', '?', ?, caller_id)
+    #         if allowed:
+    #             return f(instance, caller_id, node_name)
+    #         else:
+    #             raise PolicyInvalid("ERROR: policy invalid for given action")
+    #     return check_permitted
+    # 
+    # def getPublishedTopics(self, context, f):
+    #     def check_permitted(instance, caller_id, subgraph):
+    #         policy, allowed = self.engine.check_profile(context, '?', '?', ?, caller_id)
+    #         if allowed:
+    #             return f(instance, caller_id, subgraph)
+    #         else:
+    #             raise PolicyInvalid("ERROR: policy invalid for given action")
+    #     return check_permitted
+    # 
+    # def getTopicTypes(self, context, f):
+    #     def check_permitted(instance, caller_id):
+    #         policy, allowed = self.engine.check_profile(context, '?', '?', ?, caller_id)
+    #         if allowed:
+    #             return f(instance, caller_id)
+    #         else:
+    #             raise PolicyInvalid("ERROR: policy invalid for given action")
+    #     return check_permitted
+    # 
+    # def getSystemState(self, context, f):
+    #     def check_permitted(instance, caller_id):
+    #         policy, allowed = self.engine.check_profile(context, '?', '?', ?, caller_id)
+    #         if allowed:
+    #             return f(instance, caller_id)
+    #         else:
+    #             raise PolicyInvalid("ERROR: policy invalid for given action")
+    #     return check_permitted
+    
 
 class NameSpaceSlaveAPI(object):
     def __init__(self, engine, _logger):
