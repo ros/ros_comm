@@ -45,8 +45,8 @@ class NameSpacePolicy(Policy):
         _logger.info("rospy.policy.NameSpacePolicy init")
 
         self.engine = NameSpaceEngine(self.node_name, _logger)
-        # self.master_api = NameSpaceMasterAPI(self.engine, _logger)
-        self.master_api = None
+        self.master_api = NameSpaceMasterAPI(self.engine, _logger)
+        # self.master_api = None
         # self.slave_api = NameSpaceSlaveAPI(self.engine, _logger)
         self.slave_api = None
         self.transport = NameSpaceTransport(self.engine, _logger)

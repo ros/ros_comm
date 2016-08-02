@@ -63,11 +63,11 @@ class NameSpaceEngine(object):
             from security import caller_id_to_node_stem
             node_stem = caller_id_to_node_stem(caller_id)
             mask = ROLE_STRUCT[mode_name][role_name]['mask']
-            info = (action_name, mask, self.node_stem, self.graph.graph_path)
+            info = (action_name, mask, 'self.node_stem', self.graph.graph_path)
             if self.graph_mode is GraphModes.enforce:
                 allowed, audit = self.graph.is_allowed(node_stem, role_name, action_name, mask)
                 flag = '*' if allowed else '!'
-                self.log_register(audit, flag, info)
+                self._log_register(audit, flag, info)
                 return allowed
             elif self.graph_mode is GraphModes.train:
                 if self.graph.graph_path is not None:
@@ -76,24 +76,24 @@ class NameSpaceEngine(object):
                         self.graph.add_allowed(node_stem, role_name, action_name, mask)
                         self.graph.save_graph()
                     flag = '*' if allowed else '+'
-                    self.log_register((audit or not allowed), flag, info)
+                    self._log_register((audit or not allowed), flag, info)
                 return True
             elif self.graph_mode is GraphModes.complain:
                 if self.graph.graph is not None:
                     allowed, audit = self.graph.is_allowed(node_stem, role_name, action_name, mask)
                     flag = '*' if allowed else '!'
-                    self.log_register((audit or not allowed), flag, info)
+                    self._log_register((audit or not allowed), flag, info)
                 else:
-                    self.log_register(True, '!', info)
+                    self._log_register(True, '!', info)
                 return True
             elif self.graph_mode is GraphModes.audit:
                 if self.graph.graph is not None:
                     allowed, audit = self.graph.is_allowed(node_stem, role_name, action_name, mask)
                     flag = '*' if allowed else '!'
-                    self.log_register(True, flag, info)
+                    self._log_register(True, flag, info)
                     return allowed
                 else:
-                    self.log_register(True, '', info)
+                    self._log_register(True, '', info)
                     return True
             else:
                 return False
