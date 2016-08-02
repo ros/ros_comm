@@ -4,8 +4,7 @@ import argparse
 import os
 import subprocess
 import sys
-import rosgraph.security as security
-import rosgraph.policy as policy
+from rosgraph.sros_consts import GraphModes
 import rosgraph.keyserver as keyserver
 import shutil
 import rospkg
@@ -27,7 +26,7 @@ class SroscoreParser(argparse.ArgumentParser):
             def __call__(self, parser, namespace, values, option_string=None):
                 for x in self.make_required:
                     x.required = True
-                if values not in policy.GraphModes:
+                if values not in GraphModes:
                     parser.error("Unknown MODE [{}] specified".format(values))
                 setattr(namespace, self.dest, values)
 

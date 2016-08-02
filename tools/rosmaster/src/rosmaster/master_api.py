@@ -74,6 +74,11 @@ from rosmaster.util import xmlrpcapi
 from rosmaster.registrations import RegistrationManager
 from rosmaster.validators import non_empty, non_empty_str, not_none, is_api, is_topic, is_service, valid_type_name, valid_name, empty_or_valid_name, ParameterInvalid
 
+try:
+    from xmlrpc.server import resolve_dotted_attribute #Python 3.x
+except ImportError:
+    from SimpleXMLRPCServer import resolve_dotted_attribute #Python 2.x
+
 NUM_WORKERS = 3 #number of threads we use to send publisher_update notifications
 
 # Return code slots
@@ -130,9 +135,11 @@ def apivalidate(error_return_value, validators=()):
         try:
             func_code = f.__code__
             func_name = f.__name__
+            func_doc = f.__doc__
         except AttributeError:
             func_code = f.func_code
             func_name = f.func_name
+            func_doc = f.func_doc
         assert len(validators) == func_code.co_argcount - 2, "%s failed arg check"%f #ignore self and caller_id
         def validated_f(*args, **kwds):
             if LOG_API:
@@ -170,15 +177,26 @@ def apivalidate(error_return_value, validators=()):
                     else:
                         newArgs.append(a)
 
+                master_api_policy = security.get().policy.master_api
+                if master_api_policy:
+                    policy_validator = getattr(master_api_policy, func_name, None)
+                    if policy_validator:                        
+                        check_permitted = policy_validator(context=kwds['context'], f=f)
+                    else:
+                        check_permitted = f
+                else:
+                    check_permitted = f
+
                 if LOG_API:
-                    retval = f(*newArgs, **kwds)
+                    retval = check_permitted(*newArgs)
                     _logger.debug("%s%s returns %s", func_name, args[1:], retval)
                     return retval
                 else:
-                    code, msg, val = f(*newArgs, **kwds)
+                    code, msg, val = check_permitted(*newArgs)
                     if val is None:
                         return -1, "Internal error (None value returned)", error_return_value
                     return code, msg, val
+                    
             except TypeError as te: #most likely wrong arg number
                 _logger.error(traceback.format_exc())
                 return -1, "Error: invalid arguments: %s"%te, error_return_value
@@ -189,7 +207,7 @@ def apivalidate(error_return_value, validators=()):
             validated_f.__name__ = func_name
         except AttributeError:
             validated_f.func_name = func_name
-        validated_f.__doc__ = f.__doc__ #preserve doc
+        validated_f.__doc__ = func_doc #preserve doc
         return validated_f
     return check_validates
 
@@ -261,6 +279,22 @@ class ROSMasterHandler(object):
 
         # parameter server dictionary
         self.param_server = rosmaster.paramserver.ParamDictionary(self.reg_manager)
+
+    def _dispatch(self, method, params, context):
+        func = None
+        try:
+            func = resolve_dotted_attribute(
+                self,
+                method,
+                allow_dotted_names=False
+            )
+        except AttributeError:
+            pass
+
+        if func is not None:
+            return func(*params, context=context)
+        else:
+            raise Exception('method "%s" is not supported' % method)
 
     def _shutdown(self, reason=''):
         if self.thread_pool is not None:
@@ -608,8 +642,6 @@ class ROSMasterHandler(object):
         @return: (code, message, ignore)
         @rtype: (int, str, int)
         """        
-        if not security.get().policy.allow_registerService(caller_id, service):
-            return 0, "request denied by security policy", []
         try:
             self.ps_lock.acquire()
             self.reg_manager.register_service(service, caller_id, caller_api, service_api)
@@ -630,8 +662,6 @@ class ROSMasterHandler(object):
            ROSRPC URI with address and port.  Fails if there is no provider.
         @rtype: (int, str, str)
         """
-        if not security.get().policy.allow_lookupService(caller_id, service):
-            return 0, "request denied by security policy", []
         try:
             self.ps_lock.acquire()
             service_url = self.services.get_service_api(service)
@@ -686,8 +716,6 @@ class ROSMasterHandler(object):
            for nodes currently publishing the specified topic.
         @rtype: (int, str, [str])
         """
-        if not security.get().policy.allow_registerSubscriber(caller_id, topic):
-            return 0, "request denied by security policy", []
         #NOTE: subscribers do not get to set topic type
         try:
             self.ps_lock.acquire()
@@ -745,8 +773,6 @@ class ROSMasterHandler(object):
         List of current subscribers of topic in the form of XMLRPC URIs.
         @rtype: (int, str, [str])
         """
-        if not security.get().policy.allow_registerPublisher(caller_id, topic):
-            return 0, "request denied by security policy", []
         #NOTE: we need topic_type for getPublishedTopics.
         try:
             self.ps_lock.acquire()
