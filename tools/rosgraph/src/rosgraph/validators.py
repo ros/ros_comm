@@ -65,22 +65,22 @@ class NameSpaceEngine(object):
             mask = ROLE_STRUCT[mode_name][role_name]['mask']
             info = (action_name, mask, 'self.node_stem', self.graph.graph_path)
             if self.graph_mode is GraphModes.enforce:
-                allowed, audit = self.graph.is_allowed(node_stem, role_name, action_name, mask)
+                allowed, audit = self.graph.is_allowed(node_stem, mode_name, action_name, mask)
                 flag = '*' if allowed else '!'
                 self._log_register(audit, flag, info)
                 return allowed
             elif self.graph_mode is GraphModes.train:
                 if self.graph.graph_path is not None:
-                    allowed, audit = self.graph.is_allowed(node_stem, role_name, action_name, mask)
+                    allowed, audit = self.graph.is_allowed(node_stem, mode_name, action_name, mask)
                     if not allowed:
-                        self.graph.add_allowed(node_stem, role_name, action_name, mask)
+                        self.graph.add_allowed(node_stem, mode_name, action_name, mask)
                         self.graph.save_graph()
                     flag = '*' if allowed else '+'
                     self._log_register((audit or not allowed), flag, info)
                 return True
             elif self.graph_mode is GraphModes.complain:
                 if self.graph.graph is not None:
-                    allowed, audit = self.graph.is_allowed(node_stem, role_name, action_name, mask)
+                    allowed, audit = self.graph.is_allowed(node_stem, mode_name, action_name, mask)
                     flag = '*' if allowed else '!'
                     self._log_register((audit or not allowed), flag, info)
                 else:
@@ -88,7 +88,7 @@ class NameSpaceEngine(object):
                 return True
             elif self.graph_mode is GraphModes.audit:
                 if self.graph.graph is not None:
-                    allowed, audit = self.graph.is_allowed(node_stem, role_name, action_name, mask)
+                    allowed, audit = self.graph.is_allowed(node_stem, mode_name, action_name, mask)
                     flag = '*' if allowed else '!'
                     self._log_register(True, flag, info)
                     return allowed
@@ -189,7 +189,7 @@ class NameSpaceMasterAPI(object):
     
     def registerService(self, context, f):
         def check_permitted(instance, caller_id, service, service_api, caller_api):
-            policy, allowed = self.engine.check_profile(context, 'topics', 'subscriber', service, caller_id)
+            policy, allowed = self.engine.check_profile(context, 'services', 'server', service, caller_id)
             if allowed:
                 return f(instance, caller_id, service, service_api, caller_api)
             else:
@@ -198,7 +198,7 @@ class NameSpaceMasterAPI(object):
 
     def lookupService(self, context, f):
         def check_permitted(instance, caller_id, service):
-            policy, allowed = self.engine.check_profile(context, 'topics', 'subscriber', service, caller_id)
+            policy, allowed = self.engine.check_profile(context, 'services', 'client', service, caller_id)
             if allowed:
                 return f(instance, caller_id, service)
             else:

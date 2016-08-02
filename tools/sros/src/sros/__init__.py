@@ -121,11 +121,15 @@ def sroscore_main(argv = sys.argv):
         keyserver_mode = os.environ['SROS_KEYSERVER_MODE']
         if not os.path.isfile(keyserver_config):
             keyserver_config_default = os.path.join(rospkg.get_etc_ros_dir(), 'keyserver_config.yaml')
+            if not os.path.exists(os.path.dirname(keyserver_config)):
+                os.makedirs(os.path.dirname(keyserver_config))
             shutil.copy(keyserver_config_default, keyserver_config)
 
         policy_config = os.path.abspath(os.environ['SROS_POLICY_CONFIG'])
         if not os.path.isfile(policy_config):
             policy_config_default = os.path.join(rospkg.get_etc_ros_dir(), 'policy_config.yaml')
+            if not os.path.exists(os.path.dirname(policy_config)):
+                os.makedirs(os.path.dirname(policy_config))
             shutil.copy(policy_config_default, policy_config)
         
         keyserver.fork_xmlrpc_keyserver(keyserver_config, keystore_path, keyserver_mode)
