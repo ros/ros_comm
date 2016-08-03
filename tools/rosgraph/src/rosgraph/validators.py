@@ -414,7 +414,14 @@ class NameSpaceSlaveAPI(object):
         self._engine = engine
         self._logger = logger
 
-    
+    def requestTopic(self, context, f):
+        def check_permitted(instance, caller_id, topic, protocols):
+            policy, allowed = self._engine.check_profile(context, 'topics', 'subscriber', topic, caller_id)
+            if allowed:
+                return f(instance, caller_id, topic, protocols)
+            else:
+                raise PolicyInvalid("ERROR: policy invalid for given action")
+        return check_permitted
 
 class Transport(object):
 
