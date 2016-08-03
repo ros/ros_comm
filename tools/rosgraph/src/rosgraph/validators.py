@@ -163,6 +163,15 @@ class NameSpaceEngine(object):
         allowed = self._is_action_allowed(permitted)
         return policy, allowed
 
+    def filter_policy(self, context, mode_name, role_name, action_list, caller_id):
+        if self._is_action_allowed(False):
+            return action_list
+        else:
+            cert = self._extract_cert_from_context(context)
+            policy = self._extract_policy(cert, mode_name, role_name)
+            action_list[:] = [action for action in action_list if self._is_policy_permited(policy, action)]
+            return action_list
+
     def check_profile(self, context, mode_name, role_name, action_name, caller_id):
         cert = self._extract_cert_from_context(context)
         policy = self._extract_policy(cert, mode_name, role_name)
@@ -213,7 +222,6 @@ class NameSpaceMasterAPI(object):
     ################################################################
     # PARAMETER SERVER ROUTINES
 
-    #TODO add mutex locks in policy _engine before enabling these high frequency calls 
     def deleteParam(self, context, f):
         def check_permitted(instance, caller_id, key):
             policy, allowed = self._engine.check_profile(context, 'parameters', 'writer', key, caller_id)
@@ -259,7 +267,7 @@ class NameSpaceMasterAPI(object):
                 raise PolicyInvalid("ERROR: policy invalid for given action")
         return check_permitted
     
-    #TODO: Should one only be able to un{subscribe,register} using one's own caller_id?
+    #TODO: Should one only be able to un{subscribe,register} using one's own caller_id/caller_api?
     def unsubscribeParam(self, context, f):
         def check_permitted(instance, caller_id, caller_api, key):
             policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
@@ -268,25 +276,22 @@ class NameSpaceMasterAPI(object):
             else:
                 raise PolicyInvalid("ERROR: policy invalid for given action")
         return check_permitted
-    
-    #TODO: filter response through policy _engine
-    # def hasParam(self, context, f):
-    #     def check_permitted(instance, caller_id, key):
-    #         policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
-    #         if allowed:
-    #             return f(instance, caller_id, key)
-    #         else:
-    #             raise PolicyInvalid("ERROR: policy invalid for given action")
-    #     return check_permitted
-    # 
-    # def getParamNames(self, context, f):
-    #     def check_permitted(instance, caller_id):
-    #         policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
-    #         if allowed:
-    #             return f(instance, caller_id)
-    #         else:
-    #             raise PolicyInvalid("ERROR: policy invalid for given action")
-    #     return check_permitted
+
+    def hasParam(self, context, f):
+        def check_permitted(instance, caller_id, key):
+            policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
+            if allowed:
+                return f(instance, caller_id, key)
+            else:
+                raise PolicyInvalid("ERROR: policy invalid for given action")
+        return check_permitted
+
+    def getParamNames(self, context, f):
+        def check_permitted(instance, caller_id):
+            code, msg, val = f(instance, caller_id)
+            val = self._engine.filter_policy(context, 'parameters', 'reader', val, caller_id)
+            return code, msg, val
+        return check_permitted
     
     
     ##################################################################################
