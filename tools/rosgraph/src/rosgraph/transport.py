@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """A replacement transport for Python xmlrpc library."""
 
 try:
@@ -27,7 +26,8 @@ class RequestsTransport(xmlrpc.Transport):
                                                    host=host,
                                                    handler=handler)
         try:
-            resp = requests.post(url, data=request_body, headers=headers)
+            resp = requests.post(url, data=request_body.encode('utf-8'),
+                                 headers=headers)
         except requests.exceptions.Timeout:
             raise socket.timeout('timed out')
         except requests.RequestException as exc:
