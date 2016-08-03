@@ -32,9 +32,9 @@ class PolicyInvalid(Exception):
 
 
 class NameSpaceEngine(object):
-    def __init__(self, node_name, _logger):
+    def __init__(self, node_name, logger):
         self.node_name = node_name
-        self._logger = _logger
+        self._logger = logger
         self._init_graph()
 
     def _init_graph(self):
@@ -164,10 +164,9 @@ class NameSpaceEngine(object):
 
 
 class NameSpaceMasterAPI(object):
-    
-    def __init__(self, engine, _logger):
-        self.engine = engine
-        self._logger = _logger
+    def __init__(self, engine, logger):
+        self._engine = engine
+        self._logger = logger
 
     ###############################################################################
     # EXTERNAL API
@@ -175,7 +174,7 @@ class NameSpaceMasterAPI(object):
     #TODO: How should external api calls be treated?
     # def shutdown(self, context, f):
     #     def check_permitted(instance, caller_id, msg):
-    #         policy, allowed = self.engine.check_profile(context, '?', '?', ?, caller_id)
+    #         policy, allowed = self._engine.check_profile(context, '?', '?', ?, caller_id)
     #         if allowed:
     #             return f(instance, caller_id, msg)
     #         else:
@@ -185,7 +184,7 @@ class NameSpaceMasterAPI(object):
     # 
     # def getUri(self, context, f):
     #     def check_permitted(instance, caller_id):
-    #         policy, allowed = self.engine.check_profile(context, '?', '?', ?, caller_id)
+    #         policy, allowed = self._engine.check_profile(context, '?', '?', ?, caller_id)
     #         if allowed:
     #             return f(instance, caller_id)
     #         else:
@@ -195,7 +194,7 @@ class NameSpaceMasterAPI(object):
     # 
     # def getPid(self, context, f):
     #     def check_permitted(instance, caller_id):
-    #         policy, allowed = self.engine.check_profile(context, '?', '?', ?, caller_id)
+    #         policy, allowed = self._engine.check_profile(context, '?', '?', ?, caller_id)
     #         if allowed:
     #             return f(instance, caller_id)
     #         else:
@@ -206,10 +205,10 @@ class NameSpaceMasterAPI(object):
     ################################################################
     # PARAMETER SERVER ROUTINES
 
-    #TODO add mutex locks in policy engine before enabling these high frequency calls 
+    #TODO add mutex locks in policy _engine before enabling these high frequency calls 
     # def deleteParam(self, context, f):
     #     def check_permitted(instance, caller_id, key):
-    #         policy, allowed = self.engine.check_profile(context, 'parameters', 'writer', key, caller_id)
+    #         policy, allowed = self._engine.check_profile(context, 'parameters', 'writer', key, caller_id)
     #         if allowed:
     #             return f(instance, caller_id, key)
     #         else:
@@ -218,7 +217,7 @@ class NameSpaceMasterAPI(object):
     # 
     # def setParam(self, context, f):
     #     def check_permitted(instance, caller_id, key, value):
-    #         policy, allowed = self.engine.check_profile(context, 'parameters', 'writer', key, caller_id)
+    #         policy, allowed = self._engine.check_profile(context, 'parameters', 'writer', key, caller_id)
     #         if allowed:
     #             return f(instance, caller_id, key, value)
     #         else:
@@ -227,7 +226,7 @@ class NameSpaceMasterAPI(object):
     # 
     # def getParam(self, context, f):
     #     def check_permitted(instance, caller_id, key):
-    #         policy, allowed = self.engine.check_profile(context, 'parameters', 'reader', key, caller_id)
+    #         policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
     #         if allowed:
     #             return f(instance, caller_id, key)
     #         else:
@@ -236,7 +235,7 @@ class NameSpaceMasterAPI(object):
     # 
     # def searchParam(self, context, f):
     #     def check_permitted(instance, caller_id, key):
-    #         policy, allowed = self.engine.check_profile(context, 'parameters', 'reader', key, caller_id)
+    #         policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
     #         if allowed:
     #             return f(instance, caller_id, key)
     #         else:
@@ -245,7 +244,7 @@ class NameSpaceMasterAPI(object):
     # 
     # def subscribeParam(self, context, f):
     #     def check_permitted(instance, caller_id, caller_api, key):
-    #         policy, allowed = self.engine.check_profile(context, 'parameters', 'reader', key, caller_id)
+    #         policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
     #         if allowed:
     #             return f(instance, caller_id, caller_api, key)
     #         else:
@@ -255,17 +254,17 @@ class NameSpaceMasterAPI(object):
     # #TODO: Should one only be able to un{subscribe,register} using one's own caller_id?
     # def unsubscribeParam(self, context, f):
     #     def check_permitted(instance, caller_id, caller_api, key):
-    #         policy, allowed = self.engine.check_profile(context, 'parameters', 'reader', key, caller_id)
+    #         policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
     #         if allowed:
     #             return f(instance, caller_id, caller_api, key)
     #         else:
     #             raise PolicyInvalid("ERROR: policy invalid for given action")
     #     return check_permitted
     # 
-    # #TODO: filter response through policy engine
+    # #TODO: filter response through policy _engine
     # # def hasParam(self, context, f):
     # #     def check_permitted(instance, caller_id, key):
-    # #         policy, allowed = self.engine.check_profile(context, 'parameters', 'reader', key, caller_id)
+    # #         policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
     # #         if allowed:
     # #             return f(instance, caller_id, key)
     # #         else:
@@ -274,7 +273,7 @@ class NameSpaceMasterAPI(object):
     # # 
     # # def getParamNames(self, context, f):
     # #     def check_permitted(instance, caller_id):
-    # #         policy, allowed = self.engine.check_profile(context, 'parameters', 'reader', key, caller_id)
+    # #         policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
     # #         if allowed:
     # #             return f(instance, caller_id)
     # #         else:
@@ -287,7 +286,7 @@ class NameSpaceMasterAPI(object):
     
     def registerService(self, context, f):
         def check_permitted(instance, caller_id, service, service_api, caller_api):
-            policy, allowed = self.engine.check_profile(context, 'services', 'server', service, caller_id)
+            policy, allowed = self._engine.check_profile(context, 'services', 'server', service, caller_id)
             if allowed:
                 return f(instance, caller_id, service, service_api, caller_api)
             else:
@@ -297,7 +296,7 @@ class NameSpaceMasterAPI(object):
     
     def lookupService(self, context, f):
         def check_permitted(instance, caller_id, service):
-            policy, allowed = self.engine.check_profile(context, 'services', 'client', service, caller_id)
+            policy, allowed = self._engine.check_profile(context, 'services', 'client', service, caller_id)
             if allowed:
                 return f(instance, caller_id, service)
             else:
@@ -307,7 +306,7 @@ class NameSpaceMasterAPI(object):
     
     def unregisterService(self, context, f):
         def check_permitted(instance, caller_id, service, service_api):
-            policy, allowed = self.engine.check_profile(context, 'services', 'server', service, caller_id)
+            policy, allowed = self._engine.check_profile(context, 'services', 'server', service, caller_id)
             if allowed:
                 return f(instance, caller_id, service, service_api)
             else:
@@ -321,7 +320,7 @@ class NameSpaceMasterAPI(object):
 
     def registerSubscriber(self, context, f):
         def check_permitted(instance, caller_id, topic, topic_type, caller_api):
-            policy, allowed = self.engine.check_profile(context, 'topics', 'subscriber', topic, caller_id)
+            policy, allowed = self._engine.check_profile(context, 'topics', 'subscriber', topic, caller_id)
             if allowed:
                 return f(instance, caller_id, topic, topic_type, caller_api)
             else:
@@ -330,7 +329,7 @@ class NameSpaceMasterAPI(object):
 
     def unregisterSubscriber(self, context, f):
         def check_permitted(instance, caller_id, topic, topic_type):
-            policy, allowed = self.engine.check_profile(context, 'topics', 'subscriber', topic, caller_id)
+            policy, allowed = self._engine.check_profile(context, 'topics', 'subscriber', topic, caller_id)
             if allowed:
                 return f(instance, caller_id, topic, topic_type)
             else:
@@ -339,7 +338,7 @@ class NameSpaceMasterAPI(object):
     
     def registerPublisher(self, context, f):
         def check_permitted(instance, caller_id, topic, topic_type, caller_api):
-            policy, allowed = self.engine.check_profile(context, 'topics', 'publisher', topic, caller_id)
+            policy, allowed = self._engine.check_profile(context, 'topics', 'publisher', topic, caller_id)
             if allowed:
                 return f(instance, caller_id, topic, topic_type, caller_api)
             else:
@@ -348,7 +347,7 @@ class NameSpaceMasterAPI(object):
     
     def unregisterPublisher(self, context, f):
         def check_permitted(instance, caller_id, topic, topic_type):
-            policy, allowed = self.engine.check_profile(context, 'topics', 'publisher', topic, caller_id)
+            policy, allowed = self._engine.check_profile(context, 'topics', 'publisher', topic, caller_id)
             if allowed:
                 return f(instance, caller_id, topic, topic_type)
             else:
@@ -362,7 +361,7 @@ class NameSpaceMasterAPI(object):
     #TODO: How should graph state api calls be treated?
     # def lookupNode(self, context, f):
     #     def check_permitted(instance, caller_id, node_name):
-    #         policy, allowed = self.engine.check_profile(context, '?', '?', ?, caller_id)
+    #         policy, allowed = self._engine.check_profile(context, '?', '?', ?, caller_id)
     #         if allowed:
     #             return f(instance, caller_id, node_name)
     #         else:
@@ -371,7 +370,7 @@ class NameSpaceMasterAPI(object):
     # 
     # def getPublishedTopics(self, context, f):
     #     def check_permitted(instance, caller_id, subgraph):
-    #         policy, allowed = self.engine.check_profile(context, '?', '?', ?, caller_id)
+    #         policy, allowed = self._engine.check_profile(context, '?', '?', ?, caller_id)
     #         if allowed:
     #             return f(instance, caller_id, subgraph)
     #         else:
@@ -380,7 +379,7 @@ class NameSpaceMasterAPI(object):
     # 
     # def getTopicTypes(self, context, f):
     #     def check_permitted(instance, caller_id):
-    #         policy, allowed = self.engine.check_profile(context, '?', '?', ?, caller_id)
+    #         policy, allowed = self._engine.check_profile(context, '?', '?', ?, caller_id)
     #         if allowed:
     #             return f(instance, caller_id)
     #         else:
@@ -389,7 +388,7 @@ class NameSpaceMasterAPI(object):
     # 
     # def getSystemState(self, context, f):
     #     def check_permitted(instance, caller_id):
-    #         policy, allowed = self.engine.check_profile(context, '?', '?', ?, caller_id)
+    #         policy, allowed = self._engine.check_profile(context, '?', '?', ?, caller_id)
     #         if allowed:
     #             return f(instance, caller_id)
     #         else:
@@ -398,10 +397,11 @@ class NameSpaceMasterAPI(object):
     
 
 class NameSpaceSlaveAPI(object):
-    def __init__(self, engine, _logger):
-        self.engine = engine
-        self._logger = _logger
+    def __init__(self, engine, logger):
+        self._engine = engine
+        self._logger = logger
 
+    
 
 class Transport(object):
 
@@ -418,12 +418,12 @@ class Transport(object):
         return True
 
 class NameSpaceTransport(Transport):
-    def __init__(self, engine, _logger):
-        self.engine = engine
-        self._logger = _logger
+    def __init__(self, engine, logger):
+        self._engine = engine
+        self._logger = logger
     
     def connect_topic(self, sock, topic):
-        policy, allowed = self.engine.check_policy(sock, 'topics', 'publisher', topic)
+        policy, allowed = self._engine.check_policy(sock, 'topics', 'publisher', topic)
         print('##################################################')
         print("policy:\n",json.dumps(policy, sort_keys=True, indent=4))
         print('Callback: {}\n action: {}\n allowed: {}'.format('connect_topic', topic, allowed))
@@ -431,7 +431,7 @@ class NameSpaceTransport(Transport):
         return allowed
 
     def accept_topic(self, sock, topic):
-        policy, allowed = self.engine.check_policy(sock, 'topics', 'subscriber', topic)
+        policy, allowed = self._engine.check_policy(sock, 'topics', 'subscriber', topic)
         print('##################################################')
         print("policy:\n",json.dumps(policy, sort_keys=True, indent=4))
         print('Callback: {}\n action: {}\n allowed: {}'.format('accept_topic', topic, allowed))
@@ -439,7 +439,7 @@ class NameSpaceTransport(Transport):
         return allowed
 
     def connect_service(self, sock, service):
-        policy, allowed = self.engine.check_policy(sock, 'services', 'server', service)
+        policy, allowed = self._engine.check_policy(sock, 'services', 'server', service)
         print('##################################################')
         print("policy:\n",json.dumps(policy, sort_keys=True, indent=4))
         print('Callback: {}\n action: {}\n allowed: {}'.format('connect_service', service, allowed))
@@ -447,7 +447,7 @@ class NameSpaceTransport(Transport):
         return allowed
 
     def accept_service(self, sock, service):
-        policy, allowed = self.engine.check_policy(sock, 'services', 'client', service)
+        policy, allowed = self._engine.check_policy(sock, 'services', 'client', service)
         print('##################################################')
         print("policy:\n",json.dumps(policy, sort_keys=True, indent=4))
         print('Callback: {}\n action: {}\n allowed: {}'.format('accept_service', service, allowed))
