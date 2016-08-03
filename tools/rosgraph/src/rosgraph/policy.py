@@ -19,8 +19,13 @@ _logger = logging.getLogger('rosgraph.policy')
 
 class Policy(object):
     # TODO: add security logging stuff here
-    def __init__(self):
+    def __init__(self, node_id, node_stem, node_name):
         _logger.info("policy init")
+
+        self.node_id = node_id
+        self.node_stem = node_stem
+        self.node_name = node_name
+
         self.engine = None
         self.master_api = None
         self.slave_api = None
@@ -29,8 +34,8 @@ class Policy(object):
 #########################################################################
 
 class NoPolicy(Policy):
-    def __init__(self):
-        super(NoPolicy, self).__init__()
+    def __init__(self, node_id, node_stem, node_name):
+        super(NoPolicy, self).__init__(node_id, node_stem, node_name)
         _logger.info("  rospy.policy.NoPolicy init")
 
 ##########################################################################
@@ -38,18 +43,16 @@ class NoPolicy(Policy):
 class NameSpacePolicy(Policy):
 
     def __init__(self, node_id, node_stem, node_name):
-        self.node_id = node_id
-        self.node_stem = node_stem
-        self.node_name = node_name
-        super(NameSpacePolicy, self).__init__()
+        super(NameSpacePolicy, self).__init__(node_id, node_stem, node_name)
         _logger.info("rospy.policy.NameSpacePolicy init")
 
         self.engine = NameSpaceEngine(self.node_name, _logger)
         self.master_api = NameSpaceMasterAPI(self.engine, _logger)
         # self.master_api = None
-        # self.slave_api = NameSpaceSlaveAPI(self.engine, _logger)
-        self.slave_api = None
+        self.slave_api = NameSpaceSlaveAPI(self.engine, _logger)
+        # self.slave_api = None
         self.transport = NameSpaceTransport(self.engine, _logger)
+        # self.transport = None
 
 #########################################################################
 _policy = None
@@ -64,11 +67,11 @@ def init(node_id, node_stem, node_name):
             if os.environ['SROS_POLICY'] == 'namespace':
                 _policy = NameSpacePolicy(node_id, node_stem, node_name)
             elif os.environ['SROS_POLICY'] == 'none':
-                _policy = NoPolicy()
+                _policy = NoPolicy(node_id, node_stem, node_name)
             else:
                 raise ValueError("illegal SROS_POLICY value: [%s]" % os.environ['SROS_POLICY'])
         else:
-            _policy = NoPolicy()
+            _policy = NoPolicy(node_id, node_stem, node_name)
 
 
 def get():
