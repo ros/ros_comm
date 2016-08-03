@@ -7,6 +7,7 @@ import os
 # import socket
 import traceback
 # import ssl
+import threading
 import rosgraph_helper
 
 import json
@@ -36,6 +37,7 @@ class NameSpaceEngine(object):
         self.node_name = node_name
         self._logger = logger
         self._init_graph()
+        self.ps_lock = threading.Condition(threading.Lock())
 
     def _init_graph(self):
         # ugly... need to figure out a graceful way to pass the graph
@@ -59,44 +61,50 @@ class NameSpaceEngine(object):
         if permitted:
             return True
         else:
-            # TODO fix crazy imports
-            from security import caller_id_to_node_stem
-            node_stem = caller_id_to_node_stem(caller_id)
-            mask = ROLE_STRUCT[mode_name][role_name]['mask']
-            info = (action_name, mask, 'self.node_stem', self.graph.graph_path)
-            if self.graph_mode is GraphModes.enforce:
-                allowed, audit = self.graph.is_allowed(node_stem, mode_name, action_name, mask)
-                flag = '*' if allowed else '!'
-                self._log_register(audit, flag, info)
-                return allowed
-            elif self.graph_mode is GraphModes.train:
-                if self.graph.graph_path is not None:
-                    allowed, audit = self.graph.is_allowed(node_stem, mode_name, action_name, mask)
-                    if not allowed:
-                        self.graph.add_allowed(node_stem, mode_name, action_name, mask)
-                        self.graph.save_graph()
-                    flag = '*' if allowed else '+'
-                    self._log_register((audit or not allowed), flag, info)
-                return True
-            elif self.graph_mode is GraphModes.complain:
-                if self.graph.graph is not None:
+            allowed = False
+            try:
+                self.ps_lock.acquire()
+                # TODO fix crazy imports
+                from security import caller_id_to_node_stem
+                node_stem = caller_id_to_node_stem(caller_id)
+                mask = ROLE_STRUCT[mode_name][role_name]['mask']
+                info = (action_name, mask, 'self.node_stem', self.graph.graph_path)
+                if self.graph_mode is GraphModes.enforce:
                     allowed, audit = self.graph.is_allowed(node_stem, mode_name, action_name, mask)
                     flag = '*' if allowed else '!'
-                    self._log_register((audit or not allowed), flag, info)
+                    self._log_register(audit, flag, info)
+                    # return allowed
+                elif self.graph_mode is GraphModes.train:
+                    if self.graph.graph_path is not None:
+                        allowed, audit = self.graph.is_allowed(node_stem, mode_name, action_name, mask)
+                        if not allowed:
+                            self.graph.add_allowed(node_stem, mode_name, action_name, mask)
+                            self.graph.save_graph()
+                        flag = '*' if allowed else '+'
+                        self._log_register((audit or not allowed), flag, info)
+                    allowed = True
+                elif self.graph_mode is GraphModes.complain:
+                    if self.graph.graph is not None:
+                        allowed, audit = self.graph.is_allowed(node_stem, mode_name, action_name, mask)
+                        flag = '*' if allowed else '!'
+                        self._log_register((audit or not allowed), flag, info)
+                    else:
+                        self._log_register(True, '!', info)
+                    allowed = True
+                elif self.graph_mode is GraphModes.audit:
+                    if self.graph.graph is not None:
+                        allowed, audit = self.graph.is_allowed(node_stem, mode_name, action_name, mask)
+                        flag = '*' if allowed else '!'
+                        self._log_register(True, flag, info)
+                        # return allowed
+                    else:
+                        self._log_register(True, '', info)
+                        allowed = True
                 else:
-                    self._log_register(True, '!', info)
-                return True
-            elif self.graph_mode is GraphModes.audit:
-                if self.graph.graph is not None:
-                    allowed, audit = self.graph.is_allowed(node_stem, mode_name, action_name, mask)
-                    flag = '*' if allowed else '!'
-                    self._log_register(True, flag, info)
-                    return allowed
-                else:
-                    self._log_register(True, '', info)
-                    return True
-            else:
-                return False
+                    allowed = False
+            finally:
+                self.ps_lock.release()
+            return allowed
 
     def _is_action_allowed(self, permitted, mode=None, role=None, action=None):
         # info = (action, mask, self.node_stem, self.graph.graph_path)
@@ -206,79 +214,79 @@ class NameSpaceMasterAPI(object):
     # PARAMETER SERVER ROUTINES
 
     #TODO add mutex locks in policy _engine before enabling these high frequency calls 
-    # def deleteParam(self, context, f):
+    def deleteParam(self, context, f):
+        def check_permitted(instance, caller_id, key):
+            policy, allowed = self._engine.check_profile(context, 'parameters', 'writer', key, caller_id)
+            if allowed:
+                return f(instance, caller_id, key)
+            else:
+                raise PolicyInvalid("ERROR: policy invalid for given action")
+        return check_permitted
+    
+    def setParam(self, context, f):
+        def check_permitted(instance, caller_id, key, value):
+            policy, allowed = self._engine.check_profile(context, 'parameters', 'writer', key, caller_id)
+            if allowed:
+                return f(instance, caller_id, key, value)
+            else:
+                raise PolicyInvalid("ERROR: policy invalid for given action")
+        return check_permitted
+    
+    def getParam(self, context, f):
+        def check_permitted(instance, caller_id, key):
+            policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
+            if allowed:
+                return f(instance, caller_id, key)
+            else:
+                raise PolicyInvalid("ERROR: policy invalid for given action")
+        return check_permitted
+    
+    def searchParam(self, context, f):
+        def check_permitted(instance, caller_id, key):
+            policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
+            if allowed:
+                return f(instance, caller_id, key)
+            else:
+                raise PolicyInvalid("ERROR: policy invalid for given action")
+        return check_permitted
+    
+    def subscribeParam(self, context, f):
+        def check_permitted(instance, caller_id, caller_api, key):
+            policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
+            if allowed:
+                return f(instance, caller_id, caller_api, key)
+            else:
+                raise PolicyInvalid("ERROR: policy invalid for given action")
+        return check_permitted
+    
+    #TODO: Should one only be able to un{subscribe,register} using one's own caller_id?
+    def unsubscribeParam(self, context, f):
+        def check_permitted(instance, caller_id, caller_api, key):
+            policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
+            if allowed:
+                return f(instance, caller_id, caller_api, key)
+            else:
+                raise PolicyInvalid("ERROR: policy invalid for given action")
+        return check_permitted
+    
+    #TODO: filter response through policy _engine
+    # def hasParam(self, context, f):
     #     def check_permitted(instance, caller_id, key):
-    #         policy, allowed = self._engine.check_profile(context, 'parameters', 'writer', key, caller_id)
+    #         policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
     #         if allowed:
     #             return f(instance, caller_id, key)
     #         else:
     #             raise PolicyInvalid("ERROR: policy invalid for given action")
     #     return check_permitted
     # 
-    # def setParam(self, context, f):
-    #     def check_permitted(instance, caller_id, key, value):
-    #         policy, allowed = self._engine.check_profile(context, 'parameters', 'writer', key, caller_id)
-    #         if allowed:
-    #             return f(instance, caller_id, key, value)
-    #         else:
-    #             raise PolicyInvalid("ERROR: policy invalid for given action")
-    #     return check_permitted
-    # 
-    # def getParam(self, context, f):
-    #     def check_permitted(instance, caller_id, key):
+    # def getParamNames(self, context, f):
+    #     def check_permitted(instance, caller_id):
     #         policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
     #         if allowed:
-    #             return f(instance, caller_id, key)
+    #             return f(instance, caller_id)
     #         else:
     #             raise PolicyInvalid("ERROR: policy invalid for given action")
     #     return check_permitted
-    # 
-    # def searchParam(self, context, f):
-    #     def check_permitted(instance, caller_id, key):
-    #         policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
-    #         if allowed:
-    #             return f(instance, caller_id, key)
-    #         else:
-    #             raise PolicyInvalid("ERROR: policy invalid for given action")
-    #     return check_permitted
-    # 
-    # def subscribeParam(self, context, f):
-    #     def check_permitted(instance, caller_id, caller_api, key):
-    #         policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
-    #         if allowed:
-    #             return f(instance, caller_id, caller_api, key)
-    #         else:
-    #             raise PolicyInvalid("ERROR: policy invalid for given action")
-    #     return check_permitted
-    # 
-    # #TODO: Should one only be able to un{subscribe,register} using one's own caller_id?
-    # def unsubscribeParam(self, context, f):
-    #     def check_permitted(instance, caller_id, caller_api, key):
-    #         policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
-    #         if allowed:
-    #             return f(instance, caller_id, caller_api, key)
-    #         else:
-    #             raise PolicyInvalid("ERROR: policy invalid for given action")
-    #     return check_permitted
-    # 
-    # #TODO: filter response through policy _engine
-    # # def hasParam(self, context, f):
-    # #     def check_permitted(instance, caller_id, key):
-    # #         policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
-    # #         if allowed:
-    # #             return f(instance, caller_id, key)
-    # #         else:
-    # #             raise PolicyInvalid("ERROR: policy invalid for given action")
-    # #     return check_permitted
-    # # 
-    # # def getParamNames(self, context, f):
-    # #     def check_permitted(instance, caller_id):
-    # #         policy, allowed = self._engine.check_profile(context, 'parameters', 'reader', key, caller_id)
-    # #         if allowed:
-    # #             return f(instance, caller_id)
-    # #         else:
-    # #             raise PolicyInvalid("ERROR: policy invalid for given action")
-    # #     return check_permitted
     
     
     ##################################################################################
