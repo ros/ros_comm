@@ -243,7 +243,42 @@ class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
             if logger:
                 logger.error(traceback.format_exc())
 
-    def _dispatch(self, method, params, context=None):
+    def system_multicall(self, call_list, context):
+        """
+        Overrides SimpleXMLRPCDispatcher to also pass context when calling instance's self._dispatch.
+        
+        system.multicall([{'methodName': 'add', 'params': [2, 2]}, ...]) => \
+[[4], ...]
+
+        Allows the caller to package multiple XML-RPC calls into a single
+        request.
+
+        See http://www.xmlrpc.com/discuss/msgReader$1208
+        """
+
+        results = []
+        for call in call_list:
+            method_name = call['methodName']
+            params = call['params']
+
+            try:
+                # XXX A marshalling error in any response will fail the entire
+                # multicall. If someone cares they should fix this.
+                results.append([self._dispatch(method_name, params, context)])
+            except Fault, fault:
+                results.append(
+                    {'faultCode': fault.faultCode,
+                     'faultString': fault.faultString}
+                )
+            except:
+                exc_type, exc_value, exc_tb = sys.exc_info()
+                results.append(
+                    {'faultCode': 1,
+                     'faultString': "%s:%s" % (exc_type, exc_value)}
+                )
+        return results
+
+    def _dispatch(self, method, params, context):
         """
         Overrides SimpleXMLRPCServer to also pass server socket when calling instance's dispach.
         """
@@ -270,7 +305,10 @@ class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
                         pass
 
         if func is not None:
-            return func(*params)
+            if method == 'system.multicall': # aka func is self.system_multicall
+                return func(*params, context=context)
+            else:
+                return func(*params)
         else:
             raise Exception('method "%s" is not supported' % method)
 
