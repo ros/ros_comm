@@ -270,7 +270,7 @@ def init(caller_id):
             else:
                 raise ValueError("illegal SROS_SECURITY value: [%s]" % os.environ['SROS_SECURITY'])
         else:
-            _security = NoSecurity()
+            _security = NoSecurity(caller_id)
 
 def get():
     if _security is None:
