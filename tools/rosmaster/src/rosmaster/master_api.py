@@ -226,7 +226,7 @@ def publisher_update_task(api, topic, pub_uris):
     
     mloginfo("publisherUpdate[%s] -> %s", topic, api)
     #TODO: check return value for errors so we can unsubscribe if stale
-    security.get().xmlrpcapi(api, 'topic', 'publisher').publisherUpdate('/master', topic, pub_uris)
+    security.get().xmlrpcapi(api).publisherUpdate('/master', topic, pub_uris)
 
 def service_update_task(api, service, uri):
     """

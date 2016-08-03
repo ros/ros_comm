@@ -55,7 +55,7 @@ class NoSecurity(Security):
         from policy import NoPolicy
         self.policy = NoPolicy()
 
-    def xmlrpcapi(self, uri, node_name = None):
+    def xmlrpcapi(self, uri, context=None):
         uriValidate = urlparse.urlparse(uri)
         if not uriValidate[0] or not uriValidate[1]:
             return None
