@@ -328,12 +328,13 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
         for required in ['topic', 'md5sum', 'callerid']:
             if not required in header:
                 return "Missing required '%s' field"%required
-        transport_policy = security.get().policy.transport
-        if transport_policy:
-            if not transport_policy.accept_topic(sock, header['topic']):
-                return "Subscriber policy violation"
         else:
             resolved_topic_name = header['topic']
+            transport_policy = security.get().policy.transport
+            if transport_policy:
+                if not transport_policy.accept_topic(sock, resolved_topic_name):
+                    return "Subscriber policy violation"
+
             md5sum = header['md5sum']
             tm = rospy.impl.registration.get_topic_manager()
             topic = tm.get_publisher_impl(resolved_topic_name)

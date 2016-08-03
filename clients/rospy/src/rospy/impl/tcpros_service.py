@@ -226,13 +226,14 @@ def service_connection_handler(sock, client_addr, header):
         if not required in header:
             return "Missing required '%s' field"%required
 
-    transport_policy = security.get().policy.transport
-    if transport_policy:
-        if not transport_policy.accept_service(sock, header['service']):
-            return "Client policy violation"
     else:
-        logger.debug("connection from %s:%s", client_addr[0], client_addr[1])
         service_name = header['service']
+        transport_policy = security.get().policy.transport
+        if transport_policy:
+            if not transport_policy.accept_service(sock, service_name):
+                return "Client policy violation"
+
+        logger.debug("connection from %s:%s", client_addr[0], client_addr[1])
         
         #TODO: make service manager configurable. I think the right
         #thing to do is to make these singletons private members of a
