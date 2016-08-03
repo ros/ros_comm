@@ -31,8 +31,17 @@ _logger = logging.getLogger('rosgraph.security')
 
 class Security(object):
     # TODO: add security logging stuff here
-    def __init__(self):
+    def __init__(self, caller_id):
+        if caller_id[0] is not '/':
+            caller_id = '/' + caller_id
+        self.node_id = caller_id
+        self.node_stem = caller_id_to_node_stem(self.node_id)
+        self.node_name = node_stem_to_node_name(self.node_stem)
         _logger.info("security init")
+
+        import rosgraph.policy as policy
+        policy.init(self.node_id, self.node_stem, self.node_name)
+        self.policy = policy.get()
     def wrap_socket(self, sock):
         """
         Called whenever there is an opportunity to wrap a server socket.
@@ -48,12 +57,9 @@ class Security(object):
 
 class NoSecurity(Security):
 
-    def __init__(self):
-        super(NoSecurity, self).__init__()
+    def __init__(self, caller_id):
+        super(NoSecurity, self).__init__(caller_id)
         _logger.info("  rospy.security.NoSecurity init")
-
-        from policy import NoPolicy
-        self.policy = NoPolicy()
 
     def xmlrpcapi(self, uri, context=None):
         uriValidate = urlparse.urlparse(uri)
@@ -184,12 +190,7 @@ class TLSSecurity(Security):
         self.context.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
 
     def __init__(self, caller_id):
-        if caller_id[0] is not '/':
-            caller_id = '/' + caller_id
-        self.node_id = caller_id
-        self.node_stem = caller_id_to_node_stem(self.node_id)
-        self.node_name = node_stem_to_node_name(self.node_stem)
-        super(TLSSecurity, self).__init__()
+        super(TLSSecurity, self).__init__(caller_id)
         _logger.info("rospy.security.TLSSecurity init")
 
         self.keystore_path  = os.environ['SROS_KEYSTORE_PATH']
@@ -205,10 +206,6 @@ class TLSSecurity(Security):
         self.init_context()
 
         print('all startup certificates are present')
-        
-        import rosgraph.policy as policy
-        policy.init(self.node_id, self.node_stem, self.node_name)
-        self.policy = policy.get()
 
     def get_keyserver_context(self):
         context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
