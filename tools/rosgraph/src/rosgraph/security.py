@@ -31,8 +31,17 @@ _logger = logging.getLogger('rosgraph.security')
 
 class Security(object):
     # TODO: add security logging stuff here
-    def __init__(self):
+    def __init__(self, caller_id):
+        if caller_id[0] is not '/':
+            caller_id = '/' + caller_id
+        self.node_id = caller_id
+        self.node_stem = caller_id_to_node_stem(self.node_id)
+        self.node_name = node_stem_to_node_name(self.node_stem)
         _logger.info("security init")
+
+        import rosgraph.policy as policy
+        policy.init(self.node_id, self.node_stem, self.node_name)
+        self.policy = policy.get()
     def wrap_socket(self, sock):
         """
         Called whenever there is an opportunity to wrap a server socket.
@@ -41,19 +50,18 @@ class Security(object):
         return sock
     def xmlrpc_protocol(self):
         return 'http'
+    def get_context(self, sock):
+        return None
 
 #########################################################################
 
 class NoSecurity(Security):
 
-    def __init__(self):
-        super(NoSecurity, self).__init__()
+    def __init__(self, caller_id):
+        super(NoSecurity, self).__init__(caller_id)
         _logger.info("  rospy.security.NoSecurity init")
 
-        from policy import NoPolicy
-        self.policy = NoPolicy()
-
-    def xmlrpcapi(self, uri, node_name = None):
+    def xmlrpcapi(self, uri, context=None):
         uriValidate = urlparse.urlparse(uri)
         if not uriValidate[0] or not uriValidate[1]:
             return None
@@ -75,7 +83,7 @@ class NoSecurity(Security):
 
     def accept(self, server_sock, server_node_name):
         s = server_sock.accept()
-        return (s[0], s[1], 'unknown')
+        return (s[0], s[1])
 
 #########################################################################
 
@@ -182,12 +190,7 @@ class TLSSecurity(Security):
         self.context.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
 
     def __init__(self, caller_id):
-        if caller_id[0] is not '/':
-            caller_id = '/' + caller_id
-        self.node_id = caller_id
-        self.node_stem = caller_id_to_node_stem(self.node_id)
-        self.node_name = node_stem_to_node_name(self.node_stem)
-        super(TLSSecurity, self).__init__()
+        super(TLSSecurity, self).__init__(caller_id)
         _logger.info("rospy.security.TLSSecurity init")
 
         self.keystore_path  = os.environ['SROS_KEYSTORE_PATH']
@@ -203,10 +206,6 @@ class TLSSecurity(Security):
         self.init_context()
 
         print('all startup certificates are present')
-        
-        import rosgraph.policy as policy
-        policy.init(self.node_id, self.node_stem, self.node_name)
-        self.policy = policy.get()
 
     def get_keyserver_context(self):
         context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
@@ -244,91 +243,15 @@ class TLSSecurity(Security):
         client_stream = None
         try:
             client_stream = self.context.wrap_socket(client_sock, server_side=True)
-            client_cert = client_stream.getpeercert()
-            # print("SSLSecurity.accept(server_node_name=%s) getpeercert = %s" % (server_node_name, repr(client_cert)))
-            # cn = cert_cn(client_cert)
-            # if cn is None:
-            #     raise Exception("unknown certificate format")
-            # if not cn.endswith('.client'):
-            #     raise Exception("unexpected commonName format: %s" % cn)
-            # # get rid of the '.client' suffix
-            # cn = '.'.join(cn.split('.')[0:-1])
-            # if not cn in self.allowed_clients:
-            #     raise Exception("unknown client [%s] is trying to connect!" % cn)
+            # client_cert = client_stream.getpeercert()
         except Exception as e:
             print("SSLSecurity.accept() wrap_socket exception: %s" % e)
             raise
         return (client_stream, client_addr)
-
-
-    # def allow_xmlrpc_request(self, cert_text, cert_binary):
-    #     cn = cert_cn(cert_text)
-    #     if cn is None:
-    #         return None
-    #     # print("allow_xmlrpc_request() node=%s commonName=%s" % (self.node_stem, cn))
-    #     # sanity-check to ensure that it ends in '.client'
-    #     if not cn.endswith('.client'):
-    #         return None
-    #     try:
-    #         # if we're master, make sure this cert exists in our keystore
-    #         if self.node_stem == 'master':  # NOW I AM THE MASTER
-    #             path = os.path.join(self.keystore, cn + '.cert')
-    #             if '..' in path:
-    #                 print('HEY WHAT ARE YOU TRYING TO DO WITH THOSE DOTS')
-    #                 return None
-    #             # print('looking for client cert in [%s]' % path)
-    #             if not os.path.isfile(path):
-    #                 print("WOAH THERE PARTNER. I DON'T KNOW [%s]" % cn)
-    #                 return None
-    #             with open(path, 'r') as client_cert_file:
-    #                 file_contents = client_cert_file.read()
-    #                 # remove header and footer lines
-    #                 file_contents = ''.join(file_contents.split('\n')[1:-2])
-    #             # print('file contents: %s' % file_contents)
-    #             client_cert = base64.b64encode(cert_binary)
-    #             # print('cert transmitted: %s' % client_cert)
-    #             if file_contents != client_cert:
-    #                 print('WOAH. cert mismatch!')
-    #                 return None
-    #             else:
-    #                 # print('    cert matches OK')
-    #                 return cn[:-7]
-    #         else:  # we're not the master. life is more complicated.
-    #             # see if it's the master
-    #             if cn == 'master.client':
-    #                 # we have this one in our keystore; we can verify it
-    #                 cert_path = os.path.join(self.keystore, 'master.client.cert')
-    #                 with open(cert_path, 'r') as cert_file:
-    #                     saved_cert = cert_file.read()
-    #                     # remove header and footer lines
-    #                     saved_cert = ''.join(saved_cert.split('\n')[1:-2])
-    #                 presented_cert = base64.b64encode(cert_binary)
-    #                 if saved_cert != presented_cert:
-    #                     print("WOAH. master client certificate mismatch!")
-    #                     return None
-    #                 else:
-    #                     # print("   master client cert matches OK")
-    #                     return 'master'
-    #             # see if we are talking to ourselves
-    #             cn_without_suffix = '.'.join(cn.split('.')[0:-1])
-    #             if cn_without_suffix == self.node_stem:
-    #                 # print("    I'm talking to myself again.")
-    #                 return cn_without_suffix  # it's always healthy to talk to yourself
-    #             if cn_without_suffix in self.allowed_clients:
-    #                 # print("    client %s is OK; it's in %s's allowed_clients list: %s" % (cn_without_suffix, self.node_stem, repr(self.allowed_clients)))
-    #                 return cn_without_suffix
-    #             else:
-    #                 print(
-    #                     "    client %s xmlrpc connection denied; it's not in %s's allowed list of clients: %s" % (
-    #                     cn_without_suffix, self.node_stem, repr(self.allowed_clients)))
-    #                 return None
-    #
-    #     except Exception as e:
-    #         print('oh noes: %s' % e)
-    #         return None
-    #     print("WOAH WOAH WOAH how did i get here?")
-    #     return 'ahhhhhhhhhhhh'
-
+    
+    def get_context(self, sock):
+        cert = sock.getpeercert(binary_form=True)
+        return cert
 
 #########################################################################
 _security = None
@@ -347,7 +270,7 @@ def init(caller_id):
             else:
                 raise ValueError("illegal SROS_SECURITY value: [%s]" % os.environ['SROS_SECURITY'])
         else:
-            _security = NoSecurity()
+            _security = NoSecurity(caller_id)
 
 def get():
     if _security is None:

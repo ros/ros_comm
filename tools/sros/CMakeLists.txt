@@ -22,6 +22,8 @@ catkin_install_python(PROGRAMS scripts/sros
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 catkin_install_python(PROGRAMS scripts/sroscore
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+catkin_install_python(PROGRAMS scripts/sroslaunch
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #if(CATKIN_ENABLE_TESTING)
 #  catkin_add_nosetests(test)

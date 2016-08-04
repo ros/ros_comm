@@ -4,8 +4,7 @@ import argparse
 import os
 import subprocess
 import sys
-import rosgraph.security as security
-import rosgraph.policy as policy
+from rosgraph.sros_consts import GraphModes
 import rosgraph.keyserver as keyserver
 import shutil
 import rospkg
@@ -27,7 +26,7 @@ class SroscoreParser(argparse.ArgumentParser):
             def __call__(self, parser, namespace, values, option_string=None):
                 for x in self.make_required:
                     x.required = True
-                if values not in policy.GraphModes:
+                if values not in GraphModes:
                     parser.error("Unknown MODE [{}] specified".format(values))
                 setattr(namespace, self.dest, values)
 
@@ -122,11 +121,15 @@ def sroscore_main(argv = sys.argv):
         keyserver_mode = os.environ['SROS_KEYSERVER_MODE']
         if not os.path.isfile(keyserver_config):
             keyserver_config_default = os.path.join(rospkg.get_etc_ros_dir(), 'keyserver_config.yaml')
+            if not os.path.exists(os.path.dirname(keyserver_config)):
+                os.makedirs(os.path.dirname(keyserver_config))
             shutil.copy(keyserver_config_default, keyserver_config)
 
         policy_config = os.path.abspath(os.environ['SROS_POLICY_CONFIG'])
         if not os.path.isfile(policy_config):
             policy_config_default = os.path.join(rospkg.get_etc_ros_dir(), 'policy_config.yaml')
+            if not os.path.exists(os.path.dirname(policy_config)):
+                os.makedirs(os.path.dirname(policy_config))
             shutil.copy(policy_config_default, policy_config)
         
         keyserver.fork_xmlrpc_keyserver(keyserver_config, keystore_path, keyserver_mode)
@@ -137,6 +140,28 @@ def sroscore_main(argv = sys.argv):
     import roslaunch
     roslaunch.main(['roscore', '--core'] + roscore_argv[1:])
 
+def check_environ(name, default):
+    if name not in os.environ:
+        os.environ[name] = default
+
+def sroslaunch_main(argv = sys.argv):
+
+    check_environ(
+        'SROS_SECURITY',
+        'ssl')    
+    check_environ(
+        'SROS_POLICY',
+        'namespace')
+    check_environ(
+        'SROS_KEYSTORE_PATH',
+        os.path.join(os.path.expanduser('~'), '.ros', 'keys'))
+    check_environ(
+        'SROS_KEYSERVER_VERIFY',
+        'CERT_REQUIRED')
+    
+    import roslaunch
+    roslaunch.main(argv)
+    
 
 class SrosParser(argparse.ArgumentParser):
     """Argument parser class sros"""

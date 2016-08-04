@@ -48,3 +48,14 @@ EXTENSION_MAPPING = {
     'key': '.pem',
     'cert': '.cert',
 }
+
+
+class GraphModes:
+    audit = 'audit'
+    complain = 'complain'
+    enforce = 'enforce'
+    train = 'train'
+
+    class __metaclass__(type):
+        def __contains__(self, item):
+            return hasattr(self, item)
