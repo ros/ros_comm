@@ -80,7 +80,10 @@ class Keyserver(object):
     def init_context(self):
         capath = os.path.join(self.keystore_path, 'capath')
         certfile, keyfile = self.key_helper.init_keyserver()
-        password = os.environ['SROS_KEYSERVER_PASSWORD']
+        if 'SROS_KEYSERVER_PASSWORD' in os.environ:
+            password = os.environ['SROS_KEYSERVER_PASSWORD']
+        else:
+            password = None
         self.context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
         self.context.verify_mode = getattr(ssl, self.keyserver_mode)
         self.context.load_verify_locations(capath=capath)

@@ -140,6 +140,28 @@ def sroscore_main(argv = sys.argv):
     import roslaunch
     roslaunch.main(['roscore', '--core'] + roscore_argv[1:])
 
+def check_environ(name, default):
+    if name not in os.environ:
+        os.environ[name] = default
+
+def sroslaunch_main(argv = sys.argv):
+
+    check_environ(
+        'SROS_SECURITY',
+        'ssl')    
+    check_environ(
+        'SROS_POLICY',
+        'namespace')
+    check_environ(
+        'SROS_KEYSTORE_PATH',
+        os.path.join(os.path.expanduser('~'), '.ros', 'keys'))
+    check_environ(
+        'SROS_KEYSERVER_VERIFY',
+        'CERT_REQUIRED')
+    
+    import roslaunch
+    roslaunch.main(argv)
+    
 
 class SrosParser(argparse.ArgumentParser):
     """Argument parser class sros"""
