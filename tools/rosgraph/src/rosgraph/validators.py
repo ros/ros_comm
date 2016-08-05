@@ -51,6 +51,8 @@ class NameSpaceEngine(object):
             if 'SROS_POLICY_CONFIG' in os.environ:
                 self.graph.graph_path = os.environ['SROS_POLICY_CONFIG']
                 self.graph.load_graph()
+        else:
+            self.graph = None
 
     def _log_register(self, enable, flag, info):
         if enable:
@@ -60,7 +62,7 @@ class NameSpaceEngine(object):
         
         if permitted:
             return True
-        else:
+        elif self.graph:
             allowed = False
             try:
                 self.ps_lock.acquire()
@@ -105,6 +107,8 @@ class NameSpaceEngine(object):
             finally:
                 self.ps_lock.release()
             return allowed
+        else:
+            return permitted
 
     def _is_action_allowed(self, permitted, mode=None, role=None, action=None):
         # info = (action, mask, self.node_stem, self.graph.graph_path)

@@ -150,15 +150,19 @@ def apivalidate(error_return_value, validators=()):
             if not isstring(caller_id):
                 _logger.error("%s: invalid caller_id param type", func_name)
                 return -1, "caller_id must be a string", error_return_value
-
-            newArgs = [instance, caller_id]  # canonicalized args
+            
+            newArgs = [instance, caller_id] #canonicalized args
             try:
                 for (v, a) in zip(validators, args[2:]):
                     if v:
                         try:
-                            newArgs.append(v(a, caller_id))
+                            #simultaneously validate + canonicalized args
+                            if type(v) == list or type(v) == tuple:
+                                newArgs.append(instance._custom_validate(v[0], v[1], a, caller_id))
+                            else:
+                                newArgs.append(v(a, caller_id)) 
                         except ParameterInvalid as e:
-                            _logger.error("%s: invalid parameter: %s", func_name, str(e) or 'error')
+                            _logger.error("%s: invalid parameter: %s", f.__name__, str(e) or 'error')
                             return -1, str(e) or 'error', error_return_value
                     else:
                         newArgs.append(a)
