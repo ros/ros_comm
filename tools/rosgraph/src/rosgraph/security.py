@@ -11,7 +11,7 @@ import ssl
 # import shutil
 import httplib
 # import sys
-from keyserver import get_keyserver_uri
+import rosenv
 
 from sros_consts import EXTENSION_MAPPING
 
@@ -156,7 +156,7 @@ class TLSSecurity(Security):
             print("initializing node's keystore: %s" % self.nodestore_path)
             os.makedirs(self.nodestore_path)
             os.chmod(self.nodestore_path, 0o700)
-        keyserver_proxy = self.xmlrpcapi(get_keyserver_uri(), context=self.get_keyserver_context())
+        keyserver_proxy = self.xmlrpcapi(rosenv.get_keyserver_uri(), context=self.get_keyserver_context())
         code, msg, value = keyserver_proxy.requestNodeStore(self.node_id, self.node_stem)
         for file_name, file_data in value.iteritems():
             file_path = os.path.join(self.nodestore_path, file_name)
@@ -169,7 +169,7 @@ class TLSSecurity(Security):
         os.makedirs(self.capath)
         os.chmod(self.capath, 0o700)
 
-        keyserver_proxy = self.xmlrpcapi(get_keyserver_uri(), context=self.get_keyserver_context())
+        keyserver_proxy = self.xmlrpcapi(rosenv.get_keyserver_uri(), context=self.get_keyserver_context())
         code, msg, value = keyserver_proxy.getCA(self.node_id)
         for file_name, file_data in value.iteritems():
             file_path = os.path.join(self.capath, file_name)
