@@ -102,7 +102,7 @@ def _is_unix_like_platform():
     @rtype: bool
     """
     #return platform.system() in ['Linux', 'Mac OS X', 'Darwin']
-    return platform.system() in ['Linux', 'FreeBSD']
+    return platform.system() in ['Linux', 'FreeBSD', 'Darwin']
 
 def get_address_override():
     """
