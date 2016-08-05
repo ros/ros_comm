@@ -101,7 +101,8 @@ def check_verify_mode(keyserver_mode):
         pass
     else:
         raise ValueError("\nFailed to start keyserver, keyserver verify mode is invalid!\n" +
-                         "User specified: {}".format(keyserver_mode)) 
+                         "User specified: {}".format(keyserver_mode))
+    return keyserver_mode
 
 def check_keyserver_alive(keyserver):
     # spin until the keyserver is responding to requests    

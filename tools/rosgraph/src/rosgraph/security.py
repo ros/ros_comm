@@ -12,6 +12,7 @@ import ssl
 import httplib
 # import sys
 import rosenv
+import rospkg
 
 from sros_consts import EXTENSION_MAPPING
 
@@ -193,7 +194,7 @@ class TLSSecurity(Security):
         super(TLSSecurity, self).__init__(caller_id)
         _logger.info("rospy.security.TLSSecurity init")
 
-        self.keystore_path  = os.environ['SROS_KEYSTORE_PATH']
+        self.keystore_path  = rospkg.get_sros_keystore_path()
         self.capath   = os.path.join(self.keystore_path, 'capath')
         self.nodestore_path = os.path.join(self.keystore_path, 'nodes', self.node_stem.lstrip('/'))
         self.nodestore_paths = self.get_nodestore_paths()
