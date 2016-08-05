@@ -83,7 +83,7 @@ function(add_rostest_gtest target launch_file)
     if(TARGET tests)
       add_dependencies(tests ${target})
     endif()
-    add_rostest(${launch_file})
+    add_rostest(${launch_file} DEPENDENCIES ${target})
   endif()
 endfunction()
 
