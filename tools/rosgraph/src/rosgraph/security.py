@@ -11,7 +11,8 @@ import ssl
 # import shutil
 import httplib
 # import sys
-from keyserver import get_keyserver_uri
+import rosenv
+import rospkg
 
 from sros_consts import EXTENSION_MAPPING
 
@@ -156,7 +157,7 @@ class TLSSecurity(Security):
             print("initializing node's keystore: %s" % self.nodestore_path)
             os.makedirs(self.nodestore_path)
             os.chmod(self.nodestore_path, 0o700)
-        keyserver_proxy = self.xmlrpcapi(get_keyserver_uri(), context=self.get_keyserver_context())
+        keyserver_proxy = self.xmlrpcapi(rosenv.get_keyserver_uri(), context=self.get_keyserver_context())
         code, msg, value = keyserver_proxy.requestNodeStore(self.node_id, self.node_stem)
         for file_name, file_data in value.iteritems():
             file_path = os.path.join(self.nodestore_path, file_name)
@@ -169,7 +170,7 @@ class TLSSecurity(Security):
         os.makedirs(self.capath)
         os.chmod(self.capath, 0o700)
 
-        keyserver_proxy = self.xmlrpcapi(get_keyserver_uri(), context=self.get_keyserver_context())
+        keyserver_proxy = self.xmlrpcapi(rosenv.get_keyserver_uri(), context=self.get_keyserver_context())
         code, msg, value = keyserver_proxy.getCA(self.node_id)
         for file_name, file_data in value.iteritems():
             file_path = os.path.join(self.capath, file_name)
@@ -193,7 +194,7 @@ class TLSSecurity(Security):
         super(TLSSecurity, self).__init__(caller_id)
         _logger.info("rospy.security.TLSSecurity init")
 
-        self.keystore_path  = os.environ['SROS_KEYSTORE_PATH']
+        self.keystore_path  = rospkg.get_sros_keystore_path()
         self.capath   = os.path.join(self.keystore_path, 'capath')
         self.nodestore_path = os.path.join(self.keystore_path, 'nodes', self.node_stem.lstrip('/'))
         self.nodestore_paths = self.get_nodestore_paths()

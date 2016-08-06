@@ -16,51 +16,22 @@ class SroscoreParser(argparse.ArgumentParser):
     def set(self):
         """Setup parser for sroscore"""
 
-        class CondAction(argparse.Action):
-            def __init__(self, option_strings, dest, nargs=None, **kwargs):
-                x = kwargs.pop('to_be_required', [])
-                super(CondAction, self).__init__(option_strings, dest, **kwargs)
-                self.make_required = x
-                self.dest = dest
-
-            def __call__(self, parser, namespace, values, option_string=None):
-                for x in self.make_required:
-                    x.required = True
-                if values not in GraphModes:
-                    parser.error("Unknown MODE [{}] specified".format(values))
-                setattr(namespace, self.dest, values)
-
-        self.add_argument(
-            '-k','--keyserver',
-            action='store_true',
-            help='enable keyserver')
-        self.add_argument(
-            '--keyserver_config',
-            action=CondAction,
-            to_be_required=[self._option_string_actions['--keyserver']],
-            help='path to custom config file')
-        self.add_argument(
-            '--keyserver_mode',
-            action=CondAction,
-            to_be_required=[self._option_string_actions['--keyserver']],
-            help='verify mode *on* keyserver (CERT_NONE|[CERT_OPTIONAL]|CERT_REQUIRED)')
-        self.add_argument(
-            '--keyserver_verify',
-            action=CondAction,
-            to_be_required=[self._option_string_actions['--keyserver']],
-            help='verify mode *of* keyserver (CERT_NONE|CERT_OPTIONAL|[CERT_REQUIRED])')
         self.add_argument(
             '--keystore_path',
             action='store',
-            help='path to custom keystore directory path')
+            default=rospkg.get_sros_keystore_path(),
+            help='path to custom keystore path')
+        self.add_argument(
+            '--keyserver_verify',
+            action='store',
+            help='verify mode *of* keyserver (CERT_NONE|CERT_OPTIONAL|[CERT_REQUIRED])')
         self.add_argument(
             '--policy_config',
             action='store',
-            help='policy config for access control')
+            help='policy config path for access control')
         self.add_argument(
             '--policy_mode',
-            action=CondAction,
-            # to_be_required=[self._option_string_actions['--policy_config']],
+            action='store',
             help='policy mode for access control (audit|complain|[enforce]|train)')
         self.add_argument(
             '--version',
@@ -73,6 +44,10 @@ def check_set_environ(name, arg, default):
     else:
         os.environ[name] = default
 
+def check_environ(name, default):
+    if name not in os.environ:
+        os.environ[name] = default
+
 def sroscore_main(argv = sys.argv):
     sroscore_parser = SroscoreParser(
         prog='sroscore',
@@ -81,70 +56,24 @@ def sroscore_main(argv = sys.argv):
     args, roscore_argv = sroscore_parser.parse_known_args(argv)
 
     check_set_environ(
-        'SROS_KEYSERVER_CONFIG',
-        args.keyserver_config,
-        os.path.join(os.path.expanduser('~'), '.ros', 'sros', 'keyserver_config.yaml'))
-    
-    check_set_environ(
         'SROS_KEYSTORE_PATH',
         args.keystore_path,
-        os.path.join(os.path.expanduser('~'), '.ros', 'keys'))
+        rospkg.get_sros_keystore_path())
     
     check_set_environ(
         'SROS_KEYSERVER_VERIFY',
         args.keyserver_verify,
         'CERT_REQUIRED')
-    
-    check_set_environ(
-        'SROS_KEYSERVER_MODE',
-        args.keyserver_mode,
-        'CERT_OPTIONAL')
 
     check_set_environ(
         'SROS_POLICY_CONFIG',
         args.policy_config,
-        os.path.join(os.path.expanduser('~'), '.ros', 'sros', 'policy_config.yaml'))
+        os.path.join(rospkg.get_sros_config_dir(), 'policy_config.yaml'))
     
     check_set_environ(
         'SROS_POLICY_MODE',
         args.policy_mode,
         'enforce')
-
-    if args.keyserver:
-        # if we're in setup mode, we need to start an unsecured server that will
-        # hand out the SSL certificates and keys so that nodes can talk to roscore
-        os.environ['SROS_SECURITY'] = 'ssl_setup'
-        os.environ['SROS_POLICY'] = 'namespace'
-        
-        keyserver_config = os.path.abspath(os.environ['SROS_KEYSERVER_CONFIG'])
-        keystore_path = os.path.abspath(os.environ['SROS_KEYSTORE_PATH'])
-        keyserver_mode = os.environ['SROS_KEYSERVER_MODE']
-        if not os.path.isfile(keyserver_config):
-            keyserver_config_default = os.path.join(rospkg.get_etc_ros_dir(), 'keyserver_config.yaml')
-            if not os.path.exists(os.path.dirname(keyserver_config)):
-                os.makedirs(os.path.dirname(keyserver_config))
-            shutil.copy(keyserver_config_default, keyserver_config)
-
-        policy_config = os.path.abspath(os.environ['SROS_POLICY_CONFIG'])
-        if not os.path.isfile(policy_config):
-            policy_config_default = os.path.join(rospkg.get_etc_ros_dir(), 'policy_config.yaml')
-            if not os.path.exists(os.path.dirname(policy_config)):
-                os.makedirs(os.path.dirname(policy_config))
-            shutil.copy(policy_config_default, policy_config)
-        
-        keyserver.fork_xmlrpc_keyserver(keyserver_config, keystore_path, keyserver_mode)
-    else:
-        os.environ['SROS_SECURITY'] = 'ssl'
-        os.environ['SROS_POLICY'] = 'namespace'
-    
-    import roslaunch
-    roslaunch.main(['roscore', '--core'] + roscore_argv[1:])
-
-def check_environ(name, default):
-    if name not in os.environ:
-        os.environ[name] = default
-
-def sroslaunch_main(argv = sys.argv):
 
     check_environ(
         'SROS_SECURITY',
@@ -152,16 +81,104 @@ def sroslaunch_main(argv = sys.argv):
     check_environ(
         'SROS_POLICY',
         'namespace')
+    
+    import roslaunch
+    roslaunch.main(['roscore', '--core'] + roscore_argv[1:])
+
+
+def sroslaunch_main(argv = sys.argv):
+
     check_environ(
         'SROS_KEYSTORE_PATH',
-        os.path.join(os.path.expanduser('~'), '.ros', 'keys'))
+        rospkg.get_sros_keystore_path())
     check_environ(
         'SROS_KEYSERVER_VERIFY',
         'CERT_REQUIRED')
+    check_environ(
+        'SROS_SECURITY',
+        'ssl')    
+    check_environ(
+        'SROS_POLICY',
+        'namespace')
     
     import roslaunch
     roslaunch.main(argv)
-    
+
+class SroskeyserverParser(argparse.ArgumentParser):
+    """Argument parser class sroskeyserver"""
+
+    def set(self):
+        """Setup parser for sroscore"""
+
+        self.add_argument(
+            '-c', '--keyserver_config',
+            action='store',
+            default=os.path.join(rospkg.get_sros_config_dir(), 'keyserver_config.yaml'),
+            help='path to custom config file')
+        self.add_argument(
+            '-m', '--keyserver_mode',
+            action='store',
+            default='CERT_OPTIONAL',
+            help='verify mode *on* keyserver (CERT_NONE|[CERT_OPTIONAL]|CERT_REQUIRED)')
+        self.add_argument(
+            '-k', '--keystore_path',
+            action='store',
+            default=rospkg.get_sros_keystore_path(),
+            help='path to custom keystore path')
+        self.add_argument(
+            '-p', '--port',
+            action='store',
+            default=0,
+            help='keyserver port')
+        self.add_argument(
+            '-v', '--keyserver_verify',
+            action='store',
+            help='verify mode *of* keyserver (CERT_NONE|CERT_OPTIONAL|[CERT_REQUIRED])')
+        self.add_argument(
+            '--version',
+            action='version',
+            version='%(prog)s 0.0')
+
+def sroskeyserver_main(argv = sys.argv):
+    sroskeyserver_parser = SroskeyserverParser(
+        prog='sroskeyserver',
+        description='secure ros keyserver')
+    sroskeyserver_parser.set()
+    args, argv = sroskeyserver_parser.parse_known_args(argv)
+
+    check_set_environ(
+        'SROS_KEYSERVER_VERIFY',
+        args.keyserver_verify,
+        'CERT_REQUIRED')
+    check_environ(
+        'SROS_SECURITY',
+        'ssl')
+    check_environ(
+        'SROS_POLICY',
+        'namespace')
+
+    port = keyserver.DEFAULT_KEYSERVER_PORT
+    if args.port:
+        port = int(args.port)
+
+    keystore_path = os.path.abspath(args.keystore_path)
+    keyserver_mode = keyserver.check_verify_mode(args.keyserver_mode)
+
+    keyserver_config = os.path.abspath(args.keyserver_config)
+    if not os.path.isfile(keyserver_config):
+        keyserver_config_default = os.path.join(rospkg.get_etc_ros_dir(), 'keyserver_config.yaml')
+        if not os.path.exists(os.path.dirname(keyserver_config)):
+            os.makedirs(os.path.dirname(keyserver_config))
+        shutil.copy(keyserver_config_default, keyserver_config)
+
+        policy_config = os.path.join(rospkg.get_sros_config_dir(), 'policy_config.yaml')
+        if not os.path.isfile(policy_config):
+            policy_config_default = os.path.join(rospkg.get_etc_ros_dir(), 'policy_config.yaml')
+            if not os.path.exists(os.path.dirname(policy_config)):
+                os.makedirs(os.path.dirname(policy_config))
+            shutil.copy(policy_config_default, policy_config)
+
+    keyserver.start_keyserver(keyserver_config, keystore_path, keyserver_mode, port)
 
 class SrosParser(argparse.ArgumentParser):
     """Argument parser class sros"""
@@ -193,25 +210,25 @@ def sros_main(argv = sys.argv):
     sros_parser.set()
     args = sros_parser.parse_args(argv[1:])
 
-    if args.subparser_name == 'keys':
-        return sros_keys(args)
+    if args.subparser_name == 'keystore':
+        return sros_keystore(args)
 
 
-def sros_keys(args):
+def sros_keystore(args):
     if args.delete:
         if args.all:
-            return sros_keys_delete(args)
+            return sros_keystore_delete(args)
 
 
-def sros_keys_delete(args):
+def sros_keystore_delete(args):
     # todo: parameterize keystore location, if we expand to multiple keyrings
-    keypath = os.path.join(os.path.expanduser('~'), '.ros', 'keys')
+    keystore_path = rospkg.get_sros_keystore_path()
     # do a tiny bit of sanity check...
-    if keypath.count('/') <= 1:
-        print("woah. I probably shouldn't delete this path: [%s]" % keypath)
+    if keystore_path.count('/') <= 1:
+        print("woah. I probably shouldn't delete this path: [%s]" % keystore_path)
         sys.exit(1)
-    print("deleting keystore directory: [%s]" % keypath)
-    shutil.rmtree(keypath)
+    print("deleting keystore directory: [%s]" % keystore_path)
+    shutil.rmtree(keystore_path)
     print("done.")
     return 0
 

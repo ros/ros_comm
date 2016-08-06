@@ -2,19 +2,19 @@ from __future__ import print_function
 
 import logging
 import os
-import names
+# import names
 import time
-import socket
-import subprocess
-import traceback
+# import socket
+# import subprocess
+# import traceback
 import ssl
 import rosgraph.masterapi
 from rosgraph import rosenv
-import shutil
-import httplib
-import sys
-import base64
-import rosgraph_helper
+# import shutil
+# import httplib
+# import sys
+# import base64
+# import rosgraph_helper
 import key_helper
 #from rospy.exceptions import TransportInitError
 
@@ -28,56 +28,19 @@ try:
 except ImportError:
     import xmlrpclib as xmlrpcclient #Python 2.x
 
-
-
-def node_name_to_cert_stem(node_name):
-    node_name = caller_id_to_node_name(node_name)
-    stem = node_name
-    if (stem[0] == '/'):
-        stem = stem[1:]
-    if '..' in node_name:
-        raise ValueError('woah there. node_name [%s] has a double-dot. OH NOES.' % node_name)
-    return stem.replace('/', '__')
-
-def caller_id_to_node_name(caller_id):
-    stem = caller_id
-    # check for anonymous node names. remove any long numeric suffix.
-    # anonymous nodes will have numeric suffix tokens at the end (PID and time)
-    tok = stem.split('_')
-    if len(tok) >= 3: # check if pid and epoch suffix posable
-        if tok[-2].isdigit() and tok[-1].isdigit(): # check for pid and epoch
-            if len(tok[-1]) == 13: # check for epoch 13 uses milliseconds
-                stem = '_'.join(tok[0:-2])
-    return stem
-
-def parse_uri(uri):
-    address_port = uri.split('://')[1]
-    address, port = address_port.rstrip('/').split(':')
-    return address, int(port)
-
-def get_keyserver_uri():
-    #TODO: Fix uri fetching
-    master_uri = rosenv.get_master_uri()
-    address, port = parse_uri(master_uri)
-    keyserver_uri = 'https://%s:%d' % (address, port - 1)
-    return keyserver_uri
+DEFAULT_KEYSERVER_PORT = 11310  # default port for keyservers's to bind to
 
 class Keyserver(object):
-
-    def __init__(self, keyserver_config, keystore_path, keyserver_mode):
+    def __init__(self, keyserver_config, keystore_path, keyserver_mode, port=DEFAULT_KEYSERVER_PORT):
         self.keyserver_config = keyserver_config
         self.keystore_path = keystore_path
         self.keyserver_mode = keyserver_mode
-
-        self.uri = get_keyserver_uri()
+        self.port = port
 
         self.key_helper = key_helper.KeyHelper(self.keyserver_config, self.keystore_path)
-        self.init_context()
+        self._init_context()
 
-        from rosgraph.keyserver_handler import KeyserverHandler
-        self.keyserver_handler = KeyserverHandler(self.key_helper)
-
-    def init_context(self):
+    def _init_context(self):
         capath = os.path.join(self.keystore_path, 'capath')
         certfile, keyfile = self.key_helper.init_keyserver()
         if 'SROS_KEYSERVER_PASSWORD' in os.environ:
@@ -89,44 +52,63 @@ class Keyserver(object):
         self.context.load_verify_locations(capath=capath)
         self.context.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
 
-    def run(self):
-        address, port = parse_uri(self.uri)
+    def start(self):
+        """
+        Start the SROS Keyserver.
+        """
+        self.handler = None
+        self.keyserver_node = None
+        self.uri = None
 
         from rosgraph.xmlrpc import XmlRpcNode
+        from rosgraph.keyserver_api import KeyserverHandler
+        handler = KeyserverHandler(self.key_helper)
+        # keyserver_node = rosgraph.xmlrpc.XmlRpcNode(self.port, handler, node_name='keyserver')
         keyserver_node = XmlRpcNode(
-            port=port,
-            rpc_handler=self.keyserver_handler,
+            port=self.port,
+            rpc_handler=handler,
             node_name='keyserver',
-            context=self.context)
+            context=self.context,
+        )
+        keyserver_node.start()
 
-        try:
-            keyserver_node.run()
-        except KeyboardInterrupt:
-            pass
+        # poll for initialization
+        while not keyserver_node.uri:
+            time.sleep(0.0001)
+
+            # save fields
+        self.handler = handler
+        self.keyserver_node = keyserver_node
+        self.uri = keyserver_node.uri
+
+        logging.getLogger('sros.keyserver').info("Keyserver initialized: port[%s], uri[%s]", self.port, self.uri)
+
+    def ok(self):
+        if self.keyserver_node is not None:
+            return self.keyserver_node.handler._ok()
+        else:
+            return False
+
+    def stop(self):
+        if self.keyserver_node is not None:
+            self.keyserver_node.shutdown('Keserver.stop')
+            self.keyserver_node = None
+
 
 def check_verify_mode(keyserver_mode):
     valid_modes = ['CERT_NONE','CERT_OPTIONAL','CERT_REQUIRED']
     if keyserver_mode in valid_modes:
         pass
     else:
-        raise ValueError("\nFailed to fork keyserver, keyserver verify mode is invalid!\n" +
-                         "User specified: {}".format(keyserver_mode)) 
+        raise ValueError("\nFailed to start keyserver, keyserver verify mode is invalid!\n" +
+                         "User specified: {}".format(keyserver_mode))
+    return keyserver_mode
 
-def fork_xmlrpc_keyserver(keyserver_config, keystore_path, keyserver_mode):
-    print("forking an unsecured XML-RPC server to bootstrap SSL key distribution...")
-
-    check_verify_mode(keyserver_mode)
-
-    keyserver = Keyserver(keyserver_config, keystore_path, keyserver_mode)
-
-    from multiprocessing import Process
-    p = Process(target=keyserver.run)
-    p.start()
+def check_keyserver_alive(keyserver):
     # spin until the keyserver is responding to requests    
     from rosgraph.security import XMLRPCTimeoutSafeTransport
     st = XMLRPCTimeoutSafeTransport(context=keyserver.context, timeout=10.0)
     keyserver_proxy = xmlrpcclient.ServerProxy(keyserver.uri, transport=st, context=keyserver.context)
-
     print("sleeping until keyserver has generated the initial keyring...")
     while True:
         try:
@@ -134,9 +116,28 @@ def fork_xmlrpc_keyserver(keyserver_config, keystore_path, keyserver_mode):
             break
         except Exception as e:
             time.sleep(0.01)
-    # TODO: Not sure why this changes from localhost to <hostname> 
-    # if value != keyserver.uri:
-    #     raise ValueError("Keyserver URI does not match what was expexted:" + 
-    #                      "getUri returned {} instead of {}".format(value, keyserver.uri))
-    logging.getLogger('rosmaster.keyserver').info("Keyserver initialized: uri[%s]", keyserver.uri)
+
+    if value != keyserver.uri:
+        raise ValueError("Keyserver URI does not match what was expexted:" + 
+                         "getUri returned {} instead of {}".format(value, keyserver.uri))
     print("Horray, the keyserver is now open for business.")
+
+def start_keyserver(keyserver_config, keystore_path, keyserver_mode, port):
+    print("Starting an XML-RPC server to bootstrap SSL key distribution...")
+    logger = logging.getLogger("sros.keyserver")
+    logger.info("initialization complete, waiting for shutdown")
+
+    try:
+        logger.info("Starting SROS Keyserver Node")
+        keyserver = Keyserver(keyserver_config, keystore_path, keyserver_mode, port)
+        keyserver.start()
+        check_keyserver_alive(keyserver)
+
+        import time
+        while keyserver.ok():
+            time.sleep(.1)
+    except KeyboardInterrupt:
+        logger.info("keyboard interrupt, will exit")
+    finally:
+        logger.info("stopping keyserver...")
+        keyserver.stop()

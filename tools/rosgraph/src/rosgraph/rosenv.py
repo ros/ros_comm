@@ -34,6 +34,7 @@ import os
 import sys
 
 ROS_MASTER_URI   = "ROS_MASTER_URI"
+SROS_KEYSERVER_URI   = "SROS_KEYSERVER_URI"
 
 ROS_IP           ="ROS_IP"
 ROS_IPV6         ="ROS_IPV6"
@@ -78,4 +79,48 @@ def get_master_uri(env=None, argv=None):
         return env[ROS_MASTER_URI]
     except KeyError as e:
         return None
-        
+
+def parse_uri(uri):
+    protocol, address_port = uri.split('://')
+    address, port = address_port.rstrip('/').split(':')
+    return protocol, address, int(port)
+
+def get_keyserver_uri(env=None, argv=None):
+    """
+    Get the :envvar:`SROS_KEYSERVER_URI` setting from the command-line args or
+    environment, command-line args takes precedence.
+
+    :param env: override environment dictionary, ``dict``
+    :param argv: override ``sys.argv``, ``[str]``
+    :raises: :exc:`ValueError` If :envvar:both `ROS_MASTER_URI`
+      and `SROS_KEYSERVER_URI` values are invalidly specified 
+    """
+    if env is None:
+        env = os.environ
+    if argv is None:
+        argv = sys.argv
+    try:
+        for arg in argv:
+            if arg.startswith('__keyserver:='):
+                val = None
+                try:
+                    _, val = arg.split(':=')
+                except:
+                    pass
+
+                # we ignore required here because there really is no
+                # correct return value as the configuration is bad
+                # rather than unspecified
+                if not val:
+                    raise ValueError("__keyserver remapping argument '%s' improperly specified" % arg)
+                return val
+        if SROS_KEYSERVER_URI in env:
+            return env[SROS_KEYSERVER_URI]
+        else:
+            #defult to using ROS_MASTER_URI to get address and port
+            master_uri = get_master_uri(env, argv)
+            protocol, address, port = parse_uri(master_uri)
+            keyserver_uri = '%s://%s:%d' % (protocol, address, port - 1)
+            return keyserver_uri
+    except KeyError as e:
+        return None
