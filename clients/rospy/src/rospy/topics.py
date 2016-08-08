@@ -192,25 +192,28 @@ class Poller(object):
     on multiple platforms.  NOT thread-safe.
     """
     def __init__(self):
-        try:
+        if hasattr(select, 'epoll'):
             self.poller = select.epoll()
+            self.add_fd = self.add_epoll
+            self.remove_fd = self.remove_epoll
+            self.error_iter = self.error_epoll_iter
+        elif hasattr(select, 'poll'):
+            self.poller = select.poll()
             self.add_fd = self.add_poll
             self.remove_fd = self.remove_poll
             self.error_iter = self.error_poll_iter
-        except:
-            try:
-                # poll() not available, try kqueue
-                self.poller = select.kqueue()
-                self.add_fd = self.add_kqueue
-                self.remove_fd = self.remove_kqueue
-                self.error_iter = self.error_kqueue_iter
-                self.kevents = []
-            except:
-                #TODO: non-Noop impl for Windows
-                self.poller = self.noop
-                self.add_fd = self.noop
-                self.remove_fd = self.noop
-                self.error_iter = self.noop_iter
+        elif hasattr(select, 'kqueue'):
+            self.poller = select.kqueue()
+            self.add_fd = self.add_kqueue
+            self.remove_fd = self.remove_kqueue
+            self.error_iter = self.error_kqueue_iter
+            self.kevents = []
+        else:
+            #TODO: non-Noop impl for Windows
+            self.poller = self.noop
+            self.add_fd = self.noop
+            self.remove_fd = self.noop
+            self.error_iter = self.noop_iter
 
     def noop(self, *args):
         pass
@@ -221,12 +224,24 @@ class Poller(object):
             yield x
 
     def add_poll(self, fd):
-        self.poller.register(fd, select.EPOLLHUP|select.EPOLLERR|select.EPOLLRDHUP)
+        self.poller.register(fd)
 
     def remove_poll(self, fd):
         self.poller.unregister(fd)
 
     def error_poll_iter(self):
+        events = self.poller.poll(0)
+        for fd, event in events:
+            if event & (select.POLLHUP | select.POLLERR):
+                yield fd
+
+    def add_epoll(self, fd):
+        self.poller.register(fd, select.EPOLLHUP|select.EPOLLERR|select.EPOLLRDHUP)
+
+    def remove_epoll(self, fd):
+        self.poller.unregister(fd)
+
+    def error_epoll_iter(self):
         events = self.poller.poll(0)
         for fd, event in events:
             if event & (select.EPOLLHUP | select.EPOLLERR | select.EPOLLRDHUP):
