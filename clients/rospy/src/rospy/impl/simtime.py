@@ -57,7 +57,7 @@ def _is_use_simtime():
     # builtin libraries for interacting with the parameter server, at least
     # until I reorganize the client vs. internal APIs better.
     master_uri = rosgraph.get_master_uri()
-    m = security.get().xmlrpcapi(master_uri, 'master')
+    m = security.get().xmlrpcapi(master_uri)
     code, msg, val = m.getParam(rospy.names.get_caller_id(), _USE_SIMTIME)
     if code == 1 and val:
         return True

@@ -221,7 +221,7 @@ class RegManager(RegistrationListener):
             master = None
         else:
             registered = False
-            master = security.get().xmlrpcapi(master_uri, 'master')
+            master = security.get().xmlrpcapi(master_uri)
             self.logger.info("Registering with master node %s", master_uri)
 
         while not registered and not is_shutdown():
@@ -234,14 +234,12 @@ class RegManager(RegistrationListener):
                     pub, sub, srv = tm.get_publications(), tm.get_subscriptions(), sm.get_services()
                     for resolved_name, data_type in pub:
                         self.logger.info("Registering publisher topic [%s] type [%s] with master", resolved_name, data_type)
-                        #print('master.registerPublisher(%s,%s,%s,%s)' % (caller_id, resolved_name, data_type, uri))
                         code, msg, val = master.registerPublisher(caller_id, resolved_name, data_type, uri)
                         if code != 1:
                             logfatal("cannot register publication topic [%s] with master: %s"%(resolved_name, msg))
                             signal_shutdown("master/node incompatibility with register publisher")
                     for resolved_name, data_type in sub:
                         self.logger.info("registering subscriber topic [%s] type [%s] with master", resolved_name, data_type)
-                        #print('master.registerPublisher(%s,%s,%s,%s)' % (caller_id, resolved_name, data_type, uri))
                         code, msg, val = master.registerSubscriber(caller_id, resolved_name, data_type, uri)
                         if code != 1:
                             logfatal("cannot register subscription topic [%s] with master: %s"%(resolved_name, msg))
@@ -301,7 +299,6 @@ class RegManager(RegistrationListener):
                 if self.updates:
                     #work from the end as these are the most up-to-date
                     topic, uris = self.updates.pop()
-                    #print("RegManager.run() just popped topic=%s, uris=%s" % (topic, uris))
                     #filter out older updates for same topic
                     self.updates = [x for x in self.updates if x[0] != topic]
                 else:
@@ -321,7 +318,6 @@ class RegManager(RegistrationListener):
 
     def _connect_topic_thread(self, topic, uri):
         try:
-            #print("_connect_topic_thread(%s, %s)" % (topic, uri))
             code, msg, _ = self.handler._connect_topic(topic, uri)
             if code != 1:
                 logdebug("Unable to connect subscriber to publisher [%s] for topic [%s]: %s", uri, topic, msg)
@@ -345,14 +341,13 @@ class RegManager(RegistrationListener):
         # we never successfully initialized master_uri
         if not self.master_uri:
             return
-        
-        caller_id = get_caller_id()
 
-        master = security.get().xmlrpcapi(self.master_uri, 'master')
+        master = security.get().xmlrpcapi(self.master_uri)
         # we never successfully initialized master
         if master is None:
             return
         
+        caller_id = get_caller_id()
 
         # clear the registration listeners as we are going to do a quick unregister here
         rl = get_registration_listeners()
@@ -409,7 +404,7 @@ class RegManager(RegistrationListener):
             self.logger.error("Registrar: master_uri is not set yet, cannot inform master of deregistration")
         else:
             try:
-                master = security.get().xmlrpcapi(master_uri, 'master')
+                master = security.get().xmlrpcapi(master_uri)
                 if reg_type == Registration.PUB:
                     self.logger.debug("unregisterPublisher(%s, %s)", resolved_name, self.uri)
                     master.unregisterPublisher(get_caller_id(), resolved_name, self.uri)
@@ -438,7 +433,7 @@ class RegManager(RegistrationListener):
         if not master_uri:
             self.logger.error("Registrar: master_uri is not set yet, cannot inform master of registration")
         else:
-            master = security.get().xmlrpcapi(master_uri, 'master')
+            master = security.get().xmlrpcapi(master_uri)
             args = (get_caller_id(), resolved_name, data_type_or_uri, self.uri)
             registered = False
             first = True
@@ -481,9 +476,8 @@ class RegManager(RegistrationListener):
         @param resolved_name: resolved topic name
         @type  resolved_name: str
         @param uris: list of all publishers uris for topic
-        @type  uris: {str->str}
+        @type  uris: [str]
         """
-        #print("RegManager.publisher_update(%s, %s)" % (resolved_name, repr(uris)))
         try:
             self.cond.acquire()
             self.updates.append((resolved_name, uris))

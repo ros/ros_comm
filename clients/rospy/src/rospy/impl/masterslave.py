@@ -79,6 +79,11 @@ from rospy.impl.paramserver import get_param_server_cache
 from rospy.impl.registration import RegManager, get_topic_manager
 from rospy.impl.validators import non_empty, ParameterInvalid
 
+try:
+    from xmlrpc.server import resolve_dotted_attribute #Python 3.x
+except ImportError:
+    from SimpleXMLRPCServer import resolve_dotted_attribute #Python 2.x
+
 # Return code slots
 STATUS = 0
 MSG = 1
@@ -108,22 +113,42 @@ def apivalidate(error_return_value, validators=()):
       start with the second param.
     @type  validators: sequence
     """
+
     def check_validates(f):
-        assert len(validators) == f.__code__.co_argcount - 2, "%s failed arg check"%f #ignore self and caller_id
+        try:
+            func_code = f.__code__
+            func_name = f.__name__
+            func_doc = f.__doc__
+        except AttributeError:
+            func_code = f.func_code
+            func_name = f.func_name
+            func_doc = f.func_doc
+        assert len(validators) == func_code.co_argcount - 2, "%s failed arg check" % f  # ignore self and caller_id
+
         def validated_f(*args, **kwds):
             if LOG_API:
-                _logger.debug("%s%s", f.__name__, str(args[1:]))
-                #print "%s%s"%(f.func_name, str(args[1:]))
+                _logger.debug("%s%s", func_name, str(args[1:]))
+                # print "%s%s"%(func_name, str(args[1:]))
             if len(args) == 1:
-                _logger.error("%s invoked without caller_id paramter"%f.__name__)
+                _logger.error("%s invoked without caller_id paramter" % func_name)
                 return -1, "missing required caller_id parameter", error_return_value
-            elif len(args) != f.__code__.co_argcount:
+            elif len(args) != func_code.co_argcount:
                 return -1, "Error: bad call arity", error_return_value
 
             instance = args[0]
             caller_id = args[1]
-            if not isinstance(caller_id, str):
-                _logger.error("%s: invalid caller_id param type", f.__name__)
+
+            def isstring(s):
+                """Small helper version to check an object is a string in
+                a way that works for both Python 2 and 3
+                """
+                try:
+                    return isinstance(s, basestring)
+                except NameError:
+                    return isinstance(s, str)
+
+            if not isstring(caller_id):
+                _logger.error("%s: invalid caller_id param type", func_name)
                 return -1, "caller_id must be a string", error_return_value
             
             newArgs = [instance, caller_id] #canonicalized args
@@ -142,24 +167,40 @@ def apivalidate(error_return_value, validators=()):
                     else:
                         newArgs.append(a)
 
+                slave_api_policy = security.get().policy.slave_api
+                if slave_api_policy:
+                    policy_validator = getattr(slave_api_policy, func_name, None)
+                    if policy_validator:
+                        check_permitted = policy_validator(context=kwds['context'], f=f)
+                    else:
+                        check_permitted = f
+                else:
+                    check_permitted = f
+
                 if LOG_API:
-                    retval = f(*newArgs, **kwds)
-                    _logger.debug("%s%s returns %s", f.__name__, args[1:], retval)
+                    retval = check_permitted(*newArgs)
+                    _logger.debug("%s%s returns %s", func_name, args[1:], retval)
                     return retval
                 else:
-                    code, msg, val = f(*newArgs, **kwds)
+                    code, msg, val = check_permitted(*newArgs)
                     if val is None:
                         return -1, "Internal error (None value returned)", error_return_value
                     return code, msg, val
-            except TypeError as te: #most likely wrong arg number
+
+            except TypeError as te:  # most likely wrong arg number
                 _logger.error(traceback.format_exc())
-                return -1, "Error: invalid arguments: %s"%te, error_return_value
-            except Exception as e: #internal failure
+                return -1, "Error: invalid arguments: %s" % te, error_return_value
+            except Exception as e:  # internal failure
                 _logger.error(traceback.format_exc())
-                return 0, "Internal failure: %s"%e, error_return_value
-        validated_f.__name__ = f.__name__
-        validated_f.__doc__ = f.__doc__ #preserve doc
+                return 0, "Internal failure: %s" % e, error_return_value
+
+        try:
+            validated_f.__name__ = func_name
+        except AttributeError:
+            validated_f.func_name = func_name
+        validated_f.__doc__ = func_doc  # preserve doc
         return validated_f
+
     return check_validates
 
 
@@ -194,6 +235,22 @@ class ROSHandler(XmlRpcHandler):
             self.protocol_handlers.append(handler)
             
         self.reg_man = RegManager(self)
+
+    def _dispatch(self, method, params, context):
+        func = None
+        try:
+            func = resolve_dotted_attribute(
+                self,
+                method,
+                allow_dotted_names=False
+            )
+        except AttributeError:
+            pass
+
+        if func is not None:
+            return func(*params, context=context)
+        else:
+            raise Exception('method "%s" is not supported' % method)
 
     ###############################################################################
     # INTERNAL 
@@ -413,7 +470,6 @@ class ROSHandler(XmlRpcHandler):
            of subscribers connected to the topic.
         @rtype: [int, str, int]
         """
-        #print("ROSHandler._connect_topic(%s, %s)" % (topic, pub_uri))
         caller_id = rospy.names.get_caller_id()
         sub = get_topic_manager().get_subscriber_impl(topic)
         if not sub:
@@ -445,12 +501,10 @@ class ROSHandler(XmlRpcHandler):
         while not success:
             tries += 1
             try:
-                #print("starting xmlrpc connection sequence to node at %s" % pub_uri)
                 code, msg, result = \
                       security.get().xmlrpcapi(pub_uri).requestTopic(caller_id, topic, protocols)
                 success = True
             except Exception as e:
-                print("requestTopic exception: %s" % e)
                 if tries >= max_num_tries:
                     return 0, "unable to requestTopic: %s"%str(e), 0
                 else:
@@ -459,12 +513,10 @@ class ROSHandler(XmlRpcHandler):
         #Create the connection (if possible)
         if code <= 0:
             _logger.debug("connect[%s]: requestTopic did not succeed %s, %s", pub_uri, code, msg)
-            print("connect[%s]: requestTopic did not succeed %s, %s", pub_uri, code, msg)
             return code, msg, 0
         elif not result or type(protocols) != list:
             return 0, "ERROR: publisher returned invalid protocol choice: %s"%(str(result)), 0
         _logger.debug("connect[%s]: requestTopic returned protocol list %s", topic, result)
-        #print("connect[%s]: requestTopic returned protocol list %s" % (topic, result))
         protocol = result[0]
         for h in self.protocol_handlers:
             if h.supports(protocol):
@@ -505,7 +557,6 @@ class ROSHandler(XmlRpcHandler):
         @rtype: [int, str, int]
         """
         if self.reg_man:
-            #print("publisherUpdate(%s, %s, %s)" % (caller_id, topic, repr(publishers)))
             for uri in publishers:
                 self.reg_man.publisher_update(topic, publishers)
         return 1, "", 0

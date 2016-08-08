@@ -58,10 +58,6 @@ try:
     from urllib.parse import urlparse
 except ImportError:
     from urlparse import urlparse
-#try:
-#    from xmlrpc.client import ServerProxy
-#except ImportError:
-#    from xmlrpclib import ServerProxy
 
 import rosgraph.network as network
 import rosgraph.xmlrpc as xmlrpc
@@ -264,7 +260,7 @@ class ROSLaunchChildHandler(ROSLaunchBaseHandler):
         self.name = name
         self.pm = pm
         self.server_uri = server_uri
-        self.server = security.get().xmlrpcapi(server_uri, 'roslaunch')
+        self.server = security.get().xmlrpcapi(server_uri)
 
     def _shutdown(self, reason):
         """
@@ -374,19 +370,17 @@ class ROSLaunchNode(xmlrpc.XmlRpcNode):
         server_up = False
         while not server_up and time.time() < timeout_t:
             try:
-                code, msg, val = security.get().xmlrpcapi(self.uri, 'roslaunch').get_pid()
+                code, msg, val = security.get().xmlrpcapi(self.uri).get_pid()
                 if val != os.getpid():
                     raise RLException("Server at [%s] did not respond with correct PID. There appears to be something wrong with the networking configuration"%self.uri)
                 server_up = True
-            except IOError as e:
+            except IOError:
                 # presumably this can occur if we call in a small time
                 # interval between the server socket port being
                 # assigned and the XMLRPC server initializing, but it
                 # is highly unlikely and unconfirmed
-                print("  ioerror: %s" % e.strerror)
                 time.sleep(0.1)
             except socket.error as e:
-                print(e)
                 if e.errno == 113:
                     p = urlparse(self.uri)
                     raise RLException("Unable to contact the address [%s], which should be local.\nThis is generally caused by:\n * bad local network configuration\n * bad ROS_IP environment variable\n * bad ROS_HOSTNAME environment variable\nCan you ping %s?"%(self.uri, p.hostname))
@@ -505,7 +499,7 @@ class ROSLaunchChildNode(ROSLaunchNode):
         name = self.name
         self.logger.info("attempting to register with roslaunch parent [%s]"%self.server_uri)
         try:
-            server = security.get().xmlrpcapi(self.server_uri, 'roslaunch')
+            server = security.get().xmlrpcapi(self.server_uri)
             code, msg, _ = server.register(name, self.uri)
             if code != 1:
                 raise RLException("unable to register with roslaunch server: %s"%msg)

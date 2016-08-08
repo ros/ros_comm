@@ -46,6 +46,7 @@ import genpy
 import rosgraph
 import rosgraph.names
 import rosgraph.network
+import rosgraph.security as security
 
 from rospy.exceptions import TransportInitError, TransportTerminated, ROSException, ROSInterruptException
 from rospy.service import _Service, ServiceException
@@ -72,6 +73,8 @@ else:
         return isinstance(s, basestring) #Python 2.x
 
 logger = logging.getLogger('rospy.service')
+
+import rosgraph.security as security
 
 #########################################################
 # Service helpers
@@ -109,7 +112,7 @@ def wait_for_service(service, timeout=None):
             # to a down service.
             s.settimeout(timeout)
             logdebug('connecting to ' + str(addr))
-            s.connect(addr)
+            s = security.get().connect(s, addr[0], addr[1], endpoint_id=None)
             h = { 'probe' : '1', 'md5sum' : '*',
                   'callerid' : rospy.core.get_caller_id(),
                   'service': resolved_name }
@@ -222,9 +225,15 @@ def service_connection_handler(sock, client_addr, header):
     for required in ['service', 'md5sum', 'callerid']:
         if not required in header:
             return "Missing required '%s' field"%required
+
     else:
-        logger.debug("connection from %s:%s", client_addr[0], client_addr[1])
         service_name = header['service']
+        transport_policy = security.get().policy.transport
+        if transport_policy:
+            if not transport_policy.accept_service(sock, service_name):
+                return "Client policy violation"
+
+        logger.debug("connection from %s:%s", client_addr[0], client_addr[1])
         
         #TODO: make service manager configurable. I think the right
         #thing to do is to make these singletons private members of a
@@ -500,6 +509,10 @@ class ServiceProxy(_Service):
             transport.buff_size = self.buff_size
             try:
                 transport.connect(dest_addr, dest_port, service_uri)
+                transport_policy = security.get().policy.transport
+                if transport_policy:
+                    if not transport_policy.connect_service(transport.socket, self.resolved_name):
+                        raise rospy.exceptions.TransportInitError("Server policy violation")
             except TransportInitError as e:
                 # can be a connection or md5sum mismatch
                 raise ServiceException("unable to connect to service: %s"%e)

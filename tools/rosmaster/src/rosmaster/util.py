@@ -63,7 +63,7 @@ def xmlrpcapi(uri, node_name):
     if not uriValidate[0] or not uriValidate[1]:
         return None
     if not uri in _proxies:
-        _proxies[uri] = security.get().xmlrpcapi(uri, node_name)
+        _proxies[uri] = security.get().xmlrpcapi(uri)
     return _proxies[uri]
 
 

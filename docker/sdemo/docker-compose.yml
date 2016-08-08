@@ -4,7 +4,7 @@ services:
   master:
     build: .
     environment:
-      - "ROS_SECURITY=ssl"
+      - "SROS_SECURITY=ssl"
     command: bash -c "sroscore & rosrun rospy_tutorials listener & rosrun rospy_tutorials talker"
 
   # resolvable:

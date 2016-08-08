@@ -1,0 +1,152 @@
+# sros configuration file
+x509_extensions: # https://access.redhat.com/documentation/en-US/Red_Hat_Certificate_System/8.0/html/Admin_Guide/Standard_X.509_v3_Certificate_Extensions.html
+  root_extensions: &root_extensions # dict of extensions https://cryptography.io/en/latest/x509/reference/#x-509-extensions
+    AuthorityKeyIdentifier: # Authority Key Identifier extension identifies the public key corresponding to the private key used to sign a certificate
+      critical: False # This extension is always noncritical and is always evaluated
+      value: # no value needed, auto pulled from CA
+    BasicConstraints: # This extension is used during the certificate chain verification process to identify CA certificates and to apply certificate chain path length constraints
+      critical: True # PKIX Part 1 requires that this extension be marked critical. This extension is evaluated regardless of its criticality
+      value:
+        ca: True
+        path_length: 1 # max length of CA chain tat could extend from current cert
+    KeyUsage: # Key Usage extension defines the purpose of the key contained in the certificate
+      critical: True # to enforce the usage of the certificate and key
+      value:
+        key_cert_sign: True # for all CA signing certificates
+        crl_sign: True # for CA signing certificates that are used to sign CRLs
+    # NameConstraints: # PKIX recommends that this extension used in CA certificates only
+    #   critical: True
+    #   value: name_constraints # can be list or key to value in key_config
+    #   value: # can be a dict of two URI lists
+    #     permitted_subtrees:  # list of permited namespaces
+    #     excluded_subtrees: # list of excluded namespaces
+    #       - /my/topic/name{,space/}/* # example of URI string used in apparmor's regex like syntax
+    SubjectKeyIdentifier: # Subject Key Identifier extension identifies the public key certified by this certificate
+      critical: False # This extension is always noncritical
+      value: # no value needed, auto pulled from self's cert subject
+  master_extensions: &master_extensions
+    <<: *root_extensions
+    BasicConstraints: # This extension is used during the certificate chain verification process to identify CA certificates and to apply certificate chain path length constraints
+      critical: True # PKIX Part 1 requires that this extension be marked critical. This extension is evaluated regardless of its criticality
+      value:
+        ca: True
+        path_length: 0
+  node_extensions: &node_extensions
+    <<: *master_extensions
+    BasicConstraints: # PKIX recommends that this extension should not appear in end-entity certificates
+    CertificatePolicies: # This is used to embed namespace access control using graph config
+      critical: True
+      value : # no value needed, auto pulled from graph
+      # value: # can be a dict with keys as OIDs and values as lists of namespaces
+      #   1.2.3.4.5.6.7.8.9.1:  # list of permited namespaces
+      #     - "**" # keyserver cert should not be allowed for any other perpose
+    ExtendedKeyUsage: # Extended Key Usage extension indicates the purposes for which the certified public key may be used
+      critical: False # PKIX Part 1 recommends that this extension be marked noncritical
+      # value: extended_key_usage_types # can be list or key to value in key_config
+      value: # list of Extended Key Usage OID names or dotted string to include https://cryptography.io/en/latest/x509/reference/#cryptography.x509.oid.ExtendedKeyUsageOID
+        - SERVER_AUTH # used for SSL server end authentication
+        - CLIENT_AUTH # used for SSL client end authentication
+    KeyUsage: # Key Usage extension defines the purpose of the key contained in the certificate
+      critical: True # to enforce the usage of the certificate and key
+      value:
+        digital_signature: True # for SSL client certificates, S/MIME signing certificates, and object-signing certificates
+        key_encipherment: True # for SSL server certificates and S/MIME encryption certificates
+        key_agreement: True # when the subject's public key is used for key agreement
+    SubjectAlternativeName: # Subject alternative name is an X.509 extension that provides a list of general name instances that provide a set of identities for which the certificate is valid.
+      critical: False # If the certificate's subject field is empty, this extension must be marked critical.
+      value: # no value needed, auto pulled from node name
+      # value: alternative_names # can be a key to value in key_config
+      #   - /rosout # or can be list of strings
+  keyserver_extensions: &keyserver_extensions
+    <<: *node_extensions
+    CertificatePolicies: # This is used to embed namespace access control using graph config
+      critical: True
+      value: # keyserver cert should not be allowed for any other perpose
+        1.2.3.4.5.6.7.8.9.1.2:  # list of excluded namespaces
+          - "**" # any namespace
+        1.2.3.4.5.6.7.8.9.2.2:  # list of excluded namespaces
+          - "**" # any namespace
+        1.2.3.4.5.6.7.8.9.3.2:  # list of excluded namespaces
+          - "**" # any namespace
+        1.2.3.4.5.6.7.8.9.4.2:  # list of excluded namespaces
+          - "**" # any namespace
+        1.2.3.4.5.6.7.8.9.5.2:  # list of excluded namespaces
+          - "**" # any namespace
+        1.2.3.4.5.6.7.8.9.6.2:  # list of excluded namespaces
+          - "**" # any namespace
+    SubjectAlternativeName: # Alternative Name extension will not be used
+x509_meta:
+  subject: &default_subject # change subject content accordingly for your use; must be somehow unique for each CA, https://cryptography.io/en/latest/x509/reference/#object-identifiers
+    COUNTRY_NAME             : "ZZ" # uses two-letter country code https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+    STATE_OR_PROVINCE_NAME   : "Sate"
+    LOCALITY_NAME            : "Locality"
+    ORGANIZATION_NAME        : "Organization"
+    ORGANIZATIONAL_UNIT_NAME : "Organizational Unit"
+
+keys: # reserved name in config for key configuration
+  ca: # reserved name for certificate authority configuration
+    root: &root # certificate authority; listing should follow singing hierarchy as keyserver loads/generates them in order listed
+      issuer_name: # parent certificate authority; leave blank to specify as self singed
+      key: # leave blank to load private key from keystore
+        key_type: rsa # {rsa,dsa,ec}; type of asymmetric cryptographic key to use https://cryptography.io/en/latest/hazmat/primitives/asymmetric/
+        key_peram: 4096 # key length; commonly a power of 2, and usually no less than 2048 for security https://cryptography.io/en/latest/hazmat/primitives/asymmetric/rsa/?highlight=2048#generation
+      encryption_algorithm: #BestAvailableEncryption # private key cipher; leave blank to save keyfile unencrypted https://cryptography.io/en/latest/hazmat/primitives/asymmetric/serialization/#serialization-encryption-types
+      password_env: #SROS_ROOT_PASSWORD # environment variable to use acquire secret private key cipher password; leave to be propted to save keyfile unencrypted
+      fingerprint_algorithm: SHA256 # fingerprint method used for singing child certificate requests https://cryptography.io/en/latest/hazmat/primitives/cryptographic-hashes/?highlight=sha256#cryptography.hazmat.primitives.hashes.Hash
+      cert: &default_cert # certificate specifications; leave blank to load public certificate from keystore
+        subject: # change subject content accordingly for your use; must be somehow unique for each CA, https://cryptography.io/en/latest/x509/reference/#object-identifiers
+          <<: *default_subject # forking from default, so include cert subject defaults
+          COMMON_NAME: "root"
+        serial_number: 0 # if no value provided, then UUID4 is used https://cryptography.io/en/latest/x509/reference/?highlight=uuid4#cryptography.x509.CertificateBuilder.serial_number
+        not_valid_before : 0 # intager seconds into future (positive) or past (neative) wrt. now
+        not_valid_after  : 315360000 # 10yrs * 365days * 24hours * 60min * 60sec
+        x509_extensions:
+          <<: *root_extensions
+    master: &master
+      <<: *root # inherit key config defaults from root lable
+      issuer_name: root # use root as
+      key:
+        key_type: rsa
+        key_peram: 2048 # overide key length inherited from root
+      password_env: #SROS_MASTER_PASSWORD
+      cert:
+        <<: *default_cert # forking from default cert, so include cert defaults
+        subject: # change subject content accordingly for your use
+          <<: *default_subject # forking from root cert, so include cert defaults
+          COMMON_NAME: "master"
+        serial_number: 1
+        not_valid_before : 0 # or iso8601 dates format
+        not_valid_after  : 2020-12-14t21:59:43.10-05:00 # or 2020-12-14 21:59:43.10 -5
+        x509_extensions:
+          <<: *master_extensions
+  nodes: # reserved name for node certificate configuration
+    /**: &default # certificate configuration for a globbed namespace; keyserver uses first match found in order listed
+      <<: *master
+      issuer_name: master # inherit key config defaults from master lable
+      key: # overide key length inherited from master
+        key_type: ec # computationally lighter for for signing
+        key_peram: SECP384R1 # key curve; https://cryptography.io/en/latest/hazmat/primitives/asymmetric/ec/#elliptic-curves
+      password_env: #SROS_NODE_PASSWORD
+      cert:
+        <<: *default_cert
+        subject:
+          <<: *default_subject
+          COMMON_NAME: # if no value provided, then auto pulled from caller_id
+        serial_number: # if no value provided, then UUID4 is used https://cryptography.io/en/latest/x509/reference/?highlight=uuid4#cryptography.x509.CertificateBuilder.serial_number
+        not_valid_before : 0 # or iso8601 dates format
+        not_valid_after  : 2020-12-14 21:59:43.10 -5
+        policy_config: policy_config.yaml
+        x509_extensions:
+          <<: *node_extensions
+  utils: # reserved name for utility specific certificate configuration
+    keyserver: &keyserver # reserved name for keyserver certificate configuration
+      <<: *default
+      password_env: #SROS_KEYSERVER_PASSWORD
+      cert:
+        <<: *default_cert # forking from root cert, so include cert defaults
+        subject: # change subject content accordingly for your use
+          <<: *default_subject # forking from root cert, so include cert defaults
+          COMMON_NAME: "keyserver"
+        serial_number: 2
+        x509_extensions:
+          <<: *keyserver_extensions
