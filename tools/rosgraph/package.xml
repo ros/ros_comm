@@ -15,8 +15,8 @@
   <buildtool_depend version_gte="0.5.78">catkin</buildtool_depend>
 
   <run_depend>python-netifaces</run_depend>
-  <run_depend>python-rospkg</run_depend>
   <run_depend>python-requests</run_depend>
+  <run_depend>python-rospkg</run_depend>
 
   <test_depend>python-mock</test_depend>
 
