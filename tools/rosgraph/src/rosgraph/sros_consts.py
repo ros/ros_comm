@@ -60,9 +60,20 @@ class GraphModes:
         def __contains__(self, item):
             return hasattr(self, item)
 
-TLSv1_2 = "TLSv1_2"
-NAMESPACE = "NAMESPACE"
-NONE = "NONE"
+class SecuityModes:
+    TLSv1_2 = "TLSv1_2"
+
+    class __metaclass__(type):
+        def __contains__(self, item):
+            return hasattr(self, item)
+
+class PolicyModes:
+    NAMESPACE = "NAMESPACE"
+    NONE = "NONE"
+
+    class __metaclass__(type):
+        def __contains__(self, item):
+            return hasattr(self, item)
 
 class VerifyModes:
     CERT_NONE = "CERT_NONE"

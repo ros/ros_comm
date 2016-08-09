@@ -76,10 +76,10 @@ def sroscore_main(argv = sys.argv):
 
     check_environ(
         'SROS_SECURITY',
-        sros_consts.TLSv1_2)    
+        sros_consts.SecuityModes.TLSv1_2)    
     check_environ(
         'SROS_POLICY',
-        sros_consts.NAMESPACE)
+        sros_consts.PolicyModes.NAMESPACE)
     
     import roslaunch
     roslaunch.main(['roscore', '--core'] + roscore_argv[1:])
@@ -95,10 +95,10 @@ def sroslaunch_main(argv = sys.argv):
         sros_consts.VerifyModes.CERT_REQUIRED)
     check_environ(
         'SROS_SECURITY',
-        sros_consts.TLSv1_2)    
+        sros_consts.SecuityModes.TLSv1_2)    
     check_environ(
         'SROS_POLICY',
-        sros_consts.NAMESPACE)
+        sros_consts.PolicyModes.NAMESPACE)
     
     import roslaunch
     roslaunch.main(argv)
@@ -151,10 +151,10 @@ def sroskeyserver_main(argv = sys.argv):
         sros_consts.VerifyModes.CERT_REQUIRED)
     check_environ(
         'SROS_SECURITY',
-        sros_consts.TLSv1_2)
+        sros_consts.SecuityModes.TLSv1_2)
     check_environ(
         'SROS_POLICY',
-        sros_consts.NAMESPACE)
+        sros_consts.PolicyModes.NAMESPACE)
 
     port = keyserver.DEFAULT_KEYSERVER_PORT
     if args.port:

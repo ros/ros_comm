@@ -14,7 +14,7 @@ import httplib
 import rosenv
 import rospkg
 
-from sros_consts import EXTENSION_MAPPING, TLSv1_2
+import sros_consts as sros_consts
 
 try:
     import urllib.parse as urlparse #Python 3.x
@@ -135,7 +135,7 @@ class TLSSecurity(Security):
 
     def get_nodestore_paths(self):
         nodestore_paths = {}
-        for key_cert, extension in EXTENSION_MAPPING.iteritems():
+        for key_cert, extension in sros_consts.EXTENSION_MAPPING.iteritems():
             file_name = self.node_name + extension
             nodestore_paths[key_cert] = os.path.join(self.nodestore_path, file_name)
         return nodestore_paths
@@ -266,7 +266,7 @@ def init(caller_id):
     if _security is None:
         _logger.info("choosing security model...")
         if 'SROS_SECURITY' in os.environ:
-            if os.environ['SROS_SECURITY'] == TLSv1_2:
+            if os.environ['SROS_SECURITY'] == sros_consts.SecuityModes.TLSv1_2:
                 _security = TLSSecurity(caller_id)
             else:
                 raise ValueError("illegal SROS_SECURITY value: [%s]" % os.environ['SROS_SECURITY'])

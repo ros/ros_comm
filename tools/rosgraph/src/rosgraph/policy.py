@@ -67,9 +67,9 @@ def init(node_id, node_stem, node_name):
     if _policy is None:
         _logger.info("choosing policy model...")
         if 'SROS_POLICY' in os.environ:
-            if os.environ['SROS_POLICY'] == sros_consts.NAMESPACE:
+            if os.environ['SROS_POLICY'] == sros_consts.PolicyModes.NAMESPACE:
                 _policy = NameSpacePolicy(node_id, node_stem, node_name)
-            elif os.environ['SROS_POLICY'] == sros_consts.NONE:
+            elif os.environ['SROS_POLICY'] == sros_consts.PolicyModes.NONE:
                 _policy = NoPolicy(node_id, node_stem, node_name)
             else:
                 raise ValueError("illegal SROS_POLICY value: [%s]" % os.environ['SROS_POLICY'])
