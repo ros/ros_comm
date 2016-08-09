@@ -39,7 +39,7 @@ import time
 
 import rospy
 import rosgraph
-import rosgraph.xmlrpc
+from rosgraph.xmlrpc import ServerProxy
 
 from rosclient import *
 
@@ -111,7 +111,7 @@ class _NodeTestCase(TestRosClient):
             self.fail("master did not return XML-RPC API for [%s, %s]"%(self.caller_id, self.test_node))
         print("[%s] API  = %s" %(self.test_node, self.node_api))
         self.assert_(self.node_api.startswith('http'))
-        self.node = rosgraph.xmlrpc.ServerProxy(self.node_api)
+        self.node = ServerProxy(self.node_api)
 
     ## validates a URI as being http(s)
     def _checkUri(self, uri):

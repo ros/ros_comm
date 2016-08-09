@@ -35,9 +35,9 @@ import sys
 import unittest
 import time
 
+from rosgraph.xmlrpc import ServerProxy
 import roslaunch.pmon
 import roslaunch.server
-import rosgraph.xmlrpc
 from roslaunch.server import ProcessListener
 
 
@@ -347,7 +347,7 @@ class TestRoslaunchServer(unittest.TestCase):
         self.assert_(node.uri)
 
         # - call the ping API that we added
-        s = rosgraph.xmlrpc.ServerProxy(node.uri)
+        s = ServerProxy(node.uri)
         test_val = 'test-%s'%time.time()
         s.ping(test_val)
         self.assertEquals(handler.pinged, test_val)
@@ -404,7 +404,7 @@ class TestRoslaunchServer(unittest.TestCase):
         try:
             server.start()
             self.assert_(server.uri, "server URI did not initialize")
-            s = rosgraph.xmlrpc.ServerProxy(server.uri)
+            s = ServerProxy(server.uri)
             child_uri = 'http://fake-unroutable:1324'
             # - list children should be empty
             val = self._succeed(s.list_children())
@@ -455,7 +455,7 @@ class TestRoslaunchServer(unittest.TestCase):
         try:
             server.start()
             self.assert_(server.uri, "server URI did not initialize")
-            s = rosgraph.xmlrpc.ServerProxy(server.uri)
+            s = ServerProxy(server.uri)
 
             print("SERVER STARTED")
             

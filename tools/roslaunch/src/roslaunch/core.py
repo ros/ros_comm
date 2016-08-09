@@ -51,7 +51,7 @@ import rospkg
 import rosgraph
 import rosgraph.names 
 import rosgraph.network
-import rosgraph.xmlrpc
+from rosgraph.xmlrpc import ServerProxy
 
 from xml.sax.saxutils import escape 
 try:
@@ -291,7 +291,7 @@ class Master(object):
         """
         :returns:: XMLRPC proxy for communicating with master, ``rosgraph.xmlrpc.ServerProxy``
         """
-        return rosgraph.xmlrpc.ServerProxy(self.uri)
+        return ServerProxy(self.uri)
     
     def get_multi(self):
         """

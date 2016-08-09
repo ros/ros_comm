@@ -37,7 +37,7 @@ import sys
 import string
 
 import rospy
-import rosgraph.xmlrpc
+from rosgraph.xmlrpc import ServerProxy
 from rostest import *
 
 singletest = None
@@ -70,7 +70,7 @@ class SlaveTestCase(TestRosClient):
         self.caller_id = rospy.get_caller_id()
         self.node_api = self.apiSuccess(self.master.lookupNode(self.caller_id, 'test_node'))
         self.assert_(self.node_api.startswith('http'))
-        self.node = rosgraph.xmlrpc.ServerProxy(self.node_api)
+        self.node = ServerProxy(self.node_api)
         
     def testGetPid(self):
         pid = self.apiSuccess(self.node.getPid(self.caller_id))
@@ -104,7 +104,7 @@ class SlaveTestCase(TestRosClient):
             port = apiSuccess(master.addNode('', '', sourceName, pkg, node, TEST_MACHINE, 0))
             apiSuccess(master.addNode('', '', sinkName, pkg, node, TEST_MACHINE, 0))
             sourceUri = 'http://%s:%s/'%(testNodeAddr[0], port)
-            sources[sourceName] = rosgraph.xmlrpc.ServerProxy(sourceUri)
+            sources[sourceName] = ServerProxy(sourceUri)
 
         for test in tests:
             sourceName, sinkName = [val%testName for val in test[0]]
@@ -183,7 +183,7 @@ class SlaveTestCase(TestRosClient):
             port = apiSuccess(master.addNode('', '', sourceName, pkg, node, TEST_MACHINE, 0))
             apiSuccess(master.addNode('', '', sinkName, pkg, node, TEST_MACHINE, 0))
             sourceUri = 'http://%s:%s/'%(testNodeAddr[0], port)
-            sources[sourceName] = rosgraph.xmlrpc.ServerProxy(sourceUri)
+            sources[sourceName] = ServerProxy(sourceUri)
             # - start the flow
             callerId, sourceLocator, sinkLocator = test[1]
             apiSuccess(master.connectFlow(callerId, sourceLocator, sinkLocator, 1))
@@ -254,7 +254,7 @@ class SlaveTestCase(TestRosClient):
             sourceUri = 'http://%s:%s/'%(testNodeAddr[0], sourcePort)
             sinkUri = 'http://%s:%s/'%(testNodeAddr[0], sinkPort)
             sourceUris[sourceName] = sourceUri
-            sinks[sinkName] = rosgraph.xmlrpc.ServerProxy(sinkUri)
+            sinks[sinkName] = ServerProxy(sinkUri)
         return sourceUris, sinks
 
     def _sink_StartFlows(self, tests, sourceUris, sinks):

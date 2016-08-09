@@ -47,7 +47,7 @@ except ImportError:
 
 import rosunit
 import rosgraph
-import rosgraph.xmlrpc
+from rosgraph.xmlrpc import ServerProxy
 
 TCPROS = 'TCPROS'
 
@@ -127,7 +127,7 @@ class TestSlaveApi(unittest.TestCase):
             self.fail("master did not return XML-RPC API for [%s, %s]"%(self.caller_id, self.test_node))
         print "[%s] API  = %s"%(self.test_node, self.node_api)
         self.assert_(self.node_api.startswith('http'))
-        self.node = rosgraph.xmlrpc.ServerProxy(self.node_api)
+        self.node = ServerProxy(self.node_api)
 
         # hack: sleep for a couple seconds just in case the node is
         # still registering with the master.

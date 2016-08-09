@@ -41,7 +41,7 @@ import socket
 import traceback
 
 import rosgraph
-import rosgraph.xmlrpc
+from rosgraph.xmlrpc import ServerProxy
 from roslaunch.core import printlog, printerrlog
 import roslaunch.pmon
 import roslaunch.server
@@ -237,11 +237,10 @@ class SSHChildROSLaunchProcess(roslaunch.server.ChildROSLaunchProcess):
 
     def getapi(self):
         """
-        :returns: rosgraph.xmlrpc.ServerProxy to remote client XMLRPC server,
-                  `rosgraph.xmlrpc.ServerProxy`
+        :returns: ServerProxy to remote client XMLRPC server, `rosgraph.xmlrpc.ServerProxy`
         """
         if self.uri:
-            return rosgraph.xmlrpc.ServerProxy(self.uri)
+            return ServerProxy(self.uri)
         else:
             return None
     

@@ -47,7 +47,7 @@ import traceback
 import socket
 
 import rosgraph.masterapi
-import rosgraph.xmlrpc
+from rosgraph.xmlrpc import ServerProxy
 
 logger = logging.getLogger('rosgraph.graph')
 
@@ -452,7 +452,7 @@ class Graph(object):
         uri = self._node_uri_refresh(node)
         try:
             if uri:
-                api = rosgraph.xmlrpc.ServerProxy(uri)
+                api = ServerProxy(uri)
                 updated = self._node_refresh_businfo(node, api, bad_node)
         except KeyError as e:
             logger.warn('cannot contact node [%s] as it is not in the lookup table'%node)

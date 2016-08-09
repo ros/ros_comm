@@ -40,7 +40,7 @@ import sys
 
 from os.path import isfile, isdir
 
-import rosgraph.xmlrpc
+from rosgraph.xmlrpc import ServerProxy
 import roslib.packages
 import roslaunch
 import roslaunch.netapi
@@ -198,7 +198,7 @@ def roslaunch_respawn_check(ctx):
     respawn = []
     for uri in ctx.roslaunch_uris:
         try:
-            r = rosgraph.xmlrpc.ServerProxy(uri)
+            r = ServerProxy(uri)
             code, msg, val = r.list_processes()
             active, _ = val
             respawn.extend([a for a in active if a[1] > 1])
@@ -214,13 +214,13 @@ def roslaunch_uris_check(ctx):
     # uris only contains the parent launches
     for uri in ctx.roslaunch_uris:
         try:
-            r = rosgraph.xmlrpc.ServerProxy(uri)
+            r = ServerProxy(uri)
             code, msg, val = r.list_children()
             # check the children launches
             if code == 1:
                 for child_uri in val:
                     try:
-                        r = rosgraph.xmlrpc.ServerProxy(uri)
+                        r = ServerProxy(uri)
                         code, msg, val = r.get_pid()
                     except:
                         bad.append(child_uri)
@@ -232,7 +232,7 @@ def roslaunch_dead_check(ctx):
     dead = []
     for uri in ctx.roslaunch_uris:
         try:
-            r = rosgraph.xmlrpc.ServerProxy(uri)
+            r = ServerProxy(uri)
             code, msg, val = r.list_processes()
             _, dead_list = val
             dead.extend([d[0] for d in dead_list])
