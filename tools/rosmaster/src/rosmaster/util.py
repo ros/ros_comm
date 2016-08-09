@@ -48,7 +48,7 @@ except ImportError:
     from urllib import splittype
 import threading
 
-import rosgraph.xmlrpc
+from rosgraph.xmlrpc import ServerProxy
 
 from defusedxml.xmlrpc import monkey_patch
 monkey_patch()
@@ -77,11 +77,13 @@ def xmlrpcapi(uri):
         return None
     with _get_lock(uri):
         if uri not in _proxies:
-            _proxies[uri] = rosgraph.xmlrpc.ServerProxy(uri)
+            _proxies[uri] = ServerProxy(uri)
         return _proxies[uri]
 
 
 def remove_server_proxy(uri):
-    with _get_lock(uri):
-        if uri in _proxies:
-            del _proxies[uri]
+    with _global_lock:
+        with _uri_locks[uri]:
+            if uri in _proxies:
+                del _proxies[uri]
+            del _uri_locks[uri]
