@@ -62,7 +62,7 @@ def sroscore_main(argv = sys.argv):
     check_set_environ(
         'SROS_KEYSERVER_VERIFY',
         args.keyserver_verify,
-        'CERT_REQUIRED')
+        sros_consts.VerifyModes.CERT_REQUIRED)
 
     check_set_environ(
         'SROS_POLICY_CONFIG',
@@ -72,14 +72,14 @@ def sroscore_main(argv = sys.argv):
     check_set_environ(
         'SROS_POLICY_MODE',
         args.policy_mode,
-        'enforce')
+        sros_consts.GraphModes.enforce)
 
     check_environ(
         'SROS_SECURITY',
         sros_consts.TLSv1_2)    
     check_environ(
         'SROS_POLICY',
-        'namespace')
+        sros_consts.NAMESPACE)
     
     import roslaunch
     roslaunch.main(['roscore', '--core'] + roscore_argv[1:])
@@ -92,13 +92,13 @@ def sroslaunch_main(argv = sys.argv):
         rospkg.get_sros_keystore_path())
     check_environ(
         'SROS_KEYSERVER_VERIFY',
-        'CERT_REQUIRED')
+        sros_consts.VerifyModes.CERT_REQUIRED)
     check_environ(
         'SROS_SECURITY',
         sros_consts.TLSv1_2)    
     check_environ(
         'SROS_POLICY',
-        'namespace')
+        sros_consts.NAMESPACE)
     
     import roslaunch
     roslaunch.main(argv)
@@ -117,7 +117,7 @@ class SroskeyserverParser(argparse.ArgumentParser):
         self.add_argument(
             '-m', '--keyserver_mode',
             action='store',
-            default='CERT_OPTIONAL',
+            default=sros_consts.VerifyModes.CERT_OPTIONAL,
             help='verify mode *on* keyserver (CERT_NONE|[CERT_OPTIONAL]|CERT_REQUIRED)')
         self.add_argument(
             '-k', '--keystore_path',
@@ -148,13 +148,13 @@ def sroskeyserver_main(argv = sys.argv):
     check_set_environ(
         'SROS_KEYSERVER_VERIFY',
         args.keyserver_verify,
-        'CERT_REQUIRED')
+        sros_consts.VerifyModes.CERT_REQUIRED)
     check_environ(
         'SROS_SECURITY',
         sros_consts.TLSv1_2)
     check_environ(
         'SROS_POLICY',
-        'namespace')
+        sros_consts.NAMESPACE)
 
     port = keyserver.DEFAULT_KEYSERVER_PORT
     if args.port:

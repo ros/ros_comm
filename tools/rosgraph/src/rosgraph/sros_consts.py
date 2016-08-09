@@ -61,3 +61,14 @@ class GraphModes:
             return hasattr(self, item)
 
 TLSv1_2 = "TLSv1_2"
+NAMESPACE = "NAMESPACE"
+NONE = "NONE"
+
+class VerifyModes:
+    CERT_NONE = "CERT_NONE"
+    CERT_OPTIONAL = "CERT_OPTIONAL"
+    CERT_REQUIRED = "CERT_REQUIRED"
+
+    class __metaclass__(type):
+        def __contains__(self, item):
+            return hasattr(self, item)

@@ -16,6 +16,7 @@ from rosgraph import rosenv
 # import base64
 # import rosgraph_helper
 import key_helper
+import sros_consts as sros_consts
 #from rospy.exceptions import TransportInitError
 
 try:
@@ -96,8 +97,7 @@ class Keyserver(object):
 
 
 def check_verify_mode(keyserver_mode):
-    valid_modes = ['CERT_NONE','CERT_OPTIONAL','CERT_REQUIRED']
-    if keyserver_mode in valid_modes:
+    if keyserver_mode in sros_consts.VerifyModes:
         pass
     else:
         raise ValueError("\nFailed to start keyserver, keyserver verify mode is invalid!\n" +
