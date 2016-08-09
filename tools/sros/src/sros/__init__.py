@@ -4,11 +4,10 @@ import argparse
 import os
 import subprocess
 import sys
-from rosgraph.sros_consts import GraphModes
+import rosgraph.sros_consts as sros_consts
 import rosgraph.keyserver as keyserver
 import shutil
 import rospkg
-
 
 class SroscoreParser(argparse.ArgumentParser):
     """Argument parser class sroscore"""
@@ -77,7 +76,7 @@ def sroscore_main(argv = sys.argv):
 
     check_environ(
         'SROS_SECURITY',
-        'ssl')    
+        sros_consts.TLSv1_2)    
     check_environ(
         'SROS_POLICY',
         'namespace')
@@ -96,7 +95,7 @@ def sroslaunch_main(argv = sys.argv):
         'CERT_REQUIRED')
     check_environ(
         'SROS_SECURITY',
-        'ssl')    
+        sros_consts.TLSv1_2)    
     check_environ(
         'SROS_POLICY',
         'namespace')
@@ -152,7 +151,7 @@ def sroskeyserver_main(argv = sys.argv):
         'CERT_REQUIRED')
     check_environ(
         'SROS_SECURITY',
-        'ssl')
+        sros_consts.TLSv1_2)
     check_environ(
         'SROS_POLICY',
         'namespace')

@@ -14,7 +14,7 @@ import httplib
 import rosenv
 import rospkg
 
-from sros_consts import EXTENSION_MAPPING
+from sros_consts import EXTENSION_MAPPING, TLSv1_2
 
 try:
     import urllib.parse as urlparse #Python 3.x
@@ -266,7 +266,7 @@ def init(caller_id):
     if _security is None:
         _logger.info("choosing security model...")
         if 'SROS_SECURITY' in os.environ:
-            if os.environ['SROS_SECURITY'] == 'ssl' or os.environ['SROS_SECURITY'] == 'ssl_setup':
+            if os.environ['SROS_SECURITY'] == TLSv1_2:
                 _security = TLSSecurity(caller_id)
             else:
                 raise ValueError("illegal SROS_SECURITY value: [%s]" % os.environ['SROS_SECURITY'])

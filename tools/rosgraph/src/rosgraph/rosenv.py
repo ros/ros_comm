@@ -32,6 +32,7 @@
 
 import os
 import sys
+import sros_consts as sros_consts
 
 ROS_MASTER_URI   = "ROS_MASTER_URI"
 SROS_KEYSERVER_URI   = "SROS_KEYSERVER_URI"
@@ -71,7 +72,7 @@ def get_master_uri(env=None, argv=None):
                     raise ValueError("__master remapping argument '%s' improperly specified"%arg)
                 return val
         if 'SROS_SECURITY' in env and \
-            env['SROS_SECURITY'] == 'ssl' and \
+            env['SROS_SECURITY'] == sros_consts.TLSv1_2 and \
             env[ROS_MASTER_URI].split('://')[0] == 'http':
             # SROS_SECURITY is set to SSL but ROS_MASTER_URI is not HTTPS. I'll fix that for you
             return 'https://' + env[ROS_MASTER_URI].split('://')[1]

@@ -47,6 +47,8 @@ import struct
 import sys
 import platform
 
+import sros_consts as sros_consts
+
 try:
     from cStringIO import StringIO #Python 2.x
     python3 = 0
@@ -297,7 +299,7 @@ def create_local_xmlrpc_uri(port):
     """
     #TODO: merge logic in rosgraph.xmlrpc with this routine
     # in the future we may not want to be locked to http protocol nor root path
-    if 'SROS_SECURITY' in os.environ and os.environ['SROS_SECURITY'] == 'ssl':
+    if 'SROS_SECURITY' in os.environ and os.environ['SROS_SECURITY'] == sros_consts.TLSv1_2:
         return 'https://%s:%s/'%(get_host_name(), port)
     else:
         return 'http://%s:%s/'%(get_host_name(), port)

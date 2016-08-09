@@ -59,3 +59,5 @@ class GraphModes:
     class __metaclass__(type):
         def __contains__(self, item):
             return hasattr(self, item)
+
+TLSv1_2 = "TLSv1_2"
