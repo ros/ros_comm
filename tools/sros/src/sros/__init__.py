@@ -18,7 +18,6 @@ class SroscoreParser(argparse.ArgumentParser):
         self.add_argument(
             '--keystore_path',
             action='store',
-            default=rospkg.get_sros_keystore_path(),
             help='path to custom keystore path')
         self.add_argument(
             '--keyserver_verify',
@@ -40,7 +39,7 @@ class SroscoreParser(argparse.ArgumentParser):
 def check_set_environ(name, arg, default):
     if arg is not None:
         os.environ[name] = arg
-    else:
+    elif name not in os.environ:
         os.environ[name] = default
 
 def check_environ(name, default):
