@@ -459,19 +459,15 @@ class _TopicImpl(object):
             return True
 
     def check(self):
-        new_connections = self.connections[:]
-        removed_connection = False
-
-        for fd in self.connection_poll.error_iter():
-            to_remove = [x for x in new_connections if x.fileno() == fd]
-
-            for x in to_remove:
-                removed_connection = True
-                rospydebug("removing connection to %s, connection error detected"%(x.endpoint_id))
-                self._remove_connection(new_connections, x)
-
-        if removed_connection:
-            self.connections = new_connections
+        fds_to_remove = list(self.connection_poll.error_iter())
+        if fds_to_remove:
+            with self.c_lock:
+                new_connections = self.connections[:]
+                to_remove = [x for x in new_connections if x.fileno() in fds_to_remove]
+                for x in to_remove:
+                    rospydebug("removing connection to %s, connection error detected"%(x.endpoint_id))
+                    self._remove_connection(new_connections, x)
+                self.connections = new_connections
 
     def remove_connection(self, c):
         """
