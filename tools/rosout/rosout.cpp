@@ -192,7 +192,7 @@ public:
             std::cerr << "Error deleting oldest rosout log file '" << backup_file_name.str().c_str() << "': " << strerror(errno) << std::endl;
           }
         }
-        std::size_t i = (current_backup_index_ == max_backup_index_) ? current_backup_index_ : (current_backup_index_ + 1);
+        std::size_t i = std::min(max_backup_index_, current_backup_index_ + 1);
         while (i > 0)
         {
           std::stringstream current_file_name, rotated_file_name;
