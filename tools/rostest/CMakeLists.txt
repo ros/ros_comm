@@ -13,7 +13,7 @@ catkin_package(DEPENDS Boost
 catkin_python_setup()
 
 catkin_install_python(
-  PROGRAMS nodes/hztest nodes/publishtest
+  PROGRAMS nodes/hztest nodes/paramtest nodes/publishtest
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/nodes)
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
@@ -32,4 +32,5 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/publishtest.test)
   add_rostest(test/clean_master.test)
   add_rostest(test/distro_version.test)
+  add_rostest(test/param.test)
 endif()
