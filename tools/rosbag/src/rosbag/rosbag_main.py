@@ -304,7 +304,7 @@ The following variables are available:
         return
 
     try:
-        meter = ProgressMeter(outbag_filename, inbag.size)
+        meter = ProgressMeter(outbag_filename, inbag._uncompressed_size)
         total_bytes = 0
     
         if options.verbose_pattern:
