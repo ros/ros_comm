@@ -1,0 +1,25 @@
+<launch>
+  <!-- These parameters are registered to Parameter Server and
+       will be accessed by the test cases. -->
+  <param name="param_nonempty" value="This param is not empty." />
+  <param name="param_empty" value="" />
+
+  <test pkg="rostest" type="paramtest" name="paramtest_nonempty"
+        test-name="paramtest_nonempty">
+    <rosparam>
+      param_name_target: param_nonempty
+      test_duration: 5.0
+      wait_time: 30.0
+    </rosparam>
+  </test>
+
+  <test pkg="rostest" type="paramtest" name="paramtest_empty"
+        test-name="paramtest_empty">
+    <rosparam>
+      param_name_target: param_empty
+      test_duration: 5.0
+      wait_time: 30.0
+    </rosparam>
+  </test>
+
+</launch>

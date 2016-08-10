@@ -14,6 +14,8 @@ catkin_python_setup()
 
 catkin_install_python(PROGRAMS nodes/hztest
   DESTINATION  ${CATKIN_PACKAGE_SHARE_DESTINATION}/nodes/hztest)
+catkin_install_python(PROGRAMS nodes/paramtest
+  DESTINATION  ${CATKIN_PACKAGE_SHARE_DESTINATION}/nodes/paramtest)
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h")
@@ -30,4 +32,5 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/hztest.test)
   add_rostest(test/clean_master.test)
   add_rostest(test/distro_version.test)
+  add_rostest(test/param.test)
 endif()

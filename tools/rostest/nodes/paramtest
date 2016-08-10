@@ -1,0 +1,118 @@
+#!/usr/bin/env python
+# Software License Agreement (BSD License)
+#
+# Copyright (c) 2016, TORK (Tokyo Opensource Robotics Kyokai Association)
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+#  * Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above
+#    copyright notice, this list of conditions and the following
+#    disclaimer in the documentation and/or other materials provided
+#    with the distribution.
+#  * Neither the name of TORK nor the names of its
+#    contributors may be used to endorse or promote products derived
+#    from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+# Original copied from hztest node
+# https://github.com/ros/ros_comm/blob/24e45419bdd4b0d588321e3b376650c7a51bf11c/tools/rostest/nodes/hztest
+# Integration test node that checks if a designated parameter is already
+# registered at the Parameter Server. Following parameters must be set:
+#
+#  * ~/param_name_target: expected parameter name
+#  * ~/test_duration: time (in secs) to run test
+#
+
+from __future__ import print_function
+
+import sys
+import threading
+import time
+import unittest
+
+import rospy
+import rostest
+
+CLASSNAME = 'paramtest'
+
+
+class ParamTest(unittest.TestCase):
+    def __init__(self, *args):
+        super(ParamTest, self).__init__(*args)
+        rospy.init_node(CLASSNAME)
+
+        self.lock = threading.Lock()
+        self.parameter_obtained = False
+
+    def setUp(self):
+        self.errors = []
+
+    def test_param(self):
+        # performs two tests of a node, first with /rostime off,
+        # then with /rostime on
+
+        # Fetch parameters
+        try:
+            # Param to test
+            param_name_target = rospy.get_param('~param_name_target')
+            # length of test
+            test_duration = float(rospy.get_param('~test_duration'))
+            # time to wait before
+            wait_time = rospy.get_param('~wait_time', 20.)
+        except KeyError as e:
+            self.fail('ParamTest not initialized properly. Parameter [%s] not set. debug[%s] debug[%s]'%(str(e), rospy.get_caller_id(), rospy.resolve_name(e.args[0])))
+
+        print("""Parameter: %s Test Duration: %s""" % (param_name_target, test_duration))
+
+        self._test_param(param_name_target, test_duration, wait_time)
+
+    def _test_param(self, param_name_target, test_duration, wait_time):
+        self.assert_(test_duration > 0.0, "bad parameter (test_duration)")
+        self.assert_(len(param_name_target), "bad parameter (param_name_target)")
+        param_obtained = None
+
+        print("Waiting for parameters")
+        # we have to wait until the first message is received before measuring
+        # the rate as time can advance too much before publisher is up
+
+        # - give the test 20 seconds to start,
+        # may parameterize this in the future
+        wallclock_timeout_t = time.time() + wait_time
+        while not self.parameter_obtained and time.time() < wallclock_timeout_t:
+            time.sleep(0.1)
+
+        # Start actual test
+        try:
+            param_obtained = rospy.get_param(param_name_target)
+            rospy.loginfo('Content of the obtained parameter: {}'.format(param_obtained))
+        except KeyError as e:
+            self.fail('Designated parameter [%s] is not registered. debug[%s] debug[%s]'%(target_param, rospy.get_caller_id(), rospy.resolve_name(e.args[0])))
+
+        self.assertIsNotNone(param_obtained)
+
+if __name__ == '__main__':
+    # A dirty hack that is taken from hztest and not sure if it's necessary
+    # for paramtest as well.
+    time.sleep(0.75)
+    try:
+        rostest.run('rostest', CLASSNAME, ParamTest, sys.argv)
+    except KeyboardInterrupt:
+        pass
+    print("{} exiting".format(CLASSNAME))
