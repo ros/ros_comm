@@ -38,6 +38,7 @@ The code API of the rosmsg module is unstable.
 
 from __future__ import print_function
 
+import argparse
 import collections
 import inspect
 import os
@@ -683,16 +684,10 @@ def rosmsg_cmd_packages(mode, full, argv=None):
 def rosmsg_cmd_list(mode, full, argv=None):
     if argv is None:
         argv = sys.argv[1:]
-    parser = OptionParser(usage="usage: ros%s list [package_name]"%mode[1:])
-    options, args = parser.parse_args(argv[1:])
-    if len(args) == 0:
-        package_name = None
-    elif len(args) == 1:
-        package_name = args[0]
-    else:
-        sys.stderr.write('ERROR: expected number of arguments is 0 or 1, but passed %d.\n'%len(args))
-        sys.stderr.write(parser.get_usage())
-        sys.exit(2)
+    parser = argparse.ArgumentParser(usage='ros%s list [package_name]'%mode[1:])
+    parser.add_argument('package_name', nargs='?', help='package to list %s files for.'%mode[1:])
+    args = parser.parse_args(argv[1:])
+    package_name = args.package_name
     if mode == MODE_MSG:
         subdir = 'msg'
     elif mode == MODE_SRV:
