@@ -46,22 +46,13 @@ import time
 import traceback
 import types
 
-try:
-    import urllib.parse as urlparse #Python 3.x
-except ImportError:
-    import urlparse
-
-try:
-    import xmlrpc.client as xmlrpcclient #Python 3.x
-except ImportError:
-    import xmlrpclib as xmlrpcclient #Python 2.x
-
 import rospkg
 
 import rosgraph.roslogging
 
 import rospy.exceptions
 import rospy.rostime
+import rosgraph.security as security
 
 from rospy.names import *
 from rospy.impl.validators import ParameterInvalid
@@ -467,13 +458,14 @@ def is_topic(param_name):
 
 def xmlrpcapi(uri):
     """
+    Instead of instantiating xmlrpcclient.ServerProxy directly, we'll forward
+    this connection request to the security library of choice, so it can
+    be encrypted or tunneled or otherwise handled as per the security model.
+
     @return: instance for calling remote server or None if not a valid URI
     @rtype: xmlrpclib.ServerProxy
     """
     if uri is None:
         return None
-    uriValidate = urlparse.urlparse(uri)
-    if not uriValidate[0] or not uriValidate[1]:
-        return None
-    return xmlrpcclient.ServerProxy(uri)
+    return security.get().xmlrpcapi(uri)
 

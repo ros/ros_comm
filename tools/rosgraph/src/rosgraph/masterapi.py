@@ -45,6 +45,7 @@ except ImportError:
 from . names import make_caller_id
 from . rosenv import get_master_uri
 from . network import parse_http_host_and_port
+import rosgraph.security as security
 
 class MasterException(Exception):
     """
@@ -94,7 +95,7 @@ class Master(object):
         :param master_uri: (optional) override default ROS master URI, ``str``
         :raises: :exc:`ValueError` If ROS master uri not set properly
         """
-
+        security.init(caller_id)
         if master_uri is None:
             master_uri = get_master_uri()
         self._reinit(master_uri)
@@ -118,7 +119,11 @@ class Master(object):
             raise ValueError("invalid master URI: %s"%(master_uri))
 
         self.master_uri = master_uri
-        self.handle = ServerProxy(self.master_uri)
+        try:
+            self.handle = security.get().xmlrpcapi(self.master_uri)
+        except Exception as e:
+            print("woah! couldn't create xmlrpcapi to master: %s" % e)
+            raise
         
     def is_online(self):
         """

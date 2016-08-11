@@ -63,6 +63,7 @@ import rosmsg
 import rosgraph
 import rosgraph.names
 import rosgraph.network
+import rosgraph.security as security
 
 from optparse import OptionParser
 
@@ -117,7 +118,7 @@ def get_service_headers(service_name, service_uri):
         try:
             # connect to service and probe it to get the headers
             s.settimeout(5.0)
-            s.connect((dest_addr, dest_port))
+            s = security.get().connect(s, dest_addr, dest_port, endpoint_id=None)
             header = { 'probe':'1', 'md5sum':'*',
                        'callerid':'/rosservice', 'service':service_name}
             rosgraph.network.write_ros_handshake_header(s, header)

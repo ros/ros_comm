@@ -43,6 +43,7 @@ except ImportError:
     python3 = 1
 import socket
 import logging
+import os
 
 import threading
 import time
@@ -51,6 +52,7 @@ import select
 
 import rosgraph
 import rosgraph.network
+import rosgraph.security as security
 from genpy import DeserializationError, Message
 from rosgraph.network import read_ros_handshake_header, write_ros_handshake_header
 
@@ -83,7 +85,7 @@ def _is_use_tcp_keepalive():
             return _use_tcp_keepalive
         # in order to prevent circular dependencies, this does not use the
         # builtin libraries for interacting with the parameter server
-        m = rospy.core.xmlrpcapi(rosgraph.get_master_uri())
+        m = security.get().xmlrpcapi(rosgraph.get_master_uri())
         code, msg, val = m.getParam(rospy.names.get_caller_id(), _PARAM_TCP_KEEPALIVE)
         _use_tcp_keepalive = val if code == 1 else True
         return _use_tcp_keepalive 
@@ -150,7 +152,7 @@ class TCPServer(object):
             raise ROSInternalException("%s did not connect"%self.__class__.__name__)
         while not self.is_shutdown:
             try:
-                (client_sock, client_addr) = self.server_sock.accept()
+                (client_sock, client_addr) = security.get().accept(self.server_sock, rospy.get_name())
             except socket.timeout:
                 continue
             except IOError as e:
@@ -528,31 +530,33 @@ class TCPROSTransport(Transport):
             raise TransportInitError(msg)  # bubble up
  
         # now we can proceed with trying to connect.
+        self.endpoint_id = endpoint_id
+        self.dest_address = (dest_addr, dest_port)
+
+        if rosgraph.network.use_ipv6():
+            s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        else:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        if _is_use_tcp_keepalive():
+            # OSX (among others) does not define these options
+            if hasattr(socket, 'TCP_KEEPCNT') and \
+               hasattr(socket, 'TCP_KEEPIDLE') and \
+               hasattr(socket, 'TCP_KEEPINTVL'):
+                # turn on KEEPALIVE
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+                # - # keepalive failures before actual connection failure
+                s.setsockopt(socket.SOL_TCP, socket.TCP_KEEPCNT, 9)
+                # - timeout before starting KEEPALIVE process
+                s.setsockopt(socket.SOL_TCP, socket.TCP_KEEPIDLE, 60)
+                # - interval to send KEEPALIVE after IDLE timeout
+                s.setsockopt(socket.SOL_TCP, socket.TCP_KEEPINTVL, 10)
+        if timeout is not None:
+            s.settimeout(timeout)
+
         try:
-            self.endpoint_id = endpoint_id
-            self.dest_address = (dest_addr, dest_port)
-            if rosgraph.network.use_ipv6():
-                s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-            else:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            if _is_use_tcp_keepalive():
-                # OSX (among others) does not define these options
-                if hasattr(socket, 'TCP_KEEPCNT') and \
-                   hasattr(socket, 'TCP_KEEPIDLE') and \
-                   hasattr(socket, 'TCP_KEEPINTVL'):
-                    # turn on KEEPALIVE
-                    s.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-                    # - # keepalive failures before actual connection failure
-                    s.setsockopt(socket.SOL_TCP, socket.TCP_KEEPCNT, 9)
-                    # - timeout before starting KEEPALIVE process
-                    s.setsockopt(socket.SOL_TCP, socket.TCP_KEEPIDLE, 60)
-                    # - interval to send KEEPALIVE after IDLE timeout
-                    s.setsockopt(socket.SOL_TCP, socket.TCP_KEEPINTVL, 10)
-            if timeout is not None:
-                s.settimeout(timeout)
+            s = security.get().connect(s, dest_addr, dest_port, endpoint_id, timeout)
             self.socket = s
-            logdebug('connecting to ' + str(dest_addr)+ ' ' + str(dest_port))
-            self.socket.connect((dest_addr, dest_port))
             self.write_header()
             self.read_header()
             self.local_endpoint = self.socket.getsockname()
@@ -562,7 +566,7 @@ class TCPROSTransport(Transport):
             raise
         except Exception as e:
             #logerr("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, str(e)))
-            rospywarn("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, traceback.format_exc()))            
+            rospywarn("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, traceback.format_exc()))
 
             # FATAL: no reconnection as error is unknown
             self.close()

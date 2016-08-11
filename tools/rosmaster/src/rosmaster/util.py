@@ -49,8 +49,10 @@ from defusedxml.xmlrpc import monkey_patch
 monkey_patch()
 del monkey_patch
 
+import rosgraph.security as security
+
 _proxies = {} #cache ServerProxys
-def xmlrpcapi(uri):
+def xmlrpcapi(uri, node_name):
     """
     @return: instance for calling remote server or None if not a valid URI
     @rtype: xmlrpc.client.ServerProxy
@@ -61,7 +63,7 @@ def xmlrpcapi(uri):
     if not uriValidate[0] or not uriValidate[1]:
         return None
     if not uri in _proxies:
-        _proxies[uri] = ServerProxy(uri)
+        _proxies[uri] = security.get().xmlrpcapi(uri)
     return _proxies[uri]
 
 

@@ -291,6 +291,7 @@ def init_node(name, argv=None, anonymous=False, log_level=None, disable_rostime=
             logdebug("[%s] WARNING: due to __name setting, anonymous setting is being changed to false"%name)
             anonymous = False
         
+    name_stem = name
     if anonymous:
         # not as good as a uuid/guid, but more readable. can't include
         # hostname as that is not guaranteed to be a legal ROS name
@@ -311,7 +312,7 @@ def init_node(name, argv=None, anonymous=False, log_level=None, disable_rostime=
     logger.info("init_node, name[%s], pid[%s]", resolved_node_name, os.getpid())
             
     # node initialization blocks until registration with master
-    node = rospy.impl.init.start_node(os.environ, resolved_node_name, port=xmlrpc_port, tcpros_port=tcpros_port) 
+    node = rospy.impl.init.start_node(os.environ, resolved_node_name, port=xmlrpc_port, tcpros_port=tcpros_port, name_stem=name_stem) 
     rospy.core.set_node_uri(node.uri)
     rospy.core.add_shutdown_hook(node.shutdown)    
     

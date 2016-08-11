@@ -38,6 +38,8 @@ import socket
 import threading
 import time
 
+import rosgraph.security as security
+
 try:
     from xmlrpc.client import ServerProxy  # Python 3.x
 except ImportError:
@@ -166,6 +168,10 @@ def robust_connect_subscriber(conn, dest_addr, dest_port, pub_uri, receive_cb, r
     while conn.socket is None and not conn.done and not rospy.is_shutdown():
         try:
             conn.connect(dest_addr, dest_port, pub_uri, timeout=60.)
+            transport_policy = security.get().policy.transport
+            if transport_policy:
+                if not transport_policy.connect_topic(conn.socket, resolved_topic_name):
+                    raise rospy.exceptions.TransportInitError("Publisher policy violation")
         except rospy.exceptions.TransportInitError as e:
             # if the connection was closed intentionally
             # because of an unknown error, stop trying
@@ -324,6 +330,11 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
                 return "Missing required '%s' field"%required
         else:
             resolved_topic_name = header['topic']
+            transport_policy = security.get().policy.transport
+            if transport_policy:
+                if not transport_policy.accept_topic(sock, resolved_topic_name):
+                    return "Subscriber policy violation"
+
             md5sum = header['md5sum']
             tm = rospy.impl.registration.get_topic_manager()
             topic = tm.get_publisher_impl(resolved_topic_name)

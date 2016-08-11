@@ -58,13 +58,10 @@ try:
     from urllib.parse import urlparse
 except ImportError:
     from urlparse import urlparse
-try:
-    from xmlrpc.client import ServerProxy
-except ImportError:
-    from xmlrpclib import ServerProxy
 
 import rosgraph.network as network
 import rosgraph.xmlrpc as xmlrpc
+import rosgraph.security as security
 
 import roslaunch.config 
 from roslaunch.pmon import ProcessListener, Process
@@ -263,7 +260,7 @@ class ROSLaunchChildHandler(ROSLaunchBaseHandler):
         self.name = name
         self.pm = pm
         self.server_uri = server_uri
-        self.server = ServerProxy(server_uri)
+        self.server = security.get().xmlrpcapi(server_uri)
 
     def _shutdown(self, reason):
         """
@@ -348,7 +345,7 @@ class ROSLaunchNode(xmlrpc.XmlRpcNode):
         @param handler: xmlrpc api handler
         @type  handler: L{ROSLaunchBaseHandler}
         """
-        super(ROSLaunchNode, self).__init__(0, handler)
+        super(ROSLaunchNode, self).__init__(0, handler, node_name='roslaunch')
 
     def start(self):
         """
@@ -373,7 +370,7 @@ class ROSLaunchNode(xmlrpc.XmlRpcNode):
         server_up = False
         while not server_up and time.time() < timeout_t:
             try:
-                code, msg, val = ServerProxy(self.uri).get_pid()
+                code, msg, val = security.get().xmlrpcapi(self.uri).get_pid()
                 if val != os.getpid():
                     raise RLException("Server at [%s] did not respond with correct PID. There appears to be something wrong with the networking configuration"%self.uri)
                 server_up = True
@@ -502,7 +499,7 @@ class ROSLaunchChildNode(ROSLaunchNode):
         name = self.name
         self.logger.info("attempting to register with roslaunch parent [%s]"%self.server_uri)
         try:
-            server = ServerProxy(self.server_uri)
+            server = security.get().xmlrpcapi(self.server_uri)
             code, msg, _ = server.register(name, self.uri)
             if code != 1:
                 raise RLException("unable to register with roslaunch server: %s"%msg)

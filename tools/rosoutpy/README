@@ -1,0 +1,3 @@
+# rosoutpy
+A minimal rosout implementation in python
+(no logging currently)

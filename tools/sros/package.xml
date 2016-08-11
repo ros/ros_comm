@@ -1,0 +1,25 @@
+<package>
+  <name>sros</name>
+  <version>1.12.0</version>
+  <description>
+    provides some tools to automate security in ROS systems
+  </description>
+  <maintainer email="mquigley@osrfoundation.org">Morgan Quigley</maintainer>
+  <license>BSD</license>
+
+  <url>http://ros.org/wiki/sros</url>
+  <author>Morgan Quigley</author>
+
+  <buildtool_depend version_gte="0.5.78">catkin</buildtool_depend>
+  <run_depend version_gte="1.0.37">python-rospkg</run_depend>
+  <run_depend>python-yaml</run_depend>
+  <run_depend>rosgraph_msgs</run_depend>
+  <run_depend>roslib</run_depend>
+  <run_depend version_gte="1.11.16">rosmaster</run_depend>
+  <run_depend version_gte="1.11.16">roslaunch</run_depend>
+  <run_depend>rosparam</run_depend>
+
+  <export>
+    <architecture_independent/>
+  </export>
+</package>
