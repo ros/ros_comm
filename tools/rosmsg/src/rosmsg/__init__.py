@@ -683,8 +683,16 @@ def rosmsg_cmd_packages(mode, full, argv=None):
 def rosmsg_cmd_list(mode, full, argv=None):
     if argv is None:
         argv = sys.argv[1:]
-    parser = OptionParser(usage="usage: ros%s list"%mode[1:])
+    parser = OptionParser(usage="usage: ros%s list [package_name]"%mode[1:])
     options, args = parser.parse_args(argv[1:])
+    if len(args) == 0:
+        package_name = None
+    elif len(args) == 1:
+        package_name = args[0]
+    else:
+        sys.stderr.write('ERROR: expected number of arguments is 0 or 1, but passed %d.\n'%len(args))
+        sys.stderr.write(parser.get_usage())
+        sys.exit(2)
     if mode == MODE_MSG:
         subdir = 'msg'
     elif mode == MODE_SRV:
@@ -693,9 +701,16 @@ def rosmsg_cmd_list(mode, full, argv=None):
         raise ValueError('Unknown mode for iterate_packages: %s'%mode)
     rospack = rospkg.RosPack()
     packs = sorted([x for x in iterate_packages(rospack, mode)])
+    msgs_to_show = []
     for (p, direc) in packs:
         for file in _list_types(direc, subdir, mode):
-            print( "%s/%s"%(p, file))
+            if (package_name is not None) and (p != package_name):
+                continue
+            msgs_to_show.append('%s/%s'%(p, file))
+    if not msgs_to_show:
+        sys.stderr.write('WARNING: no %s is found for package [%s]\n'%(mode[1:], package_name))
+        sys.exit(1)
+    print('\n'.join(msgs_to_show))
         
 
 def fullusage(mode):
