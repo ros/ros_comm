@@ -38,6 +38,7 @@ The code API of the rosmsg module is unstable.
 
 from __future__ import print_function
 
+import argparse
 import collections
 import inspect
 import os
@@ -683,8 +684,9 @@ def rosmsg_cmd_packages(mode, full, argv=None):
 def rosmsg_cmd_list(mode, full, argv=None):
     if argv is None:
         argv = sys.argv[1:]
-    parser = OptionParser(usage="usage: ros%s list"%mode[1:])
-    options, args = parser.parse_args(argv[1:])
+    parser = argparse.ArgumentParser(usage='ros%s list [package_name]'%mode[1:])
+    parser.add_argument('package_name', nargs='?', help='package to list %s files for.'%mode[1:])
+    args = parser.parse_args(argv[1:])
     if mode == MODE_MSG:
         subdir = 'msg'
     elif mode == MODE_SRV:
@@ -693,9 +695,14 @@ def rosmsg_cmd_list(mode, full, argv=None):
         raise ValueError('Unknown mode for iterate_packages: %s'%mode)
     rospack = rospkg.RosPack()
     packs = sorted([x for x in iterate_packages(rospack, mode)])
+    if args.package_name and args.package_name not in zip(*packs)[0]:
+        sys.stderr.write('ERROR: requested package [%s] does not exist.\n'%args.package_name)
+        sys.exit(1)
     for (p, direc) in packs:
+        if args.package_name and p != args.package_name:
+            continue  # skip because it's not the requested package
         for file in _list_types(direc, subdir, mode):
-            print( "%s/%s"%(p, file))
+            print("%s/%s"%(p, file))
         
 
 def fullusage(mode):
