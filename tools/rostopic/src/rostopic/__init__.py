@@ -843,12 +843,19 @@ def _rostopic_type(topic):
     Print ROS message type of topic to screen
     :param topic: topic name, ``str``
     """
-    t, _, _ = get_topic_type(topic, blocking=False)
-    if t:
-        print(t)
-    else:
+    topic_type, topic_real_name, _ = get_topic_type(topic, blocking=False)
+    if topic_type is None:
         sys.stderr.write('unknown topic type [%s]\n'%topic)
         sys.exit(1)
+    elif topic == topic_real_name:
+        print(topic_type)
+    else:
+        field = topic[len(topic_real_name)+1:]
+        field_type = topic_type
+        for current_field in field.split('/'):
+            msg_class = roslib.message.get_message_class(field_type)
+            field_type = msg_class._slot_types[msg_class.__slots__.index(current_field)]
+        print('%s %s %s'%(topic_type, field, field_type))
 
 def _rostopic_echo_bag(callback_echo, bag_file):
     """
