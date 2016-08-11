@@ -696,11 +696,11 @@ def rosmsg_cmd_list(mode, full, argv=None):
         raise ValueError('Unknown mode for iterate_packages: %s'%mode)
     rospack = rospkg.RosPack()
     packs = sorted([x for x in iterate_packages(rospack, mode)])
-    if (package_name is not None) and (package_name not in zip(*packs)[0]):
+    if package_name and package_name not in zip(*packs)[0]:
         sys.stderr.write('ERROR: requested package [%s] does not exist.\n'%package_name)
         sys.exit(1)
     for (p, direc) in packs:
-        if (package_name is not None) and (p != package_name):
+        if package_name and p != package_name:
             continue  # skip because it's not the requested package
         for file in _list_types(direc, subdir, mode):
             print('%s/%s'%(p, file))
