@@ -701,16 +701,14 @@ def rosmsg_cmd_list(mode, full, argv=None):
         raise ValueError('Unknown mode for iterate_packages: %s'%mode)
     rospack = rospkg.RosPack()
     packs = sorted([x for x in iterate_packages(rospack, mode)])
-    msgs_to_show = []
-    for (p, direc) in packs:
-        for file in _list_types(direc, subdir, mode):
-            if (package_name is not None) and (p != package_name):
-                continue
-            msgs_to_show.append('%s/%s'%(p, file))
-    if not msgs_to_show:
-        sys.stderr.write('WARNING: no %s is found for package [%s]\n'%(mode[1:], package_name))
+    if (package_name is not None) and (package_name not in zip(*packs)[0]):
+        sys.stderr.write('ERROR: requested package [%s] does not exist.\n'%package_name)
         sys.exit(1)
-    print('\n'.join(msgs_to_show))
+    for (p, direc) in packs:
+        if (package_name is not None) and (p != package_name):
+            continue  # skip because it's not the requested package
+        for file in _list_types(direc, subdir, mode):
+            print('%s/%s'%(p, file))
         
 
 def fullusage(mode):
