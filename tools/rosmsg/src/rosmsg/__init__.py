@@ -683,10 +683,10 @@ def rosmsg_cmd_packages(mode, full, argv=None):
     
 def rosmsg_cmd_list(mode, full, argv=None):
     if argv is None:
-        argv = sys.argv[1:]
+        argv = sys.argv[2:]  # removes 'rosmsg/rossrv' and 'list'.
     parser = argparse.ArgumentParser(usage='ros%s list [package_name]'%mode[1:])
     parser.add_argument('package_name', nargs='?', help='package to list %s files for.'%mode[1:])
-    args = parser.parse_args(argv[1:])
+    args = parser.parse_args(argv)
     package_name = args.package_name
     if mode == MODE_MSG:
         subdir = 'msg'
