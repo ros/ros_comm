@@ -160,7 +160,7 @@ private:
 
     std::string                   target_filename_;
     std::string                   write_filename_;
-    std::list<std::string>         current_files_;
+    std::list<std::string>        current_files_;
 
     std::set<std::string>         currently_recording_;  //!< set of currenly recording topics
     int                           num_subscribers_;      //!< used for book-keeping of our number of subscribers
