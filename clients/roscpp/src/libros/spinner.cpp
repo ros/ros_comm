@@ -70,7 +70,7 @@ struct SpinnerMonitor {
     return true;
   }
 
-  /// remove a queue to the list
+  /// remove a queue from the list
   void remove(ros::CallbackQueue* queue)
   {
     boost::mutex::scoped_lock lock(mutex_);
@@ -89,7 +89,7 @@ struct SpinnerMonitor {
 
 SpinnerMonitor spinner_monitor;
 const std::string DEFAULT_ERROR_MESSAGE =
-    "Attempt to spin a callback queue from two spinners, one of them being single-threaded."
+    "Attempt to spin a callback queue from two spinners, one of them being single-threaded. "
     "This will probably result in callbacks being executed out-of-order.";
 }
 
