@@ -121,7 +121,7 @@ void SingleThreadedSpinner::spin(CallbackQueue* queue)
 
   if (!spinner_monitor.add(queue, true))
   {
-    ROS_ERROR_STREAM("SingleThreadedSpinner: " << DEFAULT_ERROR_MESSAGE);
+    ROS_FATAL_STREAM("SingleThreadedSpinner: " << DEFAULT_ERROR_MESSAGE);
     return;
   }
 
@@ -211,7 +211,7 @@ void AsyncSpinnerImpl::start()
 
   if (!spinner_monitor.add(callback_queue_, false))
   {
-    ROS_ERROR_STREAM("AsyncSpinnerImpl: " << DEFAULT_ERROR_MESSAGE);
+    ROS_FATAL_STREAM("AsyncSpinnerImpl: " << DEFAULT_ERROR_MESSAGE);
     return;
   }
 
