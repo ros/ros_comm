@@ -109,8 +109,10 @@ public:
 
 
   /**
-   * \brief Check if the spinner can be started. The spinner can't be started if
+   * \brief Check if the spinner can be started. The spinner shouldn't be started if
    * another single-threaded spinner is already operating on the callback queue.
+   *
+   * This function is not necessary anymore. start() will always start spinning.
    */
   ROS_DEPRECATED bool canStart();
   /**

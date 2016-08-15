@@ -42,28 +42,12 @@ namespace {
  *  To avoid multiple SingleThreadedSpinners (started from different threads) to operate on the same callback queue,
  *  this class stores a map of all spinned callback queues.
  *  If the spinner is single threaded, the corresponding thread-id is stored in the map
- *  and other threads are not allowed to spin on this callback queue too.
+ *  and if other threads will try to spin the same queue, an error message is issued.
  *
  *  If the spinner is multi-threaded, the stored thread-id is NULL and future SingleThreadedSpinners
- *  are not allowed to spin on this queue.
+ *  should not spin this queue.
  */
 struct SpinnerMonitor {
-  /// check whether the queue could be spinned without problems
-  // TODO: Remove! This is only for use with deprecated AsyncSpinner::canStart()
-  // Calling canSpin() and add() in sequence might give different return values
-  // if a single-threaded spinner was started in between.
-  bool canSpin(ros::CallbackQueue* queue, bool single_threaded)
-  {
-    boost::mutex::scoped_lock lock(mutex_);
-
-    boost::thread::id tid;
-    if (single_threaded)
-      tid = boost::this_thread::get_id();
-
-    std::map<ros::CallbackQueue*, boost::thread::id>::const_iterator it = spinning_queues_.find(queue);
-    return it == spinning_queues_.end() || it->second == tid;
-  }
-
   /// add a queue to the list
   bool add(ros::CallbackQueue* queue, bool single_threaded)
   {
@@ -73,14 +57,15 @@ struct SpinnerMonitor {
     if (single_threaded)
       tid = boost::this_thread::get_id();
 
-    std::map<ros::CallbackQueue*, boost::thread::id>::const_iterator it = spinning_queues_.find(queue);
+    std::map<ros::CallbackQueue*, boost::thread::id>::iterator it = spinning_queues_.find(queue);
     bool can_spin = ( it == spinning_queues_.end() || it->second == tid );
     if (!can_spin)
       return false;
 
-
     if (it == spinning_queues_.end())
       spinning_queues_.insert(it, std::make_pair(queue, tid));
+    else if (single_threaded)
+      it->second = tid; // "upgrade" thread id to "single-threaded"
 
     return true;
   }
@@ -92,8 +77,8 @@ struct SpinnerMonitor {
     std::map<ros::CallbackQueue*, boost::thread::id>::const_iterator it = spinning_queues_.find(queue);
     if (it != spinning_queues_.end())
     {
-      ROS_ASSERT_MSG(it->second == boost::thread::id() || it->second == boost::this_thread::get_id(),
-                     "SpinnerMonitor::remove() called from different thread than add().");
+      if (it->second != boost::thread::id() && it->second != boost::this_thread::get_id())
+        ROS_ERROR("SpinnerMonitor::remove() called from different thread than add().");
       spinning_queues_.erase(it);
     }
   }
@@ -120,10 +105,7 @@ void SingleThreadedSpinner::spin(CallbackQueue* queue)
   }
 
   if (!spinner_monitor.add(queue, true))
-  {
     ROS_FATAL_STREAM("SingleThreadedSpinner: " << DEFAULT_ERROR_MESSAGE);
-    return;
-  }
 
   ros::WallDuration timeout(0.1f);
   ros::NodeHandle n;
@@ -199,7 +181,7 @@ AsyncSpinnerImpl::~AsyncSpinnerImpl()
 
 bool AsyncSpinnerImpl::canStart()
 {
-  return spinner_monitor.canSpin(callback_queue_, false);
+  return true;
 }
 
 void AsyncSpinnerImpl::start()
@@ -210,10 +192,7 @@ void AsyncSpinnerImpl::start()
     return; // already spinning
 
   if (!spinner_monitor.add(callback_queue_, false))
-  {
     ROS_FATAL_STREAM("AsyncSpinnerImpl: " << DEFAULT_ERROR_MESSAGE);
-    return;
-  }
 
   continue_ = true;
 
