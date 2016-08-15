@@ -393,6 +393,23 @@ void Recorder::stopWriting() {
     rename(write_filename_.c_str(), target_filename_.c_str());
 }
 
+void Recorder::checkNumSplits()
+{
+    if(options_.max_splits>0)
+    {
+        current_files_.push_back(target_filename_);
+        if(current_files_.size()>options_.max_splits)
+        {
+            int err = unlink(current_files_.front().c_str());
+            if(err != 0)
+            {
+                ROS_ERROR("Unable to remove %s: %s", current_files_.front().c_str(), strerror(errno));
+            }
+            current_files_.pop_front();
+        }
+    }
+}
+
 bool Recorder::checkSize()
 {
     if (options_.max_size > 0)
@@ -403,6 +420,7 @@ bool Recorder::checkSize()
             {
                 stopWriting();
                 split_count_++;
+                checkNumSplits();
                 startWriting();
             } else {
                 ros::shutdown();
@@ -425,6 +443,7 @@ bool Recorder::checkDuration(const ros::Time& t)
                 {
                     stopWriting();
                     split_count_++;
+                    checkNumSplits();
                     start_time_ += options_.max_duration;
                     startWriting();
                 }

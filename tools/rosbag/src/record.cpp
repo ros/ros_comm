@@ -62,6 +62,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       ("bz2,j", "use BZ2 compression")
       ("lz4", "use LZ4 compression")
       ("split", po::value<int>()->implicit_value(0), "Split the bag file and continue recording when maximum size or maximum duration reached.")
+      ("max-splits", po::value<int>()->default_value(0), "Keep a maximum of N bag files, when reaching the maximum erase the oldest one to keep a constant number of files.")
       ("topic", po::value< std::vector<std::string> >(), "topic to record")
       ("size", po::value<uint64_t>(), "The maximum size of the bag to record in MB.")
       ("duration", po::value<std::string>(), "Record a bag of maximum duration in seconds, unless 'm', or 'h' is appended.")
@@ -122,6 +123,17 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
           throw ros::Exception("Split size must be 0 or positive");
         opts.max_size = 1048576 * S;
       }
+    }
+    if(vm.count("max-splits"))
+    {
+        if(!opts.split)
+        {
+            ROS_WARN("--max-splits is ignored without --split");
+        }
+        else
+        {
+            opts.max_splits = vm["max-splits"].as<int>();
+        }
     }
     if (vm.count("buffsize"))
     {
