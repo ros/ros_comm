@@ -109,10 +109,10 @@ public:
 
 
   /**
-   * \brief Check if the spinner can be started. A spinner can't be started if
-   * another spinner is already running.
+   * \brief Check if the spinner can be started. The spinner can't be started if
+   * another single-threaded spinner is already operating on the callback queue.
    */
-  bool canStart();
+  ROS_DEPRECATED bool canStart();
   /**
    * \brief Start this spinner spinning asynchronously
    */
