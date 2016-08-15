@@ -144,12 +144,10 @@ TEST(Spinners, async)
   AsyncSpinner as1(2);
   as1.start();
 
-#if 0
   // running another AsyncSpinner is allowed
   AsyncSpinner as2(2);
   as2.start();
   as2.stop();
-#endif
 
   SingleThreadedSpinner ss;
   EXPECT_THROW(ros::spin(ss), std::runtime_error);
