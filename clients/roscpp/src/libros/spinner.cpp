@@ -105,7 +105,10 @@ void SingleThreadedSpinner::spin(CallbackQueue* queue)
   }
 
   if (!spinner_monitor.add(queue, true))
+  {
     ROS_FATAL_STREAM("SingleThreadedSpinner: " << DEFAULT_ERROR_MESSAGE);
+    throw std::runtime_error("There is already another spinner on this queue");
+  }
 
   ros::WallDuration timeout(0.1f);
   ros::NodeHandle n;
@@ -192,7 +195,10 @@ void AsyncSpinnerImpl::start()
     return; // already spinning
 
   if (!spinner_monitor.add(callback_queue_, false))
+  {
     ROS_FATAL_STREAM("AsyncSpinnerImpl: " << DEFAULT_ERROR_MESSAGE);
+    throw std::runtime_error("There is already a single-threaded spinner on this queue");
+  }
 
   continue_ = true;
 
