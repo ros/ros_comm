@@ -148,6 +148,7 @@ void atexitCallback()
   if (ok() && !isShuttingDown())
   {
     ROSCPP_LOG_DEBUG("shutting down due to exit() or end of main() without cleanup of all NodeHandles");
+    g_started = false; // don't shutdown singletons, because they are already destroyed
     shutdown();
   }
 }

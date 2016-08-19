@@ -102,6 +102,9 @@ void TopicManager::shutdown()
     shutting_down_ = true;
   }
 
+  // actually one should call poll_manager_->removePollThreadListener(), but the connection is not stored above
+  poll_manager_->shutdown();
+
   xmlrpc_manager_->unbind("publisherUpdate");
   xmlrpc_manager_->unbind("requestTopic");
   xmlrpc_manager_->unbind("getBusStats");
