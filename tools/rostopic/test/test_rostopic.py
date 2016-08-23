@@ -131,6 +131,10 @@ class TestRostopic(unittest.TestCase):
                 rostopic.rostopicmain([cmd, 'type', s])
                 v = b.getvalue().strip()
                 self.assertEquals('std_msgs/String', v)
+                # check type of topic field
+                rostopic.rostopicmain([cmd, 'type', s + '/data'])
+                v = b.getvalue().strip()
+                self.assertEquals('std_msgs/String data string', v)
 
     def test_main(self):
         import rostopic
