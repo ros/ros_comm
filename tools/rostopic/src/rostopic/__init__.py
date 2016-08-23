@@ -1289,8 +1289,16 @@ def _optparse_topic_only(cmd, argv):
     return rosgraph.names.script_resolve_name('rostopic', args[0])
 
 def _rostopic_cmd_type(argv):
-    _rostopic_type(_optparse_topic_only('type', argv))
-    
+    args = argv[2:]
+    from optparse import OptionParser
+    parser = OptionParser(usage="usage: %prog type /topic_or_field", prog=NAME)
+    (options, args) = parser.parse_args(args)
+    if len(args) == 0:
+        parser.error("topic or field must be specified")
+    if len(args) > 1:
+        parser.error("you may only specify one input topic or field")
+    _rostopic_type(rosgraph.names.script_resolve_name('rostopic', args[0]))
+
 def _rostopic_cmd_hz(argv):
     args = argv[2:]
     from optparse import OptionParser
@@ -1901,7 +1909,7 @@ Commands:
 \trostopic info\tprint information about active topic
 \trostopic list\tlist active topics
 \trostopic pub\tpublish data to topic
-\trostopic type\tprint topic type
+\trostopic type\tprint topic or field type
 
 Type rostopic <command> -h for more detailed usage, e.g. 'rostopic echo -h'
 """)
