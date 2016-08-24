@@ -38,6 +38,7 @@ from __future__ import division, print_function
 
 NAME='rostopic'
 
+import argparse
 import os
 import sys
 import math
@@ -1289,15 +1290,10 @@ def _optparse_topic_only(cmd, argv):
     return rosgraph.names.script_resolve_name('rostopic', args[0])
 
 def _rostopic_cmd_type(argv):
-    args = argv[2:]
-    from optparse import OptionParser
-    parser = OptionParser(usage="usage: %prog type /topic_or_field", prog=NAME)
-    (options, args) = parser.parse_args(args)
-    if len(args) == 0:
-        parser.error("topic or field must be specified")
-    if len(args) > 1:
-        parser.error("you may only specify one input topic or field")
-    _rostopic_type(rosgraph.names.script_resolve_name('rostopic', args[0]))
+    parser = argparse.ArgumentParser(prog='%s type' % NAME)
+    parser.add_argument('topic_or_field', help='Topic or filed name')
+    args = parser.parse_args(argv[2:])
+    _rostopic_type(rosgraph.names.script_resolve_name('rostopic', args.topic_or_field))
 
 def _rostopic_cmd_hz(argv):
     args = argv[2:]
