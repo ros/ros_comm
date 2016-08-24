@@ -81,17 +81,10 @@ class PublishChecker(object):
 
     def assert_published(self):
         if self.msg:
-            if self.negative:
-                return False
-            else:
-                return True
-        elif rospy.Time.now() > self.deadline:
-            if self.negative:
-                return True
-            else:
-                return False
-        else:
-            return None
+            return not self.negative
+        if rospy.Time.now() > self.deadline:
+            return self.negative
+        return None
 
 
 class PublishTest(unittest.TestCase):
