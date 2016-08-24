@@ -216,6 +216,82 @@ def logfatal_throttle(period, msg):
     _logging_throttle(caller_id, logfatal, period, msg)
 
 
+def _log_msg_func_named(msg):
+    try:
+        return '[{cls}::{method}] {msg}'.format(
+            cls=inspect.stack()[2][0].f_locals['self'].__class__.__name__,
+            method=inspect.stack()[2][0].f_code.co_name,
+            msg=msg)
+    except KeyError:
+        return '[{func}] {msg}'.format(
+            func=inspect.stack()[2][0].f_code.co_name,
+            msg=msg)
+
+
+def logdebug_func_named(msg, *args):
+    logdebug(*[_log_msg_func_named(msg[0])] + list(msg[1:]))
+
+
+def loginfo_func_named(msg, *args):
+    loginfo(_log_msg_func_named(msg), *args)
+
+
+def logwarn_func_named(msg, *args):
+    logwarn(_log_msg_func_named(msg), *args)
+
+
+def logerr_func_named(msg, *args):
+    logerr(_log_msg_func_named(msg), *args)
+
+
+def logfatal_func_named(msg, *args):
+    logfatal(_log_msg_func_named(msg), *args)
+
+
+def _log_msg_node_named(msg):
+    return '[{node}] {msg}'.format(node=rospy.get_name(), msg=msg)
+
+
+def logdebug_node_named(msg, *args):
+    logdebug(_log_msg_node_named(msg), *args)
+
+
+def loginfo_node_named(msg, *args):
+    loginfo(_log_msg_node_named(msg), *args)
+
+
+def logwarn_node_named(msg, *args):
+    logwarn(_log_msg_node_named(msg), *args)
+
+
+def logerr_node_named(msg, *args):
+    logerr(_log_msg_node_named(msg), *args)
+
+
+def logfatal_node_named(msg, *args):
+    logfatal(_log_msg_node_named(msg), *args)
+
+
+def logdebug_node_func_named(msg, *args):
+    logdebug(_log_msg_node_named(_log_msg_func_named(msg), *args))
+
+
+def loginfo_node_func_named(msg, *args):
+    loginfo(_log_msg_node_named(_log_msg_func_named(msg), *args))
+
+
+def logwarn_node_func_named(msg, *args):
+    logwarn(_log_msg_node_named(_log_msg_func_named(msg), *args))
+
+
+def logerr_node_func_named(msg, *args):
+    logerr(_log_msg_node_named(_log_msg_func_named(msg), *args))
+
+
+def logfatal_node_func_named(msg, *args):
+    logfatal(_log_msg_node_named(_log_msg_func_named(msg), *args))
+
+
 #########################################################
 # CONSTANTS
 
