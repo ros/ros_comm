@@ -241,6 +241,33 @@ def _get_ascii_table(header, cols):
 def _sleep(duration):
     rospy.rostime.wallsleep(duration)
 
+def get_parent_topics(topic, parent_topics=None, impl=False):
+    """Get topics to which the specified topic subscribes to.
+
+    @type topic: ``str``
+    @param topic: topic name
+    @type parent_topics: ``NoneType`` or ``list``
+    @param parent_topics: list of parent topics which already got.
+    @type impl: ``bool``
+    @param impl: get parent topics recursively or not
+    """
+    master = rosgraph.Master('/rostopic')
+    publications, subscriptions, _ = master.getSystemState()
+    if parent_topics is None:
+        parent_topics = []
+    pub_nodes = [l for t, l in publications if t == topic]
+    if not pub_nodes:
+        return parent_topics
+    for node in pub_nodes[0]:
+        subs = [t for t, l in subscriptions if node in l]
+        subs = filter(lambda x: x not in parent_topics, subs)  # get unique
+        parent_topics.extend(subs)
+        if not impl:
+            return parent_topics
+        for sub in subs:
+            parent_topics = get_parent_topics(sub, parent_topics, impl=impl)
+    return parent_topics
+
 def _rostopic_hz(topics, window_size=-1, filter_expr=None, use_wtime=False):
     """
     Periodically print the publishing rate of a topic to console until
@@ -1409,6 +1436,7 @@ def _rostopic_cmd_hz(argv):
     parser.add_option("--wall-time",
                       dest="use_wtime", default=False, action="store_true",
                       help="calculates rate using wall time which can be helpful when clock isnt published during simulation")
+    parser.add_option("--parent", action="store_true", help="get parent topics and check the hz")
 
     (options, args) = parser.parse_args(args)
     if len(args) == 0:
@@ -1423,6 +1451,16 @@ def _rostopic_cmd_hz(argv):
         parser.error("window size must be an integer")
 
     topics = [rosgraph.names.script_resolve_name('rostopic', t) for t in args]
+
+    if options.parent:
+        # get all parent topics
+        for topic in topics:
+            parent_topics = get_parent_topics(topic, impl=True)
+            if parent_topics:
+                print('got parent topics [%s]' % ' -> '
+                      .join(reversed([topic] + parent_topics)))
+            topics.extend(parent_topics)
+        topics = list(set(topics))
 
     # #694
     if options.filter_expr:
