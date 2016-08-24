@@ -241,15 +241,15 @@ def _get_ascii_table(header, cols):
 def _sleep(duration):
     rospy.rostime.wallsleep(duration)
 
-def get_parent_topics(topic, parent_topics=None, impl=False):
-    """Get topics to which the specified topic subscribes to.
+def get_parent_topics(topic, parent_topics=None, recursive=False):
+    """Get topics to which the node of specified topic subscribes to.
 
     @type topic: ``str``
     @param topic: topic name
     @type parent_topics: ``NoneType`` or ``list``
     @param parent_topics: list of parent topics which already got.
-    @type impl: ``bool``
-    @param impl: get parent topics recursively or not
+    @type recursive: ``bool``
+    @param recursive: get parent topics recursively or not
     """
     master = rosgraph.Master('/rostopic')
     publications, subscriptions, _ = master.getSystemState()
@@ -259,13 +259,15 @@ def get_parent_topics(topic, parent_topics=None, impl=False):
     if not pub_nodes:
         return parent_topics
     for node in pub_nodes[0]:
-        subs = [t for t, l in subscriptions if node in l]
-        subs = filter(lambda x: x not in parent_topics, subs)  # get unique
+        subs = [t for t, l in subscriptions
+                if (node in l) and (t not in parent_topics)]
         parent_topics.extend(subs)
-        if not impl:
+        if not recursive:
             return parent_topics
         for sub in subs:
-            parent_topics = get_parent_topics(sub, parent_topics, impl=impl)
+            if sub in parent_topics:
+                continue
+            parent_topics = get_parent_topics(sub, parent_topics, recursive=recursive)
     return parent_topics
 
 def _rostopic_hz(topics, window_size=-1, filter_expr=None, use_wtime=False):
@@ -1455,7 +1457,7 @@ def _rostopic_cmd_hz(argv):
     if options.parent:
         # get all parent topics
         for topic in topics:
-            parent_topics = get_parent_topics(topic, impl=True)
+            parent_topics = get_parent_topics(topic, recursive=True)
             if parent_topics:
                 print('got parent topics [%s]' % ' -> '.join(reversed([topic] + parent_topics)))
             topics.extend(parent_topics)
