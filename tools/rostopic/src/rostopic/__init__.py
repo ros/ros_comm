@@ -1291,7 +1291,7 @@ def _optparse_topic_only(cmd, argv):
 
 def _rostopic_cmd_type(argv):
     parser = argparse.ArgumentParser(prog='%s type' % NAME)
-    parser.add_argument('topic_or_field', help='Topic or filed name')
+    parser.add_argument('topic_or_field', help='Topic or field name')
     args = parser.parse_args(argv[2:])
     _rostopic_type(rosgraph.names.script_resolve_name('rostopic', args.topic_or_field))
 
