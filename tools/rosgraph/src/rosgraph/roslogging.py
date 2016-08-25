@@ -39,11 +39,30 @@ import sys
 import time
 import logging
 import logging.config
+import inspect
 
 import rospkg
 from rospkg.environment import ROS_LOG_DIR
 
 class LoggingException(Exception): pass
+
+class RospyLogger(logging.Logger):
+    def findCaller(self):
+        """
+        Find the stack frame of the caller so that we can note the source
+        file name, line number, and function name with class name if possible.
+        """
+        frame = inspect.stack()[3][0]
+        file_name = inspect.getabsfile(frame)
+        func_name = frame.f_code.co_name
+        try:
+            class_name = frame.f_locals['self'].__class__.__name__
+            func_name = '%s::%s' % (class_name, func_name)
+        except KeyError:
+            pass
+        return file_name, 0, func_name
+
+logging.setLoggerClass(RospyLogger)
 
 def renew_latest_logdir(logfile_dir):
     log_dir = os.path.dirname(logfile_dir)
