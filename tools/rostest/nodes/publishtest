@@ -96,15 +96,13 @@ class PublishTest(unittest.TestCase):
         params = rospy.get_param('~topics', [])
         for param in params:
             if 'name' not in param:
-                rospy.logerr("'name' field is required but not specified.")
-                sys.exit(1)
+                self.fail("'name' field in rosparam is required but not specified.")
             topic = {'timeout': 10, 'negative': False}
             topic.update(param)
             self.topics.append(topic)
         # check if there is at least one topic
         if not self.topics:
-            rospy.logerr('No topic is specified.')
-            sys.exit(1)
+            self.fail('No topic is specified in rosparam.')
 
     def test_publish(self):
         """Test topics are published and messages come"""
