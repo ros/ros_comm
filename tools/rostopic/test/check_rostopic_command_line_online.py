@@ -91,6 +91,10 @@ class TestRostopicOnline(unittest.TestCase):
             output = Popen([cmd, 'type', name], stdout=PIPE).communicate()[0]
             output = output.decode()
             self.assertEquals('std_msgs/String', output.strip())
+            # check type of topic field
+            output = Popen([cmd, 'type', name + '/data'], stdout=PIPE).communicate()[0]
+            output = output.decode()
+            self.assertEquals('std_msgs/String data string', output.strip())
 
             # find
             output = Popen([cmd, 'find', 'std_msgs/String'], stdout=PIPE).communicate()[0]
