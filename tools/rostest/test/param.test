@@ -6,20 +6,32 @@
 
   <test pkg="rostest" type="paramtest" name="paramtest_nonempty"
         test-name="paramtest_nonempty">
-    <rosparam>
-      param_name_target: param_nonempty
-      test_duration: 5.0
-      wait_time: 30.0
-    </rosparam>
+    <param name="param_name_target" value="param_nonempty" />
+    <param name="test_duration" value="5.0" />
+    <param name="wait_time" value="30.0" />
   </test>
 
   <test pkg="rostest" type="paramtest" name="paramtest_empty"
         test-name="paramtest_empty">
-    <rosparam>
-      param_name_target: param_empty
-      test_duration: 5.0
-      wait_time: 30.0
-    </rosparam>
+    <param name="param_name_target" value="param_empty" />
+    <param name="test_duration" value="5.0" />
+    <param name="wait_time" value="30.0" />
+  </test>
+
+  <test pkg="rostest" type="paramtest" name="paramtest_value_simple"
+        test-name="paramtest_value_simple">
+    <param name="param_name_target" value="param_empty" />
+    <param name="param_value_target" value="Opensource Robotics is forever." />
+    <param name="test_duration" value="5.0" />
+    <param name="wait_time" value="30.0" />
+  </test>
+
+  <test pkg="rostest" type="paramtest" name="paramtest_value_urdf"
+        test-name="paramtest_value_urdf">
+    <param name="param_name_target" value="param_empty" />
+    <param name="param_value_target" value="***TODO add urdf***" />
+    <param name="test_duration" value="5.0" />
+    <param name="wait_time" value="30.0" />
   </test>
 
 </launch>
