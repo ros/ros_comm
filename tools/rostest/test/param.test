@@ -3,12 +3,13 @@
        will be accessed by the test cases. -->
   <param name="param_nonempty" value="This param is not empty." />
   <param name="param_empty" value="" />
+  <param name="param_value_specific" value="Opensource Robotics is forever." />
 
   <test pkg="rostest" type="paramtest" name="paramtest_nonempty"
         test-name="paramtest_nonempty">
     <param name="param_name_target" value="param_nonempty" />
     <param name="test_duration" value="5.0" />
-    <param name="wait_time" value="30.0" />
+    <param name="wait_time" value="20.0" />
   </test>
 
   <test pkg="rostest" type="paramtest" name="paramtest_empty"
@@ -18,18 +19,10 @@
     <param name="wait_time" value="30.0" />
   </test>
 
-  <test pkg="rostest" type="paramtest" name="paramtest_value_simple"
-        test-name="paramtest_value_simple">
-    <param name="param_name_target" value="param_empty" />
-    <param name="param_value_target" value="Opensource Robotics is forever." />
-    <param name="test_duration" value="5.0" />
-    <param name="wait_time" value="30.0" />
-  </test>
-
-  <test pkg="rostest" type="paramtest" name="paramtest_value_urdf"
-        test-name="paramtest_value_urdf">
-    <param name="param_name_target" value="param_empty" />
-    <param name="param_value_target" value="***TODO add urdf***" />
+  <test pkg="rostest" type="paramtest" name="paramtest_value_specific_correct"
+        test-name="paramtest_value_specific_correct">
+    <param name="param_name_target" value="param_value_specific" />
+    <param name="param_value_expected" value="Opensource Robotics is forever." />
     <param name="test_duration" value="5.0" />
     <param name="wait_time" value="30.0" />
   </test>

@@ -70,42 +70,37 @@ class ParamTest(unittest.TestCase):
 
         # Fetch parameters
         try:
-            # Param to test
-            param_name_target = rospy.get_param("~param_name_target")
+            # Getting the attributes of the test.
+            testattr_paramname_target = rospy.get_param("~param_name_target")
+            paramvalue_expected = rospy.get_param("~param_value_expected", None)  # This is the expected param value.
             # length of test
-            test_duration = float(rospy.get_param("~test_duration"))
+            testattr_duration = float(rospy.get_param("~test_duration", 5))
             # time to wait before
-            wait_time = rospy.get_param("~wait_time", 20.)
+            wait_time = rospy.get_param("~wait_time", 20)
         except KeyError as e:
             self.fail("ParamTest not initialized properly. Parameter [%s] not set. Caller ID: [%s] Resolved name: [%s]"%(str(e), rospy.get_caller_id(), rospy.resolve_name(e.args[0])))
+        print("Parameter: %s Test Duration: %s" % (testattr_paramname_target, testattr_duration))
+        self._test_param(testattr_paramname_target, testattr_duration, wait_time, paramvalue_expected)
 
-        print("Parameter: %s Test Duration: %s" % (param_name_target, test_duration))
-
-        self._test_param(param_name_target, test_duration, wait_time)
-
-    def _test_param(self, param_name_target, test_duration, wait_time):
-        self.assert_(test_duration > 0.0, "bad parameter (test_duration)")
-        self.assert_(len(param_name_target), "bad parameter (param_name_target)")
-        param_obtained = None
+    def _test_param(self, testattr_paramname_target, testattr_duration, wait_time, paramvalue_expected=None):
+        self.assert_(testattr_duration > 0.0, "bad parameter (test_duration)")
+        self.assert_(len(testattr_paramname_target), "bad parameter (testattr_paramname_target)")
 
         print("Waiting for parameters")
-        # we have to wait until the first message is received before measuring
-        # the rate as time can advance too much before publisher is up
 
-        # - give the test 20 seconds to start,
-        # may parameterize this in the future
         wallclock_timeout_t = time.time() + wait_time
-        while not self.parameter_obtained and time.time() < wallclock_timeout_t:
+        param_obtained = None
+        while not param_obtained and time.time() < wallclock_timeout_t:
+            try:
+                param_obtained = rospy.get_param(testattr_paramname_target)
+            except KeyError as e:
+                print('Designated parameter [%s] is not registered yet, will wait. Caller ID: [%s] Resolved name: [%s]'%(testattr_paramname_target, rospy.get_caller_id(), rospy.resolve_name(e.args[0])))
             time.sleep(0.1)
 
-        # Start actual test
-        try:
-            param_obtained = rospy.get_param(param_name_target)
-            rospy.loginfo('Content of the obtained parameter: {}'.format(param_obtained))
-        except KeyError as e:
-            self.fail('Designated parameter [%s] is not registered. Caller ID: [%s] Resolved name: [%s]'%(target_param, rospy.get_caller_id(), rospy.resolve_name(e.args[0])))
-
-        self.assertIsNotNone(param_obtained)
+        if paramvalue_expected:
+            self.assertEqual(paramvalue_expected, param_obtained)
+        else:
+            self.assertIsNotNone(param_obtained)
 
 if __name__ == '__main__':
     try:
