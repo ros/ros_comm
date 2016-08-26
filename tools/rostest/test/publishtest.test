@@ -2,12 +2,12 @@
 
   <node name="talker_0"
         pkg="rospy" type="talker.py">
-    <remap from="chatter" to="talker_0/output" />
+    <remap from="chatter" to="~output" />
   </node>
 
   <node name="talker_1"
         pkg="rospy" type="talker.py">
-    <remap from="chatter" to="talker_1/output" />
+    <remap from="chatter" to="~output" />
   </node>
 
   <node name="talker_2"
