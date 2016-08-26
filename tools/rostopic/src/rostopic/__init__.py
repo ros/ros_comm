@@ -38,6 +38,7 @@ from __future__ import division, print_function
 
 NAME='rostopic'
 
+import argparse
 import os
 import sys
 import math
@@ -914,12 +915,19 @@ def _rostopic_type(topic):
     Print ROS message type of topic to screen
     :param topic: topic name, ``str``
     """
-    t, _, _ = get_topic_type(topic, blocking=False)
-    if t:
-        print(t)
-    else:
+    topic_type, topic_real_name, _ = get_topic_type(topic, blocking=False)
+    if topic_type is None:
         sys.stderr.write('unknown topic type [%s]\n'%topic)
         sys.exit(1)
+    elif topic == topic_real_name:
+        print(topic_type)
+    else:
+        field = topic[len(topic_real_name)+1:]
+        field_type = topic_type
+        for current_field in field.split('/'):
+            msg_class = roslib.message.get_message_class(field_type)
+            field_type = msg_class._slot_types[msg_class.__slots__.index(current_field)]
+        print('%s %s %s'%(topic_type, field, field_type))
 
 def _rostopic_echo_bag(callback_echo, bag_file):
     """
@@ -1394,8 +1402,11 @@ def _optparse_topic_only(cmd, argv):
     return rosgraph.names.script_resolve_name('rostopic', args[0])
 
 def _rostopic_cmd_type(argv):
-    _rostopic_type(_optparse_topic_only('type', argv))
-    
+    parser = argparse.ArgumentParser(prog='%s type' % NAME)
+    parser.add_argument('topic_or_field', help='Topic or field name')
+    args = parser.parse_args(argv[2:])
+    _rostopic_type(rosgraph.names.script_resolve_name('rostopic', args.topic_or_field))
+
 def _rostopic_cmd_hz(argv):
     args = argv[2:]
     from optparse import OptionParser
@@ -2005,7 +2016,7 @@ Commands:
 \trostopic info\tprint information about active topic
 \trostopic list\tlist active topics
 \trostopic pub\tpublish data to topic
-\trostopic type\tprint topic type
+\trostopic type\tprint topic or field type
 
 Type rostopic <command> -h for more detailed usage, e.g. 'rostopic echo -h'
 """)
