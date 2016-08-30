@@ -1370,7 +1370,8 @@ def create_value_transform(echo_nostr, echo_noarr):
                 try:
                     msg_class = genpy.message.get_message_class(t)
                     if msg_class is None:
-                        continue
+                        # happens for list of ROS messages like std_msgs/String[]
+                        raise ValueError
                     nested_transformed = value_transform(f_val)
                     setattr(val_trans, f, nested_transformed)
                 except ValueError:
