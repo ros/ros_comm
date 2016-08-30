@@ -52,7 +52,7 @@ class RospyLogger(logging.Logger):
         Find the stack frame of the caller so that we can note the source
         file name, line number, and function name with class name if possible.
         """
-        frame = inspect.stack()[3][0]
+        frame, _, lineno, _, _, _ = inspect.stack()[3]
         file_name = inspect.getabsfile(frame)
         func_name = frame.f_code.co_name
         try:
@@ -60,7 +60,7 @@ class RospyLogger(logging.Logger):
             func_name = '%s.%s' % (class_name, func_name)
         except KeyError:
             pass
-        return file_name, 0, func_name
+        return file_name, lineno, func_name
 
 logging.setLoggerClass(RospyLogger)
 
