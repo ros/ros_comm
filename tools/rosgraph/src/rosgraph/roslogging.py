@@ -57,7 +57,7 @@ class RospyLogger(logging.Logger):
         func_name = frame.f_code.co_name
         try:
             class_name = frame.f_locals['self'].__class__.__name__
-            func_name = '%s::%s' % (class_name, func_name)
+            func_name = '%s.%s' % (class_name, func_name)
         except KeyError:
             pass
         return file_name, 0, func_name
