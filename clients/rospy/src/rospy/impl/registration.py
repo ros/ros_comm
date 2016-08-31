@@ -316,22 +316,13 @@ class RegManager(RegistrationListener):
                     t.start()
 
     def _connect_topic_thread(self, topic, uri):
-        interval = 0.5 # seconds
-        success = False
-        while not success and not is_shutdown():
-            try:
-                code, msg, _ = self.handler._connect_topic(topic, uri)
-                if code != 1:
-                    logdebug("Unable to connect subscriber to publisher [%s] for topic [%s]: %s", uri, topic, msg)
-                else:
-                  success = True
-            except Exception as e:
-                if not is_shutdown():
-                    logdebug("Unable to connect to publisher [%s] for topic [%s]: %s"%(uri, topic, traceback.format_exc()))
-                # exponential backoff
-                if interval < 60.0:
-                  interval = interval * 2
-                time.sleep(interval)
+        try:
+            code, msg, _ = self.handler._connect_topic(topic, uri)
+            if code != 1:
+                logdebug("Unable to connect subscriber to publisher [%s] for topic [%s]: %s", uri, topic, msg)
+        except Exception as e:
+            if not is_shutdown():
+                logdebug("Unable to connect to publisher [%s] for topic [%s]: %s"%(uri, topic, traceback.format_exc()))
         
     def cleanup(self, reason):
         """

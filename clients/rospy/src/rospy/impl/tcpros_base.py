@@ -562,13 +562,23 @@ class TCPROSTransport(Transport):
             raise
         except Exception as e:
             #logerr("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, str(e)))
-            rospywarn("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, traceback.format_exc()))            
-            if isinstance(e, socket.error):
-                if not isinstance(e, socket.timeout) and e.errno not in [100, 101, 102, 103, 110, 112, 113]:
-                    # 100: 'ENETDOWN', 101: 'ENETUNREACH', 102: 'ENETRESET', 103: 'ECONNABORTED'
-                    # 110: 'ETIMEDOUT', 112: 'EHOSTDOWN', 113: 'EHOSTUNREACH'
-                    # FATAL: no reconnection as error is unknown
-                    self.close()
+            rospywarn("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, traceback.format_exc()))
+            # check for error type and reason. On unknown errors the socket will be closed
+            # to avoid reconnection and error reproduction
+            if not isinstance(e, socket.error):
+                # FATAL: no reconnection as error is unknown
+                self.close()
+            elif not isinstance(e, socket.timeout) and e.errno not in [100, 101, 102, 103, 110, 112, 113]:
+                # reconnect in follow cases, otherwise close the socket:
+                # 1. socket.timeout: on timeouts caused by delays on wireless links
+                # 2. ENETDOWN (100), ENETUNREACH (101), ENETRESET (102), ECONNABORTED (103):
+                #     while using ROS_HOSTNAME ros binds to a specific interface. Theses errors
+                #     are thrown on interface shutdown e.g. on reconnection in LTE networks
+                # 3. ETIMEDOUT (110): same like 1. (for completeness)
+                # 4. EHOSTDOWN (112), EHOSTUNREACH (113): while network and/or DNS-server is not reachable
+                #
+                # no reconnection as error is not 1.-4.
+                self.close()
             raise TransportInitError(str(e)) #re-raise i/o error
                 
     def _validate_header(self, header):
@@ -741,7 +751,7 @@ class TCPROSTransport(Transport):
                 self.socket = None
                 
             if self.socket is None and interval < 30.:
-                # exponential backoff
+                # exponential backoff (maximum 32 seconds)
                 interval = interval * 2
                 
             time.sleep(interval)
