@@ -46,7 +46,7 @@ from rospkg.environment import ROS_LOG_DIR
 
 class LoggingException(Exception): pass
 
-class RospyLogger(logging.Logger):
+class RospyLogger(logging.getLoggerClass()):
     def findCaller(self):
         """
         Find the stack frame of the caller so that we can note the source
@@ -62,9 +62,7 @@ class RospyLogger(logging.Logger):
             pass
         return file_name, lineno, func_name
 
-# ensure not to overwrite custom logger classes being set by user
-if logging.getLoggerClass() == logging.Logger:
-    logging.setLoggerClass(RospyLogger)
+logging.setLoggerClass(RospyLogger)
 
 def renew_latest_logdir(logfile_dir):
     log_dir = os.path.dirname(logfile_dir)
