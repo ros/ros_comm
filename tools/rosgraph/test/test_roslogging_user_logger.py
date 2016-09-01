@@ -47,7 +47,20 @@ from nose.tools import assert_regexp_matches
 # set user defined custom logger
 class UserCustomLogger(logging.Logger):
     def findCaller(self):
+        """Returns static caller.
+
+        This method is being overwritten in rosgraph.roslogging.
+        """
         return '<filename>', '<lineno>', '<func_name>'
+
+    def _log(self, level, msg, args, exc_info=None, extra=None):
+        """Write log with ROS_IP.
+
+        This method is not being overwritten in rosgraph.roslogging.
+        """
+        ros_ip = os.environ.get('ROS_IP', '<unknown ros_ip>')
+        msg = '%s %s' % (ros_ip, msg)
+        logging.Logger._log(self, level, msg, args, exc_info, extra)
 
 logging.setLoggerClass(UserCustomLogger)
 
@@ -55,6 +68,7 @@ logging.setLoggerClass(UserCustomLogger)
 import rosgraph.roslogging
 
 
+os.environ['ROS_IP'] = '127.0.0.1'
 os.environ['ROSCONSOLE_FORMAT'] = ' '.join([
     '${severity}',
     '${message}',
@@ -102,13 +116,14 @@ def test_rosconsole__logging_format():
     for i, loc in enumerate(['module', 'function', 'method']):
         log_out = ' '.join([
             'INFO',
+            os.environ['ROS_IP'],
             'on ' + loc,
             '[0-9]*\.[0-9]*',
             '[0-9]*',
             'rosout',
-            '<filename>',
-            '<lineno>',
-            '<func_name>',
+            '.*',
+            '[0-9]*',
+            '.*',
             '/unnamed',
             '[0-9]*\.[0-9]*',
         ])
