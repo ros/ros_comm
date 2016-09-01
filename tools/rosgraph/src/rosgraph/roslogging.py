@@ -62,7 +62,9 @@ class RospyLogger(logging.Logger):
             pass
         return file_name, lineno, func_name
 
-logging.setLoggerClass(RospyLogger)
+# ensure not to overwrite custom logger classes being set by user
+if logging.getLoggerClass() == logging.Logger:
+    logging.setLoggerClass(RospyLogger)
 
 def renew_latest_logdir(logfile_dir):
     log_dir = os.path.dirname(logfile_dir)
