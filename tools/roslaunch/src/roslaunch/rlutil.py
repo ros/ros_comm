@@ -180,12 +180,13 @@ def get_or_generate_uuid(options_runid, options_wait_for_master):
                 val = roslaunch.core.generate_run_id()
     return val
     
-def check_roslaunch(f):
+def check_roslaunch(f, option_use_test_depends=False):
     """
     Check roslaunch file for errors, returning error message if check fails. This routine
     is mainly to support rostest's roslaunch_check.
 
     :param f: roslaunch file name, ``str``
+    :param option_use_test_depends: Consider test_depends, ``Bool``
     :returns: error message or ``None``
     """
     try:
@@ -197,7 +198,7 @@ def check_roslaunch(f):
     errors = []
     # check for missing deps
     try:
-        base_pkg, file_deps, missing = roslaunch.depends.roslaunch_deps([f])
+        base_pkg, file_deps, missing = roslaunch.depends.roslaunch_deps([f], use_test_depends=option_use_test_depends)
     except rospkg.common.ResourceNotFound as r:
         errors.append("Could not find package [%s] included from [%s]"%(str(r), f))
         missing = {}
