@@ -106,7 +106,7 @@ class LoggingOnClass(object):
 LoggingOnClass()
 
 
-def test_rosconsole__logging_format():
+def test_roslogging_user_logger():
     this_file = os.path.abspath(__file__)
     # this is necessary to avoid test fails because of .pyc cache file
     base, ext = os.path.splitext(this_file)
