@@ -202,8 +202,6 @@ class ROSTopicHz(object):
         # monitoring multiple topics' hz
         header = ['topic', 'rate', 'min_delta', 'max_delta', 'std_dev', 'window']
         stats = {h: [] for h in header}
-        if not any(self.times.values()):
-            return  # wait for initial message
         for topic in topics:
             hz_stat = self.get_hz(topic)
             if hz_stat is None:
