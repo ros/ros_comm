@@ -2,6 +2,10 @@
 Changelog for package rosbag_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* make Bag constructor explicit (`#835 <https://github.com/ros/ros_comm/pull/835>`_)
+
 1.12.2 (2016-06-03)
 -------------------
 

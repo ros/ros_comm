@@ -2,6 +2,10 @@
 Changelog for package rosservice
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix rosservice call for Python 3 (`#847 <https://github.com/ros/ros_comm/pull/847>`_)
+
 1.12.2 (2016-06-03)
 -------------------
 

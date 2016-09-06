@@ -2,6 +2,12 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add 'Darwin' to unix-like platforms improving address resolution (`#846 <https://github.com/ros/ros_comm/pull/846>`_)
+* use logging Formatter, enabling printing exception info with exc_info=1 (`#828 <https://github.com/ros/ros_comm/pull/828>`_)
+* add `__contains_\_`, which is a better spelling of `has` (`#754 <https://github.com/ros/ros_comm/pull/754>`_)
+
 1.12.2 (2016-06-03)
 -------------------
 * avoid creating a latest symlink for the root of the log dir (`#795 <https://github.com/ros/ros_comm/pull/795>`_)

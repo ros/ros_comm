@@ -2,6 +2,10 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* improve debug message when queue is full (`#818 <https://github.com/ros/ros_comm/issues/818>`_)
+
 1.12.2 (2016-06-03)
 -------------------
 * improve stacktrace for exceptions thrown in callbacks (`#811 <https://github.com/ros/ros_comm/pull/811>`_)
