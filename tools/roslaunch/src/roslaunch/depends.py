@@ -146,7 +146,15 @@ def _parse_launch(tags, launch_file, file_deps, verbose, context):
                 sub_launch_file = resolve_args(tag.attributes['file'].value, context)
             except KeyError as e:
                 raise RoslaunchDepsException("Cannot load roslaunch <%s> tag: missing required attribute %s.\nXML is %s"%(tag.tagName, str(e), tag.toxml()))
-                
+
+            # Check if an empty file is included, and skip if so.  This will allow a default-empty <include> inside a
+            # conditional to pass
+            if sub_launch_file == '':
+                if verbose:
+                    print("Empty <include> in %s. Skipping <include> of %s" % (launch_file,
+                                                                           tag.attributes['file'].value))
+                continue
+
             if verbose:
                 print("processing included launch %s"%sub_launch_file)
 
@@ -154,12 +162,12 @@ def _parse_launch(tags, launch_file, file_deps, verbose, context):
             sub_pkg = rospkg.get_package_name(os.path.dirname(os.path.abspath(sub_launch_file)))
             if sub_pkg is None:
                 print("ERROR: cannot determine package for [%s]"%sub_launch_file, file=sys.stderr)
-            
+
             if sub_launch_file not in file_deps[launch_file].includes:
                 file_deps[launch_file].includes.append(sub_launch_file)
-            if launch_file_pkg != sub_pkg:            
+            if launch_file_pkg != sub_pkg:
                 file_deps[launch_file].pkgs.append(sub_pkg)
-            
+
             # recurse
             file_deps[sub_launch_file] = RoslaunchDeps()
             try:
@@ -171,7 +179,8 @@ def _parse_launch(tags, launch_file, file_deps, verbose, context):
                     sub_context = _parse_subcontext(tag.childNodes, context)
                     _parse_launch(launch_tag.childNodes, sub_launch_file, file_deps, verbose, sub_context)
             except IOError as e:
-                raise RoslaunchDepsException("Cannot load roslaunch include '%s' in '%s'"%(sub_launch_file, launch_file))
+                raise RoslaunchDepsException("Cannot load roslaunch include '%s' in '%s'"%(sub_launch_file,
+                                                                                           launch_file))
 
         elif tag.tagName in ['node', 'test']:
             try:
