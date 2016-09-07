@@ -147,11 +147,12 @@ def _parse_launch(tags, launch_file, file_deps, verbose, context):
             except KeyError as e:
                 raise RoslaunchDepsException("Cannot load roslaunch <%s> tag: missing required attribute %s.\nXML is %s"%(tag.tagName, str(e), tag.toxml()))
 
-            # Check if an empty file is included, and skip if so.  This will allow a default-empty <include> inside a
+	    # Check if an empty file is included, and skip if so.  This will allow a default-empty <include> inside a
             # conditional to pass
             if sub_launch_file == '':
-                print("WARNING: empty <include> in %s. Skipping <include> of %s" % (launch_file,
-                                                                                    tag.attributes['file'].value))
+                if verbose:
+                    print("Empty <include> in %s. Skipping <include> of %s" % (launch_file,
+                                                                           tag.attributes['file'].value))
             else:
                 if verbose:
                     print("processing included launch %s"%sub_launch_file)
@@ -161,7 +162,7 @@ def _parse_launch(tags, launch_file, file_deps, verbose, context):
                 if sub_pkg is None:
                     print("ERROR: cannot determine package for [%s]"%sub_launch_file, file=sys.stderr)
 
-                elif sub_launch_file not in file_deps[launch_file].includes:
+                if sub_launch_file not in file_deps[launch_file].includes:
                     file_deps[launch_file].includes.append(sub_launch_file)
                 if launch_file_pkg != sub_pkg:
                     file_deps[launch_file].pkgs.append(sub_pkg)
