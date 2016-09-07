@@ -54,7 +54,7 @@ def check_roslaunch_dir(roslaunch_dir, use_test_depends=False):
         if f.endswith('.launch'):
             roslaunch_file = os.path.join(roslaunch_dir, f)
             if os.path.isfile(roslaunch_file):
-                error_msgs.append(check_roslaunch_file(roslaunch_file))
+                error_msgs.append(check_roslaunch_file(roslaunch_file, use_test_depends=use_test_depends))
     # error message has to be XML attr safe
     return '\n'.join([e for e in error_msgs if e])
 
