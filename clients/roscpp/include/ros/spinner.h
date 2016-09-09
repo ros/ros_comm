@@ -112,9 +112,11 @@ public:
    * \brief Check if the spinner can be started. The spinner shouldn't be started if
    * another single-threaded spinner is already operating on the callback queue.
    *
-   * This function is not necessary anymore. start() will always start spinning.
+   * This function is not necessary anymore. start() will always try to start spinning
+   * and throw a std::runtime_error if it failed.
    */
-  ROS_DEPRECATED bool canStart();
+  // TODO: deprecate in L-turtle
+  bool canStart();
   /**
    * \brief Start this spinner spinning asynchronously
    */

@@ -50,12 +50,12 @@ namespace {
 struct SpinnerMonitor
 {
   /* store spinner information per callback queue:
-     Only as unique single-threaded spinner is allowed and we store its thread id.
+     Only one unique single-threaded spinner is allowed and we store its thread id.
      As multiple multi-threaded spinners are allowed in parallel, their number is counted.
   */
   struct Entry
   {
-    Entry(const boost::thread::id &tid) : tid(tid) {}
+    Entry(const boost::thread::id &tid) : tid(tid), num_multi_threaded(0) {}
 
     boost::thread::id tid; // thread id of single-threaded spinner
     unsigned int num_multi_threaded; // number of multi-threaded spinners
