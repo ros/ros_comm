@@ -76,7 +76,7 @@ struct SpinnerMonitor
       return false;
 
     if (it == spinning_queues_.end())
-      spinning_queues_.insert(it, std::make_pair(queue, Entry(tid)));
+      it = spinning_queues_.insert(it, std::make_pair(queue, Entry(tid)));
 
     if (!single_threaded) // increment number of multi-threaded spinners
       it->second.num_multi_threaded += 1;
