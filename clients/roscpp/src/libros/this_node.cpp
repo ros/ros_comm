@@ -120,6 +120,10 @@ void ThisNode::init(const std::string& name, const M_string& remappings, uint32_
 #endif
   }
 
+  if (name.empty()) {
+    throw InvalidNameException("The node name must not be empty");
+  }
+
   name_ = name;
 
   bool disable_anon = false;

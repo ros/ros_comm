@@ -34,6 +34,7 @@
  */
 
 #include <gtest/gtest.h>
+#include "ros/init.h"
 #include "ros/names.h"
 
 using namespace ros;
@@ -75,6 +76,13 @@ TEST(Names, parentNamespace)
   EXPECT_STREQ(std::string("/z/a").c_str(), names::parentNamespace("/z/a/b").c_str());
   EXPECT_STREQ(std::string("/z/a").c_str(), names::parentNamespace("/z/a/b/").c_str()); //trailing slash
   EXPECT_STREQ(std::string("/z/asdf").c_str(), names::parentNamespace("/z/asdf/b").c_str());
+}
+
+TEST(Names, init_empty_node_name)
+{
+  int argc = 0;
+  char** argv = NULL;
+  EXPECT_THROW(ros::init(argc, argv, ""), ros::InvalidNameException);
 }
 
 int
