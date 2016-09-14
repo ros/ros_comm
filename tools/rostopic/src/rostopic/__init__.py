@@ -102,10 +102,14 @@ class ROSTopicHz(object):
         import threading
         from collections import defaultdict
         self.lock = threading.Lock()
-        self.last_printed_tn = defaultdict(int)
-        self.msg_t0 = defaultdict(lambda: -1)
-        self.msg_tn = defaultdict(int)
-        self.times = defaultdict(list)
+        self.last_printed_tn = 0
+        self.msg_t0 = -1
+        self.msg_tn = 0
+        self.times = []
+        self._last_printed_tn = defaultdict(int)
+        self._msg_t0 = defaultdict(lambda: -1)
+        self._msg_tn = defaultdict(int)
+        self._times = defaultdict(list)
         self.filter_expr = filter_expr
         self.use_wtime = use_wtime
         
@@ -113,7 +117,47 @@ class ROSTopicHz(object):
         if window_size < 0:
             window_size = 50000
         self.window_size = window_size
-                
+
+    def get_last_printed_tn(self, topic=None):
+        if topic is None:
+            return self.last_printed_tn
+        return self._last_printed_tn[topic]
+
+    def set_last_printed_tn(self, value, topic=None):
+        if topic is None:
+            self.last_printed_tn = value
+        self._last_printed_tn[topic] = value
+
+    def get_msg_t0(self, topic=None):
+        if topic is None:
+            return self.msg_t0
+        return self._msg_t0[topic]
+
+    def set_msg_t0(self, value, topic=None):
+        if topic is None:
+            self.msg_t0 = value
+        self._msg_t0[topic] = value
+
+    def get_msg_tn(self, topic=None):
+        if topic is None:
+            return self.msg_tn
+        return self._msg_tn[topic]
+
+    def set_msg_tn(self, value, topic=None):
+        if topic is None:
+            self.msg_tn = value
+        self._msg_tn[topic] = value
+
+    def get_times(self, topic=None):
+        if topic is None:
+            return self.times
+        return self._times[topic]
+
+    def set_times(self, value, topic=None):
+        if topic is None:
+            self.times = value
+        self._times[topic] = value
+
     def callback_hz(self, m, topic=None):
         """
         ros sub callback
@@ -129,24 +173,24 @@ class ROSTopicHz(object):
 
             # time reset
             if curr_rostime.is_zero():
-                if len(self.times[topic]) > 0:
+                if len(self.get_times(topic=topic)) > 0:
                     print("time has reset, resetting counters")
-                    self.times[topic] = []
+                    self.set_times([], topic=topic)
                 return
             
             curr = curr_rostime.to_sec() if not self.use_wtime else \
                     rospy.Time.from_sec(time.time()).to_sec()
-            if self.msg_t0[topic] < 0 or self.msg_t0[topic] > curr:
-                self.msg_t0[topic] = curr
-                self.msg_tn[topic] = curr
-                self.times[topic] = []
+            if self.get_msg_t0(topic=topic) < 0 or self.get_msg_t0(topic=topic) > curr:
+                self.set_msg_t0(curr, topic=topic)
+                self.set_msg_tn(curr, topic=topic)
+                self.set_times([], topic=topic)
             else:
-                self.times[topic].append(curr - self.msg_tn[topic])
-                self.msg_tn[topic] = curr
+                self.get_times(topic=topic).append(curr - self.get_msg_tn(topic=topic))
+                self.set_msg_tn(curr, topic=topic)
 
             #only keep statistics for the last 10000 messages so as not to run out of memory
-            if len(self.times[topic]) > self.window_size - 1:
-                self.times[topic].pop(0)
+            if len(self.get_times(topic=topic)) > self.window_size - 1:
+                self.get_times(topic=topic).pop(0)
 
     def get_hz(self, topic=None):
         """
@@ -156,9 +200,9 @@ class ROSTopicHz(object):
             (rate, min_delta, max_delta, standard deviation, window number)
             None when waiting for the first message or there is no new one
         """
-        if not self.times[topic]:
+        if not self.get_times(topic=topic):
             return
-        elif self.msg_tn[topic] == self.last_printed_tn[topic]:
+        elif self.get_msg_tn(topic=topic) == self.get_last_printed_tn(topic=topic):
             return
         with self.lock:
             #frequency
@@ -170,19 +214,19 @@ class ROSTopicHz(object):
             # makes it easier for users to see when a publisher dies,
             # so the decay is no longer necessary.
             
-            n = len(self.times[topic])
+            n = len(self.get_times(topic=topic))
             #rate = (n - 1) / (rospy.get_time() - self.msg_t0)
-            mean = sum(self.times[topic]) / n
+            mean = sum(self.get_times(topic=topic)) / n
             rate = 1./mean if mean > 0. else 0
 
             #std dev
-            std_dev = math.sqrt(sum((x - mean)**2 for x in self.times[topic]) /n)
+            std_dev = math.sqrt(sum((x - mean)**2 for x in self.get_times(topic=topic)) /n)
 
             # min and max
-            max_delta = max(self.times[topic])
-            min_delta = min(self.times[topic])
+            max_delta = max(self.get_times(topic=topic))
+            min_delta = min(self.get_times(topic=topic))
 
-            self.last_printed_tn[topic] = self.msg_tn[topic]
+            self.set_last_printed_tn(self.get_msg_tn(topic=topic), topic=topic)
 
         return rate, min_delta, max_delta, std_dev, n+1
 
