@@ -92,7 +92,11 @@ struct SpinnerMonitor
     ROS_ASSERT_MSG(it != spinning_queues_.end(), "Call to SpinnerMonitor::remove() without matching call to add().");
 
     if (it->second.tid != boost::thread::id() && it->second.tid != boost::this_thread::get_id())
-      ROS_ERROR("SpinnerMonitor::remove() called from different thread than add().");
+    {
+      // This doesn't harm, but isn't good practice?
+      // It was enforced by the previous implementation.
+      ROS_WARN("SpinnerMonitor::remove() called from different thread than add().");
+    }
 
     if (single_threaded)
       spinning_queues_.erase(it);
