@@ -153,7 +153,6 @@ void MultiThreadedSpinner::spin(CallbackQueue* queue)
   s.start();
 
   ros::waitForShutdown();
-  s.stop();
 }
 
 class AsyncSpinnerImpl
