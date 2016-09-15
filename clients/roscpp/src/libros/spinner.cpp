@@ -89,20 +89,19 @@ struct SpinnerMonitor
   {
     boost::mutex::scoped_lock lock(mutex_);
     std::map<ros::CallbackQueue*, Entry>::iterator it = spinning_queues_.find(queue);
-    if (it != spinning_queues_.end())
-    {
-      if (it->second.tid != boost::thread::id() && it->second.tid != boost::this_thread::get_id())
-        ROS_ERROR("SpinnerMonitor::remove() called from different thread than add().");
+    ROS_ASSERT_MSG(it != spinning_queues_.end(), "Call to SpinnerMonitor::remove() without matching call to add().");
 
-      if (single_threaded)
+    if (it->second.tid != boost::thread::id() && it->second.tid != boost::this_thread::get_id())
+      ROS_ERROR("SpinnerMonitor::remove() called from different thread than add().");
+
+    if (single_threaded)
+      spinning_queues_.erase(it);
+    else
+    {
+      ROS_ASSERT(it->second.num_multi_threaded > 0);
+      it->second.num_multi_threaded -= 1;
+      if (it->second.num_multi_threaded == 0)
         spinning_queues_.erase(it);
-      else
-      {
-        ROS_ASSERT(it->second.num_multi_threaded > 0);
-        it->second.num_multi_threaded -= 1;
-        if (it->second.num_multi_threaded == 0)
-          spinning_queues_.erase(it);
-      }
     }
   }
 
