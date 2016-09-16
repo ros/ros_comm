@@ -87,15 +87,13 @@ if __name__ == '__main__':
 
     if os.path.isfile(roslaunch_path):
         error_msg = check_roslaunch_file(roslaunch_path, use_test_depends=options.test_depends)
-        outname = os.path.basename(roslaunch_path).replace('.', '_')
     else:
         print("checking *.launch in directory", roslaunch_path)
         error_msg = check_roslaunch_dir(roslaunch_path, use_test_depends=options.test_depends)
-        abspath = os.path.abspath
-        relpath = abspath(roslaunch_path)[len(abspath(pkg_dir))+1:]
-        outname = relpath.replace(os.sep, '_')
-        if outname == '.':
-            outname = '_pkg'
+    relpath = os.path.abspath(roslaunch_path)[len(os.path.abspath(pkg_dir))+1:]
+    outname = relpath.replace('.', '_').replace(os.sep, '_')
+    if outname == '_':
+        outname = '_pkg'
 
     if options.output_file:
         test_file = options.output_file
@@ -116,10 +114,12 @@ if __name__ == '__main__':
         print("FAILURE:\n%s"%error_msg, file=sys.stderr)
         with open(test_file, 'w') as f:
             message = "roslaunch check [%s] failed"%(roslaunch_path)
-            f.write(rosunit.junitxml.test_failure_junit_xml(test_name, message, stdout=error_msg))
+            f.write(rosunit.junitxml.test_failure_junit_xml(test_name, message, stdout=error_msg,
+                    class_name="roslaunch.RoslaunchCheck", testcase_name="%s_%s" % (pkg, outname)))
         print("wrote test file to [%s]"%test_file)
         sys.exit(1)
     else:
         print("passed")
         with open(test_file, 'w') as f:
-            f.write(rosunit.junitxml.test_success_junit_xml(test_name))
+            f.write(rosunit.junitxml.test_success_junit_xml(test_name,
+                    class_name="roslaunch.RoslaunchCheck", testcase_name="%s_%s" % (pkg, outname)))

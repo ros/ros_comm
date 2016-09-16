@@ -29,7 +29,7 @@
   <run_depend version_gte="1.11.16">rosmaster</run_depend>
   <run_depend>rosout</run_depend>
   <run_depend>rosparam</run_depend>
-  <run_depend>rosunit</run_depend>
+  <run_depend version_gte="1.13.3">rosunit</run_depend>
 
   <test_depend>rosbuild</test_depend>
 
