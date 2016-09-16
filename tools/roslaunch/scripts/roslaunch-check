@@ -121,5 +121,5 @@ if __name__ == '__main__':
     else:
         print("passed")
         with open(test_file, 'w') as f:
-            f.write(rosunit.junitxml.test_success_junit_xml(test_name, stdout="",
+            f.write(rosunit.junitxml.test_success_junit_xml(test_name,
                     class_name="roslaunch.RoslaunchCheck", testcase_name="%s_%s" % (pkg, outname)))
