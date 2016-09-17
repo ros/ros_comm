@@ -2,8 +2,8 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.3 (2016-09-17)
+-------------------
 * show topic field type with rostopic type (`#860 <https://github.com/ros/ros_comm/issues/860>`_)
 * show stat for rostopic echo --noarr/nostr (`#724 <https://github.com/ros/ros_comm/pull/724>`_, `#872 <https://github.com/ros/ros_comm/pull/872>`_)
 * add support for multiple topics in rostopic hz (`#712 <https://github.com/ros/ros_comm/pull/712>`_, `#886 <https://github.com/ros/ros_comm/pull/886>`_, `#888 <https://github.com/ros/ros_comm/pull/888>`_)

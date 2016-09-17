@@ -2,8 +2,8 @@
 Changelog for package rosmsg
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.3 (2016-09-17)
+-------------------
 * register nosetests only when testing is enabled (`#880 <https://github.com/ros/ros_comm/issues/880>`_)
 
 1.12.2 (2016-06-03)

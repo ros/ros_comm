@@ -2,8 +2,8 @@
 Changelog for package roslz4
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.3 (2016-09-17)
+-------------------
 * set lz4_FOUND in order to continue using it with catkin_package(DEPENDS) (`ros/catkin#813 <https://github.com/ros/catkin/issues/813>`_)
 
 1.12.2 (2016-06-03)

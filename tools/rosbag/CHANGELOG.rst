@@ -2,8 +2,8 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.3 (2016-09-17)
+-------------------
 * set default values for min_space and min_space_str (`#883 <https://github.com/ros/ros_comm/issues/883>`_)
 * record a maximum number of splits and then begin deleting old files (`#866 <https://github.com/ros/ros_comm/issues/866>`_)
 * allow 64-bit sizes to be passed to robag max_size (`#865 <https://github.com/ros/ros_comm/issues/865>`_)

@@ -2,8 +2,8 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.3 (2016-09-17)
+-------------------
 * better naming for roslaunch check test results (`#897 <https://github.com/ros/ros_comm/pull/897>`_)
 * support use_test_depends option for roslaunch-check (`#887 <https://github.com/ros/ros_comm/pull/887>`_)
 * allow empty include (`#882 <https://github.com/ros/ros_comm/pull/882>`_)
