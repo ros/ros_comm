@@ -3,21 +3,6 @@ if(TARGET ${PROJECT_NAME}-test_version)
   target_link_libraries(${PROJECT_NAME}-test_version)
 endif()
 
-# WARNING test_spinners is not actually run.  This is because this
-# infrastructure won't let me pass arguments from here through to
-# these test units.  otherwise one would have to build ten executables.
-# also the output of test_spinners has to be visually inspected
-# because there is no automatic way to ensure that an error condition
-# provokes a particular message.
-if(GTEST_FOUND)
-  include_directories(${GTEST_INCLUDE_DIRS})
-  add_executable(${PROJECT_NAME}-test_spinners EXCLUDE_FROM_ALL test_spinners.cpp)
-  add_dependencies(tests ${PROJECT_NAME}-test_spinners) 
-endif()
-if(TARGET ${PROJECT_NAME}-test_spinners)
-  target_link_libraries(${PROJECT_NAME}-test_spinners ${catkin_LIBRARIES} ${GTEST_LIBRARIES})
-endif()
-
 catkin_add_gtest(${PROJECT_NAME}-test_header test_header.cpp)
 if(TARGET ${PROJECT_NAME}-test_header)
   target_link_libraries(${PROJECT_NAME}-test_header ${catkin_LIBRARIES})
@@ -161,3 +146,6 @@ add_rostest(launch/ns_node_remapping.xml)
 add_rostest(launch/search_param.xml)
 
 add_rostest(launch/stamped_topic_statistics_with_empty_timestamp.xml)
+
+# Test spinners
+add_rostest(launch/spinners.xml)

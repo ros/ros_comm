@@ -67,76 +67,96 @@ void fire_shutdown(const ros::WallTimerEvent&) {
 TEST(Spinners, spin)
 {
   DOIT();
-  ros::spin();
+  ros::spin(); // will block until ROS shutdown
 }
 
 TEST(Spinners, spinfail)
 {
   DOIT();
   boost::thread th(boost::bind(&ros::spin));
-  ros::spin();
-}
+  ros::WallDuration(0.1).sleep(); // wait for thread to be started
 
-TEST(Spinners, single)
-{
-  DOIT();
-  SingleThreadedSpinner s;
-  ros::spin(s);
+  EXPECT_THROW(ros::spin(), std::runtime_error);
+
+  SingleThreadedSpinner ss;
+  EXPECT_THROW(ros::spin(ss), std::runtime_error);
+  EXPECT_THROW(ss.spin(), std::runtime_error);
+
+  MultiThreadedSpinner ms;
+  EXPECT_THROW(ros::spin(ms), std::runtime_error);
+  EXPECT_THROW(ms.spin(), std::runtime_error);
+
+  AsyncSpinner as(2);
+  EXPECT_THROW(as.start(), std::runtime_error);
+
+  ros::waitForShutdown();
 }
 
 TEST(Spinners, singlefail)
 {
   DOIT();
-  boost::thread th(boost::bind(&ros::spin));
-  SingleThreadedSpinner s;
-  ros::spin(s);
-}
+  SingleThreadedSpinner ss;
+  boost::thread th(boost::bind(&ros::spin, ss));
+  ros::WallDuration(0.1).sleep(); // wait for thread to be started
 
-TEST(Spinners, singlefail2)
-{
-  DOIT();
-  SingleThreadedSpinner s;
-  boost::thread th(boost::bind(&ros::spin, s));
-  ros::spin(s);
+  EXPECT_THROW(ros::spin(), std::runtime_error);
+
+  SingleThreadedSpinner ss2;
+  EXPECT_THROW(ros::spin(ss2), std::runtime_error);
+  EXPECT_THROW(ss2.spin(), std::runtime_error);
+
+  MultiThreadedSpinner ms;
+  EXPECT_THROW(ros::spin(ms), std::runtime_error);
+  EXPECT_THROW(ms.spin(), std::runtime_error);
+
+  AsyncSpinner as(2);
+  EXPECT_THROW(as.start(), std::runtime_error);
+
+  ros::waitForShutdown();
 }
 
 TEST(Spinners, multi)
 {
   DOIT();
-  MultiThreadedSpinner s;
-  ros::spin(s);
+  MultiThreadedSpinner ms;
+  ros::spin(ms); // will block until ROS shutdown
 }
 
 TEST(Spinners, multifail)
 {
   DOIT();
-  boost::thread th(boost::bind(&ros::spin));
-  MultiThreadedSpinner s;
-  ros::spin(s);
-}
+  MultiThreadedSpinner ms;
+  boost::thread th(boost::bind(&ros::spin, ms));
+  ros::WallDuration(0.1).sleep(); // wait for thread to be started
 
-TEST(Spinners, multifail2)
-{
-  DOIT();
-  MultiThreadedSpinner s;
-  boost::thread th(boost::bind(&ros::spin, s));
-  ros::spin(s);
+  SingleThreadedSpinner ss2;
+  EXPECT_THROW(ros::spin(ss2), std::runtime_error);
+  EXPECT_THROW(ss2.spin(), std::runtime_error);
+
+  // running another multi-threaded spinner is allowed
+  MultiThreadedSpinner ms2;
+  ros::spin(ms2); // will block until ROS shutdown
 }
 
 TEST(Spinners, async)
 {
   DOIT();
-  AsyncSpinner s(2);
-  s.start();
-  ros::waitForShutdown();
-}
+  AsyncSpinner as1(2);
+  as1.start();
 
-TEST(Spinners, asyncfail)
-{
-  DOIT();
-  boost::thread th(boost::bind(&ros::spin));
-  AsyncSpinner s(2);
-  s.start();
+  // running another AsyncSpinner is allowed
+  AsyncSpinner as2(2);
+  as2.start();
+  as2.stop();
+
+  SingleThreadedSpinner ss;
+  EXPECT_THROW(ros::spin(ss), std::runtime_error);
+  EXPECT_THROW(ss.spin(), std::runtime_error);
+
+  // running a multi-threaded spinner is allowed
+  MultiThreadedSpinner ms;
+  ros::spin(ms); // will block until ROS shutdown
+
   ros::waitForShutdown();
 }
 
@@ -149,5 +169,3 @@ main(int argc, char** argv)
   argv_ = argv;
   return RUN_ALL_TESTS();
 }
-
-

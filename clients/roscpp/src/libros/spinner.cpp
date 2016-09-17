@@ -30,10 +30,111 @@
 #include "ros/callback_queue.h"
 
 #include <boost/thread/thread.hpp>
-#include <boost/thread/recursive_mutex.hpp>
+#include <boost/thread/mutex.hpp>
 
 namespace {
-  boost::recursive_mutex spinmutex;
+
+const std::string DEFAULT_ERROR_MESSAGE =
+    "\nAttempt to spin a callback queue from two spinners, one of them being single-threaded."
+    "\nThis will probably result in callbacks being executed out-of-order."
+    "\nIn future this will throw an exception!";
+
+/** class to monitor running single-threaded spinners.
+ *
+ *  Calling the callbacks of a callback queue _in order_, requires a unique SingleThreadedSpinner
+ *  spinning on the queue. Other threads accessing the callback queue will probably intercept execution order.
+
+ *  To avoid multiple SingleThreadedSpinners (started from different threads) to operate on the same callback queue,
+ *  this class stores a map of all spinned callback queues.
+ *  If the spinner is single threaded, the corresponding thread-id is stored in the map
+ *  and if other threads will try to spin the same queue, an error message is issued.
+ *
+ *  If the spinner is multi-threaded, the stored thread-id is NULL and future SingleThreadedSpinners
+ *  should not spin this queue. However, other multi-threaded spinners are allowed.
+ */
+struct SpinnerMonitor
+{
+  /* store spinner information per callback queue:
+     Only alike spinners (single-threaded or multi-threaded) are allowed on a callback queue.
+     For single-threaded spinners we store their thread id.
+     We store the number of alike spinners operating on the callback queue.
+  */
+  struct Entry
+  {
+    Entry(const boost::thread::id &tid,
+          const boost::thread::id &initial_tid) : tid(tid), initial_tid(initial_tid), num(0) {}
+
+    boost::thread::id tid; // proper thread id of single-threaded spinner
+    boost::thread::id initial_tid; // to retain old behaviour, store first spinner's thread id
+    unsigned int num; // number of (alike) spinners serving this queue
+  };
+
+  /// add a queue to the list
+  bool add(ros::CallbackQueue* queue, bool single_threaded)
+  {
+    boost::mutex::scoped_lock lock(mutex_);
+
+    boost::thread::id current_tid = boost::this_thread::get_id();
+    boost::thread::id tid; // current thread id for single-threaded spinners, zero for multi-threaded ones
+    if (single_threaded)
+      tid = current_tid;
+
+    std::map<ros::CallbackQueue*, Entry>::iterator it = spinning_queues_.find(queue);
+    bool can_spin = ( it == spinning_queues_.end() || // we will spin on any new queue
+                      it->second.tid == tid ); // otherwise spinner must be alike (all multi-threaded: 0, or single-threaded on same thread id)
+
+    if (!can_spin)
+    {
+      // Previous behavior (up to Kinetic) was to accept multiple spinners on a queue
+      // as long as they were started from the same thread. Although this is wrong behavior,
+      // we retain it here for backwards compatibility, i.e. we allow spinning of a
+      // single-threaded spinner after several multi-threaded ones, given that they
+      // were started from the same initial thread
+      if (it->second.initial_tid == tid)
+      {
+        ROS_ERROR_STREAM("SpinnerMonitor: single-threaded spinner after multi-threaded one(s)."
+                         << DEFAULT_ERROR_MESSAGE
+                         << " Only allowed for backwards compatibility.");
+        it->second.tid = tid; // "upgrade" tid to represent single-threaded spinner
+      }
+      else
+        return false;
+    }
+
+    if (it == spinning_queues_.end())
+      it = spinning_queues_.insert(it, std::make_pair(queue, Entry(tid, current_tid)));
+
+    // increment number of active spinners
+    it->second.num += 1;
+
+    return true;
+  }
+
+  /// remove a queue from the list
+  void remove(ros::CallbackQueue* queue)
+  {
+    boost::mutex::scoped_lock lock(mutex_);
+    std::map<ros::CallbackQueue*, Entry>::iterator it = spinning_queues_.find(queue);
+    ROS_ASSERT_MSG(it != spinning_queues_.end(), "Call to SpinnerMonitor::remove() without matching call to add().");
+
+    if (it->second.tid != boost::thread::id() && it->second.tid != boost::this_thread::get_id())
+    {
+      // This doesn't harm, but isn't good practice?
+      // It was enforced by the previous implementation.
+      ROS_WARN("SpinnerMonitor::remove() called from different thread than add().");
+    }
+
+    ROS_ASSERT_MSG(it->second.num > 0, "SpinnerMonitor::remove(): Invalid spinner count (0) encountered.");
+    it->second.num -= 1;
+    if (it->second.num == 0)
+      spinning_queues_.erase(it); // erase queue entry to allow future queues with same pointer
+  }
+
+  std::map<ros::CallbackQueue*, Entry> spinning_queues_;
+  boost::mutex mutex_;
+};
+
+SpinnerMonitor spinner_monitor;
 }
 
 namespace ros
@@ -42,25 +143,24 @@ namespace ros
 
 void SingleThreadedSpinner::spin(CallbackQueue* queue)
 {
-  boost::recursive_mutex::scoped_try_lock spinlock(spinmutex);
-  if(!spinlock.owns_lock()) {
-    ROS_ERROR("SingleThreadedSpinner: You've attempted to call spin "
-              "from multiple threads.  Use a MultiThreadedSpinner instead.");
-    return;
-  }
-
-  ros::WallDuration timeout(0.1f);
-
   if (!queue)
   {
     queue = getGlobalCallbackQueue();
   }
 
+  if (!spinner_monitor.add(queue, true))
+  {
+    ROS_ERROR_STREAM("SingleThreadedSpinner: " << DEFAULT_ERROR_MESSAGE);
+    return;
+  }
+
+  ros::WallDuration timeout(0.1f);
   ros::NodeHandle n;
   while (n.ok())
   {
     queue->callAvailable(timeout);
   }
+  spinner_monitor.remove(queue);
 }
 
 MultiThreadedSpinner::MultiThreadedSpinner(uint32_t thread_count)
@@ -70,13 +170,6 @@ MultiThreadedSpinner::MultiThreadedSpinner(uint32_t thread_count)
 
 void MultiThreadedSpinner::spin(CallbackQueue* queue)
 {
-  boost::recursive_mutex::scoped_try_lock spinlock(spinmutex);
-  if (!spinlock.owns_lock()) {
-    ROS_ERROR("MultiThreadeSpinner: You've attempted to call ros::spin "
-              "from multiple threads... "
-              "but this spinner is already multithreaded.");
-    return;
-  }
   AsyncSpinner s(thread_count_, queue);
   s.start();
 
@@ -97,7 +190,6 @@ private:
   void threadFunc();
 
   boost::mutex mutex_;
-  boost::recursive_mutex::scoped_try_lock member_spinlock;
   boost::thread_group threads_;
 
   uint32_t thread_count_;
@@ -136,8 +228,7 @@ AsyncSpinnerImpl::~AsyncSpinnerImpl()
 
 bool AsyncSpinnerImpl::canStart()
 {
-  boost::recursive_mutex::scoped_try_lock spinlock(spinmutex);
-  return spinlock.owns_lock();
+  return true;
 }
 
 void AsyncSpinnerImpl::start()
@@ -145,18 +236,13 @@ void AsyncSpinnerImpl::start()
   boost::mutex::scoped_lock lock(mutex_);
 
   if (continue_)
-    return;
+    return; // already spinning
 
-  boost::recursive_mutex::scoped_try_lock spinlock(spinmutex);
-  if (!spinlock.owns_lock()) {
-    ROS_WARN("AsyncSpinnerImpl: Attempt to start() an AsyncSpinner failed "
-             "because another AsyncSpinner is already running. Note that the "
-             "other AsyncSpinner might not be using the same callback queue "
-             "as this AsyncSpinner, in which case no callbacks in your "
-             "callback queue will be serviced.");
+  if (!spinner_monitor.add(callback_queue_, false))
+  {
+    ROS_ERROR_STREAM("AsyncSpinnerImpl: " << DEFAULT_ERROR_MESSAGE);
     return;
   }
-  spinlock.swap(member_spinlock);
 
   continue_ = true;
 
@@ -172,14 +258,10 @@ void AsyncSpinnerImpl::stop()
   if (!continue_)
     return;
 
-  ROS_ASSERT_MSG(member_spinlock.owns_lock(), 
-                 "Async spinner's member lock doesn't own the global spinlock, hrm.");
-  ROS_ASSERT_MSG(member_spinlock.mutex() == &spinmutex, 
-                 "Async spinner's member lock owns a lock on the wrong mutex?!?!?");
-  member_spinlock.unlock();
-
   continue_ = false;
   threads_.join_all();
+
+  spinner_monitor.remove(callback_queue_);
 }
 
 void AsyncSpinnerImpl::threadFunc()

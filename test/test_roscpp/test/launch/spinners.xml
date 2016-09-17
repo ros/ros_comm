@@ -1,0 +1,4 @@
+<launch>
+  <test pkg="test_roscpp" type="test_roscpp-spinners" test-name="Spinners_spin" args="--gtest_filter=Spinners.spin"/>
+  <test pkg="test_roscpp" type="test_roscpp-spinners" test-name="Spinners_multi" args="--gtest_filter=Spinners.multi"/>
+</launch>
