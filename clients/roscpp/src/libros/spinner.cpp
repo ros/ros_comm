@@ -45,20 +45,21 @@ namespace {
  *  and if other threads will try to spin the same queue, an error message is issued.
  *
  *  If the spinner is multi-threaded, the stored thread-id is NULL and future SingleThreadedSpinners
- *  should not spin this queue.
+ *  should not spin this queue. However, other multi-threaded spinners are allowed.
  */
 struct SpinnerMonitor
 {
   /* store spinner information per callback queue:
-     Only one unique single-threaded spinner is allowed and we store its thread id.
-     As multiple multi-threaded spinners are allowed in parallel, their number is counted.
+     Only alike spinners (single-threaded or multi-threaded) are allowed on a callback queue.
+     For single-threaded spinners we store their thread id.
+     We store the number of alike spinners operating on the callback queue.
   */
   struct Entry
   {
-    Entry(const boost::thread::id &tid) : tid(tid), num_multi_threaded(0) {}
+    Entry(const boost::thread::id &tid) : tid(tid), num(0) {}
 
-    boost::thread::id tid; // thread id of single-threaded spinner
-    unsigned int num_multi_threaded; // number of multi-threaded spinners
+    boost::thread::id tid; // proper thread id of single-threaded spinner
+    unsigned int num; // number of (alike) spinners serving this queue
   };
 
   /// add a queue to the list
@@ -66,26 +67,28 @@ struct SpinnerMonitor
   {
     boost::mutex::scoped_lock lock(mutex_);
 
-    boost::thread::id tid;
+    boost::thread::id tid; // current thread id for single-threaded spinners, zero for multi-threaded ones
     if (single_threaded)
       tid = boost::this_thread::get_id();
 
     std::map<ros::CallbackQueue*, Entry>::iterator it = spinning_queues_.find(queue);
-    bool can_spin = ( it == spinning_queues_.end() || it->second.tid == tid );
+    bool can_spin = ( it == spinning_queues_.end() || // we will spin on any new queue
+                      it->second.tid == tid ); // otherwise spinner must be alike (all multi-threaded: 0, or single-threaded on same thread id)
+
     if (!can_spin)
       return false;
 
     if (it == spinning_queues_.end())
       it = spinning_queues_.insert(it, std::make_pair(queue, Entry(tid)));
 
-    if (!single_threaded) // increment number of multi-threaded spinners
-      it->second.num_multi_threaded += 1;
+    // increment number of active spinners
+    it->second.num += 1;
 
     return true;
   }
 
   /// remove a queue from the list
-  void remove(ros::CallbackQueue* queue, bool single_threaded)
+  void remove(ros::CallbackQueue* queue)
   {
     boost::mutex::scoped_lock lock(mutex_);
     std::map<ros::CallbackQueue*, Entry>::iterator it = spinning_queues_.find(queue);
@@ -98,15 +101,10 @@ struct SpinnerMonitor
       ROS_WARN("SpinnerMonitor::remove() called from different thread than add().");
     }
 
-    if (single_threaded)
-      spinning_queues_.erase(it);
-    else
-    {
-      ROS_ASSERT(it->second.num_multi_threaded > 0);
-      it->second.num_multi_threaded -= 1;
-      if (it->second.num_multi_threaded == 0)
-        spinning_queues_.erase(it);
-    }
+    ROS_ASSERT_MSG(it->second.num > 0, "SpinnerMonitor::remove(): Invalid spinner count (0) encountered.");
+    it->second.num -= 1;
+    if (it->second.num == 0)
+      spinning_queues_.erase(it); // erase queue entry to allow future queues with same pointer
   }
 
   std::map<ros::CallbackQueue*, Entry> spinning_queues_;
@@ -142,7 +140,7 @@ void SingleThreadedSpinner::spin(CallbackQueue* queue)
   {
     queue->callAvailable(timeout);
   }
-  spinner_monitor.remove(queue, true);
+  spinner_monitor.remove(queue);
 }
 
 MultiThreadedSpinner::MultiThreadedSpinner(uint32_t thread_count)
@@ -243,7 +241,7 @@ void AsyncSpinnerImpl::stop()
   continue_ = false;
   threads_.join_all();
 
-  spinner_monitor.remove(callback_queue_, false);
+  spinner_monitor.remove(callback_queue_);
 }
 
 void AsyncSpinnerImpl::threadFunc()
