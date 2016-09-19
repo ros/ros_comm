@@ -1,6 +1,6 @@
 <package>
   <name>rostest</name>
-  <version>1.12.3</version>
+  <version>1.12.4</version>
   <description>
      Integration test suite based on roslaunch that is compatible with xUnit frameworks.
   </description>
