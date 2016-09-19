@@ -134,10 +134,11 @@ def rosrun(package, test_name, test, sysargs=None):
     import rospy
     
     suite = None
-    if issubclass(test, unittest.TestCase):
-        suite = unittest.TestLoader().loadTestsFromTestCase(test)
-    else:
+    if isinstance(test, str):
         suite = unittest.TestLoader().loadTestsFromName(test)
+    else:
+        # some callers pass a TestCase type (instead of an instance)
+        suite = unittest.TestLoader().loadTestsFromTestCase(test)
 
     if text_mode:
         result = unittest.TextTestRunner(verbosity=2).run(suite)
