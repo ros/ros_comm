@@ -2,6 +2,10 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix test type handling (`#722 <https://github.com/ros/ros_comm/issues/722>`_)
+
 1.12.3 (2016-09-17)
 -------------------
 * add test node if topic message is published at least once (`#863 <https://github.com/ros/ros_comm/issues/863>`_)

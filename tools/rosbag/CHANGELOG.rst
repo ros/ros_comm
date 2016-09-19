@@ -2,6 +2,9 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.12.3 (2016-09-17)
 -------------------
 * set default values for min_space and min_space_str (`#883 <https://github.com/ros/ros_comm/issues/883>`_)

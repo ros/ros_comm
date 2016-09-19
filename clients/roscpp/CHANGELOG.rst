@@ -2,6 +2,9 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.12.3 (2016-09-17)
 -------------------
 * fix multi-threaded spinning (`#867 <https://github.com/ros/ros_comm/pull/867>`_)

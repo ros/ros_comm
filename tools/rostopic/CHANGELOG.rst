@@ -2,6 +2,9 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.12.3 (2016-09-17)
 -------------------
 * show topic field type with rostopic type (`#860 <https://github.com/ros/ros_comm/issues/860>`_)

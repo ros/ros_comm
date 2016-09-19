@@ -2,6 +2,9 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.12.3 (2016-09-17)
 -------------------
 * better naming for roslaunch check test results (`#897 <https://github.com/ros/ros_comm/pull/897>`_)

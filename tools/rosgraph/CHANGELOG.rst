@@ -2,6 +2,9 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.12.3 (2016-09-17)
 -------------------
 * add 'Darwin' to unix-like platforms improving address resolution (`#846 <https://github.com/ros/ros_comm/pull/846>`_)

@@ -2,6 +2,9 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.12.3 (2016-09-17)
 -------------------
 * add abstract class to implement connection based transport (`#713 <https://github.com/ros/ros_comm/pull/713>`_)
