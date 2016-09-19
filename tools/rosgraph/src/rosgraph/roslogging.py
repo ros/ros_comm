@@ -191,10 +191,10 @@ class RosStreamHandler(logging.Handler):
             node_name = '<unknown_node_name>'
         msg = msg.replace('${node}', node_name)
         if self._get_time is not None and not self._is_wallclock():
-            t = self._get_time()
+            msg = msg.replace('${time}',
+                              '%f, %f' % (time.time(), self._get_time()))
         else:
-            t = time.time()
-        msg = msg.replace('${time}', '%f' % t)
+            msg = msg.replace('${time}', '%f' % time.time())
         msg += '\n'
         if record.levelno < logging.WARNING:
             self._write(sys.stdout, msg, color)
