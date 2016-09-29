@@ -1395,8 +1395,10 @@ def create_value_transform(echo_nostr, echo_noarr):
             if echo_noarr and '[' in type_information:
                 return ('<array type: %s, length: %s>' %
                         (type_information.rstrip('[]'), len(val)))
-            elif echo_nostr and 'string' in type_information:
+            elif echo_nostr and type_information == 'string':
                 return '<string length: %s>' % len(val)
+            elif echo_nostr and type_information == 'string[]':
+                return '<array type: string, length: %s>' % len(val)
             return val
 
         class TransformedMessage(genpy.Message):
@@ -1415,8 +1417,12 @@ def create_value_transform(echo_nostr, echo_noarr):
                 setattr(val_trans, f, '<array type: %s, length: %s>' %
                                       (t.rstrip('[]'), len(f_val)))
                 val_trans._slot_types[index] = 'string'
-            elif echo_nostr and 'string' in t:
+            elif echo_nostr and t == 'string':
                 setattr(val_trans, f, '<string length: %s>' % len(f_val))
+            elif echo_nostr and t == 'string[]':
+                setattr(val_trans, f, '<array type: string, length: %s>' %
+                                      len(f_val))
+                val_trans._slot_types[index] = 'string'
             else:
                 try:
                     msg_class = genpy.message.get_message_class(t)
