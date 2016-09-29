@@ -1389,17 +1389,21 @@ def _rostopic_cmd_echo(argv):
 
 def create_value_transform(echo_nostr, echo_noarr):
     def value_transform(val, type_information=None):
+        def transform_field_value(value, value_type, echo_nostr, echo_noarr):
+            if echo_noarr and '[' in value_type:
+                return '<array type: %s, length: %s>' % \
+                    (value_type.rstrip('[]'), len(value))
+            elif echo_nostr and value_type == 'string':
+                return '<string length: %s>' % len(value)
+            elif echo_nostr and value_type == 'string[]':
+                return '<array type: string, length: %s>' % len(value)
+            return value
+
         if not isinstance(val, genpy.Message):
             if type_information is None:
                 return val
-            if echo_noarr and '[' in type_information:
-                return ('<array type: %s, length: %s>' %
-                        (type_information.rstrip('[]'), len(val)))
-            elif echo_nostr and type_information == 'string':
-                return '<string length: %s>' % len(val)
-            elif echo_nostr and type_information == 'string[]':
-                return '<array type: string, length: %s>' % len(val)
-            return val
+            return transform_field_value(val, type_information,
+                                         echo_nostr, echo_noarr)
 
         class TransformedMessage(genpy.Message):
             # These should be copy because changing these variables
@@ -1413,15 +1417,10 @@ def create_value_transform(echo_nostr, echo_noarr):
         field_types = val._slot_types
         for index, (f, t) in enumerate(zip(fields, field_types)):
             f_val = getattr(val, f)
-            if echo_noarr and '[' in t:
-                setattr(val_trans, f, '<array type: %s, length: %s>' %
-                                      (t.rstrip('[]'), len(f_val)))
-                val_trans._slot_types[index] = 'string'
-            elif echo_nostr and t == 'string':
-                setattr(val_trans, f, '<string length: %s>' % len(f_val))
-            elif echo_nostr and t == 'string[]':
-                setattr(val_trans, f, '<array type: string, length: %s>' %
-                                      len(f_val))
+            f_val_trans = transform_field_value(f_val, t,
+                                                echo_nostr, echo_noarr)
+            if f_val_trans != f_val:
+                setattr(val_trans, f, f_val_trans)
                 val_trans._slot_types[index] = 'string'
             else:
                 try:
