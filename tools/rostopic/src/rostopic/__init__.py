@@ -1389,6 +1389,12 @@ def _rostopic_cmd_echo(argv):
 
 def create_value_transform(echo_nostr, echo_noarr):
     def value_transform(val):
+        if not isinstance(val, genpy.Message):
+            if echo_nostr and isinstance(val, str):
+                return None
+            elif echo_noarr and isinstance(val, list):
+                return None
+            return val
 
         class TransformedMessage(genpy.Message):
             # These should be copy because changing these variables
