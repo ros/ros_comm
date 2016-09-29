@@ -873,7 +873,7 @@ class CallbackEcho(object):
         if type_information and type_information.startswith('uint8['):
             val = [ord(x) for x in val]
         if value_transform is not None:
-            val = value_transform(val)
+            val = value_transform(val, type_information)
         return genpy.message.strify_message(val, indent=indent, time_offset=time_offset, current_time=current_time, field_filter=field_filter, fixed_numeric_width=fixed_numeric_width)
 
     def callback(self, data, callback_args, current_time=None):
@@ -1388,12 +1388,15 @@ def _rostopic_cmd_echo(argv):
         sys.stderr.write("Network communication failed. Most likely failed to communicate with master.\n")
 
 def create_value_transform(echo_nostr, echo_noarr):
-    def value_transform(val):
+    def value_transform(val, type_information=None):
         if not isinstance(val, genpy.Message):
-            if echo_nostr and isinstance(val, str):
-                return None
-            elif echo_noarr and isinstance(val, list):
-                return None
+            if type_information is None:
+                return val
+            if echo_noarr and '[' in type_information:
+                return ('<array type: %s, length: %s>' %
+                        (type_information.rstrip('[]'), len(val)))
+            elif echo_nostr and 'string' in type_information:
+                return '<string length: %s>' % len(val)
             return val
 
         class TransformedMessage(genpy.Message):
