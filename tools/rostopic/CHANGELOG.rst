@@ -2,8 +2,8 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.5 (2016-09-30)
+-------------------
 * fix regression with rostopic echo for primitive fields from 1.12.3 (`#909 <https://github.com/ros/ros_comm/issues/909>`_)
 
 1.12.4 (2016-09-19)
