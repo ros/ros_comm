@@ -873,7 +873,7 @@ class CallbackEcho(object):
         if type_information and type_information.startswith('uint8['):
             val = [ord(x) for x in val]
         if value_transform is not None:
-            val = value_transform(val)
+            val = value_transform(val, type_information)
         return genpy.message.strify_message(val, indent=indent, time_offset=time_offset, current_time=current_time, field_filter=field_filter, fixed_numeric_width=fixed_numeric_width)
 
     def callback(self, data, callback_args, current_time=None):
@@ -1388,7 +1388,22 @@ def _rostopic_cmd_echo(argv):
         sys.stderr.write("Network communication failed. Most likely failed to communicate with master.\n")
 
 def create_value_transform(echo_nostr, echo_noarr):
-    def value_transform(val):
+    def value_transform(val, type_information=None):
+        def transform_field_value(value, value_type, echo_nostr, echo_noarr):
+            if echo_noarr and '[' in value_type:
+                return '<array type: %s, length: %s>' % \
+                    (value_type.rstrip('[]'), len(value))
+            elif echo_nostr and value_type == 'string':
+                return '<string length: %s>' % len(value)
+            elif echo_nostr and value_type == 'string[]':
+                return '<array type: string, length: %s>' % len(value)
+            return value
+
+        if not isinstance(val, genpy.Message):
+            if type_information is None:
+                return val
+            return transform_field_value(val, type_information,
+                                         echo_nostr, echo_noarr)
 
         class TransformedMessage(genpy.Message):
             # These should be copy because changing these variables
@@ -1402,12 +1417,11 @@ def create_value_transform(echo_nostr, echo_noarr):
         field_types = val._slot_types
         for index, (f, t) in enumerate(zip(fields, field_types)):
             f_val = getattr(val, f)
-            if echo_noarr and '[' in t:
-                setattr(val_trans, f, '<array type: %s, length: %s>' %
-                                      (t.rstrip('[]'), len(f_val)))
+            f_val_trans = transform_field_value(f_val, t,
+                                                echo_nostr, echo_noarr)
+            if f_val_trans != f_val:
+                setattr(val_trans, f, f_val_trans)
                 val_trans._slot_types[index] = 'string'
-            elif echo_nostr and 'string' in t:
-                setattr(val_trans, f, '<string length: %s>' % len(f_val))
             else:
                 try:
                     msg_class = genpy.message.get_message_class(t)
