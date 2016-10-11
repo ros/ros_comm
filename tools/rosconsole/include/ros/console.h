@@ -40,6 +40,7 @@
 #include <cstdarg>
 #include <ros/macros.h>
 #include <map>
+#include <vector>
 
 #ifdef ROSCONSOLE_BACKEND_LOG4CXX
 #include "log4cxx/level.h"
