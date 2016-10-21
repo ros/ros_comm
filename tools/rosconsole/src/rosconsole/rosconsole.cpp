@@ -212,6 +212,16 @@ struct TimeToken : public Token
   }
 };
 
+struct WallTimeToken : public Token
+{
+  virtual std::string getString(void*, ::ros::console::Level, const char*, const char*, const char*, int)
+  {
+    std::stringstream ss;
+    ss << ros::WallTime::now();
+    return ss.str();
+  }
+};
+
 struct ThreadToken : public Token
 {
   virtual std::string getString(void*, ::ros::console::Level, const char*, const char*, const char*, int)
@@ -274,6 +284,10 @@ TokenPtr createTokenFromType(const std::string& type)
   else if (type == "time")
   {
     return TokenPtr(boost::make_shared<TimeToken>());
+  }
+  else if (type == "walltime")
+  {
+    return TokenPtr(boost::make_shared<WallTimeToken>());
   }
   else if (type == "thread")
   {
