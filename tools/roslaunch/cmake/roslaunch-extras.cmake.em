@@ -17,12 +17,15 @@ set(roslaunch_check_script ${roslaunch_DIR}/../scripts/roslaunch-check)
 # :param DEPENDENCIES: the targets which must be built before executing
 #   the test
 # :type DEPENDENCIES: list of strings
+# :param USE_TEST_DEPENDENCIES: beside run dependencies also consider test
+#   dependencies when checking if all dependencies of a launch file are present
+# :type USE_TEST_DEPENDENCIES: option
 # :param ARGV: arbitrary arguments in the form 'key=value'
 #   which will be set as environment variables
 # :type ARGV: string
 #
 function(roslaunch_add_file_check path)
-  cmake_parse_arguments(_roslaunch "" "" "DEPENDENCIES" ${ARGN})
+  cmake_parse_arguments(_roslaunch "USE_TEST_DEPENDENCIES" "" "DEPENDENCIES" ${ARGN})
   if(IS_ABSOLUTE ${path})
     set(abspath ${path})
   else()
@@ -52,6 +55,10 @@ function(roslaunch_add_file_check path)
   set(cmd "${CMAKE_COMMAND} -E make_directory ${output_path}")
   set(output_file_name "roslaunch-check_${testname}.xml")
   string(REPLACE ";" " " _roslaunch_UNPARSED_ARGUMENTS "${_roslaunch_UNPARSED_ARGUMENTS}")
-  set(cmd ${cmd} "${roslaunch_check_script} -o '${output_path}/${output_file_name}' '${abspath}' ${_roslaunch_UNPARSED_ARGUMENTS}")
+  set(use_test_dependencies "")
+  if(${_roslaunch_USE_TEST_DEPENDENCIES})
+    set(use_test_dependencies " -t")
+  endif()
+  set(cmd ${cmd} "${roslaunch_check_script} -o '${output_path}/${output_file_name}'${use_test_dependencies} '${abspath}' ${_roslaunch_UNPARSED_ARGUMENTS}")
   catkin_run_tests_target("roslaunch-check" ${testname} "${output_file_name}" COMMAND ${cmd} DEPENDENCIES ${_roslaunch_DEPENDENCIES})
 endfunction()
