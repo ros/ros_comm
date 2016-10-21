@@ -203,13 +203,10 @@ struct TimeToken : public Token
   virtual std::string getString(void*, ::ros::console::Level, const char*, const char*, const char*, int)
   {
     std::stringstream ss;
+    ss << ros::WallTime::now();
     if (ros::Time::isValid() && ros::Time::isSimTime())
     {
-      ss << ros::WallTime::now() << ", " << ros::Time::now();
-    }
-    else
-    {
-      ss << ros::WallTime::now();
+      ss << ", " << ros::Time::now();
     }
     return ss.str();
   }
