@@ -154,9 +154,8 @@ class Time(genpy.Time):
         """
         return get_rostime()
 
-    # have to reproduce super class implementation to return correct typing
-    
-    def from_seconds(float_secs):
+    @classmethod
+    def from_seconds(cls, float_secs):
         """
         Use Time.from_sec() instead. Retained for backwards compatibility.
         
@@ -165,25 +164,7 @@ class Time(genpy.Time):
         @return: Time instance for specified time
         @rtype: L{Time}
         """
-        return Time.from_sec(float_secs)
-    
-    from_seconds = staticmethod(from_seconds)
-
-    def from_sec(float_secs):
-        """
-        Create new Time instance from a float seconds representation
-        (e.g. time.time()).
-        
-        @param float_secs: time value in time.time() format
-        @type  float_secs: float
-        @return: Time instance for specified time
-        @rtype: L{Time}
-        """
-        secs = int(float_secs)
-        nsecs = int((float_secs - secs) * 1000000000)
-        return Time(secs, nsecs)
-    
-    from_sec = staticmethod(from_sec)
+        return cls.from_sec(float_secs)
     
 def _set_rostime(t):
     """Callback to update ROS time from a ROS Topic"""
