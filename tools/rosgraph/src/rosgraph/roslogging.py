@@ -190,11 +190,10 @@ class RosStreamHandler(logging.Handler):
         except ImportError:
             node_name = '<unknown_node_name>'
         msg = msg.replace('${node}', node_name)
+        time_str = '%f' % time.time()
         if self._get_time is not None and not self._is_wallclock():
-            msg = msg.replace('${time}',
-                              '%f, %f' % (time.time(), self._get_time()))
-        else:
-            msg = msg.replace('${time}', '%f' % time.time())
+            time_str += ', %f' % self._get_time()
+        msg = msg.replace('${time}', time_str)
         msg += '\n'
         if record.levelno < logging.WARNING:
             self._write(sys.stdout, msg, color)
