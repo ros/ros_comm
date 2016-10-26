@@ -2,6 +2,10 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix typo of arg for _str_plot function (`#915 <https://github.com/ros/ros_comm/issues/915>`_)
+
 1.12.5 (2016-09-30)
 -------------------
 * fix regression with rostopic echo for primitive fields from 1.12.3 (`#909 <https://github.com/ros/ros_comm/issues/909>`_)

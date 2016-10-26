@@ -2,6 +2,11 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add missing walltime to roscpp logging (`#879 <https://github.com/ros/ros_comm/pull/879>`_)
+* fix building on GCC-6 (`#911 <https://github.com/ros/ros_comm/pull/911>`_)
+
 1.12.5 (2016-09-30)
 -------------------
 

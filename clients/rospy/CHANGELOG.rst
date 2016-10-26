@@ -2,6 +2,11 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* improve reconnection logic on timeout and other common errors (`#851 <https://github.com/ros/ros_comm/pull/851>`_)
+* remove duplicated function (`#783 <https://github.com/ros/ros_comm/pull/783>`_)
+
 1.12.5 (2016-09-30)
 -------------------
 

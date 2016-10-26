@@ -2,6 +2,10 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add USE_TEST_DEPENDENCIES option to roslaunch_add_file_check() (`#910 <https://github.com/ros/ros_comm/pull/910>`_)
+
 1.12.5 (2016-09-30)
 -------------------
 
