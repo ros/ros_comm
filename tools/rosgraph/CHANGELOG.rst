@@ -2,8 +2,8 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.6 (2016-10-26)
+-------------------
 * change rospy default rosconsole format for consistency with roscpp (`#879 <https://github.com/ros/ros_comm/pull/879>`_)
 * increase request_queue_size for xmlrpc server (`#849 <https://github.com/ros/ros_comm/issues/849>`_)
 
