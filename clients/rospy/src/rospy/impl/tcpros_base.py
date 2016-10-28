@@ -613,11 +613,29 @@ class TCPROSTransport(Transport):
             return
         fileno = sock.fileno()
         ready = None
-        while not ready:
-            _, ready, _ = select.select([], [fileno], [])
+        poller = None
+        if hasattr(select, 'poll'):
+            poller = select.poll()
+            poller.register(fileno, select.POLLOUT)
+            while not ready:
+                events = poller.poll()
+                for _, flag in events:
+                  if flag & select.POLLOUT:
+                        ready = True
+        else:
+            while not ready:
+                try:
+                    _, ready, _ = select.select([], [fileno], [])
+                except ValueError as e:
+                    logger.error("[%s]: select fileno '%s': %s", self.name, str(fileno), str(e))
+                    raise
+
         logger.debug("[%s]: writing header", self.name)
         sock.setblocking(1)
         self.stat_bytes += write_ros_handshake_header(sock, protocol.get_header_fields())
+        if poller:
+            poller.unregister(fileno)
+
 
     def read_header(self):
         """
