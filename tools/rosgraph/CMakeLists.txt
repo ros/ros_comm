@@ -17,5 +17,4 @@ catkin_install_python(PROGRAMS scripts/rosgraph
 
 if(CATKIN_ENABLE_TESTING)
   catkin_add_nosetests(test)
-  catkin_add_nosetests(test/isolated/test_roslogging_user_logger.py)
 endif()
