@@ -43,6 +43,8 @@ import sys
 
 from nose.tools import assert_regexp_matches
 
+import rosgraph.roslogging
+
 
 # set user defined custom logger
 class UserCustomLogger(logging.Logger):
@@ -65,69 +67,46 @@ class UserCustomLogger(logging.Logger):
 logging.setLoggerClass(UserCustomLogger)
 
 
-import rosgraph.roslogging
-
-
-os.environ['ROS_IP'] = '127.0.0.1'
-os.environ['ROSCONSOLE_FORMAT'] = ' '.join([
-    '${severity}',
-    '${message}',
-    '${walltime}',
-    '${thread}',
-    '${logger}',
-    '${file}',
-    '${line}',
-    '${function}',
-    '${node}',
-    '${time}',
-])
-rosgraph.roslogging.configure_logging('test_rosgraph', logging.INFO)
-loginfo = logging.getLogger('rosout').info
-
-# Remap stdout for testing
-f = StringIO()
-sys.stdout = f
-
-
-loginfo('on module')
-
-
-def logging_on_function():
-    loginfo('on function')
-
-logging_on_function()
-
-
-class LoggingOnClass(object):
-
-    def __init__(self):
-        loginfo('on method')
-
-LoggingOnClass()
-
-
 def test_roslogging_user_logger():
-    this_file = os.path.abspath(__file__)
-    # this is necessary to avoid test fails because of .pyc cache file
-    base, ext = os.path.splitext(this_file)
-    if ext == '.pyc':
-        this_file = base + '.py'
+    os.environ['ROS_IP'] = '127.0.0.1'
+    os.environ['ROSCONSOLE_FORMAT'] = ' '.join([
+        '${severity}',
+        '${message}',
+        '${walltime}',
+        '${thread}',
+        '${logger}',
+        '${file}',
+        '${line}',
+        '${function}',
+        '${node}',
+        '${time}',
+    ])
+    rosgraph.roslogging.configure_logging('test_rosgraph', logging.INFO)
+    loginfo = logging.getLogger('rosout').info
 
-    for i, loc in enumerate(['module', 'function', 'method']):
-        log_out = ' '.join([
-            'INFO',
-            os.environ['ROS_IP'],
-            'on ' + loc,
-            '[0-9]*\.[0-9]*',
-            '[0-9]*',
-            'rosout',
-            '.*',
-            '[0-9]*',
-            '.*',
-            '/unnamed',
-            '[0-9]*\.[0-9]*',
-        ])
-        assert_regexp_matches(f.getvalue().splitlines()[i], log_out)
+    # Remap stdout for testing
+    f = StringIO()
+    sys.stdout = f
 
+    # Logging
+    msg = 'Hello world.'
+    loginfo(msg)
 
-sys.stdout = sys.__stdout__
+    # Restore stdout
+    log_actual = f.getvalue().strip()
+    sys.stdout = sys.__stdout__
+
+    log_expected = ' '.join([
+        'INFO',
+        os.environ['ROS_IP'],
+        msg,
+        '[0-9]*\.[0-9]*',
+        '[0-9]*',
+        'rosout',
+        '<filename>',
+        '<lineno>',
+        '<func_name>',
+        '/unnamed',
+        '[0-9]*\.[0-9]*',
+    ])
+    assert_regexp_matches(log_actual, log_expected)
