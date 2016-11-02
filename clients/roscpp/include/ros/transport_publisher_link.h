@@ -42,7 +42,7 @@ typedef boost::weak_ptr<Subscription> SubscriptionWPtr;
 class Connection;
 typedef boost::shared_ptr<Connection> ConnectionPtr;
 
-class WallTimerEvent;
+struct WallTimerEvent;
 
 /**
  * \brief Handles a connection to a single publisher on a given topic.  Receives messages from a publisher
