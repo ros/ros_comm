@@ -136,20 +136,25 @@ def _find(resolved, a, args, context):
     if path:
         source_path_to_packages = rp.get_custom_cache('source_path_to_packages', {})
         try:
-            return _find_executable(
+            res = _find_executable(
                 resolve_without_path, a, [args[0], path], context,
                 source_path_to_packages=source_path_to_packages)
+            # persist mapping of packages in rospack instance
+            if source_path_to_packages:
+                rp.set_custom_cache('source_path_to_packages', source_path_to_packages)
+            return res
         except SubstitutionException:
             pass
         try:
-            return _find_resource(
+            res = _find_resource(
                 resolve_without_path, a, [args[0], path], context,
                 source_path_to_packages=source_path_to_packages)
+            # persist mapping of packages in rospack instance
+            if source_path_to_packages:
+                rp.set_custom_cache('source_path_to_packages', source_path_to_packages)
+            return res
         except SubstitutionException:
             pass
-        # persist mapping of packages in rospack instance
-        if source_path_to_packages:
-            rp.set_custom_cache('source_path_to_packages', source_path_to_packages)
     pkg_path = rp.get_path(args[0])
     if path:
         pkg_path = os.path.join(pkg_path, path)
