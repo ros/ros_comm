@@ -991,14 +991,62 @@ def _rostopic_list_bag(bag_file, topic=None):
                 if rospy.is_shutdown():
                     break
 
-def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, verbose, indent=''):
+def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, verbose, verbose2, indent=''):
     def topic_type(t, topic_types):
         matches = [t_type for t_name, t_type in topic_types if t_name == t]
         if matches:
             return matches[0]
         return 'unknown type'
 
-    if verbose:
+    if verbose2:
+        topic_types = _master_get_topic_types(master)
+        
+        def getTopic(item): return item[0]
+        sortedPubs = sorted(pubs, key=getTopic)
+        sortedSubs = sorted(subs, key=getTopic)
+        sortedAll = []
+        
+        pubsPos = 0
+        subsPos = 0
+        while pubsPos < len(sortedPubs) and subsPos < len(sortedSubs):
+            pubItem = sortedPubs[pubsPos]
+            subItem = sortedSubs[subsPos]
+            if pubItem[0] == subItem[0]:
+                sortedAll.append([pubItem[0], len(pubItem[1]), len(subItem[1])])
+                pubsPos += 1
+                subsPos += 1
+            elif pubItem[0] < subItem[0]:
+                sortedAll.append([pubItem[0], len(pubItem[1]), 0])
+                pubsPos += 1
+            else:
+                sortedAll.append([subItem[0], 0, len(subItem[1])])
+                subsPos += 1
+        
+        while pubsPos < len(sortedPubs):
+            pubItem = sortedPubs[pubsPos]
+            sortedAll.append([pubItem[0], len(pubItem[1]), 0])
+            pubsPos += 1
+            
+        while subsPos < len(sortedSubs):
+            subItem = sortedSubs[subsPos]
+            sortedAll.append([subItem[0], 0, len(subItem[1])])
+            subsPos += 1
+            
+        print("\n%sTopics:"%indent)
+        for t, p, s in sortedAll:
+            if (publishers_only and p == 0) or (subscribers_only and s == 0) :
+                continue
+                
+            pubStr = str(p) + " pub"
+            subStr = str(s) + " sub"
+            
+            if p != 1: pubStr += "s"
+            if s != 1: subStr += "s"
+            
+            print(indent+" * %s [%s] %s, %s"%(t, topic_type(t, topic_types), pubStr, subStr))
+        print('')
+
+    elif verbose:
         topic_types = _master_get_topic_types(master)
 
         if not subscribers_only:
@@ -1057,7 +1105,7 @@ def _rostopic_list_group_by_host(master, pubs, subs):
     host_sub_topics = build_map(master, subs, uricache)
     return host_pub_topics, host_sub_topics
 
-def _rostopic_list(topic, verbose=False,
+def _rostopic_list(topic, verbose=False, verbose2=False,
                    subscribers_only=False, publishers_only=False,
                    group_by_host=False):
     """
@@ -1065,6 +1113,7 @@ def _rostopic_list(topic, verbose=False,
     
     :param topic: topic name to list information or None to match all topics, ``str``
     :param verbose: print additional debugging information, ``bool``
+    :param verbose2: like verbose, but with a unified ordered list, ``bool``
     :param subscribers_only: print information about subscriptions only, ``bool``
     :param publishers_only: print information about subscriptions only, ``bool``
     :param group_by_host: group topic list by hostname, ``bool``
@@ -1096,11 +1145,11 @@ def _rostopic_list(topic, verbose=False,
                 print("Host [%s]:" % hostname)
                 _sub_rostopic_list(master, pubs, subs,
                                    publishers_only, subscribers_only,
-                                   verbose, indent='  ')
+                                   verbose, verbose2, indent='  ')
     else:
         _sub_rostopic_list(master, pubs, subs,
                            publishers_only, subscribers_only,
-                           verbose)
+                           verbose, verbose2)
 
 def get_info_text(topic):
     """
@@ -1831,6 +1880,9 @@ def _rostopic_cmd_list(argv):
     parser.add_option("-v", "--verbose",
                       dest="verbose", default=False,action="store_true",
                       help="list full details about each topic")
+    parser.add_option("-V", "--verbose2",
+                      dest="verbose2", default=False,action="store_true",
+                      help="like -v, but with a unified ordered list")
     parser.add_option("-p",
                       dest="publishers", default=False,action="store_true",
                       help="list only publishers")
@@ -1859,7 +1911,7 @@ def _rostopic_cmd_list(argv):
         if options.subscribers and options.publishers:
             parser.error("you may only specify one of -p, -s")
 
-        exitval = _rostopic_list(topic, verbose=options.verbose, subscribers_only=options.subscribers, publishers_only=options.publishers, group_by_host=options.hostname) or 0
+        exitval = _rostopic_list(topic, verbose=options.verbose, verbose2=options.verbose2, subscribers_only=options.subscribers, publishers_only=options.publishers, group_by_host=options.hostname) or 0
         if exitval != 0:
             sys.exit(exitval)
 
