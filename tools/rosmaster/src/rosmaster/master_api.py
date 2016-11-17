@@ -202,10 +202,23 @@ def publisher_update_task(api, topic, pub_uris):
     @param pub_uris: list of publisher APIs to send to node
     @type  pub_uris: [str]
     """
-    
-    mloginfo("publisherUpdate[%s] -> %s", topic, api)
+    is_rosout_topic = 'rosout' in topic
+    start_ms = time.time()
+    msg = "publisherUpdate[%s] -> %s %s" % (topic, api, str(pub_uris))
+    if not is_rosout_topic:
+        mloginfo(msg)
     #TODO: check return value for errors so we can unsubscribe if stale
-    xmlrpcapi(api).publisherUpdate('/master', topic, pub_uris)
+    try:
+        ret = xmlrpcapi(api).publisherUpdate('/master', topic, pub_uris)
+    except Exception as ex:
+        if not is_rosout_topic:
+            delta_sec = (time.time() - start_ms) * 1000.0
+            mloginfo("%s: secs=%0.2f, exception=%s", msg, delta_sec, str(ex))
+        raise
+    if not is_rosout_topic:
+        delta_sec = (time.time() - start_ms) * 1000.0
+        mloginfo("%s: secs=%0.2f, result=%s", msg, delta_sec, ret)
+
 
 def service_update_task(api, service, uri):
     """
