@@ -578,9 +578,9 @@ def _stdin_arg(parser, full):
             parser.error("you may only specify one %s"%full)
         return options, args[0]
     
-def rosmsg_cmd_show(mode, full):
+def rosmsg_cmd_show(mode, full, alias='show'):
     cmd = "ros%s"%(mode[1:])
-    parser = OptionParser(usage="usage: %s show [options] <%s>"%(cmd, full))
+    parser = OptionParser(usage="usage: %s %s [options] <%s>"%(cmd, alias, full))
     parser.add_option("-r", "--raw",
                       dest="raw", default=False,action="store_true",
                       help="show raw message text, including comments")
@@ -712,7 +712,8 @@ def fullusage(mode):
     return """%(cmd)s is a command-line tool for displaying information about ROS %(type_)s types.
 
 Commands:
-\t%(cmd)s show\tShow %(type_lower)s description
+\t%(cmd)s show, %(cmd)s info
+\t\t\tShow %(type_lower)s description
 \t%(cmd)s list\tList all %(type_lower)ss
 \t%(cmd)s md5\tDisplay %(type_lower)s md5sum
 \t%(cmd)s package\tList %(type_lower)ss in a package
@@ -742,7 +743,9 @@ def rosmsgmain(mode=MODE_MSG):
 
         command = sys.argv[1]
         if command == 'show':
-            sys.exit(rosmsg_cmd_show(ext, full))
+            sys.exit(rosmsg_cmd_show(ext, full, 'show'))
+        elif command == 'info':
+            sys.exit(rosmsg_cmd_show(ext, full, 'info'))
         elif command == 'package':
             rosmsg_cmd_package(ext, full)
         elif command == 'packages':
