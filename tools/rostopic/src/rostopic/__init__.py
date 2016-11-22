@@ -1011,6 +1011,7 @@ def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, ve
         while pubsPos < len(sortedPubs) and subsPos < len(sortedSubs):
             pubItem = sortedPubs[pubsPos]
             subItem = sortedSubs[subsPos]
+            
             if pubItem[0] == subItem[0]:
                 sortedAll.append([pubItem[0], len(pubItem[1]), len(subItem[1])])
                 pubsPos += 1
@@ -1032,18 +1033,29 @@ def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, ve
             sortedAll.append([subItem[0], 0, len(subItem[1])])
             subsPos += 1
             
+        pubsMax = 0
+        subsMax = 0
+        for t, p, s in sortedAll:
+            if p > pubsMax: pubsMax = p
+            if s > subsMax: subsMax = s
+            
+        pubsDigits = len(str(pubsMax))
+        subsDigits = len(str(subsMax))   
+        
         print("\n%sTopics:"%indent)
         for t, p, s in sortedAll:
             if (publishers_only and p == 0) or (subscribers_only and s == 0) :
                 continue
-                
-            pubStr = str(p) + " pub"
-            subStr = str(s) + " sub"
             
-            if p != 1: pubStr += "s"
-            if s != 1: subStr += "s"
+            pubStr = ("%" + str(pubsDigits) + "d pub") % (p)
+            subStr = ("%" + str(subsDigits) + "d sub") % (s)
             
-            print(indent+" * %s [%s] %s, %s"%(t, topic_type(t, topic_types), pubStr, subStr))
+            if p != 1: pubStr += "s,"
+            else: pubStr += ", "
+            if s != 1: subStr += "s,"
+            else: subStr += ", "
+            
+            print(indent+" * %s %s %s [%s]"%(pubStr, subStr, t, topic_type(t, topic_types)))
         print('')
 
     elif verbose:
@@ -1113,13 +1125,13 @@ def _rostopic_list(topic, verbose=False, verbose2=False,
     
     :param topic: topic name to list information or None to match all topics, ``str``
     :param verbose: print additional debugging information, ``bool``
-    :param verbose2: like verbose, but with a unified ordered list, ``bool``
+    :param verbose2: like verbose, but with an unified ordered list, ``bool``
     :param subscribers_only: print information about subscriptions only, ``bool``
     :param publishers_only: print information about subscriptions only, ``bool``
     :param group_by_host: group topic list by hostname, ``bool``
     """
     # #1563
-    if subscribers_only and publishers_only:
+    if subscribers_only and publishers_only and not verbose2:
         raise ROSTopicException("cannot specify both subscribers- and publishers-only")
     
     master = rosgraph.Master('/rostopic')
@@ -1882,7 +1894,7 @@ def _rostopic_cmd_list(argv):
                       help="list full details about each topic")
     parser.add_option("-V", "--verbose2",
                       dest="verbose2", default=False,action="store_true",
-                      help="like -v, but with a unified ordered list")
+                      help="like -v, but with an unified ordered list")
     parser.add_option("-p",
                       dest="publishers", default=False,action="store_true",
                       help="list only publishers")
@@ -1908,7 +1920,7 @@ def _rostopic_cmd_list(argv):
             parser.error("--host option is not valid with bags")
         _rostopic_list_bag(options.bag, topic)
     else:
-        if options.subscribers and options.publishers:
+        if options.subscribers and options.publishers and not options.verbose2:
             parser.error("you may only specify one of -p, -s")
 
         exitval = _rostopic_list(topic, verbose=options.verbose, verbose2=options.verbose2, subscribers_only=options.subscribers, publishers_only=options.publishers, group_by_host=options.hostname) or 0
