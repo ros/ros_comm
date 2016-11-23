@@ -245,6 +245,11 @@ bool execute(const std::string& method, const XmlRpc::XmlRpcValue& request, XmlR
 
   XMLRPCManager::instance()->releaseXMLRPCClient(c);
 
+  if (payload.getType() == XmlRpc::XmlRpcValue::TypeInvalid)
+  {
+    return false;
+  }
+
   return true;
 }
 
