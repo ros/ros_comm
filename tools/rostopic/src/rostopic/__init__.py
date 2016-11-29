@@ -1488,7 +1488,6 @@ def publish_message(pub, msg_class, pub_args, rate=None, once=False, verbose=Fal
     try:
         
         if rate is None:
-            s = "publishing and latching [%s]"%(msg) if verbose else "publishing and latching message"
             if once:
                 s = "[%s] published"%(msg) if verbose else "message published."
             else:
