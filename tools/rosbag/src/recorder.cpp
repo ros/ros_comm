@@ -125,7 +125,20 @@ Recorder::Recorder(RecorderOptions const& options) :
 {
 }
 
-int Recorder::run() {
+int Recorder::run(bool* stop_recording) {
+
+    static bool false_bool = 0; // this should be used as a constant
+    // Check if the user passed in a pointer for the stop flag
+    if( !stop_recording )
+    {
+        // No stop flag given, set it to always false
+        stop_recording_ = &false_bool;
+    }
+    else
+    {
+        stop_recording_ = stop_recording;
+    }
+
     if (options_.trigger) {
         doTrigger();
         return 0;
@@ -146,7 +159,7 @@ int Recorder::run() {
     }
 
     ros::NodeHandle nh;
-    if (!nh.ok())
+    if (!nh.ok() || *stop_recording_)
         return 0;
 
     last_buffer_warn_ = Time();
@@ -166,7 +179,7 @@ int Recorder::run() {
     start_time_ = ros::Time::now();
 
     // Don't bother doing anything if we never got a valid time
-    if (!nh.ok())
+    if (!nh.ok() || *stop_recording_)
         return 0;
 
     ros::Subscriber trigger_sub;
@@ -193,8 +206,25 @@ int Recorder::run() {
         check_master_timer = nh.createTimer(ros::Duration(1.0), boost::bind(&Recorder::doCheckMaster, this, _1, boost::ref(nh)));
     }
 
-    ros::MultiThreadedSpinner s(10);
-    ros::spin(s);
+    // If this class is being used within another application, it may need to have the ability to stop recording
+    if (stop_recording) // a stop flag was passed into the run() function so we need to allow the recording to end
+    {
+      // non-blocking spinner
+      ros::AsyncSpinner spinner(10);
+      spinner.start();
+
+      ros::Rate r(10);
+      while (ros::ok() && *stop_recording_ == false)
+      {
+        r.sleep();
+      }
+    }
+    else // default behavior
+    {
+      // blocking spinner
+      ros::MultiThreadedSpinner s(10);
+      ros::spin(s);
+    }
 
     queue_condition_.notify_all();
 
@@ -441,12 +471,12 @@ void Recorder::doRecord() {
     // Except it should only get checked if the node is not ok, and thus
     // it shouldn't be in contention.
     ros::NodeHandle nh;
-    while (nh.ok() || !queue_->empty()) {
+    while (!*stop_recording_ && ( nh.ok() || !queue_->empty() ) ) {
         boost::unique_lock<boost::mutex> lock(queue_mutex_);
 
         bool finished = false;
         while (queue_->empty()) {
-            if (!nh.ok()) {
+            if (!nh.ok() || *stop_recording_) {
                 lock.release()->unlock();
                 finished = true;
                 break;
@@ -490,10 +520,10 @@ void Recorder::doRecord() {
 void Recorder::doRecordSnapshotter() {
     ros::NodeHandle nh;
   
-    while (nh.ok() || !queue_queue_.empty()) {
+    while ( !*stop_recording_ && (nh.ok() || !queue_queue_.empty()) ) {
         boost::unique_lock<boost::mutex> lock(queue_mutex_);
         while (queue_queue_.empty()) {
-            if (!nh.ok())
+            if (!nh.ok() || *stop_recording_)
                 return;
             queue_condition_.wait(lock);
         }
