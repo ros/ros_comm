@@ -170,15 +170,7 @@ void XMLRPCManager::shutdown()
 
     // Erase the deleted clients. The clients in use will delete themselves
     // on release
-    struct
-    {
-      bool operator() (const CachedXmlRpcClient& c)
-      {
-        return !(c.client_);
-      }
-    } is_deleted;
-
-    clients_.erase(std::remove_if(clients_.begin(), clients_.end(), is_deleted), clients_.end());
+    clients_.erase(std::remove(clients_.begin(), clients_.end(), false), clients_.end());
   }
 
   boost::mutex::scoped_lock lock(functions_mutex_);
