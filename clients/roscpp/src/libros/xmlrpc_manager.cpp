@@ -163,14 +163,15 @@ void XMLRPCManager::shutdown()
     {
       if (!i->in_use_)
       {
-       i->client_->close();
-       delete i->client_;
+        i->client_->close();
+        delete i->client_;
       }
     }
 
     // Erase the deleted clients. The clients in use will delete themselves
     // on release
-    clients_.erase(std::remove(clients_.begin(), clients_.end(), false), clients_.end());
+    clients_.erase(std::remove(clients_.begin(), clients_.end(), false),
+		    clients_.end());
   }
 
   boost::mutex::scoped_lock lock(functions_mutex_);
@@ -372,16 +373,16 @@ void XMLRPCManager::releaseXMLRPCClient(XmlRpcClient *c)
   {
     if (c == i->client_)
     {
-      if (!shutting_down_)
-      {
-        i->in_use_ = false;
-      }
-      else
+      if (shutting_down_)
       {
         // if we are shutting down we won't be re-using the client
         i->client_->close();
         delete i->client_;
         clients_.erase(i);
+      }
+      else
+      {
+        i->in_use_ = false;
       }
       break;
     }
