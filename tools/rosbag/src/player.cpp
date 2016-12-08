@@ -87,6 +87,8 @@ PlayerOptions::PlayerOptions() :
     has_duration(false),
     duration(0.0f),
     keep_alive(false),
+    rate_control_topic(""),
+    rate_control_max_delay(1.0f),
     skip_empty(ros::DURATION_MAX)
 {
 }
@@ -203,9 +205,27 @@ void Player::publish() {
         }
     }
 
+    if (options_.rate_control_topic != "")
+    {
+        std::cout << "Creating rate control topic subscriber..." << std::flush;
+        
+        rate_control_sub_ = node_handle_.subscribe(options_.rate_control_topic, 1000, &Player::updateRateTopicTime, this);
+
+        // Subscribe to the given topic.
+        //callback boundImageCallback = boost::bind(&Player::updateRateTopicTime, &this, _1);
+
+        //rate_control_sub_ = node_handle_.subscribe(options_.rate_control_topic, 1, &Player::updateRateTopicTime);
+
+        std::cout << " done." << std::endl;
+    }
+
+
     std::cout << "Waiting " << options_.advertise_sleep.toSec() << " seconds after advertising topics..." << std::flush;
     options_.advertise_sleep.sleep();
     std::cout << " done." << std::endl;
+
+    // Set the last rate control to now, so the program doesn't start delayed.
+    last_rate_control_ = ros::WallTime::now();
 
     std::cout << std::endl << "Hit space to toggle paused, or 's' to step." << std::endl;
 
@@ -259,6 +279,12 @@ void Player::publish() {
     ros::shutdown();
 }
 
+void Player::updateRateTopicTime(const std_msgs::Empty::ConstPtr& message)
+{
+    // Set last update to current
+    last_rate_control_ = ros::WallTime::now();
+}
+
 void Player::printTime()
 {
     if (!options_.quiet) {
@@ -266,13 +292,15 @@ void Player::printTime()
         ros::Time current_time = time_publisher_.getTime();
         ros::Duration d = current_time - start_time_;
 
+        ros::WallDuration time_since_rate = ros::WallTime::now() - last_rate_control_;
+
         if (paused_)
         {
-            printf("\r [PAUSED]   Bag Time: %13.6f   Duration: %.6f / %.6f     \r", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
-        }
-        else
-        {
-            printf("\r [RUNNING]  Bag Time: %13.6f   Duration: %.6f / %.6f     \r", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
+            printf("\r [PAUSED]   Bag Time: %13.6f   Duration: %.6f / %.6f       \r", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
+        } else if (delayed_) {
+            printf("\r [DELAYED]  Bag Time: %13.6f   Duration: %.6f / %.6f       \r", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
+        } else {
+            printf("\r [RUNNING]  Bag Time: %13.6f   Duration: %.6f / %.6f       \r", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
         }
         fflush(stdout);
     }
@@ -293,6 +321,9 @@ void Player::doPublish(MessageInstance const& m) {
 
     map<string, ros::Publisher>::iterator pub_iter = publishers_.find(callerid_topic);
     ROS_ASSERT(pub_iter != publishers_.end());
+
+    // Update subscribers.
+    ros::spinOnce();
 
     // If immediate specified, play immediately
     if (options_.at_once) {
@@ -330,7 +361,16 @@ void Player::doPublish(MessageInstance const& m) {
         }
     }
 
-    while ((paused_ || !time_publisher_.horizonReached()) && node_handle_.ok())
+    // Check if the rate control topic has posted recently enough to continue, or if a delay is needed.
+    // Delayed is separated from paused to allow more verbose printing.
+    if(rate_control_sub_ != NULL) {
+        if((ros::WallTime::now() - last_rate_control_).toSec() > options_.rate_control_max_delay) {
+            delayed_ = true;
+            paused_time_ = ros::WallTime::now();
+        }
+    }
+
+    while ((paused_ || delayed_ || !time_publisher_.horizonReached()) && node_handle_.ok())
     {
         bool charsleftorpaused = true;
         while (charsleftorpaused && node_handle_.ok())
@@ -343,6 +383,7 @@ void Player::doPublish(MessageInstance const& m) {
                 }
                 else
                 {
+                    // Make sure time doesn't shift after leaving pause.
                     ros::WallDuration shift = ros::WallTime::now() - paused_time_;
                     paused_time_ = ros::WallTime::now();
          
@@ -374,18 +415,34 @@ void Player::doPublish(MessageInstance const& m) {
                 pause_for_topics_ = !pause_for_topics_;
                 break;
             case EOF:
-                if (paused_)
-                {
+                if (paused_) {
                     printTime();
                     time_publisher_.runStalledClock(ros::WallDuration(.1));
-                }
-                else
+                    ros::spinOnce();
+                } else if (delayed_) {
+                    printTime();
+                    time_publisher_.runStalledClock(ros::WallDuration(.1));
+                    ros::spinOnce();
+                    // You need to check the rate here too.
+                    if(rate_control_sub_ == NULL || (ros::WallTime::now() - last_rate_control_).toSec() <= options_.rate_control_max_delay) {
+                        delayed_ = false;
+                        // Make sure time doesn't shift after leaving delay.
+                        ros::WallDuration shift = ros::WallTime::now() - paused_time_;
+                        paused_time_ = ros::WallTime::now();
+         
+                        time_translator_.shift(ros::Duration(shift.sec, shift.nsec));
+
+                        horizon += shift;
+                        time_publisher_.setWCHorizon(horizon);
+                    }
+                } else
                     charsleftorpaused = false;
             }
         }
 
         printTime();
         time_publisher_.runClock(ros::WallDuration(.1));
+        ros::spinOnce();
     }
 
     pub_iter->second.publish(m);
@@ -406,6 +463,9 @@ void Player::doKeepAlive() {
         return;
     }
 
+    // If we're done and just staying alive, don't watch the rate control topic. We aren't publishing anyway.
+    delayed_ = false;
+
     while ((paused_ || !time_publisher_.horizonReached()) && node_handle_.ok())
     {
         bool charsleftorpaused = true;
@@ -419,6 +479,7 @@ void Player::doKeepAlive() {
                 }
                 else
                 {
+                    // Make sure time doesn't shift after leaving pause.
                     ros::WallDuration shift = ros::WallTime::now() - paused_time_;
                     paused_time_ = ros::WallTime::now();
          
@@ -433,6 +494,7 @@ void Player::doKeepAlive() {
                 {
                     printTime();
                     time_publisher_.runStalledClock(ros::WallDuration(.1));
+                    ros::spinOnce();
                 }
                 else
                     charsleftorpaused = false;
@@ -441,6 +503,7 @@ void Player::doKeepAlive() {
 
         printTime();
         time_publisher_.runClock(ros::WallDuration(.1));
+        ros::spinOnce();
     }
 }
 

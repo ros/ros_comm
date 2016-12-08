@@ -61,8 +61,11 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
       ("try-future-version", "still try to open a bag file, even if the version is not known to the player")
       ("topics", po::value< std::vector<std::string> >()->multitoken(), "topics to play back")
       ("pause-topics", po::value< std::vector<std::string> >()->multitoken(), "topics to pause playback on")
-      ("bags", po::value< std::vector<std::string> >(), "bag files to play back from");
-    
+      ("bags", po::value< std::vector<std::string> >(), "bag files to play back from")
+      ("rate-control-topic", po::value<std::string>(), "watch the given topic, and if the last publish was more than <rate-control-max-delay> ago, wait until the topic publishes again to continue playback")
+      ("rate-control-max-delay", po::value<float>()->default_value(1.0f), "maximum time difference from <rate-control-topic> before pausing")
+      ;
+
     po::positional_options_description p;
     p.add("bags", -1);
     
@@ -80,6 +83,7 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
     }
 
     if (vm.count("help")) {
+      std::cout << "TESTING" << std::endl;
       std::cout << desc << std::endl;
       exit(0);
     }
@@ -136,6 +140,12 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
            i++)
         opts.pause_topics.push_back(*i);
     }
+
+    if (vm.count("rate-control-topic"))
+      opts.rate_control_topic = vm["rate-control-topic"].as<std::string>();
+
+    if (vm.count("rate-control-max-delay"))
+      opts.rate_control_max_delay = vm["rate-control-max-delay"].as<float>();
 
     if (vm.count("bags"))
     {

@@ -44,6 +44,7 @@
 
 #include <queue>
 #include <string>
+#include <functional>
 
 #include <ros/ros.h>
 #include <ros/time.h>
@@ -52,6 +53,8 @@
 
 #include "rosbag/time_translator.h"
 #include "rosbag/macros.h"
+
+#include "std_msgs/Empty.h"
 
 namespace rosbag {
 
@@ -88,6 +91,8 @@ struct ROSBAG_DECL PlayerOptions
     bool     has_duration;
     float    duration;
     bool     keep_alive;
+    std::string rate_control_topic;
+    float    rate_control_max_delay;
     ros::Duration skip_empty;
 
     std::vector<std::string> bags;
@@ -171,6 +176,8 @@ private:
     void setupTerminal();
     void restoreTerminal();
 
+    void updateRateTopicTime(const std_msgs::Empty::ConstPtr& message);
+
     void doPublish(rosbag::MessageInstance const& m);
 
     void doKeepAlive();
@@ -185,8 +192,12 @@ private:
     ros::NodeHandle node_handle_;
 
     bool paused_;
+    bool delayed_;
 
     bool pause_for_topics_;
+
+    ros::Subscriber rate_control_sub_;
+    ros::WallTime last_rate_control_;
 
     ros::WallTime paused_time_;
 
