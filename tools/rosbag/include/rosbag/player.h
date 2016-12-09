@@ -44,12 +44,13 @@
 
 #include <queue>
 #include <string>
-#include <functional>
 
 #include <ros/ros.h>
 #include <ros/time.h>
 
 #include "rosbag/bag.h"
+
+#include <topic_tools/shape_shifter.h>
 
 #include "rosbag/time_translator.h"
 #include "rosbag/macros.h"
@@ -176,7 +177,7 @@ private:
     void setupTerminal();
     void restoreTerminal();
 
-    void updateRateTopicTime(const std_msgs::Empty::ConstPtr& message);
+    void updateRateTopicTime(const ros::MessageEvent<topic_tools::ShapeShifter const>& msg_event, std::string const& topic, boost::shared_ptr<ros::Subscriber> subscriber);
 
     void doPublish(rosbag::MessageInstance const& m);
 
@@ -197,7 +198,7 @@ private:
     bool pause_for_topics_;
 
     ros::Subscriber rate_control_sub_;
-    ros::WallTime last_rate_control_;
+    ros::Time last_rate_control_;
 
     ros::WallTime paused_time_;
 

@@ -83,7 +83,6 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
     }
 
     if (vm.count("help")) {
-      std::cout << "TESTING" << std::endl;
       std::cout << desc << std::endl;
       exit(0);
     }
