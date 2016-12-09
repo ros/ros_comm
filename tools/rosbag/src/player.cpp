@@ -290,6 +290,24 @@ void Player::updateRateTopicTime(const ros::MessageEvent<topic_tools::ShapeShift
     std::string def = ssmsg->getMessageDefinition();
     size_t length = ros::serialization::serializationLength(*ssmsg);
     
+    // Check the message definition.
+    std::istringstream f(def);
+    std::string s;
+    bool flag = false;
+    while(std::getline(f, s, '\n')) {
+        if (s.find("#") != 0) {
+            // Does not start with #, is not a comment.
+            if(s == "Header header") {
+                flag = true;
+            }
+        }
+    }
+    // If the header is not the first element in the message according to the definition, throw an error.
+    if (!flag) {
+        std::cout << std::endl << "WARNING: Rate control topic is bad, header is not first. MSG may be malformed." << std::endl;
+        return;
+    }
+
     std::vector<uint8_t> buffer(length);
     ros::serialization::OStream ostream(&buffer[0], length);
     ros::serialization::Serializer<topic_tools::ShapeShifter>::write(ostream, *ssmsg);

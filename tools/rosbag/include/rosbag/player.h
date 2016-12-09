@@ -55,8 +55,6 @@
 #include "rosbag/time_translator.h"
 #include "rosbag/macros.h"
 
-#include "std_msgs/Empty.h"
-
 namespace rosbag {
 
 //! Helper function to create AdvertiseOptions from a MessageInstance
