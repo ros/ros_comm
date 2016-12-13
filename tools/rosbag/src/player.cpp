@@ -102,6 +102,7 @@ void PlayerOptions::check() {
 
 Player::Player(PlayerOptions const& options) :
     options_(options),
+    node_handle_("~"),
     paused_(false),
     // If we were given a list of topics to pause on, then go into that mode
     // by default (it can be toggled later via 't' from the keyboard).
