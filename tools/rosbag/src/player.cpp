@@ -106,8 +106,11 @@ Player::Player(PlayerOptions const& options) :
     // If we were given a list of topics to pause on, then go into that mode
     // by default (it can be toggled later via 't' from the keyboard).
     pause_for_topics_(options_.pause_topics.size() > 0),
+    pause_change_requested_(false),
+    requested_pause_state_(false),
     terminal_modified_(false)
 {
+  pause_service_ = node_handle_.advertiseService("pause", &Player::pauseCallback, this);
 }
 
 Player::~Player() {
@@ -278,6 +281,17 @@ void Player::printTime()
     }
 }
 
+bool Player::pauseCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
+{
+  pause_change_requested_ = (req.data != paused_);
+  requested_pause_state_ = req.data;
+
+  res.success = true;
+  res.message = (requested_pause_state_ ? "Pause" : "Resume") + std::string(" requested.");
+
+  return true;
+}
+
 void Player::doPublish(MessageInstance const& m) {
     string const& topic   = m.getTopic();
     ros::Time const& time = m.getTime();
@@ -335,6 +349,30 @@ void Player::doPublish(MessageInstance const& m) {
         bool charsleftorpaused = true;
         while (charsleftorpaused && node_handle_.ok())
         {
+            ros::spinOnce();
+
+            if (pause_change_requested_)
+            {
+              paused_ = requested_pause_state_;
+
+              if (paused_)
+              {
+                paused_time_ = ros::WallTime::now();
+              }
+              else
+              {
+                ros::WallDuration shift = ros::WallTime::now() - paused_time_;
+                paused_time_ = ros::WallTime::now();
+
+                time_translator_.shift(ros::Duration(shift.sec, shift.nsec));
+
+                horizon += shift;
+                time_publisher_.setWCHorizon(horizon);
+              }
+
+              pause_change_requested_ = false;
+            }
+
             switch (readCharFromStdin()){
             case ' ':
                 paused_ = !paused_;
