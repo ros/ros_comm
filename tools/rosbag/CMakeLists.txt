@@ -5,7 +5,7 @@ if(NOT WIN32)
   set_directory_properties(PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra")
 endif()
 
-find_package(catkin REQUIRED COMPONENTS rosbag_storage rosconsole roscpp topic_tools xmlrpcpp)
+find_package(catkin REQUIRED COMPONENTS rosbag_storage rosconsole roscpp std_srvs topic_tools xmlrpcpp)
 find_package(Boost REQUIRED COMPONENTS date_time regex program_options filesystem)
 find_package(BZip2 REQUIRED)
 
@@ -19,7 +19,7 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 catkin_package(
   LIBRARIES rosbag
   INCLUDE_DIRS include
-  CATKIN_DEPENDS rosbag_storage rosconsole roscpp topic_tools xmlrpcpp)
+  CATKIN_DEPENDS rosbag_storage rosconsole roscpp std_srvs topic_tools xmlrpcpp)
 
 add_library(rosbag
   src/player.cpp
