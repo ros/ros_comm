@@ -286,8 +286,16 @@ bool Player::pauseCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::R
   pause_change_requested_ = (req.data != paused_);
   requested_pause_state_ = req.data;
 
-  res.success = true;
-  res.message = (requested_pause_state_ ? "Pause" : "Resume") + std::string(" requested.");
+  res.success = pause_change_requested_;
+
+  if (res.success)
+  {
+    res.message = (requested_pause_state_ ? "Pause" : "Resume") + std::string(" requested.");
+  }
+  else
+  {
+    res.message = std::string("Bag is already ") + (requested_pause_state_ ? "paused." : "running.");
+  }
 
   return true;
 }
