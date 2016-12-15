@@ -339,7 +339,7 @@ void Player::printTime()
         }
         else
         {
-            printf("\r [RUNNING]  Bag Time: %13.6f   Duration: %.6f / %.6f       \r", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
+            printf("\r [RUNNING]  Bag Time: %13.6f   Duration: %.6f / %.6f     \r", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
         }
         fflush(stdout);
     }
@@ -455,12 +455,12 @@ void Player::doPublish(MessageInstance const& m) {
                 break;
             case EOF:
                 if (paused_)
-		{
+                {
                     printTime();
                     time_publisher_.runStalledClock(ros::WallDuration(.1));
                     ros::spinOnce();
                 }
-		else if (delayed_)
+                else if (delayed_)
 		{
                     printTime();
                     time_publisher_.runStalledClock(ros::WallDuration(.1));
@@ -478,7 +478,7 @@ void Player::doPublish(MessageInstance const& m) {
                         time_publisher_.setWCHorizon(horizon);
                     }
                 }
-		else
+                else
                     charsleftorpaused = false;
             }
         }
