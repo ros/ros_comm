@@ -330,13 +330,13 @@ void Player::printTime()
         ros::Duration time_since_rate = ros::Time::now() - last_rate_control_;
 
         if (paused_)
-        {
+	{
             printf("\r [PAUSED]   Bag Time: %13.6f   Duration: %.6f / %.6f       \r", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
-        }
+	}
 	else if (delayed_)
 	{
             printf("\r [DELAYED (%.2f)]  Bag Time: %13.6f   Duration: %.6f / %.6f       \r", time_since_rate.toSec(), time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
-        }
+	}
 	else
 	{
             printf("\r [RUNNING]  Bag Time: %13.6f   Duration: %.6f / %.6f       \r", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
