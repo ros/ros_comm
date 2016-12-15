@@ -332,9 +332,13 @@ void Player::printTime()
         if (paused_)
         {
             printf("\r [PAUSED]   Bag Time: %13.6f   Duration: %.6f / %.6f       \r", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
-        } else if (delayed_) {
+        }
+	else if (delayed_)
+	{
             printf("\r [DELAYED (%.2f)]  Bag Time: %13.6f   Duration: %.6f / %.6f       \r", time_since_rate.toSec(), time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
-        } else {
+        }
+	else
+	{
             printf("\r [RUNNING]  Bag Time: %13.6f   Duration: %.6f / %.6f       \r", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
         }
         fflush(stdout);
@@ -450,11 +454,14 @@ void Player::doPublish(MessageInstance const& m) {
                 pause_for_topics_ = !pause_for_topics_;
                 break;
             case EOF:
-                if (paused_) {
+                if (paused_)
+		{
                     printTime();
                     time_publisher_.runStalledClock(ros::WallDuration(.1));
                     ros::spinOnce();
-                } else if (delayed_) {
+                }
+		else if (delayed_)
+		{
                     printTime();
                     time_publisher_.runStalledClock(ros::WallDuration(.1));
                     ros::spinOnce();
@@ -470,7 +477,8 @@ void Player::doPublish(MessageInstance const& m) {
                         horizon += shift;
                         time_publisher_.setWCHorizon(horizon);
                     }
-                } else
+                }
+		else
                     charsleftorpaused = false;
             }
         }
