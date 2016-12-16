@@ -65,6 +65,13 @@ def handle_split(option, opt_str, value, parser):
         print("Use of \"--split <MAX_SIZE>\" has been deprecated.  Please use --split --size <MAX_SIZE> or --split --duration <MAX_DURATION>", file=sys.stderr)
         parser.values.size = int(parser.rargs.pop(0))
 
+
+def _stop_process(signum, frame, old_handler, process):
+    process.terminate()
+    if old_handler:
+        old_handler(signum, frame)
+
+
 def record_cmd(argv):
     parser = optparse.OptionParser(usage="rosbag record TOPIC1 [TOPIC2 TOPIC3 ...]",
                                    description="Record a bag file with the contents of specified topics.",
@@ -124,9 +131,15 @@ def record_cmd(argv):
 
     cmd.extend(args)
 
+    old_handler = signal.signal(
+        signal.SIGTERM,
+        lambda signum, frame: _stop_process(signum, frame, old_handler, process)
+    )
     # Better way of handling it than os.execv
     # This makes sure stdin handles are passed to the process.
-    subprocess.call(cmd)
+    process = subprocess.Popen(cmd)
+    process.wait()
+
 
 def info_cmd(argv):
     parser = optparse.OptionParser(usage='rosbag info [options] BAGFILE1 [BAGFILE2 BAGFILE3 ...]',
@@ -255,9 +268,16 @@ def play_cmd(argv):
         cmd.extend(['--bags'])
 
     cmd.extend(args)
+
+    old_handler = signal.signal(
+        signal.SIGTERM,
+        lambda signum, frame: _stop_process(signum, frame, old_handler, process)
+    )
     # Better way of handling it than os.execv
     # This makes sure stdin handles are passed to the process.
-    subprocess.call(cmd)
+    process = subprocess.Popen(cmd)
+    process.wait()
+
 
 def filter_cmd(argv):
     def expr_eval(expr):
