@@ -290,6 +290,8 @@ def resolve_args(arg_str, context=None, resolve_anon=True):
         'optenv': _optenv,
         'anon': _anon,
         'arg': _arg,
+        'find-executable': _find_executable,
+        'find-resource': _find_resource,
     }
     resolved = _resolve_args(arg_str, context, resolve_anon, commands)
     # than resolve 'find' as it requires the subsequent path to be expanded already
@@ -300,7 +302,7 @@ def resolve_args(arg_str, context=None, resolve_anon=True):
     return resolved
 
 def _resolve_args(arg_str, context, resolve_anon, commands):
-    valid = ['find', 'env', 'optenv', 'anon', 'arg']
+    valid = ['find', 'find-executable', 'find-resource', 'env', 'optenv', 'anon', 'arg']
     resolved = arg_str
     for a in _collect_args(arg_str):
         splits = [s for s in a.split(' ') if s]
