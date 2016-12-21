@@ -175,7 +175,7 @@ private:
     void setupTerminal();
     void restoreTerminal();
 
-    void updateRateTopicTime(const ros::MessageEvent<topic_tools::ShapeShifter const>& msg_event, std::string const& topic, boost::shared_ptr<ros::Subscriber> subscriber);
+    void updateRateTopicTime(const ros::MessageEvent<topic_tools::ShapeShifter const>& msg_event);
 
     void doPublish(rosbag::MessageInstance const& m);
 
