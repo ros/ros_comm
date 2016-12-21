@@ -338,25 +338,25 @@ def rosnode_ping(node_name, max_count=None, verbose=False):
                     errnum, msg = e
                     if errnum == -2: #name/service unknown
                         p = urlparse.urlparse(node_api)
-                        print("ERROR: Unknown host [%s] for node [%s]"%(p.hostname, node_name), file=sys.stderr)
+                        raise ROSNodeIOException("ERROR: Unknown host [%s] for node [%s]"%(p.hostname, node_name), file=sys.stderr)                        
                     elif errnum == errno.ECONNREFUSED:
                         # check if node url has changed
                         new_node_api = get_api_uri(master,node_name, skip_cache=True)
                         if not new_node_api:
                             print("cannot ping [%s]: unknown node"%node_name, file=sys.stderr)
-                            return False
+                            return False                        
                         if new_node_api != node_api:
                             if verbose:
                                 print("node url has changed from [%s] to [%s], retrying to ping"%(node_api, new_node_api))
                             node_api = new_node_api
                             node = xmlrpclib.ServerProxy(node_api)
                             continue
-                        print("ERROR: connection refused to [%s]"%(node_api), file=sys.stderr)
+                        raise ROSNodeIOException("ERROR: connection refused to [%s]"%(node_api), file=sys.stderr)
                     else:
                         print("connection to [%s] timed out"%node_name, file=sys.stderr)
                     return False
                 except ValueError:
-                    print("unknown network error contacting node: %s"%(str(e)))
+                    raise ROSNodeIOException("unknown network error contacting node: %s"%(str(e)))
             if max_count and count >= max_count:
                 break
             time.sleep(1.0)
