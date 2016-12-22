@@ -207,7 +207,6 @@ def write_struct(s, spec, cpp_name_prefix, extra_deprecated_traits = {}):
     (cpp_msg_unqualified, cpp_msg_with_alloc, cpp_msg_base) = cpp_message_declarations(cpp_name_prefix, msg)
     s.write('  typedef boost::shared_ptr<%s> Ptr;\n'%(cpp_msg_with_alloc))
     s.write('  typedef boost::shared_ptr<%s const> ConstPtr;\n'%(cpp_msg_with_alloc))
-    s.write('  boost::shared_ptr<std::map<std::string, std::string> > __connection_header;\n')
 
     s.write('}; // struct %s\n'%(msg))
     
