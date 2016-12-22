@@ -217,7 +217,7 @@ void Player::publish() {
         ops.datatype = ros::message_traits::datatype<topic_tools::ShapeShifter>();
         ops.helper = boost::make_shared<ros::SubscriptionCallbackHelperT<
             const ros::MessageEvent<topic_tools::ShapeShifter const> &> >(
-                boost::bind(&Player::updateRateTopicTime, this, _1, ops.topic, sub));
+                boost::bind(&Player::updateRateTopicTime, this, _1));
 
         rate_control_sub_ = node_handle_.subscribe(ops);
 
