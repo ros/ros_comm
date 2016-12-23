@@ -153,7 +153,7 @@ def _base_logger(msg, *args, **kwargs):
         name = None
 
     try:
-        throttle = int(kwargs.pop('_logger_throttle'))
+        throttle = kwargs.pop('_logger_throttle')
     except KeyError:
         throttle = None
 
