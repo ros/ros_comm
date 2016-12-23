@@ -241,7 +241,7 @@ def logerr_throttle(period, msg):
 
 
 def logfatal_throttle(period, msg):
-    logfatal(msg, None, _logger_throttle=period)
+    logfatal(msg, _logger_name=None, _logger_throttle=period)
 
 
 #########################################################
