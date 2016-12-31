@@ -33,6 +33,8 @@
 from __future__ import division, print_function
 
 import rosgraph
+from rostopic import NAME
+from rostopic.util import master_get_topic_types
 
 
 _caller_apis = {}
@@ -83,7 +85,7 @@ def get_info_text(topic):
         subs = [x for x in subs if x[0] == topic]
         pubs = [x for x in pubs if x[0] == topic]
 
-        topic_types = _master_get_topic_types(master)
+        topic_types = master_get_topic_types(master)
 
     except socket.error:
         raise ROSTopicIOException("Unable to communicate with master!")

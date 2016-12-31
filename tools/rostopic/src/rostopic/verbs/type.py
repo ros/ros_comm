@@ -32,6 +32,11 @@
 
 from __future__ import division, print_function
 
+from argparse import ArgumentParser
+from rosgraph.names import script_resolve_name
+from rostopic import NAME
+from rostopic.util import get_topic_type
+
 
 def _rostopic_type(topic):
     """
@@ -53,7 +58,7 @@ def _rostopic_type(topic):
         print('%s %s %s'%(topic_type, field, field_type))
 
 def _rostopic_cmd_type(argv):
-    parser = argparse.ArgumentParser(prog='%s type' % NAME)
+    parser = ArgumentParser(prog='%s type' % NAME)
     parser.add_argument('topic_or_field', help='Topic or field name')
     args = parser.parse_args(argv[2:])
-    _rostopic_type(rosgraph.names.script_resolve_name('rostopic', args.topic_or_field))
+    _rostopic_type(script_resolve_name('rostopic', args.topic_or_field))

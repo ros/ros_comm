@@ -32,6 +32,10 @@
 
 from __future__ import division, print_function
 
+import rosgraph
+from rostopic import NAME
+from rostopic.util import master_get_topic_types
+import socket
 import sys
 
 
@@ -43,7 +47,7 @@ def find_by_type(topic_type):
     """
     master = rosgraph.Master('/rostopic')
     try:
-        t_list = _master_get_topic_types(master)
+        t_list = master_get_topic_types(master)
     except socket.error:
         raise ROSTopicIOException("Unable to communicate with master!")
     return [t_name for t_name, t_type in t_list if t_type == topic_type]

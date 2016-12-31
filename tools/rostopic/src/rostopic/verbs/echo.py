@@ -32,12 +32,16 @@
 
 from __future__ import division, print_function
 
-from rostopic import NAME
-
 import genpy
-import rosgraph
-import roslib.message
+from rosgraph.names import script_resolve_name
 import rospy
+from rostopic import NAME
+from rostopic.util import check_master
+from rostopic.util import get_topic_class
+from rostopic.util import msgevalgen
+from rostopic.util import sleep
+import socket
+import sys
 import traceback
 
 
@@ -100,183 +104,6 @@ def create_field_filter(echo_nostr, echo_noarr):
                 continue
             yield f
     return field_filter
-
-# code adapted from rqt_plot
-def msgevalgen(pattern):
-    """
-    Generates a function that returns the relevant field(s) (aka 'subtopic(s)') of a Message object
-    :param pattern: subtopic, e.g. /x[2:]/y[:-1]/z, ``str``
-    :returns: function that converts a message into the desired value, ``fn(Message) -> value``
-    """
-    evals = []  # list of (field_name, slice_object) pairs
-    fields = [f for f in pattern.split('/') if f]
-    for f in fields:
-        if '[' in f:
-            field_name, rest = f.split('[', 1)
-            if not rest.endswith(']'):
-                print("missing closing ']' in slice spec '%s'" % f, file=sys.stderr)
-                return None
-            rest = rest[:-1]  # slice content, removing closing bracket
-            try:
-                array_index_or_slice_object = _get_array_index_or_slice_object(rest)
-            except AssertionError as e:
-                print("field '%s' has invalid slice argument '%s': %s"
-                      % (field_name, rest, str(e)), file=sys.stderr)
-                return None
-            evals.append((field_name, array_index_or_slice_object))
-        else:
-            evals.append((f, None))
-
-    def msgeval(msg, evals):
-        for i, (field_name, slice_object) in enumerate(evals):
-            try: # access field first
-                msg = getattr(msg, field_name)
-            except AttributeError:
-                print("no field named %s in %s" % (field_name, pattern), file=sys.stderr)
-                return None
-
-            if slice_object is not None: # access slice
-                try:
-                    msg = msg.__getitem__(slice_object)
-                except IndexError as e:
-                    print("%s: %s" % (str(e), pattern), file=sys.stderr)
-                    return None
-
-                # if a list is returned here (i.e. not only a single element accessed),
-                # we need to recursively call msg_eval() with the rest of evals
-                # in order to handle nested slices
-                if isinstance(msg, list):
-                    rest = evals[i + 1:]
-                    return [msgeval(m, rest) for m in msg]
-        return msg
-
-    return (lambda msg: msgeval(msg, evals)) if evals else None
-
-
-def _get_array_index_or_slice_object(index_string):
-    assert index_string != '', 'empty array index'
-    index_string_parts = index_string.split(':')
-    if len(index_string_parts) == 1:
-        try:
-            array_index = int(index_string_parts[0])
-        except ValueError:
-            assert False, "non-integer array index step '%s'" % index_string_parts[0]
-        return array_index
-
-    slice_args = [None, None, None]
-    if index_string_parts[0] != '':
-        try:
-            slice_args[0] = int(index_string_parts[0])
-        except ValueError:
-            assert False, "non-integer slice start '%s'" % index_string_parts[0]
-    if index_string_parts[1] != '':
-        try:
-            slice_args[1] = int(index_string_parts[1])
-        except ValueError:
-            assert False, "non-integer slice stop '%s'" % index_string_parts[1]
-    if len(index_string_parts) > 2 and index_string_parts[2] != '':
-            try:
-                slice_args[2] = int(index_string_parts[2])
-            except ValueError:
-                assert False, "non-integer slice step '%s'" % index_string_parts[2]
-    if len(index_string_parts) > 3:
-        assert False, 'too many slice arguments'
-    return slice(*slice_args)
-
-def _get_nested_attribute(msg, nested_attributes):
-    value = msg
-    for attr in nested_attributes.split('/'):
-        value = getattr(value, attr)
-    return value
-
-def _get_topic_type(topic):
-    """
-    subroutine for getting the topic type
-    :returns: topic type, real topic name and fn to evaluate the message instance
-    if the topic points to a field within a topic, e.g. /rosout/msg, ``(str, str, fn)``
-    """
-    try:
-        val = _master_get_topic_types(rosgraph.Master('/rostopic'))
-    except socket.error:
-        raise ROSTopicIOException("Unable to communicate with master!")
-
-    # exact match first, followed by prefix match
-    matches = [(t, t_type) for t, t_type in val if t == topic]
-    if not matches:
-        matches = [(t, t_type) for t, t_type in val if topic.startswith(t+'/')]
-        # choose longest match
-        matches.sort(key=itemgetter(0), reverse=True)
-
-        # try to ignore messages which don't have the field specified as part of the topic name
-        while matches:
-            t, t_type = matches[0]
-            msg_class = roslib.message.get_message_class(t_type)
-            if not msg_class:
-                # if any class is not fetchable skip ignoring any message types
-                break
-            msg = msg_class()
-            nested_attributes = topic[len(t) + 1:].rstrip('/')
-            nested_attributes = nested_attributes.split('[')[0]
-            if nested_attributes == '':
-                break
-            try:
-                _get_nested_attribute(msg, nested_attributes)
-            except AttributeError:
-                # ignore this type since it does not have the requested field
-                matches.pop(0)
-                continue
-            matches = [(t, t_type)]
-            break
-
-    if matches:
-        t, t_type = matches[0]
-        if t_type == rosgraph.names.ANYTYPE:
-            return None, None, None
-        return t_type, t, msgevalgen(topic[len(t):])
-    else:
-        return None, None, None
-
-# NOTE: this is used externally by rxplot
-
-def get_topic_type(topic, blocking=False):
-    """
-    Get the topic type.
-
-    :param topic: topic name, ``str``
-    :param blocking: (default False) block until topic becomes available, ``bool``
-
-    :returns: topic type, real topic name and fn to evaluate the message instance
-      if the topic points to a field within a topic, e.g. /rosout/msg. fn is None otherwise. ``(str, str, fn)``
-    :raises: :exc:`ROSTopicException` If master cannot be contacted
-    """
-    topic_type, real_topic, msg_eval = _get_topic_type(topic)
-    if topic_type:
-        return topic_type, real_topic, msg_eval
-    elif blocking:
-        sys.stderr.write("WARNING: topic [%s] does not appear to be published yet\n"%topic)
-        while not rospy.is_shutdown():
-            topic_type, real_topic, msg_eval = _get_topic_type(topic)
-            if topic_type:
-                return topic_type, real_topic, msg_eval
-            else:
-                _sleep(0.1)
-    return None, None, None
-
-def get_topic_class(topic, blocking=False):
-    """
-    Get the topic message class
-    :returns: message class for topic, real topic
-      name, and function for evaluating message objects into the subtopic
-      (or ``None``). ``(Message, str, str)``
-    :raises: :exc:`ROSTopicException` If topic type cannot be determined or loaded
-    """
-    topic_type, real_topic, msg_eval = get_topic_type(topic, blocking=blocking)
-    if topic_type is None:
-        return None, None, None
-    msg_class = roslib.message.get_message_class(topic_type)
-    if not msg_class:
-        raise ROSTopicException("Cannot load message class for [%s]. Are your messages built?" % topic_type)
-    return msg_class, real_topic, msg_eval
 
 def _str_plot_fields(val, f, field_filter):
     """
@@ -574,7 +401,7 @@ def _rostopic_echo_bag(callback_echo, bag_file):
         # bag files can have relative paths in them, this respects any
             # dynamic renaming
             if t[0] != '/':
-                t = rosgraph.names.script_resolve_name('rostopic', t)
+                t = script_resolve_name('rostopic', t)
             callback_echo.callback(msg, {'topic': t}, current_time=timestamp)
             # done is set if there is a max echo count
             if callback_echo.done:
@@ -594,7 +421,7 @@ def _rostopic_echo(topic, callback_echo, bag_file=None, echo_all_topics=False):
         rospy.rostime.set_rostime_initialized(True)
         _rostopic_echo_bag(callback_echo, bag_file)
     else:
-        _check_master()
+        check_master()
         rospy.init_node(NAME, anonymous=True)
         msg_class, real_topic, msg_eval = get_topic_class(topic, blocking=True)
         if msg_class is None:
@@ -616,7 +443,7 @@ def _rostopic_echo(topic, callback_echo, bag_file=None, echo_all_topics=False):
                     index = submsg_class.__slots__.index(field)
                     type_information = submsg_class._slot_types[index]
                     if fields:
-                        submsg_class = roslib.message.get_message_class(type_information.split('[', 1)[0])
+                        submsg_class = get_message_class(type_information.split('[', 1)[0])
                         if not submsg_class:
                             raise ROSTopicException("Cannot load message class for [%s]. Are your messages built?" % type_information)
 
@@ -631,7 +458,7 @@ def _rostopic_echo(topic, callback_echo, bag_file=None, echo_all_topics=False):
                     callback_echo.count == 0 and \
                     not rospy.is_shutdown() and \
                     not callback_echo.done:
-                _sleep(0.1)
+                sleep(0.1)
 
             if callback_echo.count == 0 and \
                     not rospy.is_shutdown() and \
@@ -639,7 +466,7 @@ def _rostopic_echo(topic, callback_echo, bag_file=None, echo_all_topics=False):
                 sys.stderr.write("WARNING: no messages received and simulated time is active.\nIs /clock being published?\n")
 
         while not rospy.is_shutdown() and not callback_echo.done:
-            _sleep(0.1)
+            sleep(0.1)
 
 def _rostopic_cmd_echo(argv):
     def expr_eval(expr):
@@ -700,7 +527,7 @@ def _rostopic_cmd_echo(argv):
     else:
         if len(args) == 0:
             parser.error("topic must be specified")
-        topic = rosgraph.names.script_resolve_name('rostopic', args[0])
+        topic = script_resolve_name('rostopic', args[0])
         # suppressing output to keep it clean
         #if not options.plot:
         #    print "rostopic: topic is [%s]"%topic

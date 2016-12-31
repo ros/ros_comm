@@ -33,8 +33,13 @@
 
 from __future__ import division, print_function
 
-import argparse
+from argparse import ArgumentParser
+import math
 import rospy
+from rosgraph.names import script_resolve_name
+from rostopic import NAME
+from rostopic.util import get_topic_class
+from rostopic.util import sleep
 
 
 class ROSTopicDelay(object):
@@ -132,14 +137,13 @@ def _rostopic_delay(topic, window_size=-1):
         print("WARNING: may be using simulated time",file=sys.stderr)
 
     while not rospy.is_shutdown():
-        _sleep(1.0)
+        sleep(1.0)
         rt.print_delay()
 
 
 def _rostopic_cmd_delay(argv):
     args = argv[2:]
-    import argparse
-    parser = argparse.ArgumentParser(usage="%(prog)s delay [options] /topic", prog=NAME)
+    parser = ArgumentParser(usage="%(prog)s delay [options] /topic", prog=NAME)
     parser.add_argument("topic", help="topic name to be calcurated the delay")
     parser.add_argument("-w", "--window",
                         dest="window_size", default=-1, type=int,
@@ -148,5 +152,5 @@ def _rostopic_cmd_delay(argv):
     args = parser.parse_args(args)
     topic_name = args.topic
     window_size = args.window_size
-    topic = rosgraph.names.script_resolve_name('rostopic', topic_name)
+    topic = script_resolve_name('rostopic', topic_name)
     _rostopic_delay(topic, window_size=window_size)

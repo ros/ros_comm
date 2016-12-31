@@ -32,14 +32,22 @@
 
 from __future__ import division, print_function
 
+import genpy
+import rosgraph
+import rospy
+
+from roslib.message import get_message_class
 from rostopic import NAME
+from rostopic.exceptions import ROSTopicException
+from rostopic.util import check_master
+from rostopic.util import sleep
 
 
 SUBSCRIBER_TIMEOUT = 5.
 def wait_for_subscriber(pub, timeout):
     timeout_t = time.time() + timeout
     while pub.get_num_connections() == 0 and timeout_t > time.time():
-        _sleep(0.01)
+        sleep(0.01)
 
 
 class _ParamNotifier(object):
@@ -231,7 +239,7 @@ def create_publisher(topic_name, topic_type, latch):
     """
     topic_name = rosgraph.names.script_resolve_name('rostopic', topic_name)
     try:
-        msg_class = roslib.message.get_message_class(topic_type)
+        msg_class = get_message_class(topic_type)
     except:
         raise ROSTopicException("invalid topic type: %s"%topic_type)
     if msg_class is None:
@@ -392,6 +400,7 @@ def _rostopic_cmd_pub(argv):
 
     # type-case using YAML
     try:
+        import yaml
         pub_args = []
         for arg in args[2:]:
             pub_args.append(yaml.load(arg))
@@ -400,7 +409,7 @@ def _rostopic_cmd_pub(argv):
 
     # make sure master is online. we wait until after we've parsed the
     # args to do this so that syntax errors are reported first
-    _check_master()
+    check_master()
 
     # if no rate, or explicit latch, we latch
     latch = (rate == None) or options.latch

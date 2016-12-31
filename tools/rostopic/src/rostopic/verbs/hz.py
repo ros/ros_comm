@@ -32,6 +32,14 @@
 
 from __future__ import division, print_function
 
+import math
+import rospy
+from rosgraph.names import script_resolve_name
+from rostopic import NAME
+from rostopic.util import check_master
+from rostopic.util import get_topic_class
+from rostopic.util import sleep
+
 
 class ROSTopicHz(object):
     """
@@ -221,8 +229,6 @@ def _get_ascii_table(header, cols):
         header='   '.join(header_aligned), hline='=' * table_width, body=body)
     return table
 
-def _sleep(duration):
-    rospy.rostime.wallsleep(duration)
 
 def _rostopic_hz(topics, window_size=-1, filter_expr=None, use_wtime=False):
     """
@@ -232,7 +238,7 @@ def _rostopic_hz(topics, window_size=-1, filter_expr=None, use_wtime=False):
     :param window_size: number of messages to average over, -1 for infinite, ``int``
     :param filter_expr: Python filter expression that is called with m, the message instance
     """
-    _check_master()
+    check_master()
     if rospy.is_shutdown():
         return
     rospy.init_node(NAME, anonymous=True)
@@ -252,7 +258,7 @@ def _rostopic_hz(topics, window_size=-1, filter_expr=None, use_wtime=False):
         print("WARNING: may be using simulated time",file=sys.stderr)
 
     while not rospy.is_shutdown():
-        _sleep(1.0)
+        sleep(1.0)
         rt.print_hz(topics)
 
 def _rostopic_cmd_hz(argv):
@@ -281,7 +287,7 @@ def _rostopic_cmd_hz(argv):
     except:
         parser.error("window size must be an integer")
 
-    topics = [rosgraph.names.script_resolve_name('rostopic', t) for t in args]
+    topics = [script_resolve_name('rostopic', t) for t in args]
 
     # #694
     if options.filter_expr:

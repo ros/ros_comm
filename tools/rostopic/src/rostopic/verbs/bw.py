@@ -32,8 +32,14 @@
 
 from __future__ import division, print_function
 
+from rosgraph.names import script_resolve_name
 import rospy
+from rostopic import NAME
+from rostopic.util import check_master
+from rostopic.util import get_topic_type
+from rostopic.util import sleep
 import sys
+import time
 import traceback
 
 
@@ -103,7 +109,7 @@ def _rostopic_bw(topic, window_size=-1):
     periodically print the received bandwidth of a topic to console until
     shutdown
     """
-    _check_master()
+    check_master()
     _, real_topic, _ = get_topic_type(topic, blocking=True) #pause hz until topic is published
     if rospy.is_shutdown():
         return
@@ -115,7 +121,7 @@ def _rostopic_bw(topic, window_size=-1):
     sub = rospy.Subscriber(real_topic, rospy.AnyMsg, rt.callback)
     print("subscribed to [%s]"%real_topic)
     while not rospy.is_shutdown():
-        _sleep(1.0)
+        sleep(1.0)
         rt.print_bw()
 
 def _rostopic_cmd_bw(argv=sys.argv):
@@ -138,5 +144,5 @@ def _rostopic_cmd_bw(argv=sys.argv):
             window_size = options.window_size
     except:
         parser.error("window size must be an integer")
-    topic = rosgraph.names.script_resolve_name('rostopic', args[0])
+    topic = script_resolve_name('rostopic', args[0])
     _rostopic_bw(topic, window_size=window_size)

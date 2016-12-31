@@ -34,6 +34,8 @@ from __future__ import division, print_function
 
 import rosgraph
 import rospy
+from rostopic import NAME
+from rostopic.util import master_get_topic_types
 
 
 def _rostopic_list_bag(bag_file, topic=None):
@@ -82,7 +84,7 @@ def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, ve
         return 'unknown type'
 
     if verbose:
-        topic_types = _master_get_topic_types(master)
+        topic_types = master_get_topic_types(master)
 
         if not subscribers_only:
             print("\n%sPublished topics:"%indent)
@@ -117,6 +119,11 @@ def _rostopic_list_group_by_host(master, pubs, subs):
     Build up maps for hostname to topic list per hostname
     :returns: publishers host map, subscribers host map, ``{str: set(str)}, {str: set(str)}``
     """
+    try:
+        from urllib.parse import urlparse
+    except ImportError:
+        from urlparse import urlparse
+
     def build_map(master, state, uricache):
         tmap = {}
         for topic, tnodes in state:
