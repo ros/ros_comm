@@ -145,7 +145,22 @@ def rospywarn(msg, *args):
     _rospy_logger.warn(msg, *args)
 
 
-def _base_logger(msg, name=None, throttle=None, level='info'):
+def _base_logger(msg, *args, **kwargs):
+
+    try:
+        name = kwargs.pop('_logger_name')
+    except KeyError:
+        name = None
+
+    try:
+        throttle = kwargs.pop('_logger_throttle')
+    except KeyError:
+        throttle = None
+
+    try:
+        level = kwargs.pop('_logger_level')
+    except KeyError:
+        level = None
 
     rospy_logger = logging.getLogger('rosout')
     if name:
@@ -156,22 +171,22 @@ def _base_logger(msg, name=None, throttle=None, level='info'):
         caller_id = _frame_record_to_caller_id(inspect.stack()[1])
         _logging_throttle(caller_id, logfunc, throttle, msg)
     else:
-        logfunc(msg)
+        logfunc(msg, *args, **kwargs)
 
 
-loginfo = partial(_base_logger, level='info')
+loginfo = partial(_base_logger, _logger_level='info')
 
 logout = loginfo # alias deprecated name
 
-logdebug = partial(_base_logger, level='debug')
+logdebug = partial(_base_logger, _logger_level='debug')
 
-logwarn = partial(_base_logger, level='warn')
+logwarn = partial(_base_logger, _logger_level='warn')
 
-logerr = partial(_base_logger, level='error')
+logerr = partial(_base_logger, _logger_level='error')
 
 logerror = logerr # alias logerr
 
-logfatal = partial(_base_logger, level='critical')
+logfatal = partial(_base_logger, _logger_level='critical')
 
 
 class LoggingThrottle(object):
@@ -210,23 +225,23 @@ def _frame_record_to_caller_id(frame_record):
 
 
 def logdebug_throttle(period, msg):
-    logdebug(msg, None, period)
+    logdebug(msg, _logger_name=None, _logger_throttle=period)
 
 
 def loginfo_throttle(period, msg):
-    loginfo(msg, None, period)
+    loginfo(msg, _logger_name=None, _logger_throttle=period)
 
 
 def logwarn_throttle(period, msg):
-    logwarn(msg, None, period)
+    logwarn(msg, _logger_name=None, _logger_throttle=period)
 
 
 def logerr_throttle(period, msg):
-    logerr(msg, None, period)
+    logerr(msg, _logger_name=None, _logger_throttle=period)
 
 
 def logfatal_throttle(period, msg):
-    logfatal(msg, None, period)
+    logfatal(msg, _logger_name=None, _logger_throttle=period)
 
 
 #########################################################
