@@ -144,27 +144,27 @@ template <class T>
 
 void set(const std::string& key, const std::vector<std::string>& vec)
 {
-  setImpl(key, vec);
+  ros::param::setImpl(key, vec);
 }
 
 void set(const std::string& key, const std::vector<double>& vec)
 {
-  setImpl(key, vec);
+  ros::param::setImpl(key, vec);
 }
 
 void set(const std::string& key, const std::vector<float>& vec)
 {
-  setImpl(key, vec);
+  ros::param::setImpl(key, vec);
 }
 
 void set(const std::string& key, const std::vector<int>& vec)
 {
-  setImpl(key, vec);
+  ros::param::setImpl(key, vec);
 }
 
 void set(const std::string& key, const std::vector<bool>& vec)
 {
-  setImpl(key, vec);
+  ros::param::setImpl(key, vec);
 }
 
 template <class T>
@@ -185,27 +185,27 @@ template <class T>
 
 void set(const std::string& key, const std::map<std::string, std::string>& map)
 {
-  setImpl(key, map);
+  ros::param::setImpl(key, map);
 }
 
 void set(const std::string& key, const std::map<std::string, double>& map)
 {
-  setImpl(key, map);
+  ros::param::setImpl(key, map);
 }
 
 void set(const std::string& key, const std::map<std::string, float>& map)
 {
-  setImpl(key, map);
+  ros::param::setImpl(key, map);
 }
 
 void set(const std::string& key, const std::map<std::string, int>& map)
 {
-  setImpl(key, map);
+  ros::param::setImpl(key, map);
 }
 
 void set(const std::string& key, const std::map<std::string, bool>& map)
 {
-  setImpl(key, map);
+  ros::param::setImpl(key, map);
 }
 
 bool has(const std::string& key)
