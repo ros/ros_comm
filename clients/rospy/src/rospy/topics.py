@@ -429,12 +429,15 @@ class _TopicImpl(object):
         """
         Get the stats for this topic
         @return: stats for topic in getBusInfo() format::
-          ((connection_id, destination_caller_id, direction, transport, topic_name, connected)*)
+          Publisher:
+          ((connection_id, destination_caller_id, direction, transport, topic_name, connected, connection_info_string)*)
+          Subscriber:
+          ((connection_id, publisher_xmlrpc_uri, direction, transport, topic_name, connected, connection_info_string)*)
         @rtype: list
         """
         # save referenceto avoid locking
         connections = self.connections
-        return [(c.id, c.endpoint_id, c.direction, c.transport_type, self.resolved_name, True) for c in connections]
+        return [(c.id, c.endpoint_id, c.direction, c.transport_type, self.resolved_name, True, c.get_transport_info()) for c in connections]
 
     def get_stats(self): # STATS
         """Get the stats for this topic (API stub)"""

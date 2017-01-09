@@ -356,6 +356,7 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
                 protocol = TCPROSPub(resolved_topic_name, topic.data_class, is_latch=topic.is_latch, headers=topic.headers)
                 transport = TCPROSTransport(protocol, resolved_topic_name)
                 transport.set_socket(sock, header['callerid'])
+                transport.remote_endpoint = client_addr
                 transport.write_header()
                 topic.add_connection(transport)
             

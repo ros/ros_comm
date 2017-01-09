@@ -53,6 +53,7 @@ public:
   virtual void enqueueMessage(const SerializedMessage& m, bool ser, bool nocopy);
   virtual void drop();
   virtual std::string getTransportType();
+  virtual std::string getTransportInfo();
   virtual bool isIntraprocess() { return true; }
   virtual void getPublishTypes(bool& ser, bool& nocopy, const std::type_info& ti);
 

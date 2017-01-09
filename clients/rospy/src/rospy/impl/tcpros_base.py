@@ -461,6 +461,14 @@ class TCPROSTransport(Transport):
         self.md5sum = None
         self.type = None 
             
+    def get_transport_info(self):
+        """
+        Get detailed connection information.
+        Similar to getTransportInfo() in 'libros/transport/transport_tcp.cpp'
+        e.g. TCPROS connection on port 41374 to [127.0.0.1:40623 on socket 6]
+        """
+        return "%s connection on port %s to [%s:%s on socket %s]" % (self.transport_type, self.local_endpoint[1], self.remote_endpoint[0], self.remote_endpoint[1], self._fileno)
+
     def fileno(self):
         """
         Get descriptor for select
@@ -488,6 +496,7 @@ class TCPROSTransport(Transport):
         self.socket = sock
         self.endpoint_id = endpoint_id
         self._fileno = sock.fileno()
+        self.local_endpoint = self.socket.getsockname()
 
     def connect(self, dest_addr, dest_port, endpoint_id, timeout=None):
         """
@@ -531,6 +540,8 @@ class TCPROSTransport(Transport):
             self.socket.connect((dest_addr, dest_port))
             self.write_header()
             self.read_header()
+            self.local_endpoint = self.socket.getsockname()
+            self.remote_endpoint = (dest_addr, dest_port)
         except TransportInitError as tie:
             rospyerr("Unable to initiate TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, traceback.format_exc()))            
             raise

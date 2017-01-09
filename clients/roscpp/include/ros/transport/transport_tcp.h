@@ -97,6 +97,7 @@ public:
    * \brief Returns the port this transport is listening on
    */
   int getServerPort() { return server_port_; }
+  int getLocalPort() { return local_port_; }
 
   void setNoDelay(bool nodelay);
   void setKeepAlive(bool use, uint32_t idle, uint32_t interval, uint32_t count);
@@ -148,8 +149,11 @@ private:
   bool is_server_;
   sockaddr_storage server_address_;
   socklen_t sa_len_;
+  sockaddr_storage local_address_;
+  socklen_t la_len_;
 
   int server_port_;
+  int local_port_;
   AcceptCallback accept_cb_;
 
   std::string cached_remote_host_;
