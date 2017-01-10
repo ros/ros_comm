@@ -208,6 +208,7 @@ def play_cmd(argv):
     parser.add_option("--topics", dest="topics", default=[],  callback=handle_topics, action="callback", help="topics to play back")
     parser.add_option("--pause-topics", dest="pause_topics", default=[],  callback=handle_pause_topics, action="callback", help="topics to pause on during playback")
     parser.add_option("--bags",  help="bags files to play back from")
+    parser.add_option("--wait-for-subscribers",  dest="wait_for_subscribers", default=False, action="store_true", help="wait for subscribers before publishing")
 
     (options, args) = parser.parse_args(argv)
 
@@ -231,6 +232,7 @@ def play_cmd(argv):
     if options.loop:       cmd.extend(["--loop"])
     if options.keep_alive: cmd.extend(["--keep-alive"])
     if options.try_future: cmd.extend(["--try-future-version"])
+    if options.wait_for_subscribers: cmd.extend(["--wait-for-subscribers"])
 
     if options.clock:
         cmd.extend(["--clock", "--hz", str(options.freq)])
