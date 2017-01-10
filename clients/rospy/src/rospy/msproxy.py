@@ -103,7 +103,8 @@ class MasterProxy(object):
                 i = i + 1 #callerId does not count
                 #print "Remap %s => %s"%(args[i], rospy.names.resolve_name(args[i]))
                 args[i] = rospy.names.resolve_name(args[i])
-            return f(*args, **kwds)
+            with self._lock:
+                return f(*args, **kwds)
         return wrappedF
 
     def __getitem__(self, key):
