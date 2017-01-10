@@ -148,17 +148,17 @@ def rospywarn(msg, *args):
 def _base_logger(msg, *args, **kwargs):
 
     try:
-        name = kwargs.pop('_logger_name')
+        name = kwargs.pop('logger_name')
     except KeyError:
         name = None
 
     try:
-        throttle = kwargs.pop('_logger_throttle')
+        throttle = kwargs.pop('logger_throttle')
     except KeyError:
         throttle = None
 
     try:
-        level = kwargs.pop('_logger_level')
+        level = kwargs.pop('logger_level')
     except KeyError:
         level = None
 
@@ -174,19 +174,19 @@ def _base_logger(msg, *args, **kwargs):
         logfunc(msg, *args, **kwargs)
 
 
-loginfo = partial(_base_logger, _logger_level='info')
+loginfo = partial(_base_logger, logger_level='info')
 
 logout = loginfo # alias deprecated name
 
-logdebug = partial(_base_logger, _logger_level='debug')
+logdebug = partial(_base_logger, logger_level='debug')
 
-logwarn = partial(_base_logger, _logger_level='warn')
+logwarn = partial(_base_logger, logger_level='warn')
 
-logerr = partial(_base_logger, _logger_level='error')
+logerr = partial(_base_logger, logger_level='error')
 
 logerror = logerr # alias logerr
 
-logfatal = partial(_base_logger, _logger_level='critical')
+logfatal = partial(_base_logger, logger_level='critical')
 
 
 class LoggingThrottle(object):
@@ -225,23 +225,23 @@ def _frame_record_to_caller_id(frame_record):
 
 
 def logdebug_throttle(period, msg):
-    logdebug(msg, _logger_name=None, _logger_throttle=period)
+    logdebug(msg, logger_name=None, logger_throttle=period)
 
 
 def loginfo_throttle(period, msg):
-    loginfo(msg, _logger_name=None, _logger_throttle=period)
+    loginfo(msg, logger_name=None, logger_throttle=period)
 
 
 def logwarn_throttle(period, msg):
-    logwarn(msg, _logger_name=None, _logger_throttle=period)
+    logwarn(msg, logger_name=None, logger_throttle=period)
 
 
 def logerr_throttle(period, msg):
-    logerr(msg, _logger_name=None, _logger_throttle=period)
+    logerr(msg, logger_name=None, logger_throttle=period)
 
 
 def logfatal_throttle(period, msg):
-    logfatal(msg, _logger_name=None, _logger_throttle=period)
+    logfatal(msg, logger_name=None, logger_throttle=period)
 
 
 #########################################################
