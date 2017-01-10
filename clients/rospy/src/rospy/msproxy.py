@@ -90,8 +90,6 @@ class MasterProxy(object):
         self._lock = Lock()
 
     def __getattr__(self, key): #forward api calls to target
-        with self._lock:
-            f = getattr(self.target, key)
         if key in _master_arg_remap:
             remappings = _master_arg_remap[key]
         else:
@@ -104,6 +102,7 @@ class MasterProxy(object):
                 #print "Remap %s => %s"%(args[i], rospy.names.resolve_name(args[i]))
                 args[i] = rospy.names.resolve_name(args[i])
             with self._lock:
+                f = getattr(self.target, key)
                 return f(*args, **kwds)
         return wrappedF
 
