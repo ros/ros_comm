@@ -42,6 +42,7 @@ try:
 except ImportError:
     import pickle
 import inspect
+import hashlib
 import logging
 import os
 import signal
@@ -73,6 +74,7 @@ from rospy.impl.validators import ParameterInvalid
 
 from rosgraph_msgs.msg import Log
 from functools import partial
+from collections import namedtuple
 
 _logger = logging.getLogger("rospy.core")
 
@@ -169,9 +171,9 @@ def _base_logger(msg, *args, **kwargs):
 
     if throttle:
         caller_id = _frame_record_to_caller_id(inspect.stack()[1])
-        _logging_throttle(caller_id, logfunc, throttle, msg)
+        _logging_throttle(caller_id, logfunc, throttle, msg, *args)
     else:
-        logfunc(msg, *args, **kwargs)
+        logfunc(msg, *args)
 
 
 loginfo = partial(_base_logger, logger_level='info')
@@ -191,24 +193,33 @@ logfatal = partial(_base_logger, logger_level='critical')
 
 class LoggingThrottle(object):
 
-    last_logging_time_table = {}
+    LogEntry = namedtuple("LogEntry", "time digest")
 
-    def __call__(self, caller_id, logging_func, period, msg):
-        """Do logging specified message periodically.
+    last_log_entry = {}
+
+    def __call__(self, caller_id, logging_func, period, msg, *args):
+        """Do logging specified message periodically. Messages with different contents will bypass throttling
 
         - caller_id (str): Id to identify the caller
         - logging_func (function): Function to do logging.
-        - period (float): Period to do logging in second unit.
+        - period (float): Period to do logging in seconds.
         - msg (object): Message to do logging.
         """
         now = rospy.Time.now()
 
-        last_logging_time = self.last_logging_time_table.get(caller_id)
+        last = self.last_log_entry.get(caller_id, self.LogEntry(time=None, digest=None))
+        digest = _get_digest(msg, *args)
 
-        if (last_logging_time is None or
-              (now - last_logging_time) > rospy.Duration(period)):
-            logging_func(msg)
-            self.last_logging_time_table[caller_id] = now
+        if (last.time is None or (now - last.time) > rospy.Duration(period) or digest != last.digest):
+            logging_func(msg, *args)
+            self.last_log_entry[caller_id] = self.LogEntry(time=now, digest=digest)
+
+
+def _get_digest(*args):
+    m = hashlib.md5()
+    for arg in args:
+        m.update(str(args))
+    return m.hexdigest()
 
 
 _logging_throttle = LoggingThrottle()
