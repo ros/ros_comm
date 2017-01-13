@@ -110,7 +110,8 @@ Player::Player(PlayerOptions const& options) :
     requested_pause_state_(false),
     terminal_modified_(false)
 {
-  pause_service_ = node_handle_.advertiseService("pause", &Player::pauseCallback, this);
+  ros::NodeHandle private_node_handle("~");
+  pause_service_ = private_node_handle.advertiseService("pause", &Player::pauseCallback, this);
 }
 
 Player::~Player() {
@@ -290,7 +291,7 @@ bool Player::pauseCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::R
 
   if (res.success)
   {
-    res.message = (requested_pause_state_ ? "Pause" : "Resume") + std::string(" requested.");
+    res.message = std::string("Playback is now ") + (requested_pause_state_ ? "paused" : "resumed");
   }
   else
   {
