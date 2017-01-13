@@ -186,9 +186,9 @@ bool execute(const std::string& method, const XmlRpc::XmlRpcValue& request, XmlR
   bool printed = false;
   bool slept = false;
   bool ok = true;
+  bool b = false;
   do
   {
-    bool b = false;
     {
 #if defined(__APPLE__)
       boost::mutex::scoped_lock lock(g_xmlrpc_call_mutex);
@@ -245,7 +245,7 @@ bool execute(const std::string& method, const XmlRpc::XmlRpcValue& request, XmlR
 
   XMLRPCManager::instance()->releaseXMLRPCClient(c);
 
-  return true;
+  return b;
 }
 
 } // namespace master
