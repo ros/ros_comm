@@ -62,7 +62,7 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
       ("topics", po::value< std::vector<std::string> >()->multitoken(), "topics to play back")
       ("pause-topics", po::value< std::vector<std::string> >()->multitoken(), "topics to pause playback on")
       ("bags", po::value< std::vector<std::string> >(), "bag files to play back from")
-      ("wait-for-subscribers", "wait for subscribers before publishing");
+      ("wait-for-subscribers", "wait for at least one subscriber on each topic before publishing");
     
     po::positional_options_description p;
     p.add("bags", -1);
