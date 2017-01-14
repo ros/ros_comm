@@ -290,8 +290,7 @@ void Player::waitForSubscribers() const
     std::cout << "Waiting for subscribers." << std::endl;
     while (!all_topics_subscribed) {
         all_topics_subscribed = true;
-        typedef std::pair<std::string, ros::Publisher> value_type;
-        foreach(const value_type& pub, publishers_) {
+        foreach(const PublisherMap::value_type& pub, publishers_) {
             all_topics_subscribed &= pub.second.getNumSubscribers() > 0;
         }
     }
