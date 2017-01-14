@@ -293,6 +293,7 @@ void Player::waitForSubscribers() const
         foreach(const PublisherMap::value_type& pub, publishers_) {
             all_topics_subscribed &= pub.second.getNumSubscribers() > 0;
         }
+        ros::Duration(0.1).sleep();
     }
     std::cout << "Finished waiting for subscribers." << std::endl;
 }
