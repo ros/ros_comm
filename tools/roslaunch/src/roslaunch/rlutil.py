@@ -225,8 +225,8 @@ def check_roslaunch(f):
     
     # load all node defs
     nodes = []
-    for filename, rldeps in file_deps.items():
-        nodes.extend(rldeps.nodes)
+    for node in rl_config.nodes: # using rl_config instead of 'for filename, rldeps in file_deps.items():' for evaluating if/unless
+        nodes.extend([(node.package, node.type)])
 
     # check for missing packages
     for pkg, node_type in nodes:
