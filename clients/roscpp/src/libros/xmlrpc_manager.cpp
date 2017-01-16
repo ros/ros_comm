@@ -159,19 +159,19 @@ void XMLRPCManager::shutdown()
     boost::mutex::scoped_lock lock(clients_mutex_);
 
     for (V_CachedXmlRpcClient::iterator i = clients_.begin();
-         i != clients_.end(); ++i)
+         i != clients_.end();)
     {
       if (!i->in_use_)
       {
         i->client_->close();
         delete i->client_;
+        i = clients_.erase(i);
+      }
+      else
+      {
+        ++i;
       }
     }
-
-    // Erase the deleted clients. The clients in use will delete themselves
-    // on release
-    clients_.erase(std::remove(clients_.begin(), clients_.end(), false),
-		    clients_.end());
   }
 
   boost::mutex::scoped_lock lock(functions_mutex_);

@@ -84,12 +84,6 @@ public:
   XmlRpc::XmlRpcClient* client_;
 
   static const ros::WallDuration s_zombie_time_; // how long before it is toasted
-
-  // Conversion operator to check if pointer is valid
-  operator bool() const
-  {
-    return client_;
-  }
 };
 
 class XMLRPCManager;
