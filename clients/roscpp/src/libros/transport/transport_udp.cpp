@@ -590,7 +590,7 @@ int32_t TransportUDP::write(uint8_t* buffer, uint32_t size)
       else
       {
         num_bytes = 0;
-	--this_block;
+        --this_block;
       }
     }
     else if (num_bytes < (unsigned) sizeof(header))
