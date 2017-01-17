@@ -88,6 +88,7 @@ struct ROSBAG_DECL PlayerOptions
     bool     has_duration;
     float    duration;
     bool     keep_alive;
+    bool     wait_for_subscribers;
     ros::Duration skip_empty;
 
     std::vector<std::string> bags;
@@ -177,8 +178,11 @@ private:
 
     void printTime();
 
+    void waitForSubscribers() const;
+
 
 private:
+    typedef std::map<std::string, ros::Publisher> PublisherMap;
 
     PlayerOptions options_;
 
@@ -191,7 +195,7 @@ private:
     ros::WallTime paused_time_;
 
     std::vector<boost::shared_ptr<Bag> >  bags_;
-    std::map<std::string, ros::Publisher> publishers_;
+    PublisherMap publishers_;
 
     // Terminal
     bool    terminal_modified_;

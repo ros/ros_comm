@@ -87,6 +87,7 @@ PlayerOptions::PlayerOptions() :
     has_duration(false),
     duration(0.0f),
     keep_alive(false),
+    wait_for_subscribers(false),
     skip_empty(ros::DURATION_MAX)
 {
 }
@@ -211,6 +212,11 @@ void Player::publish() {
 
     paused_ = options_.start_paused;
 
+    if (options_.wait_for_subscribers)
+    {
+        waitForSubscribers();
+    }
+
     while (true) {
         // Set up our time_translator and publishers
 
@@ -276,6 +282,20 @@ void Player::printTime()
         }
         fflush(stdout);
     }
+}
+
+void Player::waitForSubscribers() const
+{
+    bool all_topics_subscribed = false;
+    std::cout << "Waiting for subscribers." << std::endl;
+    while (!all_topics_subscribed) {
+        all_topics_subscribed = true;
+        foreach(const PublisherMap::value_type& pub, publishers_) {
+            all_topics_subscribed &= pub.second.getNumSubscribers() > 0;
+        }
+        ros::Duration(0.1).sleep();
+    }
+    std::cout << "Finished waiting for subscribers." << std::endl;
 }
 
 void Player::doPublish(MessageInstance const& m) {
