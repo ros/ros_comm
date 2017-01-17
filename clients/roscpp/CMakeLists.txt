@@ -109,7 +109,6 @@ add_library(roscpp
   src/libros/spinner.cpp
   src/libros/internal_timer_manager.cpp
   src/libros/message_deserializer.cpp
-  src/libros/header.cpp
   src/libros/poll_set.cpp
   src/libros/service.cpp
   src/libros/this_node.cpp

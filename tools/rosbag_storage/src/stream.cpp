@@ -35,7 +35,7 @@
 #include "rosbag/stream.h"
 #include "rosbag/chunked_file.h"
 
-#include <ros/ros.h>
+//#include <ros/ros.h>
 
 using boost::shared_ptr;
 
