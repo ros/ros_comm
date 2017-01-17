@@ -39,7 +39,7 @@
 #include <vector>
 
 #include "ros/time.h"
-#include "ros/ros.h"
+#include "ros/datatypes.h"
 #include "macros.h"
 
 namespace rosbag {
@@ -56,8 +56,6 @@ struct ROSBAG_DECL ConnectionInfo
 
     boost::shared_ptr<ros::M_string> header;
 };
-
-ROSBAG_DECL ros::AdvertiseOptions createAdvertiseOptions(const ConnectionInfo* c, uint32_t queue_size);
 
 struct ChunkInfo
 {

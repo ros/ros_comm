@@ -38,7 +38,7 @@
 
 #include <boost/format.hpp>
 
-#include <ros/ros.h>
+//#include <ros/ros.h>
 #ifdef _WIN32
 #    ifdef __MINGW32__
 #      define fseeko fseeko64

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(rosbag)
-find_package(catkin REQUIRED COMPONENTS rosconsole roscpp topic_tools xmlrpcpp)
+find_package(catkin REQUIRED COMPONENTS rosbag_storage rosconsole roscpp topic_tools xmlrpcpp)
 find_package(Boost REQUIRED COMPONENTS date_time regex program_options filesystem)
 find_package(BZip2 REQUIRED)
 
@@ -9,8 +9,7 @@ catkin_python_setup()
 # Support large bags (>2GB) on 32-bit systems
 add_definitions(-D_FILE_OFFSET_BITS=64)
 
-include_directories(include ${Boost_INCLUDE_DIR} ${BZIP2_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
-add_definitions(${BZIP2_DEFINITIONS})
+include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 
 catkin_package(
   LIBRARIES rosbag
@@ -18,19 +17,11 @@ catkin_package(
   CATKIN_DEPENDS rosconsole roscpp topic_tools xmlrpcpp)
 
 add_library(rosbag
-  src/bag.cpp
-  src/buffer.cpp
-  src/bz2_stream.cpp
-  src/chunked_file.cpp
-  src/message_instance.cpp
   src/player.cpp
-  src/query.cpp
   src/recorder.cpp
-  src/stream.cpp
-  src/time_translator.cpp
-  src/uncompressed_stream.cpp
-  src/view.cpp)
-target_link_libraries(rosbag ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${BZIP2_LIBRARIES})
+  src/time_translator.cpp)
+
+target_link_libraries(rosbag ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 add_executable(record src/record.cpp)
 target_link_libraries(record rosbag)
