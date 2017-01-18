@@ -90,8 +90,6 @@ class MasterProxy(object):
         self._lock = Lock()
 
     def __getattr__(self, key): #forward api calls to target
-        with self._lock:
-            f = getattr(self.target, key)
         if key in _master_arg_remap:
             remappings = _master_arg_remap[key]
         else:
@@ -103,7 +101,9 @@ class MasterProxy(object):
                 i = i + 1 #callerId does not count
                 #print "Remap %s => %s"%(args[i], rospy.names.resolve_name(args[i]))
                 args[i] = rospy.names.resolve_name(args[i])
-            return f(*args, **kwds)
+            with self._lock:
+                f = getattr(self.target, key)
+                return f(*args, **kwds)
         return wrappedF
 
     def __getitem__(self, key):
