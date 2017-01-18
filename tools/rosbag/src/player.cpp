@@ -111,7 +111,7 @@ Player::Player(PlayerOptions const& options) :
     terminal_modified_(false)
 {
   ros::NodeHandle private_node_handle("~");
-  pause_service_ = private_node_handle.advertiseService("pause", &Player::pauseCallback, this);
+  pause_service_ = private_node_handle.advertiseService("pause_playback", &Player::pauseCallback, this);
 }
 
 Player::~Player() {
@@ -301,6 +301,26 @@ bool Player::pauseCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::R
   return true;
 }
 
+void Player::processPause(const bool paused, ros::WallTime &horizon)
+{
+  paused_ = paused;
+
+  if (paused_)
+  {
+    paused_time_ = ros::WallTime::now();
+  }
+  else
+  {
+    ros::WallDuration shift = ros::WallTime::now() - paused_time_;
+    paused_time_ = ros::WallTime::now();
+
+    time_translator_.shift(ros::Duration(shift.sec, shift.nsec));
+
+    horizon += shift;
+    time_publisher_.setWCHorizon(horizon);
+  }
+}
+
 void Player::doPublish(MessageInstance const& m) {
     string const& topic   = m.getTopic();
     ros::Time const& time = m.getTime();
@@ -362,42 +382,13 @@ void Player::doPublish(MessageInstance const& m) {
 
             if (pause_change_requested_)
             {
-              paused_ = requested_pause_state_;
-
-              if (paused_)
-              {
-                paused_time_ = ros::WallTime::now();
-              }
-              else
-              {
-                ros::WallDuration shift = ros::WallTime::now() - paused_time_;
-                paused_time_ = ros::WallTime::now();
-
-                time_translator_.shift(ros::Duration(shift.sec, shift.nsec));
-
-                horizon += shift;
-                time_publisher_.setWCHorizon(horizon);
-              }
-
+              processPause(requested_pause_state_, horizon);
               pause_change_requested_ = false;
             }
 
             switch (readCharFromStdin()){
             case ' ':
-                paused_ = !paused_;
-                if (paused_) {
-                    paused_time_ = ros::WallTime::now();
-                }
-                else
-                {
-                    ros::WallDuration shift = ros::WallTime::now() - paused_time_;
-                    paused_time_ = ros::WallTime::now();
-         
-                    time_translator_.shift(ros::Duration(shift.sec, shift.nsec));
-
-                    horizon += shift;
-                    time_publisher_.setWCHorizon(horizon);
-                }
+                processPause(!paused_, horizon);
                 break;
             case 's':
                 if (paused_) {

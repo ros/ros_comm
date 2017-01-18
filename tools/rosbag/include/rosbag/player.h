@@ -180,6 +180,8 @@ private:
 
     bool pauseCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
 
+    void processPause(const bool paused, ros::WallTime &horizon);
+
 private:
 
     PlayerOptions options_;
