@@ -86,6 +86,9 @@ struct ROSBAG_DECL IndexEntryCompare
 {
     bool operator()(ros::Time const& a, IndexEntry const& b) const { return a < b.time; }
     bool operator()(IndexEntry const& a, ros::Time const& b) const { return a.time < b; }
+	// workaround to build ROS in debug-mode using MS VisualStudio (2008)
+	bool operator()(IndexEntry const& a, IndexEntry const& b) const { return a.time < b.time; }
+    bool operator()(ros::Time const& a, ros::Time const& b) const { return a < b; }
 };
 
 } // namespace rosbag
