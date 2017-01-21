@@ -47,6 +47,7 @@
 
 #include <ros/ros.h>
 #include <ros/time.h>
+#include <std_srvs/SetBool.h>
 
 #include "rosbag/bag.h"
 
@@ -178,8 +179,11 @@ private:
 
     void printTime();
 
-    void waitForSubscribers() const;
+    bool pauseCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
 
+    void processPause(const bool paused, ros::WallTime &horizon);
+
+    void waitForSubscribers() const;
 
 private:
     typedef std::map<std::string, ros::Publisher> PublisherMap;
@@ -188,9 +192,15 @@ private:
 
     ros::NodeHandle node_handle_;
 
+    ros::ServiceServer pause_service_;
+
     bool paused_;
 
     bool pause_for_topics_;
+
+    bool pause_change_requested_;
+
+    bool requested_pause_state_;
 
     ros::WallTime paused_time_;
 
