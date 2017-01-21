@@ -48,7 +48,7 @@
 #include "ros/subscribe_options.h"
 #include "ros/transport/transport_tcp.h"
 #include "ros/internal_timer_manager.h"
-#include "XmlRpcSocket.h"
+#include "xmlrpcpp/XmlRpcSocket.h"
 
 #include "roscpp/GetLoggers.h"
 #include "roscpp/SetLoggerLevel.h"

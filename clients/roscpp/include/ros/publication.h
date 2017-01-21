@@ -31,7 +31,7 @@
 #include "ros/forwards.h"
 #include "ros/advertise_options.h"
 #include "common.h"
-#include "XmlRpc.h"
+#include "xmlrpcpp/XmlRpc.h"
 
 #include <boost/thread/mutex.hpp>
 

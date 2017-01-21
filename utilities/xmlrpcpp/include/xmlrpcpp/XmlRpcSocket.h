@@ -15,7 +15,7 @@
 # include <string>
 #endif
 
-#include "XmlRpcDecl.h"
+#include "xmlrpcpp/XmlRpcDecl.h"
 
 namespace XmlRpc {
 

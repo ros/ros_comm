@@ -1,6 +1,6 @@
 // Validator.cpp : XMLRPC server based on the compliancy test at validator.xmlrpc.com.
 //
-#include "XmlRpc.h"
+#include "xmlrpcpp/XmlRpc.h"
 using namespace XmlRpc;
 
 #include <iostream>

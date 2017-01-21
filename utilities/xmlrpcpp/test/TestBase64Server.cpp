@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 
-#include "XmlRpc.h"
+#include "xmlrpcpp/XmlRpc.h"
 using namespace XmlRpc;
 
 

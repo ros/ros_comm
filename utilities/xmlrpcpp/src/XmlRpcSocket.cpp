@@ -2,8 +2,8 @@
 // added features: server can be opened on port 0 and you can read back
 // what port the OS gave you
 
-#include "XmlRpcSocket.h"
-#include "XmlRpcUtil.h"
+#include "xmlrpcpp/XmlRpcSocket.h"
+#include "xmlrpcpp/XmlRpcUtil.h"
 
 #ifndef MAKEDEPEND
 

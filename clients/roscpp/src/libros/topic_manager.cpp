@@ -41,7 +41,7 @@
 #include "ros/file_log.h"
 #include "ros/subscribe_options.h"
 
-#include "XmlRpc.h"
+#include "xmlrpcpp/XmlRpc.h"
 
 #include <ros/console.h>
 

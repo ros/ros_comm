@@ -42,7 +42,7 @@
 #include "ros/names.h"
 #include "ros/init.h"
 #include "ros/this_node.h"
-#include "XmlRpc.h"
+#include "xmlrpcpp/XmlRpc.h"
 
 #include <boost/thread.hpp>
 
