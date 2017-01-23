@@ -1,0 +1,4 @@
+<launch>
+    <include file="$(find roslaunch)/test/xml/test-export-no-args-child.xml" export_all_args="true">
+    </include>
+</launch>

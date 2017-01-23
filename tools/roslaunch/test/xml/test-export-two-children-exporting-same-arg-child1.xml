@@ -1,0 +1,7 @@
+<launch>
+    <arg name="the_arg" default="child1_default"/>
+
+    <node pkg="package" type="type" name="child1_node">
+        <param name="the_param" value="$(arg the_arg)"/>
+    </node>
+</launch>

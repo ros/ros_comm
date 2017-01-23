@@ -58,6 +58,7 @@ ArgException = substitution_args.ArgException
 
 NS='ns'
 CLEAR_PARAMS='clear_params'
+EXPORT_ALL_ARGS='export_all_args'
 
 def _get_text(tag):
     buff = ''
@@ -164,15 +165,19 @@ class XmlLoader(loader.Loader):
     Parser for roslaunch XML format. Loads parsed representation into ROSConfig model.
     """
 
-    def __init__(self, resolve_anon=True):
+    def __init__(self, resolve_anon=True, dumping_args=False):
         """
         @param resolve_anon: If True (default), will resolve $(anon foo). If
         false, will leave these args as-is.
         @type  resolve_anon: bool
+        @param dumping_args: True if args are being dumped, False
+        (default) otherwise
+        @type dumping_args: bool
         """        
         # store the root XmlContext so that outside code can access it
         self.root_context = None
         self.resolve_anon = resolve_anon
+        self.dumping_args = dumping_args
 
     def resolve_args(self, args, context):
         """
@@ -580,7 +585,98 @@ class XmlLoader(loader.Loader):
             else:
                 ros_config.add_config_error("Deprecation Warning: "+deprecated)
 
-    INCLUDE_ATTRS = ('file', NS, CLEAR_PARAMS, 'pass_all_args')
+    def __export_all_args(self, context, ros_config, child_ns, inc_filename, verbose=False):
+        """Export all of the arguments from the given include file into the
+        current context (context that included the file) and also automatically
+        pass the arguments to the include file as well.
+
+        @param context: the parent context
+        @type context: L{LoaderContext}
+        @param ros_config: the ros config
+        @type ros_config: L{ROSLaunchConfig}
+        @param child_ns: the namespace of the include
+        @type chil_ns: L{LoaderContext}
+        @param inc_filename: the path to the include file
+        @type inc_filename: string
+        @param verbose: true for verbose, false otherwise
+        @type vebose: bool
+
+        """
+        context_args = context.resolve_dict.get("arg", {})
+
+        # Parse the launch file to get access to other includes files,
+        # as well as arguments defined in the launch file
+        launch = self._parse_launch(inc_filename, verbose=verbose)
+        for tag in launch.childNodes:
+            # Only care about element nodes
+            if tag.nodeType == DomNode.ELEMENT_NODE:
+                name = tag.tagName
+
+                if name == 'include':
+                    #### Handle included files
+
+                    # Only care about includes that export args
+                    if tag.hasAttribute(EXPORT_ALL_ARGS):
+                        export_all_args = self.resolve_args(tag.attributes[EXPORT_ALL_ARGS].value, context)
+                        export_all_args = _bool_attr(export_all_args, False, EXPORT_ALL_ARGS)
+
+                        if export_all_args:
+                            # Grab the sub filename
+                            sub_filename = self.resolve_args(tag.attributes['file'].value, context)
+
+                            # Recurse to export args from this file
+                            self.__export_all_args(context, ros_config, child_ns, sub_filename, verbose)
+                elif name == 'arg':
+                    #### Handle defined args defined in the launch file
+                    # Parse the arg
+                    self._check_attrs(tag, context, ros_config, XmlLoader.ARG_ATTRS)
+                    (name,) = self.reqd_attrs(tag, context, ('name',))
+                    value, default, doc = self.opt_attrs(tag, context, ('value', 'default', 'doc'))
+
+                    # Handle an invalid arg
+                    if value is not None and default is not None:
+                        raise XmlParseException(
+                            "<arg> tag must have one and only one of value/default.")
+
+                    # Do not declare args that were defined with a fixed
+                    # value, as their values cannot be overriden, and
+                    # therefore should not be passed
+                    if value is not None:
+                        continue
+
+                    # Export the arg into the current context
+                    if name not in context.arg_names:
+                        context.add_arg(name, value=value, default=default, doc=doc)
+
+                    # Must determine the specific value for the exported
+                    # arg in order to define the arg to pass it to the
+                    # include file. Use the following rules:
+                    #     - No value defined, use the default
+                    #     - If a value is defined, used that
+                    #     - If the arg is defined in the current context,
+                    #       use that value no matter what
+                    if value is None:
+                        value = default
+                    value = context_args.get(name, value)
+
+                    # If the arg does not have a value throw an undefined
+                    # argument error
+                    if value is None:
+                        # If args are being dumped, then give this argument
+                        # an empty string to avoid raising an undefined arg
+                        # error, otherwise, raise the error
+                        if self.dumping_args:
+                            child_ns.add_arg(name, value="")
+                            continue
+                        else:
+                            raise ArgException(name)
+
+                    # Finally -- add the arg to the include file namespace
+                    # so that the include file inherits this arg value
+                    if name not in child_ns.arg_names:
+                        child_ns.add_arg(name, value=value, doc=doc)
+
+    INCLUDE_ATTRS = ('file', NS, CLEAR_PARAMS, 'pass_all_args', EXPORT_ALL_ARGS)
     @ifunless
     def _include_tag(self, tag, context, ros_config, default_machine, is_core, verbose):
         self._check_attrs(tag, context, ros_config, XmlLoader.INCLUDE_ATTRS)
@@ -591,6 +687,12 @@ class XmlLoader(loader.Loader):
             pass_all_args = _bool_attr(pass_all_args, False, 'pass_all_args')
         else:
             pass_all_args = False
+
+        if tag.hasAttribute(EXPORT_ALL_ARGS):
+            export_all_args = self.resolve_args(tag.attributes[EXPORT_ALL_ARGS].value, context)
+            export_all_args = _bool_attr(export_all_args, False, EXPORT_ALL_ARGS)
+        else:
+            export_all_args = False
 
         child_ns = self._ns_clear_params_attr(tag.tagName, tag, context, ros_config, include_filename=inc_filename)
 
@@ -612,6 +714,11 @@ class XmlLoader(loader.Loader):
                 self._arg_tag(t, child_ns, ros_config, verbose=verbose)
             else:
                 print("WARN: unrecognized '%s' tag in <%s> tag"%(t.tagName, tag.tagName), file=sys.stderr)
+
+        # If we're asked to export args, then we need to add the include
+        # file args into the current context
+        if export_all_args:
+            self.__export_all_args(context, ros_config, child_ns, inc_filename, verbose)
 
         # setup arg passing
         loader.process_include_args(child_ns)

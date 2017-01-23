@@ -1,0 +1,11 @@
+<launch>
+    <arg name="child2_arg" doc="child2 arg docstring"/>
+    <arg name="child2_arg_value" value="a_fixed_value"/>
+    <arg name="child2_arg_default" default="a_default_value" doc="child2 default docstring"/>
+
+    <node pkg="package" type="type" name="child2_node">
+        <param name="param1" value="$(arg child2_arg)"/>
+        <param name="param2" value="$(arg child2_arg_value)"/>
+        <param name="param3" value="$(arg child2_arg_default)"/>
+    </node>
+</launch>

@@ -1,0 +1,7 @@
+<launch>
+    <include file="$(find roslaunch)/test/xml/test-export-two-children-exporting-same-arg-child1.xml" export_all_args="true">
+    </include>
+
+    <include file="$(find roslaunch)/test/xml/test-export-two-children-exporting-same-arg-child2.xml" export_all_args="true">
+    </include>
+</launch>

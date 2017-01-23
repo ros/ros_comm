@@ -1,0 +1,14 @@
+<launch>
+    <arg name="child1_arg"/>
+    <arg name="child1_arg_value" value="a_fixed_value"/>
+    <arg name="child1_arg_default" default="a_default_value" doc="child1 default docstring"/>
+
+    <include file="$(find roslaunch)/test/xml/test-export-multiple-levels-child2.xml" export_all_args="true">
+    </include>
+
+    <node pkg="package" type="type" name="child1_node">
+        <param name="param1" value="$(arg child1_arg)"/>
+        <param name="param2" value="$(arg child1_arg_value)"/>
+        <param name="param3" value="$(arg child1_arg_default)"/>
+    </node>
+</launch>

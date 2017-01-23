@@ -1,0 +1,7 @@
+<launch>
+    <!-- Override value exported from child -->
+    <arg name="my_arg" default="top_level_value"/>
+
+    <include file="$(find roslaunch)/test/xml/test-export-top-level-override-export-child.xml" export_all_args="true">
+    </include>
+</launch>

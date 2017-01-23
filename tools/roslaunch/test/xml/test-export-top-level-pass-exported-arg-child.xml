@@ -1,0 +1,9 @@
+<launch>
+    <arg name="child_arg" default="this is the child value"/>
+    <arg name="another_arg" default="this was set in the child launch file"/>
+
+    <node pkg="package" type="type" name="test_pass_exported_arg">
+        <param name="test_param" value="$(arg child_arg)"/>
+        <param name="second_param" value="$(arg another_arg)"/>
+    </node>
+</launch>

@@ -1,0 +1,9 @@
+<launch>
+    <arg name="the_arg" default="my_value"/>
+
+    <group ns="my_group">
+        <node pkg="package" type="type" name="test_export_with_group">
+            <param name="the_param" value="$(arg the_arg)"/>
+        </node>
+    </group>
+</launch>

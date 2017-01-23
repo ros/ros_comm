@@ -1,0 +1,8 @@
+<launch>
+    <arg name="custom_arg" default="this is my value"/>
+
+    <include file="$(find roslaunch)/test/xml/test-export-top-level-pass-exported-arg-child.xml" export_all_args="true">
+        <arg name="child_arg" value="$(arg custom_arg)"/>
+        <arg name="another_arg" value="this was set in the top level file"/>
+    </include>
+</launch>

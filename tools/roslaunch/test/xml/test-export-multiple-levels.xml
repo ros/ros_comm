@@ -1,0 +1,6 @@
+<launch>
+    <arg name="my_main_arg" default="my_main_value"/>
+
+    <include file="$(find roslaunch)/test/xml/test-export-multiple-levels-child1.xml" export_all_args="true">
+    </include>
+</launch>

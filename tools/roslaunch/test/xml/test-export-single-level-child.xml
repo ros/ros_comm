@@ -1,0 +1,11 @@
+<launch>
+    <arg name="arg_with_no_value_or_default" doc="my docstring"/>
+    <arg name="arg_with_value" value="fixed_value"/>
+    <arg name="arg_with_default" default="default_value"/>
+
+    <node pkg="package" type="type" name="test_single_level">
+        <param name="param1" value="$(arg arg_with_no_value_or_default)"/>
+        <param name="param2" value="$(arg arg_with_value)"/>
+        <param name="param3" value="$(arg arg_with_default)"/>
+    </node>
+</launch>

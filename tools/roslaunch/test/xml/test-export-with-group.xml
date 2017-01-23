@@ -1,0 +1,3 @@
+<launch>
+    <include file="$(find roslaunch)/test/xml/test-export-with-group-child.xml" export_all_args="true"/>
+</launch>

@@ -1,0 +1,7 @@
+<launch>
+    <arg name="my_arg" default="default_value"/>
+
+    <node pkg="package" type="type" name="test_top_level_override_export_child">
+        <param name="param1" value="$(arg my_arg)"/>
+    </node>
+</launch>
