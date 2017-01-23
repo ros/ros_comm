@@ -1004,32 +1004,10 @@ extern std::string console::g_last_error_message;
 
 void TopicManager::pubUpdateCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
 {
-  std::stringstream ss;
-  const std::string& topic = params[1];
-  int is_rosout_topic = (strcmp(topic.c_str(), "rosout") == 0);
-  if (!is_rosout_topic)
-  {
-    ss << "publisherUpdate callback: topic=" << topic.c_str();
-    ss << ", pubs=[";
-  }
-
   std::vector<std::string> pubs;
   for (int idx = 0; idx < params[2].size(); idx++)
   {
-    const std::string& puburi = params[2][idx];
-    if (!is_rosout_topic)
-    {
-      ss << puburi.c_str() << ",";
-    }
-
     pubs.push_back(params[2][idx]);
-  }
-
-  if (!is_rosout_topic) 
-  {
-    ss << "]";
-    auto p = ss.str();
-    ROS_INFO("%s", p.c_str());
   }
 
   if (pubUpdate(params[1], pubs))

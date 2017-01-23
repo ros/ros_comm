@@ -203,7 +203,7 @@ def publisher_update_task(api, topic, pub_uris):
     @type  pub_uris: [str]
     """
     is_rosout_topic = 'rosout' in topic
-    start_ms = time.time()
+    start_sec = time.time()
     msg = "publisherUpdate[%s] -> %s %s" % (topic, api, str(pub_uris))
     if not is_rosout_topic:
         mloginfo(msg)
@@ -212,12 +212,12 @@ def publisher_update_task(api, topic, pub_uris):
         ret = xmlrpcapi(api).publisherUpdate('/master', topic, pub_uris)
     except Exception as ex:
         if not is_rosout_topic:
-            delta_sec = (time.time() - start_ms) * 1000.0
-            mloginfo("%s: secs=%0.2f, exception=%s", msg, delta_sec, str(ex))
+            delta_sec = (time.time() - start_sec)
+            mloginfo("%s: sec=%0.2f, exception=%s", msg, delta_sec, str(ex))
         raise
     if not is_rosout_topic:
-        delta_sec = (time.time() - start_ms) * 1000.0
-        mloginfo("%s: secs=%0.2f, result=%s", msg, delta_sec, ret)
+        delta_sec = (time.time() - start_sec)
+        mloginfo("%s: sec=%0.2f, result=%s", msg, delta_sec, ret)
 
 
 def service_update_task(api, service, uri):
