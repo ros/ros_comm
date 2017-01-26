@@ -1,8 +1,8 @@
 
-#include "XmlRpcValue.h"
-#include "XmlRpcException.h"
-#include "XmlRpcUtil.h"
-#include "base64.h"
+#include "xmlrpcpp/XmlRpcValue.h"
+#include "xmlrpcpp/XmlRpcException.h"
+#include "xmlrpcpp/XmlRpcUtil.h"
+#include "xmlrpcpp/base64.h"
 
 #ifndef MAKEDEPEND
 # include <iostream>

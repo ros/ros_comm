@@ -47,6 +47,7 @@
 
 #include <ros/ros.h>
 #include <ros/time.h>
+#include <std_srvs/SetBool.h>
 
 #include "rosbag/bag.h"
 
@@ -90,6 +91,7 @@ struct ROSBAG_DECL PlayerOptions
     bool     has_duration;
     float    duration;
     bool     keep_alive;
+    bool     wait_for_subscribers;
     std::string rate_control_topic;
     float    rate_control_max_delay;
     ros::Duration skip_empty;
@@ -183,17 +185,29 @@ private:
 
     void printTime();
 
+    bool pauseCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
+
+    void processPause(const bool paused, ros::WallTime &horizon);
+
+    void waitForSubscribers() const;
 
 private:
+    typedef std::map<std::string, ros::Publisher> PublisherMap;
 
     PlayerOptions options_;
 
     ros::NodeHandle node_handle_;
 
+    ros::ServiceServer pause_service_;
+
     bool paused_;
     bool delayed_;
 
     bool pause_for_topics_;
+
+    bool pause_change_requested_;
+
+    bool requested_pause_state_;
 
     ros::Subscriber rate_control_sub_;
     ros::Time last_rate_control_;
@@ -201,7 +215,7 @@ private:
     ros::WallTime paused_time_;
 
     std::vector<boost::shared_ptr<Bag> >  bags_;
-    std::map<std::string, ros::Publisher> publishers_;
+    PublisherMap publishers_;
 
     // Terminal
     bool    terminal_modified_;

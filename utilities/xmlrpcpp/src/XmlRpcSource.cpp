@@ -1,7 +1,7 @@
 
-#include "XmlRpcSource.h"
-#include "XmlRpcSocket.h"
-#include "XmlRpcUtil.h"
+#include "xmlrpcpp/XmlRpcSource.h"
+#include "xmlrpcpp/XmlRpcSocket.h"
+#include "xmlrpcpp/XmlRpcUtil.h"
 
 namespace XmlRpc {
 

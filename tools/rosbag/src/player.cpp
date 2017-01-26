@@ -87,6 +87,7 @@ PlayerOptions::PlayerOptions() :
     has_duration(false),
     duration(0.0f),
     keep_alive(false),
+    wait_for_subscribers(false),
     rate_control_topic(""),
     rate_control_max_delay(1.0f),
     skip_empty(ros::DURATION_MAX)
@@ -108,8 +109,12 @@ Player::Player(PlayerOptions const& options) :
     // If we were given a list of topics to pause on, then go into that mode
     // by default (it can be toggled later via 't' from the keyboard).
     pause_for_topics_(options_.pause_topics.size() > 0),
+    pause_change_requested_(false),
+    requested_pause_state_(false),
     terminal_modified_(false)
 {
+  ros::NodeHandle private_node_handle("~");
+  pause_service_ = private_node_handle.advertiseService("pause_playback", &Player::pauseCallback, this);
 }
 
 Player::~Player() {
@@ -233,6 +238,11 @@ void Player::publish() {
 
     paused_ = options_.start_paused;
 
+    if (options_.wait_for_subscribers)
+    {
+        waitForSubscribers();
+    }
+
     while (true) {
         // Set up our time_translator and publishers
 
@@ -345,6 +355,60 @@ void Player::printTime()
     }
 }
 
+bool Player::pauseCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
+{
+  pause_change_requested_ = (req.data != paused_);
+  requested_pause_state_ = req.data;
+
+  res.success = pause_change_requested_;
+
+  if (res.success)
+  {
+    res.message = std::string("Playback is now ") + (requested_pause_state_ ? "paused" : "resumed");
+  }
+  else
+  {
+    res.message = std::string("Bag is already ") + (requested_pause_state_ ? "paused." : "running.");
+  }
+
+  return true;
+}
+
+void Player::processPause(const bool paused, ros::WallTime &horizon)
+{
+  paused_ = paused;
+
+  if (paused_)
+  {
+    paused_time_ = ros::WallTime::now();
+  }
+  else
+  {
+    // Make sure time doesn't shift after leaving pause.
+    ros::WallDuration shift = ros::WallTime::now() - paused_time_;
+    paused_time_ = ros::WallTime::now();
+
+    time_translator_.shift(ros::Duration(shift.sec, shift.nsec));
+
+    horizon += shift;
+    time_publisher_.setWCHorizon(horizon);
+  }
+}
+
+void Player::waitForSubscribers() const
+{
+    bool all_topics_subscribed = false;
+    std::cout << "Waiting for subscribers." << std::endl;
+    while (!all_topics_subscribed) {
+        all_topics_subscribed = true;
+        foreach(const PublisherMap::value_type& pub, publishers_) {
+            all_topics_subscribed &= pub.second.getNumSubscribers() > 0;
+        }
+        ros::Duration(0.1).sleep();
+    }
+    std::cout << "Finished waiting for subscribers." << std::endl;
+}
+
 void Player::doPublish(MessageInstance const& m) {
     string const& topic   = m.getTopic();
     ros::Time const& time = m.getTime();
@@ -414,23 +478,17 @@ void Player::doPublish(MessageInstance const& m) {
         bool charsleftorpaused = true;
         while (charsleftorpaused && node_handle_.ok())
         {
+            ros::spinOnce();
+
+            if (pause_change_requested_)
+            {
+              processPause(requested_pause_state_, horizon);
+              pause_change_requested_ = false;
+            }
+
             switch (readCharFromStdin()){
             case ' ':
-                paused_ = !paused_;
-                if (paused_) {
-                    paused_time_ = ros::WallTime::now();
-                }
-                else
-                {
-                    // Make sure time doesn't shift after leaving pause.
-                    ros::WallDuration shift = ros::WallTime::now() - paused_time_;
-                    paused_time_ = ros::WallTime::now();
-         
-                    time_translator_.shift(ros::Duration(shift.sec, shift.nsec));
-
-                    horizon += shift;
-                    time_publisher_.setWCHorizon(horizon);
-                }
+                processPause(!paused_, horizon);
                 break;
             case 's':
                 if (paused_) {

@@ -491,7 +491,14 @@ def set_param(param_name, param_value):
     Set a parameter on the param server
 
     NOTE: this method is thread-safe.
-    
+    If param_value is a dictionary it will be treated as a parameter
+    tree, where param_name is the namespace. For example:::
+      {'x':1,'y':2,'sub':{'z':3}}
+    will set param_name/x=1, param_name/y=2, and param_name/sub/z=3.
+    Furthermore, it will replace all existing parameters in the
+    param_name namespace with the parameters in param_value. You must
+    set parameters individually if you wish to perform a union update.
+
     @param param_name: parameter name
     @type  param_name: str
     @param param_value: parameter value

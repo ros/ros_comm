@@ -35,7 +35,7 @@
 #include "ros/transport_hints.h"
 #include "ros/xmlrpc_manager.h"
 #include "ros/statistics.h"
-#include "XmlRpc.h"
+#include "xmlrpcpp/XmlRpc.h"
 
 #include <boost/thread.hpp>
 #include <boost/shared_ptr.hpp>

@@ -33,7 +33,7 @@
 #include "ros/serialization.h"
 #include "rosout_appender.h"
 
-#include "XmlRpcValue.h"
+#include "xmlrpcpp/XmlRpcValue.h"
 
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>

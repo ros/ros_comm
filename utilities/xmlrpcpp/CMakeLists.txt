@@ -6,10 +6,13 @@ if(NOT WIN32)
 endif()
 
 find_package(catkin REQUIRED COMPONENTS cpp_common)
+
+# The CFG_EXTRAS is only for compatibility, to be removed in Lunar.
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES xmlrpcpp
   CATKIN_DEPENDS cpp_common
+  CFG_EXTRAS xmlrpcpp-extras.cmake
 )
 
 include_directories(include ${catkin_INCLUDE_DIRS})
@@ -35,8 +38,7 @@ if(WIN32)
   target_link_libraries(xmlrpcpp ws2_32)
 endif()
 
-# FIXME the headers should be in a package-specific subfolder but can not be for backward compatibility
-install(DIRECTORY include/
+install(DIRECTORY include/${PROJECT_NAME}
   DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h")
 

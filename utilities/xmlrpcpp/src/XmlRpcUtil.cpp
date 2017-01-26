@@ -1,5 +1,5 @@
 
-#include "XmlRpcUtil.h"
+#include "xmlrpcpp/XmlRpcUtil.h"
 
 #ifndef MAKEDEPEND
 # include <ctype.h>
@@ -9,7 +9,7 @@
 # include <string.h>
 #endif
 
-#include "XmlRpc.h"
+#include "xmlrpcpp/XmlRpc.h"
 
 using namespace XmlRpc;
 

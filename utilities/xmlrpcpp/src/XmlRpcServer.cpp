@@ -2,12 +2,12 @@
 // added features: server can be opened on port 0 and you can read back
 // what port the OS gave you
 
-#include "XmlRpcServer.h"
-#include "XmlRpcServerConnection.h"
-#include "XmlRpcServerMethod.h"
-#include "XmlRpcSocket.h"
-#include "XmlRpcUtil.h"
-#include "XmlRpcException.h"
+#include "xmlrpcpp/XmlRpcServer.h"
+#include "xmlrpcpp/XmlRpcServerConnection.h"
+#include "xmlrpcpp/XmlRpcServerMethod.h"
+#include "xmlrpcpp/XmlRpcSocket.h"
+#include "xmlrpcpp/XmlRpcUtil.h"
+#include "xmlrpcpp/XmlRpcException.h"
 
 
 using namespace XmlRpc;
@@ -141,6 +141,8 @@ unsigned
 XmlRpcServer::handleEvent(unsigned)
 {
   acceptConnection();
+  if (getfd() == -1)
+     return XmlRpcDispatch::Exception;
   return XmlRpcDispatch::ReadableEvent;		// Continue to monitor this fd
 }
 
@@ -154,7 +156,7 @@ XmlRpcServer::acceptConnection()
   XmlRpcUtil::log(2, "XmlRpcServer::acceptConnection: socket %d", s);
   if (s < 0)
   {
-    //this->close();
+    this->close();
     XmlRpcUtil::error("XmlRpcServer::acceptConnection: Could not accept connection (%s).", XmlRpcSocket::getErrorMsg().c_str());
   }
   else if ( ! XmlRpcSocket::setNonBlocking(s))

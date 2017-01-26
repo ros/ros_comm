@@ -30,7 +30,7 @@
 
 #include "forwards.h"
 #include "common.h"
-#include "XmlRpcValue.h"
+#include "xmlrpcpp/XmlRpcValue.h"
 
 #include <vector>
 #include <map>
