@@ -148,22 +148,24 @@ def _find(resolved, a, args, context):
             res = _find_executable(
                 resolve_without_path, a, [args[0], path], context,
                 source_path_to_packages=source_path_to_packages)
+        except SubstitutionException:
+            pass
+        else:
             # persist mapping of packages in rospack instance
             if source_path_to_packages:
                 rp.set_custom_cache('source_path_to_packages', source_path_to_packages)
             return res
-        except SubstitutionException:
-            pass
         try:
             res = _find_resource(
                 resolve_without_path, a, [args[0], path], context,
                 source_path_to_packages=source_path_to_packages)
+        except SubstitutionException:
+            pass
+        else:
             # persist mapping of packages in rospack instance
             if source_path_to_packages:
                 rp.set_custom_cache('source_path_to_packages', source_path_to_packages)
             return res
-        except SubstitutionException:
-            pass
     pkg_path = rp.get_path(args[0])
     if path:
         pkg_path = os.path.join(pkg_path, path)
