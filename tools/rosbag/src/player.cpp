@@ -337,19 +337,19 @@ void Player::printTime()
         ros::Time current_time = time_publisher_.getTime();
         ros::Duration d = current_time - start_time_;
 
-        ros::Duration time_since_rate = ros::Time::now() - last_rate_control_;
 
         if (paused_)
         {
-            printf("\r [PAUSED]   Bag Time: %13.6f   Duration: %.6f / %.6f     \r", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
+            printf("\r [PAUSED ]  Bag Time: %13.6f   Duration: %.6f / %.6f               \r", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
         }
         else if (delayed_)
         {
-            printf("\r [DELAYED (%.2f)]  Bag Time: %13.6f   Duration: %.6f / %.6f       \r", time_since_rate.toSec(), time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
+            ros::Duration time_since_rate = std::max(ros::Time::now() - last_rate_control_, ros::Duration(0));
+            printf("\r [DELAYED]  Bag Time: %13.6f   Duration: %.6f / %.6f   Delay: %.2f \r", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec(), time_since_rate.toSec());
         }
         else
         {
-            printf("\r [RUNNING]  Bag Time: %13.6f   Duration: %.6f / %.6f     \r", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
+            printf("\r [RUNNING]  Bag Time: %13.6f   Duration: %.6f / %.6f               \r", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
         }
         fflush(stdout);
     }
@@ -466,8 +466,8 @@ void Player::doPublish(MessageInstance const& m) {
 
     // Check if the rate control topic has posted recently enough to continue, or if a delay is needed.
     // Delayed is separated from paused to allow more verbose printing.
-    if(rate_control_sub_ != NULL) {
-        if((time_publisher_.getTime() - last_rate_control_).toSec() > options_.rate_control_max_delay) {
+    if (rate_control_sub_ != NULL) {
+        if ((time_publisher_.getTime() - last_rate_control_).toSec() > options_.rate_control_max_delay) {
             delayed_ = true;
             paused_time_ = ros::WallTime::now();
         }
@@ -519,7 +519,7 @@ void Player::doPublish(MessageInstance const& m) {
                     ros::spinOnce();
                 }
                 else if (delayed_)
-		{
+                {
                     printTime();
                     time_publisher_.runStalledClock(ros::WallDuration(.1));
                     ros::spinOnce();
