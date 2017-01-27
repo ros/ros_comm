@@ -147,9 +147,8 @@ XmlRpcDispatch::work(double timeout)
         _sources.erase(thisIt);  // Stop monitoring this one
         if ( ! src->getKeepOpen())
           src->close();
-      } else if (newMask != (unsigned) -1) {
+      } else if (newMask != (unsigned) -1)
         thisIt->getMask() = newMask;
-      }
     }
 
     // Check whether to clear all sources
