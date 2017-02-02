@@ -503,7 +503,7 @@ void Subscription::pendingConnectionDone(const PendingConnectionPtr& conn, XmlRp
     }
     std::string pub_host = proto[1];
     int pub_port = proto[2];
-    ROSCPP_LOG_DEBUG("Connecting via tcpros to topic [%s] at host [%s:%d]", name_.c_str(), pub_host.c_str(), pub_port);
+    ROSCPP_CONN_LOG_DEBUG("Connecting via tcpros to topic [%s] at host [%s:%d]", name_.c_str(), pub_host.c_str(), pub_port);
 
     TransportTCPPtr transport(boost::make_shared<TransportTCP>(&PollManager::instance()->getPollSet()));
     if (transport->connect(pub_host, pub_port))
@@ -519,11 +519,11 @@ void Subscription::pendingConnectionDone(const PendingConnectionPtr& conn, XmlRp
       boost::mutex::scoped_lock lock(publisher_links_mutex_);
       addPublisherLink(pub_link);
 
-      ROSCPP_LOG_DEBUG("Connected to publisher of topic [%s] at [%s:%d]", name_.c_str(), pub_host.c_str(), pub_port);
+      ROSCPP_CONN_LOG_DEBUG("Connected to publisher of topic [%s] at [%s:%d]", name_.c_str(), pub_host.c_str(), pub_port);
     }
     else
     {
-    	ROSCPP_LOG_DEBUG("Failed to connect to publisher of topic [%s] at [%s:%d]", name_.c_str(), pub_host.c_str(), pub_port);
+      ROSCPP_CONN_LOG_DEBUG("Failed to connect to publisher of topic [%s] at [%s:%d]", name_.c_str(), pub_host.c_str(), pub_port);
     }
   }
   else if (proto_name == "UDPROS")
