@@ -612,12 +612,19 @@ class TCPROSTransport(Transport):
         if sock is None or protocol is None:
             return
         fileno = sock.fileno()
+        poller = select.poll()
+        poller.register(fileno, select.POLLOUT)
         ready = None
         while not ready:
-            _, ready, _ = select.select([], [fileno], [])
+	    events = poller.poll()
+	    for _, flag in events:
+	      if flag & select.POLLOUT:
+                ready = True
         logger.debug("[%s]: writing header", self.name)
         sock.setblocking(1)
         self.stat_bytes += write_ros_handshake_header(sock, protocol.get_header_fields())
+        poller.unregister(fileno)
+
 
     def read_header(self):
         """
