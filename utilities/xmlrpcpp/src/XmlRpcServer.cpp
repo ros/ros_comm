@@ -141,8 +141,6 @@ unsigned
 XmlRpcServer::handleEvent(unsigned)
 {
   acceptConnection();
-  if (getfd() == -1)
-     return XmlRpcDispatch::Exception;
   return XmlRpcDispatch::ReadableEvent;		// Continue to monitor this fd
 }
 
@@ -156,7 +154,7 @@ XmlRpcServer::acceptConnection()
   XmlRpcUtil::log(2, "XmlRpcServer::acceptConnection: socket %d", s);
   if (s < 0)
   {
-    this->close();
+    //this->close();
     XmlRpcUtil::error("XmlRpcServer::acceptConnection: Could not accept connection (%s).", XmlRpcSocket::getErrorMsg().c_str());
   }
   else if ( ! XmlRpcSocket::setNonBlocking(s))
