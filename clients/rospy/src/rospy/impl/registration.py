@@ -306,6 +306,8 @@ class RegManager(RegistrationListener):
                 if cond is not None:
                     cond.release()
 
+            get_topic_manager().check_all()
+
             #call _connect_topic on all URIs as it can check to see whether
             #or not a connection exists.
             if uris and not self.handler.done:
