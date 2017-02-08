@@ -223,7 +223,7 @@ void TransportPublisherLink::onRetryTimer(const ros::WallTimerEvent&)
       const std::string& host = old_transport->getConnectedHost();
       int port = old_transport->getConnectedPort();
 
-      ROSCPP_LOG_DEBUG("Retrying connection to [%s:%d] for topic [%s]", host.c_str(), port, topic.c_str());
+      ROSCPP_CONN_LOG_DEBUG("Retrying connection to [%s:%d] for topic [%s]", host.c_str(), port, topic.c_str());
 
       TransportTCPPtr transport(boost::make_shared<TransportTCP>(&PollManager::instance()->getPollSet()));
       if (transport->connect(host, port))
@@ -236,7 +236,7 @@ void TransportPublisherLink::onRetryTimer(const ros::WallTimerEvent&)
       }
       else
       {
-        ROSCPP_LOG_DEBUG("connect() failed when retrying connection to [%s:%d] for topic [%s]", host.c_str(), port, topic.c_str());
+        ROSCPP_CONN_LOG_DEBUG("connect() failed when retrying connection to [%s:%d] for topic [%s]", host.c_str(), port, topic.c_str());
       }
     }
     else if (parent)
@@ -264,7 +264,7 @@ void TransportPublisherLink::onConnectionDropped(const ConnectionPtr& conn, Conn
   {
     std::string topic = parent ? parent->getName() : "unknown";
 
-    ROSCPP_LOG_DEBUG("Connection to publisher [%s] to topic [%s] dropped", connection_->getTransport()->getTransportInfo().c_str(), topic.c_str());
+    ROSCPP_CONN_LOG_DEBUG("Connection to publisher [%s] to topic [%s] dropped", connection_->getTransport()->getTransportInfo().c_str(), topic.c_str());
 
     ROS_ASSERT(!needs_retry_);
     needs_retry_ = true;

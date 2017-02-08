@@ -128,7 +128,7 @@ void TransportSubscriberLink::onConnectionDropped(const ConnectionPtr& conn)
 
   if (parent)
   {
-    ROSCPP_LOG_DEBUG("Connection to subscriber [%s] to topic [%s] dropped", connection_->getRemoteString().c_str(), topic_.c_str());
+    ROSCPP_CONN_LOG_DEBUG("Connection to subscriber [%s] to topic [%s] dropped", connection_->getRemoteString().c_str(), topic_.c_str());
 
     parent->removeSubscriberLink(shared_from_this());
   }
