@@ -41,7 +41,7 @@ class RequestsTransport(xmlrpc.Transport):
                 # We could add more exception mappings here:
                 #  - requests.exceptions.InvalidURL    -> socket.gaierror?
                 #  - requests.exceptions.InvalidSchema -> socket.gaierror?
-                raise exc
+                raise
         else:
             try:
                 resp.raise_for_status()
