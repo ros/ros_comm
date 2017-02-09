@@ -109,7 +109,7 @@ def parse_rosrpc_uri(uri):
     @raise ParameterInvalid: if uri is not a valid ROSRPC URI
     """
     if uri.startswith(ROSRPC):
-        dest_addr = uri[len(ROSRPC):]            
+        dest_addr = uri[len(ROSRPC):]
     else:
         raise ParameterInvalid("Invalid protocol for ROS service URL: %s"%uri)
     try:
@@ -122,7 +122,7 @@ def parse_rosrpc_uri(uri):
     return dest_addr, dest_port
 
 #########################################################
-        
+
 # rospy logger
 _rospy_logger = logging.getLogger("rospy.internal")
 
@@ -142,18 +142,97 @@ def rospyerr(msg, *args):
 def rospywarn(msg, *args):
     """Internal rospy client library warn logging"""
     _rospy_logger.warn(msg, *args)
-    
-logdebug = logging.getLogger('rosout').debug
 
-logwarn = logging.getLogger('rosout').warning
 
-loginfo = logging.getLogger('rosout').info
+def loginfo(msg, name=None, period=None):
+
+    if name is not None:
+        _loginfo_named = logging.getLogger('rosout').getChild(name).info
+    _loginfo = logging.getLogger('rosout').info
+    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+
+    if name is None and period is None:
+        _loginfo(msg)
+    elif name is None:
+        _logging_throttle(caller_id, _loginfo, period, msg)
+    elif period is None:
+        _loginfo_named(msg)
+    else:
+        _logging_throttle(caller_id, _loginfo_named, period, msg)
+
+
 logout = loginfo # alias deprecated name
 
-logerr = logging.getLogger('rosout').error
+
+def logdebug(msg, name=None, period=None):
+
+    if name is not None:
+        _logdebug_named = logging.getLogger('rosout').getChild(name).debug
+    _logdebug = logging.getLogger('rosout').debug
+    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+
+    if name is None and period is None:
+        _logdebug(msg)
+    elif name is None:
+        _logging_throttle(caller_id, _logdebug, period, msg)
+    elif period is None:
+        _logdebug_named(msg)
+    else:
+        _logging_throttle(caller_id, _logdebug_named, period, msg)
+
+
+def logwarn(msg, name=None, period=None):
+
+    if name is not None:
+        _logwarn_named = logging.getLogger('rosout').getChild(name).warning
+    _logwarn = logging.getLogger('rosout').warning
+    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+
+    if name is None and period is None:
+        _logwarn(msg)
+    elif name is None:
+        _logging_throttle(caller_id, _logwarn, period, msg)
+    elif period is None:
+        _logwarn_named(msg)
+    else:
+        _logging_throttle(caller_id, _logwarn_named, period, msg)
+
+
+def logerr(msg, name=None, period=None):
+
+    if name is not None:
+        _logerr_named = logging.getLogger('rosout').getChild(name).error
+    _logerr = logging.getLogger('rosout').error
+    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+
+    if name is None and period is None:
+        _logerr(msg)
+    elif name is None:
+        _logging_throttle(caller_id, _logerr, period, msg)
+    elif period is None:
+        _logerr_named(msg)
+    else:
+        _logging_throttle(caller_id, _logerr_named, period, msg)
+
+
 logerror = logerr # alias logerr
 
-logfatal = logging.getLogger('rosout').critical
+
+def logfatal(msg, name=None, period=None):
+
+    if name is not None:
+        _logfatal_named = logging.getLogger('rosout').getChild(name).critical
+    _logfatal = logging.getLogger('rosout').critical
+    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+
+    if name is None and period is None:
+        _logfatal(msg)
+    elif name is None:
+        _logging_throttle(caller_id, _logfatal, period, msg)
+    elif period is None:
+        _logfatal_named(msg)
+    else:
+        _logging_throttle(caller_id, _logfatal_named, period, msg)
 
 
 class LoggingThrottle(object):
@@ -192,28 +271,23 @@ def _frame_record_to_caller_id(frame_record):
 
 
 def logdebug_throttle(period, msg):
-    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
-    _logging_throttle(caller_id, logdebug, period, msg)
+    logdebug(msg, None, period)
 
 
 def loginfo_throttle(period, msg):
-    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
-    _logging_throttle(caller_id, loginfo, period, msg)
+    loginfo(msg, None, period)
 
 
 def logwarn_throttle(period, msg):
-    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
-    _logging_throttle(caller_id, logwarn, period, msg)
+    logwarn(msg, None, period)
 
 
 def logerr_throttle(period, msg):
-    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
-    _logging_throttle(caller_id, logerr, period, msg)
+    logerr(msg, None, period)
 
 
 def logfatal_throttle(period, msg):
-    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
-    _logging_throttle(caller_id, logfatal, period, msg)
+    logfatal(msg, None, period)
 
 
 #########################################################
@@ -302,10 +376,10 @@ def configure_logging(node_name, level=logging.INFO):
 class NullHandler(logging.Handler):
     def emit(self, record):
         pass
-    
+
 # keep logging happy until we have the node name to configure with
-logging.getLogger('rospy').addHandler(NullHandler())    
-    
+logging.getLogger('rospy').addHandler(NullHandler())
+
 
 #########################################################
 # Init/Shutdown/Exit API and Handlers
@@ -364,7 +438,7 @@ def is_shutdown_requested():
     received and continues until client shutdown handlers have been
     called.  After client shutdown handlers have been serviced, the
     is_shutdown state becomes true.
-    
+
     @return: True if shutdown has been requested (but possibly not yet initiated)
     @rtype: bool
     """
@@ -413,7 +487,7 @@ def add_client_shutdown_hook(h):
     Add client method to invoke when system shuts down. Unlike
     L{add_shutdown_hook} and L{add_preshutdown_hooks}, these methods
     will be called before any rospy internal shutdown code.
-    
+
     @param h: function with zero args
     @type  h: fn()
     """
@@ -424,7 +498,7 @@ def add_preshutdown_hook(h):
     Add method to invoke when system shuts down. Unlike
     L{add_shutdown_hook}, these methods will be called before any
     other shutdown hooks.
-    
+
     @param h: function that takes in a single string argument (shutdown reason)
     @type  h: fn(str)
     """
@@ -517,17 +591,17 @@ def register_signals():
     """
     _signalChain[signal.SIGTERM] = signal.signal(signal.SIGTERM, _ros_signal)
     _signalChain[signal.SIGINT]  = signal.signal(signal.SIGINT, _ros_signal)
-    
+
 # Validators ######################################
 
 def is_topic(param_name):
     """
     Validator that checks that parameter is a valid ROS topic name
-    """    
+    """
     def validator(param_value, caller_id):
         v = valid_name_validator_resolved(param_name, param_value, caller_id)
         if param_value == '/':
-            raise ParameterInvalid("ERROR: parameter [%s] cannot be the global namespace"%param_name)            
+            raise ParameterInvalid("ERROR: parameter [%s] cannot be the global namespace"%param_name)
         return v
     return validator
 
@@ -542,4 +616,3 @@ def xmlrpcapi(uri):
     if not uriValidate[0] or not uriValidate[1]:
         return None
     return xmlrpcclient.ServerProxy(uri)
-

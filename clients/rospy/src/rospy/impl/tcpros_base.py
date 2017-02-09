@@ -348,8 +348,8 @@ class TCPROSServer(object):
         except Exception as e:
             # collect stack trace separately in local log file
             if not rospy.core.is_shutdown_requested():
-                logwarn("Inbound TCP/IP connection failed: %s", e)
-                rospyerr("Inbound TCP/IP connection failed:\n%s", traceback.format_exc())
+                logwarn("Inbound TCP/IP connection failed from '%s': %s", str(client_addr), e)
+                rospyerr("Inbound TCP/IP connection failed from '%s':\n%s", str(client_addr), traceback.format_exc())
             if sock is not None:
                 sock.close()
 
