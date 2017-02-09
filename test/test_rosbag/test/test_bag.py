@@ -287,7 +287,7 @@ class TestRosbag(unittest.TestCase):
     def test_get_message_count(self):
         fn = '/tmp/test_get_message_count.bag'
         with rosbag.Bag(fn, mode='w') as bag:
-            for i in xrange(100):
+            for i in range(100):
                 bag.write("/test_bag", Int32(data=i))
                 bag.write("/test_bag", String(data='also'))
                 bag.write("/test_bag/more", String(data='alone'))
@@ -303,7 +303,7 @@ class TestRosbag(unittest.TestCase):
         
         # No Compression
         with rosbag.Bag(fn, mode='w') as bag:
-            for i in xrange(100):
+            for i in range(100):
                 bag.write("/test_bag", Int32(data=i))
                 
         with rosbag.Bag(fn) as bag:
@@ -314,7 +314,7 @@ class TestRosbag(unittest.TestCase):
             self.assertEquals(info.compressed, 5166)
         
         with rosbag.Bag(fn, mode='w', compression=rosbag.Compression.BZ2) as bag:
-            for i in xrange(100):
+            for i in range(100):
                 bag.write("/test_bag", Int32(data=i))
                 
         with rosbag.Bag(fn) as bag:
@@ -331,7 +331,7 @@ class TestRosbag(unittest.TestCase):
         fn = '/tmp/test_get_time.bag'
         
         with rosbag.Bag(fn, mode='w') as bag:
-            for i in xrange(100):
+            for i in range(100):
                 bag.write("/test_bag", Int32(data=i), t=genpy.Time.from_sec(i))
                 
         with rosbag.Bag(fn) as bag:
@@ -358,7 +358,7 @@ class TestRosbag(unittest.TestCase):
         topic_1 = "/test_bag"
         topic_2 = "/test_bag/more"
         with rosbag.Bag(fn, mode='w') as bag:
-            for i in xrange(100):
+            for i in range(100):
                 bag.write(topic_1, Int32(data=i))
                 bag.write(topic_1, String(data='also'))
                 bag.write(topic_2, String(data='alone'))

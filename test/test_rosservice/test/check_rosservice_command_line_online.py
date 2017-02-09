@@ -88,28 +88,28 @@ class TestRosserviceOnline(unittest.TestCase):
         for name in names:
             # args
             output = Popen([cmd, 'args', name], stdout=PIPE).communicate()[0]
-            self.assertEquals('a b', output.strip())
+            self.assertEquals(b'a b', output.strip())
 
             # type
             output = Popen([cmd, 'type', name], stdout=PIPE).communicate()[0]
-            self.assertEquals('test_rosmaster/AddTwoInts', output.strip())
+            self.assertEquals(b'test_rosmaster/AddTwoInts', output.strip())
 
             # find
             output = Popen([cmd, 'find', 'test_rosmaster/AddTwoInts'], stdout=PIPE).communicate()[0]
-            values = [v.strip() for v in output.split('\n') if v.strip()]
+            values = [v.strip() for v in output.decode().split('\n') if v.strip()]
             self.assertEquals(set(values), set(services))
 
             # uri
             output = Popen([cmd, 'uri', name], stdout=PIPE).communicate()[0]
             # - no exact answer
-            self.assert_(output.startswith('rosrpc://'), output)
+            self.assert_(output.decode().startswith('rosrpc://'), output)
 
             # call
             output = Popen([cmd, 'call', '--wait', name, '1', '2'], stdout=PIPE).communicate()[0]
-            self.assertEquals('sum: 3', output.strip())
+            self.assertEquals(b'sum: 3', output.strip())
 
             output = Popen([cmd, 'call', name, '1', '2'], stdout=PIPE).communicate()[0]
-            self.assertEquals('sum: 3', output.strip())
+            self.assertEquals(b'sum: 3', output.strip())
 
         name = 'header_echo'
         # test with a Header so we can validate keyword args
@@ -143,13 +143,13 @@ class TestRosserviceOnline(unittest.TestCase):
         env['ROS_NAMESPACE'] = 'foo'
         uri1 = Popen([cmd, 'uri', 'add_two_ints'], stdout=PIPE).communicate()[0]
         uri2 = Popen([cmd, 'uri', 'add_two_ints'], env=env, stdout=PIPE).communicate()[0]
-        self.assert_(uri2.startswith('rosrpc://'))
+        self.assert_(uri2.decode().startswith('rosrpc://'))
         self.assertNotEquals(uri1, uri2)
 
         # test_call_wait
         def task1():
             output = Popen([cmd, 'call', '--wait', 'wait_two_ints', '1', '2'], stdout=PIPE).communicate()[0]
-            self.assertEquals('sum: 3', output.strip())
+            self.assertEquals(b'sum: 3', output.strip())
         timeout_t = time.time() + 5.
         t1 = TestTask(task1)
         t1.start()

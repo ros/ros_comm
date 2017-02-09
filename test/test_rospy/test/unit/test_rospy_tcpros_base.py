@@ -154,8 +154,8 @@ class TestRospyTcprosBase(unittest.TestCase):
         self.assertEquals('TCPROS', t.transport_type)        
         self.assertEquals(OUTBOUND, t.direction)        
         self.assertEquals('unknown', t.endpoint_id)        
-        self.assertEquals('', t.read_buff.getvalue())
-        self.assertEquals('', t.write_buff.getvalue())
+        self.assertEquals(b'', t.read_buff.getvalue())
+        self.assertEquals(b'', t.write_buff.getvalue())
 
         s = MockSock('12345')
         t.set_socket(s, 'new_endpoint_id')

@@ -138,7 +138,7 @@ class TestRospyTopics(unittest.TestCase):
         self.assertEquals(None, impl.latch)                
         self.assertEquals(0, impl.seq)
         self.assertEquals(1, impl.ref_count)
-        self.assertEquals('', impl.buff.getvalue())
+        self.assertEquals(b'', impl.buff.getvalue())
         self.failIf(impl.closed)
         self.failIf(impl.has_connections())
         # check publish() fall-through
