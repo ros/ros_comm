@@ -712,8 +712,8 @@ def fullusage(mode):
     return """%(cmd)s is a command-line tool for displaying information about ROS %(type_)s types.
 
 Commands:
-\t%(cmd)s show, %(cmd)s info
-\t\t\tShow %(type_lower)s description
+\t%(cmd)s show\tShow %(type_lower)s description
+\t%(cmd)s info\tAlias for %(cmd)s show
 \t%(cmd)s list\tList all %(type_lower)ss
 \t%(cmd)s md5\tDisplay %(type_lower)s md5sum
 \t%(cmd)s package\tList %(type_lower)ss in a package
@@ -742,10 +742,8 @@ def rosmsgmain(mode=MODE_MSG):
             sys.exit(0)
 
         command = sys.argv[1]
-        if command == 'show':
-            sys.exit(rosmsg_cmd_show(ext, full, 'show'))
-        elif command == 'info':
-            sys.exit(rosmsg_cmd_show(ext, full, 'info'))
+        if command in ('show', 'info'):
+            sys.exit(rosmsg_cmd_show(ext, full, command))
         elif command == 'package':
             rosmsg_cmd_package(ext, full)
         elif command == 'packages':
