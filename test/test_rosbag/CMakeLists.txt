@@ -30,7 +30,7 @@ if(CATKIN_ENABLE_TESTING)
     FILENAME test/test_rosbag_latched_pub.bag MD5 ed70b8cbb8a53220434aeb24bccf7342)
   catkin_download_test_data(download_data_test_clock.bag http://download.ros.org/data/rosbag/test_clock.bag
     FILENAME test/clock.bag MD5 d81aca4472ad4220b282ecf9e2e557e7)
-  catkin_download_test_data(download_data_test_clock_alive.bag http://tutux.web4all.fr/ros/clock_alive.bag
+  catkin_download_test_data(download_data_test_clock_alive.bag http://download.ros.org/data/rosbag/clock_alive.bag
     FILENAME test/clock_alive.bag MD5 4f771e2dfc770000271c61be10a7817d)
 
   catkin_add_nosetests(test/test_bag.py)
