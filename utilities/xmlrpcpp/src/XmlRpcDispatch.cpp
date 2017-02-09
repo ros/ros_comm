@@ -6,17 +6,12 @@
 #include <math.h>
 #include <errno.h>
 #include <sys/timeb.h>
-#include <sys/poll.h>
 #if defined (__ANDROID__)
 #include <sys/select.h>
 #endif
 
 #if defined(_WINDOWS)
 # include <winsock2.h>
-static inline int poll( struct pollfd *pfd, int nfds, int timeout)
-{
-    return WSAPoll ( pfd, nfds, timeout );
-}
 
 # define USE_FTIME
 # if defined(_MSC_VER)
@@ -65,7 +60,7 @@ XmlRpcDispatch::removeSource(XmlRpcSource* source)
 
 
 // Modify the types of events to watch for on this source
-void
+void 
 XmlRpcDispatch::setSourceEvents(XmlRpcSource* source, unsigned eventMask)
 {
   for (SourceList::iterator it=_sources.begin(); it!=_sources.end(); ++it)
@@ -86,69 +81,84 @@ XmlRpcDispatch::work(double timeout)
   _endTime = (timeout < 0.0) ? -1.0 : (getTime() + timeout);
   _doClear = false;
   _inWork = true;
-  int timeout_ms = static_cast<int>(floor(timeout * 1000.));
 
   // Only work while there is something to monitor
   while (_sources.size() > 0) {
 
     // Construct the sets of descriptors we are interested in
-    struct pollfd fds[_sources.size()];
+    fd_set inFd, outFd, excFd;
+	  FD_ZERO(&inFd);
+	  FD_ZERO(&outFd);
+	  FD_ZERO(&excFd);
 
+    int maxFd = -1;     // Not used on windows
     SourceList::iterator it;
-    std::size_t i = 0;
-    for (it=_sources.begin(); it!=_sources.end(); ++it, ++i) {
+    for (it=_sources.begin(); it!=_sources.end(); ++it) {
       int fd = it->getSource()->getfd();
-      fds[i].fd = fd;
-      fds[i].events = 0;
-      if (it->getMask() & ReadableEvent) fds[i].events |= POLLIN;
-      if (it->getMask() & WritableEvent) fds[i].events |= POLLOUT;
+      if (it->getMask() & ReadableEvent) FD_SET(fd, &inFd);
+      if (it->getMask() & WritableEvent) FD_SET(fd, &outFd);
+      if (it->getMask() & Exception)     FD_SET(fd, &excFd);
+      if (it->getMask() && fd > maxFd)   maxFd = fd;
     }
 
     // Check for events
-    int nEvents = poll(fds, _sources.size(), (timeout_ms < 0) ? -1 : timeout_ms);
+    int nEvents;
+    if (timeout < 0.0)
+      nEvents = select(maxFd+1, &inFd, &outFd, &excFd, NULL);
+    else 
+    {
+      struct timeval tv;
+      tv.tv_sec = (int)floor(timeout);
+      tv.tv_usec = ((int)floor(1000000.0 * (timeout-floor(timeout)))) % 1000000;
+      nEvents = select(maxFd+1, &inFd, &outFd, &excFd, &tv);
+    }
 
     if (nEvents < 0)
     {
       if(errno != EINTR)
-        XmlRpcUtil::error("Error in XmlRpcDispatch::work: error in poll (%d).", nEvents);
+        XmlRpcUtil::error("Error in XmlRpcDispatch::work: error in select (%d).", nEvents);
       _inWork = false;
       return;
     }
 
     // Process events
-    for (i=0, it=_sources.begin(); it != _sources.end(); ++i)
+    for (it=_sources.begin(); it != _sources.end(); )
     {
       SourceList::iterator thisIt = it++;
       XmlRpcSource* src = thisIt->getSource();
+      int fd = src->getfd();
       unsigned newMask = (unsigned) -1;
-      // If you select on multiple event types this could be ambiguous
-      if (fds[i].revents & POLLIN)
-        newMask &= src->handleEvent(ReadableEvent);
-      if (fds[i].revents & POLLOUT)
-        newMask &= src->handleEvent(WritableEvent);
-      if (fds[i].revents & (POLLERR|POLLHUP|POLLNVAL))
-        newMask &= src->handleEvent(Exception);
+      if (fd <= maxFd) {
+        // If you select on multiple event types this could be ambiguous
+        if (FD_ISSET(fd, &inFd))
+          newMask &= src->handleEvent(ReadableEvent);
+        if (FD_ISSET(fd, &outFd))
+          newMask &= src->handleEvent(WritableEvent);
+        if (FD_ISSET(fd, &excFd))
+          newMask &= src->handleEvent(Exception);
 
-      // Find the source again.  It may have moved as a result of the way
-      // that sources are removed and added in the call stack starting
-      // from the handleEvent() calls above.
-      for (thisIt=_sources.begin(); thisIt != _sources.end(); thisIt++)
-      {
-        if(thisIt->getSource() == src)
-          break;
-      }
-      if(thisIt == _sources.end())
-      {
-        XmlRpcUtil::error("Error in XmlRpcDispatch::work: couldn't find source iterator");
-        continue;
-      }
+        // Find the source again.  It may have moved as a result of the way
+        // that sources are removed and added in the call stack starting
+        // from the handleEvent() calls above.
+        for (thisIt=_sources.begin(); thisIt != _sources.end(); thisIt++)
+        {
+          if(thisIt->getSource() == src)
+            break;
+        }
+        if(thisIt == _sources.end())
+        {
+          XmlRpcUtil::error("Error in XmlRpcDispatch::work: couldn't find source iterator");
+          continue;
+        }
 
-      if ( ! newMask) {
-        _sources.erase(thisIt);  // Stop monitoring this one
-        if ( ! src->getKeepOpen())
-          src->close();
-      } else if (newMask != (unsigned) -1)
-        thisIt->getMask() = newMask;
+        if ( ! newMask) {
+          _sources.erase(thisIt);  // Stop monitoring this one
+          if ( ! src->getKeepOpen())
+            src->close();
+        } else if (newMask != (unsigned) -1) {
+          thisIt->getMask() = newMask;
+        }
+      }
     }
 
     // Check whether to clear all sources
