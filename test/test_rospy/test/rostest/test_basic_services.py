@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2008, Willow Garage, Inc.
@@ -213,7 +214,21 @@ class TestBasicServicesClient(unittest.TestCase):
             resp_req_kwds = self._test_req_kwds(name, Cls, {'str': String('FOO'), 'str2': Val('bar')})
             for resp in [resp_req, resp_req_naked, resp_req_kwds]:
                 self.assertEquals('FOObar', resp.str.data)
-        
+
+    def test_String_String_unicode(self):
+        from std_msgs.msg import String
+        from test_rospy.srv import StringString, StringStringRequest
+        from test_rospy.msg import Val
+        Cls = StringString
+        Req = StringStringRequest
+
+        for name in [STRING_CAT_SERVICE_NAKED, STRING_CAT_SERVICE_WRAPPED]:
+            resp_req = self._test(name, Cls, Req(String(u'ロボット'), Val(u'机器人')))
+            resp_req_naked = self._test_req_naked(name, Cls, (String(u'ロボット'), Val(u'机器人'),))
+            resp_req_kwds = self._test_req_kwds(name, Cls, {'str': String(u'ロボット'), 'str2': Val(u'机器人')})
+            for resp in [resp_req, resp_req_naked, resp_req_kwds]:
+                self.assertEquals('ロボット机器人', resp.str.data)  # if you send in unicode, you'll receive in str
+
     def test_constants(self):
         Cls = ConstantsMultiplex
         Req = ConstantsMultiplexRequest
