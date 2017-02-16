@@ -23,19 +23,16 @@ class RequestsTransport(xmlrpc.Transport):
         """Make a xmlrpc request."""
         headers = {'User-Agent': self.user_agent, 'Content-Type': 'text/xml'}
         url = '{scheme}://{host}{handler}'.format(scheme=self._scheme,
-                                                   host=host,
-                                                   handler=handler)
+                                                  host=host,
+                                                  handler=handler)
         try:
             resp = requests.post(url, data=request_body.encode('utf-8'),
                                  headers=headers)
         except requests.exceptions.Timeout:
             raise socket.timeout('timed out')
         except requests.RequestException as exc:
-            if isinstance(exc.args[0], urllib3.exceptions.HTTPError):
-                # Rethrow urllib3 exception.reason. That are e.g. socket.error
-                # Or other exceptions that the default xmlrpclib implementation
-                # would throw.
-                raise exc.args[0].reason
+            if isinstance(exc.args[0], urllib3.exceptions.MaxRetryError):
+                raise socket.timeout('timed out')
             else:
                 # otherwise, rethrow the exc
                 # We could add more exception mappings here:
