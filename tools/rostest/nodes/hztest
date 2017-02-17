@@ -120,7 +120,7 @@ Test Duration: %s"""%(hz, hzerror, topic, test_duration))
         self.assert_(hz >= 0.0, "bad parameter (hz)")
         self.assert_(hzerror >= 0.0, "bad parameter (hzerror)")
         self.assert_(test_duration > 0.0, "bad parameter (test_duration)")
-        self.assert_(len(topic), "bad parameter (topic")
+        self.assert_(len(topic), "bad parameter (topic)")
 
         if hz == 0:
             self.min_rate = 0.0
