@@ -42,6 +42,9 @@ import subprocess
 import time
 import traceback
 
+import sys
+import threading
+
 import rospkg
 
 from roslaunch.core import *
@@ -86,7 +89,7 @@ def create_master_process(run_id, type_, ros_root, port):
         raise RLException("unknown master typ_: %s"%type_)
 
     _logger.info("process[master]: launching with args [%s]"%args)
-    log_output = False
+    log_output = 'screen'
     return LocalProcess(run_id, package, 'master', args, os.environ, log_output, None)
 
 def create_node_process(run_id, node, master_uri):
@@ -133,7 +136,7 @@ def create_node_process(run_id, node, master_uri):
     _logger.info('process[%s]: args[%s]', name, args)        
 
     # default for node.output not set is 'log'
-    log_output = node.output != 'screen'
+    log_output = node.output
     _logger.debug('process[%s]: returning LocalProcess wrapper')
     return LocalProcess(run_id, node.package, name, args, env, log_output, respawn=node.respawn, required=node.required, cwd=node.cwd)
 
@@ -219,7 +222,7 @@ class LocalProcess(Process):
         logfileout = logfileerr = None
         logfname = self._log_name()
         
-        if self.log_output:
+        if self.log_output in ['log', 'both']:
             outf, errf = [os.path.join(log_dir, '%s-%s.log'%(logfname, n)) for n in ['stdout', 'stderr']]
             if self.respawn:
                 mode = 'a'
@@ -280,7 +283,23 @@ class LocalProcess(Process):
             _logger.info("process[%s]: cwd will be [%s]", self.name, cwd)
 
             try:
-                self.popen = subprocess.Popen(self.args, cwd=cwd, stdout=logfileout, stderr=logfileerr, env=full_env, close_fds=True, preexec_fn=os.setsid)
+                # the two arguments 'stdbuf' and '-oL' are necessary to have real time logging, 
+                # instead of all at once. only necessary if stdout is not a tty
+                if self.log_output == 'both':
+                    # stderr is redirected to stdout
+                    self.popen = subprocess.Popen(['stdbuf', '-oL'] + self.args, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=full_env, close_fds=True, preexec_fn=os.setsid)
+                    # stdout (and stderr) are written to file and screen
+                    tee(self.popen.stdout, logfileout, sys.stdout)
+                elif self.log_output == 'log':
+                    self.popen = subprocess.Popen(['stdbuf', '-oL'] + self.args, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=full_env, close_fds=True, preexec_fn=os.setsid)
+                    # stdout is written to file
+                    tee(self.popen.stdout, logfileout)
+                    # stderr is written to file and screen
+                    tee(self.popen.stderr, logfileout, sys.stdout)
+                else:
+                    # use default stdout and stderr (screen)
+                    self.popen = subprocess.Popen(self.args, cwd=cwd, env=full_env, close_fds=True, preexec_fn=os.setsid)
+            
             except OSError, (errno, msg):
                 self.started = True # must set so is_alive state is correct
                 _logger.error("OSError(%d, %s)", errno, msg)
@@ -370,7 +389,7 @@ executable permission. This is often caused by a bad launch-prefix."""%(msg, ' '
             os.killpg(pgid, signal.SIGINT)
             _logger.info("[%s] sent SIGINT to pgid [%s]", self.name, pgid)
             timeout_t = time.time() + _TIMEOUT_SIGINT
-            retcode = self.popen.poll()                
+            retcode = self.popen.poll()
             while time.time() < timeout_t and retcode is None:
                 time.sleep(0.1)
                 retcode = self.popen.poll()
@@ -516,3 +535,16 @@ def _cleanup_remappings(args, prefix):
     for a in existing_args:
         args.remove(a)
     return args
+
+def tee(infile, *files):
+    """Print `infile` to `files` in a separate thread."""
+    def fanout(infile, *files):
+        for line in iter(infile.readline, b''):
+            for f in files:
+                f.write(line)
+                f.flush()
+        infile.close()
+    t = threading.Thread(target=fanout, args=(infile,)+files)
+    t.daemon = True
+    t.start()
+    return t
