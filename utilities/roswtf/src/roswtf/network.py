@@ -52,8 +52,14 @@ def ip_check(ctx):
     global_ips = [ ip for ip in resolved_ips if not ip.startswith('127.') and not ip == '::1']
 
     remote_ips = list(set(global_ips) - set(local_addrs))
-    if remote_ips:
-        return "Local hostname [%s] resolves to [%s], which does not appear to be a local IP address %s."%(socket.gethostname(), ','.join(remote_ips), str(local_addrs))
+
+    # replace '%' symbol in ipv6 address by '/' to avoid syntax conflict
+    refined_ips = list()
+    for val in remote_ips:
+        refined_ips.append(val.replace('%', '/'))
+        
+    if refined_ips:
+        return "Local hostname [%s] resolves to [%s], which does not appear to be a local IP address %s."%(socket.gethostname(), ','.join(refined_ips), str(local_addrs))
 
 # suggestion by mquigley based on laptop dhcp issues    
 def ros_hostname_check(ctx):
