@@ -1,4 +1,8 @@
 <launch>
   <test pkg="test_roscpp" type="test_roscpp-spinners" test-name="Spinners_spin" args="--gtest_filter=Spinners.spin"/>
+  <test pkg="test_roscpp" type="test_roscpp-spinners" test-name="Spinners_spinfail" args="--gtest_filter=Spinners.spinfail"/>
+  <test pkg="test_roscpp" type="test_roscpp-spinners" test-name="Spinners_singlefail" args="--gtest_filter=Spinners.singlefail"/>
   <test pkg="test_roscpp" type="test_roscpp-spinners" test-name="Spinners_multi" args="--gtest_filter=Spinners.multi"/>
+  <test pkg="test_roscpp" type="test_roscpp-spinners" test-name="Spinners_multifail" args="--gtest_filter=Spinners.multifail"/>
+  <test pkg="test_roscpp" type="test_roscpp-spinners" test-name="Spinners_async" args="--gtest_filter=Spinners.async"/>
 </launch>

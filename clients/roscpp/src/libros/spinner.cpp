@@ -34,11 +34,6 @@
 
 namespace {
 
-const std::string DEFAULT_ERROR_MESSAGE =
-    "\nAttempt to spin a callback queue from two spinners, one of them being single-threaded."
-    "\nThis will probably result in callbacks being executed out-of-order."
-    "\nIn future this will throw an exception!";
-
 /** class to monitor running single-threaded spinners.
  *
  *  Calling the callbacks of a callback queue _in order_, requires a unique SingleThreadedSpinner
@@ -61,11 +56,9 @@ struct SpinnerMonitor
   */
   struct Entry
   {
-    Entry(const boost::thread::id &tid,
-          const boost::thread::id &initial_tid) : tid(tid), initial_tid(initial_tid), num(0) {}
+    Entry(const boost::thread::id &tid) : tid(tid), num(0) {}
 
     boost::thread::id tid; // proper thread id of single-threaded spinner
-    boost::thread::id initial_tid; // to retain old behaviour, store first spinner's thread id
     unsigned int num; // number of (alike) spinners serving this queue
   };
 
@@ -74,35 +67,19 @@ struct SpinnerMonitor
   {
     boost::mutex::scoped_lock lock(mutex_);
 
-    boost::thread::id current_tid = boost::this_thread::get_id();
     boost::thread::id tid; // current thread id for single-threaded spinners, zero for multi-threaded ones
     if (single_threaded)
-      tid = current_tid;
+      tid = boost::this_thread::get_id();
 
     std::map<ros::CallbackQueue*, Entry>::iterator it = spinning_queues_.find(queue);
     bool can_spin = ( it == spinning_queues_.end() || // we will spin on any new queue
                       it->second.tid == tid ); // otherwise spinner must be alike (all multi-threaded: 0, or single-threaded on same thread id)
 
     if (!can_spin)
-    {
-      // Previous behavior (up to Kinetic) was to accept multiple spinners on a queue
-      // as long as they were started from the same thread. Although this is wrong behavior,
-      // we retain it here for backwards compatibility, i.e. we allow spinning of a
-      // single-threaded spinner after several multi-threaded ones, given that they
-      // were started from the same initial thread
-      if (it->second.initial_tid == tid)
-      {
-        ROS_ERROR_STREAM("SpinnerMonitor: single-threaded spinner after multi-threaded one(s)."
-                         << DEFAULT_ERROR_MESSAGE
-                         << " Only allowed for backwards compatibility.");
-        it->second.tid = tid; // "upgrade" tid to represent single-threaded spinner
-      }
-      else
-        return false;
-    }
+      return false;
 
     if (it == spinning_queues_.end())
-      it = spinning_queues_.insert(it, std::make_pair(queue, Entry(tid, current_tid)));
+      it = spinning_queues_.insert(it, std::make_pair(queue, Entry(tid)));
 
     // increment number of active spinners
     it->second.num += 1;
@@ -135,6 +112,9 @@ struct SpinnerMonitor
 };
 
 SpinnerMonitor spinner_monitor;
+const std::string DEFAULT_ERROR_MESSAGE =
+    "Attempt to spin a callback queue from two spinners, one of them being single-threaded. "
+    "This will probably result in callbacks being executed out-of-order.";
 }
 
 namespace ros
@@ -150,8 +130,8 @@ void SingleThreadedSpinner::spin(CallbackQueue* queue)
 
   if (!spinner_monitor.add(queue, true))
   {
-    ROS_ERROR_STREAM("SingleThreadedSpinner: " << DEFAULT_ERROR_MESSAGE);
-    return;
+    ROS_FATAL_STREAM("SingleThreadedSpinner: " << DEFAULT_ERROR_MESSAGE);
+    throw std::runtime_error("There is already another spinner on this queue");
   }
 
   ros::WallDuration timeout(0.1f);
@@ -240,8 +220,8 @@ void AsyncSpinnerImpl::start()
 
   if (!spinner_monitor.add(callback_queue_, false))
   {
-    ROS_ERROR_STREAM("AsyncSpinnerImpl: " << DEFAULT_ERROR_MESSAGE);
-    return;
+    ROS_FATAL_STREAM("AsyncSpinnerImpl: " << DEFAULT_ERROR_MESSAGE);
+    throw std::runtime_error("There is already a single-threaded spinner on this queue");
   }
 
   continue_ = true;
