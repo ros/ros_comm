@@ -409,7 +409,7 @@ class XmlLoader(loader.Loader):
                 elif tag_name == 'env':
                     self._env_tag(t, env_context, ros_config)
                 else:
-                    ros_config.add_config_error("WARN: unrecognized '%s' tag in <node> tag. Node xml is %s"%(t.tagName, tag.toxml()))
+                    ros_config.add_config_error("WARN: unrecognized child '%s' tag in the parent tag element: %s"%(t.tagName, tag.toxml()))
 
             # #1036 evaluate all ~params in context
             # TODO: can we get rid of force_local (above), remove this for loop, and just rely on param_tag logic instead?
