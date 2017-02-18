@@ -2,6 +2,9 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.12.6 (2016-10-26)
 -------------------
 * change rospy default rosconsole format for consistency with roscpp (`#879 <https://github.com/ros/ros_comm/pull/879>`_)

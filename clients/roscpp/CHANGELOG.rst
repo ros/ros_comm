@@ -2,6 +2,14 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* move connection specific log message to new name roscpp_internal.connections (`#980 <https://github.com/ros/ros_comm/pull/980>`_)
+* move headers to include/xmlrpcpp (`#962 <https://github.com/ros/ros_comm/issues/962>`_)
+* fix UDP block number when EAGAIN or EWOULDBLOCK (`#957 <https://github.com/ros/ros_comm/issues/957>`_)
+* fix return code of master execute function (`#938 <https://github.com/ros/ros_comm/pull/938>`_)
+* change WallTimerEvent from class to struct (`#924 <https://github.com/ros/ros_comm/pull/924>`_)
+
 1.12.6 (2016-10-26)
 -------------------
 

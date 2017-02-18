@@ -2,6 +2,15 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* throw exception instead of accessing invalid memory (`#971 <https://github.com/ros/ros_comm/pull/971>`_)
+* move headers to include/xmlrpcpp (`#962 <https://github.com/ros/ros_comm/issues/962>`_)
+* added option wait-for-subscriber to rosbag play (`#959 <https://github.com/ros/ros_comm/issues/959>`_)
+* terminate underlying rosbag play, record  on SIGTERM (`#951 <https://github.com/ros/ros_comm/issues/951>`_)
+* add pause service for rosbag player (`#949 <https://github.com/ros/ros_comm/issues/949>`_)
+* add rate-control-topic and rate-control-max-delay. (`#947 <https://github.com/ros/ros_comm/issues/947>`_)
+
 1.12.6 (2016-10-26)
 -------------------
 * fix BagMigrationException in migrate_raw (`#917 <https://github.com/ros/ros_comm/issues/917>`_)
