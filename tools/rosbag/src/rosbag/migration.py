@@ -968,7 +968,7 @@ class MessageMigrator(object):
                 found_stop = True
                 break
 
-        # Next see if we can create a valid rule
+        # Next see if we can create a valid rule, including the sub rules
         if not found_stop:
             for (ind, tmp_sn) in reversed(list(zip(range(len(sn_range)), sn_range))):
                 if (tmp_sn.new_class._type != new_class._type):
@@ -977,12 +977,13 @@ class MessageMigrator(object):
                 R = new_rule(self, 'GENERATED.' + new_rule.__name__)
                 if R.valid:
                     R.find_sub_paths()
-                    sn = ScaffoldNode(tmp_sn.new_class, new_class, R)
-                    self.extra_nodes.append(sn)
-                    sn_range = sn_range[:ind+1]
-                    sn_range.append(sn)
-                    found_stop = True
-                    break
+                    if R.sub_rules_valid:
+                        sn = ScaffoldNode(tmp_sn.new_class, new_class, R)
+                        self.extra_nodes.append(sn)
+                        sn_range = sn_range[:ind+1]
+                        sn_range.append(sn)
+                        found_stop = True
+                        break
 
         # If there were no valid implicit rules, we suggest a new one from to the end
         if not found_stop:
@@ -1018,7 +1019,7 @@ class MessageMigrator(object):
                     self.found_paths[key] = [sn]
                     return [sn]
 
-        # Next see if we can create a valid rule
+        # Next see if we can create a valid rule, including the sub rules
         if not found_start:
             for (ind, tmp_sn) in reversed(list(zip(range(len(sn_range)), sn_range))):
                 if (tmp_sn.old_class._type != old_class._type):
@@ -1027,12 +1028,13 @@ class MessageMigrator(object):
                 R = new_rule(self, 'GENERATED.' + new_rule.__name__)
                 if R.valid:
                     R.find_sub_paths()
-                    sn = ScaffoldNode(old_class, tmp_sn.old_class, R)
-                    self.extra_nodes.append(sn)
-                    sn_range = sn_range[ind:]
-                    sn_range.insert(0,sn)
-                    found_start = True
-                    break
+                    if R.sub_rules_valid:
+                        sn = ScaffoldNode(old_class, tmp_sn.old_class, R)
+                        self.extra_nodes.append(sn)
+                        sn_range = sn_range[ind:]
+                        sn_range.insert(0,sn)
+                        found_start = True
+                        break
 
         # If there were no valid implicit rules, we suggest a new one from the beginning
         if not found_start:
