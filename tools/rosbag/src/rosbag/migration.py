@@ -1006,6 +1006,18 @@ class MessageMigrator(object):
                 found_start = True
                 break
 
+        # Next see if we can create a valid rule directly to the end, including the sub rules
+        if not found_start:
+            new_rule = self.make_update_rule(old_class, new_class)
+            R = new_rule(self, 'GENERATED.' + new_rule.__name__)
+            if R.valid:
+                R.find_sub_paths()
+                if R.sub_rules_valid:
+                    sn = ScaffoldNode(old_class, new_class, R)
+                    self.extra_nodes.append(sn)
+                    self.found_paths[key] = [sn]
+                    return [sn]
+
         # Next see if we can create a valid rule
         if not found_start:
             for (ind, tmp_sn) in reversed(list(zip(range(len(sn_range)), sn_range))):
