@@ -172,6 +172,9 @@ public:
                boost::shared_ptr<ros::M_string> connection_header = boost::shared_ptr<ros::M_string>());
 
 private:
+    Bag(const Bag&);
+    Bag& operator=(const Bag&);
+
     // This helper function actually does the write with an arbitrary serializable message
     template<class T>
     void doWrite(std::string const& topic, ros::Time const& time, T const& msg, boost::shared_ptr<ros::M_string> const& connection_header);
