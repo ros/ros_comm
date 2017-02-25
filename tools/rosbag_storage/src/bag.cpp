@@ -1117,4 +1117,35 @@ void Bag::write(char const* s, std::streamsize n) { file_.write((char*) s, n);  
 void Bag::read(char* b, std::streamsize n) const  { file_.read(b, n);             }
 void Bag::seek(uint64_t pos, int origin) const    { file_.seek(pos, origin);      }
 
+void Bag::swap(Bag& other) {
+    using std::swap;
+    swap(mode_, other.mode_);
+    swap(file_, other.file_);
+    swap(version_, other.version_);
+    swap(compression_, other.compression_);
+    swap(chunk_threshold_, other.chunk_threshold_);
+    swap(bag_revision_, other.bag_revision_);
+    swap(file_size_, other.file_size_);
+    swap(file_header_pos_, other.file_header_pos_);
+    swap(index_data_pos_, other.index_data_pos_);
+    swap(connection_count_, other.connection_count_);
+    swap(chunk_count_, other.chunk_count_);
+    swap(chunk_open_, other.chunk_open_);
+    swap(curr_chunk_info_, other.curr_chunk_info_);
+    swap(curr_chunk_data_pos_, other.curr_chunk_data_pos_);
+    swap(topic_connection_ids_, other.topic_connection_ids_);
+    swap(header_connection_ids_, other.header_connection_ids_);
+    swap(connections_, other.connections_);
+    swap(chunks_, other.chunks_);
+    swap(connection_indexes_, other.connection_indexes_);
+    swap(curr_chunk_connection_indexes_, other.curr_chunk_connection_indexes_);
+    swap(header_buffer_, other.header_buffer_);
+    swap(record_buffer_, other.record_buffer_);
+    swap(chunk_buffer_, other.chunk_buffer_);
+    swap(decompress_buffer_, other.decompress_buffer_);
+    swap(outgoing_chunk_buffer_, other.outgoing_chunk_buffer_);
+    swap(current_buffer_, other.current_buffer_);
+    swap(decompressed_chunk_, other.decompressed_chunk_);
+}
+
 } // namespace rosbag

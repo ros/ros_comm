@@ -171,6 +171,8 @@ public:
     void write(std::string const& topic, ros::Time const& time, boost::shared_ptr<T> const& msg,
                boost::shared_ptr<ros::M_string> connection_header = boost::shared_ptr<ros::M_string>());
 
+    void swap(Bag&);
+
 private:
     Bag(const Bag&);
     Bag& operator=(const Bag&);
@@ -622,6 +624,10 @@ void Bag::writeMessageDataRecord(uint32_t conn_id, ros::Time const& time, T cons
     	curr_chunk_info_.end_time = time;
     else if (time < curr_chunk_info_.start_time)
         curr_chunk_info_.start_time = time;
+}
+
+inline void swap(Bag& a, Bag& b) {
+    a.swap(b);
 }
 
 } // namespace rosbag
