@@ -43,7 +43,7 @@ import rosunit
 
 def check_roslaunch_file(roslaunch_file, use_test_depends=False):
     print("checking", roslaunch_file)
-    error_msg = roslaunch.rlutil.check_roslaunch(roslaunch_file, use_test_depends=use_test_depends)
+    error_msg = roslaunch.rlutil.check_roslaunch(roslaunch_file, option_use_test_depends=use_test_depends)
     # error message has to be XML attr safe
     if error_msg:
         return "[%s]:\n\t%s"%(roslaunch_file,error_msg)
