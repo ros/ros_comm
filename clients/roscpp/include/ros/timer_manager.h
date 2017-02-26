@@ -193,9 +193,9 @@ private:
         event.current_real = T::now();
         event.profile.last_duration = info->last_cb_duration;
 
-        WallTime cb_start = WallTime::now();
+        SteadyTime cb_start = SteadyTime::now();
         info->callback(event);
-        WallTime cb_end = WallTime::now();
+        SteadyTime cb_end = SteadyTime::now();
         info->last_cb_duration = cb_end - cb_start;
 
         info->last_real = event.current_real;
@@ -573,7 +573,7 @@ void TimerManager<T, D, E>::threadFunc()
       }
       else
       {
-        // we have to distinguish between MonotonicTime and WallTime here,
+        // we have to distinguish between SteadyTime and WallTime here,
         // because boost timed_wait with duration just adds the duration to current system time
         // this however requires boost 1.61, see: https://svn.boost.org/trac/boost/ticket/6377
         if (typeid(T) == typeid(SteadyTime))
