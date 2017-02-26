@@ -6,7 +6,7 @@ if(NOT WIN32)
 endif()
 
 find_package(catkin REQUIRED COMPONENTS rosbag_storage rosconsole roscpp std_srvs topic_tools xmlrpcpp)
-find_package(Boost REQUIRED COMPONENTS date_time regex program_options filesystem)
+find_package(Boost REQUIRED COMPONENTS date_time regex program_options filesystem thread)
 find_package(BZip2 REQUIRED)
 
 catkin_python_setup()
@@ -38,6 +38,12 @@ target_link_libraries(record rosbag)
 add_executable(play src/play.cpp)
 target_link_libraries(play rosbag)
 
+add_executable(pub_tf_static src/pub_tf_static.cpp)
+add_dependencies(pub_tf_static ${catkin_EXPORTED_TARGETS})
+target_link_libraries(pub_tf_static
+  ${catkin_LIBRARIES}
+)
+
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h")
@@ -45,7 +51,7 @@ install(TARGETS rosbag
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
-install(TARGETS record play
+install(TARGETS record play pub_tf_static
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
