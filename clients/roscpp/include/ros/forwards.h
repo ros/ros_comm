@@ -161,6 +161,24 @@ struct WallTimerEvent
 };
 typedef boost::function<void(const WallTimerEvent&)> WallTimerCallback;
 
+/**
+ * \brief Structure passed as a parameter to the callback invoked by a ros::MonotonicTimer
+ */
+struct MonotonicTimerEvent
+{
+  MonotonicTime last_expected;            ///< In a perfect world, this is when the last callback should have happened
+  MonotonicTime last_real;                ///< When the last callback actually happened
+
+  MonotonicTime current_expected;         ///< In a perfect world, this is when the current callback should be happening
+  MonotonicTime current_real;             ///< This is when the current callback was actually called (Time::now() as of the beginning of the callback)
+
+  struct
+  {
+    WallDuration last_duration;           ///< How long the last callback ran for
+  } profile;
+};
+typedef boost::function<void(const MonotonicTimerEvent&)> MonotonicTimerCallback;
+
 class ServiceManager;
 typedef boost::shared_ptr<ServiceManager> ServiceManagerPtr;
 class TopicManager;
