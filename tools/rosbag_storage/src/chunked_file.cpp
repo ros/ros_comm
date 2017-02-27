@@ -86,13 +86,14 @@ void ChunkedFile::open(string const& filename, string const& mode) {
 
     // Open the file
     if (mode == "r+b") {
-        // Read + write requires file to exists.  Create a new file if it doesn't exist.
+        // check if file already exists
         #if defined(_MSC_VER) && (_MSC_VER >= 1400 )
             fopen_s( &file_, filename.c_str(), "r" );
         #else
             file_ = fopen(filename.c_str(), "r");
         #endif
         if (file_ == NULL)
+            // create an empty file and open it for update
             #if defined(_MSC_VER) && (_MSC_VER >= 1400 )
                 fopen_s( &file_, filename.c_str(), "w+b" );
             #else
@@ -100,8 +101,9 @@ void ChunkedFile::open(string const& filename, string const& mode) {
             #endif
         else {
             fclose(file_);
+            // open existing file for update
             #if defined(_MSC_VER) && (_MSC_VER >= 1400 )
-                fopen_s( &file_, filename.c_str(), "w+b" );
+                fopen_s( &file_, filename.c_str(), "r+b" );
             #else
                 file_ = fopen(filename.c_str(), "r+b");
             #endif
