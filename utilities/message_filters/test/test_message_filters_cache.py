@@ -121,6 +121,41 @@ class TestCache(unittest.TestCase):
         self.assertEqual(s, rospy.Time(1),
                          "wrong message discarded")
 
+    def test_headerless(self):
+        sub = Subscriber("/empty", String)
+        cache = Cache(sub, 5, allow_headerless=False)
+
+        msg = String()
+        cache.add(msg)
+
+        self.assertIsNone(cache.getElemAfterTime(rospy.Time(0)),
+                          "Headerless message invalidly added.")
+
+        cache = Cache(sub, 5, allow_headerless=True)
+
+        rospy.rostime.set_rostime_initialized(True)
+
+        rospy.rostime._set_rostime(rospy.Time(0))
+        cache.add(msg)
+
+        s = cache.getElemAfterTime(rospy.Time(0))
+        self.assertEqual(s, msg,
+                         "invalid msg returned in headerless scenario")
+
+        s = cache.getElemAfterTime(rospy.Time(1))
+        self.assertIsNone(s, "invalid msg returned in headerless scenario")
+
+        rospy.rostime._set_rostime(rospy.Time(2))
+        cache.add(msg)
+
+        s = cache.getInterval(rospy.Time(0), rospy.Time(1))
+        self.assertEqual(s, [msg],
+                         "invalid msg returned in headerless scenario")
+
+        s = cache.getInterval(rospy.Time(0), rospy.Time(2))
+        self.assertEqual(s, [msg, msg],
+                         "invalid msg returned in headerless scenario")
+
 
 if __name__ == '__main__':
     import rosunit
