@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# Function that builds a message generation:
+build_generation()
+{
+    catkin_make_isolated -q --pkg test_rosbag --cmake-args -DMSG_DIRECTORY="msg_$1" >/dev/null
+}
+
+# Function that saves all the message types in a bag file:
+save_msg()
+{
+    generation=${1/.bag}
+    generation=${generation/*_/}
+
+    msg_types=$(rosbag info -y -k types "$1" | grep type | awk '{print $3}')
+
+    for msg_type in $msg_types
+    do
+        saved_msg=${msg_type/test_rosbag\//}_${generation}.saved
+
+        rosrun rosbag savemsg.py -b "$1" "$msg_type" > "test/${saved_msg}"
+    done
+}
+
+# Take optional positional argument that specifies which message generations to build; defaults to $(seq 1 3):
+if [ $# -gt 0 ]
+then
+    GENERATIONS=$@
+else
+    GENERATIONS=$(seq 1 3)
+fi
+
+# Find the bag_migration_tests folder inside the test_rosbag package, since the .bag files would be
+# created in the test sub-folder:
+DESTINATION=$(rospack find test_rosbag)/bag_migration_tests
+
+# Generate data for each message generation:
+for GENERATION in ${GENERATIONS}
+do
+    echo "Generating data in '${DESTINATION}' for generation: ${GENERATION}"
+
+    # Build messages generation:
+    build_generation "gen${GENERATION}"
+
+    if [ $? -ne 0 ]
+    then
+        >&2 echo "Failed to build messages!"
+        continue
+    fi
+
+    # Generate data:
+    cd "${DESTINATION}"
+    rosrun test_rosbag "generate_data_${GENERATION}.py"
+    cd "$OLDPWD"
+
+    if [ $? -ne 0 ]
+    then
+        >&2 echo "Failed to generate data!"
+        continue
+    fi
+done
+
+# Build messages for the current generation:
+build_generation current
+
+# We don't really need to change the directory back to the old one, it's done automatically on exit:
+# cd $OLDPWD
