@@ -4,14 +4,18 @@ class update_test_rosbag_MigratedMixed_5568494133a082ad58ef1aa391f47e2b(MessageU
 Header             header
 MigratedImplicit   field1 #(34, 16.32, "kjljene", (17, 58.2, "aldfkja", 82))
 
+
 ================================================================================
-MSG: roslib/Header
-#Standard metadata for higher-level flow data types
-#sequence ID: consecutively increasing ID
+MSG: std_msgs/Header
+# Standard metadata for higher-level stamped data types.
+# This is generally used to communicate timestamped data 
+# in a particular coordinate frame.
+# 
+# sequence ID: consecutively increasing ID 
 uint32 seq
 #Two-integer timestamp that is expressed as:
-# * stamp.secs: seconds (stamp_secs) since epoch
-# * stamp.nsecs: nanoseconds since stamp_secs
+# * stamp.sec: seconds (stamp_secs) since epoch (in Python the variable is called 'secs')
+# * stamp.nsec: nanoseconds since stamp_secs (in Python the variable is called 'nsecs')
 # time-handling sugar is provided by the client library
 time stamp
 #Frame this data is associated with
@@ -43,13 +47,16 @@ MigratedImplicit   field1 #((17, 58.2, "aldfkja", 82), "kjljene", 16.32, 34)
 int32              field2 #59
 
 ================================================================================
-MSG: roslib/Header
-#Standard metadata for higher-level flow data types
-#sequence ID: consecutively increasing ID
+MSG: std_msgs/Header
+# Standard metadata for higher-level stamped data types.
+# This is generally used to communicate timestamped data 
+# in a particular coordinate frame.
+# 
+# sequence ID: consecutively increasing ID 
 uint32 seq
 #Two-integer timestamp that is expressed as:
-# * stamp.secs: seconds (stamp_secs) since epoch
-# * stamp.nsecs: nanoseconds since stamp_secs
+# * stamp.sec: seconds (stamp_secs) since epoch (in Python the variable is called 'secs')
+# * stamp.nsec: nanoseconds since stamp_secs (in Python the variable is called 'nsecs')
 # time-handling sugar is provided by the client library
 time stamp
 #Frame this data is associated with
@@ -65,6 +72,8 @@ string  field3 #"kljene"
 float32 field2 #16.32
 int32   field1 #34
 
+
+
 ================================================================================
 MSG: test_rosbag/MigratedExplicit
 Header  header
@@ -77,9 +86,7 @@ int32   afield4 #82
     order = 0
     migrated_types = [
         ("Header","Header"),
-        ("MigratedImplicit","MigratedImplicit"),
-
-    ]
+        ("MigratedImplicit","MigratedImplicit"),]
 
     valid = True
 

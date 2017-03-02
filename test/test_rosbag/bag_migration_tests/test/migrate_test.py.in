@@ -58,7 +58,7 @@ class MigrationTest(unittest.TestCase):
     self.assertTrue(len(res[0][1]) == 1)
     self.assertTrue(not res[0][1][0].valid)
     self.assertEqual(res[0][1][0].old_class._md5sum, '4b12e5ff694b0e2a31b2ea9e0bd900f4')
-    self.assertEqual(res[0][1][0].new_class._md5sum, 'b5d640967dccef2a24697ec4b8a571ec')
+    self.assertEqual(res[0][1][0].new_class._md5sum, 'fed3471829c6040a8c84cd6c04ec5ab2')
 
 
   def test_subunmigrated(self):
@@ -73,7 +73,7 @@ class MigrationTest(unittest.TestCase):
     self.assertTrue(len(res[0][1]) == 1)
     self.assertTrue(not res[0][1][0].valid)
     self.assertEqual(res[0][1][0].old_class._md5sum, '4b12e5ff694b0e2a31b2ea9e0bd900f4')
-    self.assertEqual(res[0][1][0].new_class._md5sum, 'b5d640967dccef2a24697ec4b8a571ec')
+    self.assertEqual(res[0][1][0].new_class._md5sum, 'fed3471829c6040a8c84cd6c04ec5ab2')
 
   def do_partially_migrated(self, N):
     tmp_rule_files = ['migrated_explicit_rules.bmr', 'migrated_mixed_rules.bmr', 'migrated_addsub_rules.bmr', 'partially_migrated_rules.bmr']
@@ -86,9 +86,9 @@ class MigrationTest(unittest.TestCase):
 
     self.assertTrue(len(res[0][1]) == 1)
     self.assertTrue(not res[0][1][0].valid)
-    self.assertEqual(res[0][1][0].old_class._md5sum, 'aba12af164ecf3f5cd150fb990205c4b')
-    self.assertEqual(res[0][1][0].new_class._md5sum, 'b942bf4a41fb2bebc502889fd8981dfe')
-    
+    self.assertEqual(res[0][1][0].old_class._md5sum, '9fafd0ad3f442b8a7908d03e9bb64de2')
+    self.assertEqual(res[0][1][0].new_class._md5sum, '45f99fcf57ef956dd2a6a16472643507')
+
 
   def test_partially_migrated_gen1(self):
     self.do_partially_migrated(1)
@@ -98,6 +98,9 @@ class MigrationTest(unittest.TestCase):
 
   def test_partially_migrated_gen3(self):
     self.do_partially_migrated(3)
+
+  def test_partially_migrated_gen4(self):
+    self.do_partially_migrated(4)
 
 
   def test_addsub(self):
@@ -140,9 +143,9 @@ class MigrationTest(unittest.TestCase):
 
     self.assertTrue(len(msgs) > 0)
 
-    self.assertEqual(msgs[0][1].afield2, struct.unpack('<f',struct.pack('<f',58.2))[0])
+    self.assertEqual(msgs[0][1].field2, struct.unpack('<f',struct.pack('<f',58.2))[0])
     self.assertEqual(msgs[0][1].combo_field3, "aldfkja 17")
-    self.assertEqual(msgs[0][1].afield4, 82)
+    self.assertEqual(msgs[0][1].field4, 82)
 
   def test_migrated_explicit_gen1(self):
     self.do_migrated_explicit(1)
@@ -152,6 +155,9 @@ class MigrationTest(unittest.TestCase):
 
   def test_migrated_explicit_gen3(self):
     self.do_migrated_explicit(3)
+
+  def test_migrated_explicit_gen4(self):
+    self.do_migrated_explicit(4)
 
 
 
@@ -173,9 +179,9 @@ class MigrationTest(unittest.TestCase):
 
     self.assertTrue(len(msgs) > 0)
 
-    self.assertEqual(msgs[0][1].field4.afield2, struct.unpack('<f',struct.pack('<f',58.2))[0])
+    self.assertEqual(msgs[0][1].field4.field2, struct.unpack('<f',struct.pack('<f',58.2))[0])
     self.assertEqual(msgs[0][1].field4.combo_field3, "aldfkja 17")
-    self.assertEqual(msgs[0][1].field4.afield4, 82)
+    self.assertEqual(msgs[0][1].field4.field4, 82)
 
     self.assertEqual(msgs[0][1].field1, 34)
     self.assertEqual(msgs[0][1].field2, struct.unpack('<f',struct.pack('<f',16.32))[0])
@@ -190,6 +196,9 @@ class MigrationTest(unittest.TestCase):
 
   def test_migrated_implicit_gen3(self):
     self.do_migrated_implicit(3)
+
+  def test_migrated_implicit_gen4(self):
+    self.do_migrated_implicit(4)
 
 
 
@@ -211,9 +220,9 @@ class MigrationTest(unittest.TestCase):
 
     self.assertTrue(len(msgs) > 0)
 
-    self.assertEqual(msgs[0][1].field1.field4.afield2, struct.unpack('<f',struct.pack('<f',58.2))[0])
+    self.assertEqual(msgs[0][1].field1.field4.field2, struct.unpack('<f',struct.pack('<f',58.2))[0])
     self.assertEqual(msgs[0][1].field1.field4.combo_field3, "aldfkja 17")
-    self.assertEqual(msgs[0][1].field1.field4.afield4, 82)
+    self.assertEqual(msgs[0][1].field1.field4.field4, 82)
 
     self.assertEqual(msgs[0][1].field1.field1, 34)
     self.assertEqual(msgs[0][1].field1.field2, struct.unpack('<f',struct.pack('<f',16.32))[0])
@@ -229,6 +238,9 @@ class MigrationTest(unittest.TestCase):
 
   def test_migrated_mixed_gen3(self):
     self.do_migrated_mixed(3)
+
+  def test_migrated_mixed_gen4(self):
+    self.do_migrated_mixed(4)
 
 
 
@@ -251,7 +263,7 @@ class MigrationTest(unittest.TestCase):
     self.assertTrue(len(msgs) > 0)
 
 
-    self.assertEqual(msgs[0][1]._type, 'test_rosbag/Renamed4', 'Type name is wrong')
+    self.assertEqual(msgs[0][1]._type, 'test_rosbag/Renamed5', 'Type name is wrong')
     self.assertEqual(msgs[0][1].foo, struct.unpack('<d',struct.pack('<d',2.17))[0])
     self.assertEqual(msgs[0][1].bar, (8, 2, 5, 1))
 
@@ -264,6 +276,9 @@ class MigrationTest(unittest.TestCase):
 
   def test_renamed_gen3(self):
     self.do_renamed(3)
+
+  def test_renamed_gen4(self):
+    self.do_renamed(4)
 
 
   def do_converged(self, N):
@@ -304,6 +319,9 @@ class MigrationTest(unittest.TestCase):
 
   def test_converged_gen3(self):
     self.do_converged(3)
+
+  def test_converged_gen4(self):
+    self.do_converged(4)
 
 
   def do_convergent(self, N):
