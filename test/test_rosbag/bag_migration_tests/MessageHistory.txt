@@ -24,15 +24,15 @@ GENERATION 1:
  Converged.msg
  Hierarchical.msg
  SuperHierarchical.msg
- 
+
 
 GENERATION 2:
  Unmigrated.msg
  Subunmigrated.msg
- PartiallyMigrated.msg - implicit 
- MigratedExplicit.msg  - explicit 
- MigratedImplicit.msg  - implicit 
- MigratedMixed.msg     - implicit 
+ PartiallyMigrated.msg - implicit
+ MigratedExplicit.msg  - explicit
+ MigratedImplicit.msg  - implicit
+ MigratedMixed.msg     - implicit
  Converged.msg         - Rename from Convergent.msg
  Renamed2.msg          - Rename from Renamed1.msg
  Hierarchical.msg
@@ -41,25 +41,25 @@ GENERATION 2:
 GENERATION 3
  Unmigrated.msg
  Subunmigrated.msg
- PartiallyMigrated.msg - explicit 
- MigratedExplicit.msg  - explicit 
- MigratedImplicit.msg  - implicit 
- MigratedMixed.msg     - explicit 
- Converged.msg         - explicit 
- Renamed3.msg          - rename from Renamed2.msg and explicit 
- Hierarchical.msg      - explicit 
+ PartiallyMigrated.msg - explicit
+ MigratedExplicit.msg  - explicit
+ MigratedImplicit.msg  - implicit
+ MigratedMixed.msg     - explicit
+ Converged.msg         - explicit
+ Renamed3.msg          - rename from Renamed2.msg and explicit
+ Hierarchical.msg      - explicit
  SuperHierarchical.msg - implicit
 
 CURRENT:
  UnMigrated.msg        - explicit  (No corresponding rule)
  Subunmigrated.msg
  PartiallyMigrated.msg - explicit  (No corresponding rule)
- MigratedExplicit.msg  - explicit 
- MigratedImplicit.msg  - implicit 
- MigratedMixed.msg     - implicit 
- Converged.msg         - implicit 
+ MigratedExplicit.msg  - explicit
+ MigratedImplicit.msg  - implicit
+ MigratedMixed.msg     - implicit
+ Converged.msg         - implicit
  Renamed4.msg          - rename from Renamed3.msg
- Hierarchical.msg      - implicit 
+ Hierarchical.msg      - implicit
  SuperHierarchical.msg
 
  
