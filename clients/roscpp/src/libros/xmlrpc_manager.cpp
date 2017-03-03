@@ -155,20 +155,24 @@ void XMLRPCManager::shutdown()
   server_.close();
 
   // kill the last few clients that were started in the shutdown process
-  for (V_CachedXmlRpcClient::iterator i = clients_.begin();
-       i != clients_.end(); ++i)
   {
-    for (int wait_count = 0; i->in_use_ && wait_count < 10; wait_count++)
+    boost::mutex::scoped_lock lock(clients_mutex_);
+
+    for (V_CachedXmlRpcClient::iterator i = clients_.begin();
+         i != clients_.end();)
     {
-      ROSCPP_LOG_DEBUG("waiting for xmlrpc connection to finish...");
-      ros::WallDuration(0.01).sleep();
+      if (!i->in_use_)
+      {
+        i->client_->close();
+        delete i->client_;
+        i = clients_.erase(i);
+      }
+      else
+      {
+        ++i;
+      }
     }
-
-    i->client_->close();
-    delete i->client_;
   }
-
-  clients_.clear();
 
   boost::mutex::scoped_lock lock(functions_mutex_);
   functions_.clear();
@@ -369,7 +373,17 @@ void XMLRPCManager::releaseXMLRPCClient(XmlRpcClient *c)
   {
     if (c == i->client_)
     {
-      i->in_use_ = false;
+      if (shutting_down_)
+      {
+        // if we are shutting down we won't be re-using the client
+        i->client_->close();
+        delete i->client_;
+        clients_.erase(i);
+      }
+      else
+      {
+        i->in_use_ = false;
+      }
       break;
     }
   }
