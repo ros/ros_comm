@@ -63,11 +63,11 @@ typedef compression::CompressionType CompressionType;
 
 class ChunkedFile;
 
-class FileSwapper;
+class FileAccessor;
 
 class ROSBAG_DECL Stream
 {
-    friend class FileSwapper;
+    friend class FileAccessor;
 public:
     Stream(ChunkedFile* file);
     virtual ~Stream();
@@ -102,7 +102,6 @@ protected:
 
 class ROSBAG_DECL StreamFactory
 {
-    friend class FileSwapper;
 public:
     StreamFactory(ChunkedFile* file);
 
@@ -114,16 +113,10 @@ private:
     boost::shared_ptr<Stream> lz4_stream_;
 };
 
-class FileSwapper {
+class FileAccessor {
     friend class ChunkedFile;
-    static void swapFiles(Stream& a, Stream& b) {
-        std::swap(a.file_, b.file_);
-    }
-
-    static void swapFiles(StreamFactory& a, StreamFactory& b) {
-        std::swap(a.uncompressed_stream_->file_, b.uncompressed_stream_->file_);
-        std::swap(a.bz2_stream_->file_, b.bz2_stream_->file_);
-        std::swap(a.lz4_stream_->file_, b.lz4_stream_->file_);
+    static void setFile(Stream& a, ChunkedFile* file) {
+        a.file_ = file;
     }
 };
 
@@ -190,6 +183,8 @@ public:
     void decompress(uint8_t* dest, unsigned int dest_len, uint8_t* source, unsigned int source_len);
 
 private:
+    LZ4Stream(const LZ4Stream&);
+    LZ4Stream operator=(const LZ4Stream&);
     void writeStream(int action);
 
     char *buff_;
