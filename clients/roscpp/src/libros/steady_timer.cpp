@@ -25,6 +25,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+// make sure we use CLOCK_MONOTONIC for the condition variable
+#define BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
+
 #include "ros/steady_timer.h"
 #include "ros/timer_manager.h"
 
