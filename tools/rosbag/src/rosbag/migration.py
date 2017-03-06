@@ -1039,7 +1039,7 @@ class MessageMigrator(object):
         path = self.find_path(msg_from[4], msg_to[4])
 
         if False in [sn.rule.valid for sn in path]:
-            raise BagMigrationException("Migrate called, but no valid migration path from [%s] to [%s]"%(msg_from._type, msg_to._type))
+            raise BagMigrationException("Migrate called, but no valid migration path from [%s] to [%s]"%(msg_from[0], msg_to[0]))
 
         # Short cut to speed up case of matching md5sum:
         if path == [] or msg_from[2] == msg_to[2]:

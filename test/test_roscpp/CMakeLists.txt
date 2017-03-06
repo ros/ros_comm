@@ -85,7 +85,6 @@ endif()
 
 catkin_package(
   CATKIN_DEPENDS message_runtime rosconsole rosgraph_msgs std_msgs xmlrpcpp
-  DEPENDS Boost
 )
 
 if(CATKIN_ENABLE_TESTING)

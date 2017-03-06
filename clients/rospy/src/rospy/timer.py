@@ -185,7 +185,7 @@ class Timer(threading.Thread):
         """
         Constructor.
         @param period: desired period between callbacks
-        @type  period: rospy.Time
+        @type  period: rospy.Duration
         @param callback: callback to be called
         @type  callback: function taking rospy.TimerEvent
         @param oneshot: if True, fire only once, otherwise fire continuously until shutdown is called [default: False]
