@@ -2,6 +2,11 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* improve error message for invalid tags (`#989 <https://github.com/ros/ros_comm/pull/989>`_)
+* fix caching logic to improve performance (`#931 <https://github.com/ros/ros_comm/pull/931>`_)
+
 1.11.20 (2016-06-27)
 --------------------
 * fix roslaunch check for multiple tests with multiple args (`#814 <https://github.com/ros/ros_comm/pull/814>`_)

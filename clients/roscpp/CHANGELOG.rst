@@ -2,6 +2,11 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix UDP block number when EAGAIN or EWOULDBLOCK (`#957 <https://github.com/ros/ros_comm/issues/957>`_)
+* improve stacktrace for exceptions thrown in callbacks (`#811 <https://github.com/ros/ros_comm/pull/811>`_)
+
 1.11.20 (2016-06-27)
 --------------------
 * fix segfault if connection fails (`#807 <https://github.com/ros/ros_comm/pull/807>`_)

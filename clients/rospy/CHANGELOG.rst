@@ -2,6 +2,12 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* make get_published_topics threadsafe (`#958 <https://github.com/ros/ros_comm/issues/958>`_)
+* fix wrong type in docstring for rospy.Timer (`#878 <https://github.com/ros/ros_comm/pull/878>`_)
+* add logXXX_throttle functions (`#812 <https://github.com/ros/ros_comm/pull/812>`_)
+
 1.11.20 (2016-06-27)
 --------------------
 

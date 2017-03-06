@@ -2,6 +2,10 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* increase request_queue_size for xmlrpc server (`#849 <https://github.com/ros/ros_comm/issues/849>`_)
+
 1.11.20 (2016-06-27)
 --------------------
 * fix symlink of the log dir itself as latest (`#795 <https://github.com/ros/ros_comm/pull/795>`_)

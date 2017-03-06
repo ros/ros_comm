@@ -2,6 +2,14 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* throw exception instead of accessing invalid memory (`#971 <https://github.com/ros/ros_comm/pull/971>`_)
+* terminate underlying rosbag play, record  on SIGTERM (`#951 <https://github.com/ros/ros_comm/issues/951>`_)
+* fix BagMigrationException in migrate_raw (`#917 <https://github.com/ros/ros_comm/issues/917>`_)
+* set default values for min_space and min_space_str (`#883 <https://github.com/ros/ros_comm/issues/883>`_)
+* update rosbag filter progress meter to use raw uncompressed input size (`#857 <https://github.com/ros/ros_comm/issues/857>`_)
+
 1.11.20 (2016-06-27)
 --------------------
 
