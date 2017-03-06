@@ -2,8 +2,8 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.21 (2017-03-06)
+--------------------
 * fix building on GCC-6 (`#911 <https://github.com/ros/ros_comm/pull/911>`_)
 
 1.11.20 (2016-06-27)

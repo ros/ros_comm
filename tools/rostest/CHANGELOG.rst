@@ -2,8 +2,8 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.21 (2017-03-06)
+--------------------
 * fix test type handling (`#722 <https://github.com/ros/ros_comm/issues/722>`_)
 * add_rostest_gtest does now add the created gtest-target as a dependeny to the created rostest (`#830 <https://github.com/ros/ros_comm/pull/830>`_)
 
