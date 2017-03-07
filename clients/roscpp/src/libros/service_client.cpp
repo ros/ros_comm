@@ -210,4 +210,24 @@ std::string ServiceClient::getService()
   return "";
 }
 
+bool ServiceClient::tryToReconnect(ros::Duration timeout) {
+  if (impl_)
+  {
+    // wait for service to become availabile and reconnect
+    waitForExistence(timeout);
+    if (exists())
+    {
+      impl_->server_link_ = ServiceManager::instance()->createServiceServerLink(impl_->name_, impl_->persistent_, impl_->service_md5sum_, impl_->service_md5sum_, impl_->header_values_);
+
+      // make sure we have a connection
+      if (isValid())
+      {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 }
