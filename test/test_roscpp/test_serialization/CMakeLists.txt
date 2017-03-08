@@ -2,6 +2,8 @@ if(NOT GTEST_FOUND)
   return()
 endif()
 
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+
 catkin_add_gtest(${PROJECT_NAME}-serialization src/serialization.cpp)
 if(TARGET ${PROJECT_NAME}-serialization)
   target_link_libraries(${PROJECT_NAME}-serialization ${catkin_LIBRARIES} ${GTEST_LIBRARIES})
