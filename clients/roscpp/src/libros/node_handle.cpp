@@ -449,6 +449,37 @@ WallTimer NodeHandle::createWallTimer(WallTimerOptions& ops) const
   return timer;
 }
 
+SteadyTimer NodeHandle::createSteadyTimer(WallDuration period, const SteadyTimerCallback& callback,
+                                                bool oneshot, bool autostart) const
+{
+  SteadyTimerOptions ops;
+  ops.period = period;
+  ops.callback = callback;
+  ops.oneshot = oneshot;
+  ops.autostart = autostart;
+  return createSteadyTimer(ops);
+}
+
+SteadyTimer NodeHandle::createSteadyTimer(SteadyTimerOptions& ops) const
+{
+  if (ops.callback_queue == 0)
+  {
+    if (callback_queue_)
+    {
+      ops.callback_queue = callback_queue_;
+    }
+    else
+    {
+      ops.callback_queue = getGlobalCallbackQueue();
+    }
+  }
+
+  SteadyTimer timer(ops);
+  if (ops.autostart)
+    timer.start();
+  return timer;
+}
+
 void NodeHandle::shutdown()
 {
   {
