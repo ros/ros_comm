@@ -125,7 +125,7 @@ public:
 
     int run();
 
-private:
+protected:
     void printUsage();
 
     void updateFilenames();
@@ -150,7 +150,6 @@ private:
     template<class T>
     static std::string timeToStr(T ros_t);
 
-private:
     RecorderOptions               options_;
 
     Bag                           bag_;
