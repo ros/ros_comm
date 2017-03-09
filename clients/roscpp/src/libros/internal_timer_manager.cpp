@@ -31,6 +31,14 @@
 #include "ros/timer_manager.h"
 #include "ros/internal_timer_manager.h"
 
+// check if we have really included the backported boost condition variable
+// just in case someone messes with the include order...
+#if BOOST_VERSION < 106100
+#ifndef USING_BACKPORTED_BOOST_CONDITION_VARIABLE
+#error "steady timer needs boost version >= 1.61 or the backported headers!"
+#endif
+#endif
+
 namespace ros
 {
 

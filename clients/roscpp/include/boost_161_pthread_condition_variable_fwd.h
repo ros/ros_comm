@@ -6,6 +6,9 @@
 // (C) Copyright 2007-8 Anthony Williams
 // (C) Copyright 2011-2012 Vicente J. Botet Escriba
 
+// define to check if this backported version was included
+#define USING_BACKPORTED_BOOST_CONDITION_VARIABLE 1
+
 #include <boost/assert.hpp>
 #include <boost/throw_exception.hpp>
 #include <pthread.h>

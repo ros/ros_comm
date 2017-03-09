@@ -30,6 +30,7 @@
 
 // check if we might need to include our own backported version boost::condition_variable
 // in order to use CLOCK_MONOTONIC for the SteadyTimer
+// the include order here is important!
 #ifdef BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
 #include <boost/version.hpp>
 #if BOOST_VERSION < 106100

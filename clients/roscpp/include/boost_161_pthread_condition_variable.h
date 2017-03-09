@@ -6,6 +6,8 @@
 // (C) Copyright 2007-10 Anthony Williams
 // (C) Copyright 2011-2012 Vicente J. Botet Escriba
 
+// make sure we include our backported version first!!
+// (before the system version might be included via some of the other header files)
 #include "boost_161_pthread_condition_variable_fwd.h"
 
 #include <boost/thread/pthread/timespec.hpp>
