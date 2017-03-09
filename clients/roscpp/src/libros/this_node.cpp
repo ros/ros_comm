@@ -89,6 +89,10 @@ void init(const std::string& name, const M_string& remappings, uint32_t options)
 #endif
   }
 
+  if (name.empty()) {
+    throw InvalidNameException("The node name must not be empty");
+  }
+
   g_name = name;
 
   bool disable_anon = false;
