@@ -59,4 +59,15 @@
   <!-- more compact import syntax -->
   <include ns="included2" file="$(find roslaunch)/resources/example-include.launch" />
   
+  <!-- Pass over an include and node with if-attributes that evaluate to false. -->
+  <arg name="false_arg" value="false" />
+  <include if="$(arg false_arg)" file="does/not/exist.launch" />
+  <node if="$(arg false_arg)" pkg="doesnt_exist" type="nope" name="nope" />
+
+  <!-- Pass over a group with an unless-attribute that evaluate to true. -->
+  <arg name="true_arg" value="true" />
+  <group unless="$(arg true_arg)">
+    <include file="does/not/exist.launch" />
+    <node pkg="doesnt_exist" type="nope" name="nope" />
+  </group>
 </launch>
