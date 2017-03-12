@@ -141,7 +141,8 @@ public:
       ss << msg->level << " ";
     }
 
-    ss << "[" << msg->file << ":" << msg->line << "(" << msg->function << ") ";
+    ss << msg->name << " ";
+    ss << "[" << msg->file << ":" << msg->line << "(" << msg->function << ")] ";
 
     ss << "[topics: ";
     std::vector<std::string>::const_iterator it = msg->topics.begin();
