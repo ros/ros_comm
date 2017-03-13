@@ -1451,7 +1451,7 @@ def _publish_at_rate(pub, msg, rate, verbose=False, substitute_keywords=False, p
         pub.publish(msg)
         r.sleep()
 
-_ONCE_DELAY = 3.
+_ONCE_DELAY = 0.1
 def _publish_latched(pub, msg, once=False, verbose=False):
     """
     Publish and latch message. Subroutine of L{publish_message()}.
@@ -1488,11 +1488,10 @@ def publish_message(pub, msg_class, pub_args, rate=None, once=False, verbose=Fal
     try:
         
         if rate is None:
-            s = "publishing and latching [%s]"%(msg) if verbose else "publishing and latching message"
             if once:
-                s = s + " for %s seconds"%_ONCE_DELAY
+                s = "[%s] published"%(msg) if verbose else "message published."
             else:
-                s = s + ". Press ctrl-C to terminate"
+                s = "Publishing and latching " + ("[%s]"%(msg) if verbose else "message") + ". Press ctrl-C to terminate."
             print(s)
 
             _publish_latched(pub, msg, once, verbose)
