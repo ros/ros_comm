@@ -5,22 +5,42 @@
 # generate_messages() it might make it work, or we can migrate the bag
 # files themselves.
 
-add_message_files(
-  DIRECTORY msg_current
-  FILES
-  Constants.msg
+set(MSG_DIRECTORY "msg_current" CACHE STRING "Messages directory")
+message(STATUS "Building messages in: ${MSG_DIRECTORY}")
+
+set(messages_common
   Converged.msg
   MigratedAddSub.msg
   MigratedExplicit.msg
   MigratedImplicit.msg
   MigratedMixed.msg
   PartiallyMigrated.msg
-  Renamed4.msg
   Simple.msg
   SimpleMigrated.msg
   SubUnmigrated.msg
-  Unmigrated.msg
-)
+  Unmigrated.msg)
+
+set(messages_msg_gen1
+  Constants.msg
+  Convergent.msg
+  Renamed1.msg)
+
+set(messages_msg_gen2
+  Constants.msg
+  Convergent.msg
+  Renamed2.msg)
+
+set(messages_msg_gen3
+  Renamed3.msg)
+
+set(messages_msg_current
+  Constants.msg
+  Renamed4.msg)
+
+add_message_files(
+  DIRECTORY ${MSG_DIRECTORY}
+  FILES ${messages_common} ${messages_${MSG_DIRECTORY}})
+
 generate_messages(DEPENDENCIES rosgraph_msgs std_msgs)
 
 catkin_download_test_data(download_data_test_constants_gen1.bag http://download.ros.org/data/test_rosbag/constants_gen1.bag FILENAME test/constants_gen1.bag MD5 77ec8cb20e823ee3f3a87d07ea1132df )
