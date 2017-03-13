@@ -46,6 +46,7 @@ except ImportError:
 
 import rosgraph.names
 import rospkg
+import loader
 
 _rospack = None
 
@@ -60,6 +61,12 @@ class ArgException(SubstitutionException):
     """
     pass
 
+def _eval_env(name):
+    try:
+        return os.environ[name]
+    except KeyError as e:
+        raise SubstitutionException("environment variable %s is not set" % str(e))
+
 def _env(resolved, a, args, context):
     """
     process $(env) arg
@@ -69,10 +76,13 @@ def _env(resolved, a, args, context):
     """
     if len(args) != 1:
         raise SubstitutionException("$(env var) command only accepts one argument [%s]"%a)
-    try:
-        return resolved.replace("$(%s)"%a, os.environ[args[0]])
-    except KeyError as e:
-        raise SubstitutionException("environment variable %s is not set"%str(e))
+    return resolved.replace("$(%s)" % a, _eval_env(args[0]))
+
+def _eval_optenv(name, default=''):
+    if name in os.environ:
+        return os.environ[name]
+    else:
+        return default
 
 def _optenv(resolved, a, args, context):
     """
@@ -83,13 +93,16 @@ def _optenv(resolved, a, args, context):
     """
     if len(args) == 0:
         raise SubstitutionException("$(optenv var) must specify an environment variable [%s]"%a)
-    if args[0] in os.environ:
-        return resolved.replace("$(%s)"%a, os.environ[args[0]])
-    elif len(args) > 1:
-        return resolved.replace("$(%s)"%a, ' '.join(args[1:]))
+    return resolved.replace("$(%s)" % a, _eval_optenv(args[0], default=' '.join(args[1:])))
+
+def _eval_anon(id, anons):
+    if id in anons:
+        return anons[id]
     else:
-        return resolved.replace("$(%s)"%a, '')
-    
+        resolve_to = rosgraph.names.anonymous_name(id)
+        anons[id] = resolve_to
+        return resolve_to
+
 def _anon(resolved, a, args, context):
     """
     process $(anon) arg
@@ -102,17 +115,14 @@ def _anon(resolved, a, args, context):
         raise SubstitutionException("$(anon var) must specify a name [%s]"%a)
     elif len(args) > 1:
         raise SubstitutionException("$(anon var) may only specify one name [%s]"%a)
-    id = args[0]
     if 'anon' not in context:
         context['anon'] = {}
     anon_context = context['anon']
-    if id in anon_context:
-        return resolved.replace("$(%s)"%a, anon_context[id])
-    else:
-        resolve_to = rosgraph.names.anonymous_name(id)
-        anon_context[id] = resolve_to
-        return resolved.replace("$(%s)"%a, resolve_to)
+    return resolved.replace("$(%s)" % a, _eval_anon(id=args[0], anons=anon_context))
 
+def _eval_find(pkg):
+    rp = _get_rospack()
+    return rp.get_path(pkg)
 
 def _find(resolved, a, args, context):
     """
@@ -249,6 +259,12 @@ def _get_rospack():
     return _rospack
 
 
+def _eval_arg(name, args):
+    try:
+        return args[name]
+    except KeyError:
+        raise ArgException(name)
+
 def _arg(resolved, a, args, context):
     """
     process $(arg) arg
@@ -257,21 +273,50 @@ def _arg(resolved, a, args, context):
     :raises: :exc:`ArgException` If arg invalidly specified
     """
     if len(args) == 0:
-        raise SubstitutionException("$(arg var) must specify an environment variable [%s]"%(a))
+        raise SubstitutionException("$(arg var) must specify a variable name [%s]"%(a))
     elif len(args) > 1:
         raise SubstitutionException("$(arg var) may only specify one arg [%s]"%(a))
     
     if 'arg' not in context:
         context['arg'] = {}
-    arg_context = context['arg']
+    return resolved.replace("$(%s)" % a, _eval_arg(name=args[0], args=context['arg']))
 
-    arg_name = args[0]
-    if arg_name in arg_context:
-        arg_value = arg_context[arg_name]
-        return resolved.replace("$(%s)"%a, arg_value)
-    else:
-        raise ArgException(arg_name)
+# Create a dictionary of global symbols that will be available in the eval
+# context.  We disable all the builtins, then add back True and False, and also
+# add true and false for convenience (because we accept those lower-case strings
+# as boolean values in XML).
+_eval_dict={'true': True, 'false': False, 'True': True, 'False': False, '__builtins__': {},
+            'env': _eval_env, 'optenv': _eval_optenv, 'find': _eval_find}
 
+class _DictWrapper(object):
+    def __init__(self, args, functions):
+        self._args = args
+        self._functions = functions
+
+    def __getitem__(self, key):
+        try:
+            return self._functions[key]
+        except KeyError:
+            return loader.convert_value(self._args[key], 'auto')
+
+def _eval(s, context):
+    if 'anon' not in context:
+        context['anon'] = {}
+    if 'arg' not in context:
+        context['arg'] = {}
+
+    # inject correct anon context
+    def _eval_anon_context(id): return _eval_anon(id, anons=context['anon'])
+    # inject arg context
+    def _eval_arg_context(name): return loader.convert_value(_eval_arg(name, args=context['arg']), 'auto')
+    functions = dict(anon = _eval_anon_context, arg = _eval_arg_context)
+    functions.update(_eval_dict)
+
+    # ignore values containing double underscores (for safety)
+    # http://nedbatchelder.com/blog/201206/eval_really_is_dangerous.html
+    if s.find('__') >= 0:
+        raise SubstitutionException("$(eval ...) may not contain double underscore expressions")
+    return str(eval(s, {}, _DictWrapper(context['arg'], functions)))
 
 def resolve_args(arg_str, context=None, resolve_anon=True):
     """
@@ -298,9 +343,11 @@ def resolve_args(arg_str, context=None, resolve_anon=True):
     """
     if context is None:
         context = {}
-    #parse found substitution args
     if not arg_str:
         return arg_str
+    # special handling of $(eval ...)
+    if arg_str.startswith('$(eval ') and arg_str.endswith(')'):
+        return _eval(arg_str[7:-1], context)
     # first resolve variables like 'env' and 'arg'
     commands = {
         'env': _env,
@@ -309,7 +356,7 @@ def resolve_args(arg_str, context=None, resolve_anon=True):
         'arg': _arg,
     }
     resolved = _resolve_args(arg_str, context, resolve_anon, commands)
-    # than resolve 'find' as it requires the subsequent path to be expanded already
+    # then resolve 'find' as it requires the subsequent path to be expanded already
     commands = {
         'find': _find,
     }
