@@ -58,6 +58,19 @@ TEST(SrvCall, callSrv)
   ASSERT_STREQ(res.str.c_str(), "CASE_flip");
 }
 
+TEST(SrvCall, callSrvUnicode)
+{
+  test_roscpp::TestStringString::Request req;
+  test_roscpp::TestStringString::Response res;
+
+  req.str = std::string("ロボット");
+
+  ASSERT_TRUE(ros::service::waitForService("service_adv"));
+  ASSERT_TRUE(ros::service::call("service_adv", req, res));
+
+  ASSERT_STREQ(res.str.c_str(), "ロボット");
+}
+
 TEST(SrvCall, callSrvMultipleTimes)
 {
   test_roscpp::TestStringString::Request req;
