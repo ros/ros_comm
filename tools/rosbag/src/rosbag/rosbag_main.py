@@ -222,6 +222,8 @@ def play_cmd(argv):
     parser.add_option("--pause-topics", dest="pause_topics", default=[],  callback=handle_pause_topics, action="callback", help="topics to pause on during playback")
     parser.add_option("--bags",  help="bags files to play back from")
     parser.add_option("--wait-for-subscribers",  dest="wait_for_subscribers", default=False, action="store_true", help="wait for at least one subscriber on each topic before publishing")
+    parser.add_option("--rate-control-topic", dest="rate_control_topic", default='', type='str', help="watch the given topic, and if the last publish was more than <rate-control-max-delay> ago, wait until the topic publishes again to continue playback")
+    parser.add_option("--rate-control-max-delay", dest="rate_control_max_delay", default=1.0, type='float', help="maximum time difference from <rate-control-topic> before pausing")
 
     (options, args) = parser.parse_args(argv)
 
@@ -268,6 +270,12 @@ def play_cmd(argv):
     # prevent bag files to be passed as --topics or --pause-topics
     if options.topics or options.pause_topics:
         cmd.extend(['--bags'])
+
+    if options.rate_control_topic:
+        cmd.extend(['--rate-control-topic', str(options.rate_control_topic)])
+
+    if options.rate_control_max_delay:
+        cmd.extend(['--rate-control-max-delay', str(options.rate_control_max_delay)])
 
     cmd.extend(args)
 
