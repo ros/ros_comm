@@ -174,6 +174,13 @@ void XMLRPCManager::shutdown()
     }
   }
 
+  // Wait for the clients that are in use to finish and remove themselves from clients_
+  for (int wait_count = 0; !clients_.empty() && wait_count < 10; wait_count++)
+  {
+    ROSCPP_LOG_DEBUG("waiting for xmlrpc connection to finish...");
+    ros::WallDuration(0.01).sleep();
+  }
+
   boost::mutex::scoped_lock lock(functions_mutex_);
   functions_.clear();
 
