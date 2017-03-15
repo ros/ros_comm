@@ -397,9 +397,11 @@ void Formatter::print(void* logger_handle, ::ros::console::Level level, const ch
 
   fprintf(f, "%s\n", ss.str().c_str());
   
-  if (g_force_stdout_line_buffered && f == stdout) {
+  if (g_force_stdout_line_buffered && f == stdout)
+  {
     int flush_result = fflush(f);
-    if (flush_result != 0 && !g_stdout_flush_failure_reported) {
+    if (flush_result != 0 && !g_stdout_flush_failure_reported)
+    {
       g_stdout_flush_failure_reported = true;
       fprintf(stderr, "Error: failed to perform fflush on stdout, fflush return code is %d\n", flush_result);
     }
@@ -439,13 +441,14 @@ void initialize()
     std::string line_buffered;
     if (get_environment_variable(line_buffered, "ROSCONSOLE_STDOUT_LINE_BUFFERED"))
     {
-      if (line_buffered == "1") {
+      if (line_buffered == "1")
+      {
         g_force_stdout_line_buffered = true;
-      } else {
-        if (line_buffered != "0") {
-          fprintf(stderr, "Warning: unexpected value %s specified for ROSCONSOLE_STDOUT_LINE_BUFFERED. Default value 0 "
-            "will be used. Valid values are 1 or 0.\n", line_buffered.c_str());
-        }
+      }
+      else if (line_buffered != "0")
+      {
+        fprintf(stderr, "Warning: unexpected value %s specified for ROSCONSOLE_STDOUT_LINE_BUFFERED. Default value 0 "
+          "will be used. Valid values are 1 or 0.\n", line_buffered.c_str());
       }
     }
 
