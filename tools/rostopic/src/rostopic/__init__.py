@@ -1342,6 +1342,23 @@ def _rostopic_cmd_delay(argv):
     _rostopic_delay(topic, window_size=window_size)
 
 
+
+def _rostopic_cmd_delay(argv):
+    args = argv[2:]
+    import argparse
+    parser = argparse.ArgumentParser(usage="%(prog)s delay [options] /topic", prog=NAME)
+    parser.add_argument("topic", help="topic name to be calcurated the delay")
+    parser.add_argument("-w", "--window",
+                        dest="window_size", default=-1, type=int,
+                        help="window size, in # of messages, for calculating rate")
+
+    args = parser.parse_args(args)
+    topic_name = args.topic
+    window_size = args.window_size
+    topic = rosgraph.names.script_resolve_name('rostopic', topic_name)
+    _rostopic_delay(topic, window_size=window_size)
+
+
 def _rostopic_cmd_bw(argv=sys.argv):
     args = argv[2:]
     from optparse import OptionParser
