@@ -59,6 +59,19 @@ View::iterator::iterator(View* view, bool end) : view_(view), view_revision_(0),
 
 View::iterator::iterator(const iterator& i) : view_(i.view_), iters_(i.iters_), view_revision_(i.view_revision_), message_instance_(NULL) { }
 
+View::iterator &View::iterator::operator=(iterator const& i) {
+    if (this != &i) {
+        view_ = i.view_;
+        iters_ = i.iters_;
+        view_revision_ = i.view_revision_;
+        if (message_instance_ != NULL) {
+            delete message_instance_;
+            message_instance_ = NULL;
+        }
+    }
+    return *this;
+}
+
 void View::iterator::populate() {
     assert(view_ != NULL);
 
