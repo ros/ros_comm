@@ -29,6 +29,39 @@ void create_test_bag(const std::string &filename)
 
 const char* bag_filename = "/tmp/rosbag_storage_create_and_iterate_bag.bag";
 
+TEST(rosbag_storage, iterator_copy_constructor)
+{
+  // copy ctor
+  rosbag::Bag bag;
+  bag.open(bag_filename, rosbag::bagmode::Read);
+  rosbag::View view(bag, rosbag::TopicQuery("numbers"));
+  rosbag::View::const_iterator it0 = view.begin();
+  EXPECT_EQ(42, it0->instantiate<std_msgs::Int32>()->data);
+  rosbag::View::const_iterator it1(it0);
+  EXPECT_EQ(it0, it1);
+  EXPECT_EQ(42, it1->instantiate<std_msgs::Int32>()->data);
+  ++it1;
+  EXPECT_NE(it0, it1);
+  EXPECT_EQ(42, it0->instantiate<std_msgs::Int32>()->data);
+}
+
+TEST(rosbag_storage, iterator_copy_assignment)
+{
+  // copy assignment
+  rosbag::Bag bag;
+  bag.open(bag_filename, rosbag::bagmode::Read);
+  rosbag::View view(bag, rosbag::TopicQuery("numbers"));
+  rosbag::View::const_iterator it0 = view.begin();
+  EXPECT_EQ(42, it0->instantiate<std_msgs::Int32>()->data);
+  rosbag::View::const_iterator it1;
+  it1 = it0;
+  EXPECT_EQ(it0, it1);
+  EXPECT_EQ(42, it1->instantiate<std_msgs::Int32>()->data);
+  ++it1;
+  EXPECT_NE(it0, it1);
+  EXPECT_EQ(42, it0->instantiate<std_msgs::Int32>()->data);
+}
+
 TEST(rosbag_storage, iterate_bag)
 {
   rosbag::Bag bag;
