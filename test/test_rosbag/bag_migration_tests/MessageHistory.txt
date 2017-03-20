@@ -8,8 +8,8 @@ previous generation forward.
 
 To use a particular generation script, move msgs_N to msgs, and then
 run script/generate_data_N.py.  The bash script "generate_data" does
-this for all generations.  The helper scripts, "gen1, gen2, gen3, and
-current" switch the message context to that particular 
+this for all generations.  The helper scripts, "gen1, gen2, gen3, gen4,
+and current" switch the message context to that particular
 
 
 GENERATION 1:
@@ -50,7 +50,7 @@ GENERATION 3
  Hierarchical.msg      - explicit
  SuperHierarchical.msg - implicit
 
-CURRENT:
+GENERATION 4:
  UnMigrated.msg        - explicit  (No corresponding rule)
  Subunmigrated.msg
  PartiallyMigrated.msg - explicit  (No corresponding rule)
@@ -62,4 +62,16 @@ CURRENT:
  Hierarchical.msg      - implicit
  SuperHierarchical.msg
 
- 
+CURRENT:
+ UnMigrated.msg        - explicit  (No corresponding rule)
+ Subunmigrated.msg
+ PartiallyMigrated.msg - explicit  (No corresponding rule)
+ MigratedExplicit.msg  - explicit
+ MigratedImplicit.msg  - implicit
+ MigratedMixed.msg     - implicit
+ Converged.msg         - implicit
+ Renamed5.msg          - rename from Renamed4.msg
+ Hierarchical.msg      - implicit
+ SuperHierarchical.msg
+
+

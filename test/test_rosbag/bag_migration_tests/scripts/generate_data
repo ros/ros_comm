@@ -22,12 +22,12 @@ save_msg()
     done
 }
 
-# Take optional positional argument that specifies which message generations to build; defaults to $(seq 1 3):
+# Take optional positional argument that specifies which message generations to build; defaults to $(seq 1 4):
 if [ $# -gt 0 ]
 then
     GENERATIONS=$@
 else
-    GENERATIONS=$(seq 1 3)
+    GENERATIONS=$(seq 1 4)
 fi
 
 # Find the bag_migration_tests folder inside the test_rosbag package, since the .bag files would be

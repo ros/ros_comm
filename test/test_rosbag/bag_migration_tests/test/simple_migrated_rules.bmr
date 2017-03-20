@@ -10,9 +10,7 @@ int32 data2 # 42
 """
 
     order = 0
-    migrated_types = [
-
-    ]
+    migrated_types = []
 
     valid = True
 
@@ -46,7 +44,7 @@ int32 data3 # 42
 
     new_type = "test_rosbag/SimpleMigrated"
     new_full_text = """
-int32 data # 42
+int32 data4 # 42
 """
 
     order = 2
@@ -55,4 +53,23 @@ int32 data # 42
     valid = True
 
     def update(self, old_msg, new_msg):
-        new_msg.data = old_msg.data3
+        new_msg.data4 = old_msg.data3
+
+class update_test_rosbag_SimpleMigrated_3a614a5e4e7251529dc16a74525c515a(MessageUpdateRule):
+    old_type = "test_rosbag/SimpleMigrated"
+    old_full_text = """
+int32 data4 # 42
+"""
+
+    new_type = "test_rosbag/SimpleMigrated"
+    new_full_text = """
+int32 data # 42
+"""
+
+    order = 3
+    migrated_types = []
+
+    valid = True
+
+    def update(self, old_msg, new_msg):
+        new_msg.data = old_msg.data4
