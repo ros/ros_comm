@@ -35,6 +35,7 @@ from __future__ import print_function
 
 import os
 import sys
+import re
 
 import rospkg
 
@@ -66,17 +67,32 @@ if __name__ == '__main__':
     parser.add_option("-o", "--output-file",
                       dest="output_file", default=None,
                       help="file to store test results in", metavar="FILE")
+    parser.add_option("--gtest_output",
+                      dest="gtest_output", default=None,
+                      help="file to store test results in for when launching by rostest")
 
     options, args = parser.parse_args()
+
+    # if --gtsest_output option is given, overwrite output_file option
+    if options.gtest_output:
+        delimiter_index = options.gtest_output.find(":")
+        if delimiter_index == -1: # not found
+            options.output_file = options.gtest_output
+        else:
+            options.output_file = options.gtest_output[delimiter_index+1:]
+
     if not args:
         parser.error('please specify a file or directory for roslaunch files to test')
     roslaunch_path = args[0]
 
     # #2590: implementing this quick and dirty as this script should only be used by higher level tools
+    # check if valid for environment value
+    pattern = re.compile(r"^[a-zA-Z_]+[a-zA-Z0-9_]*$")
     env_vars = args[1:]
     for e in env_vars:
         var, val = e.split('=')
-        os.environ[var] = val
+        if pattern.match(var):
+            os.environ[var] = val
 
     pkg = rospkg.get_package_name(roslaunch_path)
     r = rospkg.RosPack()
