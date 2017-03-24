@@ -51,6 +51,23 @@ class LoadException(RLException):
     """Error loading data as specified (e.g. cannot find included files, etc...)"""
     pass
 
+# Create a dictionary of global symbols that will be available in the eval
+# context.  We disable all the builtins, then add back True and False, and also
+# add true and false for convenience (because we accept those lower-case strings
+# as boolean values in XML).
+_eval_dict=dict(true=True, false=False, __builtins__={'True': True, 'False': False})
+def eval_value(value):
+    if value is None:
+        return None
+    try:
+        # ignore values containing double underscores (for safety)
+        # http://nedbatchelder.com/blog/201206/eval_really_is_dangerous.html
+        if value.find('__') >= 0:
+            return value
+        return str(eval(value, _eval_dict, None))
+    except Exception:
+        return value
+
 #TODO: lists, maps(?)
 def convert_value(value, type_):
     """

@@ -70,14 +70,20 @@ def ifunless_test(obj, tag, context):
     """
     @return True: if tag should be processed according to its if/unless attributes
     """
-    if_val, unless_val = obj.opt_attrs(tag, context, ['if', 'unless'])
+    if_val, unless_val, pyeval = obj.opt_attrs(tag, context, ['if', 'unless', 'pyeval'])
+    if pyeval is not None:
+        pyeval = loader.convert_value(pyeval, 'bool')
     if if_val is not None and unless_val is not None:
         raise XmlParseException("cannot set both 'if' and 'unless' on the same tag")
     if if_val is not None:
+        if pyeval:
+            if_val = loader.eval_value(if_val)
         if_val = loader.convert_value(if_val, 'bool')
         if if_val:
             return True
     elif unless_val is not None:
+        if pyeval:
+            unless_val = loader.eval_value(unless_val)
         unless_val = loader.convert_value(unless_val, 'bool')
         if not unless_val:
             return True
@@ -214,7 +220,7 @@ class XmlLoader(loader.Loader):
     def _check_attrs(self, tag, context, ros_config, attrs):
         tag_attrs = tag.attributes.keys()
         for t_a in tag_attrs:
-            if not t_a in attrs and not t_a in ['if', 'unless']:
+            if not t_a in attrs and not t_a in ['if', 'unless', 'pyeval']:
                 ros_config.add_config_error("[%s] unknown <%s> attribute '%s'"%(context.filename, tag.tagName, t_a))
 
     # 'ns' attribute is now deprecated and is an alias for
@@ -287,12 +293,17 @@ class XmlLoader(loader.Loader):
         try:
             self._check_attrs(tag, context, ros_config, XmlLoader.ARG_ATTRS)
             (name,) = self.reqd_attrs(tag, context, ('name',))
-            value, default, doc = self.opt_attrs(tag, context, ('value', 'default', 'doc'))
+            value, default, doc, pyeval = self.opt_attrs(tag, context, ('value', 'default', 'doc', 'pyeval'))
             
+            if pyeval is not None:
+                pyeval = loader.convert_value(pyeval, 'bool')
             if value is not None and default is not None:
                 raise XmlParseException(
                     "<arg> tag must have one and only one of value/default.")
             
+            if pyeval:
+                value = loader.eval_value(value)
+                default = loader.eval_value(default)
             context.add_arg(name, value=value, default=default, doc=doc)
 
         except substitution_args.ArgException as e:
