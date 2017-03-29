@@ -29,10 +29,12 @@
 #include "ros/this_node.h"
 #include "ros/service.h"
 #include "ros/callback_queue.h"
-#include "ros/timer_manager.h"
 
 #include "ros/time.h"
 #include "ros/rate.h"
+#include "ros/timer.h"
+#include "ros/wall_timer.h"
+#include "ros/steady_timer.h"
 
 #include "ros/xmlrpc_manager.h"
 #include "ros/topic_manager.h"

@@ -574,21 +574,10 @@ void TimerManager<T, D, E>::threadFunc()
       }
       else
       {
-        // we have to distinguish between SteadyTime and WallTime here,
-        // because boost timed_wait with duration just adds the duration to current system time
-        // this however requires boost 1.61, see: https://svn.boost.org/trac/boost/ticket/6377
-        if (typeid(T) == typeid(SteadyTime))
-        {
-          boost::chrono::steady_clock::time_point end_tp(boost::chrono::nanoseconds(sleep_end.toNSec()));
-          timers_cond_.wait_until(lock, end_tp);
-        }
-        else
-        {
-          // On system time we can simply sleep for the rest of the wait time, since anything else requiring processing will
-          // signal the condition variable
-          int32_t remaining_time = std::max((int32_t) ((sleep_end - current).toSec() * 1000.0f), 1);
-          timers_cond_.timed_wait(lock, boost::posix_time::milliseconds(remaining_time));
-        }
+        // On system time we can simply sleep for the rest of the wait time, since anything else requiring processing will
+        // signal the condition variable
+        int32_t remaining_time = std::max((int32_t) ((sleep_end - current).toSec() * 1000.0f), 1);
+        timers_cond_.timed_wait(lock, boost::posix_time::milliseconds(remaining_time));
       }
     }
 
