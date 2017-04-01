@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding:utf-8
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2008, Willow Garage, Inc.
@@ -58,7 +59,14 @@ class TestParamsBasic(unittest.TestCase):
         self.assertEquals(get_param('stringbar'), 'bar')
         self.assertEquals(get_param('str10'), '10')
         self.assertEquals(get_param('string10'), '10')        
-        self.assertEquals(get_param('stringentity'), '<stringentity/>')        
+        self.assertEquals(get_param('stringentity'), '<stringentity/>')
+        try:
+            # python 2.X
+            self.assertEquals(get_param('stringnotascii'),
+                              unicode('\xef\xbd\x86\xef\xbd\x8f\xef\xbd\x8f'.decode('unicode-escape')))
+        except:
+            self.assertEquals(get_param('stringnotascii'),
+                              'ｆｏｏ')
         ## Test roslaunch integer params
         self.assertEquals(get_param("integerneg1"), -1)
         self.assertEquals(get_param("integer0"), 0)
