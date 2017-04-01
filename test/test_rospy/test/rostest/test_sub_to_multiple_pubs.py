@@ -43,12 +43,9 @@ import socket
 import sys
 import time
 import unittest
-try:
-    from xmlrpc.client import ServerProxy
-except ImportError:
-    from xmlrpclib import ServerProxy
 
 import rosgraph
+from rosgraph.xmlrpc import ServerProxy
 import rospy
 import rostest
 

@@ -40,16 +40,13 @@ import itertools
 import socket
 import sys
 import time
-try:
-    from xmlrpc.client import ServerProxy
-except ImportError:
-    from xmlrpclib import ServerProxy
 
 import rospkg.environment
 
 import rosgraph
 import rosgraph.rosenv
 import rosgraph.network
+from rosgraph.xmlrpc import ServerProxy
 
 import rosnode
 import rosservice

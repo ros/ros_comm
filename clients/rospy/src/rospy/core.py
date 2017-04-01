@@ -56,14 +56,10 @@ try:
 except ImportError:
     import urlparse
 
-try:
-    import xmlrpc.client as xmlrpcclient #Python 3.x
-except ImportError:
-    import xmlrpclib as xmlrpcclient #Python 2.x
-
 import rospkg
 
 import rosgraph.roslogging
+import rosgraph.xmlrpc
 
 import rospy.exceptions
 import rospy.rostime
@@ -534,12 +530,12 @@ def is_topic(param_name):
 def xmlrpcapi(uri):
     """
     @return: instance for calling remote server or None if not a valid URI
-    @rtype: xmlrpclib.ServerProxy
+    @rtype: rosgraph.xmlrpc.ServerProxy
     """
     if uri is None:
         return None
     uriValidate = urlparse.urlparse(uri)
     if not uriValidate[0] or not uriValidate[1]:
         return None
-    return xmlrpcclient.ServerProxy(uri)
+    return rosgraph.xmlrpc.ServerProxy(uri)
 

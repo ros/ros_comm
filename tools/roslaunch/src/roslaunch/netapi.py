@@ -36,13 +36,9 @@
 Convience methods for manipulating XML-RPC APIs
 """
 
-try:
-    from xmlrpc.client import ServerProxy
-except ImportError:
-    from xmlrpclib import ServerProxy
-
 import rosgraph
 import rosgraph.network
+from rosgraph.xmlrpc import ServerProxy
 
 _ID = '/roslaunch_netapi'
 def get_roslaunch_uris():

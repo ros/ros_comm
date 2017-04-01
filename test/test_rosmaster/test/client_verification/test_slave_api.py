@@ -41,12 +41,13 @@ import string
 import time
 import unittest
 try:
-    from xmlrpc.client import Fault, ServerProxy
+    from xmlrpc.client import Fault
 except ImportError:
-    from xmlrpclib import Fault, ServerProxy
+    from xmlrpclib import Fault
 
 import rosunit
 import rosgraph
+from rosgraph.xmlrpc import ServerProxy
 
 TCPROS = 'TCPROS'
 

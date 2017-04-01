@@ -40,11 +40,12 @@ To run, invoke nodes/testMaster
 import os, sys, getopt, traceback, logging, socket
 import datetime, math, random
 try:
-    from xmlrpc.client import DateTime, ServerProxy
+    from xmlrpc.client import DateTime
 except ImportError:
-    from xmlrpclib import DateTime, ServerProxy
+    from xmlrpclib import DateTime
 import unittest
 import rospy
+from rosgraph.xmlrpc import ServerProxy
 from rostest import *
 from testSlave import msMain
 

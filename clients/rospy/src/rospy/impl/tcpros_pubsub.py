@@ -38,11 +38,7 @@ import socket
 import threading
 import time
 
-try:
-    from xmlrpc.client import ServerProxy  # Python 3.x
-except ImportError:
-    from xmlrpclib import ServerProxy  # Python 2.x
-
+from rosgraph.xmlrpc import ServerProxy
 from rospy.core import logwarn, logerr, logdebug, rospyerr
 import rospy.exceptions
 import rospy.names

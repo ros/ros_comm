@@ -1,10 +1,11 @@
 <launch>
   <!-- string parameters -->
-  <param name="stringempty"  value="" />
-  <param name="stringbar"    value="bar" />
-  <param name="str10"        value="10" type="str" />
-  <param name="string10"     value="10" type="string" />  <!-- type alias -->
-  <param name="stringentity" value="&lt;stringentity/&gt;" />  
+  <param name="stringempty"    value="" />
+  <param name="stringbar"      value="bar" />
+  <param name="str10"          value="10" type="str" />
+  <param name="string10"       value="10" type="string" />  <!-- type alias -->
+  <param name="stringentity"   value="&lt;stringentity/&gt;" />
+  <param name="stringnotascii" value="ｆｏｏ" />
   
   <!-- integer parameters -->
   <param name="integer0"     value="0" />

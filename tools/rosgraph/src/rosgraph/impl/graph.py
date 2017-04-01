@@ -44,13 +44,10 @@ import itertools
 import random
 import logging
 import traceback
-try:
-    from xmlrpc.client import ServerProxy
-except ImportError:
-    from xmlrpclib import ServerProxy
 import socket
 
 import rosgraph.masterapi
+from rosgraph.xmlrpc import ServerProxy
 
 logger = logging.getLogger('rosgraph.graph')
 
@@ -371,7 +368,7 @@ class Graph(object):
         @param node: node name
         @type  node: str
         @param api: XML-RPC proxy
-        @type  api: ServerProxy
+        @type  api: rosgraph.xmlrpc.ServerProxy
         @param bad_node: If True, node has connectivity issues and
         should be treated differently
         @type  bad_node: bool

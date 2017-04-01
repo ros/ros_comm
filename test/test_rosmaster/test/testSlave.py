@@ -35,12 +35,9 @@
 import os
 import sys
 import string
-try:
-    from xmlrpc.client import ServerProxy
-except ImportError:
-    from xmlrpclib import ServerProxy
 
 import rospy
+from rosgraph.xmlrpc import ServerProxy
 from rostest import *
 
 singletest = None

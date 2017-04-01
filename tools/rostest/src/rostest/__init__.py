@@ -58,12 +58,9 @@ def get_master():
     @return: XML-RPC proxy to ROS master
     @rtype: xmlrpclib.ServerProxy
     """
-    try:
-        import xmlrpc.client as xmlrpcclient  #Python 3.x
-    except ImportError:
-        import xmlrpclib as xmlrpcclient #Python 2.x
+    from rosgraph.xmlrpc import ServerProxy
     uri = rosgraph.get_master_uri()
-    return xmlrpcclient.ServerProxy(uri)
+    return ServerProxy(uri)
 
 def is_subscriber(topic, subscriber_id):
     """

@@ -36,35 +36,54 @@
 Utility routines for rosmaster.
 """
 
+import collections
+
 try:
     from urllib.parse import urlparse
 except ImportError:
     from urlparse import urlparse
 try:
-    from xmlrpc.client import ServerProxy
+    from urllib.parse import splittype
 except ImportError:
-    from xmlrpclib import ServerProxy
+    from urllib import splittype
+import threading
+
+from rosgraph.xmlrpc import ServerProxy
 
 from defusedxml.xmlrpc import monkey_patch
 monkey_patch()
 del monkey_patch
 
 _proxies = {} #cache ServerProxys
+
+_global_lock = threading.Lock()  # global lock for the _uri_locks dict
+_uri_locks = collections.defaultdict(threading.Lock)  # one lock object per uri
+_proxies = {}  #cache ServerProxys
+
+def _get_lock(uri):
+    with _global_lock:
+        return _uri_locks[uri]
+
+
 def xmlrpcapi(uri):
     """
     @return: instance for calling remote server or None if not a valid URI
-    @rtype: xmlrpc.client.ServerProxy
+    @rtype: rosgraph.xmlrpc.ServerProxy
     """
     if uri is None:
         return None
     uriValidate = urlparse(uri)
     if not uriValidate[0] or not uriValidate[1]:
         return None
-    if not uri in _proxies:
-        _proxies[uri] = ServerProxy(uri)
-    return _proxies[uri]
+    with _get_lock(uri):
+        if uri not in _proxies:
+            _proxies[uri] = ServerProxy(uri)
+        return _proxies[uri]
 
 
 def remove_server_proxy(uri):
-    if uri in _proxies:
-        del _proxies[uri]
+    with _global_lock:
+        with _uri_locks[uri]:
+            if uri in _proxies:
+                del _proxies[uri]
+            del _uri_locks[uri]
