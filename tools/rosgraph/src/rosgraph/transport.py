@@ -25,8 +25,10 @@ class RequestsTransport(xmlrpc.Transport):
         url = '{scheme}://{host}{handler}'.format(scheme=self._scheme,
                                                   host=host,
                                                   handler=handler)
+        if isinstance(request_body, unicode):
+            request_body = request_body.encode('utf-8')
         try:
-            resp = requests.post(url, data=request_body.encode('utf-8'),
+            resp = requests.post(url, data=request_body,
                                  headers=headers)
         except requests.exceptions.Timeout:
             raise socket.timeout('timed out')
