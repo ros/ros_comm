@@ -55,6 +55,6 @@ class RequestsTransport(xmlrpc.Transport):
         Parse the xmlrpc response.
         """
         p, u = self.getparser()
-        p.feed(resp.text)
+        p.feed(resp.text.encode(resp.apparent_encoding))
         p.close()
         return u.close()
