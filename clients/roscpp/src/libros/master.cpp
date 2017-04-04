@@ -199,7 +199,7 @@ bool execute(const std::string& method, const XmlRpc::XmlRpcValue& request, XmlR
 
     ok = !ros::isShuttingDown() && !XMLRPCManager::instance()->isShuttingDown();
 
-    if (!b && ok)
+    if (!(b && response.valid()) && ok)
     {
       if (!printed && wait_for_master)
       {
