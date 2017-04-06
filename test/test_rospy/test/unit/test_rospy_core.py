@@ -219,10 +219,7 @@ class TestRospyCore(unittest.TestCase):
         self.assert_(rospy.core.xmlrpcapi('http://') is None)
         api = rospy.core.xmlrpcapi('http://localhost:1234')
         self.assert_(api is not None)
-        try:
-            from xmlrpc.client import ServerProxy
-        except ImportError:
-            from xmlrpclib import ServerProxy
+        from rosgraph.xmlrpc import ServerProxy
         self.assert_(isinstance(api, ServerProxy))
     
 called = None

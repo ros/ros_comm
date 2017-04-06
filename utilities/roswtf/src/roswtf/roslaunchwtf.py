@@ -37,13 +37,10 @@ import itertools
 import socket
 import stat
 import sys
-try:
-    from xmlrpc.client import ServerProxy
-except ImportError:
-    from xmlrpclib import ServerProxy
 
 from os.path import isfile, isdir
 
+from rosgraph.xmlrpc import ServerProxy
 import roslib.packages
 import roslaunch
 import roslaunch.netapi

@@ -34,11 +34,11 @@ import os
 import sys
 import rospkg
 try:
-    from xmlrpc.client import MultiCall, ServerProxy
+    from xmlrpc.client import MultiCall
 except ImportError:
-    from xmlrpclib import MultiCall, ServerProxy
+    from xmlrpclib import MultiCall
 
-
+from rosgraph.xmlrpc import ServerProxy
 import roslaunch.core
 
 def test_Executable():

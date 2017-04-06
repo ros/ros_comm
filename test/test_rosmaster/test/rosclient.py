@@ -34,12 +34,10 @@
 # Revision $Id: test_embed_msg.py 1986 2008-08-26 23:57:56Z sfkwc $
 
 import unittest
-try:
-    from xmlrpc.client import ServerProxy
-except ImportError:
-    from xmlrpclib import ServerProxy
 
 import rosgraph
+from rosgraph.xmlrpc import ServerProxy
+
 
 class TestRosClient(unittest.TestCase):
 

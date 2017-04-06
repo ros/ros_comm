@@ -151,10 +151,7 @@ class TestCore(unittest.TestCase):
             self.assertEquals(m, m)
             self.assertEquals(m, Master(Master.ROSMASTER, 'http://foo:1234'))
 
-            try:
-                from xmlrpc.client import ServerProxy
-            except ImportError:
-                from xmlrpclib import ServerProxy
+            from rosgraph.xmlrpc import ServerProxy
             self.assert_(isinstance(m.get(), ServerProxy))
             m.uri = 'http://foo:567'
             self.assertEquals(567, m.get_port())

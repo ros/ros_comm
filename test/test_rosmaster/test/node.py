@@ -36,13 +36,10 @@ import os
 import sys
 import string
 import time
-try:
-    from xmlrpc.client import ServerProxy
-except ImportError:
-    from xmlrpclib import ServerProxy
 
 import rospy
 import rosgraph
+from rosgraph.xmlrpc import ServerProxy
 
 from rosclient import *
 

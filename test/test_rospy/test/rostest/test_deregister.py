@@ -46,6 +46,7 @@ import weakref
 
 import rospy
 import rostest
+from rosgraph.xmlrpc import ServerProxy
 from std_msgs.msg import String
 from test_rospy.srv import EmptySrv
 
@@ -61,10 +62,6 @@ def callback(data):
     print("message received", data.data)
     _last_callback = data
 
-try:
-    from xmlrpc.client import ServerProxy
-except ImportError:
-    from xmlrpclib import ServerProxy
 
 class TestDeregister(unittest.TestCase):
         

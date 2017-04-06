@@ -60,11 +60,21 @@ except ImportError:
     from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler #Python 2.x
 
 try:
+    from xmlrpc.client import ServerProxy as _ServerProxy
+except ImportError:
+    from xmlrpclib import ServerProxy as _ServerProxy
+try:
+    from urllib.parse import splittype
+except ImportError:
+    from urllib import splittype
+
+try:
     import socketserver
 except ImportError:
     import SocketServer as socketserver
 
 import rosgraph.network
+from rosgraph.transport import RequestsTransport
 
 def isstring(s):
     """Small helper version to check an object is a string in a way that works
@@ -76,9 +86,22 @@ def isstring(s):
         return isinstance(s, str)
 
 class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
+    protocol_version = 'HTTP/1.1'
+
     def log_message(self, format, *args):
         if 0:
             SimpleXMLRPCRequestHandler.log_message(self, format, *args)
+    
+class ServerProxy(_ServerProxy):
+    def __init__(self, uri, transport=None, encoding=None, verbose=0,
+                 allow_none=0, use_datetime=0):
+        if transport is None:
+            scheme, _ = splittype(uri)
+            transport = RequestsTransport(scheme)
+
+        _ServerProxy.__init__(self, uri, transport=transport, encoding=encoding,
+                              verbose=verbose, allow_none=allow_none,
+                              use_datetime=use_datetime)
     
 class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
     """

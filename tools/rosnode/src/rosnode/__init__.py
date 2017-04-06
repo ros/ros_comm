@@ -45,10 +45,6 @@ import errno
 import sys
 import socket
 import time
-try:
-    from xmlrpc.client import ServerProxy
-except ImportError:
-    from xmlrpclib import ServerProxy
 
 try: #py3k
     import urllib.parse as urlparse
@@ -56,6 +52,7 @@ except ImportError:
     import urlparse
 
 from optparse import OptionParser
+from rosgraph.xmlrpc import ServerProxy
 import rosgraph
 import rosgraph.names
 import rostopic
@@ -402,7 +399,7 @@ def cleanup_master_blacklist(master, blacklist):
     """
     Remove registrations from ROS Master that do not match blacklist.    
     @param master: XMLRPC handle to ROS Master
-    @type  master: xmlrpclib.ServerProxy
+    @type  master: rosgraph.xmlrpc.ServerProxy
     @param blacklist: list of nodes to scrub
     @type  blacklist: [str]
     """
@@ -428,7 +425,7 @@ def cleanup_master_whitelist(master, whitelist):
     """
     Remove registrations from ROS Master that do not match whitelist.
     @param master: XMLRPC handle to ROS Master
-    @type  master: xmlrpclib.ServerProxy
+    @type  master: nosgraph.xmlrpc.ServerProxy
     @param whitelist: list of nodes to keep
     @type  whitelist: list of nodes to keep
    """

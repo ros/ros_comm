@@ -1057,7 +1057,7 @@ _caller_apis = {}
 def get_api(master, caller_id):
     """
     Get XML-RPC API of node
-    :param master: XML-RPC handle to ROS Master, :class:`xmlrpclib.ServerProxy`
+    :param master: XML-RPC handle to ROS Master, :class:`rosgraph.xmlrpc.ServerProxy`
     :param caller_id: node name, ``str``
     :returns: XML-RPC URI of node, ``str``
     :raises: :exc:`ROSTopicIOException` If unable to communicate with master

@@ -433,7 +433,7 @@ class ROSLaunchRunner(object):
         @param default_run_id: run_id to use if value is not set
         @type  default_run_id: str
         @param param_server: parameter server proxy
-        @type  param_server: xmlrpclib.ServerProxy
+        @type  param_server: rosgraph.xmlrpc.ServerProxy
         """
         code, _, val = param_server.hasParam(_ID, '/run_id')
         if code == 1 and not val:

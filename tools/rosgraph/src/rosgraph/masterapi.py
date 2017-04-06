@@ -37,14 +37,10 @@ Master directly using XML-RPC, this API provides a safer abstraction in the even
 the Master API is changed.
 """
 
-try:
-    from xmlrpc.client import ServerProxy  # Python 3.x
-except ImportError:
-    from xmlrpclib import ServerProxy  # Python 2.x
-
 from . names import make_caller_id
 from . rosenv import get_master_uri
 from . network import parse_http_host_and_port
+from . xmlrpc import ServerProxy
 
 class MasterException(Exception):
     """
