@@ -58,6 +58,9 @@ from .core import is_shutdown, signal_shutdown, \
     get_node_uri, get_ros_root, \
     logdebug, logwarn, loginfo, logout, logerr, logfatal, \
     logdebug_throttle, logwarn_throttle, loginfo_throttle, logerr_throttle, logfatal_throttle, \
+    logdebug_func_named, logwarn_func_named, loginfo_func_named, logerr_func_named, logfatal_func_named, \
+    logdebug_node_named, logwarn_node_named, loginfo_node_named, logerr_node_named, logfatal_node_named, \
+    logdebug_node_func_named, logwarn_node_func_named, loginfo_node_func_named, logerr_node_func_named, logfatal_node_func_named, \
     parse_rosrpc_uri
 from .exceptions import *
 from .msg import AnyMsg
