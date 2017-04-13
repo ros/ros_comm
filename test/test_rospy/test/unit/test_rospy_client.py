@@ -54,6 +54,20 @@ class TestRospyClient(unittest.TestCase):
             failed = False
         self.failIf(failed, "init_node allowed '/' in name")
 
+        failed = True
+        try:
+            rospy.init_node(name=None)
+        except ValueError:
+            failed = False
+        self.failIf(failed, "init_node allowed None as name")
+
+        failed = True
+        try:
+            rospy.init_node("")
+        except ValueError:
+            failed = False
+        self.failIf(failed, "init_node allowed empty string as name")
+
     def test_spin(self):
         failed = True
         try:

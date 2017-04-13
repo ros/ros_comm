@@ -257,7 +257,12 @@ def init_node(name, argv=None, anonymous=False, log_level=None, disable_rostime=
         # reload the mapping table. Any previously created rospy data
         # structure does *not* reinitialize based on the new mappings.
         rospy.names.reload_mappings(argv)
-        
+
+    # node name is None or empty string, raise error
+    # NOTE: the empty strings are considered false in a Boolean context (PEP 8)
+    if not name:
+        raise ValueError("name must not be empty")
+
     # this test can be eliminated once we change from warning to error in the next check
     if rosgraph.names.SEP in name:
         raise ValueError("namespaces are not allowed in node names")
