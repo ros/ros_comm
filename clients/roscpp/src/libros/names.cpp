@@ -117,6 +117,8 @@ std::string clean(const std::string& name)
 
 std::string append(const std::string& left, const std::string& right)
 {
+  if (left.empty())
+    return right;
   return clean(left + "/" + right);
 }
 
