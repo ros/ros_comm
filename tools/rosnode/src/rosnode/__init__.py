@@ -349,7 +349,8 @@ def rosnode_ping(node_name, max_count=None, verbose=False):
                             if verbose:
                                 print("node url has changed from [%s] to [%s], retrying to ping"%(node_api, new_node_api))
                             node_api = new_node_api
-                            node = xmlrpclib.ServerProxy(node_api)
+                            if node_api:
+                                node = xmlrpclib.ServerProxy(node_api)
                             continue
                         print("ERROR: connection refused to [%s]"%(node_api), file=sys.stderr)
                     else:
