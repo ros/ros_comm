@@ -104,6 +104,10 @@ class EdgeList(object):
         return itertools.chain(*[v for v in self.edges_by_start.values()])
     
     def has(self, edge):
+        """ deprecated """
+        return edge in self
+
+    def __contains__(self, edge):
         """
         @return: True if edge is in edge list
         @rtype: bool
@@ -239,9 +243,9 @@ class Graph(object):
         self.topic_ns = topic_ns or '/'
 
         # ROS nodes
-        self.nn_nodes = set([])
+        self.nn_nodes = set()
         # ROS topic nodes
-        self.nt_nodes = set([])
+        self.nt_nodes = set()
 
         # ROS nodes that aren't responding quickly
         self.bad_nodes = {}
@@ -249,7 +253,7 @@ class Graph(object):
         self.bad_nodes_lock = threading.Lock()
         
         # ROS services
-        self.srvs = set([])
+        self.srvs = set()
         # ROS node->node transport connections
         self.nn_edges = EdgeList()
         # ROS node->topic connections        
