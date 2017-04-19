@@ -40,6 +40,8 @@ import time
 import logging
 import logging.config
 
+import yaml
+
 import rospkg
 from rospkg.environment import ROS_LOG_DIR
 
@@ -103,16 +105,17 @@ def configure_logging(logname, level=logging.INFO, filename=None, env=None):
     else:
         # search for logging config file in /etc/.  If it's not there,
         # look for it package-relative.
-        fname = 'python_logging.conf'
-        rosgraph_d = rospkg.RosPack().get_path('rosgraph')
-        for f in [os.path.join(rospkg.get_ros_home(), 'config', fname),
-                  '/etc/ros/%s'%(fname),
-                  os.path.join(rosgraph_d, 'conf', fname)]:
-            if os.path.isfile(f):
-                config_file = f
+        config_file = None
+        for fname in ['python_logging.conf', 'python_logging.yaml']:
+            rosgraph_d = rospkg.RosPack().get_path('rosgraph')
+            for f in [os.path.join(rospkg.get_ros_home(), 'config', fname),
+                      '/etc/ros/%s'%(fname),
+                      os.path.join(rosgraph_d, 'conf', fname)]:
+                if os.path.isfile(f):
+                    config_file = f
+                    break
+            if config_file is not None:
                 break
-        else:
-            config_file = None
 
     if config_file is None or not os.path.isfile(config_file):
         # logging is considered soft-fail
@@ -122,9 +125,17 @@ def configure_logging(logname, level=logging.INFO, filename=None, env=None):
     
     # pass in log_filename as argument to pylogging.conf
     os.environ['ROS_LOG_FILENAME'] = log_filename
-    # #3625: disabling_existing_loggers=False
-    logging.config.fileConfig(config_file, disable_existing_loggers=False)
+    if config_file.endswith('.conf'):
+        # #3625: disabling_existing_loggers=False
+        logging.config.fileConfig(config_file, disable_existing_loggers=False)
+    elif config_file.endswith('.yaml'):
+        with open(config_file) as f:
+            dict_conf = yaml.load(f)
+            dict_conf.setdefault('version', 1)
+            logging.config.dictConfig(dict_conf)
+
     return log_filename
+
 
 def makedirs_with_parent_perms(p):
     """
