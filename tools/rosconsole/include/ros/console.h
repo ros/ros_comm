@@ -445,7 +445,7 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
   { \
     ROSCONSOLE_DEFINE_LOCATION(true, level, name); \
     static double last_hit = 0.0; \
-    ::ros::Time now = ::ros::Time::now(); \
+    ::ros::WallTime now = ::ros::WallTime::now(); \
     if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && ROS_UNLIKELY(last_hit + rate <= now.toSec())) \
     { \
       last_hit = now.toSec(); \
@@ -466,7 +466,7 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
   { \
     ROSCONSOLE_DEFINE_LOCATION(true, level, name); \
     static double __ros_log_stream_throttle__last_hit__ = 0.0; \
-    ::ros::Time __ros_log_stream_throttle__now__ = ::ros::Time::now(); \
+    ::ros::WallTime __ros_log_stream_throttle__now__ = ::ros::WallTime::now(); \
     if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && ROS_UNLIKELY(__ros_log_stream_throttle__last_hit__ + rate <= __ros_log_stream_throttle__now__.toSec())) \
     { \
       __ros_log_stream_throttle__last_hit__ = __ros_log_stream_throttle__now__.toSec(); \
@@ -485,7 +485,7 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
   do \
   { \
     ROSCONSOLE_DEFINE_LOCATION(true, level, name); \
-    ::ros::Time __ros_log_delayed_throttle__now__ = ::ros::Time::now(); \
+    ::ros::WallTime __ros_log_delayed_throttle__now__ = ::ros::WallTime::now(); \
     static double __ros_log_delayed_throttle__last_hit__ = __ros_log_delayed_throttle__now__.toSec(); \
     if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && ROS_UNLIKELY(__ros_log_delayed_throttle__last_hit__ + rate <= __ros_log_delayed_throttle__now__.toSec())) \
     { \
@@ -506,7 +506,7 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
   do \
   { \
     ROSCONSOLE_DEFINE_LOCATION(true, level, name); \
-    ::ros::Time __ros_log_stream_delayed_throttle__now__ = ::ros::Time::now(); \
+    ::ros::WallTime __ros_log_stream_delayed_throttle__now__ = ::ros::WallTime::now(); \
     static double __ros_log_stream_delayed_throttle__last_hit__ = __ros_log_stream_delayed_throttle__now__.toSec(); \
     if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && ROS_UNLIKELY(__ros_log_stream_delayed_throttle__last_hit__ + rate <= __ros_log_stream_delayed_throttle__now__.toSec())) \
     { \
