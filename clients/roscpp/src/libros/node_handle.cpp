@@ -46,12 +46,58 @@
 
 #include <boost/thread.hpp>
 
+#include <atomic>
+
 namespace ros
 {
 
-boost::mutex g_nh_refcount_mutex;
-int32_t g_nh_refcount = 0;
-bool g_node_started_by_nh = false;
+namespace
+{
+  boost::mutex g_nh_refcount_mutex;
+  int32_t g_nh_refcount = 1; // start at 1 to delay cleanup until static cleanup.
+  bool g_node_started_by_nh = false;
+
+  /**
+   * Keep track of the number of created node handles and start ROS if required.
+   */
+  void g_node_created() {
+    boost::mutex::scoped_lock lock(g_nh_refcount_mutex);
+    if (g_nh_refcount == 1 && !ros::isStarted())
+    {
+      g_node_started_by_nh = true;
+      ros::start();
+    }
+
+    ++g_nh_refcount;
+  }
+
+  /**
+   * Keep track of the number of destroyed node handles
+   * and shut down ROS if required.
+   *
+   * ros::shutdown() is called if the following conditions are met:
+   *  - ros::start() was called by creating a NodeHandle
+   *  - main() has returned (or something else triggered normal program termination)
+   *  - there are no NodeHandles remaining
+   */
+  void g_node_destroyed() {
+    boost::mutex::scoped_lock lock(g_nh_refcount_mutex);
+    --g_nh_refcount;
+    if (g_nh_refcount == 0 && g_node_started_by_nh)
+    {
+      ros::shutdown();
+    }
+  }
+
+  /// Static struct to shutdown ROS if all node handles have been destroyed.
+  struct StaticCleanUp
+  {
+    ~StaticCleanUp()
+    {
+      g_node_destroyed();
+    }
+  } g_static_cleanup;
+}
 
 class NodeHandleBackingCollection
 {
@@ -164,29 +210,14 @@ void NodeHandle::construct(const std::string& ns, bool validate_name)
     }
   ok_ = true;
 
-  boost::mutex::scoped_lock lock(g_nh_refcount_mutex);
-
-  if (g_nh_refcount == 0 && !ros::isStarted())
-  {
-    g_node_started_by_nh = true;
-    ros::start();
-  }
-
-  ++g_nh_refcount;
+  g_node_created();
 }
 
 void NodeHandle::destruct()
 {
   delete collection_;
 
-  boost::mutex::scoped_lock lock(g_nh_refcount_mutex);
-
-  --g_nh_refcount;
-
-  if (g_nh_refcount == 0 && g_node_started_by_nh)
-  {
-    ros::shutdown();
-  }
+  g_node_destroyed();
 }
 
 void NodeHandle::initRemappings(const M_string& remappings)

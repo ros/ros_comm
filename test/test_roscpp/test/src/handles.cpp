@@ -54,38 +54,21 @@ using namespace test_roscpp;
 
 TEST(RoscppHandles, nodeHandleConstructionDestruction)
 {
+  // Cleanup is done during static deinitialization.
+  // Manual start/shutdown should still work though.
+  //
+  ASSERT_FALSE(ros::isStarted());
   {
-    ASSERT_FALSE(ros::isStarted());
-
     ros::NodeHandle n1;
     ASSERT_TRUE(ros::isStarted());
-
-    {
-      ros::NodeHandle n2;
-      ASSERT_TRUE(ros::isStarted());
-
-      {
-        ros::NodeHandle n3(n2);
-        ASSERT_TRUE(ros::isStarted());
-
-        {
-          ros::NodeHandle n4 = n3;
-          ASSERT_TRUE(ros::isStarted());
-        }
-      }
-    }
-
-    ASSERT_TRUE(ros::isStarted());
   }
+  ASSERT_TRUE(ros::isStarted());
 
+  ros::shutdown();
   ASSERT_FALSE(ros::isStarted());
 
-  {
-    ros::NodeHandle n;
-    ASSERT_TRUE(ros::isStarted());
-  }
-
-  ASSERT_FALSE(ros::isStarted());
+  ros::start();
+  ASSERT_TRUE(ros::isStarted());
 }
 
 TEST(RoscppHandles, nodeHandleParentWithRemappings)
