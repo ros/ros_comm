@@ -115,6 +115,7 @@ class PublishTest(unittest.TestCase):
                           '/clock is published?')
             if time.time() - t_start > 10:
                 self.fail('Timed out (10s) of /clock publication.')
+            # must use time.sleep because /clock isn't yet published, so rospy.sleep hangs.
             time.sleep(1)
         # subscribe topics
         checkers = []
