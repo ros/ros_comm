@@ -133,6 +133,15 @@ class ROSLaunchBaseHandler(xmlrpc.XmlRpcHandler):
             return 0, "uninitialized", []
         return 1, "node names", self.pm.get_active_names()
 
+    def get_registrations_complete(self):
+        """
+        @return: code, msg, complete flag
+        @rtype: int, str, bool
+        """
+        if self.pm is None:
+            return 0, "uninitialized", False
+        return 1, "complete?", self.pm._registrations_complete
+
     def _shutdown(self, reason):
         """
         xmlrpc.XmlRpcHandler API: inform handler of shutdown
