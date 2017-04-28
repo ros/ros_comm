@@ -97,9 +97,7 @@ def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS
         raise RLException("unknown master typ_: %s"%type_)
 
     _logger.info("process[master]: launching with args [%s]"%args)
-    log_output = False
-    screen_output = True
-    return LocalProcess(run_id, package, 'master', args, os.environ, log_output, screen_output, None)
+    return LocalProcess(run_id, package, 'master', args, os.environ, log_output=False, screen_output=True)
 
 def create_node_process(run_id, node, master_uri):
     """
@@ -155,9 +153,9 @@ def create_node_process(run_id, node, master_uri):
         log_output = True
         screen_output = False
     _logger.debug('process[%s]: returning LocalProcess wrapper')
-    return LocalProcess(run_id, node.package, name, args, env, log_output, screen_output,\
+    return LocalProcess(run_id, node.package, name, args, env, log_output,\
             respawn=node.respawn, respawn_delay=node.respawn_delay, \
-            required=node.required, cwd=node.cwd, max_logfile_size=node.max_logfile_size,\
+            required=node.required, cwd=node.cwd, screen_output=screen_output, max_logfile_size=node.max_logfile_size,\
             logfile_count=node.logfile_count)
 
 def stream_reader(stream, level, logger, popen):
@@ -173,9 +171,9 @@ class LocalProcess(Process):
     Process launched on local machine
     """
     
-    def __init__(self, run_id, package, name, args, env, log_output, screen_output,
+    def __init__(self, run_id, package, name, args, env, log_output,
             respawn=False, respawn_delay=0.0, required=False, cwd=None,
-            is_node=True, max_logfile_size=None, logfile_count=None):
+            is_node=True, screen_output=True, max_logfile_size=None, logfile_count=None):
         """
         @param run_id: unique run ID for this roslaunch. Used to
           generate log directory location. run_id may be None if this
@@ -191,8 +189,6 @@ class LocalProcess(Process):
         @type  env: {str : str}
         @param log_output: if True, log output streams of process
         @type  log_output: bool
-        @param screen_output: if True, show process output on screen
-        @type  screen_output: bool
         @param respawn: respawn process if it dies (default is False)
         @type  respawn: bool
         @param respawn_delay: respawn process after a delay
@@ -201,7 +197,9 @@ class LocalProcess(Process):
         @type  cwd: str
         @param is_node: (optional) if True, process is ROS node and accepts ROS node command-line arguments. Default: True
         @type  is_node: False
-        @param max_logfile_size: (optional) Maximum Size (in bytes) of the node's logfile. 0 mean unlimitted (default value),
+        @param screen_output: if True, show process output on screen
+        @type  screen_output: bool
+        @param max_logfile_size: (optional) Maximum Size (in bytes) of the node's logfile. 0 mean unlimited (default value),
         this value must >= 0``int``
         @param logfile_count: (optional) If max_logfile_size > 0, and logfile_count > 0, the system will save old log
         files by appending the extensions .1, .2 etc... This is an optional parameter, default value is 2.
