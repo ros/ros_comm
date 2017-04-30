@@ -6,6 +6,7 @@ if(NOT WIN32)
 endif()
 
 find_package(catkin COMPONENTS cpp_common message_generation rosconsole roscpp rostime std_msgs xmlrpcpp)
+catkin_python_setup()
 
 include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})
@@ -100,6 +101,7 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/throttle_simtime.test)
   add_rostest(test/drop.test)
   add_rostest(test/relay.test)
+  add_rostest(test/lazy_transport.test)
   ## Latched test disabled until underlying issue in roscpp is resolved,
   ## #3385, #3434.
   #rosbuild_add_rostest(test/relay_latched.test)
