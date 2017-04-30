@@ -173,7 +173,7 @@ class LoggingThrottle(object):
         last_logging_time = self.last_logging_time_table.get(caller_id)
 
         if (last_logging_time is None or
-              (now - last_logging_time) > rospy.Duration(period)):
+              (now - last_logging_time).to_sec() > period):
             logging_func(msg)
             self.last_logging_time_table[caller_id] = now
 
@@ -214,6 +214,31 @@ def logerr_throttle(period, msg):
 def logfatal_throttle(period, msg):
     caller_id = _frame_record_to_caller_id(inspect.stack()[1])
     _logging_throttle(caller_id, logfatal, period, msg)
+
+
+def logdebug_once(msg):
+    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+    _logging_throttle(caller_id, logdebug, float('inf'), msg)
+
+
+def loginfo_once(msg):
+    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+    _logging_throttle(caller_id, loginfo, float('inf'), msg)
+
+
+def logwarn_once(msg):
+    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+    _logging_throttle(caller_id, logwarn, float('inf'), msg)
+
+
+def logerr_once(msg):
+    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+    _logging_throttle(caller_id, logerr, float('inf'), msg)
+
+
+def logfatal_once(msg):
+    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+    _logging_throttle(caller_id, logfatal, float('inf'), msg)
 
 
 #########################################################
