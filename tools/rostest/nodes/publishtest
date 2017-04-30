@@ -111,12 +111,12 @@ class PublishTest(unittest.TestCase):
         t_start = time.time()
         while not rospy.is_shutdown() and \
                 use_sim_time and (rospy.Time.now() == rospy.Time(0)):
-            rospy.logwarn('/use_sim_time is specified and rostime is 0, '
-                          '/clock is published?')
+            rospy.logwarn_throttle(
+                1, '/use_sim_time is specified and rostime is 0, /clock is published?')
             if time.time() - t_start > 10:
                 self.fail('Timed out (10s) of /clock publication.')
             # must use time.sleep because /clock isn't yet published, so rospy.sleep hangs.
-            time.sleep(1)
+            time.sleep(0.1)
         # subscribe topics
         checkers = []
         for topic in self.topics:
