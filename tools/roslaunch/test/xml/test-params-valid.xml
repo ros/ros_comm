@@ -35,6 +35,12 @@
   <!-- upload the output of a command as a param. -->
   <param name="commandoutput" command="cat &quot;$(find roslaunch)/resources/example.launch&quot;" />
 
+  <!-- upload the output of a command as a param as types. -->
+  <param name="commandoutputinteger" type="int" command="echo 0" />
+  <param name="commandoutputdouble" type="double" command="echo 10" />
+  <param name="commandoutputbool" type="bool" command="echo true" />
+  <param name="commandoutputyaml" type="yaml" command="cat &quot;$(find roslaunch)/test/params.yaml&quot;" />
+
 
   <!-- test that we can override params -->
   <param name="override" value="fail" />
