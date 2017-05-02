@@ -504,7 +504,7 @@ class Loader(object):
                 raise
             if c_value is None:
                 raise ValueError("parameter: unable to get output of command [%s]"%command)
-            return c_value
+            return convert_value(c_value.strip(), ptype)
         else: #_param_tag prevalidates, so this should not be reachable
             raise ValueError("unable to determine parameter value")
 
