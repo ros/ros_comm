@@ -17,6 +17,9 @@
   
   <param name="somefloat1" value="3.14159" type="double" />  
   <param name="somefloat2" value="5.0" />
+
+  <param name="someyaml1" value="[0, 1, 2]" type="yaml" />
+  <param name="someyaml2" value="{string1: bar2, string2: '10', integer1: 1, float1: 3.14, list1: [0, 1, 2], list2: ['a', 'b', 'c']}" type="yaml" />
   
   <!-- you can set parameters in child namespaces -->
   <param name="wg/wgchildparam" value="a child namespace parameter 1" />  
