@@ -94,6 +94,12 @@ def convert_value(value, type_):
         elif value == 'false' or value == '0':
             return False
         raise ValueError("%s is not a '%s' type"%(value, type_))
+    elif type_ == 'yaml':
+        # - lazy import
+        global yaml
+        if yaml is None:
+            import yaml
+        return yaml.load(value)
     else:
         raise ValueError("Unknown type '%s'"%type_)        
 
