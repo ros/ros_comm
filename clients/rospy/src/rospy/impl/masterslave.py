@@ -59,6 +59,7 @@ import socket
 import threading
 import traceback
 import time
+import errno
 
 try:
     #py3k
@@ -441,13 +442,19 @@ class ROSHandler(XmlRpcHandler):
         interval = 0.5  # seconds
         # while the ROS node is not shutdown try to get the topic information
         # and retry on connections problems after some wait
+        # Abort the retry if the we get a Connection Refused since at that point
+        # we know for sure the URI is invalid
         while not success and not is_shutdown():
             try:
                 code, msg, result = \
                       xmlrpcapi(pub_uri).requestTopic(caller_id, topic, protocols)
                 success = True
             except Exception as e:
-                if not is_shutdown():
+                if getattr(e, 'errno', None) == errno.ECONNREFUSED:
+                    code = -errno.ECONNREFUSED
+                    msg = str(e)
+                    break
+                elif not is_shutdown():
                     _logger.debug("Retrying for %s" % topic)
                     if interval < 30.0:
                         # exponential backoff (maximum 32 seconds)
