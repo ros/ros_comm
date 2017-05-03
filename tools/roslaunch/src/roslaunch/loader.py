@@ -474,7 +474,7 @@ class Loader(object):
             return convert_value(value.strip(), ptype)
         elif textfile is not None:
             with open(textfile, 'r') as f:
-                return f.read()
+                return convert_value(f.read().strip(), ptype)
         elif binfile is not None:
             try:
                 from xmlrpc.client import Binary
