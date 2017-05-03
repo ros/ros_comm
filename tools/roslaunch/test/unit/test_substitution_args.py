@@ -49,7 +49,7 @@ def test__arg():
     
     # test invalid
     try:
-        _arg('$(arg)', 'arg', [], ctx)
+        _arg('arg', [], ctx)
         assert False, "should have thrown"
     except SubstitutionException:
         pass
@@ -60,29 +60,24 @@ def test__arg():
         ('', ('$(arg empty)', 'arg empty', ['empty'], ctx)),
         ('sim', ('$(arg baz)', 'arg baz', ['baz'], ctx)),
         
-        # test with other args present, should only resolve match
-        ('1234512345', ('$(arg foo)$(arg foo)', 'arg foo', ['foo'], ctx)),
-        ('12345$(arg baz)', ('$(arg foo)$(arg baz)', 'arg foo', ['foo'], ctx)),            
-        ('$(arg foo)sim', ('$(arg foo)$(arg baz)', 'arg baz', ['baz'], ctx)),            
-        
         # test double-resolve safe
         ('12345', ('12345', 'arg foo', ['foo'], ctx)),            
         ]
         
     for result, test in tests:
         resolved, a, args, context = test
-        assert result == _arg(resolved, a, args, context)
+        assert result == _arg(a, args, context)
 
     #  - test that all fail if ctx is not set
     for result, test in tests:
         resolved, a, args, context = test
         try:
-            _arg(resolved, a, args, {})
+            _arg(a, args, {})
             assert False, "should have thrown"
         except ArgException as e:
             assert args[0] == str(e)
         try:
-            _arg(resolved, a, args, {'arg': {}})
+            _arg(a, args, {'arg': {}})
             assert False, "should have thrown"
         except ArgException as e:
             assert args[0] == str(e)
@@ -112,6 +107,7 @@ def test_resolve_args():
         ('$(env ROS_ROOT)', os.environ['ROS_ROOT']),
         ('$(env ROS_ROOT)', os.environ['ROS_ROOT']),
         ('$(env ROS_ROOT )', os.environ['ROS_ROOT']),
+        ('$( env ROS_ROOT )', os.environ['ROS_ROOT']),
         ('$(optenv ROS_ROOT)', os.environ['ROS_ROOT']),
         ('$(optenv ROS_ROOT)$(optenv ROS_ROOT)', os.environ['ROS_ROOT']+os.environ['ROS_ROOT']),
         ('$(optenv ROS_ROOT alternate text)', os.environ['ROS_ROOT']),
@@ -142,7 +138,7 @@ def test_resolve_args():
             
     # test against strings that should not match
     noop_tests = [
-        '$(find roslaunch', '$find roslaunch', '', ' ', 'noop', 'find roslaunch', 'env ROS_ROOT', '$$', ')', '(', '()',
+        '$find roslaunch', '', ' ', 'noop', 'find roslaunch', 'env ROS_ROOT', '$$', ')', '(', '()',
         None, 
         ]
     for t in noop_tests:
@@ -154,7 +150,8 @@ def test_resolve_args():
         '$(env NOT_SET)',
         '$(optenv)',
         '$(anon)',
-        '$(anon foo bar)',            
+        '$(anon foo bar)',
+        '$(find roslaunch'
         ]
     for f in failures:
         try:

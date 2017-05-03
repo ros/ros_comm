@@ -38,6 +38,7 @@ by roslaunch and xacro, but it is not yet a top-level ROS feature.
 """
 
 import os
+import re
 
 try:
     from cStringIO import StringIO # Python 2.x
@@ -60,7 +61,7 @@ class ArgException(SubstitutionException):
     """
     pass
 
-def _env(resolved, a, args, context):
+def _env(cmd, args, context):
     """
     process $(env) arg
     @return: updated resolved argument
@@ -68,13 +69,13 @@ def _env(resolved, a, args, context):
     @raise SubstitutionException: if arg invalidly specified
     """
     if len(args) != 1:
-        raise SubstitutionException("$(env var) command only accepts one argument [%s]"%a)
+        raise SubstitutionException("$(env var) command only accepts one argument [%s]"%cmd)
     try:
-        return resolved.replace("$(%s)"%a, os.environ[args[0]])
+        return os.environ[args[0]]
     except KeyError as e:
         raise SubstitutionException("environment variable %s is not set"%str(e))
 
-def _optenv(resolved, a, args, context):
+def _optenv(cmd, args, context):
     """
     process $(optenv) arg
     @return: updated resolved argument
@@ -82,15 +83,15 @@ def _optenv(resolved, a, args, context):
     @raise SubstitutionException: if arg invalidly specified
     """
     if len(args) == 0:
-        raise SubstitutionException("$(optenv var) must specify an environment variable [%s]"%a)
+        raise SubstitutionException("$(optenv var) must specify an environment variable [%s]"%cmd)
     if args[0] in os.environ:
-        return resolved.replace("$(%s)"%a, os.environ[args[0]])
+        return os.environ[args[0]]
     elif len(args) > 1:
-        return resolved.replace("$(%s)"%a, ' '.join(args[1:]))
+        return ' '.join(args[1:])
     else:
-        return resolved.replace("$(%s)"%a, '')
-    
-def _anon(resolved, a, args, context):
+        return ''
+
+def _anon(cmd, args, context):
     """
     process $(anon) arg
     @return: updated resolved argument
@@ -99,19 +100,19 @@ def _anon(resolved, a, args, context):
     """
     # #1559 #1660
     if len(args) == 0:
-        raise SubstitutionException("$(anon var) must specify a name [%s]"%a)
+        raise SubstitutionException("$(anon var) must specify a name [%s]"%cmd)
     elif len(args) > 1:
-        raise SubstitutionException("$(anon var) may only specify one name [%s]"%a)
+        raise SubstitutionException("$(anon var) may only specify one name [%s]"%cmd)
     id = args[0]
     if 'anon' not in context:
         context['anon'] = {}
     anon_context = context['anon']
     if id in anon_context:
-        return resolved.replace("$(%s)"%a, anon_context[id])
+        return anon_context[id]
     else:
         resolve_to = rosgraph.names.anonymous_name(id)
         anon_context[id] = resolve_to
-        return resolved.replace("$(%s)"%a, resolve_to)
+        return resolve_to
 
 
 def _find(resolved, a, args, context):
@@ -120,14 +121,37 @@ def _find(resolved, a, args, context):
     Resolves the path while considering the path following the command to provide backward compatible results.
     If it is followed by a path it first tries to resolve it as an executable and than as a normal file under share.
     Else it resolves to the source share folder of the PKG.
+
+    :param resolved: full string
+    :type resolved: str
+    :param a: substitution string
+    :type a: str
+    :param args: substitution arguments
+    :type a: dict
+    :param context: see resolve_args()
+    :type context: dict
+
     :returns: updated resolved argument, ``str``
     :raises: :exc:SubstitutionException: if PKG invalidly specified
     :raises: :exc:`rospkg.ResourceNotFound` If PKG requires resource (e.g. package) that does not exist
     """
-    if len(args) != 1:
-        raise SubstitutionException("$(find pkg) command only accepts one argument [%s]" % a)
+    assert len(args) == 1
+
+    def _separate_first_path(value):
+        idx = value.find(' ')
+        if idx < 0:
+            path, rest = value, ''
+        else:
+            path, rest = value[0:idx], value[idx:]
+        return path, rest
+
+    # These variables will contain:
+    #  * before: everything before the $()
+    #  * path: everything after $() up until the first space
+    #  * after: whatever remains after `path'
     before, after = _split_command(resolved, a)
     path, after = _separate_first_path(after)
+
     resolve_without_path = before + ('$(%s)' % a) + after
     path = _sanitize_path(path)
     if path.startswith('/') or path.startswith('\\'):
@@ -168,8 +192,7 @@ def _find_executable(resolved, a, args, _context, source_path_to_packages=None):
     :returns: updated resolved argument, ``str``
     :raises: :exc:SubstitutionException: if PKG/PATH invalidly specified or executable is not found for PKG
     """
-    if len(args) != 2:
-        raise SubstitutionException("$(find-executable pkg path) command only accepts two argument [%s]" % a)
+    assert len(args) == 2
     before, after = _split_command(resolved, a)
     path = _sanitize_path(args[1])
     # we try to find the specific executable in libexec via catkin
@@ -198,8 +221,7 @@ def _find_resource(resolved, a, args, _context, source_path_to_packages=None):
     :returns: updated resolved argument, ``str``
     :raises: :exc:SubstitutionException: if PKG and PATH invalidly specified or relative PATH is not found for PKG
     """
-    if len(args) != 2:
-        raise SubstitutionException("$(find-resource pkg path) command only accepts two argument [%s]" % a)
+    assert len(args) == 2
     before, after = _split_command(resolved, a)
     path = _sanitize_path(args[1])
     # we try to find the specific path in share via catkin
@@ -214,19 +236,11 @@ def _find_resource(resolved, a, args, _context, source_path_to_packages=None):
 
 
 def _split_command(resolved, command_with_args):
+    """ Given a string 'a $(b) c', where b == command_with_args, returns (a, c). """
     cmd = '$(%s)' % command_with_args
     idx1 = resolved.find(cmd)
     idx2 = idx1 + len(cmd)
     return resolved[0:idx1], resolved[idx2:]
-
-
-def _separate_first_path(value):
-    idx = value.find(' ')
-    if idx < 0:
-        path, rest = value, ''
-    else:
-        path, rest = value[0:idx], value[idx:]
-    return path, rest
 
 
 def _sanitize_path(path):
@@ -249,7 +263,7 @@ def _get_rospack():
     return _rospack
 
 
-def _arg(resolved, a, args, context):
+def _arg(cmd, args, context):
     """
     process $(arg) arg
     
@@ -257,22 +271,22 @@ def _arg(resolved, a, args, context):
     :raises: :exc:`ArgException` If arg invalidly specified
     """
     if len(args) == 0:
-        raise SubstitutionException("$(arg var) must specify an environment variable [%s]"%(a))
+        raise SubstitutionException("$(arg var) must specify an <arg> tag name [%s]"%cmd)
     elif len(args) > 1:
-        raise SubstitutionException("$(arg var) may only specify one arg [%s]"%(a))
-    
+        raise SubstitutionException("$(arg var) may only specify one arg [%s]"%cmd)
+
     if 'arg' not in context:
         context['arg'] = {}
     arg_context = context['arg']
 
     arg_name = args[0]
     if arg_name in arg_context:
-        arg_value = arg_context[arg_name]
-        return resolved.replace("$(%s)"%a, arg_value)
+        return arg_context[arg_name]
     else:
         raise ArgException(arg_name)
 
 
+# TODO: resolve_anon is being ignored completely! Can it be removed?
 def resolve_args(arg_str, context=None, resolve_anon=True):
     """
     Resolves substitution args (see wiki spec U{http://ros.org/wiki/roslaunch}).
@@ -298,86 +312,156 @@ def resolve_args(arg_str, context=None, resolve_anon=True):
     """
     if context is None:
         context = {}
-    #parse found substitution args
     if not arg_str:
         return arg_str
-    # first resolve variables like 'env' and 'arg'
-    commands = {
-        'env': _env,
-        'optenv': _optenv,
+
+    root = _parse_args(arg_str)
+    string = _apply_substitutions(root, context, _ParseTree.valid_commands)
+
+    # Hack for $find(), since it requires the full string for its magic.
+    for subst in _FIND_REGEX.findall(string):
+        subst = subst[2:-1]
+        splits = [s for s in subst.split(' ') if s]
+        string = _find(string, subst, splits[1:], context)
+
+    return string
+
+_FIND_REGEX = re.compile(r'\$\(\s*find .*?\)');
+def _find_hack(cmd, args, context):
+    """
+    _find() requires the full string (including stuff outside the "$(...)"), so it is handled
+    separately.
+
+    :returns: original text (unresolved)
+    :raises: :exc:SubstitutionException: if PKG invalidly specified
+    """
+    if len(args) != 1:
+        raise SubstitutionException("$(find pkg) command only accepts one argument [%s]" % cmd)
+    return '$(%s)' % cmd
+
+
+class _ParseTree:
+    """
+    Parse tree (auxiliary data structure, returned by _parse_args).
+
+    Attributes:
+     * parent: the parent _ParseTree instance (None for the root node)
+     * childs: ordered list of strings and _ParseTree instances
+
+    Note: except for the root node, the first child is always a string
+          where the first word identifies the substitution arg.
+    """
+
+    valid_commands = {
         'anon': _anon,
         'arg': _arg,
+        'env': _env,
+        'find': _find_hack,
+        'optenv': _optenv,
     }
-    resolved = _resolve_args(arg_str, context, resolve_anon, commands)
-    # than resolve 'find' as it requires the subsequent path to be expanded already
-    commands = {
-        'find': _find,
-    }
-    resolved = _resolve_args(resolved, context, resolve_anon, commands)
-    return resolved
 
-def _resolve_args(arg_str, context, resolve_anon, commands):
-    valid = ['find', 'env', 'optenv', 'anon', 'arg']
-    resolved = arg_str
-    for a in _collect_args(arg_str):
-        splits = [s for s in a.split(' ') if s]
-        if not splits[0] in valid:
-            raise SubstitutionException("Unknown substitution command [%s]. Valid commands are %s"%(a, valid))
-        command = splits[0]
-        args = splits[1:]
-        if command in commands:
-            resolved = commands[command](resolved, a, args, context)
-    return resolved
+    def __init__(self, parent=None):
+        self.parent = parent
+        self.childs = []
 
-_OUT  = 0
-_DOLLAR = 1
-_LP = 2
-_IN = 3
-def _collect_args(arg_str):
+    def _add_child(self, child):
+        """
+        Adds an element to the list of childs. If called with an empty string,
+        nothing happens.
+
+        @param child: element to add to the childs list
+        @type child: str or L{_ParseTree}
+        @raise SubstitutionException: if the first child of a non-root node isn't
+               a valid substitution command.
+        """
+        if child:
+            if len(self.childs) == 0 and not self.is_root():
+                cmd = child.strip().split(' ', 1)[0]
+                if cmd not in self.valid_commands:
+                    raise SubstitutionException(
+                        "Unknown substitution command [%s]. Valid commands are %s" % (
+                        child, self.valid_commands.keys()))
+            self.childs.append(child)
+        return child
+
+    def is_root(self):
+        """
+        Returns true if this is the root node (ie. it has no parent).
+
+        @return whether this is a root node
+        @rtype bool
+        """
+        return self.parent is None
+
+    def __repr__(self):
+        child_strs = [('%r' % c if isinstance(c, _ParseTree) else '"%s"' % c) for c in self.childs]
+        return 'Tree(%s)' % ', '.join(child_strs)
+
+
+def _apply_substitutions(node, context, commands):
     """
-    State-machine parser for resolve_args. Substitution args are of the form:
-    $(find package_name)/scripts/foo.py $(export some/attribute blar) non-relevant stuff
-    
+    Takes a parse tree and converts it into a flat string, calling the appropriate
+    function for each substitution (non-root node).
+
+    param node: the parse tree to convert into a string
+    @type node: L{_ParseTree}
+    @param context See resolve_args()
+    @type context: dict
+    @param commands: dictionary with (command name -> callable object) mappings
+    @type commands: dict
+
+    @return string resulting after applying all substitutions
+    @rtype str
+    @raise SubstitutionException: if there is an error resolving substitution args
+    """
+    resolved = []
+    for child in node.childs:
+        if not isinstance(child, _ParseTree):
+            resolved.append(child)
+        else:
+            s = _apply_substitutions(child, context, commands)
+            splits = [w for w in s.split(' ') if w]
+            resolved.append(commands[splits[0]](s, splits[1:], context))
+    return ''.join(resolved)
+
+
+def _parse_args(arg_str):
+    """
+    Parser for substitutions, with support for nested expressions. It parses strings
+    of the form:
+      '$(find package_name)/scripts/foo.py $(export some/attribute blar) non-relevant stuff'
+      '$(find $(env ROBOT_NAME)_maps)'
+
     @param arg_str: argument string to parse args from
     @type  arg_str: str
     @raise SubstitutionException: if args are invalidly specified
-    @return: list of arguments
-    @rtype: [str]
+    @return: root node of the parse tree
+    @rtype: L{_ParseTree}
     """
-    buff = StringIO()
-    args = []
-    state = _OUT
-    for c in arg_str:
-        # No escapes supported
-        if c == '$':
-            if state == _OUT:
-                state = _DOLLAR
-            elif state == _DOLLAR:
-                pass
-            else:
-                raise SubstitutionException("Dollar signs '$' cannot be inside of substitution args [%s]"%arg_str)
-        elif c == '(':
-            if state == _DOLLAR:
-                state = _LP
-            elif state != _OUT:
-                raise SubstitutionException("Invalid left parenthesis '(' in substitution args [%s]"%arg_str)
-        elif c == ')':
-            if state == _IN:
-                #save contents of collected buffer
-                args.append(buff.getvalue())
-                buff.truncate(0)
-                buff.seek(0)
-                state = _OUT
-            else:
-                state = _OUT
-        elif state == _DOLLAR:
-            # left paren must immediately follow dollar sign to enter _IN state
-            state = _OUT
-        elif state == _LP:
-            state = _IN
+    i = 0  # pointer to the left-most character that isn't in the tree
+    j = 0  # pointer to the character being evaluated
+    t = _ParseTree()
+    while j < len(arg_str):
+        if arg_str[j:j+2] == '$(':
+            t._add_child(arg_str[i:j])
+            # Starting a new substitution
+            t = t._add_child(_ParseTree(t))
+            i = j = j + 2
+        elif arg_str[j] == ')' and not t.is_root():
+            t._add_child(arg_str[i:j])
+            # End of the current substitution
+            t = t.parent
+            i = j = j + 1
+        else:
+            # Checks that were present in the previous parser (without nesting support)
+            if arg_str[j] == '(' and not t.is_root():
+                raise SubstitutionException("Invalid left parenthesis '(' in substitution args [%s]" % arg_str)
+            if arg_str[j] == '$' and not t.is_root():
+                raise SubstitutionException("Dollar signs '$' cannot be inside of substitution args [%s]" % arg_str)
+            j += 1
+    # Add remaining text content...
+    t._add_child(arg_str[i:j])
 
-        if state == _IN:
-            buff.write(c)
-    return args
-
-
+    if not t.is_root():
+        raise SubstitutionException("Unbalanced parentheses in substitution args [%s]" % arg_str)
+    return t
