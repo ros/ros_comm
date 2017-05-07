@@ -2,7 +2,9 @@
 #include "xmlrpcpp/XmlRpcValue.h"
 #include "xmlrpcpp/XmlRpcException.h"
 #include "xmlrpcpp/XmlRpcUtil.h"
-#include "xmlrpcpp/base64.h"
+
+#include <b64/encode.h>
+#include <b64/decode.h>
 
 #ifndef MAKEDEPEND
 # include <iostream>
@@ -438,6 +440,29 @@ namespace XmlRpc {
     return xml;
   }
 
+  namespace {
+    std::size_t base64EncodedSize(std::size_t raw_size)
+    {
+      // encoder will still write to output buffer for empty input.
+      if (raw_size == 0) return 1;
+
+      // 4 encoded character per 3 input bytes, rounded up,
+      // plus a newline character per 72 output characters, rounded up.
+      std::size_t encoded = (raw_size + 2) / 3 * 4;
+      encoded += (encoded + 71) / 72;
+      return encoded;
+    }
+
+    std::size_t base64DecodedSize(std::size_t encoded_size)
+    {
+      // decoded will still write to output buffer for empty input.
+      if (encoded_size == 0) return 1;
+
+      // 3 decoded bytes per 4 encoded characters, rounded up just to be sure.
+      return (encoded_size + 3) / 4 * 3;
+    }
+
+  }
 
   // Base64
   bool XmlRpcValue::binaryFromXml(std::string const& valueXml, int* offset)
@@ -446,35 +471,37 @@ namespace XmlRpc {
     if (valueEnd == std::string::npos)
       return false;     // No end tag;
 
+    std::size_t encoded_size = valueEnd - *offset;
+
+
     _type = TypeBase64;
-    std::string asString = valueXml.substr(*offset, valueEnd-*offset);
-    _value.asBinary = new BinaryData();
-    // check whether base64 encodings can contain chars xml encodes...
+    // might reserve too much, we'll shrink later
+    _value.asBinary = new BinaryData(base64DecodedSize(encoded_size), '\0');
 
-    // convert from base64 to binary
-    int iostatus = 0;
-	  base64<char> decoder;
-    std::back_insert_iterator<BinaryData> ins = std::back_inserter(*(_value.asBinary));
-		decoder.get(asString.begin(), asString.end(), ins, iostatus);
+    std::stringstream buffer;
+    base64::decoder decoder;
+    std::size_t size = decoder.decode(&valueXml[*offset], encoded_size, &(*_value.asBinary)[0]);
+    _value.asBinary->resize(size);
 
-    *offset += int(asString.length());
+    *offset += encoded_size;
     return true;
   }
 
-
   std::string XmlRpcValue::binaryToXml() const
   {
-    // convert to base64
-    std::vector<char> base64data;
-    int iostatus = 0;
-	  base64<char> encoder;
-    std::back_insert_iterator<std::vector<char> > ins = std::back_inserter(base64data);
-		encoder.put(_value.asBinary->begin(), _value.asBinary->end(), ins, iostatus, base64<>::crlf());
-
     // Wrap with xml
     std::string xml = VALUE_TAG;
     xml += BASE64_TAG;
-    xml.append(base64data.begin(), base64data.end());
+
+    std::size_t offset = xml.size();
+    // might reserve too much, we'll shrink later
+    xml.resize(xml.size() + base64EncodedSize(_value.asBinary->size()));
+
+    base64::encoder encoder;
+    offset += encoder.encode(&(*_value.asBinary)[0], _value.asBinary->size(), &xml[offset]);
+    offset += encoder.encode_end(&xml[offset]);
+    xml.resize(offset);
+
     xml += BASE64_ETAG;
     xml += VALUE_ETAG;
     return xml;
@@ -586,10 +613,10 @@ namespace XmlRpc {
         }
       case TypeBase64:
         {
-          int iostatus = 0;
-          std::ostreambuf_iterator<char> out(os);
-          base64<char> encoder;
-          encoder.put(_value.asBinary->begin(), _value.asBinary->end(), out, iostatus, base64<>::crlf());
+          std::stringstream buffer;
+          buffer.write(&(*_value.asBinary)[0], _value.asBinary->size());
+          base64::encoder encoder;
+          encoder.encode(buffer, os);
           break;
         }
       case TypeArray:
