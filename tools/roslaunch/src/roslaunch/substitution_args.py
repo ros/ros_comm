@@ -273,6 +273,31 @@ def _arg(resolved, a, args, context):
         raise ArgException(arg_name)
 
 
+def _empty(resolved, a, args, context):
+    """
+    process $(empty arg)
+    
+    :returns: "1" if arg is empty, "0" otherwise, ``str``
+    :raises: :exc:`ArgException` If arg invalidly specified
+    """
+    if len(args) == 0:
+        raise SubstitutionException("$(empty var) must specify an environment variable [%s]"%(a))
+    elif len(args) > 1:
+        raise SubstitutionException("$(empty var) may only specify one arg [%s]"%(a))
+    
+    if 'arg' not in context:
+        context['arg'] = {}
+    arg_context = context['arg']
+
+    arg_name = args[0]
+    if arg_name in arg_context:
+        arg_value = arg_context[arg_name]
+        is_empty = len(arg_value) == 0
+        return resolved.replace("$(%s)"%a, "1" if is_empty else "0")
+    else:
+        raise ArgException(arg_name)
+
+
 def resolve_args(arg_str, context=None, resolve_anon=True):
     """
     Resolves substitution args (see wiki spec U{http://ros.org/wiki/roslaunch}).
@@ -307,6 +332,7 @@ def resolve_args(arg_str, context=None, resolve_anon=True):
         'optenv': _optenv,
         'anon': _anon,
         'arg': _arg,
+		'empty': _empty,
     }
     resolved = _resolve_args(arg_str, context, resolve_anon, commands)
     # than resolve 'find' as it requires the subsequent path to be expanded already
@@ -317,7 +343,7 @@ def resolve_args(arg_str, context=None, resolve_anon=True):
     return resolved
 
 def _resolve_args(arg_str, context, resolve_anon, commands):
-    valid = ['find', 'env', 'optenv', 'anon', 'arg']
+    valid = ['find', 'env', 'optenv', 'anon', 'arg', 'empty']
     resolved = arg_str
     for a in _collect_args(arg_str):
         splits = [s for s in a.split(' ') if s]
