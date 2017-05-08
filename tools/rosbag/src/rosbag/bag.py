@@ -1580,6 +1580,7 @@ def _read_uint32(f): return _unpack_uint32(f.read(4))
 def _read_uint64(f): return _unpack_uint64(f.read(8))
 def _read_time  (f): return _unpack_time  (f.read(8))
 
+def _unpack_str(v):    return v.decode()
 def _unpack_uint8(v):  return struct.unpack('<B', v)[0]
 def _unpack_uint32(v): return struct.unpack('<L', v)[0]
 def _unpack_uint64(v): return struct.unpack('<Q', v)[0]
@@ -1628,8 +1629,7 @@ def _read_field(header, field, unpack_fn):
     
     return value
 
-def _read_str_field   (header, field):
-    return _read_field(header, field, lambda v: v)
+def _read_str_field   (header, field): return _read_field(header, field, _unpack_str)
 def _read_uint8_field (header, field): return _read_field(header, field, _unpack_uint8)
 def _read_uint32_field(header, field): return _read_field(header, field, _unpack_uint32)
 def _read_uint64_field(header, field): return _read_field(header, field, _unpack_uint64)
