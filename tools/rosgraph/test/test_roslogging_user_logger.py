@@ -64,7 +64,13 @@ class UserCustomLogger(logging.Logger):
         msg = '%s %s' % (ros_ip, msg)
         logging.Logger._log(self, level, msg, args, exc_info, extra)
 
-logging.setLoggerClass(UserCustomLogger)
+
+def setup_module():
+    logging.setLoggerClass(UserCustomLogger)
+
+
+def teardown_module():
+    logging.setLoggerClass(rosgraph.roslogging.RospyLogger)
 
 
 def test_roslogging_user_logger():
@@ -82,7 +88,7 @@ def test_roslogging_user_logger():
         '${time}',
     ])
     rosgraph.roslogging.configure_logging('test_rosgraph', logging.INFO)
-    loginfo = logging.getLogger('rosout').info
+    loginfo = logging.getLogger('rosout.custom_logger_test').info
 
     # Remap stdout for testing
     f = StringIO()
@@ -102,7 +108,7 @@ def test_roslogging_user_logger():
         msg,
         '[0-9]*\.[0-9]*',
         '[0-9]*',
-        'rosout',
+        'rosout.custom_logger_test',
         '<filename>',
         '<lineno>',
         '<func_name>',
