@@ -30,6 +30,9 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import pyros_setup
+pyros_setup.configurable_import().configure().activate()
+
 import os
 import sys
 import rospkg
@@ -86,7 +89,8 @@ def test_Node():
     assert n.xmlattrs() == [('pkg', 'package'), ('type', 'node_type'),
             ('machine', None), ('ns', '/'), ('args', ''), ('output', None),
             ('cwd', None), ('respawn', False), ('respawn_delay', 0.0),
-            ('name', None), ('launch-prefix', None), ('required', False)], \
+            ('name', None), ('launch-prefix', None), ('required', False),
+            ('max_logfile_size', None), ('logfile_count', 2)], \
             n.xmlattrs()
     assert n.output == None
 
@@ -259,7 +263,7 @@ def test_Test():
     from roslaunch.core import Test, TEST_TIME_LIMIT_DEFAULT
     t = Test('test_name', 'package', 'node_type')
     assert t.xmltype() == 'test'
-    assert t.xmlattrs() == [('pkg', 'package'), ('type', 'node_type'), ('machine', None), ('ns', '/'), ('args', ''), ('output', 'log'), ('cwd', None), ('name', None), ('launch-prefix', None), ('required', False), ('test-name', 'test_name')]
+    assert t.xmlattrs() == [('pkg', 'package'), ('type', 'node_type'), ('machine', None), ('ns', '/'), ('args', ''), ('output', 'log'), ('cwd', None), ('name', None), ('launch-prefix', None), ('required', False), ('test-name', 'test_name')], t.xmlattrs()
 
     assert t.output == 'log'
     assert t.test_name == 'test_name'
