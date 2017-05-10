@@ -26,6 +26,7 @@
   <run_depend version_gte="0.5.4">genpy</run_depend>
   <run_depend>rosbag</run_depend>
   <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>
