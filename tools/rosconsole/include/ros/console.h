@@ -60,7 +60,7 @@
 
 #ifdef __GNUC__
 #if __GNUC__ >= 3
-#define ROSCONSOLE_PRINTF_ATTRIBUTE(a, b) __attribute__ ((__format__ (__printf__, a, b)));
+#define ROSCONSOLE_PRINTF_ATTRIBUTE(a, b) __attribute__ ((__format__ (__printf__, a, b)))
 #endif
 #endif
 
