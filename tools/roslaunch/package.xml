@@ -32,6 +32,7 @@
   <run_depend version_gte="1.13.3">rosunit</run_depend>
 
   <test_depend>rosbuild</test_depend>
+  <test_depend>rospy</test_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>

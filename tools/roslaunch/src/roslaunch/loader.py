@@ -70,13 +70,13 @@ def convert_value(value, type_):
         #attempt numeric conversion
         try:
             if '.' in value:
-                return float(value)
+                return float(value.strip())
             else:
-                return int(value)
+                return int(value.strip())
         except ValueError as e:
             pass
         #bool
-        lval = value.lower()
+        lval = value.strip().lower()
         if lval == 'true' or lval == 'false':
             return convert_value(value, 'bool')
         #string
@@ -84,11 +84,11 @@ def convert_value(value, type_):
     elif type_ == 'str' or type_ == 'string':
         return value
     elif type_ == 'int':
-        return int(value)
+        return int(value.strip())
     elif type_ == 'double':
-        return float(value)
+        return float(value.strip())
     elif type_ == 'bool' or type_ == 'boolean':
-        value = value.lower()
+        value = value.strip().lower()
         if value == 'true' or value == '1':
             return True
         elif value == 'false' or value == '0':
@@ -471,10 +471,10 @@ class Loader(object):
         @raise ValueError: if parameters are invalid
         """
         if value is not None:
-            return convert_value(value.strip(), ptype)
+            return convert_value(value, ptype)
         elif textfile is not None:
             with open(textfile, 'r') as f:
-                return convert_value(f.read().strip(), ptype)
+                return convert_value(f.read(), ptype)
         elif binfile is not None:
             try:
                 from xmlrpc.client import Binary
@@ -504,7 +504,7 @@ class Loader(object):
                 raise
             if c_value is None:
                 raise ValueError("parameter: unable to get output of command [%s]"%command)
-            return convert_value(c_value.strip(), ptype)
+            return convert_value(c_value, ptype)
         else: #_param_tag prevalidates, so this should not be reachable
             raise ValueError("unable to determine parameter value")
 
