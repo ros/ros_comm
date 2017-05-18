@@ -296,21 +296,15 @@ def main(argv=sys.argv):
             # This is a roslaunch parent, spin up parent server and launch processes.
             # args are the roslaunch files to load
             from . import parent as roslaunch_parent
-            try:
-                # force a port binding spec if we are running a core
-                if options.core:
-                    options.port = options.port or DEFAULT_MASTER_PORT
-                p = roslaunch_parent.ROSLaunchParent(uuid, args, roslaunch_strs=roslaunch_strs,
-                        is_core=options.core, port=options.port, local_only=options.local_only,
-                        verbose=options.verbose, force_screen=options.force_screen,
-                        num_workers=options.num_workers, timeout=options.timeout)
-                p.start()
-                p.spin()
-            finally:
-                # remove the pid file
-                if options.pid_fn:
-                    try: os.unlink(options.pid_fn)
-                    except os.error: pass
+            # force a port binding spec if we are running a core
+            if options.core:
+                options.port = options.port or DEFAULT_MASTER_PORT
+            p = roslaunch_parent.ROSLaunchParent(uuid, args, roslaunch_strs=roslaunch_strs,
+                    is_core=options.core, port=options.port, local_only=options.local_only,
+                    verbose=options.verbose, force_screen=options.force_screen,
+                    num_workers=options.num_workers, timeout=options.timeout)
+            p.start()
+            p.spin()
 
     except RLException as e:
         roslaunch_core.printerrlog(str(e))
@@ -328,6 +322,12 @@ def main(argv=sys.argv):
     except Exception as e:
         traceback.print_exc()
         sys.exit(1)
+    finally:
+        # remove the pid file
+        if options.pid_fn:
+            try: os.unlink(options.pid_fn)
+            except os.error: pass
+
 
 if __name__ == '__main__':
     main()
