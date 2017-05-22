@@ -216,29 +216,42 @@ def logfatal_throttle(period, msg):
     _logging_throttle(caller_id, logfatal, period, msg)
 
 
+class LoggingOnce(object):
+
+    called_caller_ids = set()
+
+    def __call__(self, caller_id, logging_func, msg):
+        if caller_id not in self.called_caller_ids:
+            logging_func(msg)
+            self.called_caller_ids.add(caller_id)
+
+
+_logging_once = LoggingOnce()
+
+
 def logdebug_once(msg):
     caller_id = _frame_record_to_caller_id(inspect.stack()[1])
-    _logging_throttle(caller_id, logdebug, float('inf'), msg)
+    _logging_once(caller_id, logdebug, msg)
 
 
 def loginfo_once(msg):
     caller_id = _frame_record_to_caller_id(inspect.stack()[1])
-    _logging_throttle(caller_id, loginfo, float('inf'), msg)
+    _logging_once(caller_id, loginfo, msg)
 
 
 def logwarn_once(msg):
     caller_id = _frame_record_to_caller_id(inspect.stack()[1])
-    _logging_throttle(caller_id, logwarn, float('inf'), msg)
+    _logging_once(caller_id, logwarn, msg)
 
 
 def logerr_once(msg):
     caller_id = _frame_record_to_caller_id(inspect.stack()[1])
-    _logging_throttle(caller_id, logerr, float('inf'), msg)
+    _logging_once(caller_id, logerr, msg)
 
 
 def logfatal_once(msg):
     caller_id = _frame_record_to_caller_id(inspect.stack()[1])
-    _logging_throttle(caller_id, logfatal, float('inf'), msg)
+    _logging_once(caller_id, logfatal, msg)
 
 
 #########################################################
