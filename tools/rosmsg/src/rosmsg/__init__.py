@@ -48,6 +48,7 @@ from catkin.find_in_workspaces import find_in_workspaces
 
 import rospkg
 import genmsg
+from genpy.dynamic import generate_dynamic
 
 import roslib.message
 import rosbag
@@ -603,7 +604,14 @@ def rosmsg_cmd_show(mode, full, alias='show'):
         for topic, msg, t in rosbag.Bag(bag_file).read_messages(raw=True):
             datatype, _, _, _, pytype = msg
             if datatype == arg:
-                print(get_msg_text(datatype, options.raw, pytype._full_text))
+                if options.raw:
+                    print(pytype._full_text)
+                else:
+                    context = genmsg.MsgContext.create_default()
+                    msgs = generate_dynamic(datatype, pytype._full_text)
+                    for t, msg in msgs.items():
+                        context.register(t, msg._spec)
+                    print(spec_to_str(context, msgs[datatype]._spec))
                 break
     else:
         rospack = rospkg.RosPack()

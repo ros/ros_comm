@@ -21,6 +21,7 @@
 
   <run_depend version_gte="0.6.4">catkin</run_depend>
   <run_depend>genmsg</run_depend>
+  <run_depend version_gte="0.6.5">genpy</run_depend>
   <run_depend>python-rospkg</run_depend>
   <run_depend>rosbag</run_depend>
   <run_depend>roslib</run_depend>
