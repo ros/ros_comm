@@ -173,7 +173,7 @@ class LoggingThrottle(object):
         last_logging_time = self.last_logging_time_table.get(caller_id)
 
         if (last_logging_time is None or
-              (now - last_logging_time).to_sec() > period):
+              (now - last_logging_time) > rospy.Duration(period)):
             logging_func(msg)
             self.last_logging_time_table[caller_id] = now
 
