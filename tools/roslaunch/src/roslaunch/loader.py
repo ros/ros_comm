@@ -39,12 +39,13 @@ General routines and representations for loading roslaunch model.
 import os
 from copy import deepcopy
 
+import yaml
+
 from roslaunch.core import Param, RosbinExecutable, RLException, PHASE_SETUP
 
 from rosgraph.names import make_global_ns, ns_join, PRIV_NAME, load_mappings, is_legal_name, canonicalize_name
 
 #lazy-import global for yaml and rosparam
-yaml = None
 rosparam = None
 
 class LoadException(RLException):
@@ -95,10 +96,6 @@ def convert_value(value, type_):
             return False
         raise ValueError("%s is not a '%s' type"%(value, type_))
     elif type_ == 'yaml':
-        # - lazy import
-        global yaml
-        if yaml is None:
-            import yaml
         return yaml.load(value)
     else:
         raise ValueError("Unknown type '%s'"%type_)        
@@ -401,10 +398,6 @@ class Loader(object):
                     text = f.read()
                     
             # parse YAML text
-            # - lazy import
-            global yaml
-            if yaml is None:
-                import yaml
             # - lazy import: we have to import rosparam in oder to to configure the YAML constructors
             global rosparam
             if rosparam is None:
