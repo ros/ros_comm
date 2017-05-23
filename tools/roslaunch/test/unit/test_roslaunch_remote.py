@@ -145,4 +145,4 @@ class TestRoslaunchRemote(unittest.TestCase):
   <env name="key20a" value="val20a" />
   <env name="key20b" value="val20b" />
 </test>""", n.to_remote_xml())
-        
+

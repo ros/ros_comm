@@ -37,6 +37,7 @@ Local process implementation for running and monitoring nodes.
 """
 
 import os
+import io
 import signal
 import subprocess 
 import time
@@ -97,7 +98,7 @@ def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS
         raise RLException("unknown master typ_: %s"%type_)
 
     _logger.info("process[master]: launching with args [%s]"%args)
-    return LocalProcess(run_id, package, 'master', args, os.environ, log_output=False, screen_output=True)
+    return LocalProcess(run_id, package, 'master', args, os.environ, log_output=False)
 
 def create_node_process(run_id, node, master_uri):
     """
@@ -158,13 +159,17 @@ def create_node_process(run_id, node, master_uri):
             required=node.required, cwd=node.cwd, screen_output=screen_output, max_logfile_size=node.max_logfile_size,\
             logfile_count=node.logfile_count)
 
-def stream_reader(stream, level, logger, popen):
-    while popen.poll() is None:
-        line = stream.readline()
-        if level == logging.INFO:
-            logger.info('%s', line.strip())
-        elif level == logging.ERROR:
-            logger.error('%s', line.strip())
+
+class LogLvlStream(io.StringIO):
+    def __init__(self, logger, level):
+        super(LogLvlStream, self).__init__()
+        self._logger = logger
+        self._level = level
+
+    def flush(self):
+        for l in self.readlines():
+            self._logger.log(self._level, l)
+
 
 class LocalProcess(Process):
     """
@@ -203,7 +208,7 @@ class LocalProcess(Process):
         this value must >= 0``int``
         @param logfile_count: (optional) If max_logfile_size > 0, and logfile_count > 0, the system will save old log
         files by appending the extensions .1, .2 etc... This is an optional parameter, default value is 2.
-        """    
+        """
         super(LocalProcess, self).__init__(package, name, args, env,
                 respawn, respawn_delay, required)
         self.run_id = run_id
@@ -218,8 +223,6 @@ class LocalProcess(Process):
         self.is_node = is_node
         self.max_logfile_size = max_logfile_size
         self.logfile_count = logfile_count
-        self.logThreadError = None
-        self.logThreadInfo = None
 
     # NOTE: in the future, info() is going to have to be sufficient for relaunching a process
     def get_info(self):
@@ -340,12 +343,11 @@ class LocalProcess(Process):
                 # it's not safe to inherit from this process as
                 # rostest changes stdout to a StringIO, which is not a
                 # proper file.
-                #logfileout, logfileerr = subprocess.PIPE, subprocess.PIPE
 
-            #if we must log into a file (so process_logger exists) :
+            # if we must log into a file (so process_logger exists) :
             if process_logger:
-                # stdout and stderr must of subprocess must be redirected to a pipe
-                logfileout, logfileerr = subprocess.PIPE, subprocess.PIPE
+                # stdout and stderr must of subprocess must be redirected to a LogLvlStream, to be able to log messages.
+                logfileout, logfileerr = LogLvlStream(process_logger, logging.INFO), LogLvlStream(process_logger, logging.ERROR)
             else:
                 # stdout and stderr must of subprocess must be displayed on the screen because a problem occur when
                 # configuring the logger
@@ -389,17 +391,6 @@ Please make sure that all the executables in this command exist and have
 executable permission. This is often caused by a bad launch-prefix."""%(e.strerror, ' '.join(self.args)))
                 else:
                     raise FatalProcessLaunch("unable to launch [%s]: %s"%(' '.join(self.args), e.strerror))
-
-            # we redirect subprocess output to proper loglevel in a dedicated thread :
-            if logfileout:
-                self.logThreadInfo = threading.Thread(target=stream_reader, args=(self.popen.stdout, logging.INFO,
-                                                                                  process_logger, self.popen))
-                self.logThreadInfo.start()
-
-            if logfileerr:
-                self.logThreadError = threading.Thread(target=stream_reader, args=(self.popen.stderr, logging.ERROR,
-                                                                                   process_logger, self.popen))
-                self.logThreadError.start()
 
             self.started = True
             # Check that the process is either still running (poll returns
@@ -516,12 +507,6 @@ executable permission. This is often caused by a bad launch-prefix."""%(e.strerr
                 _logger.info("process[%s]: SIGINT killed with return value %s", self.name, retcode)
                 
         finally:
-            if self.logThreadError:
-                _logger.info("process[%s]: Joining log Error thread")
-                self.logThreadError.join()
-            if self.logThreadInfo:
-                _logger.info("process[%s]: Joining log Info thread")
-                self.logThreadInfo.join()
             self.popen = None
 
     def _stop_win32(self, errors):
@@ -589,10 +574,6 @@ executable permission. This is often caused by a bad launch-prefix."""%(e.strerr
             else:
                 _logger.info("process[%s]: SIGINT killed with return value %s", self.name, retcode)
         finally:
-            if self.logThreadError:
-                self.logThreadError.join()
-            if self.logThreadInfo:
-                self.logThreadInfo.join()
             self.popen = None
 			
     def stop(self, errors=None):
