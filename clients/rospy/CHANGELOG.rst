@@ -2,6 +2,9 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.0 (2017-02-22)
+-------------------
+
 1.12.7 (2017-02-17)
 -------------------
 * make get_published_topics threadsafe (`#958 <https://github.com/ros/ros_comm/issues/958>`_)

@@ -1,4 +1,4 @@
 Header  header
-float32 afield2 #58.2
+float32 field2 #58.2
 string  combo_field3 #"aldfkja 17"
-int32   afield4 #82
+int32   field4 #82

@@ -63,3 +63,25 @@ int32[4] bar  # [8, 2, 5, 1]
     def update(self, old_msg, new_msg):
         new_msg.foo = old_msg.foo
         new_msg.bar = old_msg.bar
+
+class update_test_rosbag_Renamed4_dd19d6452bb5e45bb900f81fed30ae83(MessageUpdateRule):
+    old_type = "test_rosbag/Renamed4"
+    old_full_text = """
+float64  foo  # 2.17
+int32[4] bar  # [8, 2, 5, 1]
+"""
+
+    new_type = "test_rosbag/Renamed5"
+    new_full_text = """
+float64  foo  # 2.17
+int32[4] bar  # [8, 2, 5, 1]
+"""
+
+    order = 0
+    migrated_types = []
+
+    valid = True
+
+    def update(self, old_msg, new_msg):
+        new_msg.foo = old_msg.foo
+        new_msg.bar = old_msg.bar

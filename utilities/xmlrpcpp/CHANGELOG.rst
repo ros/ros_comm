@@ -2,6 +2,9 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.0 (2017-02-22)
+-------------------
+
 1.12.7 (2017-02-17)
 -------------------
 * move headers to include/xmlrpcpp (`#962 <https://github.com/ros/ros_comm/issues/962>`_)

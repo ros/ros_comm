@@ -128,7 +128,6 @@ def wait_for_service(service, timeout=None):
             try:
                 if contact_service(resolved_name, timeout_t-time.time()):
                     return
-                time.sleep(0.3)
             except KeyboardInterrupt:
                 # re-raise
                 rospy.core.logdebug("wait_for_service: received keyboard interrupt, assuming signals disabled and re-raising")
@@ -137,6 +136,7 @@ def wait_for_service(service, timeout=None):
                 if first:
                     first = False
                     rospy.core.loginfo("wait_for_service(%s): failed to contact [%s], will keep trying"%(resolved_name, uri))
+            time.sleep(0.3)
         if rospy.core.is_shutdown():
             raise ROSInterruptException("rospy shutdown")
         else:
@@ -146,7 +146,6 @@ def wait_for_service(service, timeout=None):
             try:
                 if contact_service(resolved_name):
                     return
-                time.sleep(0.3)
             except KeyboardInterrupt:
                 # re-raise
                 rospy.core.logdebug("wait_for_service: received keyboard interrupt, assuming signals disabled and re-raising")
@@ -155,6 +154,7 @@ def wait_for_service(service, timeout=None):
                 if first:
                     first = False
                     rospy.core.logwarn("wait_for_service(%s): failed to contact [%s], will keep trying"%(resolved_name, uri))
+            time.sleep(0.3)
         if rospy.core.is_shutdown():
             raise ROSInterruptException("rospy shutdown")
     

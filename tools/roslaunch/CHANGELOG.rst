@@ -2,6 +2,9 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.0 (2017-02-22)
+-------------------
+
 1.12.7 (2017-02-17)
 -------------------
 * improve error message for invalid tags (`#989 <https://github.com/ros/ros_comm/pull/989>`_)
