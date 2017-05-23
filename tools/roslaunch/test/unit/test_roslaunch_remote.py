@@ -30,9 +30,6 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import pyros_setup
-pyros_setup.configurable_import().configure().activate()
-
 import os
 import sys
 import unittest
@@ -86,6 +83,7 @@ class TestRoslaunchRemote(unittest.TestCase):
         self.assertEquals('<node pkg="pkg10" type="type10" ns="/" args="" output="screen" respawn="False" respawn_delay="0.0" required="False" logfile_count="2">\n</node>', n.to_remote_xml())
         n = Node('pkg11', 'type11', output='log')
         self.assertEquals('<node pkg="pkg11" type="type11" ns="/" args="" output="log" respawn="False" respawn_delay="0.0" required="False" logfile_count="2">\n</node>', n.to_remote_xml())
+<<<<<<< HEAD
 
         # test launch-prefix
         n = Node('pkg12', 'type12', launch_prefix='xterm -e')
@@ -98,6 +96,22 @@ class TestRoslaunchRemote(unittest.TestCase):
         #test everything
         n = Node('pkg20', 'type20', namespace="/ns20/", machine_name="foo", remap_args=[('from20a', 'to20a'), ('from20b', 'to20b')], env_args=[('key20a', 'val20a'), ('key20b', 'val20b')], output="screen", cwd="ROS_HOME", respawn=True, args="arg20a arg20b", launch_prefix="nice", required=False)
         self.assertEquals("""<node pkg="pkg20" type="type20" ns="/ns20/" args="arg20a arg20b" output="screen" cwd="ROS_HOME" respawn="True" respawn_delay="0.0" launch-prefix="nice" required="False" logfile_count="2">
+=======
+        n = Node('pkg12', 'type12', output='both')
+        self.assertEquals('<node pkg="pkg12" type="type12" ns="/" args="" output="both" respawn="False" respawn_delay="0.0" required="False" logfile_count="2">\n</node>', n.to_remote_xml())
+
+        # test launch-prefix
+        n = Node('pkg13', 'type13', launch_prefix='xterm -e')
+        self.assertEquals('<node pkg="pkg13" type="type13" ns="/" args="" respawn="False" respawn_delay="0.0" launch-prefix="xterm -e" required="False" logfile_count="2">\n</node>', n.to_remote_xml())
+
+        # test required
+        n = Node('pkg14', 'type14', required=True)
+        self.assertEquals('<node pkg="pkg14" type="type14" ns="/" args="" respawn="False" respawn_delay="0.0" required="True" logfile_count="2">\n</node>', n.to_remote_xml())
+        
+        #test everything
+        n = Node('pkg20', 'type20', namespace="/ns20/", machine_name="foo", remap_args=[('from20a', 'to20a'), ('from20b', 'to20b')], env_args=[('key20a', 'val20a'), ('key20b', 'val20b')], output="log", cwd="ROS_HOME", respawn=True, args="arg20a arg20b", launch_prefix="nice", required=False)
+        self.assertEquals("""<node pkg="pkg20" type="type20" ns="/ns20/" args="arg20a arg20b" output="log" cwd="ROS_HOME" respawn="True" respawn_delay="0.0" launch-prefix="nice" required="False" logfile_count="2">
+>>>>>>> 7939279ea512508acf837227c46b39b8df949a1c
   <remap from="from20a" to="to20a" />
   <remap from="from20b" to="to20b" />
   <env name="key20a" value="val20a" />
