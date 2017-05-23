@@ -260,11 +260,7 @@ def test_Test():
     from roslaunch.core import Test, TEST_TIME_LIMIT_DEFAULT
     t = Test('test_name', 'package', 'node_type')
     assert t.xmltype() == 'test'
-<<<<<<< HEAD
-    assert t.xmlattrs() == [('pkg', 'package'), ('type', 'node_type'), ('machine', None), ('ns', '/'), ('args', ''), ('output', 'log'), ('cwd', None), ('name', None), ('launch-prefix', None), ('required', False), ('test-name', 'test_name')], t.xmlattrs()
-=======
     assert t.xmlattrs() == [('pkg', 'package'), ('type', 'node_type'), ('machine', None), ('ns', '/'), ('args', ''), ('output', 'log'), ('cwd', None), ('name', None), ('launch-prefix', None), ('required', False), ('max_logfile_size', None), ('logfile_count', 2), ('test-name', 'test_name')], t.xmlattrs()
->>>>>>> 7939279ea512508acf837227c46b39b8df949a1c
 
     assert t.output == 'log'
     assert t.test_name == 'test_name'
