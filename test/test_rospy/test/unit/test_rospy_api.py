@@ -123,6 +123,11 @@ class TestRospyApi(unittest.TestCase):
         rospy.logfatal_throttle
         rospy.loginfo_throttle
         rospy.logwarn_throttle
+        rospy.logdebug_once
+        rospy.logerr_once
+        rospy.logfatal_once
+        rospy.loginfo_once
+        rospy.logwarn_once
         rospy.myargv
         rospy.on_shutdown
         rospy.parse_rosrpc_uri

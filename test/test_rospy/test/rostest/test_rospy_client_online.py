@@ -101,6 +101,39 @@ class TestRospyClientOnline(unittest.TestCase):
             self.assert_("[FATAL]" in sys.stderr.getvalue())            
             self.assert_("test 4" in sys.stderr.getvalue())            
 
+            # logXXX_once
+            for i in range(3):
+                sys.stdout = StringIO()
+                rospy.loginfo_once("test 1")
+                if i == 0:
+                    self.assert_("test 1" in sys.stdout.getvalue())
+                else:
+                    self.assert_("" == sys.stdout.getvalue())
+
+            for i in range(3):
+                sys.stderr = StringIO()
+                rospy.logwarn_once("test 2")
+                if i == 0:
+                    self.assert_("test 2" in sys.stderr.getvalue())
+                else:
+                    self.assert_("" == sys.stderr.getvalue())
+
+            for i in range(3):
+                sys.stderr = StringIO()
+                rospy.logerr_once("test 3")
+                if i == 0:
+                    self.assert_("test 3" in sys.stderr.getvalue())
+                else:
+                    self.assert_("" == sys.stderr.getvalue())
+
+            for i in range(3):
+                sys.stderr = StringIO()
+                rospy.logfatal_once("test 4")
+                if i == 0:
+                    self.assert_("test 4" in sys.stderr.getvalue())
+                else:
+                    self.assert_("" == sys.stderr.getvalue())
+
             # logXXX_throttle
             for i in range(3):
                 sys.stdout = StringIO()
