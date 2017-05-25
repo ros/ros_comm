@@ -96,7 +96,10 @@ def convert_value(value, type_):
             return False
         raise ValueError("%s is not a '%s' type"%(value, type_))
     elif type_ == 'yaml':
-        return yaml.load(value)
+        try:
+            return yaml.load(value)
+        except yaml.parser.ParserError as e:
+            raise ValueError(e)
     else:
         raise ValueError("Unknown type '%s'"%type_)        
 
