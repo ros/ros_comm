@@ -69,6 +69,28 @@ extern "C" {
 //****************************
 typedef enum { XXH_OK=0, XXH_ERROR } XXH_errorcode;
 
+/*!XXH_NAMESPACE, aka Namespace Emulation :
+
+If you want to include _and expose_ xxHash functions from within your own library,
+but also want to avoid symbol collisions with other libraries which may also include xxHash,
+
+you can use XXH_NAMESPACE, to automatically prefix any public symbol from xxhash library
+with the value of XXH_NAMESPACE (therefore, avoid NULL and numeric values).
+
+Note that no change is required within the calling program as long as it includes `xxhash.h` :
+regular symbol name will be automatically translated by this header.
+*/
+#ifdef XXH_NAMESPACE
+#  define XXH_CAT(A,B) A##B
+#  define XXH_NAME2(A,B) XXH_CAT(A,B)
+#  define XXH32 XXH_NAME2(XXH_NAMESPACE, XXH32)
+#  define XXH32_sizeofState XXH_NAME2(XXH_NAMESPACE, XXH32_sizeofState)
+#  define XXH32_resetState XXH_NAME2(XXH_NAMESPACE, XXH32_resetState)
+#  define XXH32_init XXH_NAME2(XXH_NAMESPACE, XXH32_init)
+#  define XXH32_update XXH_NAME2(XXH_NAMESPACE, XXH32_update)
+#  define XXH32_intermediateDigest XXH_NAME2(XXH_NAMESPACE, XXH32_intermediateDigest)
+#  define XXH32_digest XXH_NAME2(XXH_NAMESPACE, XXH32_digest)
+#endif
 
 
 //****************************

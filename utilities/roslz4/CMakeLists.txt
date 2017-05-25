@@ -31,6 +31,9 @@ add_library(roslz4 src/lz4s.c src/xxhash.c)
 set_source_files_properties(
   src/lz4s.c
 PROPERTIES COMPILE_FLAGS "-Wno-sign-compare")
+set_source_files_properties(
+  src/lz4s.c src/xxhash.c
+PROPERTIES COMPILE_DEFINITIONS "XXH_NAMESPACE=ROSLZ4_")
 target_link_libraries(roslz4 ${lz4_LIBRARIES} ${catkin_LIBRARIES})
 
 if(NOT ANDROID)
