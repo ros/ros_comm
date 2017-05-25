@@ -89,7 +89,7 @@ def convert_value(value, type_):
     elif type_ == 'double':
         return float(value)
     elif type_ == 'bool' or type_ == 'boolean':
-        value = value.lower()
+        value = value.lower().strip()
         if value == 'true' or value == '1':
             return True
         elif value == 'false' or value == '0':
