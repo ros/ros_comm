@@ -118,6 +118,21 @@ ROSCPP_DECL bool getTopics(V_TopicInfo& topics);
 ROSCPP_DECL bool getNodes(V_string& nodes);
 
 /**
+ * \brief Retrieves the currently-known list of subscribers nodes of topic from the master
+ */
+ROSCPP_DECL bool getSubscriberNodes(V_string& sub_nodes, const std::string topic);
+
+/**
+ * \brief Retrieves the list of authorized clients of service from the master
+ */
+ROSCPP_DECL bool getServiceClients(V_string& sub_nodes, const std::string service);
+
+/**
+ * \brief Retrieves the currently-known list of subscriber hosts of topic from the master
+ */
+ROSCPP_DECL bool getSubscriberHosts(V_string& sub_hosts, const std::string topic);
+
+/**
  * @brief Set the max time this node should spend looping trying to connect to the master
  * @param The timeout.  A negative value means infinite
  */

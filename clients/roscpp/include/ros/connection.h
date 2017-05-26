@@ -174,6 +174,7 @@ public:
 
   std::string getCallerId();
   std::string getRemoteString();
+  std::string getClientURI();
 
 private:
   /**

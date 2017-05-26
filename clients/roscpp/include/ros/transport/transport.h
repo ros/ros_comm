@@ -122,6 +122,11 @@ public:
   virtual std::string getTransportInfo() = 0;
 
   /**
+   * \brief Returns a string description of both the type of transport and who the transport is connected to
+   */
+  virtual std::string getClientURI() = 0;
+
+  /**
    * \brief Returns a boolean to indicate if the transport mechanism is reliable or not
    */
   virtual bool requiresHeader() {return true;}

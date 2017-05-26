@@ -34,6 +34,7 @@
 #include "ros/transport/transport_udp.h"
 #include "ros/file_log.h"
 #include "ros/network.h"
+#include "ros/topic_manager.h"
 
 #include <ros/assert.h>
 
@@ -209,6 +210,18 @@ bool ConnectionManager::onConnectionHeaderReceived(const ConnectionPtr& conn, co
   std::string val;
   if (header.getValue("topic", val))
   {
+    std::string caller_id( "unknown" );
+    header.getValue( "callerid", caller_id );
+    std::string client_ip = uri_to_ip_address( conn->getClientURI() );
+    if ( !is_subscriber_authorized( val, client_ip ) ) {
+      ROS_WARN_NAMED(AUTH_LOG_NAME, "received topic connection for %s from %s (%s) not authorized",
+          val.c_str(), caller_id.c_str(), conn->getRemoteString().c_str());
+      std::stringstream msg;
+      msg << "Client [" << caller_id << "] wants topic connection for " << val << ", but " << client_ip << "is not authorized"; 
+      conn->sendHeaderError(msg.str());
+      return false;
+    }
+
     ROSCPP_CONN_LOG_DEBUG("Connection: Creating TransportSubscriberLink for topic [%s] connected to [%s]", 
 		     val.c_str(), conn->getRemoteString().c_str());
 

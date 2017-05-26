@@ -77,9 +77,9 @@ public:
   , func_(cb)
   { }
 
-  void execute(XmlRpcValue &params, XmlRpcValue &result)
+  void execute(XmlRpcValue &params, XmlRpcClientInfo &client_info, XmlRpcValue &result)
   {
-    func_(params, result);
+    func_(params, result, client_info);
   }
 
 private:
@@ -87,9 +87,10 @@ private:
   XMLRPCFunc func_;
 };
 
-void getPid(const XmlRpcValue& params, XmlRpcValue& result)
+void getPid(const XmlRpcValue& params, XmlRpcValue& result, XmlRpcClientInfo& client_info)
 {
   (void)params;
+  (void)client_info;
   result = xmlrpc::responseInt(1, "", (int)getpid());
 }
 
