@@ -66,6 +66,9 @@ except ImportError:
 
 import rosgraph.network
 
+from xml.dom.minidom import parseString
+from xml.etree import ElementTree
+
 def isstring(s):
     """Small helper version to check an object is a string in a way that works
     for both Python 2 and 3
@@ -80,6 +83,87 @@ class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
         if 0:
             SimpleXMLRPCRequestHandler.log_message(self, format, *args)
     
+class IPSilenceableXMLRPCRequestHandler(SilenceableXMLRPCRequestHandler):
+    """ Add client IP address to XMLRPC request before calling the method.
+        This is a core modification for Secure ROS, wherein for secure 
+        XMLRPC methods, the client IP address is added as an additional 
+        parameter. The method can then check if the client is authorized
+        to make the request.
+    """
+    logger = logging.getLogger('roslaunch.auth')            
+
+    def __init__(self, request, client_address, server):
+        self.client_ip, self.client_port = client_address 
+        self.logger.debug( "==== received XMLRPC (from %s:%s)" % ( self.client_ip, self.client_port ) )
+        SimpleXMLRPCRequestHandler.__init__(self, request, client_address, server)
+
+    def insert_multicall_client_ip( self, doc ):
+        """ Function to add client IP address for a multicall XMLRPC request
+            If method shutdown is called without optional "msg" argument, insert that as well so 
+            that the XMLRPC dispatch is done correctly
+        """
+        structs = doc.getElementsByTagName("struct")
+        for s in structs:
+            try:
+                members = s.getElementsByTagName( "member" )
+                methodName = None
+                datas = None
+                for m in members:
+                    name = m.getElementsByTagName( "name" )[0].childNodes[0]
+                    value = m.getElementsByTagName( "value" )[0]
+                    if name.data == 'methodName':
+                        for v in value.childNodes:
+                            if v.nodeType == v.ELEMENT_NODE:
+                                methodName = v.childNodes[0].data
+                                self.logger.debug( "multicall: %s" % methodName )
+                                break
+                    elif name.data == 'params':
+                        arrays = value.getElementsByTagName( "array" )
+                        datas = arrays[0].getElementsByTagName( "data" )[0]
+                    else:
+                        self.logger.warn( "multicall: unexpected entry %s" % name.data )
+                if methodName == "shutdown":
+                    # insert optional argument 'msg' for shutdown() if not provided
+                    params = ElementTree.fromstring( datas.toxml() ).findall( "param" )
+                    if len( params ) == 1:
+                        self.logger.debug( "multicall: added msg param to shutdown()" )
+                        p2 = parseString( '''<param><value><string>silent</string></value></param>''' ).firstChild.cloneNode(True)
+                        datas.appendChild(p2)
+                p = parseString( "<value><string>%s</string></value>\n" % self.client_ip ).firstChild.cloneNode(True)
+                datas.appendChild(p)
+            except:
+              self.logger.warn( "XML system.multicall parsing error" )
+
+    def decode_request_content(self, data):
+        """ Function to add client IP address for a XMLRPC request for secure methods
+            If method shutdown is called without optional "msg" argument, insert that as well so 
+            that the XMLRPC dispatch is done correctly
+        """
+        data = SimpleXMLRPCRequestHandler.decode_request_content(self, data)
+        doc = parseString(data)
+        ps = doc.getElementsByTagName("params")[0]
+        
+        methodName = doc.getElementsByTagName("methodName")[0].childNodes[0].nodeValue
+        self.logger.info( "-- %s (from %s) --" % ( methodName, self.client_ip ) )
+        if methodName == "system.multicall":
+            self.insert_multicall_client_ip( doc )
+        else:
+            pdoc = parseString(
+                    ''' <param><value>
+                  <string>%s</string>
+                  </value></param>''' % (self.client_ip,))
+            p = pdoc.firstChild.cloneNode(True)
+            if methodName == "shutdown":
+                # insert optional argument 'msg' for shutdown() if not provided
+                params = ElementTree.fromstring( ps.toxml() ).findall( "param" )
+                if len( params ) == 1:
+                    self.logger.debug( "added msg param to shutdown()" )
+                    p2 = parseString( '''<param><value><string>silent</string></value></param>''' ).firstChild.cloneNode(True)
+                    ps.appendChild(p2)
+            ps.appendChild(p)
+        return doc.toxml()
+
+
 class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
     """
     Adds ThreadingMixin to SimpleXMLRPCServer to support multiple concurrent
@@ -102,7 +186,7 @@ class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
             # We have to monipulate private members and duplicate
             # code from the constructor.
             # TODO IPV6: Get this into SimpleXMLRPCServer 
-            SimpleXMLRPCServer.__init__(self, addr, SilenceableXMLRPCRequestHandler, log_requests,  bind_and_activate=False)
+            SimpleXMLRPCServer.__init__(self, addr, IPSilenceableXMLRPCRequestHandler, log_requests,  bind_and_activate=False)
             self.address_family = socket.AF_INET6
             self.socket = socket.socket(self.address_family, self.socket_type)
             logger.info('binding ipv6 xmlrpc socket to' + str(addr))
@@ -112,7 +196,7 @@ class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
             self.server_activate()
             logger.info('bound to ' + str(self.socket.getsockname()[0:2]))
         else:
-            SimpleXMLRPCServer.__init__(self, addr, SilenceableXMLRPCRequestHandler, log_requests)
+            SimpleXMLRPCServer.__init__(self, addr, IPSilenceableXMLRPCRequestHandler, log_requests)
 
     def handle_error(self, request, client_address):
         """

@@ -37,6 +37,8 @@ ROS Master API.
 L{ROSMasterHandler} provides the API implementation of the
 Master. Python allows an API to be introspected from a Python class,
 so the handler has a 1-to-1 mapping with the actual XMLRPC API.
+The Secure ROS feature adds an extra parameter (IP address of client)
+as an optional parameter for secure XMLRPC methods.
 
 API return convention: (statusCode, statusMessage, returnValue)
 
@@ -71,7 +73,9 @@ import rosmaster.threadpool
 
 from rosmaster.util import xmlrpcapi
 from rosmaster.registrations import RegistrationManager
-from rosmaster.validators import non_empty, non_empty_str, not_none, is_api, is_topic, is_service, valid_type_name, valid_name, empty_or_valid_name, ParameterInvalid
+from rosmaster.validators import non_empty, non_empty_str, not_none, is_ipv4, is_api, is_topic, is_service, valid_type_name, valid_name, empty_or_valid_name, ParameterInvalid
+
+from rosmaster.authorization import ROSMasterAuth, is_uri_match
 
 NUM_WORKERS = 3 #number of threads we use to send publisher_update notifications
 
@@ -268,6 +272,9 @@ class ROSMasterHandler(object):
 
         # parameter server dictionary
         self.param_server = rosmaster.paramserver.ParamDictionary(self.reg_manager)
+        # authorization
+        self.auth = ROSMasterAuth()
+        self.logger = self.auth.logger
 
     def _shutdown(self, reason=''):
         if self.thread_pool is not None:
@@ -290,40 +297,51 @@ class ROSMasterHandler(object):
     ###############################################################################
     # EXTERNAL API
 
-    @apivalidate(0, (None, ))
-    def shutdown(self, caller_id, msg=''):
+    
+    @apivalidate(0, (None, is_ipv4('client_ip_address')))
+    def shutdown(self, caller_id, msg = "none", client_ip_address = "127.0.0.1"):
         """
         Stop this server
         @param caller_id: ROS caller id
         @type  caller_id: str
         @param msg: a message describing why the node is being shutdown.
         @type  msg: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: [code, msg, 0]
         @rtype: [int, str, int]
         """
+        if not is_uri_match( self.uri, client_ip_address ):
+            self.logger.warn( "shutdown( %s, %s ) method not authorized" % ( caller_id, client_ip_address ) )
+            return -1, "shutdown not authorized", 0
         if msg:
             print("shutdown request: %s" % msg, file=sys.stdout)
         else:
-            print("shutdown requst", file=sys.stdout)
+            print("shutdown request", file=sys.stdout)
         self._shutdown('external shutdown request from [%s]: %s'%(caller_id, msg))
         return 1, "shutdown", 0
         
-    @apivalidate('')
-    def getUri(self, caller_id):
+    @apivalidate('', (is_ipv4('client_ip_address'),))
+    def getUri(self, caller_id, client_ip_address = "127.0.0.1"):
         """
         Get the XML-RPC URI of this server.
         @param caller_id str: ROS caller id    
+        @type  caller_id: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return [int, str, str]: [1, "", xmlRpcUri]
         """
         return 1, "", self.uri
 
         
-    @apivalidate(-1)
-    def getPid(self, caller_id):
+    @apivalidate(-1, (is_ipv4('client_ip_address'),))
+    def getPid(self, caller_id, client_ip_address = "127.0.0.1"):
         """
         Get the PID of this server
         @param caller_id: ROS caller id
         @type  caller_id: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: [1, "", serverProcessPID]
         @rtype: [int, str, int]
         """
@@ -333,27 +351,32 @@ class ROSMasterHandler(object):
     ################################################################
     # PARAMETER SERVER ROUTINES
     
-    @apivalidate(0, (non_empty_str('key'),))
-    def deleteParam(self, caller_id, key):
+    @apivalidate(0, (non_empty_str('key'), is_ipv4('client_ip_address')))
+    def deleteParam(self, caller_id, key, client_ip_address = "127.0.0.1"):
         """
         Parameter Server: delete parameter
         @param caller_id: ROS caller id
         @type  caller_id: str
         @param key: parameter name
         @type  key: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: [code, msg, 0]
         @rtype: [int, str, int]
         """
         try:
             key = resolve_name(key, caller_id)
+            if not self.auth.check_param_setter( key, client_ip_address ):
+                self.logger.warn( "deleteParam( %s, %s, %s) parameter not authorized" % ( caller_id, key, client_ip_address ) )
+                return -1, "parameter not authorized", 0
             self.param_server.delete_param(key, self._notify_param_subscribers)
             mloginfo("-PARAM [%s] by %s",key, caller_id)            
             return  1, "parameter %s deleted"%key, 0                
         except KeyError as e:
             return -1, "parameter [%s] is not set"%key, 0
         
-    @apivalidate(0, (non_empty_str('key'), not_none('value')))
-    def setParam(self, caller_id, key, value):
+    @apivalidate(0, (non_empty_str('key'), not_none('value'), is_ipv4('client_ip_address')))
+    def setParam(self, caller_id, key, value, client_ip_address = "127.0.0.1"):
         """
         Parameter Server: set parameter.  NOTE: if value is a
         dictionary it will be treated as a parameter tree, where key
@@ -371,16 +394,21 @@ class ROSMasterHandler(object):
         @type  key: str
         @param value: parameter value.
         @type  value: XMLRPCLegalValue
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: [code, msg, 0]
         @rtype: [int, str, int]
         """
         key = resolve_name(key, caller_id)
+        if not self.auth.check_param_setter( key, client_ip_address ):
+            self.logger.warn( "setParam( %s, %s, %s) parameter not authorized" % ( caller_id, key, client_ip_address ) )
+            return -1, "parameter not authorized", 0
         self.param_server.set_param(key, value, self._notify_param_subscribers)
         mloginfo("+PARAM [%s] by %s",key, caller_id)
         return 1, "parameter %s set"%key, 0
 
-    @apivalidate(0, (non_empty_str('key'),))
-    def getParam(self, caller_id, key):
+    @apivalidate(0, (non_empty_str('key'), is_ipv4('client_ip_address')))
+    def getParam(self, caller_id, key, client_ip_address = "127.0.0.1"):
         """
         Retrieve parameter value from server.
         @param caller_id: ROS caller id
@@ -390,6 +418,8 @@ class ROSMasterHandler(object):
         @type  key: str
         getParam() will return a parameter tree.
 
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: [code, statusMessage, parameterValue]. If code is not
             1, parameterValue should be ignored. If key is a namespace,
             the return value will be a dictionary, where each key is a
@@ -397,14 +427,18 @@ class ROSMasterHandler(object):
             represented as dictionaries.
         @rtype: [int, str, XMLRPCLegalValue]
         """
+        key = resolve_name(key, caller_id)
+        if not self.auth.check_param_getter( key, client_ip_address ):
+            self.logger.warn( "getParam( %s, %s, %s) parameter not authorized" % ( caller_id, key, client_ip_address ) )
+            return -1, "parameter not authorized", 0
         try:
-            key = resolve_name(key, caller_id)
-            return 1, "Parameter [%s]"%key, self.param_server.get_param(key)
+            param = self.param_server.get_param(key)
         except KeyError as e: 
             return -1, "Parameter [%s] is not set"%key, 0
+        return 1, "Parameter [%s]" % key, param
 
-    @apivalidate(0, (non_empty_str('key'),))
-    def searchParam(self, caller_id, key):
+    @apivalidate(0, (non_empty_str('key'), is_ipv4('client_ip_address')))
+    def searchParam(self, caller_id, key, client_ip_address = "127.0.0.1"):
         """
         Search for parameter key on parameter server. Search starts in caller's namespace and proceeds
         upwards through parent namespaces until Parameter Server finds a matching key.
@@ -428,18 +462,24 @@ class ROSMasterHandler(object):
         @type  caller_id: str
         @param key: parameter key to search for.
         @type  key: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: [code, statusMessage, foundKey]. If code is not 1, foundKey should be
             ignored. 
         @rtype: [int, str, str]
         """
         search_key = self.param_server.search_param(caller_id, key)
         if search_key:
-            return 1, "Found [%s]"%search_key, search_key
+            if self.auth.check_param_getter( search_key, client_ip_address ):
+                return 1, "Found [%s]"%search_key, search_key
+            else:
+                self.logger.warn( "searchParam( %s, %s, %s) parameter not authorized" % ( caller_id, key, client_ip_address ) )
+                return -1, "parameter not authorized", 0
         else:
             return -1, "Cannot find parameter [%s] in an upwards search"%key, ''
 
-    @apivalidate(0, (is_api('caller_api'), non_empty_str('key'),))
-    def subscribeParam(self, caller_id, caller_api, key):
+    @apivalidate(0, (is_api('caller_api'), non_empty_str('key'), is_ipv4('client_ip_address')))
+    def subscribeParam(self, caller_id, caller_api, key, client_ip_address = "127.0.0.1"):
         """
         Retrieve parameter value from server and subscribe to updates to that param. See
         paramUpdate() in the Node API. 
@@ -449,12 +489,20 @@ class ROSMasterHandler(object):
         @type  key: str
         @param caller_api: API URI for paramUpdate callbacks.
         @type  caller_api: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: [code, statusMessage, parameterValue]. If code is not
            1, parameterValue should be ignored. parameterValue is an empty dictionary if the parameter
            has not been set yet.
         @rtype: [int, str, XMLRPCLegalValue]
         """
+        if not is_uri_match( caller_api, client_ip_address ):
+            self.logger.warn( "subscribeParam( %s, %s, %s, %s) caller_api not authorized" % ( caller_id, caller_api, key, client_ip_address ) )
+            return -1, "caller_api not authorized", 0
         key = resolve_name(key, caller_id)        
+        if not self.auth.check_param_setter( key, client_ip_address ):
+            self.logger.warn( "subscribeParam( %s, %s, %s, %s) parameter not authorized" % ( caller_id, caller_api, key, client_ip_address ) )
+            return -1, "parameter not authorized", 0
         try:
             # ps_lock has precedence and is required due to
             # potential self.reg_manager modification
@@ -464,8 +512,8 @@ class ROSMasterHandler(object):
             self.ps_lock.release()
         return 1, "Subscribed to parameter [%s]"%key, val
 
-    @apivalidate(0, (is_api('caller_api'), non_empty_str('key'),))
-    def unsubscribeParam(self, caller_id, caller_api, key):
+    @apivalidate(0, (is_api('caller_api'), non_empty_str('key'), is_ipv4('client_ip_address')))
+    def unsubscribeParam(self, caller_id, caller_api, key, client_ip_address = "127.0.0.1"):
         """
         Retrieve parameter value from server and subscribe to updates to that param. See
         paramUpdate() in the Node API. 
@@ -475,10 +523,15 @@ class ROSMasterHandler(object):
         @type  key: str
         @param caller_api: API URI for paramUpdate callbacks.
         @type  caller_api: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: [code, statusMessage, numUnsubscribed]. 
            If numUnsubscribed is zero it means that the caller was not subscribed to the parameter.
         @rtype: [int, str, int]
         """        
+        if not is_uri_match( caller_api, client_ip_address ):
+            self.logger.warn( "unsubscribeParam( %s, %s, %s, %s) caller_api not authorized" % ( caller_id, caller_api, key, client_ip_address ) )
+            return -1, "caller_api not authorized", 0
         key = resolve_name(key, caller_id)        
         try:
             # ps_lock is required due to potential self.reg_manager modification
@@ -489,35 +542,46 @@ class ROSMasterHandler(object):
         return 1, "Unsubscribe to parameter [%s]"%key, 1
 
 
-    @apivalidate(False, (non_empty_str('key'),))
-    def hasParam(self, caller_id, key):
+    @apivalidate(False, (non_empty_str('key'), is_ipv4('client_ip_address')))
+    def hasParam(self, caller_id, key, client_ip_address = "127.0.0.1"):
         """
         Check if parameter is stored on server. 
         @param caller_id str: ROS caller id
         @type  caller_id: str
         @param key: parameter to check
         @type  key: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: [code, statusMessage, hasParam]
         @rtype: [int, str, bool]
         """
         key = resolve_name(key, caller_id)
+        if not self.auth.check_param_setter( key, client_ip_address ):
+            self.logger.warn( "hasParam( %s, %s, %s) parameter not authorized" % ( caller_id, key, client_ip_address ) )
+            return -1, "parameter not authorized", 0
         if self.param_server.has_param(key):
             return 1, key, True
         else:
             return 1, key, False            
 
-    @apivalidate([])
-    def getParamNames(self, caller_id):
+    @apivalidate(False,(is_ipv4('client_ip_address'),))
+    def getParamNames(self, caller_id, client_ip_address = "127.0.0.1"):
         """
         Get list of all parameter names stored on this server.
         This does not adjust parameter names for caller's scope.
         
         @param caller_id: ROS caller id    
         @type  caller_id: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: [code, statusMessage, parameterNameList]
         @rtype: [int, str, [str]]
         """
-        return 1, "Parameter names", self.param_server.get_param_names()
+        parameters = self.param_server.get_param_names()
+        parameters2 = list( p for p in parameters if self.auth.check_param_getter( p, client_ip_address ) )
+        self.logger.info( "getParamNames( %s, %s) returned %d parameters / %d total" % ( caller_id, client_ip_address, 
+            len( parameters2 ), len( parameters ) ) )
+        return 1, "Parameter names", parameters2
             
     ##################################################################################
     # NOTIFICATION ROUTINES
@@ -600,8 +664,8 @@ class ROSMasterHandler(object):
     ##################################################################################
     # SERVICE PROVIDER
 
-    @apivalidate(0, ( is_service('service'), is_api('service_api'), is_api('caller_api')))
-    def registerService(self, caller_id, service, service_api, caller_api):
+    @apivalidate(0, ( is_service('service'), is_api('service_api'), is_api('caller_api'), is_ipv4('client_ip_address')))
+    def registerService(self, caller_id, service, service_api, caller_api, client_ip_address = "127.0.0.1"):
         """
         Register the caller as a provider of the specified service.
         @param caller_id str: ROS caller id
@@ -612,9 +676,18 @@ class ROSMasterHandler(object):
         @type  service_api: str
         @param caller_api: XML-RPC URI of caller node 
         @type  caller_api: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: (code, message, ignore)
         @rtype: (int, str, int)
         """        
+        if not self.auth.check_caller_id( caller_id, client_ip_address ):
+            self.logger.warn( "registerService( %s, %s, %s, %s ) caller_id not authorized" % ( caller_id, service, service_api, client_ip_address ) )
+            return -1, "caller_id not authorized", 0
+        if not self.auth.check_provider( service, client_ip_address ):
+            self.logger.warn( "registerService( %s, %s, %s, %s ) service not authorized" % ( caller_id, service, service_api, client_ip_address ) )
+            return -1, "service not authorized", 0
+        self.logger.info( "registerService( %s, %s, %s, %s ) OK" % ( caller_id, service, service_api, client_ip_address ) )
         try:
             self.ps_lock.acquire()
             self.reg_manager.register_service(service, caller_id, caller_api, service_api)
@@ -623,30 +696,36 @@ class ROSMasterHandler(object):
             self.ps_lock.release()
         return 1, "Registered [%s] as provider of [%s]"%(caller_id, service), 1
 
-    @apivalidate(0, (is_service('service'),))
-    def lookupService(self, caller_id, service):
+    @apivalidate(0, (is_service('service'), is_ipv4('client_ip_address'),))
+    def lookupService(self, caller_id, service, client_ip_address = "127.0.0.1"):
         """
         Lookup all provider of a particular service.
         @param caller_id str: ROS caller id
         @type  caller_id: str
         @param service: fully-qualified name of service to lookup.
         @type: service: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: (code, message, serviceUrl). service URL is provider's
            ROSRPC URI with address and port.  Fails if there is no provider.
         @rtype: (int, str, str)
         """
+        if not self.auth.check_requester( service, client_ip_address ):
+            self.logger.warn( "lookupService( %s, %s, %s ) service not authorized" % ( caller_id, service, client_ip_address ) )
+            return -1, "service not authorized", 0
         try:
             self.ps_lock.acquire()
             service_url = self.services.get_service_api(service)
         finally:
             self.ps_lock.release()
+        self.logger.info( "lookupService( %s, %s, %s ) OK" % ( caller_id, service, client_ip_address ) )
         if service_url:
             return 1, "rosrpc URI: [%s]"%service_url, service_url
         else:
             return -1, "no provider", ''
 
-    @apivalidate(0, ( is_service('service'), is_api('service_api')))
-    def unregisterService(self, caller_id, service, service_api):
+    @apivalidate(0, ( is_service('service'), is_api('service_api'), is_ipv4('client_ip_address')))
+    def unregisterService(self, caller_id, service, service_api, client_ip_address = "127.0.0.1"):
         """
         Unregister the caller as a provider of the specified service.
         @param caller_id str: ROS caller id
@@ -656,11 +735,16 @@ class ROSMasterHandler(object):
         @param service_api: API URI of service to unregister. Unregistration will only occur if current
            registration matches.
         @type  service_api: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: (code, message, numUnregistered). Number of unregistrations (either 0 or 1).
            If this is zero it means that the caller was not registered as a service provider.
            The call still succeeds as the intended final state is reached.
         @rtype: (int, str, int)
         """
+        if not is_uri_match( service_api, client_ip_address ):
+            self.logger.warn( "unregisterService( %s, %s, %s, %s ) service_api not authorized" % ( caller_id, service, service_api, client_ip_address ) )
+            return -1, "service_api not authorized", 0
         try:
             self.ps_lock.acquire()
             retval = self.reg_manager.unregister_service(service, caller_id, service_api)
@@ -669,11 +753,28 @@ class ROSMasterHandler(object):
         finally:
             self.ps_lock.release()
 
+    @apivalidate(0, ( is_service('service'), is_ipv4('client_ip_address')))
+    def getServiceClients(self, caller_id, service, client_ip_address = "127.0.0.1"):
+        """
+        Get list of authorized clients to service
+        @param caller_id str: ROS caller id
+        @type  caller_id: str
+        @param service: Fully-qualified name of service 
+        @type  service: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
+        @return: (code, message, service_client_list)
+        @rtype: (int, str, [str])
+        """        
+        auth_service_clients = self.auth.service_clients( service )
+        self.logger.info( "getServiceClients( %s, %s, %s ) OK" % ( caller_id, service, client_ip_address ) )
+        return 1, "Authorized clients for service %s"%(service), auth_service_clients
+
     ##################################################################################
     # PUBLISH/SUBSCRIBE
 
-    @apivalidate(0, ( is_topic('topic'), valid_type_name('topic_type'), is_api('caller_api')))
-    def registerSubscriber(self, caller_id, topic, topic_type, caller_api):
+    @apivalidate(0, ( is_topic('topic'), valid_type_name('topic_type'), is_api('caller_api'), is_ipv4('client_ip_address')))
+    def registerSubscriber(self, caller_id, topic, topic_type, caller_api, client_ip_address = "127.0.0.1"):
         """
         Subscribe the caller to the specified topic. In addition to receiving
         a list of current publishers, the subscriber will also receive notifications
@@ -685,11 +786,21 @@ class ROSMasterHandler(object):
         @type  topic_type: str
         @param caller_api: XML-RPC URI of caller node for new publisher notifications
         @type  caller_api: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: (code, message, publishers). Publishers is a list of XMLRPC API URIs
            for nodes currently publishing the specified topic.
         @rtype: (int, str, [str])
         """
-        #NOTE: subscribers do not get to set topic type
+        # NOTE: subscribers do not get to set topic type
+        if not self.auth.check_caller_id( caller_id, client_ip_address ):
+            self.logger.warn( "registerSubscriber( %s, %s, %s, %s ) caller_id not authorized" % 
+                    ( caller_id, topic, caller_api, client_ip_address ) )
+            return -1, "caller_id not authorized", []
+        if not self.auth.check_subscriber( topic, client_ip_address ):
+            self.logger.warn( "registerSubscriber( %s, %s, %s, %s ) topic not authorized" % 
+                    ( caller_id, topic, caller_api, client_ip_address ) )
+            return -1, "topic not authorized", []
         try:
             self.ps_lock.acquire()
             self.reg_manager.register_subscriber(topic, caller_id, caller_api)
@@ -705,8 +816,8 @@ class ROSMasterHandler(object):
             self.ps_lock.release()
         return 1, "Subscribed to [%s]"%topic, pub_uris
 
-    @apivalidate(0, (is_topic('topic'), is_api('caller_api')))
-    def unregisterSubscriber(self, caller_id, topic, caller_api):
+    @apivalidate(0, (is_topic('topic'), is_api('caller_api'), is_ipv4('client_ip_address')))
+    def unregisterSubscriber(self, caller_id, topic, caller_api, client_ip_address = "127.0.0.1"):
         """
         Unregister the caller as a publisher of the topic.
         @param caller_id: ROS caller id
@@ -716,11 +827,17 @@ class ROSMasterHandler(object):
         @param caller_api: API URI of service to unregister. Unregistration will only occur if current
            registration matches.    
         @type  caller_api: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: (code, statusMessage, numUnsubscribed). 
           If numUnsubscribed is zero it means that the caller was not registered as a subscriber.
           The call still succeeds as the intended final state is reached.
         @rtype: (int, str, int)
         """
+        if not is_uri_match( caller_api, client_ip_address ):
+            self.logger.warn( "unregisterSubscriber( %s, %s, %s, %s ) caller_api not authorized" % 
+                    ( caller_id, topic, caller_api, client_ip_address ) )
+            return -1, "caller_api not authorized", []
         try:
             self.ps_lock.acquire()
             retval = self.reg_manager.unregister_subscriber(topic, caller_id, caller_api)
@@ -729,8 +846,8 @@ class ROSMasterHandler(object):
         finally:
             self.ps_lock.release()
 
-    @apivalidate(0, ( is_topic('topic'), valid_type_name('topic_type'), is_api('caller_api')))
-    def registerPublisher(self, caller_id, topic, topic_type, caller_api):
+    @apivalidate(0, ( is_topic('topic'), valid_type_name('topic_type'), is_api('caller_api'), is_ipv4('client_ip_address')))
+    def registerPublisher(self, caller_id, topic, topic_type, caller_api, client_ip_address = "127.0.0.1"):
         """
         Register the caller as a publisher the topic.
         @param caller_id: ROS caller id
@@ -742,11 +859,21 @@ class ROSMasterHandler(object):
         @type  topic_type: str
         @param caller_api str: ROS caller XML-RPC API URI
         @type  caller_api: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: (code, statusMessage, subscriberApis).
         List of current subscribers of topic in the form of XMLRPC URIs.
         @rtype: (int, str, [str])
         """
         #NOTE: we need topic_type for getPublishedTopics.
+        if not self.auth.check_caller_id( caller_id, client_ip_address ):
+            self.logger.warn( "registerPublisher( %s, %s, %s, %s ) caller_id not authorized" % 
+                    ( caller_id, topic, caller_api, client_ip_address ) )
+            return -1, "caller_id not authorized", []
+        if not self.auth.check_publisher( topic, client_ip_address ):
+            self.logger.warn( "registerPublisher( %s, %s, %s, %s ) topic not authorized" % 
+                    ( caller_id, topic, caller_api, client_ip_address ) )
+            return -1, "topic not authorized", []
         try:
             self.ps_lock.acquire()
             self.reg_manager.register_publisher(topic, caller_id, caller_api)
@@ -763,8 +890,8 @@ class ROSMasterHandler(object):
         return 1, "Registered [%s] as publisher of [%s]"%(caller_id, topic), sub_uris
 
 
-    @apivalidate(0, (is_topic('topic'), is_api('caller_api')))
-    def unregisterPublisher(self, caller_id, topic, caller_api):
+    @apivalidate(0, (is_topic('topic'), is_api('caller_api'), is_ipv4('client_ip_address')))
+    def unregisterPublisher(self, caller_id, topic, caller_api, client_ip_address = "127.0.0.1"):
         """
         Unregister the caller as a publisher of the topic.
         @param caller_id: ROS caller id
@@ -775,11 +902,17 @@ class ROSMasterHandler(object):
            unregister. Unregistration will only occur if current
            registration matches.
         @type  caller_api: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: (code, statusMessage, numUnregistered). 
            If numUnregistered is zero it means that the caller was not registered as a publisher.
            The call still succeeds as the intended final state is reached.
         @rtype: (int, str, int)
         """            
+        if not is_uri_match( caller_api, client_ip_address ):
+            self.logger.warn( "unregisterPublisher( %s, %s, %s, %s ) caller_api not authorized" % 
+                    ( caller_id, topic, caller_api, client_ip_address ) )
+            return -1, "caller_api not authorized", []
         try:
             self.ps_lock.acquire()
             retval = self.reg_manager.unregister_publisher(topic, caller_id, caller_api)
@@ -793,17 +926,21 @@ class ROSMasterHandler(object):
     ##################################################################################
     # GRAPH STATE APIS
 
-    @apivalidate('', (valid_name('node'),))
-    def lookupNode(self, caller_id, node_name):
+    @apivalidate('', (valid_name('node'), is_ipv4('client_ip_address')))
+    def lookupNode(self, caller_id, node_name, client_ip_address = "127.0.0.1"):
         """
-        Get the XML-RPC URI of the node with the associated
-        name/caller_id.  This API is for looking information about
-        publishers and subscribers. Use lookupService instead to lookup
-        ROS-RPC URIs.
+        Get the XML-RPC URI of the node with the associated name/caller_id.  
+        A caller_id can get this information only if it has a relation with this node, ie, 
+        it is a subscriber or publisher to a topic with this node. 
+        This API is for looking information about publishers and subscribers. 
+        Use lookupService instead to lookup ROS-RPC URIs.
+        SecureROS: This will be called by publisher (client_ip_address) to subscriber (node_name)
         @param caller_id: ROS caller id
         @type  caller_id: str
         @param node: name of node to lookup
         @type  node: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: (code, msg, URI)
         @rtype: (int, str, str)
         """
@@ -816,18 +953,40 @@ class ROSMasterHandler(object):
                 retval = -1, "unknown node [%s]"%node_name, ''
         finally:
             self.ps_lock.release()
-        return retval
+        if is_uri_match( self.uri, client_ip_address ):
+            """ all requests from master are authorized  """
+            return retval
+        else:
+            """ Allow if node is the subscriber to a topic for which client_ip_address is a peer_publisher
+            """
+            if node is not None:
+                if self.auth.check_peer_publisher_to_api( node.api, client_ip_address ):
+                    self.auth.logger.info( "lookupNode( %s, %s, %s ): OK (%s is peer publisher to %s)" %
+                        ( caller_id, node_name, client_ip_address, client_ip_address, node.api ) )
+                    return retval
+                else:
+                    self.auth.logger.info( "lookupNode( %s, %s, %s ): No (%s is not peer publisher to %s)" %
+                        ( caller_id, node_name, client_ip_address, client_ip_address, node.api ) )
+                    return -1, "node_name not authorized", ''
+        self.auth.logger.warn( "lookupNode( %s, %s, %s ): node_name is not valid" %
+            ( caller_id, node_name, client_ip_address ) )
+        return -1, "node_name not authorized", ''
+
+
         
-    @apivalidate(0, (empty_or_valid_name('subgraph'),))
-    def getPublishedTopics(self, caller_id, subgraph):
+    @apivalidate(0, (empty_or_valid_name('subgraph'), is_ipv4('client_ip_address')))
+    def getPublishedTopics(self, caller_id, subgraph, client_ip_address = "127.0.0.1"):
         """
         Get list of topics that can be subscribed to. This does not return topics that have no publishers.
+        This only returns topics that the client is authorized to subscribe to.
         See L{getSystemState()} to get more comprehensive list.
         @param caller_id: ROS caller id
         @type  caller_id: str
         @param subgraph: Restrict topic names to match within the specified subgraph. Subgraph namespace
            is resolved relative to the caller's namespace. Use '' to specify all names.
         @type  subgraph: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: (code, msg, [[topic1, type1]...[topicN, typeN]])
         @rtype: (int, str, [[str, str],])
         """
@@ -838,34 +997,41 @@ class ROSMasterHandler(object):
                 subgraph = subgraph + rosgraph.names.SEP
             #we don't bother with subscribers as subscribers don't report topic types. also, the intended
             #use case is for subscribe-by-topic-type
-            retval = [[t, self.topics_types[t]] for t in self.publishers.iterkeys() if t.startswith(subgraph)]
+            retval = [[t, self.topics_types[t]] for t in self.publishers.iterkeys() if t.startswith(subgraph) and 
+                    self.auth.check_subscriber( t, client_ip_address )]
         finally:
             self.ps_lock.release()
         return 1, "current topics", retval
     
-    @apivalidate([])
-    def getTopicTypes(self, caller_id): 
+    @apivalidate([], (is_ipv4('client_ip_address'),))
+    def getTopicTypes(self, caller_id, client_ip_address = "127.0.0.1"): 
         """
         Retrieve list topic names and their types.
+        This only returns topics that the client is authorized to subscribe to.
         @param caller_id: ROS caller id    
         @type  caller_id: str
         @rtype: (int, str, [[str,str]] )
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: (code, statusMessage, topicTypes). topicTypes is a list of [topicName, topicType] pairs.
         """
         try: 
             self.ps_lock.acquire()
-            retval = list(self.topics_types.items())
+            retval = list( [t,ttype] for [t,ttype] in self.topics_types.items() if self.auth.check_subscriber( t, client_ip_address ))
         finally:
             self.ps_lock.release()
+        """ TODO """
         return 1, "current system state", retval
 
-    @apivalidate([[],[], []])
-    def getSystemState(self, caller_id): 
+    @apivalidate([[],[],[]], (is_ipv4('client_ip_address'),))
+    def getSystemState(self, caller_id, client_ip_address = "127.0.0.1"): 
         """
         Retrieve list representation of system state (i.e. publishers, subscribers, and services).
         @param caller_id: ROS caller id    
         @type  caller_id: str
         @rtype: (int, str, [[str,[str]], [str,[str]], [str,[str]]])
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
         @return: (code, statusMessage, systemState).
 
            System state is in list representation::
@@ -886,4 +1052,10 @@ class ROSMasterHandler(object):
             retval = [r.get_state() for r in (self.publishers, self.subscribers, self.services)]
         finally:
             self.ps_lock.release()
+
+        if not is_uri_match( self.uri, client_ip_address ):
+            pubs = [[t,tpubs] for [t,tpubs] in retval[0] if self.auth.check_subscriber( t, client_ip_address )]
+            subs = [[t,tsubs] for [t,tsubs] in retval[1] if self.auth.check_publisher( t, client_ip_address )]
+            services = retval[2]
+            retval = [pubs, subs, services]
         return 1, "current system state", retval
