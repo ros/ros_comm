@@ -64,6 +64,8 @@ import rospy.impl.validators
 
 import threading
 
+from rospy.impl.masterslave import is_requester_authorized, auth_logger
+
 if sys.hexversion > 0x03000000: #Python3
     def isstring(s):
         return isinstance(s, str) #Python 3.x
@@ -226,6 +228,17 @@ def service_connection_handler(sock, client_addr, header):
         logger.debug("connection from %s:%s", client_addr[0], client_addr[1])
         service_name = header['service']
         
+        """ check again if the client request is authorized """
+        auth_logger.info( "received service connection for %s from %s (%s:%s)" %
+                ( service_name, header["callerid"], client_addr[0], client_addr[1] ) )
+        client_ip_address = client_addr[0]
+        if not is_requester_authorized( service_name, client_ip_address ):
+            auth_logger.warn( "service connection for %s from %s (%s) not authorized" %
+                    ( service_name, header["callerid"], client_ip_address ) )
+            return "Client [%s] wants service connection for %s, but %s is not authorized" % ( header['callerid'], service_name, client_ip_address )
+
+        auth_logger.info( "service connection for %s from %s (%s) OK" %
+                ( service_name, header["callerid"], client_ip_address ) )
         #TODO: make service manager configurable. I think the right
         #thing to do is to make these singletons private members of a
         #Node instance and enable rospy to have multiple node

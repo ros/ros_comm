@@ -37,6 +37,7 @@
 import socket
 import threading
 import time
+import logging
 
 try:
     from xmlrpc.client import ServerProxy  # Python 3.x
@@ -49,6 +50,7 @@ import rospy.names
 
 import rospy.impl.registration
 import rospy.impl.transport
+from rospy.impl.masterslave import is_subscriber_authorized, auth_logger
 
 from rospy.impl.tcpros_base import TCPROSTransport, TCPROSTransportProtocol, \
     get_tcpros_server_address, start_tcpros_server,\
@@ -350,6 +352,16 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
                 return "Client [%s] wants topic [%s] to have datatype/md5sum [%s/%s], but our version has [%s/%s] Dropping connection."%(header['callerid'], resolved_topic_name, requested_type, md5sum, actual_type, data_class._md5sum)
 
             else:
+                """ check again if the client request is authorized """
+                auth_logger.info( "received topic connection for %s from %s (%s:%s)" %
+                        ( resolved_topic_name, header["callerid"], client_addr[0], client_addr[1] ) )
+                client_ip_address = client_addr[0]
+                """ check if subscriber is authorized """
+                if not is_subscriber_authorized( resolved_topic_name, client_ip_address ):
+                    auth_logger.warn( "topic connection for %s from %s (%s) not authorized" %
+                            ( resolved_topic_name, header["callerid"], client_ip_address ) )
+                    return "Client [%s] wants topic connection for %s, but %s is not authorized" % ( header['callerid'], resolved_topic_name, client_ip_address )
+
                 #TODO:POLLING if polling header is present, have to spin up receive loop as well
 
                 # #1334: tcp_nodelay support from subscriber option
