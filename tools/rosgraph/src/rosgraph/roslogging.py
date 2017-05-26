@@ -83,7 +83,13 @@ def configure_logging(logname, level=logging.INFO, filename=None, env=None):
             makedirs_with_parent_perms(logfile_dir)
         except OSError:
             # cannot print to screen because command-line tools with output use this
-            sys.stderr.write("WARNING: cannot create log directory [%s]. Please set %s to a writable location.\n"%(logfile_dir, ROS_LOG_DIR))
+            if os.path.exists(logfile_dir):
+                # We successfully created the logging folder, but could not change
+                # permissions of the new folder to the same as the parent folder
+                sys.stderr.write("Could not change permissions for folder [{!s}], make sure that the parent folder has correct permissions.\n".format(logfile_dir))
+            else:
+                # Could not create folder
+                sys.stderr.write("WARNING: cannot create log directory [%s]. Please set %s to a writable location.\n"%(logfile_dir, ROS_LOG_DIR))
             return None
     elif os.path.isfile(logfile_dir):
         raise LoggingException("Cannot save log files: file [%s] is in the way"%logfile_dir)
