@@ -4,6 +4,7 @@
 
 #include "xmlrpcpp/XmlRpcSocket.h"
 #include "xmlrpcpp/XmlRpcUtil.h"
+#include "xmlrpcpp/XmlRpcClientInfo.h"
 
 #ifndef MAKEDEPEND
 
@@ -178,7 +179,7 @@ XmlRpcSocket::listen(int fd, int backlog)
 
 
 int
-XmlRpcSocket::accept(int fd)
+XmlRpcSocket::accept(int fd, XmlRpcClientInfo& clientInfo)
 {
   struct sockaddr_in addr;
 #if defined(_WINDOWS)
@@ -190,7 +191,16 @@ XmlRpcSocket::accept(int fd)
   // accept will truncate the address if the buffer is too small.
   // As we are not using it, no special case for IPv6
   // has to be made.
-  return (int) ::accept(fd, (struct sockaddr*)&addr, &addrlen);
+  int result = (int) ::accept(fd, (struct sockaddr*)&addr, &addrlen);
+
+  struct sockaddr_in* inaddr_ptr = (struct sockaddr_in *)&addr;
+  char *ip = inet_ntoa(inaddr_ptr->sin_addr);
+
+  clientInfo.family = inaddr_ptr->sin_family;
+  clientInfo.port = inaddr_ptr->sin_port;
+  clientInfo.ip = std::string(ip);
+
+  return result;
 }
 
 

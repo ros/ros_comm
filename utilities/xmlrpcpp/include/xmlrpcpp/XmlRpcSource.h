@@ -9,6 +9,7 @@
 #endif
 
 #include "xmlrpcpp/XmlRpcDecl.h"
+#include "xmlrpcpp/XmlRpcClientInfo.h"
 
 namespace XmlRpc {
 
@@ -39,7 +40,12 @@ namespace XmlRpc {
     //! Return true to continue monitoring this source
     virtual unsigned handleEvent(unsigned eventType) = 0;
 
+    XmlRpcClientInfo getClientInfo() { return _clientInfo; }
+
   private:
+
+    // Client information including IP address 
+    XmlRpcClientInfo _clientInfo;
 
     // Socket. This should really be a SOCKET (an alias for unsigned int*) on windows...
     int _fd;
