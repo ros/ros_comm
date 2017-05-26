@@ -150,6 +150,31 @@ def _float_attr(v, default, label):
         raise XmlParseException("invalid float value for %s: %s"%(label, v))
     return x
 
+def _positive_int_attr(v, default, label):
+    """
+    Validate positive integer xml attribute.
+    @param v: parameter value or None if no value provided
+    @type v: any
+    @param default: default value
+    @type  default: int
+    @param label: parameter name/label
+    @type  label: str
+    @return: int value for attribute
+    @rtype: int
+    @raise XmlParseException: if v is not in correct range or is empty.
+    """
+    if v is None:
+        return default
+    if not v:
+        raise XmlParseException("positive int value for %s must be non-empty"%(label))
+    try:
+        x = int(v)
+        if x < 0:
+            raise XmlParseException("invalid positive int value for %s: %s"%(label, v))
+    except ValueError:
+        raise XmlParseException("invalid positive int value for %s: %s"%(label, v))
+    return x
+
 
 # maps machine 'default' attribute to Machine default property
 _is_default = {'true': True, 'false': False, 'never': False }
@@ -332,7 +357,7 @@ class XmlLoader(loader.Loader):
         
     NODE_ATTRS = ['pkg', 'type', 'machine', 'name', 'args', 'output', \
             'respawn', 'respawn_delay', 'cwd', NS, CLEAR_PARAMS, \
-            'launch-prefix', 'required']
+            'launch-prefix', 'required', 'logfile_count', 'max_logfile_size']
     TEST_ATTRS = NODE_ATTRS + ['test-name','time-limit', 'retry']
     
     @ifunless
@@ -374,9 +399,9 @@ class XmlLoader(loader.Loader):
             
             # optional attributes
             machine, args, output, respawn, respawn_delay, cwd, launch_prefix, \
-                    required = self.opt_attrs(tag, context, ('machine', 'args',
-                        'output', 'respawn', 'respawn_delay', 'cwd',
-                        'launch-prefix', 'required'))
+                    required, max_logfile_size, logfile_count = \
+                self.opt_attrs(tag, context, ('machine', 'args', 'output', 'respawn', 'respawn_delay', 'cwd',
+                        'launch-prefix', 'required', 'max_logfile_size', 'logfile_count'))
             if tag.hasAttribute('machine') and not len(machine.strip()):
                 raise XmlParseException("<node> 'machine' must be non-empty: [%s]"%machine)
             if not machine and default_machine:
@@ -385,6 +410,9 @@ class XmlLoader(loader.Loader):
             required, respawn = [_bool_attr(*rr) for rr in ((required, False, 'required'),\
                                                                 (respawn, False, 'respawn'))]
             respawn_delay = _float_attr(respawn_delay, 0.0, 'respawn_delay')
+
+            max_logfile_size = _positive_int_attr(max_logfile_size, None, 'max_logfile_size')
+            logfile_count = _positive_int_attr(logfile_count, 2, 'logfile_count')
 
             # each node gets its own copy of <remap> arguments, which
             # it inherits from its parent
@@ -427,7 +455,8 @@ class XmlLoader(loader.Loader):
                             respawn_delay=respawn_delay,
                             remap_args=remap_context.remap_args(), env_args=env_context.env_args,
                             output=output, cwd=cwd, launch_prefix=launch_prefix,
-                            required=required, filename=context.filename)
+                            required=required, filename=context.filename, max_logfile_size=max_logfile_size,
+                            logfile_count=logfile_count)
             else:
                 return Test(test_name, pkg, node_type, name=name, namespace=child_ns.ns, 
                             machine_name=machine, args=args,
