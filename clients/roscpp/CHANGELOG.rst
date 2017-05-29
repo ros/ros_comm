@@ -2,6 +2,10 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix bug in transport_tcp (`#1050 <https://github.com/ros/ros_comm/pull/1050>`_)
+
 1.12.7 (2017-02-17)
 -------------------
 * move connection specific log message to new name roscpp_internal.connections (`#980 <https://github.com/ros/ros_comm/pull/980>`_)
