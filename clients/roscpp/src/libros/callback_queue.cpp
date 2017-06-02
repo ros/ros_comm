@@ -360,7 +360,7 @@ CallbackQueue::CallOneResult CallbackQueue::callOneCB(TLS* tls)
   ROS_ASSERT(!tls->callbacks.empty());
   ROS_ASSERT(tls->cb_it != tls->callbacks.end());
 
-  CallbackInfo info = *tls->cb_it;
+  CallbackInfo& info = *tls->cb_it;
   CallbackInterfacePtr& cb = info.callback;
 
   IDInfoPtr id_info = getIDInfo(info.removal_id);
