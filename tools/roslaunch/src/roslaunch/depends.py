@@ -274,7 +274,7 @@ def calculate_missing(base_pkg, missing, file_deps):
             # since rospkg  does uses rosdep to decide which dependencies to return
             from catkin_pkg.package import parse_package
             p = parse_package(os.path.dirname(m.filename))
-            d_pkgs = set([d.name for d in p.run_depends])
+            d_pkgs = set([d.name for d in p.run_depends + p.test_depends])
         # make sure we don't count ourselves as a dep
         d_pkgs.add(pkg)
 
