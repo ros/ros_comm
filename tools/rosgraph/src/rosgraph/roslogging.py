@@ -157,6 +157,7 @@ _logging_to_rospy_names = {
     'CRITICAL': ('FATAL', '\033[31m')
 }
 _color_reset = '\033[0m'
+_defaultFormatter = logging.Formatter()
 
 class RosStreamHandler(logging.Handler):
     def __init__(self, colorize=True):
@@ -172,10 +173,11 @@ class RosStreamHandler(logging.Handler):
 
     def emit(self, record):
         level, color = _logging_to_rospy_names[record.levelname]
+        record_message = _defaultFormatter.format(record)
         if 'ROSCONSOLE_FORMAT' in os.environ.keys():
             msg = os.environ['ROSCONSOLE_FORMAT']
             msg = msg.replace('${severity}', level)
-            msg = msg.replace('${message}', str(record.getMessage()))
+            msg = msg.replace('${message}', str(record_message))
             msg = msg.replace('${walltime}', '%f' % time.time())
             msg = msg.replace('${thread}', str(record.thread))
             msg = msg.replace('${logger}', str(record.name))
@@ -198,7 +200,7 @@ class RosStreamHandler(logging.Handler):
             msg = '[%s] [WallTime: %f]' % (level, time.time())
             if self._get_time is not None and not self._is_wallclock():
                 msg += ' [%f]' % self._get_time()
-            msg += ' %s\n' % record.getMessage()
+            msg += ' %s\n' % record_message
         if record.levelno < logging.WARNING:
             self._write(sys.stdout, msg, color)
         else:
