@@ -63,6 +63,7 @@ import roslib.message
 import rosgraph
 #TODO: lazy-import rospy or move rospy-dependent routines to separate location
 import rospy
+import std_msgs
 
 class ROSTopicException(Exception):
     """
@@ -233,15 +234,16 @@ class ROSTopicHz(object):
     def print_hz(self, topics=(None,)):
         """
         print the average publishing rate to screen
+        Returns the struct that was printed or None.
         """
         if len(topics) == 1:
             ret = self.get_hz(topics[0])
             if ret is None:
                 print("no new messages")
-                return
+                return None
             rate, min_delta, max_delta, std_dev, window = ret
             print("average rate: %.3f\n\tmin: %.3fs max: %.3fs std dev: %.5fs window: %s"%(rate, min_delta, max_delta, std_dev, window))
-            return
+            return ret
 
         # monitoring multiple topics' hz
         header = ['topic', 'rate', 'min_delta', 'max_delta', 'std_dev', 'window']
@@ -260,8 +262,9 @@ class ROSTopicHz(object):
             stats['window'].append(str(window))
         if not stats['topic']:
             print('no new messages')
-            return
+            return None
         print(_get_ascii_table(header, stats))
+        return stats
 
 def _get_ascii_table(header, cols):
     # compose table with left alignment
@@ -284,13 +287,14 @@ def _get_ascii_table(header, cols):
 def _sleep(duration):
     rospy.rostime.wallsleep(duration)
 
-def _rostopic_hz(topics, window_size=-1, filter_expr=None, use_wtime=False):
+def _rostopic_hz(topics, window_size=-1, filter_expr=None, use_wtime=False, publish_hz_topic=None):
     """
     Periodically print the publishing rate of a topic to console until
     shutdown
     :param topics: topic names, ``list`` of ``str``
     :param window_size: number of messages to average over, -1 for infinite, ``int``
     :param filter_expr: Python filter expression that is called with m, the message instance
+    :param publish_hz_topic:  Publish rate on this topic
     """
     _check_master()
     if rospy.is_shutdown():
@@ -307,13 +311,20 @@ def _rostopic_hz(topics, window_size=-1, filter_expr=None, use_wtime=False):
         else:
             rospy.Subscriber(real_topic, rospy.AnyMsg, rt.callback_hz, callback_args=topic)
         print("subscribed to [%s]" % real_topic)
-
+    pub = None
+    if publish_hz_topic:
+        pub = rospy.Publisher(publish_hz_topic, std_msgs.msg.Float64, queue_size=10)
     if rospy.get_param('use_sim_time', False):
         print("WARNING: may be using simulated time",file=sys.stderr)
 
     while not rospy.is_shutdown():
         _sleep(1.0)
-        rt.print_hz(topics)
+        ret = rt.print_hz(topics)
+        if pub:
+            if ret is None:
+                continue
+            rate, min_delta, max_delta, std_dev, window = ret
+            pub.publish(rate)
 
 class ROSTopicDelay(object):
 
@@ -438,10 +449,11 @@ class ROSTopicBandwidth(object):
             except:
                 traceback.print_exc()
 
-    def print_bw(self):
-        """print the average publishing rate to screen"""
-        if len(self.times) < 2:
-            return
+    def compute_bw(self):
+        """
+        Compute the band width based on the recorded times.
+        :returns: a tuple bytes per sec, mean, min, max, n_data
+        """
         with self.lock:
             n = len(self.times)
             tn = time.time()
@@ -457,6 +469,13 @@ class ROSTopicBandwidth(object):
             max_s = max(self.sizes)
             min_s = min(self.sizes)
 
+        return (bytes_per_s, mean, min_s, max_s, n)
+
+    def print_bw(self):
+        """print the average publishing rate to screen"""
+        if len(self.times) < 2:
+            return
+        bytes_per_s, mean, min_s, max_s, n = self.compute_bw()
         #min/max and even mean are likely to be much smaller, but for now I prefer unit consistency
         if bytes_per_s < 1000:
             bw, mean, min_s, max_s = ["%.2fB"%v for v in [bytes_per_s, mean, min_s, max_s]]
@@ -475,7 +494,7 @@ def _isstring_type(t):
         pass
     return t in valid_types
 
-def _rostopic_bw(topic, window_size=-1):
+def _rostopic_bw(topic, window_size=-1, publish_bw_topic=None):
     """
     periodically print the received bandwidth of a topic to console until
     shutdown
@@ -490,10 +509,18 @@ def _rostopic_bw(topic, window_size=-1):
     # we use a large buffer size as we don't know what sort of messages we're dealing with.
     # may parameterize this in the future
     sub = rospy.Subscriber(real_topic, rospy.AnyMsg, rt.callback)
+    pub = None
+    if publish_bw_topic:
+        pub = rospy.Publisher(publish_bw_topic, std_msgs.msg.Float64, queue_size=10)
     print("subscribed to [%s]"%real_topic)
     while not rospy.is_shutdown():
         _sleep(1.0)
         rt.print_bw()
+        if pub:
+            if len(rt.times) < 2:
+                continue
+            bytes_per_s, mean, min_s, max_s, n = rt.compute_bw()
+            pub.publish(bytes_per_s)
 
 # code adapted from rqt_plot
 def msgevalgen(pattern):
@@ -1477,6 +1504,9 @@ def _rostopic_cmd_hz(argv):
     parser.add_option("--wall-time",
                       dest="use_wtime", default=False, action="store_true",
                       help="calculates rate using wall time which can be helpful when clock isnt published during simulation")
+    parser.add_option("--publish-hz",
+                    dest="publish_hz", default=None,
+                    help="publishes the rate on the given topic to be used by other program (e.g. for plotting)")
 
     (options, args) = parser.parse_args(args)
     if len(args) == 0:
@@ -1491,6 +1521,8 @@ def _rostopic_cmd_hz(argv):
         parser.error("window size must be an integer")
 
     topics = [rosgraph.names.script_resolve_name('rostopic', t) for t in args]
+    if options.publish_hz and len(topics) > 1:
+        parser.error("--publish_hz specificied, but multiple topics given. --publish_hz only works for a single topic.")
 
     # #694
     if options.filter_expr:
@@ -1502,7 +1534,7 @@ def _rostopic_cmd_hz(argv):
     else:
         filter_expr = None
     _rostopic_hz(topics, window_size=window_size, filter_expr=filter_expr,
-                 use_wtime=options.use_wtime)
+                 use_wtime=options.use_wtime, publish_hz_topic=options.publish_hz)
 
 
 def _rostopic_cmd_delay(argv):
@@ -1528,6 +1560,9 @@ def _rostopic_cmd_bw(argv=sys.argv):
     parser.add_option("-w", "--window",
                       dest="window_size", default=None,
                       help="window size, in # of messages, for calculating rate", metavar="WINDOW")
+    parser.add_option("--publish-bw",
+                    dest="publish_bw", default=None,
+                    help="publishes the band width on the given topic to be used by other program (e.g. for plotting)")
     options, args = parser.parse_args(args)
     if len(args) == 0:
         parser.error("topic must be specified")        
@@ -1542,7 +1577,7 @@ def _rostopic_cmd_bw(argv=sys.argv):
     except:
         parser.error("window size must be an integer")
     topic = rosgraph.names.script_resolve_name('rostopic', args[0])
-    _rostopic_bw(topic, window_size=window_size)
+    _rostopic_bw(topic, window_size=window_size, publish_bw_topic=options.publish_bw)
 
 def find_by_type(topic_type):
     """
