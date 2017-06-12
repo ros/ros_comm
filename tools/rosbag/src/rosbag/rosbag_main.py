@@ -158,9 +158,12 @@ def info_cmd(argv):
         try:
             b = Bag(arg, 'r', skip_index=not options.freq)
             if options.yaml:
-                info = b._get_yaml_info(key=options.key)
-                if info is not None:
-                    print(info)
+                if options.key:
+                    os.system("./rosbag_info_pkg/devel/lib/rosbag_info_pkg/rosbag-info " + " ".join(sys.argv[2:]))
+                else:
+                    info = b._get_yaml_info(key=options.key)
+                    if info is not None:
+                        print(info)
             else:
                 print(b)
             b.close()

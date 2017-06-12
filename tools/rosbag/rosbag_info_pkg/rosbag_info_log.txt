@@ -1,0 +1,44 @@
+
+2011-01-21-09-01-36.bag
+path 
+old time
+11.972
+new time
+0.756
+ratio 15.83
+path --freq
+old time
+27.299
+new time
+1.141
+ratio 23.92
+size 
+old time
+17.703
+new time
+1.833
+ratio 9.65
+size --freq
+old time
+27.569
+new time
+1.291
+ratio 21.35
+version 
+old time
+32.871
+new time
+1.191
+ratio 27.59
+version --freq
+old time
+28.991
+new time
+0.877
+ratio 33.05
+duration 
+old time
+18.314
+new time
+2.309
+ratio 7.93
