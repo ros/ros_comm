@@ -1,5 +1,5 @@
 #! /bin/bash
-#wget 'http://infinity.csail.mit.edu/data/2011/2011-01-21-09-01-36.bag'
+wget 'http://infinity.csail.mit.edu/data/2011/2011-01-21-09-01-36.bag'
 echo > rosbag_info_log.txt
 file=$(ls | grep -E ".*\.bag")
 chmod +x test.sh
