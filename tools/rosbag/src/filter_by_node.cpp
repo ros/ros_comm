@@ -19,7 +19,7 @@ using rosbag::MessageInstance;
 using rosbag::BagException;
 
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "filter_node", ros::init_options::AnonymousName);
+    ros::init(argc, argv, "filter_by_node", ros::init_options::AnonymousName);
     try {
         Bag bag(argv[1]);
         View view(bag);
