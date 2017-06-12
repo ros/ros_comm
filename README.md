@@ -4,21 +4,21 @@ ROS communications-related packages, including core client libraries (roscpp, ro
 
 Rosbag: create an option to filter for topics published by a specific node(issue #819).
 
-1) What's changed. 
+1) What's changed.// 
    I created two keys for separate commands:
        rosbag record --publisher=NODE - records all messages by topics subscribed to by a specific node. It is like a --node=NODE, but from other side.
        rosbag filter in.bag out.bag --node=NODE - filters for topics subscribed to by a specific node
 
-2) Realization
+2) Realization//
     
 
-3) Build
+3) Build\\
     You need to replace your ./src/ros_comm/tools/rosbag with my ./src/ros_comm/tools/rosbag - nothing was changed aside of this folder.
     Next you need to execute:
         ./src/catkin/bin/catkin_make_isolated --install -DCMAKE_BUILD_TYPE=Release
     Now you're ready to test.
     
-4) Testing
+4) Testing\\
     To test these functions we'll use canonical turtlesim. Open four terminals, set up ros in every one of them.
     Now, on three of them execute these commands:
         roscore
