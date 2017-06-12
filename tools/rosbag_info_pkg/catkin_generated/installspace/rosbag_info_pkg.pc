@@ -1,0 +1,8 @@
+prefix=/usr/local
+
+Name: rosbag_info_pkg
+Description: Description of rosbag_info_pkg
+Version: 0.0.0
+Cflags: 
+Libs: -L/usr/local/lib 
+Requires: 
