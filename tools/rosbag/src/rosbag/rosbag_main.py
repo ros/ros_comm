@@ -341,7 +341,7 @@ The following variables are available:
         return
 
     if options.node:
-        playpath = roslib.packages.find_node('rosbag', 'filter_node')
+        playpath = roslib.packages.find_node('rosbag', 'filter_by_node')
         cmd = [playpath[0]]
         cmd.extend([inbag_filename, options.node])
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
