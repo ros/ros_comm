@@ -308,6 +308,7 @@ The following variables are available:
  * t: time of message (t.secs, t.nsecs)""",
                                    description='Filter the contents of the bag.')
     parser.add_option('-p', '--print', action='store', dest='verbose_pattern', default=None, metavar='PRINT-EXPRESSION', help='Python expression to print for verbose debugging. Uses same variables as filter-expression')
+    parser.add_option('--node', action='store', dest='node', default=None, type='string', help='filter for topics published by a node')
 
     options, args = parser.parse_args(argv)
     if len(args) == 0:
@@ -332,51 +333,63 @@ The following variables are available:
     filter_fn = expr_eval(expr)
 
     outbag = Bag(outbag_filename, 'w')
-    
+
     try:
         inbag = Bag(inbag_filename)
     except ROSBagUnindexedException as ex:
         print('ERROR bag unindexed: %s.  Run rosbag reindex.' % inbag_filename, file=sys.stderr)
         return
 
+    if options.node:
+        playpath = roslib.packages.find_node('rosbag', 'filter_node')
+        cmd = [playpath[0]]
+        cmd.extend([inbag_filename, options.node])
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        process.wait()
+        fitting = set()
+        for line in process.stdout:
+            topic, sec, nsec = line.split(' ')
+            fitting.add(topic, sec, nsec)
+
     try:
         meter = ProgressMeter(outbag_filename, inbag._uncompressed_size)
-        total_bytes = 0
-    
+        total_bytes = 0    
+
         if options.verbose_pattern:
             verbose_pattern = expr_eval(options.verbose_pattern)
     
             for topic, raw_msg, t in inbag.read_messages(raw=True):
-                msg_type, serialized_bytes, md5sum, pos, pytype = raw_msg
-                msg = pytype()
-                msg.deserialize(serialized_bytes)
+                if not options.node or (topic, sec, nsec) in fitting:
+                    msg_type, serialized_bytes, md5sum, pos, pytype = raw_msg
+                    msg = pytype()
+                    msg.deserialize(serialized_bytes)
 
-                if filter_fn(topic, msg, t):
-                    print('MATCH', verbose_pattern(topic, msg, t))
-                    outbag.write(topic, msg, t)
-                else:
-                    print('NO MATCH', verbose_pattern(topic, msg, t))          
+                    if filter_fn(topic, msg, t):
+                        print('MATCH', verbose_pattern(topic, msg, t))
+                        outbag.write(topic, msg, t)
+                    else:
+                        print('NO MATCH', verbose_pattern(topic, msg, t))          
 
-                total_bytes += len(serialized_bytes) 
-                meter.step(total_bytes)
+                    total_bytes += len(serialized_bytes) 
+                    meter.step(total_bytes)
         else:
             for topic, raw_msg, t in inbag.read_messages(raw=True):
-                msg_type, serialized_bytes, md5sum, pos, pytype = raw_msg
-                msg = pytype()
-                msg.deserialize(serialized_bytes)
+                if not options.node or (topic, sec, nsec) in fitting:
+                    msg_type, serialized_bytes, md5sum, pos, pytype = raw_msg
+                    msg = pytype()
+                    msg.deserialize(serialized_bytes)
 
-                if filter_fn(topic, msg, t):
-                    outbag.write(topic, msg, t)
+                    if filter_fn(topic, msg, t):
+                        outbag.write(topic, msg, t)
 
-                total_bytes += len(serialized_bytes)
-                meter.step(total_bytes)
+                    total_bytes += len(serialized_bytes)
+                    meter.step(total_bytes)
         
         meter.finish()
 
     finally:
         inbag.close()
         outbag.close()
-
 def fix_cmd(argv):
     parser = optparse.OptionParser(usage='rosbag fix INBAG OUTBAG [EXTRARULES1 EXTRARULES2 ...]', description='Repair the messages in a bag file so that it can be played in the current system.')
     parser.add_option('-n', '--noplugins', action='store_true', dest='noplugins', help='do not load rulefiles via plugins')
