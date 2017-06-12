@@ -91,12 +91,13 @@ def record_cmd(argv):
     parser.add_option("--chunksize",           dest="chunksize",     default=768,   type='int',   action="store", help="Advanced. Record to chunks of SIZE KB (Default: %default)", metavar="SIZE")
     parser.add_option("-l", "--limit",         dest="num",           default=0,     type='int',   action="store", help="only record NUM messages on each topic")
     parser.add_option(      "--node",          dest="node",          default=None,  type='string',action="store", help="record all topics subscribed to by a specific node")
+    parser.add_option(      "--publisher",          dest="publisher",          default=None,  type='string',action="store", help="record all topics published by a specific node")
     parser.add_option("-j", "--bz2",           dest="compression",   default=None,  action="store_const", const='bz2', help="use BZ2 compression")
     parser.add_option("--lz4",                 dest="compression",                  action="store_const", const='lz4', help="use LZ4 compression")
 
     (options, args) = parser.parse_args(argv)
 
-    if len(args) == 0 and not options.all and not options.node:
+    if len(args) == 0 and not options.all and not options.node and not options.publisher:
         parser.error("You must specify a topic name or else use the '-a' option.")
 
     if options.prefix is not None and options.name is not None:
@@ -128,6 +129,8 @@ def record_cmd(argv):
     if options.size:        cmd.extend(["--size", str(options.size)])
     if options.node:
         cmd.extend(["--node", options.node])
+    if options.publisher:
+        cmd.extend(["--publisher", options.publisher])
 
     cmd.extend(args)
 
