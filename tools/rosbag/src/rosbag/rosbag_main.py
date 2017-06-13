@@ -159,7 +159,10 @@ def info_cmd(argv):
             b = Bag(arg, 'r', skip_index=not options.freq)
             if options.yaml:
                 if options.key:
-                    os.system("./rosbag_info_pkg/devel/lib/rosbag_info_pkg/rosbag-info " + " ".join(sys.argv[2:]))
+                    os.system("cmake rosbag_info_pkg/CMakeLists.txt")
+                    os.system("cd rosbag_info_pkg")
+                    os.system("make")
+                    os.system("./devel/lib/rosbag_info_pkg/rosbag-info " + " ".join(sys.argv[2:]))
                 else:
                     info = b._get_yaml_info(key=options.key)
                     if info is not None:
