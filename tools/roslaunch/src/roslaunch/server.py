@@ -123,7 +123,7 @@ class ROSLaunchBaseHandler(xmlrpc.XmlRpcHandler):
         else:
             return 1, "process info", p.get_info()
 
-    def get_pid(self):
+    def get_pid(self, client_ip_address = "127.0.0.1" ):
         """
         @return: code, msg, pid
         @rtype: int, str, int
