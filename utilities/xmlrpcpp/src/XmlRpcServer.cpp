@@ -238,6 +238,7 @@ public:
 
   void execute(XmlRpcValue& params, XmlRpcClientInfo& ci, XmlRpcValue& result)
   {
+    (void) ci;
     if (params[0].getType() != XmlRpcValue::TypeString)
       throw XmlRpcException(METHOD_HELP + ": Invalid argument type");
 
