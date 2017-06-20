@@ -130,7 +130,7 @@ class TestHandler(roslaunch.server.ROSLaunchBaseHandler):
     def __init__(self, pm):
         super(TestHandler, self).__init__(pm)
         self.pinged = None
-    def ping(self, val):
+    def ping(self, val, client_ip_address = "127.0.0.1"):
         self.pinged = val
         return True
 

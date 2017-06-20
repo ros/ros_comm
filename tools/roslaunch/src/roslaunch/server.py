@@ -169,7 +169,7 @@ class ROSLaunchParentHandler(ROSLaunchBaseHandler):
         self.child_processes = child_processes
         self.listeners = listeners
 
-    def register(self, client, uri):
+    def register(self, client, uri, client_ip_address = "127.0.0.1" ):
         """
         Registration callback from newly launched roslaunch clients
         @param client: name of client
@@ -187,14 +187,14 @@ class ROSLaunchParentHandler(ROSLaunchBaseHandler):
             self.child_processes[client].set_uri(uri)
         return 1, "registered", 1
 
-    def list_children(self):
+    def list_children(self, client_ip_address = "127.0.0.1"):
         """
         List the roslaunch child processes.
         @return int, str, [str]: code, msg, list of the roslaunch children URIS
         """        
         return 1, 'roslaunch children', [v.uri for v in self.child_processes.values() if v.uri is not None]
             
-    def process_died(self, process_name, exit_code):
+    def process_died(self, process_name, exit_code, client_ip_address = "127.0.0.1"):
         """
         Inform roslaunch server that a remote process has died
         @param process_name: name of process that died
@@ -211,7 +211,7 @@ class ROSLaunchParentHandler(ROSLaunchBaseHandler):
                 self.logger.error(traceback.format_exc())
         return 1, '', 0
         
-    def log(self, client, level, message):
+    def log(self, client, level, message, client_ip_address = "127.0.0.1"):
         """
         Report a log message to the server
         @param client: name of client
@@ -276,7 +276,7 @@ class ROSLaunchChildHandler(ROSLaunchBaseHandler):
             self.pm.join()
             self.pm = None
         
-    def shutdown(self):
+    def shutdown(self, client_ip_address = "127.0.0.1"):
         """
         @return: code, msg, ignore
         @rtype:  int, str, int
@@ -300,7 +300,7 @@ class ROSLaunchChildHandler(ROSLaunchBaseHandler):
         except:
             self.logger.error(traceback.format_exc())
     
-    def launch(self, launch_xml):
+    def launch(self, launch_xml, client_ip_address = "127.0.0.1"):
         """
         Launch the roslaunch XML file. Because this is a child
         roslaunch, it will not set parameters nor manipulate the
