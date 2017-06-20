@@ -61,6 +61,7 @@ import traceback
 import time
 import errno
 from rosmaster.authorization import is_uri_match
+from rosgraph.network import is_local_address
 
 try:
     #py3k
@@ -137,6 +138,7 @@ def is_requester_authorized( service, client_ip_address ):
         the caller IP address (client_ip_address).
         We use the valid URI list from master for this topic and checking if the 
         client_ip_address of the caller matches with one of the valid URIs.
+        Local IP addresses are allowed.
 
         @param service: Service for which subscriber authorization is requested
         @type  service: str 
@@ -146,6 +148,9 @@ def is_requester_authorized( service, client_ip_address ):
         @return: If client_ip_address is authorized for topic 
         @rtype: bool
     """
+    if is_local_address( client_ip_address ):
+        auth_logger.debug( "Local requester for %s allowed" % service )
+        return True
     masterUri = rosgraph.get_master_uri()
     this_caller_id = rospy.names.get_caller_id()
     auth_clients = get_service_client_list( masterUri, service, this_caller_id )
@@ -163,6 +168,7 @@ def is_subscriber_authorized( topic, client_ip_address ):
         the caller IP address (client_ip_address).
         We use the valid URI list from master for this topic and checking if the 
         client_ip_address of the caller matches with one of the valid URIs.
+        Local IP addresses are allowed.
 
         @param topic: Topic for which subscriber authorization is requested
         @type  topic: str 
@@ -172,6 +178,9 @@ def is_subscriber_authorized( topic, client_ip_address ):
         @return: If client_ip_address is authorized for topic 
         @rtype: bool
     """
+    if is_local_address( client_ip_address ):
+        auth_logger.debug( "Local subscriber for %s allowed" % topic )
+        return True
     masterUri = rosgraph.get_master_uri()
     this_caller_id = rospy.names.get_caller_id()
     auth_logger.debug( "Getting subscribers for topic [%s]" % topic )
