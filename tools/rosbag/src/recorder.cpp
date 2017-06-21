@@ -572,7 +572,7 @@ void Recorder::doCheckMaster(ros::TimerEvent const& e, ros::NodeHandle& node_han
 				subscribe(t.name);
 		}
     }
-    
+
     if (options_.node != std::string(""))
     {
 
@@ -611,8 +611,7 @@ void Recorder::doCheckMaster(ros::TimerEvent const& e, ros::NodeHandle& node_han
         }
       }
     }
-}
-
+}  
 void Recorder::doTrigger() {
     ros::NodeHandle nh;
     ros::Publisher pub = nh.advertise<std_msgs::Empty>("snapshot_trigger", 1, true);

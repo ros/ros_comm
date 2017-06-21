@@ -305,7 +305,7 @@ The following variables are available:
  * t: time of message (t.secs, t.nsecs)""",
                                    description='Filter the contents of the bag.')
     parser.add_option('-p', '--print', action='store', dest='verbose_pattern', default=None, metavar='PRINT-EXPRESSION', help='Python expression to print for verbose debugging. Uses same variables as filter-expression')
-
+    
     options, args = parser.parse_args(argv)
     if len(args) == 0:
         parser.error('You must specify an in bag, an out bag, and an expression.')
@@ -329,7 +329,7 @@ The following variables are available:
     filter_fn = expr_eval(expr)
 
     outbag = Bag(outbag_filename, 'w')
-    
+
     try:
         inbag = Bag(inbag_filename)
     except ROSBagUnindexedException as ex:
@@ -338,8 +338,8 @@ The following variables are available:
 
     try:
         meter = ProgressMeter(outbag_filename, inbag._uncompressed_size)
-        total_bytes = 0
-    
+        total_bytes = 0    
+
         if options.verbose_pattern:
             verbose_pattern = expr_eval(options.verbose_pattern)
     
@@ -373,7 +373,6 @@ The following variables are available:
     finally:
         inbag.close()
         outbag.close()
-
 def fix_cmd(argv):
     parser = optparse.OptionParser(usage='rosbag fix INBAG OUTBAG [EXTRARULES1 EXTRARULES2 ...]', description='Repair the messages in a bag file so that it can be played in the current system.')
     parser.add_option('-n', '--noplugins', action='store_true', dest='noplugins', help='do not load rulefiles via plugins')
