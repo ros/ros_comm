@@ -26,8 +26,7 @@ catkin_package(
 add_library(rosbag
   src/player.cpp
   src/recorder.cpp
-  src/time_translator.cpp
-  src/filter_by_node.cpp)
+  src/time_translator.cpp)
 
 target_link_libraries(rosbag ${catkin_LIBRARIES} ${Boost_LIBRARIES}
   ${BZIP2_LIBRARIES}
@@ -38,9 +37,6 @@ target_link_libraries(record rosbag)
 
 add_executable(play src/play.cpp)
 target_link_libraries(play rosbag)
-
-add executable(filter_by_node src/filter_by_node.cpp)
-target_link_libraries(filter_by_node rosbag)
 
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
