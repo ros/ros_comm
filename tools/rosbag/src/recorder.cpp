@@ -110,7 +110,6 @@ RecorderOptions::RecorderOptions() :
     max_size(0),
     max_duration(-1.0),
     node(""),
-    publisher(""),
     min_space(1024 * 1024 * 1024),
     min_space_str("1G")
 {
@@ -142,7 +141,7 @@ int Recorder::run() {
         }
 
         // Make sure topics are specified
-        if (!options_.record_all && (options_.node == std::string("")) && (options_.publisher == std::string(""))) {
+        if (!options_.record_all && (options_.node == std::string(""))) {
             fprintf(stderr, "No topics specified.\n");
             return 1;
         }
@@ -189,7 +188,7 @@ int Recorder::run() {
 
 
     ros::Timer check_master_timer;
-    if (options_.record_all || options_.regex || (options_.node != std::string("")) || (options_.publisher != std::string("")))
+    if (options_.record_all || options_.regex || (options_.node != std::string("")))
     {
         // check for master first
         doCheckMaster(ros::TimerEvent(), nh);
@@ -612,45 +611,6 @@ void Recorder::doCheckMaster(ros::TimerEvent const& e, ros::NodeHandle& node_han
         }
       }
     }
-
-    if(options_.publisher != std::string(""))
-    {
-      XmlRpc::XmlRpcValue req;
-      req[0] = ros::this_node::getName();
-      req[1] = options_.publisher;
-      XmlRpc::XmlRpcValue resp;
-      XmlRpc::XmlRpcValue payload;
-
-      if (ros::master::execute("lookupNode", req, resp, payload, true))
-      {
-        std::string peer_host;
-        uint32_t peer_port;
-
-        if (!ros::network::splitURI(static_cast<std::string>(resp[2]), peer_host, peer_port))
-        {
-          ROS_ERROR("Bad xml-rpc URI trying to inspect node at: [%s]", static_cast<std::string>(resp[2]).c_str());
-        } else {
-
-          XmlRpc::XmlRpcClient c(peer_host.c_str(), peer_port, "/");
-          XmlRpc::XmlRpcValue req2;
-          XmlRpc::XmlRpcValue resp2;
-          req2[0] = ros::this_node::getName();
-          c.execute("getPublications", req2, resp2);
-          
-          if (!c.isFault() && resp2.valid() && resp2.size() > 0 && static_cast<int>(resp2[0]) == 1)
-          {
-            for(int i = 0; i < resp2[2].size(); i++)
-            {
-              if (shouldSubscribeToTopic(resp2[2][i][0], true))
-                subscribe(resp2[2][i][0]);
-            }
-          } else {
-            ROS_ERROR("Node at: [%s] failed to return subscriptions.", static_cast<std::string>(resp[2]).c_str());
-          }
-        }
-      }
-    }
-}
 
 void Recorder::doTrigger() {
     ros::NodeHandle nh;
