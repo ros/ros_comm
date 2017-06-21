@@ -108,7 +108,6 @@ struct ROSBAG_DECL RecorderOptions
     uint32_t        max_splits;
     ros::Duration   max_duration;
     std::string     node;
-    std::string     publisher;
     unsigned long long min_space;
     std::string min_space_str;
 
