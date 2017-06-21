@@ -66,8 +66,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       ("topic", po::value< std::vector<std::string> >(), "topic to record")
       ("size", po::value<uint64_t>(), "The maximum size of the bag to record in MB.")
       ("duration", po::value<std::string>(), "Record a bag of maximum duration in seconds, unless 'm', or 'h' is appended.")
-      ("node", po::value<std::string>(), "Record all topics subscribed to by a specific node.")
-      ("publisher", po::value<std::string>(), "Record all topics published by a specific node.");
+      ("node", po::value<std::string>(), "Record all topics subscribed to by a specific node.");
 
   
     po::positional_options_description p;
@@ -238,11 +237,6 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     {
       opts.node = vm["node"].as<std::string>();
       std::cout << "Recording from: " << opts.node << std::endl;
-    }
-    if (vm.count("publisher"))
-    {
-      opts.publisher = vm["publisher"].as<std::string>();
-      std::cout << "Recording from: " << opts.publisher << std::endl;
     }
 
     // Every non-option argument is assumed to be a topic
