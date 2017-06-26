@@ -42,6 +42,7 @@ import optparse
 
 import rosmaster.master
 from rosmaster.master_api import NUM_WORKERS
+from rosmaster.util import enable_close_sockets
 
 def configure_logging():
     """
@@ -71,6 +72,10 @@ def rosmaster_main(argv=sys.argv, stdout=sys.stdout, env=os.environ):
     parser.add_option("-t", "--timeout",
                       dest="timeout",
                       help="override the socket connection timeout (in seconds).", metavar="TIMEOUT")
+    parser.add_option("--close-sockets",
+                      dest="close_sockets",
+                      action="store_true", default=False,
+                      help="enable checking and closing CLOSE_WAIT sockets.")
     options, args = parser.parse_args(argv[1:])
 
     # only arg that zenmaster supports is __log remapping of logfilename
@@ -78,7 +83,7 @@ def rosmaster_main(argv=sys.argv, stdout=sys.stdout, env=os.environ):
         if not arg.startswith('__log:='):
             parser.error("unrecognized arg: %s"%arg)
     configure_logging()   
-    
+
     port = rosmaster.master.DEFAULT_MASTER_PORT
     if options.port:
         port = int(options.port)
@@ -107,6 +112,9 @@ WARNING ACHTUNG WARNING ACHTUNG WARNING
         logger.info("Setting socket timeout to %s" % options.timeout)
         import socket
         socket.setdefaulttimeout(float(options.timeout))
+
+    if options.close_sockets:
+        enable_close_sockets()
 
     try:
         logger.info("Starting ROS Master Node")
