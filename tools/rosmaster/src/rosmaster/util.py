@@ -52,6 +52,8 @@ del monkey_patch
 import socket
 
 _proxies = {} #cache ServerProxys
+_enable_close_sockets = False  # call close_half_closed_sockets in xmlrpcapi
+
 def xmlrpcapi(uri):
     """
     @return: instance for calling remote server or None if not a valid URI
@@ -64,7 +66,14 @@ def xmlrpcapi(uri):
         return None
     if not uri in _proxies:
         _proxies[uri] = ServerProxy(uri)
+    if _enable_close_sockets:
+        close_half_closed_sockets()
     return _proxies[uri]
+
+
+def enable_close_sockets():
+    global _enable_close_sockets
+    _enable_close_sockets = True
 
 
 def close_half_closed_sockets():
