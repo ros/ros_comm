@@ -91,10 +91,12 @@ namespace rosbag{
                         ss << std::fixed << std::setprecision(4) << topic.second.frequency;
                         //std::setprecision or precision method without std::fixed give wrong output
                         //getting rid of the trailing zeroes
-                        while(ss.str().size() && ss.str().back() == '0')
-                            ss.str().resize(ss.str().size() - 1);
+                        string res = ss.str();
+                        while(res.size() && res.back() == '0'){
+                            res.resize(res.size() - 1);
+                        }
                         info << YAML::Key << "frequency";
-                        info << YAML::Value << ss.str();
+                        info << YAML::Value << res;
                     }
                     info << YAML::Key << "type";
                     info << YAML::Value << topic.second.datatype;
