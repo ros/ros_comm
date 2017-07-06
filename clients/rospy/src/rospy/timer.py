@@ -57,10 +57,10 @@ class Rate(object):
         @param reset: if True, timer is reset when rostime moved backward. [default: False]
         @type  reset: bool
         """
-        self._reset = reset
         # #1403
         self.last_time = rospy.rostime.get_rostime()
         self.sleep_dur = rospy.rostime.Duration(0, int(1e9/hz))
+        self._reset = reset
 
     def _remaining(self, curr_time):
         """
@@ -101,13 +101,11 @@ class Rate(object):
         curr_time = rospy.rostime.get_rostime()
         try:
             sleep(self._remaining(curr_time))
-        except rospy.exceptions.ROSTimeMovedBackwardsException as e:
-            if self._reset:
-                rospy.logwarn('Time jumped backward, resetting timers.')
-                self.last_time = rospy.rostime.get_rostime()
-                return
-            else:
-                raise rospy.exceptions.ROSTimeMovedBackwardsException(e)
+        except rospy.exceptions.ROSTimeMovedBackwardsException:
+            if not self._reset:
+                raise
+            self.last_time = rospy.rostime.get_rostime()
+            return
         self.last_time = self.last_time + self.sleep_dur
 
         # detect time jumping forwards, as well as loops that are
