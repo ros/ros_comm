@@ -324,7 +324,7 @@ def main(argv=sys.argv):
         sys.exit(1)
     finally:
         # remove the pid file
-        if options.pid_fn:
+        if options is not None and options.pid_fn:
             try: os.unlink(options.pid_fn)
             except os.error: pass
 
