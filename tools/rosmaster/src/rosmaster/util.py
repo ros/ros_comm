@@ -64,6 +64,7 @@ def xmlrpcapi(uri):
         return None
     if not uri in _proxies:
         _proxies[uri] = ServerProxy(uri)
+    close_half_closed_sockets()
     return _proxies[uri]
 
 
