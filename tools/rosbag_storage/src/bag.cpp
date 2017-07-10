@@ -225,29 +225,18 @@ void Bag::readVersion() {
 
     file_header_pos_ = file_.getOffset();
 
-    size_t version_line_len = version_line.length();
-
-    if(version_line_len == 0)
-        throw BagIOException("Error reading version line");
-
-    char * logtypename = (char *) malloc(version_line_len + 1);
-
-    if(logtypename == NULL)
-        throw BagIOException("Error reading version line");
-
+    char logtypename[100];
     int version_major, version_minor;
 #if defined(_MSC_VER)
     if (sscanf_s(version_line.c_str(), "#ROS%s V%d.%d", logtypename, sizeof(logtypename), &version_major, &version_minor) != 3)
 #else
-    if (sscanf(version_line.c_str(), "#ROS%s V%d.%d", logtypename, &version_major, &version_minor) != 3)
+    if (sscanf(version_line.c_str(), "#ROS%99s V%d.%d", logtypename, &version_major, &version_minor) != 3)
 #endif
         throw BagIOException("Error reading version line");
 
     version_ = version_major * 100 + version_minor;
 
     logDebug("Read VERSION: version=%d", version_);
-
-    free(logtypename);
 }
 
 uint32_t Bag::getMajorVersion() const { return version_ / 100; }
