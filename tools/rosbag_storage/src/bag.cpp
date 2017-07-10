@@ -230,7 +230,7 @@ void Bag::readVersion() {
 #if defined(_MSC_VER)
     if (sscanf_s(version_line.c_str(), "#ROS%s V%d.%d", logtypename, sizeof(logtypename), &version_major, &version_minor) != 3)
 #else
-    if (sscanf(version_line.c_str(), "#ROS%s V%d.%d", logtypename, &version_major, &version_minor) != 3)
+    if (sscanf(version_line.c_str(), "#ROS%99s V%d.%d", logtypename, &version_major, &version_minor) != 3)
 #endif
         throw BagIOException("Error reading version line");
 
