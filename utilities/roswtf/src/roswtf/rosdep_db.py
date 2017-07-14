@@ -41,15 +41,16 @@ def get_user_home_directory():
     return os.path.expanduser("~")
 
 
-def rosdep_database_initialized_check(ctx):
-    """Makes sure rosdep database is initialized"""
+def rosdep_database_updated_check(ctx):
+    """Makes sure rosdep database is updated"""
     if not os.path.exists((os.path.join(get_user_home_directory(), '.ros', 'rosdep', 'sources.cache', 'index'))):
-        return "Please initialize rosdep database with sudo rosdep init."
+        return "Please update rosdep database with 'rosdep update'."
+
 
 warnings = []
 
-errors = [(rosdep_database_initialized_check,
-           "ROS Dep database not initialized: "),
+errors = [(rosdep_database_updated_check,
+           "ROS Dep database not updated: "),
          ]
 
 
