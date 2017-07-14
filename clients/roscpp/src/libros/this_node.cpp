@@ -150,6 +150,7 @@ void ThisNode::init(const std::string& name, const M_string& remappings, uint32_
     : ("/" + namespace_)
     ;
 
+  namespace_ = names::clean(namespace_);
 
   std::string error;
   if (!names::validate(namespace_, error))
