@@ -127,13 +127,15 @@ class TestRostopicOnline(unittest.TestCase):
             'No errors or warnings' in output or 'Found 1 error' in output,
             'CMD[%s] OUTPUT[%s]%s' %
             (' '.join(cmd), output, '\nstderr[%s]' % error if error else ''))
-        if 'No errors or warnings' in output:
-            self.assert_('ERROR' not in output, 'OUTPUT[%s]' % output)
+        allowed_errors = 0
         if 'Found 1 error' in output:
             self.assert_(output.count('ERROR') == 1, 'OUTPUT[%s]' % output)
             self.assert_(
-                'Error: the rosdep view is empty' not in output,
+                'ROS Dep database not updated' in output,
                 'OUTPUT[%s]' % output)
+            allowed_errors += 1
+        if 'No errors or warnings' in output:
+            self.assert_(output.count('ERROR') <= allowed_errors, 'OUTPUT[%s]' % output)
 
 if __name__ == '__main__':
     rostest.run(PKG, NAME, TestRostopicOnline, sys.argv)
