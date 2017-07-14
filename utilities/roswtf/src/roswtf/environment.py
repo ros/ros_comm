@@ -128,7 +128,7 @@ def ros_test_results_dir_check(ctx):
 def pythonpath_check(ctx):
     # used to have a lot more checks here, but trying to phase out need for roslib on custom PYTHONPATH
     path = ctx.pythonpath
-    roslib_count = len(set([p for p in paths(path) if 'roslib' in p]))
+    roslib_count = len(set([p for p in paths(path) if 'roslib' in p.split(os.sep)]))
     if roslib_count > 1:
         return "Multiple roslib directories in PYTHONPATH (there should only be one)"
 
