@@ -24,6 +24,8 @@
   <run_depend>rosservice</run_depend>
 
   <test_depend>cmake_modules</test_depend>  <!-- since the other packages recursively depend on it roswtf needs to find it during its own tests -->
+  <test_depend>rosbag</test_depend>
+  <test_depend>std_srvs</test_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>
