@@ -106,8 +106,8 @@ def configure_logging(logname, level=logging.INFO, filename=None, env=None):
         # search for logging config file in /etc/.  If it's not there,
         # look for it package-relative.
         config_file = None
+        rosgraph_d = rospkg.RosPack().get_path('rosgraph')
         for fname in ['python_logging.conf', 'python_logging.yaml']:
-            rosgraph_d = rospkg.RosPack().get_path('rosgraph')
             for f in [os.path.join(rospkg.get_ros_home(), 'config', fname),
                       '/etc/ros/%s'%(fname),
                       os.path.join(rosgraph_d, 'conf', fname)]:
@@ -125,11 +125,11 @@ def configure_logging(logname, level=logging.INFO, filename=None, env=None):
     
     # pass in log_filename as argument to pylogging.conf
     os.environ['ROS_LOG_FILENAME'] = log_filename
-    if config_file.endswith((".yaml", ".yml")):
+    if config_file.endswith(('.yaml', '.yml')):
         with open(config_file) as f:
             dict_conf = yaml.load(f)
-            dict_conf.setdefault('version', 1)
-            logging.config.dictConfig(dict_conf)
+        dict_conf.setdefault('version', 1)
+        logging.config.dictConfig(dict_conf)
     else:
         # #3625: disabling_existing_loggers=False
         logging.config.fileConfig(config_file, disable_existing_loggers=False)
