@@ -223,4 +223,33 @@ void ChunkedFile::clearUnused() {
     nUnused_ = 0;
 }
 
+void ChunkedFile::swap(ChunkedFile& other) {
+    using std::swap;
+    using boost::swap;
+    swap(filename_, other.filename_);
+    swap(file_, other.file_);
+    swap(offset_, other.offset_);
+    swap(compressed_in_, other.compressed_in_);
+    swap(unused_, other.unused_);
+    swap(nUnused_, other.nUnused_);
+
+    swap(stream_factory_, other.stream_factory_);
+
+    FileAccessor::setFile(*stream_factory_->getStream(compression::Uncompressed), this);
+    FileAccessor::setFile(*stream_factory_->getStream(compression::BZ2), this);
+    FileAccessor::setFile(*stream_factory_->getStream(compression::LZ4), this);
+
+    FileAccessor::setFile(*other.stream_factory_->getStream(compression::Uncompressed), &other);
+    FileAccessor::setFile(*other.stream_factory_->getStream(compression::BZ2), &other);
+    FileAccessor::setFile(*other.stream_factory_->getStream(compression::LZ4), &other);
+
+    swap(read_stream_, other.read_stream_);
+    FileAccessor::setFile(*read_stream_, this);
+    FileAccessor::setFile(*other.read_stream_, &other);
+
+    swap(write_stream_, other.write_stream_);
+    FileAccessor::setFile(*write_stream_, this);
+    FileAccessor::setFile(*other.write_stream_, &other);
+}
+
 } // namespace rosbag
