@@ -67,19 +67,19 @@ public:
   ros::Subscriber rosout_sub_;
   ros::Publisher agg_pub_;
 
-  Rosout()
+  Rosout() :
+    log_file_name_(ros::file_log::getLogDirectory() + "/rosout.log"),
+    handle_(NULL),
+    max_file_size_(100*1024*1024),
+    current_file_size_(0),
+    max_backup_index_(10),
+    current_backup_index_(0)
   {
     init();
   }
 
   void init()
   {
-    max_file_size_ = 100*1024*1024;
-    current_file_size_ = 0;
-    max_backup_index_ = 10;
-    current_backup_index_ = 0;
-
-    log_file_name_ = ros::file_log::getLogDirectory() + "/rosout.log";
     handle_ = fopen(log_file_name_.c_str(), "w");
 
     if (handle_ == 0)
