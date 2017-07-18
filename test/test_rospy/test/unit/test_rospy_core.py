@@ -79,7 +79,13 @@ class TestRospyCore(unittest.TestCase):
         rospy.logout('out')
         rospy.logerr('err')
         rospy.logfatal('fatal')
-        
+        #basic named logger test
+        rospy.logdebug('debug', logger_name="child1")
+        rospy.logwarn('warn', logger_name="child1")
+        rospy.logout('out', logger_name="child1")
+        rospy.logerr('err', logger_name="child1")
+        rospy.logfatal('fatal', logger_name="child1")
+
     def test_add_shutdown_hook(self):
         def handle(reason):
             pass

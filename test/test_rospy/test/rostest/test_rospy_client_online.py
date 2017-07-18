@@ -182,6 +182,24 @@ class TestRospyClientOnline(unittest.TestCase):
                     rospy.sleep(rospy.Duration(2))
                 else:
                     self.assert_("test 4" in sys.stderr.getvalue())
+            
+            rospy.loginfo("test child logger 1", logger_name="log1")
+            self.assert_("test child logger 1" in sys.stdout.getvalue())
+            
+            rospy.logwarn("test child logger 2", logger_name="log2")            
+            self.assert_("[WARN]" in sys.stderr.getvalue())
+            self.assert_("test child logger 2" in sys.stderr.getvalue())
+
+            sys.stderr = StringIO()
+            rospy.logerr("test child logger 3", logger_name="log3")            
+            self.assert_("[ERROR]" in sys.stderr.getvalue())
+            self.assert_("test child logger 3" in sys.stderr.getvalue())
+            
+            sys.stderr = StringIO()
+            rospy.logfatal("test child logger 4", logger_name="log4")            
+            self.assert_("[FATAL]" in sys.stderr.getvalue())            
+            self.assert_("test child logger 4" in sys.stderr.getvalue()) 
+
         finally:
             sys.stdout = real_stdout
             sys.stderr = real_stderr
