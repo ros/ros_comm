@@ -15,7 +15,11 @@ catkin_package(
   CFG_EXTRAS xmlrpcpp-extras.cmake
 )
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(
+  include
+  libb64/include
+  ${catkin_INCLUDE_DIRS}
+)
 link_directories(${catkin_LIBRARY_DIRS})
 
 if(WIN32)
@@ -32,7 +36,9 @@ add_library(xmlrpcpp
   src/XmlRpcSource.cpp
   src/XmlRpcUtil.cpp
   src/XmlRpcValue.cpp
-  )
+  libb64/src/cdecode.c
+  libb64/src/cencode.c
+)
 
 if(WIN32)
   target_link_libraries(xmlrpcpp ws2_32)
@@ -46,3 +52,7 @@ install(TARGETS xmlrpcpp
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
+
+if (CATKIN_ENABLE_TESTING)
+  add_subdirectory(test)
+endif()
