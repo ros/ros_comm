@@ -56,6 +56,10 @@ def _get_optparse():
     parser.add_option("-t", "--timeout",
                       dest="timeout",
                       help="override the socket connection timeout (in seconds).", metavar="TIMEOUT")
+    parser.add_option("--close-sockets",
+                      dest="close_sockets",
+                      action="store_true", default=False,
+                      help="enable checking and closing CLOSE_WAIT sockets.")
     return parser
 
 

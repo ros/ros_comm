@@ -180,6 +180,10 @@ def _get_optparse():
     parser.add_option("-t", "--timeout",
                       dest="timeout",
                       help="override the socket connection timeout (in seconds). Only valid for core services.", metavar="TIMEOUT")
+    parser.add_option("--close-sockets",
+                      dest="close_sockets",
+                      action="store_true", default=False,
+                      help="enable checking and closing CLOSE_WAIT sockets.")
 
     return parser
     
@@ -302,7 +306,7 @@ def main(argv=sys.argv):
             p = roslaunch_parent.ROSLaunchParent(uuid, args, roslaunch_strs=roslaunch_strs,
                     is_core=options.core, port=options.port, local_only=options.local_only,
                     verbose=options.verbose, force_screen=options.force_screen,
-                    num_workers=options.num_workers, timeout=options.timeout)
+                    num_workers=options.num_workers, timeout=options.timeout, close_sockets=options.close_sockets)
             p.start()
             p.spin()
 
