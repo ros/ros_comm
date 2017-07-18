@@ -119,20 +119,20 @@ def _anon(resolved, a, args, context):
     anon_context = context['anon']
     return resolved.replace("$(%s)" % a, _eval_anon(id=args[0], anons=anon_context))
 
-def _eval_dir(filename):
+def _eval_dirname(filename):
     if not filename:
-        raise SubstitutionException("Cannot substitute $(dir), no file/directory information available.")
+        raise SubstitutionException("Cannot substitute $(dirname), no file/directory information available.")
     return os.path.abspath(os.path.dirname(filename))
 
-def _dir(resolved, a, args, context):
+def _dirname(resolved, a, args, context):
     """
-    process $(dir)
+    process $(dirname)
     @return: updated resolved argument
     @rtype: str
     @raise SubstitutionException: if no information about the current launch file is available, for example
            if XML was passed via stdin, or this is a remote launch.
     """
-    return resolved.replace("$(%s)" % a, _eval_dir(context.get('filename', None)))
+    return resolved.replace("$(%s)" % a, _eval_dirname(context.get('filename', None)))
 
 def _eval_find(pkg):
     rp = _get_rospack()
@@ -331,12 +331,12 @@ def _eval(s, context):
     def _eval_anon_context(id): return _eval_anon(id, anons=context['anon'])
     # inject arg context
     def _eval_arg_context(name): return convert_value(_eval_arg(name, args=context['arg']), 'auto')
-    # inject dir
-    def _eval_dir_context(): return _eval_dir(context['filename'])
+    # inject dirname context
+    def _eval_dirname_context(): return _eval_dirname(context['filename'])
     functions = {
         'anon': _eval_anon_context,
         'arg': _eval_arg_context,
-        'dir': _eval_dir_context
+        'dirname': _eval_dirname_context
     }
     functions.update(_eval_dict)
 
@@ -380,7 +380,7 @@ def resolve_args(arg_str, context=None, resolve_anon=True, filename=None):
     commands = {
         'env': _env,
         'optenv': _optenv,
-        'dir': _dir,
+        'dirname': _dirname,
         'anon': _anon,
         'arg': _arg,
     }
@@ -393,7 +393,7 @@ def resolve_args(arg_str, context=None, resolve_anon=True, filename=None):
     return resolved
 
 def _resolve_args(arg_str, context, resolve_anon, commands):
-    valid = ['find', 'env', 'optenv', 'dir', 'anon', 'arg']
+    valid = ['find', 'env', 'optenv', 'dirname', 'anon', 'arg']
     resolved = arg_str
     for a in _collect_args(arg_str):
         splits = [s for s in a.split(' ') if s]
