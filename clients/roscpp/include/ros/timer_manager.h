@@ -576,7 +576,7 @@ void TimerManager<T, D, E>::threadFunc()
       {
         // On system time we can simply sleep for the rest of the wait time, since anything else requiring processing will
         // signal the condition variable
-        int32_t remaining_time = std::max((int32_t) ((sleep_end - current).toSec() * 1000.0f), 1);
+        int32_t remaining_time = std::max((int32_t)((sleep_end - current).toSec() * 1000.0f), 1);
         timers_cond_.timed_wait(lock, boost::posix_time::milliseconds(remaining_time));
       }
     }
