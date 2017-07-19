@@ -39,6 +39,7 @@ Core roslaunch model and lower-level utility routines.
 import os
 import logging
 
+import re
 import socket
 import sys
 try:
@@ -456,6 +457,7 @@ class Node(object):
         self.type = node_type
         self.name = name or None
         self.namespace = rosgraph.names.make_global_ns(namespace or '/')
+        self.namespace = re.sub("//+", "/", self.namespace)
         self.machine_name = machine_name or None
         self.respawn = respawn
         self.respawn_delay = respawn_delay
