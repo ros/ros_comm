@@ -54,6 +54,319 @@ using namespace test_roscpp;
 
 std::string g_node_name = "test_timer_callbacks";
 
+
+/************************* SteadyTimer tests **********************/
+
+class SteadyTimerHelper
+{
+  public:
+    SteadyTimerHelper(float period, bool oneshot = false)
+    : expected_period_(period)
+    , failed_(false)
+    , total_calls_(0)
+    , testing_period_(false)
+    , calls_before_testing_period_(0)
+    {
+      NodeHandle n;
+      timer_ = n.createSteadyTimer(expected_period_, &SteadyTimerHelper::callback, this, oneshot);
+    }
+
+    void callback(const SteadyTimerEvent& e)
+    {
+      bool first = last_call_.isZero();
+      SteadyTime last_call = last_call_;
+      last_call_ = SteadyTime::now();
+      SteadyTime start = last_call_;
+
+      if (!first)
+      {
+        if (fabsf(expected_next_call_.toSec() - start.toSec()) > 0.1f)
+        {
+          ROS_ERROR("Call came at wrong time (%f vs. %f)", expected_next_call_.toSec(), start.toSec());
+          failed_ = true;
+        }
+      }
+
+      if(testing_period_)
+      {
+
+        // Inside callback, less than current period, reset=false
+        if(total_calls_ == calls_before_testing_period_)
+        {
+          WallDuration p(0.5);
+          pretendWork(0.15);
+          setPeriod(p);
+        }
+
+          // Inside callback, greater than current period, reset=false
+        else if(total_calls_ == (calls_before_testing_period_+1))
+        {
+          WallDuration p(0.25);
+          pretendWork(0.15);
+          setPeriod(p);
+        }
+
+          // Inside callback, less than current period, reset=true
+        else if(total_calls_ == (calls_before_testing_period_+2))
+        {
+          WallDuration p(0.5);
+          pretendWork(0.15);
+          setPeriod(p, true);
+        }
+
+          // Inside callback, greater than current period, reset=true
+        else if(total_calls_ == (calls_before_testing_period_+3))
+        {
+          WallDuration p(0.25);
+          pretendWork(0.15);
+          setPeriod(p, true);
+        }
+      }
+      else
+      {
+        expected_next_call_ = e.current_expected + expected_period_;
+      }
+
+      SteadyTime end = SteadyTime::now();
+      last_duration_ = end - start;
+
+      ++total_calls_;
+    }
+
+    void setPeriod(const WallDuration p, bool reset=false)
+    {
+      if(reset)
+      {
+        expected_next_call_ = SteadyTime::now() + p;
+      }
+      else
+      {
+        expected_next_call_ = last_call_ + p;
+      }
+
+      timer_.setPeriod(p, reset);
+      expected_period_ = p;
+    }
+
+
+    void pretendWork(const float t)
+    {
+      ros::Rate r(1. / t);
+      r.sleep();
+    }
+
+    SteadyTime last_call_;
+    SteadyTime expected_next_call_;
+    WallDuration expected_period_;
+    WallDuration last_duration_;
+
+    bool failed_;
+
+    SteadyTimer timer_;
+    int32_t total_calls_;
+
+    bool testing_period_;
+    int  calls_before_testing_period_;
+};
+
+TEST(RoscppTimerCallbacks, singleSteadyTimeCallback)
+{
+  NodeHandle n;
+  SteadyTimerHelper helper1(0.01);
+
+  WallDuration d(0.001f);
+  for (int32_t i = 0; i < 1000 && n.ok(); ++i)
+  {
+    spinOnce();
+    d.sleep();
+  }
+
+  if (helper1.failed_)
+  {
+    FAIL();
+  }
+
+  if (helper1.total_calls_ < 99)
+  {
+    ROS_ERROR("Total calls: %d (expected at least 100)", helper1.total_calls_);
+    FAIL();
+  }
+}
+
+TEST(RoscppTimerCallbacks, multipleSteadyTimeCallbacks)
+{
+  NodeHandle n;
+  const int count = 100;
+  typedef boost::scoped_ptr<SteadyTimerHelper> HelperPtr;
+  HelperPtr helpers[count];
+  for (int i = 0; i < count; ++i)
+  {
+    helpers[i].reset(new SteadyTimerHelper((float)(i + 1) * 0.1f));
+  }
+
+  WallDuration d(0.01f);
+  const int spin_count = 1000;
+  for (int32_t i = 0; i < spin_count && n.ok(); ++i)
+  {
+    spinOnce();
+    d.sleep();
+  }
+
+  for (int i = 0; i < count; ++i)
+  {
+    if (helpers[i]->failed_)
+    {
+      ROS_ERROR("Helper %d failed", i);
+      FAIL();
+    }
+
+    int32_t expected_count = (spin_count * d.toSec()) / helpers[i]->expected_period_.toSec();
+    if (helpers[i]->total_calls_ < (expected_count - 1))
+    {
+      ROS_ERROR("Helper %d total calls: %d (at least %d expected)", i, helpers[i]->total_calls_, expected_count);
+      FAIL();
+    }
+  }
+}
+
+TEST(RoscppTimerCallbacks, steadySetPeriod)
+{
+  NodeHandle n;
+  WallDuration    period(0.5);
+  SteadyTimerHelper helper(period.toSec());
+  Rate            r(100);
+
+  // Let the callback occur once before getting started
+  while(helper.total_calls_ < 1)
+  {
+    spinOnce();
+    r.sleep();
+  }
+
+  helper.pretendWork(0.1);
+
+  // outside callback, new period < old period, reset = false
+  Duration      wait(0.5);
+  WallDuration  p(0.25);
+  helper.setPeriod(p);
+  while(helper.total_calls_ < 2)
+  {
+    spinOnce();
+    r.sleep();
+  }
+
+  helper.pretendWork(0.1);
+
+  // outside callback, new period > old period, reset = false
+  WallDuration p2(0.5);
+  helper.setPeriod(p);
+  while(helper.total_calls_ < 3)
+  {
+    spinOnce();
+    r.sleep();
+  }
+
+  helper.pretendWork(0.1);
+
+  // outside callback, new period < old period, reset = true
+  WallDuration p3(0.25);
+  helper.setPeriod(p, true);
+  while(helper.total_calls_ < 4)
+  {
+    spinOnce();
+    r.sleep();
+  }
+
+  helper.pretendWork(0.1);
+
+  // outside callback, new period > old period, reset = true
+  WallDuration p4(0.5);
+  helper.setPeriod(p, true);
+  while(helper.total_calls_ < 5)
+  {
+    spinOnce();
+    r.sleep();
+  }
+
+  // Test calling setPeriod inside callback
+  helper.calls_before_testing_period_ = helper.total_calls_;
+  int total = helper.total_calls_ + 5;
+  helper.testing_period_ = true;
+  while(helper.total_calls_ < total)
+  {
+    spinOnce();
+    r.sleep();
+  }
+  helper.testing_period_ = false;
+
+
+  if(helper.failed_)
+  {
+    ROS_ERROR("Helper failed in setPeriod");
+    FAIL();
+  }
+}
+
+TEST(RoscppTimerCallbacks, stopSteadyTimer)
+{
+  NodeHandle n;
+  SteadyTimerHelper helper(0.001);
+
+  for (int32_t i = 0; i < 1000 && n.ok(); ++i)
+  {
+    WallDuration(0.001).sleep();
+    spinOnce();
+  }
+
+  ASSERT_GT(helper.total_calls_, 0);
+  int32_t last_count = helper.total_calls_;
+  helper.timer_.stop();
+
+  for (int32_t i = 0; i < 1000 && n.ok(); ++i)
+  {
+    WallDuration(0.001).sleep();
+    spinOnce();
+  }
+
+  ASSERT_EQ(last_count, helper.total_calls_);
+}
+
+int32_t g_steady_count = 0;
+void steadyTimerCallback(const ros::SteadyTimerEvent&)
+{
+  ++g_steady_count;
+}
+
+TEST(RoscppTimerCallbacks, steadyStopThenSpin)
+{
+  g_steady_count = 0;
+  NodeHandle n;
+  ros::SteadyTimer timer = n.createSteadyTimer(ros::WallDuration(0.001), steadyTimerCallback);
+
+  WallDuration(0.1).sleep();
+  timer.stop();
+
+  spinOnce();
+
+  ASSERT_EQ(g_steady_count, 0);
+}
+
+TEST(RoscppTimerCallbacks, oneShotSteadyTimer)
+{
+  NodeHandle n;
+  SteadyTimerHelper helper(0.001, true);
+
+  for (int32_t i = 0; i < 1000 && n.ok(); ++i)
+  {
+    WallDuration(0.001).sleep();
+    spinOnce();
+  }
+
+  ASSERT_EQ(helper.total_calls_, 1);
+}
+
+/************************* WallTimer tests **********************/
+
 class WallTimerHelper
 {
 public:
