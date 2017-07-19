@@ -452,7 +452,7 @@ WallTimer NodeHandle::createWallTimer(WallTimerOptions& ops) const
 }
 
 SteadyTimer NodeHandle::createSteadyTimer(WallDuration period, const SteadyTimerCallback& callback,
-                                                bool oneshot, bool autostart) const
+                                          bool oneshot, bool autostart) const
 {
   SteadyTimerOptions ops;
   ops.period = period;

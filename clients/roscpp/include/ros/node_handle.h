@@ -1487,7 +1487,7 @@ if (service)  // Enter if advertised service is valid
    */
   template<class T>
   SteadyTimer createSteadyTimer(WallDuration period, void(T::*callback)(const SteadyTimerEvent&), T* obj,
-                                      bool oneshot = false, bool autostart = true) const
+                                bool oneshot = false, bool autostart = true) const
   {
     return createSteadyTimer(period, boost::bind(callback, obj, _1), oneshot, autostart);
   }
@@ -1509,8 +1509,8 @@ if (service)  // Enter if advertised service is valid
    */
   template<class T>
   SteadyTimer createSteadyTimer(WallDuration period, void(T::*callback)(const SteadyTimerEvent&),
-                                      const boost::shared_ptr<T>& obj,
-                                      bool oneshot = false, bool autostart = true) const
+                                const boost::shared_ptr<T>& obj,
+                                bool oneshot = false, bool autostart = true) const
   {
     SteadyTimerOptions ops(period, boost::bind(callback, obj.get(), _1), 0);
     ops.tracked_object = obj;
@@ -1532,7 +1532,7 @@ if (service)  // Enter if advertised service is valid
    * \param oneshot If true, this timer will only fire once
    */
   SteadyTimer createSteadyTimer(WallDuration period, const SteadyTimerCallback& callback,
-                                      bool oneshot = false, bool autostart = true) const;
+                                bool oneshot = false, bool autostart = true) const;
 
   /**
    * \brief Create a timer which will call a callback at the specified rate, using wall time to determine

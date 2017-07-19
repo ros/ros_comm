@@ -52,7 +52,7 @@ struct ROSCPP_DECL SteadyTimerOptions
    * \param
    */
   SteadyTimerOptions(WallDuration _period, const SteadyTimerCallback& _callback, CallbackQueueInterface* _queue,
-                   bool oneshot = false, bool autostart = true)
+                     bool oneshot = false, bool autostart = true)
   : period(_period)
   , callback(_callback)
   , callback_queue(_queue)
