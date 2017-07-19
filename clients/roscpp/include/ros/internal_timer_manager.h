@@ -36,7 +36,7 @@ namespace ros
 {
 
 template<typename T, typename D, typename E> class TimerManager;
-typedef TimerManager<WallTime, WallDuration, WallTimerEvent> InternalTimerManager;
+typedef TimerManager<SteadyTime, WallDuration, SteadyTimerEvent> InternalTimerManager;
 typedef boost::shared_ptr<InternalTimerManager> InternalTimerManagerPtr;
 
 ROSCPP_DECL void initInternalTimerManager();

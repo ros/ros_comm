@@ -28,6 +28,21 @@
 #ifndef ROSCPP_TIMER_MANAGER_H
 #define ROSCPP_TIMER_MANAGER_H
 
+// check if we might need to include our own backported version boost::condition_variable
+// in order to use CLOCK_MONOTONIC for the SteadyTimer
+// the include order here is important!
+#ifdef BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
+#include <boost/version.hpp>
+#if BOOST_VERSION < 106100
+// use backported version of boost condition variable, see https://svn.boost.org/trac/boost/ticket/6377
+#include "boost_161_condition_variable.h"
+#else // Boost version is 1.61 or greater and has the steady clock fixes
+#include <boost/thread/condition_variable.hpp>
+#endif
+#else // !BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
+#include <boost/thread/condition_variable.hpp>
+#endif // BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
+
 #include "ros/forwards.h"
 #include "ros/time.h"
 #include "ros/file_log.h"
@@ -35,7 +50,6 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
-#include <boost/thread/condition_variable.hpp>
 
 #include "ros/assert.h"
 #include "ros/callback_queue_interface.h"
@@ -180,9 +194,9 @@ private:
         event.current_real = T::now();
         event.profile.last_duration = info->last_cb_duration;
 
-        WallTime cb_start = WallTime::now();
+        SteadyTime cb_start = SteadyTime::now();
         info->callback(event);
-        WallTime cb_end = WallTime::now();
+        SteadyTime cb_end = SteadyTime::now();
         info->last_cb_duration = cb_end - cb_start;
 
         info->last_real = event.current_real;

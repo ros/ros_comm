@@ -29,10 +29,12 @@
 #include "ros/this_node.h"
 #include "ros/service.h"
 #include "ros/callback_queue.h"
-#include "ros/timer_manager.h"
 
 #include "ros/time.h"
 #include "ros/rate.h"
+#include "ros/timer.h"
+#include "ros/wall_timer.h"
+#include "ros/steady_timer.h"
 
 #include "ros/xmlrpc_manager.h"
 #include "ros/topic_manager.h"
@@ -444,6 +446,37 @@ WallTimer NodeHandle::createWallTimer(WallTimerOptions& ops) const
   }
 
   WallTimer timer(ops);
+  if (ops.autostart)
+    timer.start();
+  return timer;
+}
+
+SteadyTimer NodeHandle::createSteadyTimer(WallDuration period, const SteadyTimerCallback& callback,
+                                          bool oneshot, bool autostart) const
+{
+  SteadyTimerOptions ops;
+  ops.period = period;
+  ops.callback = callback;
+  ops.oneshot = oneshot;
+  ops.autostart = autostart;
+  return createSteadyTimer(ops);
+}
+
+SteadyTimer NodeHandle::createSteadyTimer(SteadyTimerOptions& ops) const
+{
+  if (ops.callback_queue == 0)
+  {
+    if (callback_queue_)
+    {
+      ops.callback_queue = callback_queue_;
+    }
+    else
+    {
+      ops.callback_queue = getGlobalCallbackQueue();
+    }
+  }
+
+  SteadyTimer timer(ops);
   if (ops.autostart)
     timer.start();
   return timer;

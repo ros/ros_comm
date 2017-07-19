@@ -198,14 +198,14 @@ void TransportPublisherLink::onMessage(const ConnectionPtr& conn, const boost::s
   }
 }
 
-void TransportPublisherLink::onRetryTimer(const ros::WallTimerEvent&)
+void TransportPublisherLink::onRetryTimer(const ros::SteadyTimerEvent&)
 {
   if (dropping_)
   {
     return;
   }
 
-  if (needs_retry_ && WallTime::now() > next_retry_)
+  if (needs_retry_ && SteadyTime::now() > next_retry_)
   {
     retry_period_ = std::min(retry_period_ * 2, WallDuration(20));
     needs_retry_ = false;
@@ -268,12 +268,12 @@ void TransportPublisherLink::onConnectionDropped(const ConnectionPtr& conn, Conn
 
     ROS_ASSERT(!needs_retry_);
     needs_retry_ = true;
-    next_retry_ = WallTime::now() + retry_period_;
+    next_retry_ = SteadyTime::now() + retry_period_;
 
     if (retry_timer_handle_ == -1)
     {
       retry_period_ = WallDuration(0.1);
-      next_retry_ = WallTime::now() + retry_period_;
+      next_retry_ = SteadyTime::now() + retry_period_;
       // shared_from_this() shared_ptr is used to ensure TransportPublisherLink is not
       // destroyed in the middle of onRetryTimer execution
       retry_timer_handle_ = getInternalTimerManager()->add(WallDuration(retry_period_),
