@@ -1,0 +1,4 @@
+<launch>
+  <param name="foo" value="$(dirname)/bar" />
+  <include file="$(dirname)/test-dirname/included.xml" />
+</launch>

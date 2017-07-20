@@ -180,6 +180,8 @@ class XmlLoader(loader.Loader):
         """
         # resolve_args gets called a lot, so we optimize by testing for dollar sign before resolving
         if args and '$' in args:
+            # Populate resolve_dict with name of the current file being processed.
+            context.resolve_dict['filename'] = context.filename
             return substitution_args.resolve_args(args, context=context.resolve_dict, resolve_anon=self.resolve_anon)
         else:
             return args
