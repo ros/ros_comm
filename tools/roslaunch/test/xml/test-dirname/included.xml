@@ -1,0 +1,3 @@
+<launch>
+  <param name="bar" value="$(dirname)/baz" />
+</launch>

@@ -1064,3 +1064,18 @@ class TestXmlLoader(unittest.TestCase):
         #    self.fail('should have thrown an exception')
         #except roslaunch.xmlloader.XmlParseException:
         #    pass
+
+    # Test for $(dirname) behaviour across included files.
+    def test_dirname(self):
+        loader = roslaunch.xmlloader.XmlLoader()
+        filename = os.path.join(self.xml_dir, 'test-dirname.xml')
+
+        mock = RosLaunchMock()
+        loader.load(filename, mock)
+
+        param_d = {}
+        for p in mock.params:
+            param_d[p.key] = p.value
+
+        self.assertEquals(param_d['/foo'], self.xml_dir + '/bar')
+        self.assertEquals(param_d['/bar'], self.xml_dir + '/test-dirname/baz')
