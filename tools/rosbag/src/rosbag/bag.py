@@ -496,7 +496,8 @@ class Bag(object):
         else:
             if not self._connection_indexes:
                 raise ROSBagException('Bag contains no message')
-            start_stamp = min([index[0].time.to_sec() for index in self._connection_indexes.values()])
+            start_stamps = [index[0].time.to_sec() for index in self._connection_indexes.values() if index]
+            start_stamp = min(start_stamps) if start_stamps else 0
         
         return start_stamp
     
@@ -512,7 +513,8 @@ class Bag(object):
         else:
             if not self._connection_indexes:
                 raise ROSBagException('Bag contains no message')
-            end_stamp = max([index[-1].time.to_sec() for index in self._connection_indexes.values()])
+            end_stamps = [index[-1].time.to_sec() for index in self._connection_indexes.values() if index]
+            end_stamp = max(end_stamps) if end_stamps else 0
         
         return end_stamp
     
@@ -625,8 +627,10 @@ class Bag(object):
                     start_stamp = self._chunks[ 0].start_time.to_sec()
                     end_stamp   = self._chunks[-1].end_time.to_sec()
                 else:
-                    start_stamp = min([index[ 0].time.to_sec() for index in self._connection_indexes.values()])
-                    end_stamp   = max([index[-1].time.to_sec() for index in self._connection_indexes.values()])
+                    start_stamps = [index[0].time.to_sec() for index in self._connection_indexes.values() if index]
+                    start_stamp = min(start_stamps) if start_stamps else 0
+                    end_stamps = [index[-1].time.to_sec() for index in self._connection_indexes.values() if index]
+                    end_stamp = max(end_stamps) if end_stamps else 0
     
                 # Show duration
                 duration = end_stamp - start_stamp
@@ -808,8 +812,10 @@ class Bag(object):
                     start_stamp = self._chunks[ 0].start_time.to_sec()
                     end_stamp   = self._chunks[-1].end_time.to_sec()
                 else:
-                    start_stamp = min([index[ 0].time.to_sec() for index in self._connection_indexes.values()])
-                    end_stamp   = max([index[-1].time.to_sec() for index in self._connection_indexes.values()])
+                    start_stamps = [index[0].time.to_sec() for index in self._connection_indexes.values() if index]
+                    start_stamp = min(start_stamps) if start_stamps else 0
+                    end_stamps = [index[-1].time.to_sec() for index in self._connection_indexes.values() if index]
+                    end_stamp = max(end_stamps) if end_stamps else 0
                 
                 duration = end_stamp - start_stamp
                 s += 'duration: %.6f\n' % duration
