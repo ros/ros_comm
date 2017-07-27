@@ -2,8 +2,8 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.13.1 (2017-07-27)
+-------------------
 * improve message when `roslogging` cannot change permissions (`#1068 <https://github.com/ros/ros_comm/issues/1068>`_)
 * allow python_logging.yaml for logging configuration (`#1061 <https://github.com/ros/ros_comm/issues/1061>`_)
 * write log for class method with class name (`#1043 <https://github.com/ros/ros_comm/issues/1043>`_)

@@ -2,8 +2,8 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.13.1 (2017-07-27)
+-------------------
 * fix handling connections without indices (`#1109 <https://github.com/ros/ros_comm/pull/1109>`_)
 * improve message of check command (`#1067 <https://github.com/ros/ros_comm/pull/1067>`_)
 * fix BZip2 inclusion (`#1016 <https://github.com/ros/ros_comm/pull/1016>`_)
