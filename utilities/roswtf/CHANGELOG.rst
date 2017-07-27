@@ -2,6 +2,10 @@
 Changelog for package roswtf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* improve roswtf tests (`#1101 <https://github.com/ros/ros_comm/pull/1101>`_, `#1102 <https://github.com/ros/ros_comm/pull/1102>`_)
+
 1.13.0 (2017-02-22)
 -------------------
 

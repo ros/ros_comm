@@ -2,6 +2,17 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add SteadyTimer, used in TimerManager (`#1014 <https://github.com/ros/ros_comm/issues/1014>`_)
+* include missing header for writev() (`#1105 <https://github.com/ros/ros_comm/pull/1105>`_)
+* clean the namespace to get rid of double or trailing forward slashes (`#1100 <https://github.com/ros/ros_comm/issues/1100>`_)
+* add missing mutex lock for publisher links (`#1090 <https://github.com/ros/ros_comm/pull/1090>`_)
+* fix race condition that lead to miss first message (`#1058 <https://github.com/ros/ros_comm/issues/1058>`_)
+* fix bug in transport_tcp on Windows (`#1050 <https://github.com/ros/ros_comm/issues/1050>`_)
+* add subscriber to connection log messages (`#1023 <https://github.com/ros/ros_comm/issues/1023>`_)
+* avoid deleting XmlRpcClient while being used in another thread (`#1013 <https://github.com/ros/ros_comm/issues/1013>`_)
+
 1.13.0 (2017-02-22)
 -------------------
 * remove support for multiple spinners on the same queue which existed only for backward compatibily (`#988 <https://github.com/ros/ros_comm/pull/988>`_)

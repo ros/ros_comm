@@ -2,6 +2,10 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix rostopic prining long integers (`#1110 <https://github.com/ros/ros_comm/pull/1110>`_)
+
 1.13.0 (2017-02-22)
 -------------------
 

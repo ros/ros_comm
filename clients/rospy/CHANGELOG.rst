@@ -2,6 +2,16 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* improve rospy.logXXX_throttle performance (`#1091 <https://github.com/ros/ros_comm/pull/1091>`_)
+* add option to reset timer when time moved backwards (`#1083 <https://github.com/ros/ros_comm/issues/1083>`_)
+* abort topic lookup on connection refused (`#1044 <https://github.com/ros/ros_comm/pull/1044>`_)
+* add rospy.logXXX_once (`#1041 <https://github.com/ros/ros_comm/issues/1041>`_)
+* remove "ROS time moved backwards" log message (`#1027 <https://github.com/ros/ros_comm/pull/1027>`_)
+* sleep in rospy wait_for_service even if exceptions raised (`#1025 <https://github.com/ros/ros_comm/pull/1025>`_)
+* add named loggers (`#948 <https://github.com/ros/ros_comm/pull/948>`_)
+
 1.13.0 (2017-02-22)
 -------------------
 

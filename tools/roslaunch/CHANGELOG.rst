@@ -2,6 +2,16 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add $(dirname) to get directory of current launch file (`#1103 <https://github.com/ros/ros_comm/pull/1103>`_)
+* clean the namespace to get rid of double or trailing forward slashes (`#1100 <https://github.com/ros/ros_comm/issues/1100>`_)
+* only launch core nodes if master was launched by roslaunch (`#1098 <https://github.com/ros/ros_comm/pull/1098>`_)
+* ensure pid file is removed on exit (`#1057 <https://github.com/ros/ros_comm/pull/1057>`_, `#1084 <https://github.com/ros/ros_comm/pull/1084>`_)
+* add yaml type for param tag (`#1045 <https://github.com/ros/ros_comm/issues/1045>`_)
+* ensure cwd exists (`#1031 <https://github.com/ros/ros_comm/pull/1031>`_)
+* respect if/unless for roslaunch-check (`#998 <https://github.com/ros/ros_comm/pull/998>`_)
+
 1.13.0 (2017-02-22)
 -------------------
 

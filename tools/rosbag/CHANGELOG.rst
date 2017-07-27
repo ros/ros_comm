@@ -2,6 +2,14 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix handling connections without indices (`#1109 <https://github.com/ros/ros_comm/pull/1109>`_)
+* improve message of check command (`#1067 <https://github.com/ros/ros_comm/pull/1067>`_)
+* fix BZip2 inclusion (`#1016 <https://github.com/ros/ros_comm/pull/1016>`_)
+* expose rate-control-topic and rate-control-max-delay args to command line tool (`#1015 <https://github.com/ros/ros_comm/pull/1015>`_)
+* improve migration rule generation (`#1009 <https://github.com/ros/ros_comm/pull/1009>`_, `#1010 <https://github.com/ros/ros_comm/pull/1010>`_, `#1011 <https://github.com/ros/ros_comm/pull/1011>`_)
+
 1.13.0 (2017-02-22)
 -------------------
 

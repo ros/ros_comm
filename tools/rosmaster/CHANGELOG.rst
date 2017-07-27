@@ -2,6 +2,10 @@
 Changelog for package rosmaster
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* close CLOSE_WAIT sockets by default (`#1104 <https://github.com/ros/ros_comm/issues/1104>`_)
+
 1.13.0 (2017-02-22)
 -------------------
 

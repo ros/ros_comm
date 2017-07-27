@@ -2,6 +2,10 @@
 Changelog for package roslz4
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add XXH_NAMESPACE, for namespace emulation in C (`#1065 <https://github.com/ros/ros_comm/pull/1065>`_)
+
 1.13.0 (2017-02-22)
 -------------------
 

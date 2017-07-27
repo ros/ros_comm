@@ -2,6 +2,11 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* remove extra semicolon in definition of macro ROSCONSOLE_PRINTF_ATTRIBUTE(a, b) (`#1056 <https://github.com/ros/ros_comm/pull/1056>`_)
+* add ROSCONSOLE_STDOUT_LINE_BUFFERED env var to force flushing stdout in Formatter::print (`#1012 <https://github.com/ros/ros_comm/issues/1012>`_)
+
 1.13.0 (2017-02-22)
 -------------------
 
