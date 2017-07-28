@@ -4,12 +4,12 @@
 namespace shm_transport {
 
 template < class M >
-SubscriberCallbackHelper::SubscriberCallbackHelper(const std::string &topic, Func fp)
+SubscriberCallbackHelper<M>::SubscriberCallbackHelper(const std::string &topic, Func fp)
     : pshm_(NULL), topic_(topic), fp_(fp), sub_((ros::Subscriber *)NULL) {
 }
 
 template < class M >
-SubscriberCallbackHelper::~SubscriberCallbackHelper() {
+SubscriberCallbackHelper<M>::~SubscriberCallbackHelper() {
   boost::atomic<uint32_t> *ref_ptr = pshm_->find_or_construct<boost::atomic<uint32_t> >("ref")(0);
   if (ref_ptr->fetch_sub(1, boost::memory_order_relaxed) == 1) {
     boost::interprocess::shared_memory_object::remove(sub_->getTopic().c_str());
@@ -20,7 +20,7 @@ SubscriberCallbackHelper::~SubscriberCallbackHelper() {
 }
 
 template < class M >
-void SubscriberCallbackHelper::callback(const std_msgs::UInt64::ConstPtr & actual_msg) {
+void SubscriberCallbackHelper<M>::callback(const std_msgs::UInt64::ConstPtr & actual_msg) {
   if (!pshm_) {
     pshm_ = new boost::interprocess::managed_shared_memory(boost::interprocess::open_only, topic_.c_str());
     boost::atomic<uint32_t> *ref_ptr = pshm_->find_or_construct<boost::atomic<uint32_t> >("ref")(0);
@@ -40,20 +40,20 @@ void SubscriberCallbackHelper::callback(const std_msgs::UInt64::ConstPtr & actua
 
 
 template <class M>
-Subscriber::Subscriber(const Subscriber & s) {
+Subscriber<M>::Subscriber(const Subscriber & s) {
   sub_ = s.sub_;
   phlp_ = s.phlp_;
 }
 
 template <class M>
-Subscriber::Subscriber(const ros::Subscriber & sub, SubscriberCallbackHelper< M > * phlp) {
+Subscriber<M>::Subscriber(const ros::Subscriber & sub, SubscriberCallbackHelper< M > * phlp) {
   sub_ = boost::make_shared< ros::Subscriber >(sub);
   phlp_ = phlp;
   phlp_->sub_ = sub_;
 }
 
 template <class M>
-Subscriber::~Subscriber() {
+Subscriber<M>::~Subscriber() {
   if (phlp_)
     delete phlp_;
   if (sub_)
@@ -61,17 +61,17 @@ Subscriber::~Subscriber() {
 }
 
 template <class M>
-void Subscriber::shutdown() {
+void Subscriber<M>::shutdown() {
   sub_->shutdown();
 }
 
 template <class M>
-std::string Subscriber::getTopic() const {
+std::string Subscriber<M>::getTopic() const {
   return sub_->getTopic();
 }
 
 template <class M>
-uint32_t Subscriber::getNumPublishers() const {
+uint32_t Subscriber<M>::getNumPublishers() const {
   return sub_->getNumPublishers();
 }
 

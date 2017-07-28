@@ -1,5 +1,6 @@
 #include <boost/atomic/atomic.hpp>
 #include "ros/shm_publisher.hpp"
+#include "std_msgs/UInt64.h"
 
 namespace shm_transport {
 
@@ -22,21 +23,21 @@ Publisher::~Publisher() {
 
 template < class M >
 void Publisher::publish(const M & msg) const {
-　　if (!pshm_)
-  　　return;
-　　if (pub_->getNumSubscribers() == 0)
-  　　return;
+  if (!pshm_)
+    return;
+  if (pub_->getNumSubscribers() == 0)
+    return;
 
-　　uint32_t serlen = ros::serialization::serializationLength(msg);
-　　uint32_t * ptr = (uint32_t *)pshm_->allocate(sizeof(uint32_t) * 2 + serlen);
-　　ptr[0] = pub_->getNumSubscribers();
-　　ptr[1] = serlen;
-　　ros::serialization::OStream out((uint8_t *)(ptr + 2), serlen);
-　　ros::serialization::serialize(out, msg);
+  uint32_t serlen = ros::serialization::serializationLength(msg);
+  uint32_t * ptr = (uint32_t *)pshm_->allocate(sizeof(uint32_t) * 2 + serlen);
+  ptr[0] = pub_->getNumSubscribers();
+  ptr[1] = serlen;
+  ros::serialization::OStream out((uint8_t *)(ptr + 2), serlen);
+  ros::serialization::serialize(out, msg);
 
-　　std_msgs::UInt64 actual_msg;
-　　actual_msg.data = pshm_->get_handle_from_address(ptr);
-　　pub_->publish(actual_msg);
+  std_msgs::UInt64 actual_msg;
+  actual_msg.data = pshm_->get_handle_from_address(ptr);
+  pub_->publish(actual_msg);
 }
 
 void Publisher::shutdown() {
@@ -44,7 +45,7 @@ void Publisher::shutdown() {
 }
 
 std::string Publisher::getTopic() const {
-　　return pub_->getTopic();
+  return pub_->getTopic();
 }
 
 uint32_t Publisher::getNumSubscribers() const {
