@@ -22,7 +22,7 @@ list(GET roscpp_VERSION_LIST 2 roscpp_VERSION_PATCH)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ros/common.h.in ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/ros/common.h)
 
-find_package(Boost REQUIRED COMPONENTS signals filesystem system)
+find_package(Boost REQUIRED COMPONENTS chrono filesystem signals system)
 
 include_directories(include ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/ros ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
@@ -118,6 +118,7 @@ add_library(roscpp
   src/libros/poll_set.cpp
   src/libros/service.cpp
   src/libros/this_node.cpp
+  src/libros/steady_timer.cpp
   src/libros/shm_topic.cpp
   src/libros/shm_publisher.cpp
   src/libros/shm_subscriber.cpp
@@ -148,3 +149,4 @@ catkin_install_python(PROGRAMS
   rosbuild/scripts/gensrv_cpp.py
   rosbuild/scripts/msg_gen.py
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/rosbuild/scripts)
+
