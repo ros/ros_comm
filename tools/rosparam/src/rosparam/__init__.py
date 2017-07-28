@@ -267,7 +267,6 @@ def _rosparam_cmd_get_param(param, pretty=False, verbose=False):
             _pretty_print(val)
         else:
             if '\n' in val:
-                print('|')
                 for l in val.split('\n'):
                     print('  '+l)
             else:
