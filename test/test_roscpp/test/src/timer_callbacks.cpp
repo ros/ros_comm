@@ -128,7 +128,7 @@ class SteadyTimerHelper
       else
       {
         // If this call was very delayed (beyond the next period), the timer will be
-        // scheduled to call back immediately (next expected is set to the current time)
+        // scheduled to call back immediately (next expected is set to the current time).
         expected_next_call_ = std::max(e.current_expected + expected_period_, start);
       }
 
