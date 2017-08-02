@@ -80,7 +80,10 @@ class SteadyTimerHelper
 
       if (!first)
       {
-        if (fabsf(expected_next_call_.toSec() - start.toSec()) > 0.1f)
+        double time_error = start.toSec() - expected_next_call_.toSec();
+        // Strict check if called early, loose check if called late.
+        // The timed wait could be delayed due to scheduling/resources.
+        if (time_error > 1.0 || time_error < -0.01)
         {
           ROS_ERROR("Call came at wrong time (%f vs. %f)", expected_next_call_.toSec(), start.toSec());
           failed_ = true;
@@ -124,7 +127,9 @@ class SteadyTimerHelper
       }
       else
       {
-        expected_next_call_ = e.current_expected + expected_period_;
+        // If this call was very delayed (beyond the next period), the timer will be
+        // scheduled to call back immediately (next expected is set to the current time)
+        expected_next_call_ = std::max(e.current_expected + expected_period_, start);
       }
 
       SteadyTime end = SteadyTime::now();
