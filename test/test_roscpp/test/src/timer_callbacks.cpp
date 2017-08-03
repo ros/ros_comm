@@ -78,9 +78,11 @@ class SteadyTimerHelper
 
       if (!first)
       {
-        if (fabsf(e.current_expected.toSec() - e.current_real.toSec()) > 0.1f)
+        double time_error = e.current_real.toSec() - e.current_expected.toSec();
+        // Strict check if called early, loose check if called late.
+        if (time_error > 0.2 || time_error < -0.01)
         {
-          ROS_ERROR("Call came at wrong time (%f vs. %f)", e.current_expected.toSec(), e.current_real.toSec());
+          ROS_ERROR("Call came at wrong time (expected: %f, actual %f)", e.current_expected.toSec(), e.current_real.toSec());
           failed_ = true;
         }
       }
