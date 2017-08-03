@@ -74,15 +74,13 @@ class SteadyTimerHelper
     void callback(const SteadyTimerEvent& e)
     {
       bool first = last_call_.isZero();
-      SteadyTime last_call = last_call_;
-      last_call_ = SteadyTime::now();
-      SteadyTime start = last_call_;
+      last_call_ = e.current_real;
 
       if (!first)
       {
-        if (fabsf(expected_next_call_.toSec() - start.toSec()) > 0.1f)
+        if (fabsf(e.current_expected.toSec() - e.current_real.toSec()) > 0.1f)
         {
-          ROS_ERROR("Call came at wrong time (%f vs. %f)", expected_next_call_.toSec(), start.toSec());
+          ROS_ERROR("Call came at wrong time (%f vs. %f)", e.current_expected.toSec(), e.current_real.toSec());
           failed_ = true;
         }
       }
@@ -122,28 +120,12 @@ class SteadyTimerHelper
           setPeriod(p, true);
         }
       }
-      else
-      {
-        expected_next_call_ = e.current_expected + expected_period_;
-      }
-
-      SteadyTime end = SteadyTime::now();
-      last_duration_ = end - start;
 
       ++total_calls_;
     }
 
     void setPeriod(const WallDuration p, bool reset=false)
     {
-      if(reset)
-      {
-        expected_next_call_ = SteadyTime::now() + p;
-      }
-      else
-      {
-        expected_next_call_ = last_call_ + p;
-      }
-
       timer_.setPeriod(p, reset);
       expected_period_ = p;
     }
@@ -156,9 +138,7 @@ class SteadyTimerHelper
     }
 
     SteadyTime last_call_;
-    SteadyTime expected_next_call_;
     WallDuration expected_period_;
-    WallDuration last_duration_;
 
     bool failed_;
 
