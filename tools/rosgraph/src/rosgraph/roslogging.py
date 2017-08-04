@@ -49,12 +49,12 @@ from rospkg.environment import ROS_LOG_DIR
 class LoggingException(Exception): pass
 
 class RospyLogger(logging.getLoggerClass()):
-    def findCaller(self):
+    def findCaller(self, dummy=False): # Dummy second arg to match Python3 function declaration
         """
         Find the stack frame of the caller so that we can note the source
         file name, line number, and function name with class name if possible.
         """
-        file_name, lineno, func_name = super(RospyLogger, self).findCaller()
+        file_name, lineno, func_name = super(RospyLogger, self).findCaller()[:3]
 
         f = inspect.currentframe()
         if f is not None:
@@ -74,7 +74,10 @@ class RospyLogger(logging.getLoggerClass()):
             except KeyError:  # if the function is unbound, there is no self.
                 pass
             break
-        return file_name, lineno, func_name
+        if sys.version_info > (3, 2):
+            return file_name, lineno, func_name, None # Dummy last argument to match Python3 return type
+        else:
+            return file_name, lineno, func_name
 
 logging.setLoggerClass(RospyLogger)
 
