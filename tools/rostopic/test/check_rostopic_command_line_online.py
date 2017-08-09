@@ -111,7 +111,7 @@ class TestRostopicOnline(unittest.TestCase):
             values = [n for n in values if n != '---']
             self.assertEquals(count, len(values), "wrong number of echos in output:\n"+str(values))
             for n in values:
-                self.assert_('data: hello world ' in n, n)
+                self.assert_('data: "hello world ' in n, n)
 
             if 0:
                 #bw
