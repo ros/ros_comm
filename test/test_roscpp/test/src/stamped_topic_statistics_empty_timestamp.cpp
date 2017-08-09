@@ -45,18 +45,77 @@ TEST(TopicStatistics, empty_timestamp_crash_check)
   ros::Publisher pub = nh.advertise<test_roscpp::TestWithHeader>("test_with_empty_timestamp", 0);
   ros::Subscriber sub = nh.subscribe("test_with_empty_timestamp", 0, callback);
 
-  ros::Time start = ros::Time::now();
-  ros::Duration time_to_publish(10.0);
-  while ( (ros::Time::now() - start) < time_to_publish )
-  {
-    test_roscpp::TestWithHeader msg;
-    msg.header.frame_id = "foo";
-    // Don't fill in timestamp so that it defaults to 0.0
-
-    pub.publish(msg);
-    ros::spinOnce();
-    ros::WallDuration(0.01).sleep();
+  ros::Duration delay_to_publish;
+  try {
+    delay_to_publish.fromSec(10.0);
+  } catch (const std::runtime_error & e) {
+    ROS_FATAL_STREAM("It was in the duration: " << e.what());
+    FAIL();
   }
+    
+  ros::Time start = ros::Time::now();
+  ros::Time time_to_publish;
+  try {
+    time_to_publish = start + delay_to_publish;
+  } catch (const std::runtime_error & e) {
+    ROS_FATAL_STREAM("It was in the addition: " << e.what() << start.toNSec() << " " << delay_to_publish.toSec());
+    FAIL();
+  }
+
+  ROS_FATAL("Starting the loop");
+  unsigned i = 0;
+  try {
+    for (; i < 1000; ++i) { //while ( ros::Time::now() < time_to_publish )
+      try {
+	try {
+	  test_roscpp::TestWithHeader msg;
+	} catch (const std::runtime_error & e) {
+	  ROS_FATAL_STREAM("It is mad when you create a msg");
+	  FAIL();
+	}
+	
+	test_roscpp::TestWithHeader msg;
+	try {
+	  msg.header.frame_id = "foo";
+	} catch (const std::runtime_error & e) {
+	  ROS_FATAL_STREAM("It is mad when set the frame_id");
+	  FAIL();
+	}
+	
+	try {
+	  pub.publish(msg);
+	} catch (const std::runtime_error & e) {
+	  ROS_FATAL_STREAM("It was in the publish: " << e.what());
+	  FAIL();
+	}
+	try {
+	  ros::spinOnce();
+	} catch (const std::runtime_error & e) {
+	  ROS_FATAL_STREAM("It was in the spin: " << e.what());
+	  FAIL();
+	}
+	try {
+	  //ros::WallDuration(0.01).sleep();
+	} catch (const std::runtime_error & e) {
+	  ROS_FATAL_STREAM("It was in the sleep: " << e.what());
+	  FAIL();
+	}
+      } catch(const std::runtime_error & e) {
+	ROS_FATAL_STREAM("Uncaught in the loop on iter " << i << " with: " << e.what());
+	FAIL();
+      } catch(...) {
+	ROS_FATAL_STREAM("Uncaught in the loop on iter " << i);
+	FAIL();
+      }
+    }
+  } catch(const std::runtime_error & e) {
+    ROS_FATAL_STREAM("Uncaught outside the loop on iter " << i << " with: " << e.what());
+    FAIL();
+  } catch(...) {
+    ROS_FATAL_STREAM("Uncaught outside the loop on iter " << i);
+    FAIL();
+  }
+  ROS_FATAL_STREAM("Done testing the message");
 
   SUCCEED();
 }
