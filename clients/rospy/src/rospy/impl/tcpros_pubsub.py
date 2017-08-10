@@ -355,7 +355,7 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
                 """ check again if the client request is authorized """
                 auth_logger.info( "received topic connection for %s from %s (%s)" %
                         ( resolved_topic_name, header["callerid"], client_addr ) )
-                client_ip_address = client_addr[0] if isinstance( client_addr, list ) else client_addr
+                client_ip_address = client_addr[0] if type( client_addr ) in [ tuple, list ] else client_addr
                 """ check if subscriber is authorized """
                 if not is_subscriber_authorized( resolved_topic_name, client_ip_address ):
                     auth_logger.warn( "topic connection for %s from %s (%s) not authorized" %

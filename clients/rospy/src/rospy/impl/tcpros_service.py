@@ -231,7 +231,7 @@ def service_connection_handler(sock, client_addr, header):
         """ check again if the client request is authorized """
         auth_logger.info( "received service connection for %s from %s (%s)" %
                 ( service_name, header["callerid"], client_addr ) )
-        client_ip_address = client_addr[0] if isinstance( client_addr, list ) else client_addr
+        client_ip_address = client_addr[0] if type( client_addr ) in [ tuple, list ] else client_addr
         if not is_requester_authorized( service_name, client_ip_address ):
             auth_logger.warn( "service connection for %s from %s (%s) not authorized" %
                     ( service_name, header["callerid"], client_ip_address ) )
