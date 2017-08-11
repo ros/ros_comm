@@ -51,10 +51,27 @@ from collections import OrderedDict
 
 def getLogger( ):
     if getLogger.logger == None:
+        ros_auth_log_level = logging.WARN
+        if os.environ.has_key( "ROS_AUTH_LOG_LEVEL" ):
+            ros_auth_log_level_str = os.environ.get( "ROS_AUTH_LOG_LEVEL" )
+            if ros_auth_log_level_str.upper() == "DEBUG":
+                ros_auth_log_level = logging.DEBUG
+            elif ros_auth_log_level_str.upper() == "INFO":
+                ros_auth_log_level = logging.INFO
+            elif ros_auth_log_level_str.upper() == "WARN":
+                ros_auth_log_level = logging.WARN
+            elif ros_auth_log_level_str.upper() == "ERROR":
+                ros_auth_log_level = logging.ERROR
+            elif ros_auth_log_level_str.upper() == "FATAL":
+                ros_auth_log_level = logging.FATAL
+            else:
+                print( "Environment variable ROS_AUTH_LOG_LEVEL set to '%s'. \n"
+                        "It should be DEBUG, INFO, WARN, ERROR or FATAL. \n"
+                        "Defaulting to %s" % ( ros_auth_log_level_str, logging.getLevelName( ros_auth_log_level ) ) )
         formatter = logging.Formatter('[auth][%(levelname)s] %(message)s')
         handler = logging.StreamHandler( )
         handler.setFormatter( formatter )
-        handler.setLevel( logging.INFO )
+        handler.setLevel( ros_auth_log_level )
         getLogger.logger = logging.getLogger( "roslaunch.auth" )
         getLogger.logger.setLevel( logging.DEBUG )
         getLogger.logger.addHandler( handler )
