@@ -75,7 +75,7 @@ from rosmaster.util import xmlrpcapi
 from rosmaster.registrations import RegistrationManager
 from rosmaster.validators import non_empty, non_empty_str, not_none, is_ipv4, is_api, is_topic, is_service, valid_type_name, valid_name, empty_or_valid_name, ParameterInvalid
 
-from rosmaster.authorization import ROSMasterAuth, is_uri_match
+from rosmaster.authorization import ROSMasterAuth
 
 NUM_WORKERS = 3 #number of threads we use to send publisher_update notifications
 
@@ -311,7 +311,7 @@ class ROSMasterHandler(object):
         @return: [code, msg, 0]
         @rtype: [int, str, int]
         """
-        if not is_uri_match( self.uri, client_ip_address ):
+        if not self.auth.is_uri_match_or_noverify( self.uri, client_ip_address ):
             self.logger.warn( "shutdown( %s, %s ) method not authorized" % ( caller_id, client_ip_address ) )
             return -1, "shutdown not authorized", 0
         if msg:
@@ -496,7 +496,7 @@ class ROSMasterHandler(object):
            has not been set yet.
         @rtype: [int, str, XMLRPCLegalValue]
         """
-        if not is_uri_match( caller_api, client_ip_address ):
+        if not self.auth.is_uri_match_or_noverify( caller_api, client_ip_address ):
             self.logger.warn( "subscribeParam( %s, %s, %s, %s) caller_api not authorized" % ( caller_id, caller_api, key, client_ip_address ) )
             return -1, "caller_api not authorized", 0
         key = resolve_name(key, caller_id)        
@@ -529,7 +529,7 @@ class ROSMasterHandler(object):
            If numUnsubscribed is zero it means that the caller was not subscribed to the parameter.
         @rtype: [int, str, int]
         """        
-        if not is_uri_match( caller_api, client_ip_address ):
+        if not self.auth.is_uri_match_or_noverify( caller_api, client_ip_address ):
             self.logger.warn( "unsubscribeParam( %s, %s, %s, %s) caller_api not authorized" % ( caller_id, caller_api, key, client_ip_address ) )
             return -1, "caller_api not authorized", 0
         key = resolve_name(key, caller_id)        
@@ -742,7 +742,7 @@ class ROSMasterHandler(object):
            The call still succeeds as the intended final state is reached.
         @rtype: (int, str, int)
         """
-        if not is_uri_match( service_api, client_ip_address ):
+        if not self.auth.is_uri_match_or_noverify( service_api, client_ip_address ):
             self.logger.warn( "unregisterService( %s, %s, %s, %s ) service_api not authorized" % ( caller_id, service, service_api, client_ip_address ) )
             return -1, "service_api not authorized", 0
         try:
@@ -834,7 +834,7 @@ class ROSMasterHandler(object):
           The call still succeeds as the intended final state is reached.
         @rtype: (int, str, int)
         """
-        if not is_uri_match( caller_api, client_ip_address ):
+        if not self.auth.is_uri_match_or_noverify( caller_api, client_ip_address ):
             self.logger.warn( "unregisterSubscriber( %s, %s, %s, %s ) caller_api not authorized" % 
                     ( caller_id, topic, caller_api, client_ip_address ) )
             return -1, "caller_api not authorized", []
@@ -909,7 +909,7 @@ class ROSMasterHandler(object):
            The call still succeeds as the intended final state is reached.
         @rtype: (int, str, int)
         """            
-        if not is_uri_match( caller_api, client_ip_address ):
+        if not self.auth.is_uri_match_or_noverify( caller_api, client_ip_address ):
             self.logger.warn( "unregisterPublisher( %s, %s, %s, %s ) caller_api not authorized" % 
                     ( caller_id, topic, caller_api, client_ip_address ) )
             return -1, "caller_api not authorized", []
@@ -953,7 +953,7 @@ class ROSMasterHandler(object):
                 retval = -1, "unknown node [%s]"%node_name, ''
         finally:
             self.ps_lock.release()
-        if is_uri_match( self.uri, client_ip_address ):
+        if self.auth.is_uri_match_or_noverify( self.uri, client_ip_address ):
             """ all requests from master are authorized  """
             return retval
         else:
@@ -1053,7 +1053,7 @@ class ROSMasterHandler(object):
         finally:
             self.ps_lock.release()
 
-        if not is_uri_match( self.uri, client_ip_address ):
+        if not self.auth.is_uri_match_or_noverify( self.uri, client_ip_address ):
             pubs = [[t,tpubs] for [t,tpubs] in retval[0] if self.auth.check_subscriber( t, client_ip_address )]
             subs = [[t,tsubs] for [t,tsubs] in retval[1] if self.auth.check_publisher( t, client_ip_address )]
             services = retval[2]

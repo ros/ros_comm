@@ -324,6 +324,15 @@ class ROSMasterAuth():
             yaml.dump( data, handle )
 
 
+    def is_uri_match_or_noverify( self, uri, client_ip_address ):
+        """ Check if URI matches client_ip_address only if noverify == False
+        """
+        if self.noverify == False:
+            return is_uri_match( uri, client_ip_address )
+        # return True if authorization check is disabled
+        return True
+
+
     def check_key_ip_address( self, key, ip_address, auth_ip_addresses, query, fallback = False, prefix = False ):
         """ Check if ip_address is present in auth_ip_addresses[key]
             If prefix == True check if ip_address is present in auth_ip_addresses[key2] where key2 is a parent of key
