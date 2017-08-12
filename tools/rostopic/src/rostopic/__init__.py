@@ -426,9 +426,11 @@ class ROSTopicBandwidth(object):
         self.lock = threading.Lock()
         self.last_printed_tn = 0
         self.sizes =[]
-        self.times =[]        
-        self.window_size = window_size or 100
-                
+        self.times =[]
+        if window_size < 0:
+            window_size = 100
+        self.window_size = window_size
+
     def callback(self, data):
         """ros sub callback"""
         with self.lock:
