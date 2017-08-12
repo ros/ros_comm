@@ -325,7 +325,7 @@ class TestRosbag(unittest.TestCase):
             # the value varies each run, I suspect based on rand, but seems
             # to generally be around 960 to 980 on my comp
             self.assertLess(info.compressed, 1000)
-            self.assertGreater(info.compressed, 900)
+            self.assertGreater(info.compressed, 880)
         
     def test_get_time(self):
         fn = '/tmp/test_get_time.bag'
