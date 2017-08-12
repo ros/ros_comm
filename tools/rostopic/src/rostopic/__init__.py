@@ -1528,7 +1528,7 @@ def _rostopic_cmd_bw(argv=sys.argv):
     from optparse import OptionParser
     parser = OptionParser(usage="usage: %prog bw /topic", prog=NAME)
     parser.add_option("-w", "--window",
-                      dest="window_size", default=None,
+                      dest="window_size", default=-1,
                       help="window size, in # of messages, for calculating rate", metavar="WINDOW")
     options, args = parser.parse_args(args)
     if len(args) == 0:
