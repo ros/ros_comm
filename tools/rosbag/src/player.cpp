@@ -40,8 +40,10 @@
   #include <sys/select.h>
 #endif
 
+#include <cstdlib>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
+#include <boost/thread.hpp>
 
 #include "rosgraph_msgs/Clock.h"
 
@@ -124,6 +126,14 @@ Player::~Player() {
     restoreTerminal();
 }
 
+struct Command {
+    Command(const std::string& cmd) : cmd_(cmd) {}
+    void operator()() const {
+        std::system(cmd_.c_str());
+    }
+    std::string cmd_;
+};
+
 void Player::publish() {
     options_.check();
 
@@ -190,6 +200,7 @@ void Player::publish() {
       return;
     }
 
+    std::vector<boost::shared_ptr<boost::thread> > threads;
     // Advertise all of our messages
     foreach(const ConnectionInfo* c, view.getConnections())
     {
@@ -202,11 +213,19 @@ void Player::publish() {
         if (pub_iter == publishers_.end()) {
 
             ros::AdvertiseOptions opts = createAdvertiseOptions(c, options_.queue_size, options_.prefix);
-
-            ros::Publisher pub = node_handle_.advertise(opts);
-            publishers_.insert(publishers_.begin(), pair<string, ros::Publisher>(callerid_topic, pub));
-
-            pub_iter = publishers_.find(callerid_topic);
+            if (opts.latch) {
+                std::stringstream cmdline;
+                cmdline << "rosrun rosbag pub_tf_static " + callerid;
+                foreach(const std::string& bagname, options_.bags)
+                {
+                    cmdline << " " << bagname;
+                }
+                Command cmd(cmdline.str());
+                threads.push_back(boost::make_shared<boost::thread>(cmd));
+            } else {
+              ros::Publisher pub = node_handle_.advertise(opts);
+              publishers_.insert(publishers_.begin(), pair<string, ros::Publisher>(callerid_topic, pub));
+            }
         }
     }
 
@@ -274,7 +293,8 @@ void Player::publish() {
             if (!node_handle_.ok())
                 break;
 
-            doPublish(m);
+            if (!m.isLatching())
+                doPublish(m);
         }
 
         if (options_.keep_alive)
