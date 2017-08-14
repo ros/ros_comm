@@ -67,17 +67,31 @@ class RospyLogger(logging.getLoggerClass()):
             if filename != file_name or f.f_lineno != lineno or co.co_name != func_name:
                 f = f.f_back
                 continue
-            # we found  the correct frame, now extending func_name with class name
-            try:
-                class_name = f.f_locals['self'].__class__.__name__
-                func_name = '%s.%s' % (class_name, func_name)
-            except KeyError:  # if the function is unbound, there is no self.
-                pass
             break
+
+        # Jump up one more frame, as the underlying logger functions have been wrapped.
+        f = f.f_back
+        co = f.f_code
+
+        # For the throttle case, there are two additional layers of wrapping.
+        if co.co_name == '_base_logger':
+            f = f.f_back.f_back
+            co = f.f_code
+
+        func_name = co.co_name
+
+        # we found the correct frame, now extending func_name with class name
+        try:
+            class_name = f.f_locals['self'].__class__.__name__
+            func_name = '%s.%s' % (class_name, func_name)
+        except KeyError:  # if the function is unbound, there is no self.
+            pass
+
         if sys.version_info > (3, 2):
-            return file_name, lineno, func_name, None # Dummy last argument to match Python3 return type
+            # Dummy last argument to match Python3 return type
+            return co.co_filename, f.f_lineno, func_name, None
         else:
-            return file_name, lineno, func_name
+            return co.co_filename, f.f_lineno, func_name
 
 logging.setLoggerClass(RospyLogger)
 
