@@ -77,7 +77,7 @@ class BagPlayer
 {
 public:
   /* Constructor expecting the filename of a bag */
-  BagPlayer(const std::string &filename) throw(BagException);
+  BagPlayer(const std::string &filename);
 
   /* Register a callback for a specific topic and type */
   template<class T>
