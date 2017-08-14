@@ -249,7 +249,7 @@ void View::addQuery(Bag const& bag, ros::Time const& start_time, ros::Time const
     if ((bag.getMode() & bagmode::Read) != bagmode::Read)
         throw BagException("Bag not opened for reading");
 
-	boost::function<bool(ConnectionInfo const*)> query = TrueQuery();
+    boost::function<bool(ConnectionInfo const*)> query = TrueQuery();
 
     queries_.push_back(new BagQuery(&bag, Query(query, start_time, end_time), bag.bag_revision_));
 
