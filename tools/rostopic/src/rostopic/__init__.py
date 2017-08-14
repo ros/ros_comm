@@ -1536,7 +1536,7 @@ def _rostopic_cmd_bw(argv=sys.argv):
     if len(args) > 1:
         parser.error("you may only specify one input topic")
     try:
-        window_size = int(options.window_size)
+        window_size = int(options.window_size) if options.window_size else None
     except:
         parser.error("window size must be an integer")
     topic = rosgraph.names.script_resolve_name('rostopic', args[0])
