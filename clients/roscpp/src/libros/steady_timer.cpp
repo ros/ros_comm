@@ -25,8 +25,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-// make sure we use CLOCK_MONOTONIC for the condition variable
+// Make sure we use CLOCK_MONOTONIC for the condition variable if not Apple.
+#ifndef __APPLE__
 #define BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
+#endif
 
 #include "ros/steady_timer.h"
 #include "ros/timer_manager.h"
