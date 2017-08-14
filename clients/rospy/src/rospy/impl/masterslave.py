@@ -60,8 +60,7 @@ import threading
 import traceback
 import time
 import errno
-from rosmaster.authorization import is_uri_match
-from rosgraph.network import is_local_address
+from rosmaster.authorization import is_uri_match, is_local_ip_address
 
 try:
     #py3k
@@ -148,14 +147,17 @@ def is_requester_authorized( service, client_ip_address ):
         @return: If client_ip_address is authorized for topic 
         @rtype: bool
     """
-    if is_local_address( client_ip_address ):
+    if is_local_ip_address( client_ip_address ):
         auth_logger.debug( "Local requester for %s allowed" % service )
         return True
     masterUri = rosgraph.get_master_uri()
     this_caller_id = rospy.names.get_caller_id()
     auth_clients = get_service_client_list( masterUri, service, this_caller_id )
     auth_logger.debug( "Getting clients for service %s: %s" % ( service, auth_clients ) )
-    if client_ip_address in auth_clients:
+    if "255.255.255.255" in auth_clients:
+        auth_logger.info( "is_requester_authorized( %s, %s ) noverify = True" % ( service, client_ip_address ) )
+        return True
+    elif client_ip_address in auth_clients:
         return True
     auth_logger.warn( "is_requester_authorized( %s, %s ) not authorized" % ( service, client_ip_address ) )
     return False
@@ -178,7 +180,7 @@ def is_subscriber_authorized( topic, client_ip_address ):
         @return: If client_ip_address is authorized for topic 
         @rtype: bool
     """
-    if is_local_address( client_ip_address ):
+    if is_local_ip_address( client_ip_address ):
         auth_logger.debug( "Local subscriber for %s allowed" % topic )
         return True
     masterUri = rosgraph.get_master_uri()

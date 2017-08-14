@@ -463,10 +463,13 @@ class ROSMasterAuth():
 
     def service_clients( self, service ):
         """ Return list of authorized clients for service 
-                Allow if service is not listed (fallback = True)
-                Return True if allowed
+            Return ["255.255.255.255"] if noverify = True
         """
+        if self.noverify == True:
+            self.logger.debug( "service_clients( %s ): noverify = True)" % (  service ) )
+            return ["255.255.255.255",] 
         if service in self.requesters.keys():
             return list( self.requesters[service] )
+        # if service is not listed, then all IP addresses in the config file are allowed
         return list( self.ip_addresses )
 

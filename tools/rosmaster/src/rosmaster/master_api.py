@@ -767,6 +767,7 @@ class ROSMasterHandler(object):
         @rtype: (int, str, [str])
         """        
         auth_service_clients = self.auth.service_clients( service )
+        print( "auth_service_clients = %s" % ( auth_service_clients ) )
         self.logger.info( "getServiceClients( %s, %s, %s ) OK" % ( caller_id, service, client_ip_address ) )
         return 1, "Authorized clients for service %s"%(service), auth_service_clients
 

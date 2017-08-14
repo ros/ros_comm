@@ -84,13 +84,17 @@ bool is_requester_authorized( const std::string& service, const std::string& cli
       auth_list += ", ";
     }
     auth_list += auth_ip_addresses[i];
-    if ( client_ip_address == auth_ip_addresses[i] ) {
+    if ( std::string( "255.255.255.255" ) == auth_ip_addresses[i] ) {
+      ROS_INFO_NAMED(AUTH_LOG_NAME, "is_requester_authorized( %s, %s ) noverify = True", service.c_str(), client_ip_address.c_str() );
+      return true;
+    }
+    else if ( client_ip_address == auth_ip_addresses[i] ) {
       ROS_INFO_NAMED(AUTH_LOG_NAME, "is_requester_authorized( %s, %s ) OK", service.c_str(), client_ip_address.c_str() );
       return true;
     }
   }
   ROS_WARN_NAMED(AUTH_LOG_NAME, "is_requester_authorized( %s, %s ) not authorized. Authorized list is %s", service.c_str(), client_ip_address.c_str(), auth_list.c_str() );
-  return true;
+  return false;
 }
 
 TopicManagerPtr g_topic_manager;

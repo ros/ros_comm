@@ -140,7 +140,7 @@ class TestRospyTcprosService(unittest.TestCase):
 
         sock = FakeSocket()
         from rospy.impl.tcpros_service import service_connection_handler
-        client_addr = '10.0.0.1'
+        client_addr = '127.0.0.1'
 
         # check error conditions on missing headers
         self.assert_("Missing" in service_connection_handler(sock, client_addr, {}))
