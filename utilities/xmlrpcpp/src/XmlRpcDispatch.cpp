@@ -6,6 +6,7 @@
 #include <math.h>
 #include <errno.h>
 #include <sys/timeb.h>
+#include <stdexcept>
 #if defined (__ANDROID__)
 #include <sys/select.h>
 #endif
@@ -95,6 +96,10 @@ XmlRpcDispatch::work(double timeout)
     SourceList::iterator it;
     for (it=_sources.begin(); it!=_sources.end(); ++it) {
       int fd = it->getSource()->getfd();
+      if (fd >= FD_SETSIZE) {
+        _inWork = false;
+        throw std::runtime_error("XmlRpcDispatch::work: fd >= FD_SETSIZE limit, too many open files.");
+      }
       if (it->getMask() & ReadableEvent) FD_SET(fd, &inFd);
       if (it->getMask() & WritableEvent) FD_SET(fd, &outFd);
       if (it->getMask() & Exception)     FD_SET(fd, &excFd);
