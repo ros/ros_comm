@@ -336,10 +336,10 @@ XmlRpcClient* XMLRPCManager::getXMLRPCClient(const std::string &host, const int 
         // hooray, it's pointing at our destination. re-use it.
         c = i->client_;
         i->in_use_ = true;
-        i->last_use_time_ = WallTime::now();
+        i->last_use_time_ = SteadyTime::now();
         break;
       }
-      else if (i->last_use_time_ + CachedXmlRpcClient::s_zombie_time_ < WallTime::now())
+      else if (i->last_use_time_ + CachedXmlRpcClient::s_zombie_time_ < SteadyTime::now())
       {
         // toast this guy. he's dead and nobody is reusing him.
         delete i->client_;
@@ -362,7 +362,7 @@ XmlRpcClient* XMLRPCManager::getXMLRPCClient(const std::string &host, const int 
     c = new XmlRpcClient(host.c_str(), port, uri.c_str());
     CachedXmlRpcClient mc(c);
     mc.in_use_ = true;
-    mc.last_use_time_ = WallTime::now();
+    mc.last_use_time_ = SteadyTime::now();
     clients_.push_back(mc);
     //ROS_INFO("%d xmlrpc clients allocated\n", xmlrpc_clients.size());
   }
