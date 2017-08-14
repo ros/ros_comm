@@ -12,7 +12,7 @@
 # include <winsock2.h>
 static inline int poll( struct pollfd *pfd, int nfds, int timeout)
 {
-    return WSAPoll ( pfd, nfds, timeout );
+  return WSAPoll ( pfd, nfds, timeout );
 }
 
 # define USE_FTIME
@@ -62,7 +62,7 @@ XmlRpcDispatch::removeSource(XmlRpcSource* source)
 
 
 // Modify the types of events to watch for on this source
-void
+void 
 XmlRpcDispatch::setSourceEvents(XmlRpcSource* source, unsigned eventMask)
 {
   for (SourceList::iterator it=_sources.begin(); it!=_sources.end(); ++it)
@@ -158,8 +158,9 @@ XmlRpcDispatch::work(double timeout)
         _sources.erase(thisIt);  // Stop monitoring this one
         if ( ! src->getKeepOpen())
           src->close();
-      } else if (newMask != (unsigned) -1)
+      } else if (newMask != (unsigned) -1) {
         thisIt->getMask() = newMask;
+      }
     }
 
     // Check whether to clear all sources
