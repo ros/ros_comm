@@ -150,39 +150,50 @@ def _base_logger(msg, *args, **kwargs):
     name = kwargs.pop('logger_name', None)
     throttle = kwargs.pop('logger_throttle', None)
     level = kwargs.pop('logger_level', None)
-                    
+    once = kwargs.pop('logger_once', False)
+
     rospy_logger = logging.getLogger('rosout')
     if name:
         rospy_logger = rospy_logger.getChild(name)
     logfunc = getattr(rospy_logger, level)
 
-    if throttle:
+    if once:
         caller_id = _frame_to_caller_id(inspect.currentframe().f_back.f_back)
-        _logging_throttle(caller_id, logfunc, throttle, msg, *args)
+        if _logging_once(caller_id, throttle):
+            logfunc(msg, *args)
+    elif throttle:
+        caller_id = _frame_to_caller_id(inspect.currentframe().f_back.f_back)
+        if _logging_throttle(caller_id, throttle):
+            logfunc(msg, *args)
     else:
         logfunc(msg, *args)
 
 
-loginfo = partial(_base_logger, logger_level='info')
+def logdebug(msg, *args, **kwargs):
+    _base_logger(msg, *args, logger_level='debug', **kwargs)
+
+def loginfo(msg, *args, **kwargs):
+    _base_logger(msg, *args, logger_level='info', **kwargs)
+
+def logwarn(msg, *args, **kwargs):
+    _base_logger(msg, *args, logger_level='warn', **kwargs)
+
+def logerr(msg, *args, **kwargs):
+    _base_logger(msg, *args, logger_level='error', **kwargs)
+
+def logfatal(msg, *args, **kwargs):
+    _base_logger(msg, *args, logger_level='critical', **kwargs)
 
 logout = loginfo # alias deprecated name
 
-logdebug = partial(_base_logger, logger_level='debug')
-
-logwarn = partial(_base_logger, logger_level='warn')
-
-logerr = partial(_base_logger, logger_level='error')
-
 logerror = logerr # alias logerr
-
-logfatal = partial(_base_logger, logger_level='critical')
 
 
 class LoggingThrottle(object):
 
     last_logging_time_table = {}
 
-    def __call__(self, caller_id, logging_func, period, msg):
+    def __call__(self, caller_id, period):
         """Do logging specified message periodically.
 
         - caller_id (str): Id to identify the caller
@@ -196,8 +207,9 @@ class LoggingThrottle(object):
 
         if (last_logging_time is None or
               (now - last_logging_time) > rospy.Duration(period)):
-            logging_func(msg)
             self.last_logging_time_table[caller_id] = now
+            return True
+        return False
 
 
 _logging_throttle = LoggingThrottle()
@@ -213,56 +225,47 @@ def _frame_to_caller_id(frame):
 
 
 def logdebug_throttle(period, msg):
-    logdebug(msg, logger_name=None, logger_throttle=period)
-      
+    _base_logger(msg, logger_throttle=period, logger_level='debug')
+
 def loginfo_throttle(period, msg):
-    loginfo(msg, logger_name=None, logger_throttle=period)
-              
+    _base_logger(msg, logger_throttle=period, logger_level='info')
+
 def logwarn_throttle(period, msg):
-    logwarn(msg, logger_name=None, logger_throttle=period)
+    _base_logger(msg, logger_throttle=period, logger_level='warn')
 
 def logerr_throttle(period, msg):
-    logerr(msg, logger_name=None, logger_throttle=period)
-                              
+    _base_logger(msg, logger_throttle=period, logger_level='error')
+
 def logfatal_throttle(period, msg):
-    logfatal(msg, logger_name=None, logger_throttle=period)
+    _base_logger(msg, logger_throttle=period, logger_level='critical')
 
 class LoggingOnce(object):
 
     called_caller_ids = set()
 
-    def __call__(self, caller_id, logging_func, msg):
+    def __call__(self, caller_id):
         if caller_id not in self.called_caller_ids:
-            logging_func(msg)
             self.called_caller_ids.add(caller_id)
-
+            return True
+        return False
 
 _logging_once = LoggingOnce()
 
 
 def logdebug_once(msg):
-    caller_id = _frame_to_caller_id(inspect.currentframe().f_back)
-    _logging_once(caller_id, logdebug, msg)
-
+    _base_logger(msg, logger_once=True, logger_level='debug')
 
 def loginfo_once(msg):
-    caller_id = _frame_to_caller_id(inspect.currentframe().f_back)
-    _logging_once(caller_id, loginfo, msg)
-
+    _base_logger(msg, logger_once=True, logger_level='info')
 
 def logwarn_once(msg):
-    caller_id = _frame_to_caller_id(inspect.currentframe().f_back)
-    _logging_once(caller_id, logwarn, msg)
-
+    _base_logger(msg, logger_once=True, logger_level='warn')
 
 def logerr_once(msg):
-    caller_id = _frame_to_caller_id(inspect.currentframe().f_back)
-    _logging_once(caller_id, logerr, msg)
-
+    _base_logger(msg, logger_once=True, logger_level='error')
 
 def logfatal_once(msg):
-    caller_id = _frame_to_caller_id(inspect.currentframe().f_back)
-    _logging_once(caller_id, logfatal, msg)
+    _base_logger(msg, logger_once=True, logger_level='critical')
 
 
 #########################################################

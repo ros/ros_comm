@@ -60,27 +60,22 @@ class RospyLogger(logging.getLoggerClass()):
         if f is not None:
             f = f.f_back
         while hasattr(f, "f_code"):
-            # we search the right frame using the data already found by parent class
-            # following python logging findCaller() implementation logic
+            # Search for the right frame using the data already found by parent class.
             co = f.f_code
             filename = os.path.normcase(co.co_filename)
-            if filename != file_name or f.f_lineno != lineno or co.co_name != func_name:
-                f = f.f_back
-                continue
-            break
+            if filename == file_name and f.f_lineno == lineno and co.co_name == func_name:
+                break
+            f = f.f_back
 
-        # Jump up one more frame, as the underlying logger functions have been wrapped.
-        f = f.f_back
+        # Jump up two more frames, as the logger methods have been double wrapped.
+        if f.f_back:
+            f = f.f_back
+        if f.f_back:
+            f = f.f_back
         co = f.f_code
-
-        # For the throttle case, there are two additional layers of wrapping.
-        if co.co_name == '_base_logger':
-            f = f.f_back.f_back
-            co = f.f_code
-
         func_name = co.co_name
 
-        # we found the correct frame, now extending func_name with class name
+        # Now extend the function name with class name, if available.
         try:
             class_name = f.f_locals['self'].__class__.__name__
             func_name = '%s.%s' % (class_name, func_name)
@@ -88,7 +83,7 @@ class RospyLogger(logging.getLoggerClass()):
             pass
 
         if sys.version_info > (3, 2):
-            # Dummy last argument to match Python3 return type
+            # Dummy last argument to match Python3 return type.
             return co.co_filename, f.f_lineno, func_name, None
         else:
             return co.co_filename, f.f_lineno, func_name
