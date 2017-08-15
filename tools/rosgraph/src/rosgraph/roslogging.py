@@ -60,24 +60,33 @@ class RospyLogger(logging.getLoggerClass()):
         if f is not None:
             f = f.f_back
         while hasattr(f, "f_code"):
-            # we search the right frame using the data already found by parent class
-            # following python logging findCaller() implementation logic
+            # Search for the right frame using the data already found by parent class.
             co = f.f_code
             filename = os.path.normcase(co.co_filename)
-            if filename != file_name or f.f_lineno != lineno or co.co_name != func_name:
+            if filename == file_name and f.f_lineno == lineno and co.co_name == func_name:
+                break
+            f = f.f_back
+
+        # Jump up two more frames, as the logger methods have been double wrapped.
+        if f.f_back and f.f_code and f.f_code.co_name == '_base_logger':
+            f = f.f_back
+            if f.f_back:
                 f = f.f_back
-                continue
-            # we found  the correct frame, now extending func_name with class name
-            try:
-                class_name = f.f_locals['self'].__class__.__name__
-                func_name = '%s.%s' % (class_name, func_name)
-            except KeyError:  # if the function is unbound, there is no self.
-                pass
-            break
+        co = f.f_code
+        func_name = co.co_name
+
+        # Now extend the function name with class name, if available.
+        try:
+            class_name = f.f_locals['self'].__class__.__name__
+            func_name = '%s.%s' % (class_name, func_name)
+        except KeyError:  # if the function is unbound, there is no self.
+            pass
+
         if sys.version_info > (3, 2):
-            return file_name, lineno, func_name, None # Dummy last argument to match Python3 return type
+            # Dummy last argument to match Python3 return type
+            return co.co_filename, f.f_lineno, func_name, None
         else:
-            return file_name, lineno, func_name
+            return co.co_filename, f.f_lineno, func_name
 
 logging.setLoggerClass(RospyLogger)
 
