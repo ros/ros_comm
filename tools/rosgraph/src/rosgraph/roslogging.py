@@ -83,7 +83,7 @@ class RospyLogger(logging.getLoggerClass()):
             pass
 
         if sys.version_info > (3, 2):
-            # Dummy last argument to match Python3 return type.
+            # Dummy last argument to match Python3 return type
             return co.co_filename, f.f_lineno, func_name, None
         else:
             return co.co_filename, f.f_lineno, func_name
