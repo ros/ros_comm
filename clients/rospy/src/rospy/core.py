@@ -159,7 +159,7 @@ def _base_logger(msg, *args, **kwargs):
 
     if once:
         caller_id = _frame_to_caller_id(inspect.currentframe().f_back.f_back)
-        if _logging_once(caller_id, throttle):
+        if _logging_once(caller_id):
             logfunc(msg, *args)
     elif throttle:
         caller_id = _frame_to_caller_id(inspect.currentframe().f_back.f_back)
