@@ -2,8 +2,8 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.13.2 (2017-08-15)
+-------------------
 * fix rostopic hz and bw in Python 3 (`#1126 <https://github.com/ros/ros_comm/issues/1126>`_)
 * update tests to match stringify changes (`#1125 <https://github.com/ros/ros_comm/issues/1125>`_)
 
