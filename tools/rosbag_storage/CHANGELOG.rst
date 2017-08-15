@@ -2,6 +2,11 @@
 Changelog for package rosbag_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix whitespace warnings with g++ 7 (`#1138 <https://github.com/ros/ros_comm/issues/1138>`_)
+* remove deprecated dynamic exception specifications (`#1137 <https://github.com/ros/ros_comm/issues/1137>`_)
+
 1.13.1 (2017-07-27)
 -------------------
 * fix buffer overflow vulnerability (`#1092 <https://github.com/ros/ros_comm/issues/1092>`_)

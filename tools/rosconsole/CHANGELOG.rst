@@ -2,6 +2,9 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.13.1 (2017-07-27)
 -------------------
 * remove extra semicolon in definition of macro ROSCONSOLE_PRINTF_ATTRIBUTE(a, b) (`#1056 <https://github.com/ros/ros_comm/pull/1056>`_)

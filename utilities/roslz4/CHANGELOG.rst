@@ -2,6 +2,10 @@
 Changelog for package roslz4
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* replace deprecated lz4 function call (`#1136 <https://github.com/ros/ros_comm/issues/1136>`_)
+
 1.13.1 (2017-07-27)
 -------------------
 * add XXH_NAMESPACE, for namespace emulation in C (`#1065 <https://github.com/ros/ros_comm/pull/1065>`_)

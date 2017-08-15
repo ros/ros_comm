@@ -2,6 +2,11 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix stack frame identification in rospy logging (`#1141 <https://github.com/ros/ros_comm/issues/1141>`_, regression from 1.13.1)
+* make RospyLogger.findCaller compatible with Python 3 (`#1121 <https://github.com/ros/ros_comm/issues/1121>`_)
+
 1.13.1 (2017-07-27)
 -------------------
 * improve message when `roslogging` cannot change permissions (`#1068 <https://github.com/ros/ros_comm/issues/1068>`_)

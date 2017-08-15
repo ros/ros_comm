@@ -2,6 +2,11 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* use poll() in favor of select() in the XmlRPCDispatcher (`#833 <https://github.com/ros/ros_comm/issues/833>`_)
+* fix fall through warnings with g++ 7 (`#1139 <https://github.com/ros/ros_comm/issues/1139>`_)
+
 1.13.1 (2017-07-27)
 -------------------
 * switch to libb64 for base64 encoding/decoding (`#1046 <https://github.com/ros/ros_comm/issues/1046>`_)

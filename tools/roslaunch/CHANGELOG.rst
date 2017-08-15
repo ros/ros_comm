@@ -2,6 +2,9 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.13.1 (2017-07-27)
 -------------------
 * add $(dirname) to get directory of current launch file (`#1103 <https://github.com/ros/ros_comm/pull/1103>`_)

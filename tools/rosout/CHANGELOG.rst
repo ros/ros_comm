@@ -2,6 +2,9 @@
 Changelog for package rosout
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.13.1 (2017-07-27)
 -------------------
 * move code from init to initializer (`#990 <https://github.com/ros/ros_comm/issues/990>`_)

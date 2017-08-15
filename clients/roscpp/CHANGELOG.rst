@@ -2,6 +2,12 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* only use CLOCK_MONOTONIC if not on OS X (`#1142 <https://github.com/ros/ros_comm/issues/1142>`_)
+* xmlrpc_manager: use SteadyTime for timeout (`#1134 <https://github.com/ros/ros_comm/issues/1134>`_)
+* ignore headers with zero stamp in statistics (`#1127 <https://github.com/ros/ros_comm/issues/1127>`_)
+
 1.13.1 (2017-07-27)
 -------------------
 * add SteadyTimer, used in TimerManager (`#1014 <https://github.com/ros/ros_comm/issues/1014>`_)
