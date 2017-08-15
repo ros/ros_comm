@@ -390,20 +390,20 @@ class ROSHandler(XmlRpcHandler):
     ###############################################################################
     # UNOFFICIAL/PYTHON-ONLY API
 
-    @apivalidate('')
+    @apivalidate([], (is_ipv4('client_ip_address'),))
     ## (Python-Only API) Get the XML-RPC URI of this server
     ## @param self
     ## @param caller_id str: ROS caller id    
     ## @return [int, str, str]: [1, "", xmlRpcUri]
-    def getUri(self, caller_id):
+    def getUri(self, caller_id, client_ip_address = "127.0.0.1"):
         return 1, "", self.uri
 
-    @apivalidate('')
+    @apivalidate([], (is_ipv4('client_ip_address'),))
     ## (Python-Only API) Get the ROS node name of this server
     ## @param self
     ## @param caller_id str: ROS caller id    
     ## @return [int, str, str]: [1, "", ROS node name]
-    def getName(self, caller_id):
+    def getName(self, caller_id, client_ip_address = "127.0.0.1"):
         return 1, "", self.name
 
 
