@@ -108,4 +108,4 @@ def start_node(environ, resolved_name, master_uri=None, port=0, tcpros_port=0):
 
 class RosStreamHandler(rosgraph.roslogging.RosStreamHandler):
     def __init__(self, colorize=True):
-        super(RosStreamHandler, self).__init__(colorize)
+        super(RosStreamHandler, self).__init__(stdout=sys.stdout, stderr=sys.stderr, colorize=colorize)

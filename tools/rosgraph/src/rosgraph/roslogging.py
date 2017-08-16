@@ -220,8 +220,10 @@ _color_reset = '\033[0m'
 _defaultFormatter = logging.Formatter()
 
 class RosStreamHandler(logging.Handler):
-    def __init__(self, colorize=True):
+    def __init__(self, stdout=sys.stdout, stderr=sys.stderr, colorize=True):
         super(RosStreamHandler, self).__init__()
+        self._stdout = stdout
+        self._stderr = stderr
         self._colorize = colorize
         try:
             from rospy.rostime import get_time, is_wallclock
@@ -256,9 +258,9 @@ class RosStreamHandler(logging.Handler):
         msg = msg.replace('${time}', time_str)
         msg += '\n'
         if record.levelno < logging.WARNING:
-            self._write(sys.stdout, msg, color)
+            self._write(self._stdout, msg, color)
         else:
-            self._write(sys.stderr, msg, color)
+            self._write(self._stderr, msg, color)
 
     def _write(self, fd, msg, color):
         if self._colorize and color and hasattr(fd, 'isatty') and fd.isatty():

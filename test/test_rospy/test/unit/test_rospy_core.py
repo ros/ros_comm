@@ -39,8 +39,12 @@ import struct
 import unittest
 import time
 import random
+from StringIO import StringIO
 
+import re
+import rosgraph.roslogging
 import rospy
+
 
 class TestRospyCore(unittest.TestCase):
     
@@ -65,26 +69,149 @@ class TestRospyCore(unittest.TestCase):
             except: pass
 
     def test_loggers(self):
-        # trip wire tests
-        import rospy.core
-        rospy.core.logdebug('debug')
-        rospy.core.logwarn('warn')
-        rospy.core.logout('out')
-        rospy.core.logerr('err')
-        rospy.core.logfatal('fatal')
-        # test that they are exposed via top-level api
-        import rospy
-        rospy.logdebug('debug')
-        rospy.logwarn('warn')
-        rospy.logout('out')
-        rospy.logerr('err')
-        rospy.logfatal('fatal')
-        #basic named logger test
-        rospy.logdebug('debug', logger_name="child1")
-        rospy.logwarn('warn', logger_name="child1")
-        rospy.logout('out', logger_name="child1")
-        rospy.logerr('err', logger_name="child1")
-        rospy.logfatal('fatal', logger_name="child1")
+
+        old_format = os.environ.get('ROSCONSOLE_FORMAT', '')
+
+        try:
+
+            # detailed log format
+            os.environ['ROSCONSOLE_FORMAT'] = ' '.join([
+                '${severity}',
+                '${message}',
+                '${walltime}',
+                '${thread}',
+                '${logger}',
+                '${file}',
+                '${line}',
+                '${function}',
+                '${node}',
+                '${time}',
+            ])
+            import rospy.core
+            import logging
+
+            # configure_logging should not accept the root namespace as the node_name param
+            self.assertRaises(rospy.exceptions.ROSException, rospy.core.configure_logging, "/")
+
+            rospy.core.configure_logging("/node/name", logging.DEBUG)
+            # access our own log file
+            testlogfile = rospy.core._log_filename
+
+            rosout_logger = logging.getLogger('rosout')
+
+            self.assertTrue(len(rosout_logger.handlers) == 1)
+            self.assertTrue(rosout_logger.handlers[0], rosgraph.roslogging.RosStreamHandler)
+
+            default_ros_handler = rosout_logger.handlers[0]
+
+            # Remap stdout for testing
+            lout = StringIO()
+            lerr = StringIO()
+            test_ros_handler = rosgraph.roslogging.RosStreamHandler(stdout=lout, stderr=lerr, colorize=False)
+
+            lf = open(testlogfile, 'r')
+
+            this_file = os.path.abspath(__file__)
+            # this is necessary to avoid test fails because of .pyc cache file
+            base, ext = os.path.splitext(this_file)
+            if ext == '.pyc':
+                this_file = base + '.py'
+
+            try:
+
+                # hack to replace the stream handler with a debug version
+                rosout_logger.removeHandler(default_ros_handler)
+                rosout_logger.addHandler(test_ros_handler)
+
+                # trip wire tests
+                import rospy.core
+                rospy.core.logdebug('debug')
+                rospy.core.loginfo('info')
+                rospy.core.logwarn('warn')
+                rospy.core.logerror('error')
+                rospy.core.logfatal('fatal')
+
+                lf.seek(0, 2)
+                lout.seek(0, 2)
+                lerr.seek(0, 2)
+
+                # because we just cant do lvl.upper()...
+                def lvl2loglvl(lvl):
+                    return {
+                        'debug': 'DEBUG',
+                        'info': 'INFO',
+                        'warn': 'WARNING',
+                        'err': 'ERROR',
+                        'fatal': 'CRITICAL',
+                    }.get(lvl)
+
+                # and because it s not consistent
+                def lvl2loglvl_stream(lvl):
+                    return {
+                        'debug': 'DEBUG',
+                        'info': 'INFO',
+                        'warn': 'WARN',
+                        'err': 'ERROR',
+                        'fatal': 'FATAL',
+                    }.get(lvl)
+
+                # test that they are exposed via top-level api
+                import rospy
+                for lvl in ['debug', 'info', 'warn', 'err', 'fatal']:
+                    logmthd = getattr(rospy, 'log' + lvl)
+                    logmthd(lvl)
+
+                    log_file = ' '.join([
+                        '\[rosout\]\[' + lvl2loglvl(lvl) + '\]',
+                        '(\d+[-\/]\d+[-\/]\d+)',
+                        '(\d+[:]\d+[:]\d+[,]\d+):',
+                        lvl
+                    ])
+                    fileline = lf.readline()
+                    # print("lf.readline(): " + fileline)
+
+                    if lvl in ['debug']:
+                        self.assertTrue(len(fileline) == 0)  # no log in file with logdebug
+                    else:  # proper format
+                        self.assertTrue(bool(re.match(log_file, fileline)), msg="{0} doesn't match: {1}".format(fileline, log_file))
+
+                    log_out = ' '.join([
+                        lvl2loglvl_stream(lvl),
+                        lvl,
+                        '[0-9]*\.[0-9]*',
+                        '[0-9]*',
+                        'rosout',
+                        this_file,
+                        '[0-9]*',
+                        'TestRospyCore.test_loggers',
+                        '/unnamed',
+                        '[0-9]*\.[0-9]*',
+                    ])
+                    outline = lout.getvalue().splitlines()
+                    errline = lerr.getvalue().splitlines()
+
+                    if lvl in ['info']:
+                        self.assertTrue(len(outline) > 0)
+                        # print("lout.getvalue(): " + outline[-1])
+                        self.assertTrue(bool(re.match(log_out, outline[-1])), msg="{0}\n doesn't match: {1}".format(outline[-1], log_out))
+
+                    elif lvl in ['warn', 'err', 'fatal']:
+                        self.assertTrue(len(errline) > 0)
+                        # print("lerr.getvalue(): " + errline[-1])
+                        self.assertTrue(bool(re.match(log_out, errline[-1])), msg="{0}\n doesn't match: {1}".format(errline[-1], log_out))
+
+            finally:
+                lf.close()
+
+                # restoring default ros handler
+                logging.getLogger('rosout').removeHandler(test_ros_handler)
+                lout.close()
+                lerr.close()
+                logging.getLogger('rosout').addHandler(default_ros_handler)
+
+        finally:
+            # restoring format
+            os.environ['ROSCONSOLE_FORMAT'] = old_format
 
     def test_add_shutdown_hook(self):
         def handle(reason):
@@ -209,14 +336,6 @@ class TestRospyCore(unittest.TestCase):
                 self.fail(f)
             except rospy.core.ParameterInvalid:
                 pass
-            
-    def test_configure_logging(self):
-        # can't test actual functionality
-        try:
-            rospy.core.configure_logging("/")
-            self.fail("configure_logging should not accept a the root namespace as the node_name param")
-        except: pass
-        rospy.core.configure_logging("/node/name")
 
     def test_xmlrpcapi(self):
         # have to use 'is' so we don't accidentally invoke XMLRPC
