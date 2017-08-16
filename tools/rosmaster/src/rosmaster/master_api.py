@@ -349,6 +349,25 @@ class ROSMasterHandler(object):
 
     
     ################################################################
+    # SECURE ROS ROUTINES
+    
+    @apivalidate(0, (is_ipv4('client_ip_address'),))
+    def isSecureROSEnabled(self, caller_id, client_ip_address = "127.0.0.1"):
+        """
+        Is Secure ROS enabled?
+        @param caller_id: ROS caller id
+        @type  caller_id: str
+        @param client_ip_address: IP address of client making request
+        @type  client_ip_address: str 
+        @return: [code, msg, 0/1]
+        @rtype: [int, str, int]
+        """
+        val = 1 if self.auth.enabled() else 0
+        msg = "Secure ROS %senabled" % "not " if val == 0 else ""
+        return 1, msg, val
+
+
+    ################################################################
     # PARAMETER SERVER ROUTINES
     
     @apivalidate(0, (non_empty_str('key'), is_ipv4('client_ip_address')))

@@ -77,5 +77,5 @@ class TestRosClient(unittest.TestCase):
         if msg:
             assert self.last_code == -1, "%s (return msg was %s)"%(msg, self.last_msg)
         else:
-            assert self.last_code == -1, "Call should have returned error -1 code: %s"%self.last_msg            
+            assert self.last_code == -1, "Call should have returned error -1 code: %s (%s)"% (self.last_msg, str(args)) 
     

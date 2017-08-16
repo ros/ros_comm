@@ -103,6 +103,19 @@ _logger = logging.getLogger("rospy.impl.masterslave")
 
 LOG_API = True
 
+
+def is_secure_ros_enabled():
+    """ Check if Secure ROS is enabled by checking with the Master
+        @return: True if Secure ROS is enabled
+        @rtype: bool
+    """
+    masterUri = rosgraph.get_master_uri()
+    this_caller_id = rospy.names.get_caller_id()
+    code, msg, result = xmlrpcapi(masterUri).isSecureROSEnabled(this_caller_id)
+    auth_logger.debug( "Is Secure ROS enabled: %s" % result )
+    return result == 1
+
+
 def get_subscriber_list( masterUri, topic, this_caller_id ):
     """
     @param topic: Topic for which subscribers are requested
@@ -150,6 +163,9 @@ def is_requester_authorized( service, client_ip_address ):
     if is_local_ip_address( client_ip_address ):
         auth_logger.debug( "Local requester for %s allowed" % service )
         return True
+    if not is_secure_ros_enabled():
+        return True
+
     masterUri = rosgraph.get_master_uri()
     this_caller_id = rospy.names.get_caller_id()
     auth_clients = get_service_client_list( masterUri, service, this_caller_id )
@@ -183,6 +199,9 @@ def is_subscriber_authorized( topic, client_ip_address ):
     if is_local_ip_address( client_ip_address ):
         auth_logger.debug( "Local subscriber for %s allowed" % topic )
         return True
+    if not is_secure_ros_enabled():
+        return True
+
     masterUri = rosgraph.get_master_uri()
     this_caller_id = rospy.names.get_caller_id()
     auth_logger.debug( "Getting subscribers for topic [%s]" % topic )
@@ -649,10 +668,11 @@ class ROSHandler(XmlRpcHandler):
         is not subscribed to parameter_key
         @rtype: [int, str, int]
         """
-        if not is_uri_match( self.masterUri, client_ip_address ):
-            auth_logger.warn( "paramUpdate( %s, %s, %s ) method not authorized" 
-                    % ( caller_id, parameter_key, client_ip_address ) )
-            return -1, "method not authorized", []
+        if is_secure_ros_enabled():
+            if not is_uri_match( self.masterUri, client_ip_address ):
+                auth_logger.warn( "paramUpdate( %s, %s, %s ) method not authorized" 
+                        % ( caller_id, parameter_key, client_ip_address ) )
+                return -1, "method not authorized", []
         try:
             get_param_server_cache().update(parameter_key, parameter_value)
             return 1, '', 0
@@ -676,13 +696,14 @@ class ROSHandler(XmlRpcHandler):
         @rtype: [int, str, int]
         """
         """ Check if request is from master. if so, no need to check if publisher URI is authorized """
-        if not is_uri_match( self.masterUri, client_ip_address ):
-            auth_logger.warn( "publisherUpdate( %s, %s, %s ) method not authorized" 
-                    % ( caller_id, topic, client_ip_address ) )
-            return -1, "method not authorized", []
-        auth_logger.info( "publisherUpdate( %s, %s, %s ): OK" % 
-                ( caller_id, topic, client_ip_address ) )
-        auth_logger.debug( "  with %s" %  publishers )
+        if is_secure_ros_enabled():
+            if not is_uri_match( self.masterUri, client_ip_address ):
+                auth_logger.warn( "publisherUpdate( %s, %s, %s ) method not authorized" 
+                        % ( caller_id, topic, client_ip_address ) )
+                return -1, "method not authorized", []
+            auth_logger.info( "publisherUpdate( %s, %s, %s ): OK" % 
+                    ( caller_id, topic, client_ip_address ) )
+            auth_logger.debug( "  with %s" %  publishers )
         if self.reg_man:
             for uri in publishers:
                 self.reg_man.publisher_update(topic, publishers)
@@ -715,12 +736,13 @@ class ROSHandler(XmlRpcHandler):
         empty list if there are no compatible protocols.
         @rtype: [int, str, [str, XmlRpcLegalValue*]]
         """
-        if not is_subscriber_authorized( topic, client_ip_address ):
-            auth_logger.warn( "requestTopic( %s, %s, %s) topic not authorized" % 
+        if is_secure_ros_enabled():
+            if not is_subscriber_authorized( topic, client_ip_address ):
+                auth_logger.warn( "requestTopic( %s, %s, %s) topic not authorized" % 
+                        ( caller_id, topic, client_ip_address ) )
+                return 0, "topic not authorized", []
+            auth_logger.info( "requestTopic( %s, %s, %s) OK" % 
                     ( caller_id, topic, client_ip_address ) )
-            return 0, "topic not authorized", []
-        auth_logger.info( "requestTopic( %s, %s, %s) OK" % 
-                ( caller_id, topic, client_ip_address ) )
         if not get_topic_manager().has_publication(topic):
             return -1, "Not a publisher of [%s]" % topic, []
 

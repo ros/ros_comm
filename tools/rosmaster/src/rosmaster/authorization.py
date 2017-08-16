@@ -211,6 +211,13 @@ class ROSMasterAuth():
         self.save( output_file )
 
 
+    def enabled( self ):
+        """ Is Secure ROS enabled?
+            Return True if Secure ROS (i.e. authentication/verification) is enabled
+        """
+        return self.noverify == False 
+
+
     def resolve( self, ip_address_list ):
         """ Resolve ip_address_list where each ip_address may be an IP address, Host name or alias
         """
