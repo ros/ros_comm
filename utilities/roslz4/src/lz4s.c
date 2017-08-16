@@ -47,6 +47,16 @@
 #define DEBUG(...)
 #endif
 
+// Make sure the LZ library has the function we need
+// Note that the later versions of LZ contain a macro that does this version math, but the earlier
+// versions lack it.
+#define LZ_VERSION (LZ4_VERSION_MAJOR * 10000 + LZ4_VERSION_MINOR * 100 + LZ4_VERSION_RELEASE)
+#if LZ_VERSION >= 10700
+#define COMPRESS_DEFAULT LZ4_compress_default
+#else
+#define COMPRESS_DEFAULT LZ4_compress_limitedOutput
+#endif
+
 // magic numbers
 const uint32_t kMagicNumber = 0x184D2204;
 const uint32_t kEndOfStream = 0x00000000;
@@ -181,10 +191,10 @@ int bufferToOutput(roslz4_stream *str) {
         state->buffer_offset, str->output_left);
 
   // Shrink output by 1 to detect if data is not compressible
-  uint32_t comp_size = LZ4_compress_default(state->buffer,
-                                            str->output_next + 4,
-                                            (int) state->buffer_offset,
-                                            (int) uncomp_size - 1);
+  uint32_t comp_size = COMPRESS_DEFAULT(state->buffer,
+                                        str->output_next + 4,
+                                        (int) state->buffer_offset,
+                                        (int) uncomp_size - 1);
   uint32_t wrote;
   if (comp_size > 0) {
     DEBUG("bufferToOutput() Compressed to %i bytes\n", comp_size);
