@@ -35,6 +35,8 @@
 ** Includes
 *****************************************************************************/
 
+#include "config.h"
+
 #include <ros/io.h>
 #include <ros/assert.h> // don't need if we dont call the pipe functions.
 #include <ros/file_log.h>
@@ -46,6 +48,16 @@
   #include <cstring> // strerror
   #include <fcntl.h> // for non-blocking configuration
 #endif
+
+#ifdef HAVE_EPOLL
+  #include <sys/epoll.h>
+#endif
+
+/*****************************************************************************
+** Macros
+*****************************************************************************/
+
+#define UNUSED(expr) do { (void)(expr); } while (0)
 
 /*****************************************************************************
 ** Namespaces
@@ -97,6 +109,69 @@ bool last_socket_error_is_would_block() {
 #endif
 }
 
+int create_socket_watcher() {
+  int epfd = -1;
+#if defined(HAVE_EPOLL)
+  epfd = ::epoll_create1(0);
+  if (epfd < 0)
+  {
+    ROS_ERROR("Unable to create epoll watcher: %s", strerror(errno));
+  }
+#endif
+  return epfd;
+}
+
+void close_socket_watcher(int fd) {
+  if (fd >= 0)
+    ::close(fd);
+}
+
+void add_socket_to_watcher(int epfd, int fd) {
+#if defined(HAVE_EPOLL)
+  struct epoll_event ev;
+  ev.events = 0;
+  ev.data.fd = fd;
+
+  if (::epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev))
+  {
+    ROS_ERROR("Unable to add FD to epoll: %s", strerror(errno));
+  }
+#else
+  UNUSED(epfd);
+  UNUSED(fd);
+#endif
+}
+
+void del_socket_from_watcher(int epfd, int fd) {
+#if defined(HAVE_EPOLL)
+  if (::epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL))
+  {
+    ROS_ERROR("Unable to remove FD to epoll: %s", strerror(errno));
+  }
+#else
+  UNUSED(epfd);
+  UNUSED(fd);
+#endif
+}
+
+void set_events_on_socket(int epfd, int fd, int events) {
+#if defined(HAVE_EPOLL)
+  struct epoll_event ev;
+  ev.events = events;
+  ev.data.fd = fd;
+  if (::epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev))
+  {
+    ROS_ERROR("Unable to modify FD epoll: %s", strerror(errno));
+  }
+#else
+  UNUSED(epfd);
+  UNUSED(fd);
+  UNUSED(events);
+#endif
+}
+
+
+
 /*****************************************************************************
 ** Service Robotics/Libssh Functions
 *****************************************************************************/
@@ -106,22 +181,26 @@ bool last_socket_error_is_would_block() {
  * Windows doesn't have a polling function until Vista (WSAPoll) and even then
  * its implementation is not supposed to be great. This works for a broader
  * range of platforms and will suffice.
+ * @param epfd - the socket watcher to poll on.
  * @param fds - the socket set (descriptor's and events) to poll for.
  * @param nfds - the number of descriptors to poll for.
  * @param timeout - timeout in milliseconds.
- * @return int : -1 on error, 0 on timeout, +ve number of structures with received events.
+ * @return pollfd_vector_ptr : NULL on error, empty on timeout, a list of structures with received events.
  */
-int poll_sockets(socket_pollfd *fds, nfds_t nfds, int timeout) {
+pollfd_vector_ptr poll_sockets(int epfd, socket_pollfd *fds, nfds_t nfds, int timeout) {
 #if defined(WIN32)
 	fd_set readfds, writefds, exceptfds;
 	struct timeval tv, *ptv;
 	socket_fd_t max_fd;
 	int rc;
 	nfds_t i;
+        boost::shared_ptr<std::vector<socket_pollfd> > ofds;
+
+        UNUSED(epfd);
 
 	if (fds == NULL) {
 		errno = EFAULT;
-		return -1;
+		return ofds;
 	}
 
 	FD_ZERO (&readfds);
@@ -156,7 +235,7 @@ int poll_sockets(socket_pollfd *fds, nfds_t nfds, int timeout) {
 
 	if (rc == -1) {
 		errno = EINVAL;
-		return -1;
+		return ofds;
 	}
 	/*********************
 	** Setting the timeout
@@ -176,9 +255,11 @@ int poll_sockets(socket_pollfd *fds, nfds_t nfds, int timeout) {
 
 	rc = select (max_fd + 1, &readfds, &writefds, &exceptfds, ptv);
 	if (rc < 0) {
-		return -1;
-	} else if ( rc == 0 ) {
-		return 0;
+		return ofds;
+	}
+        ofds.reset(new std::vector<socket_pollfd>);
+        if ( rc == 0 ) {
+		return ofds;
 	}
 
 	for (rc = 0, i = 0; i < nfds; i++) {
@@ -223,18 +304,59 @@ int poll_sockets(socket_pollfd *fds, nfds_t nfds, int timeout) {
 		} else {
 				fds[i].revents = POLLNVAL;
 		}
+                ofds->push_back(fds[i]);
 	}
-	return rc;
+	return ofds;
+#elif defined (HAVE_EPOLL)
+        UNUSED(nfds);
+        UNUSED(fds);
+        struct epoll_event ev[nfds];
+        pollfd_vector_ptr ofds;
+
+        int fd_cnt = ::epoll_wait(epfd, ev, nfds, timeout);
+
+        if (fd_cnt < 0)
+        {
+          // EINTR means that we got interrupted by a signal, and is not an error
+          if(errno != EINTR) {
+            ROS_ERROR("Error in epoll_wait! %s", strerror(errno));
+            ofds.reset();
+          }
+        }
+        else
+        {
+          ofds.reset(new std::vector<socket_pollfd>);
+          for (int i = 0; i < fd_cnt; i++)
+          {
+            socket_pollfd pfd;
+            pfd.fd = ev[i].data.fd;
+            pfd.revents = ev[i].events;
+            ofds->push_back(pfd);
+          }
+        }
+        return ofds;
 #else
-	// use an existing poll implementation
-	int result = poll(fds, nfds, timeout);
-	if ( result < 0 ) {
-		// EINTR means that we got interrupted by a signal, and is not an error
-		if(errno == EINTR) {
-			result = 0;
-		}
-	}
-	return result;
+        UNUSED(epfd);
+        pollfd_vector_ptr ofds(new std::vector<socket_pollfd>);
+        // use an existing poll implementation
+        int result = poll(fds, nfds, timeout);
+        if ( result < 0 ) {
+          // EINTR means that we got interrupted by a signal, and is not an error
+          if(errno != EINTR) {
+            ROS_ERROR("Error in poll! %s", strerror(errno));
+            ofds.reset();
+          }
+        } else {
+          for (nfds_t i = 0; i < nfds; i++)
+          {
+            if (fds[i].revents)
+            {
+              ofds->push_back(fds[i]);
+              fds[i].revents = 0;
+            }
+          }
+        }
+        return ofds;
 #endif // poll_sockets functions
 }
 /*****************************************************************************

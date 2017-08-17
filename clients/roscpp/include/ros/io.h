@@ -138,6 +138,8 @@ namespace ros {
   typedef struct pollfd socket_pollfd;
 #endif
 
+  typedef boost::shared_ptr<std::vector<socket_pollfd> > pollfd_vector_ptr;
+
 /*****************************************************************************
 ** Functions
 *****************************************************************************/
@@ -146,11 +148,17 @@ ROSCPP_DECL int last_socket_error();
 ROSCPP_DECL const char* socket_error_string(int err);
 ROSCPP_DECL const char* last_socket_error_string();
 ROSCPP_DECL bool last_socket_error_is_would_block();
-ROSCPP_DECL int poll_sockets(socket_pollfd *fds, nfds_t nfds, int timeout);
+ROSCPP_DECL pollfd_vector_ptr poll_sockets(int epfd, socket_pollfd *fds, nfds_t nfds, int timeout);
 ROSCPP_DECL int is_async_connected(socket_fd_t &socket, int &err);
 ROSCPP_DECL int set_non_blocking(socket_fd_t &socket);
 ROSCPP_DECL int close_socket(socket_fd_t &socket);
 ROSCPP_DECL int create_signal_pair(signal_fd_t signal_pair[2]);
+
+ROSCPP_DECL int create_socket_watcher();
+ROSCPP_DECL void close_socket_watcher(int fd);
+ROSCPP_DECL void add_socket_to_watcher(int epfd, int fd);
+ROSCPP_DECL void del_socket_from_watcher(int epfd, int fd);
+ROSCPP_DECL void set_events_on_socket(int epfd, int fd, int events);
 
 /*****************************************************************************
 ** Inlines - almost direct api replacements, should stay fast.
