@@ -107,7 +107,7 @@ class TestRospyCore(unittest.TestCase):
             # Remap stdout for testing
             lout = StringIO()
             lerr = StringIO()
-            test_ros_handler = rosgraph.roslogging.RosStreamHandler(stdout=lout, stderr=lerr, colorize=False)
+            test_ros_handler = rosgraph.roslogging.RosStreamHandler(colorize=False, stdout=lout, stderr=lerr)
 
             lf = open(testlogfile, 'r')
 
@@ -204,10 +204,10 @@ class TestRospyCore(unittest.TestCase):
                 lf.close()
 
                 # restoring default ros handler
-                logging.getLogger('rosout').removeHandler(test_ros_handler)
+                rosout_logger.removeHandler(test_ros_handler)
                 lout.close()
                 lerr.close()
-                logging.getLogger('rosout').addHandler(default_ros_handler)
+                rosout_logger.addHandler(default_ros_handler)
 
         finally:
             # restoring format
