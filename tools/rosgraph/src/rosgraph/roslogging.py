@@ -220,10 +220,10 @@ _color_reset = '\033[0m'
 _defaultFormatter = logging.Formatter()
 
 class RosStreamHandler(logging.Handler):
-    def __init__(self, stdout=sys.stdout, stderr=sys.stderr, colorize=True):
+    def __init__(self, colorize=True, stdout=None, stderr=None):
         super(RosStreamHandler, self).__init__()
-        self._stdout = stdout
-        self._stderr = stderr
+        self._stdout = stdout or sys.stdout
+        self._stderr = stderr or sys.stderr
         self._colorize = colorize
         try:
             from rospy.rostime import get_time, is_wallclock
