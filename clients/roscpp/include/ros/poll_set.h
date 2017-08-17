@@ -147,6 +147,8 @@ private:
 
   boost::mutex signal_mutex_;
   signal_fd_t signal_pipe_[2];
+
+  int epfd_;
 };
 
 }
