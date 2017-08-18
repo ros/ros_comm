@@ -42,6 +42,7 @@ import random
 from StringIO import StringIO
 
 import re
+import logging
 import rosgraph.roslogging
 import rospy
 
@@ -69,11 +70,9 @@ class TestRospyCore(unittest.TestCase):
             except: pass
 
     def test_loggers(self):
-
         old_format = os.environ.get('ROSCONSOLE_FORMAT', '')
 
         try:
-
             # detailed log format
             os.environ['ROSCONSOLE_FORMAT'] = ' '.join([
                 '${severity}',
@@ -87,8 +86,6 @@ class TestRospyCore(unittest.TestCase):
                 '${node}',
                 '${time}',
             ])
-            import rospy.core
-            import logging
 
             # configure_logging should not accept the root namespace as the node_name param
             self.assertRaises(rospy.exceptions.ROSException, rospy.core.configure_logging, "/")
@@ -118,13 +115,11 @@ class TestRospyCore(unittest.TestCase):
                 this_file = base + '.py'
 
             try:
-
                 # hack to replace the stream handler with a debug version
                 rosout_logger.removeHandler(default_ros_handler)
                 rosout_logger.addHandler(test_ros_handler)
 
                 # trip wire tests
-                import rospy.core
                 rospy.core.logdebug('debug')
                 rospy.core.loginfo('info')
                 rospy.core.logwarn('warn')
@@ -156,7 +151,6 @@ class TestRospyCore(unittest.TestCase):
                     }.get(lvl)
 
                 # test that they are exposed via top-level api
-                import rospy
                 for lvl in ['debug', 'info', 'warn', 'err', 'fatal']:
                     logmthd = getattr(rospy, 'log' + lvl)
                     logmthd(lvl)
