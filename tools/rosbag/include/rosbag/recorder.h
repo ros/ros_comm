@@ -141,6 +141,7 @@ private:
     void snapshotTrigger(std_msgs::Empty::ConstPtr trigger);
     //    void doQueue(topic_tools::ShapeShifter::ConstPtr msg, std::string const& topic, boost::shared_ptr<ros::Subscriber> subscriber, boost::shared_ptr<int> count);
     void doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>& msg_event, std::string const& topic, boost::shared_ptr<ros::Subscriber> subscriber, boost::shared_ptr<int> count);
+    void doRecordLatchedTopic(const OutgoingMessage&);
     void doRecord();
     void checkNumSplits();
     bool checkSize();
@@ -172,6 +173,8 @@ private:
     std::queue<OutgoingMessage>*  queue_;                //!< queue for storing
     uint64_t                      queue_size_;           //!< queue size
     uint64_t                      max_queue_size_;       //!< max queue size
+
+    std::list<OutgoingMessage>    latched_topics_;       //!< copy of all latched topics seen so far
 
     uint64_t                      split_count_;          //!< split count
 

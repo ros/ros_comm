@@ -311,6 +311,12 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
                 }
             }
         }
+
+        const std::map<std::string,std::string>::const_iterator it = out.connection_header->find("latching");
+        if ((it != out.connection_header->end()) && (it->second == "1" ))
+        {
+            doRecordLatchedTopic(out);
+        }
     }
   
     if (!options_.snapshot)
@@ -328,6 +334,20 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
                 ros::shutdown();
         }
     }
+}
+
+void Recorder::doRecordLatchedTopic(const OutgoingMessage& out)
+{
+    for (std::list<OutgoingMessage>::iterator it = latched_topics_.begin(); it != latched_topics_.end(); ++it)
+    {
+        if (it->topic == out.topic)
+        {
+            latched_topics_.erase(it);
+            break;
+        }
+    }
+
+    latched_topics_.push_back(out);
 }
 
 void Recorder::updateFilenames() {
@@ -385,6 +405,10 @@ void Recorder::startWriting() {
     updateFilenames();
     try {
         bag_.open(write_filename_, bagmode::Write);
+        for (std::list<OutgoingMessage>::iterator it = latched_topics_.begin(); it != latched_topics_.end(); ++it)
+        {
+            bag_.write(it->topic, it->time, *it->msg, it->connection_header);
+        }
     }
     catch (rosbag::BagException e) {
         ROS_ERROR("Error writing: %s", e.what());
