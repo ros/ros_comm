@@ -539,10 +539,7 @@ class ROSLaunchRunner(object):
             process = create_node_process(self.run_id, node, master.uri)
         except roslaunch.node_args.NodeParamsException as e:
             self.logger.error(e)
-            if node.package == 'rosout' and node.type == 'rosout':
-                printerrlog("\n\n\nERROR: rosout is not built. Please run 'catkin_make rosout'\n\n\n")
-            else:
-                printerrlog("ERROR: cannot launch node of type [%s/%s]: %s"%(node.package, node.type, str(e)))
+            printerrlog("ERROR: cannot launch node of type [%s/%s]: %s"%(node.package, node.type, str(e)))
             if node.name:
                 return node.name, False
             else:
