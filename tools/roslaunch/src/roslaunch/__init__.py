@@ -36,6 +36,7 @@ from __future__ import print_function
 
 import os
 import logging
+import rospkg
 import sys
 import traceback
 
@@ -315,6 +316,12 @@ def main(argv=sys.argv):
     except ValueError as e:
         # TODO: need to trap better than this high-level trap
         roslaunch_core.printerrlog(str(e))
+        roslaunch_core.printerrlog('The traceback for the exception was written to the log file')
+        if logger:
+            logger.error(traceback.format_exc())
+        sys.exit(1)
+    except rospkg.ResourceNotFound as e:
+        roslaunch_core.printerrlog("Resource not found: " + str(e))
         roslaunch_core.printerrlog('The traceback for the exception was written to the log file')
         if logger:
             logger.error(traceback.format_exc())
