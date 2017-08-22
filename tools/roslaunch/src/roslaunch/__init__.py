@@ -36,6 +36,7 @@ from __future__ import print_function
 
 import os
 import logging
+import rospkg
 import sys
 import traceback
 
@@ -214,6 +215,13 @@ def _validate_args(parser, options, args):
     if len([x for x in [options.node_list, options.find_node, options.node_args, options.ros_args] if x]) > 1:
         parser.error("only one of [--nodes, --find-node, --args --ros-args] may be specified")
     
+def handle_exception(roslaunch_core, logger, msg, e):
+    roslaunch_core.printerrlog(msg + str(e))
+    roslaunch_core.printerrlog('The traceback for the exception was written to the log file')
+    if logger:
+        logger.error(traceback.format_exc())
+    sys.exit(1)
+
 def main(argv=sys.argv):
     options = None
     logger = None
@@ -307,18 +315,12 @@ def main(argv=sys.argv):
             p.spin()
 
     except RLException as e:
-        roslaunch_core.printerrlog(str(e))
-        roslaunch_core.printerrlog('The traceback for the exception was written to the log file')
-        if logger:
-            logger.error(traceback.format_exc())
-        sys.exit(1)
+        handle_exception(roslaunch_core, logger, "RLException: ", e)
     except ValueError as e:
         # TODO: need to trap better than this high-level trap
-        roslaunch_core.printerrlog(str(e))
-        roslaunch_core.printerrlog('The traceback for the exception was written to the log file')
-        if logger:
-            logger.error(traceback.format_exc())
-        sys.exit(1)
+        handle_exception(roslaunch_core, logger, "Value error: ", e)
+    except rospkg.ResourceNotFound as e:
+        handle_exception(roslaunch_core, logger, "Resource not found: ", e)
     except Exception as e:
         traceback.print_exc()
         sys.exit(1)
