@@ -37,6 +37,13 @@ import struct
 import unittest
 import time
 import random
+import logging
+import rosgraph.roslogging
+
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 import rosunit
 
@@ -68,24 +75,16 @@ class TestRospyClientOnline(unittest.TestCase):
         rospy.init_node('test_rospy_online')
 
     def test_log(self):
-
-        import logging
-        import rosgraph.roslogging
-
         rosout_logger = logging.getLogger('rosout')
+        import rospy
 
-        print("HANDLERS : " + str(rosout_logger.handlers))
         self.assertTrue(len(rosout_logger.handlers) == 2)
         self.assertTrue(rosout_logger.handlers[0], rosgraph.roslogging.RosStreamHandler)
-        # self.assertTrue(rosout_logger.handlers[1], rospy.impl.rosout.RosOutHandler)
+        self.assertTrue(rosout_logger.handlers[1], rospy.impl.rosout.RosOutHandler)
 
         default_ros_handler = rosout_logger.handlers[0]
 
         # Remap stdout for testing
-        try:
-            from cStringIO import StringIO
-        except ImportError:
-            from io import StringIO
         lout = StringIO()
         lerr = StringIO()
         test_ros_handler = rosgraph.roslogging.RosStreamHandler(colorize=False, stdout=lout, stderr=lerr)
