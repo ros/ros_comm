@@ -39,7 +39,10 @@ import struct
 import unittest
 import time
 import random
-from StringIO import StringIO
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 import re
 import logging
