@@ -53,59 +53,74 @@ os.environ['ROSCONSOLE_FORMAT'] = ' '.join([
 ])
 rosgraph.roslogging.configure_logging('test_rosgraph', logging.INFO)
 loginfo = logging.getLogger('rosout').info
+rosout_logger = logging.getLogger('rosout')
+assert isinstance(rosout_logger.handlers[0], rosgraph.roslogging.RosStreamHandler)
+default_ros_handler = rosout_logger.handlers[0]
 
 # Remap stdout for testing
-f = StringIO()
-sys.stdout = f
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 
+lout = StringIO()
+lerr = StringIO()
+test_ros_handler = rosgraph.roslogging.RosStreamHandler(colorize=False, stdout=lout, stderr=lerr)
 
-loginfo('on module')
+try:
+    # hack to replace the stream handler with a debug version
+    rosout_logger.removeHandler(default_ros_handler)
+    rosout_logger.addHandler(test_ros_handler)
 
+    loginfo('on module')
 
-def logging_on_function():
-    loginfo('on function')
+    def logging_on_function():
+        loginfo('on function')
 
-logging_on_function()
+    logging_on_function()
 
+    class LoggingOnClass(object):
 
-class LoggingOnClass(object):
+        def __init__(self):
+            loginfo('on method')
 
-    def __init__(self):
-        loginfo('on method')
+    LoggingOnClass()
 
-LoggingOnClass()
+    def test_rosconsole__logging_format():
+        this_file = os.path.abspath(__file__)
+        # this is necessary to avoid test fails because of .pyc cache file
+        base, ext = os.path.splitext(this_file)
+        if ext == '.pyc':
+            this_file = base + '.py'
 
+        for i, loc in enumerate(['module', 'function', 'method']):
+            if loc == 'module':
+                function = '<module>'
+            elif loc == 'function':
+                function = 'logging_on_function'
+            elif loc == 'method':
+                function = 'LoggingOnClass.__init__'
+            else:
+                raise ValueError
 
-def test_rosconsole__logging_format():
-    this_file = os.path.abspath(__file__)
-    # this is necessary to avoid test fails because of .pyc cache file
-    base, ext = os.path.splitext(this_file)
-    if ext == '.pyc':
-        this_file = base + '.py'
+            log_out = ' '.join([
+                'INFO',
+                'on ' + loc,
+                '[0-9]*\.[0-9]*',
+                '[0-9]*',
+                'rosout',
+                this_file,
+                '[0-9]*',
+                function,
+                '/unnamed',
+                '[0-9]*\.[0-9]*',
+            ])
+            assert_regexp_matches(lout.getvalue().splitlines()[i], log_out)
 
-    for i, loc in enumerate(['module', 'function', 'method']):
-        if loc == 'module':
-            function = '<module>'
-        elif loc == 'function':
-            function = 'logging_on_function'
-        elif loc == 'method':
-            function = 'LoggingOnClass.__init__'
-        else:
-            raise ValueError
+finally:
 
-        log_out = ' '.join([
-            'INFO',
-            'on ' + loc,
-            '[0-9]*\.[0-9]*',
-            '[0-9]*',
-            'rosout',
-            this_file,
-            '[0-9]*',
-            function,
-            '/unnamed',
-            '[0-9]*\.[0-9]*',
-        ])
-        assert_regexp_matches(f.getvalue().splitlines()[i], log_out)
+    # restoring default ros handler
+    rosout_logger.removeHandler(test_ros_handler)
+    rosout_logger.addHandler(default_ros_handler)
+    # lout and lerr need to stay open while test is running
 
-
-sys.stdout = sys.__stdout__

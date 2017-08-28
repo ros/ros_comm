@@ -344,10 +344,11 @@ def configure_logging(node_name, level=logging.INFO):
         filename = os.path.abspath(logfilename_remap)
     else:
         # fix filesystem-unsafe chars
-        filename = node_name.replace('/', '_') + '.log'
+        suffix = '.log'
+        filename = node_name.replace('/', '_') + suffix
         if filename[0] == '_':
             filename = filename[1:]
-        if not filename:
+        if filename == suffix:
             raise rospy.exceptions.ROSException('invalid configure_logging parameter: %s'%node_name)
     _log_filename = rosgraph.roslogging.configure_logging('rospy', level, filename=filename)
 

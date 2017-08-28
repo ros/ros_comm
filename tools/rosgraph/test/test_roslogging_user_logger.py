@@ -91,28 +91,51 @@ def test_roslogging_user_logger():
     loginfo = logging.getLogger('rosout.custom_logger_test').info
 
     # Remap stdout for testing
-    f = StringIO()
-    sys.stdout = f
+    try:
+        from cStringIO import StringIO
+    except ImportError:
+        from io import StringIO
+    lout = StringIO()
+    lerr = StringIO()
+    test_ros_handler = rosgraph.roslogging.RosStreamHandler(colorize=False, stdout=lout, stderr=lerr)
 
-    # Logging
-    msg = 'Hello world.'
-    loginfo(msg)
+    custom_logger = logging.getLogger('rosout.custom_logger_test')
+    assert len(custom_logger.handlers) == 0
 
-    # Restore stdout
-    log_actual = f.getvalue().strip()
-    sys.stdout = sys.__stdout__
+    # log messages will be propagated to parent
+    rosout_logger = logging.getLogger('rosout')
+    assert isinstance(rosout_logger.handlers[0], rosgraph.roslogging.RosStreamHandler)
+    default_ros_handler = rosout_logger.handlers[0]
 
-    log_expected = ' '.join([
-        'INFO',
-        os.environ['ROS_IP'],
-        msg,
-        '[0-9]*\.[0-9]*',
-        '[0-9]*',
-        'rosout.custom_logger_test',
-        '<filename>',
-        '<lineno>',
-        '<func_name>',
-        '/unnamed',
-        '[0-9]*\.[0-9]*',
-    ])
-    assert_regexp_matches(log_actual, log_expected)
+    # hack to replace the stream handler with a debug version
+    rosout_logger.removeHandler(default_ros_handler)
+    rosout_logger.addHandler(test_ros_handler)
+
+    try:
+        # Logging
+        msg = 'Hello world.'
+        loginfo(msg)
+
+        log_expected = ' '.join([
+            'INFO',
+            os.environ['ROS_IP'],
+            msg,
+            '[0-9]*\.[0-9]*',
+            '[0-9]*',
+            'rosout.custom_logger_test',
+            '<filename>',
+            '<lineno>',
+            '<func_name>',
+            '/unnamed',
+            '[0-9]*\.[0-9]*',
+        ])
+        assert_regexp_matches(lout.getvalue().strip(), log_expected)
+
+    finally:
+        # restoring default ros handler
+        logging.getLogger('rosout').removeHandler(test_ros_handler)
+        logging.getLogger('rosout').addHandler(default_ros_handler)
+        lout.close()
+        lerr.close()
+
+
