@@ -61,6 +61,18 @@
 #include <boost/iterator/iterator_facade.hpp>
 
 #include "console_bridge/console.h"
+#if defined logDebug
+# undef logDebug
+#endif
+#if defined logInform
+# undef logInform
+#endif
+#if defined logWarn
+# undef logWarn
+#endif
+#if defined logError
+# undef logError
+#endif
 
 namespace rosbag {
 
@@ -569,7 +581,7 @@ void Bag::doWrite(std::string const& topic, ros::Time const& time, T const& msg,
 
         // Check if we want to stop this chunk
         uint32_t chunk_size = getChunkOffset();
-        logDebug("  curr_chunk_size=%d (threshold=%d)", chunk_size, chunk_threshold_);
+        CONSOLE_BRIDGE_logDebug("  curr_chunk_size=%d (threshold=%d)", chunk_size, chunk_threshold_);
         if (chunk_size > chunk_threshold_) {
             // Empty the outgoing chunk
             stopWritingChunk();
@@ -604,7 +616,7 @@ void Bag::writeMessageDataRecord(uint32_t conn_id, ros::Time const& time, T cons
     seek(0, std::ios::end);
     file_size_ = file_.getOffset();
 
-    logDebug("Writing MSG_DATA [%llu:%d]: conn=%d sec=%d nsec=%d data_len=%d",
+    CONSOLE_BRIDGE_logDebug("Writing MSG_DATA [%llu:%d]: conn=%d sec=%d nsec=%d data_len=%d",
               (unsigned long long) file_.getOffset(), getChunkOffset(), conn_id, time.sec, time.nsec, msg_ser_len);
 
     writeHeader(header);
