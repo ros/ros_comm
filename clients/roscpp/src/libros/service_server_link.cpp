@@ -364,23 +364,24 @@ bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& re
 
     while (!info->finished_)
     {
-    	if(timeout > 0)
-    	{
-    		boost::chrono::milliseconds duration(static_cast<int>(timeout * 1000));
-    		if(info->finished_condition_.wait_for(lock, duration))
-    		{
-    			ROS_ERROR("Service [%s] call failed: no response for %fsec", service_name_.c_str(), timeout);
-    			interrupted = true;
-    			break;
-    		}
-    	}
-    	else
-    		info->finished_condition_.wait(lock);
+      if(timeout > 0)
+      {
+        boost::chrono::milliseconds duration(static_cast<int>(timeout * 1000));
+        if(info->finished_condition_.wait_for(lock, duration))
+        {
+          ROS_ERROR("Service [%s] call failed: no response for %fsec", service_name_.c_str(), timeout);
+          interrupted = true;
+          break;
+        }
+      }
+      else
+        info->finished_condition_.wait(lock);
     }
+
+    if(interrupted)
+        this->clearCalls();
   }
 
-  if(interrupted)
-	  this->clearCalls();
 
   info->call_finished_ = true;
 

@@ -174,10 +174,10 @@ bool ServiceClient::isPersistent() const
 
 void ServiceClient::setTimeout(double timeout)
 {
-	if(impl_)
-	{
-		impl_->timeout = timeout;
-	}
+  if(impl_)
+  {
+    impl_->timeout = timeout;
+  }
 }
 
 void ServiceClient::shutdown()
