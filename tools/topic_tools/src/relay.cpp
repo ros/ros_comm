@@ -43,9 +43,12 @@ ros::NodeHandle *g_node = NULL;
 bool g_advertised = false;
 string g_input_topic;
 string g_output_topic;
+string g_monitor_topic;
 ros::Publisher g_pub;
 ros::Subscriber* g_sub;
+ros::Timer g_timer;
 bool g_lazy;
+bool g_stealth;
 ros::TransportHints g_th;
 
 void conn_cb(const ros::SingleSubscriberPublisher&);
@@ -56,11 +59,20 @@ void subscribe()
   g_sub = new ros::Subscriber(g_node->subscribe(g_input_topic, 10, &in_cb, g_th));
 }
 
+void unsubscribe()
+{
+  if (g_sub)
+  {
+    delete g_sub;
+    g_sub = NULL;
+  }
+}
+
 void conn_cb(const ros::SingleSubscriberPublisher&)
 {
   // If we're in lazy subscribe mode, and the first subscriber just
   // connected, then subscribe, #3389.
-  if(g_lazy && !g_sub)
+  if(g_lazy && !g_stealth && !g_sub)
   {
     ROS_DEBUG("lazy mode; resubscribing");
     subscribe();
@@ -91,14 +103,45 @@ void in_cb(const ros::MessageEvent<ShapeShifter>& msg_event)
   }
   // If we're in lazy subscribe mode, and nobody's listening, 
   // then unsubscribe, #3389.
-  if(g_lazy && !g_pub.getNumSubscribers())
+  if((g_lazy || g_stealth) && !g_pub.getNumSubscribers())
   {
     ROS_DEBUG("lazy mode; unsubscribing");
-    delete g_sub;
-    g_sub = NULL;
+    unsubscribe();
   }
   else
     g_pub.publish(msg);
+}
+
+void timer_cb(const ros::TimerEvent&)
+{
+  if (!g_advertised) return;
+  
+  // get subscriber num of ~monitor_topic
+  XmlRpc::XmlRpcValue req(ros::this_node::getName()), res, data;
+  if (!ros::master::execute("getSystemState", req, res, data, false))
+  {
+    ROS_ERROR("Failed to communicate with rosmaster");
+    return;
+  }
+
+  int subscriber_num = 0;
+  XmlRpc::XmlRpcValue sub_info = data[1];
+  for (int i = 0; i < sub_info.size(); ++i)
+  {
+    string topic_name = sub_info[i][0];
+    if (topic_name != g_monitor_topic) continue;
+    XmlRpc::XmlRpcValue& subscribers = sub_info[i][1];
+    for (int j = 0; j < subscribers.size(); ++j)
+    {
+      if (subscribers[j] != ros::this_node::getName()) ++subscriber_num;
+    }
+    break;
+  }
+
+  // if no node subscribes to ~monitor, do unsubscribe
+  if (g_sub && subscriber_num == 0) unsubscribe();
+  // if any other nodes subscribe ~monitor, do subscribe
+  else if (!g_sub && subscriber_num > 0) subscribe();
 }
 
 int main(int argc, char **argv)
@@ -127,6 +170,15 @@ int main(int argc, char **argv)
   pnh.getParam("lazy", g_lazy);
   if (unreliable)
     g_th.unreliable().reliable(); // Prefers unreliable, but will accept reliable.
+
+  pnh.param<bool>("stealth", g_stealth, false);
+  if (g_stealth)
+  {
+    double monitor_rate;
+    pnh.param<string>("monitor_topic", g_monitor_topic, g_input_topic);
+    pnh.param<double>("monitor_rate", monitor_rate, 1.0);
+    g_timer = n.createTimer(ros::Duration(monitor_rate), &timer_cb);
+  }
 
   subscribe();
   ros::spin();
