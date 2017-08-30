@@ -381,10 +381,10 @@ bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& re
       else
         info->finished_condition_.wait(lock);
     }
-
-    if(interrupted)
-        this->clearCalls();
   }
+  // Clear calls is properly protected
+  if(interrupted)
+    this->clearCalls();
 
 
   info->call_finished_ = true;
