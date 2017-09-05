@@ -55,6 +55,7 @@
 #include <ros/time.h>
 
 #include <std_msgs/Empty.h>
+#include <std_msgs/String.h>
 #include <topic_tools/shape_shifter.h>
 
 #include "rosbag/bag.h"
@@ -84,6 +85,7 @@ public:
     ros::Time                    time;
 };
 
+enum RecordingMode { CONTINUOUS, SNAPSHOT, STARTSTOP };
 struct ROSBAG_DECL RecorderOptions
 {
     RecorderOptions();
@@ -94,7 +96,7 @@ struct ROSBAG_DECL RecorderOptions
     bool            do_exclude;
     bool            quiet;
     bool            append_date;
-    bool            snapshot;
+    RecordingMode   mode;
     bool            verbose;
     CompressionType compression;
     std::string     prefix;
@@ -139,6 +141,7 @@ private:
     bool checkDisk();
 
     void snapshotTrigger(std_msgs::Empty::ConstPtr trigger);
+    void triggerStartStop(std_msgs::String::ConstPtr trigger);
     //    void doQueue(topic_tools::ShapeShifter::ConstPtr msg, std::string const& topic, boost::shared_ptr<ros::Subscriber> subscriber, boost::shared_ptr<int> count);
     void doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>& msg_event, std::string const& topic, boost::shared_ptr<ros::Subscriber> subscriber, boost::shared_ptr<int> count);
     void doRecord();

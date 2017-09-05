@@ -36,6 +36,7 @@
 #include "rosbag/exceptions.h"
 
 #include "boost/program_options.hpp"
+#include <boost/algorithm/string/predicate.hpp>
 #include <string>
 #include <sstream>
 
@@ -49,6 +50,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
 
     desc.add_options()
       ("help,h", "produce help message")
+      ("mode", po::value<std::string>()->implicit_value("continuous"), "Recording mode: continuous, snapshot, or startstop")
       ("all,a", "record all topics")
       ("regex,e", "match topics using regular expressions")
       ("exclude,x", po::value<std::string>(), "exclude topics matching regular expressions")
@@ -88,6 +90,18 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     if (vm.count("help")) {
       std::cout << desc << std::endl;
       exit(0);
+    }
+
+    if (vm.count("mode")) {
+        const std::string &token = vm["mode"].as<std::string>();
+        if (boost::starts_with("continuous", token))
+            opts.mode = rosbag::CONTINUOUS;
+        else if (boost::starts_with("snapshot", token))
+            opts.mode = rosbag::SNAPSHOT;
+        else if (boost::starts_with("startstop", token))
+            opts.mode = rosbag::STARTSTOP;
+        else
+            throw ros::Exception("Unknown recording mode: " + token);
     }
 
     if (vm.count("all"))

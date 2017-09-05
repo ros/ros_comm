@@ -50,6 +50,7 @@
 
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include <boost/regex.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/xtime.hpp>
@@ -97,7 +98,7 @@ RecorderOptions::RecorderOptions() :
     do_exclude(false),
     quiet(false),
     append_date(true),
-    snapshot(false),
+    mode(CONTINUOUS),
     verbose(false),
     compression(compression::Uncompressed),
     prefix(""),
@@ -153,7 +154,7 @@ int Recorder::run() {
         return 0;
 
     last_buffer_warn_ = Time();
-    queue_ = new std::queue<OutgoingMessage>;
+    queue_ = (options_.mode != STARTSTOP) ? new std::queue<OutgoingMessage> : NULL;
 
     // Subscribe to each topic
     if (!options_.regex) {
@@ -176,16 +177,23 @@ int Recorder::run() {
 
     // Spin up a thread for writing to the file
     boost::thread record_thread;
-    if (options_.snapshot)
-    {
+    switch (options_.mode) {
+    case CONTINUOUS:
+        record_thread = boost::thread(boost::bind(&Recorder::doRecord, this));
+        break;
+    case SNAPSHOT:
         record_thread = boost::thread(boost::bind(&Recorder::doRecordSnapshotter, this));
 
         // Subscribe to the snapshot trigger
         trigger_sub = nh.subscribe<std_msgs::Empty>("snapshot_trigger", 100, boost::bind(&Recorder::snapshotTrigger, this, _1));
-    }
-    else
-        record_thread = boost::thread(boost::bind(&Recorder::doRecord, this));
+        break;
+    case STARTSTOP:
+        record_thread = boost::thread(boost::bind(&Recorder::doRecordSnapshotter, this));
 
+        // Subscribe to the snapshot trigger
+        trigger_sub = nh.subscribe<std_msgs::String>("start_stop", 100, boost::bind(&Recorder::triggerStartStop, this, _1));
+        break;
+    }
 
 
     ros::Timer check_master_timer;
@@ -198,6 +206,13 @@ int Recorder::run() {
 
     ros::MultiThreadedSpinner s(10);
     ros::spin(s);
+
+    // trigger a last stop to save current queue_ if still recording
+    if (options_.mode == STARTSTOP) {
+        std_msgs::String::Ptr trigger (new std_msgs::String);
+        trigger->data = "stop";
+        triggerStartStop(trigger);
+    }
 
     queue_condition_.notify_all();
 
@@ -287,6 +302,9 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
     //void Recorder::doQueue(topic_tools::ShapeShifter::ConstPtr msg, string const& topic, shared_ptr<ros::Subscriber> subscriber, shared_ptr<int> count) {
     Time rectime = Time::now();
     
+    if (!queue_)
+        return;
+
     if (options_.verbose)
         cout << "Received message on topic " << subscriber->getTopic() << endl;
 
@@ -294,6 +312,8 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
     
     {
         boost::mutex::scoped_lock lock(queue_mutex_);
+        if (!queue_)
+            return;
 
         queue_->push(out);
         queue_size_ += out.msg->size();
@@ -304,7 +324,7 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
             queue_->pop();
             queue_size_ -= drop.msg->size();
 
-            if (!options_.snapshot) {
+            if (options_.mode != SNAPSHOT) {
                 Time now = Time::now();
                 if (now > last_buffer_warn_ + ros::Duration(5.0)) {
                     ROS_WARN("rosbag record buffer exceeded.  Dropping oldest queued message.");
@@ -314,7 +334,7 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
         }
     }
   
-    if (!options_.snapshot)
+    if (options_.mode == CONTINUOUS)
         queue_condition_.notify_all();
 
     // If we are book-keeping count, decrement and possibly shutdown
@@ -377,6 +397,54 @@ void Recorder::snapshotTrigger(std_msgs::Empty::ConstPtr trigger) {
     }
 
     queue_condition_.notify_all();
+}
+
+//! Callback to be invoked to start/stop recording
+void Recorder::triggerStartStop(std_msgs::String::ConstPtr trigger) {
+    static const std::string startID ("start");
+    static const std::string stopID("stop");
+    enum Task { START, STOP };
+    Task task;
+    std::string requested_filename;
+
+    if (trigger->data == stopID)
+        task = STOP;
+    else if (boost::starts_with(trigger->data, startID)) {
+        task = START;
+        // was a custom filename provided?
+        if (trigger->data.length() > startID.length() &&
+            trigger->data[startID.length()] == ':')
+            requested_filename = trigger->data.substr(startID.length()+1);
+    } else {
+        ROS_WARN_STREAM("Unknown trigger command: '" << trigger->data << "'. Expecting 'start' or 'stop'.");
+        return;
+    }
+
+    boost::mutex::scoped_lock lock(queue_mutex_);
+    if (task == STOP && !queue_) // already stopped?
+        return;
+
+    // schedule queue_ for writing
+    if (queue_) {
+        ROS_INFO("Stopping recording messages into file %s.", target_filename_.c_str());
+        queue_queue_.push(OutgoingQueue(target_filename_, queue_, Time::now()));
+        queue_condition_.notify_all();
+
+        // stop queueing messages
+        queue_      = NULL;
+        queue_size_ = 0;
+    }
+
+    if (task == START) {
+        if (requested_filename.empty())
+            updateFilenames();
+        else
+            target_filename_ = requested_filename;
+
+        // restart queueing messages
+        queue_ = new std::queue<OutgoingMessage>;
+        ROS_INFO("Start recording messages into file %s.", target_filename_.c_str());
+    }
 }
 
 void Recorder::startWriting() {
@@ -559,7 +627,8 @@ void Recorder::doRecordSnapshotter() {
             bag_.write(out.topic, out.time, *out.msg);
         }
 
-        stopWriting();
+        bag_.close();
+        rename(write_filename.c_str(), target_filename.c_str());
     }
 }
 
