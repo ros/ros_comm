@@ -650,6 +650,7 @@ class XmlLoader(loader.Loader):
                 if ifunless_test(self, tag, context):
                     self._check_attrs(tag, context, ros_config, XmlLoader.GROUP_ATTRS)
                     child_ns = self._ns_clear_params_attr(name, tag, context, ros_config)
+                    child_ns.params = list(child_ns.params) # copy is needed here to enclose new params
                     default_machine = \
                         self._recurse_load(ros_config, tag.childNodes, child_ns, \
                                                default_machine, is_core, verbose)
