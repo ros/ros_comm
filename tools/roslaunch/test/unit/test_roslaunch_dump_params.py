@@ -77,6 +77,9 @@ class TestDumpParams(unittest.TestCase):
             '/node_rosparam/dict1/shoulders': 2,
             '/node_rosparam/dict1/knees': 3,
             '/node_rosparam/dict1/toes': 4,
+            '/node_rosparam/tilde1': 'foo',
+
+            '/node_rosparam2/tilde1': 'foo',
 
             '/inline_str': 'value1',
             '/inline_list': [1, 2, 3, 4],
