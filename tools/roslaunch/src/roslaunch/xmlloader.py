@@ -370,6 +370,7 @@ class XmlLoader(loader.Loader):
                     
             child_ns = self._ns_clear_params_attr('node', tag, context, ros_config, node_name=name)
             param_ns = child_ns.child(name)
+            param_ns.params = [] # This is necessary because child() does not make a copy of the param list.
                 
             # required attributes
             pkg, node_type = self.reqd_attrs(tag, context, ('pkg', 'type'))
