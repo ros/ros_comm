@@ -78,6 +78,7 @@ class TestDumpParams(unittest.TestCase):
             '/node_rosparam/dict1/knees': 3,
             '/node_rosparam/dict1/toes': 4,
             '/node_rosparam/tilde1': 'foo',
+            '/node_rosparam/local_param': 'baz',
 
             '/node_rosparam2/tilde1': 'foo',
 
