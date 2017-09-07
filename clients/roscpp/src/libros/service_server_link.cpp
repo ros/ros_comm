@@ -41,6 +41,7 @@
 #include "ros/file_log.h"
 
 #include <boost/bind.hpp>
+#include <boost/chrono.hpp>
 
 #include <sstream>
 
@@ -324,7 +325,7 @@ void ServiceServerLink::processNextCall()
   }
 }
 
-bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& resp)
+bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& resp, double timeout)
 {
   CallInfoPtr info(boost::make_shared<CallInfo>());
   info->req_ = req;
@@ -360,14 +361,34 @@ bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& re
     processNextCall();
   }
 
+  bool interrupted = false;
   {
     boost::mutex::scoped_lock lock(info->finished_mutex_);
 
+    using namespace boost::chrono;
+    system_clock::time_point now = system_clock::now();
+
     while (!info->finished_)
     {
-      info->finished_condition_.wait(lock);
+      if(timeout > 0)
+      {
+        system_clock::time_point wall_time = now + milliseconds(static_cast<int>(timeout * 1000));
+
+        if(info->finished_condition_.wait_until(lock, wall_time) == boost::cv_status::timeout)
+        {
+          ROS_ERROR("Service [%s] call failed: no response for %fsec", service_name_.c_str(), timeout);
+          interrupted = true;
+          break;
+        }
+      }
+      else
+        info->finished_condition_.wait(lock);
     }
   }
+  // Clear calls is properly protected
+  if(interrupted)
+    this->clearCalls();
+
 
   info->call_finished_ = true;
 
@@ -377,6 +398,11 @@ bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& re
   }
 
   return info->success_;
+}
+
+bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& resp)
+{
+  return call(req, resp, -1);
 }
 
 bool ServiceServerLink::isValid() const
