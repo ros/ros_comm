@@ -327,6 +327,11 @@ void ServiceServerLink::processNextCall()
   }
 }
 
+bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& resp)
+{
+  return call(req, resp, -1);
+}
+
 bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& resp, double timeout)
 {
   CallInfoPtr info(boost::make_shared<CallInfo>());
