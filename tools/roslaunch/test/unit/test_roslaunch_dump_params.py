@@ -103,3 +103,6 @@ class TestDumpParams(unittest.TestCase):
                 elif v != output_val[k]:
                     self.fail("key [%s] value [%s] does not match output: %s"%(k, v, output_val[k])) 
         self.assertEquals(val, output_val)
+        for k in ('/node_rosparam/tilde2', '/node_rosparam2/tilde2', '/node_rosparam2/local_param'):
+            if k in output_val:
+                self.fail("key [%s] should not be in output: %s"%(k, output_val))
