@@ -492,9 +492,9 @@ def get_node_info_description(node_name):
         pub_topics = master.getPublishedTopics('/')
     except socket.error:
         raise ROSNodeIOException("Unable to communicate with master!")
-    pubs = [t for t, l in state[0] if node_name in l]
-    subs = [t for t, l in state[1] if node_name in l]
-    srvs = [t for t, l in state[2] if node_name in l]  
+    pubs = sorted([t for t, l in state[0] if node_name in l])
+    subs = sorted([t for t, l in state[1] if node_name in l])
+    srvs = sorted([t for t, l in state[2] if node_name in l])
 
     buff = "Node [%s]"%node_name
     if pubs:
