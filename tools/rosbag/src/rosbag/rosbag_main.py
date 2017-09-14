@@ -271,13 +271,13 @@ def play_cmd(argv):
     if options.topics or options.pause_topics:
         cmd.extend(['--bags'])
 
+    cmd.extend(args)
+
     if options.rate_control_topic:
         cmd.extend(['--rate-control-topic', str(options.rate_control_topic)])
 
     if options.rate_control_max_delay:
         cmd.extend(['--rate-control-max-delay', str(options.rate_control_max_delay)])
-
-    cmd.extend(args)
 
     old_handler = signal.signal(
         signal.SIGTERM,
