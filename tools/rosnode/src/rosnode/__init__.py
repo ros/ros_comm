@@ -182,7 +182,6 @@ def get_nodes_by_machine(machine):
     @raise ROSNodeException: if machine name cannot be resolved to an address
     @raise ROSNodeIOException: if unable to communicate with master
     """
-    import urlparse
     
     master = rosgraph.Master(ID)
     try:
@@ -338,7 +337,7 @@ def rosnode_ping(node_name, max_count=None, verbose=False):
                 # 3786: catch ValueError on unpack as socket.error is not always a tuple
                 try:
                     # #3659
-                    errnum, msg = e
+                    errnum, msg = e.args
                     if errnum == -2: #name/service unknown
                         p = urlparse.urlparse(node_api)
                         print("ERROR: Unknown host [%s] for node [%s]"%(p.hostname, node_name), file=sys.stderr)
