@@ -281,7 +281,7 @@ namespace ros
 
      MyClass my_class;
      ros::Publisher pub = handle.advertise<std_msgs::Empty>("my_topic", 1, 
-                                                            boost::bind(&MyClass::connectCallback, my_class, _1));
+                                                            boost::bind(&MyClass::connectCallback, &my_class, _1));
      \endverbatim
      *
    *
