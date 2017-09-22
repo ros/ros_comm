@@ -222,12 +222,12 @@ class XmlLoader(loader.Loader):
     # 'ns' attribute is now deprecated and is an alias for
     # 'param'. 'param' is required if the value is a non-dictionary
     # type
-    ROSPARAM_OPT_ATTRS = ('command', 'ns', 'file', 'param', 'subst_value')
+    ROSPARAM_OPT_ATTRS = ('command', 'ns', 'file', 'execute', 'param', 'subst_value')
     @ifunless
     def _rosparam_tag(self, tag, context, ros_config, verbose=True):
         try:
             self._check_attrs(tag, context, ros_config, XmlLoader.ROSPARAM_OPT_ATTRS)
-            cmd, ns, file, param, subst_value = self.opt_attrs(tag, context, (XmlLoader.ROSPARAM_OPT_ATTRS))
+            cmd, ns, file, execute, param, subst_value = self.opt_attrs(tag, context, (XmlLoader.ROSPARAM_OPT_ATTRS))
             subst_value = _bool_attr(subst_value, False, 'subst_value')
             # ns atribute is a bit out-moded and is only left in for backwards compatibility
             param = ns_join(ns or '', param or '')
@@ -237,7 +237,7 @@ class XmlLoader(loader.Loader):
             value = _get_text(tag)
             if subst_value:
                 value = self.resolve_args(value, context)
-            self.load_rosparam(context, ros_config, cmd, param, file, value, verbose=verbose)
+            self.load_rosparam(context, ros_config, cmd, param, file, execute, value, verbose=verbose)
 
         except ValueError as e:
             raise loader.LoadException("error loading <rosparam> tag: \n\t"+str(e)+"\nXML is %s"%tag.toxml())
