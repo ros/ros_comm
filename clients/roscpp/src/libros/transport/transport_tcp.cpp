@@ -179,7 +179,7 @@ void TransportTCP::setKeepAlive(bool use, uint32_t idle, uint32_t interval, uint
     }
 
 /* cygwin SOL_TCP does not seem to support TCP_KEEPIDLE, TCP_KEEPINTVL, TCP_KEEPCNT */
-#if defined(SOL_TCP) && !defined(__CYGWIN__)
+#if defined(SOL_TCP) && !defined(__CYGWIN__) && defined(TCP_KEEPIDLE) && defined(TCP_KEEPINTVL) && defined(TCP_KEEPCNT)
     val = idle;
     if (setsockopt(sock_, SOL_TCP, TCP_KEEPIDLE, &val, sizeof(val)) != 0)
     {
