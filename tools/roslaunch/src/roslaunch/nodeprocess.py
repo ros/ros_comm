@@ -36,6 +36,7 @@
 Local process implementation for running and monitoring nodes.
 """
 
+import errno
 import os
 import signal
 import subprocess 
@@ -220,7 +221,7 @@ class LocalProcess(Process):
             try:
                 os.makedirs(log_dir)
             except OSError as e:
-                if e.errno == 13:
+                if e.errno == errno.EACCES:
                     raise RLException("unable to create directory for log file [%s].\nPlease check permissions."%log_dir)
                 else:
                     raise RLException("unable to create directory for log file [%s]: %s"%(log_dir, e.strerror))
@@ -305,9 +306,9 @@ class LocalProcess(Process):
             except OSError as e:
                 self.started = True # must set so is_alive state is correct
                 _logger.error("OSError(%d, %s)", e.errno, e.strerror)
-                if e.errno == 8: #Exec format error
+                if e.errno == errno.ENOEXEC: #Exec format error
                     raise FatalProcessLaunch("Unable to launch [%s]. \nIf it is a script, you may be missing a '#!' declaration at the top."%self.name)
-                elif e.errno == 2: #no such file or directory
+                elif e.errno == errno.ENOENT: #no such file or directory
                     raise FatalProcessLaunch("""Roslaunch got a '%s' error while attempting to run:
 
 %s
