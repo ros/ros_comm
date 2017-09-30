@@ -56,6 +56,9 @@ def _get_optparse():
     parser.add_option("-t", "--timeout",
                       dest="timeout",
                       help="override the socket connection timeout (in seconds).", metavar="TIMEOUT")
+    parser.add_option("--set-master-logger-level",
+                      dest="master_logger_level", default=False, type=str,
+                      help="set rosmaster.master logger level ('debug', 'info', 'warn', 'error', 'fatal')")
     return parser
 
 

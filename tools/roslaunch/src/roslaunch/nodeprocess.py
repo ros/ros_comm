@@ -63,7 +63,7 @@ def _next_counter():
     _counter += 1
     return _counter
 
-def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS, timeout=None):
+def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS, timeout=None, master_logger_level=False):
     """
     Launch a master
     @param type_: name of master executable (currently just Master.ZENMASTER)
@@ -77,17 +77,19 @@ def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS
     @param timeout: socket timeout for connections.
     @type  timeout: float
     @raise RLException: if type_ or port is invalid
+    @param master_logger_level: rosmaster.master logger debug level
+    @type  master_logger_level=: str or False
     """    
     if port < 1 or port > 65535:
         raise RLException("invalid port assignment: %s"%port)
 
-    _logger.info("create_master_process: %s, %s, %s, %s, %s", type_, ros_root, port, num_workers, timeout)
+    _logger.info("create_master_process: %s, %s, %s, %s, %s, %s", type_, ros_root, port, num_workers, timeout, master_logger_level)
     # catkin/fuerte: no longer use ROS_ROOT-relative executables, search path instead
     master = type_
     # zenmaster is deprecated and aliased to rosmaster
     if type_ in [Master.ROSMASTER, Master.ZENMASTER]:        
         package = 'rosmaster'        
-        args = [master, '--core', '-p', str(port), '-w', str(num_workers)]
+        args = [master, '--core', '-p', str(port), '-w', str(num_workers), '--set-master-logger-level', str(master_logger_level)]
         if timeout is not None:
             args += ['-t', str(timeout)]
     else:

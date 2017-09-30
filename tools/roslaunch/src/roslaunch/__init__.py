@@ -181,6 +181,9 @@ def _get_optparse():
     parser.add_option("-t", "--timeout",
                       dest="timeout",
                       help="override the socket connection timeout (in seconds). Only valid for core services.", metavar="TIMEOUT")
+    parser.add_option("--set-master-logger-level",
+                      dest="master_logger_level", default=False, type=str,
+                      help="set rosmaster.master logger level ('debug', 'info', 'warn', 'error', 'fatal')")
 
     return parser
     
@@ -310,7 +313,8 @@ def main(argv=sys.argv):
             p = roslaunch_parent.ROSLaunchParent(uuid, args, roslaunch_strs=roslaunch_strs,
                     is_core=options.core, port=options.port, local_only=options.local_only,
                     verbose=options.verbose, force_screen=options.force_screen,
-                    num_workers=options.num_workers, timeout=options.timeout)
+                    num_workers=options.num_workers, timeout=options.timeout,
+                    master_logger_level=options.master_logger_level)
             p.start()
             p.spin()
 

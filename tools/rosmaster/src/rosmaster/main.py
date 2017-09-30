@@ -71,6 +71,10 @@ def rosmaster_main(argv=sys.argv, stdout=sys.stdout, env=os.environ):
     parser.add_option("-t", "--timeout",
                       dest="timeout",
                       help="override the socket connection timeout (in seconds).", metavar="TIMEOUT")
+    parser.add_option("--set-master-logger-level",
+                      dest="master_logger_level", default=False, type=str,
+                      help="set rosmaster.master logger level ('debug', 'info', 'warn', 'error', 'fatal')")
+
     options, args = parser.parse_args(argv[1:])
 
     # only arg that zenmaster supports is __log remapping of logfilename
@@ -107,6 +111,14 @@ WARNING ACHTUNG WARNING ACHTUNG WARNING
         logger.info("Setting socket timeout to %s" % options.timeout)
         import socket
         socket.setdefaulttimeout(float(options.timeout))
+
+    if options.master_logger_level:
+        level = {'debug': logging.DEBUG, 'info': logging.INFO, 'warn': logging.WARN, 'error': logging.ERROR, 'fatal': logging.FATAL}
+        if options.master_logger_level in level.keys():
+            logger.info("set rosmaster.master logger level '{}'".format(options.master_logger_level))
+            logging.getLogger("rosmaster.master").setLevel(level[options.master_logger_level])
+        else:
+            logger.error("--set-master-logger-level received unkonwn option '{}'".format(options.master_logger_level))
 
     try:
         logger.info("Starting ROS Master Node")

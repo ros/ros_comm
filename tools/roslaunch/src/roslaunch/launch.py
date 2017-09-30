@@ -235,7 +235,7 @@ class ROSLaunchRunner(object):
     monitored.
     """
     
-    def __init__(self, run_id, config, server_uri=None, pmon=None, is_core=False, remote_runner=None, is_child=False, is_rostest=False, num_workers=NUM_WORKERS, timeout=None):
+    def __init__(self, run_id, config, server_uri=None, pmon=None, is_core=False, remote_runner=None, is_child=False, is_rostest=False, num_workers=NUM_WORKERS, timeout=None, master_logger_level=False):
         """
         @param run_id: /run_id for this launch. If the core is not
             running, this value will be used to initialize /run_id. If
@@ -264,6 +264,8 @@ class ROSLaunchRunner(object):
         @type num_workers: int
         @param timeout: If this is the core, the socket-timeout to use.
         @type timeout: Float or None
+        @param master_logger_level: Specify roscore's rosmaster.master logger level, use default if it is False.
+        @type master_logger_level: str or False
         """
         if run_id is None:
             raise RLException("run_id is None")
@@ -281,6 +283,7 @@ class ROSLaunchRunner(object):
         self.is_rostest = is_rostest
         self.num_workers = num_workers
         self.timeout = timeout
+        self.master_logger_level = master_logger_level
         self.logger = logging.getLogger('roslaunch')
         self.pm = pmon or start_process_monitor()
 
@@ -397,7 +400,7 @@ class ROSLaunchRunner(object):
             validate_master_launch(m, self.is_core, self.is_rostest)
 
             printlog("auto-starting new master")
-            p = create_master_process(self.run_id, m.type, get_ros_root(), m.get_port(), self.num_workers, self.timeout)
+            p = create_master_process(self.run_id, m.type, get_ros_root(), m.get_port(), self.num_workers, self.timeout, self.master_logger_level)
             self.pm.register_core_proc(p)
             success = p.start()
             if not success:
