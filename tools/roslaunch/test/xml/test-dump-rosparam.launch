@@ -1,13 +1,19 @@
 <launch>
 
+  <param name="~tilde1" value="foo" />
   <rosparam file="$(find roslaunch)/test/dump-params.yaml" command="load" />
   
   <group ns="rosparam">
+    <param name="~tilde2" value="bar" />
     <rosparam file="$(find roslaunch)/test/dump-params.yaml" command="load" />
   </group>
 
   <node pkg="package" type="test_base" name="node_rosparam">
+    <param name="local_param" value="baz" />
     <rosparam file="$(find roslaunch)/test/dump-params.yaml" command="load" />      
+  </node>
+
+  <node pkg="package" type="test_base" name="node_rosparam2">
   </node>
 
   <rosparam param="inline_str">value1</rosparam>

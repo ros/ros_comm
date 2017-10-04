@@ -77,6 +77,10 @@ class TestDumpParams(unittest.TestCase):
             '/node_rosparam/dict1/shoulders': 2,
             '/node_rosparam/dict1/knees': 3,
             '/node_rosparam/dict1/toes': 4,
+            '/node_rosparam/tilde1': 'foo',
+            '/node_rosparam/local_param': 'baz',
+
+            '/node_rosparam2/tilde1': 'foo',
 
             '/inline_str': 'value1',
             '/inline_list': [1, 2, 3, 4],
@@ -99,3 +103,6 @@ class TestDumpParams(unittest.TestCase):
                 elif v != output_val[k]:
                     self.fail("key [%s] value [%s] does not match output: %s"%(k, v, output_val[k])) 
         self.assertEquals(val, output_val)
+        for k in ('/node_rosparam/tilde2', '/node_rosparam2/tilde2', '/node_rosparam2/local_param'):
+            if k in output_val:
+                self.fail("key [%s] should not be in output: %s"%(k, output_val))
