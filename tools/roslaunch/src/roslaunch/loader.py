@@ -36,6 +36,7 @@
 General routines and representations for loading roslaunch model.
 """
 
+import errno
 import os
 from copy import deepcopy
 
@@ -495,7 +496,7 @@ class Loader(object):
                 if p.returncode != 0:
                     raise ValueError("Cannot load command parameter [%s]: command [%s] returned with code [%s]"%(name, command, p.returncode))
             except OSError as e:
-                if e.errno == 2:
+                if e.errno == errno.ENOENT:
                     raise ValueError("Cannot load command parameter [%s]: no such command [%s]"%(name, command))
                 raise
             if c_value is None:
