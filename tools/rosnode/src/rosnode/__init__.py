@@ -807,9 +807,12 @@ def rosnodemain(argv=None):
             _fullusage()
     except socket.error:
         print("Network communication failed. Most likely failed to communicate with master.", file=sys.stderr)
+        sys.exit(1)
     except rosgraph.MasterError as e:
         print("ERROR: "+str(e), file=sys.stderr)
+        sys.exit(1)
     except ROSNodeException as e:
         print("ERROR: "+str(e), file=sys.stderr)
+        sys.exit(1)
     except KeyboardInterrupt:
         pass
