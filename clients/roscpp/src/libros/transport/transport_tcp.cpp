@@ -195,7 +195,7 @@ void TransportTCP::setKeepAlive(bool use, uint32_t idle, uint32_t interval, uint
     }
 #endif
 
-#if defined(SOL_TCP)  && defined(TCP_KEEPCNT)
+#if defined(SOL_TCP) && defined(TCP_KEEPCNT)
     val = count;
     if (setsockopt(sock_, SOL_TCP, TCP_KEEPCNT, &val, sizeof(val)) != 0)
     {
