@@ -113,8 +113,7 @@ struct SpinnerMonitor
 
 SpinnerMonitor spinner_monitor;
 const std::string DEFAULT_ERROR_MESSAGE =
-    "Attempt to spin a callback queue from two spinners, one of them being single-threaded. "
-    "This will probably result in callbacks being executed out-of-order.";
+    "Attempt to spin a callback queue from two spinners, one of them being single-threaded. ";
 }
 
 namespace ros
@@ -130,8 +129,8 @@ void SingleThreadedSpinner::spin(CallbackQueue* queue)
 
   if (!spinner_monitor.add(queue, true))
   {
-    ROS_FATAL_STREAM("SingleThreadedSpinner: " << DEFAULT_ERROR_MESSAGE);
-    throw std::runtime_error("There is already another spinner on this queue");
+    ROS_FATAL_STREAM("SingleThreadedSpinner: " << DEFAULT_ERROR_MESSAGE << "You might want to use a MultiThreadedSpinner instead.");
+    throw std::runtime_error("SingleThreadedSpinner: " << DEFAULT_ERROR_MESSAGE << "You might want to use a MultiThreadedSpinner instead.");
   }
 
   ros::WallDuration timeout(0.1f);
@@ -221,7 +220,7 @@ void AsyncSpinnerImpl::start()
   if (!spinner_monitor.add(callback_queue_, false))
   {
     ROS_FATAL_STREAM("AsyncSpinnerImpl: " << DEFAULT_ERROR_MESSAGE);
-    throw std::runtime_error("There is already a single-threaded spinner on this queue");
+    throw std::runtime_error("AsyncSpinnerImpl: " << DEFAULT_ERROR_MESSAGE);
   }
 
   continue_ = true;
