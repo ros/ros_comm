@@ -179,19 +179,23 @@ void TransportTCP::setKeepAlive(bool use, uint32_t idle, uint32_t interval, uint
     }
 
 /* cygwin SOL_TCP does not seem to support TCP_KEEPIDLE, TCP_KEEPINTVL, TCP_KEEPCNT */
-#if defined(SOL_TCP) && !defined(__CYGWIN__) && defined(TCP_KEEPIDLE) && defined(TCP_KEEPINTVL) && defined(TCP_KEEPCNT)
+#if defined(SOL_TCP) && defined(TCP_KEEPIDLE)
     val = idle;
     if (setsockopt(sock_, SOL_TCP, TCP_KEEPIDLE, &val, sizeof(val)) != 0)
     {
       ROS_DEBUG("setsockopt failed to set TCP_KEEPIDLE on socket [%d] [%s]", sock_, cached_remote_host_.c_str());
     }
+#endif
 
+#if defined(SOL_TCP) && defined(TCP_KEEPINTVL)
     val = interval;
     if (setsockopt(sock_, SOL_TCP, TCP_KEEPINTVL, &val, sizeof(val)) != 0)
     {
       ROS_DEBUG("setsockopt failed to set TCP_KEEPINTVL on socket [%d] [%s]", sock_, cached_remote_host_.c_str());
     }
+#endif
 
+#if defined(SOL_TCP)  && defined(TCP_KEEPCNT)
     val = count;
     if (setsockopt(sock_, SOL_TCP, TCP_KEEPCNT, &val, sizeof(val)) != 0)
     {
