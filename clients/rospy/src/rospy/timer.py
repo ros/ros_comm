@@ -53,7 +53,7 @@ class Rate(object):
         """
         Constructor.
         @param hz: hz rate to determine sleeping
-        @type  hz: int
+        @type  hz: float
         @param reset: if True, timer is reset when rostime moved backward. [default: False]
         @type  reset: bool
         """
