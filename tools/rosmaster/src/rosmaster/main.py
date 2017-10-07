@@ -116,6 +116,7 @@ WARNING ACHTUNG WARNING ACHTUNG WARNING
         levels = {'debug': logging.DEBUG, 'info': logging.INFO, 'warn': logging.WARN, 'error': logging.ERROR, 'fatal': logging.FATAL}
         if options.master_logger_level.lower() in levels.keys():
             logger.info("set rosmaster.master logger level '{}'".format(options.master_logger_level))
+            rosmaster.master_api.LOG_API = True
             logging.getLogger("rosmaster.master").setLevel(levels[options.master_logger_level.lower()])
         else:
             logger.error("--master-logger-level received unknown option '{}'".format(options.master_logger_level))
