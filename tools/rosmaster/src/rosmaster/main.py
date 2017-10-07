@@ -113,10 +113,10 @@ WARNING ACHTUNG WARNING ACHTUNG WARNING
         socket.setdefaulttimeout(float(options.timeout))
 
     if options.master_logger_level:
-        level = {'debug': logging.DEBUG, 'info': logging.INFO, 'warn': logging.WARN, 'error': logging.ERROR, 'fatal': logging.FATAL}
-        if options.master_logger_level in level.keys():
+        levels = {'debug': logging.DEBUG, 'info': logging.INFO, 'warn': logging.WARN, 'error': logging.ERROR, 'fatal': logging.FATAL}
+        if options.master_logger_level in levels.keys():
             logger.info("set rosmaster.master logger level '{}'".format(options.master_logger_level))
-            logging.getLogger("rosmaster.master").setLevel(level[options.master_logger_level])
+            logging.getLogger("rosmaster.master").setLevel(levels[options.master_logger_level])
         else:
             logger.error("--master-logger-level received unkonwn option '{}'".format(options.master_logger_level))
 
