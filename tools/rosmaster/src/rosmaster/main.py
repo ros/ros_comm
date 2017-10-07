@@ -71,7 +71,7 @@ def rosmaster_main(argv=sys.argv, stdout=sys.stdout, env=os.environ):
     parser.add_option("-t", "--timeout",
                       dest="timeout",
                       help="override the socket connection timeout (in seconds).", metavar="TIMEOUT")
-    parser.add_option("--set-master-logger-level",
+    parser.add_option("--master-logger-level",
                       dest="master_logger_level", default=False, type=str,
                       help="set rosmaster.master logger level ('debug', 'info', 'warn', 'error', 'fatal')")
 
@@ -118,7 +118,7 @@ WARNING ACHTUNG WARNING ACHTUNG WARNING
             logger.info("set rosmaster.master logger level '{}'".format(options.master_logger_level))
             logging.getLogger("rosmaster.master").setLevel(level[options.master_logger_level])
         else:
-            logger.error("--set-master-logger-level received unkonwn option '{}'".format(options.master_logger_level))
+            logger.error("--master-logger-level received unkonwn option '{}'".format(options.master_logger_level))
 
     try:
         logger.info("Starting ROS Master Node")

@@ -89,7 +89,7 @@ def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS
     # zenmaster is deprecated and aliased to rosmaster
     if type_ in [Master.ROSMASTER, Master.ZENMASTER]:        
         package = 'rosmaster'        
-        args = [master, '--core', '-p', str(port), '-w', str(num_workers), '--set-master-logger-level', str(master_logger_level)]
+        args = [master, '--core', '-p', str(port), '-w', str(num_workers), '--master-logger-level', str(master_logger_level)]
         if timeout is not None:
             args += ['-t', str(timeout)]
     else:
