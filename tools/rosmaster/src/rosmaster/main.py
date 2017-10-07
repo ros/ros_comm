@@ -118,7 +118,7 @@ WARNING ACHTUNG WARNING ACHTUNG WARNING
             logger.info("set rosmaster.master logger level '{}'".format(options.master_logger_level))
             logging.getLogger("rosmaster.master").setLevel(levels[options.master_logger_level.lower()])
         else:
-            logger.error("--master-logger-level received unkonwn option '{}'".format(options.master_logger_level))
+            logger.error("--master-logger-level received unknown option '{}'".format(options.master_logger_level))
 
     try:
         logger.info("Starting ROS Master Node")
