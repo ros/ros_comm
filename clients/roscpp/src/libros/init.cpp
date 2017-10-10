@@ -48,12 +48,8 @@
 #include "ros/subscribe_options.h"
 #include "ros/transport/transport_tcp.h"
 #include "ros/internal_timer_manager.h"
-<<<<<<< HEAD
 #include "xmlrpcpp/XmlRpcSocket.h"
-=======
-#include "XmlRpcSocket.h"
 #include <tracetools/tracetools.h>
->>>>>>> a8080b5... Insert calls to tracetools
 
 #include "roscpp/GetLoggers.h"
 #include "roscpp/SetLoggerLevel.h"
