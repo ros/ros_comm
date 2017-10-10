@@ -40,6 +40,7 @@
 #include "ros/transport/transport.h"
 #include "ros/this_node.h"
 #include "ros/file_log.h"
+#include <tracetools/tracetools.h>
 
 #include <boost/bind.hpp>
 
@@ -153,6 +154,10 @@ bool ServiceClientLink::handleHeader(const Header& header)
     m["md5sum"] = ss->getMD5Sum();
     m["callerid"] = this_node::getName();
     connection_->writeHeader(m, boost::bind(&ServiceClientLink::onHeaderWritten, this, _1));
+
+    ros::trace::new_connection(connection_->getTransport()->getAddress(true).c_str(),
+    		connection_->getTransport()->getAddress(false).c_str(),
+			connection_.get(), "ServiceClientLink", service.c_str(), ss->getDataType().c_str());
 
     ss->addServiceClientLink(shared_from_this());
   }

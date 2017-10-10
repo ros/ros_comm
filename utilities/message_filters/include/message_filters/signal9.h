@@ -41,6 +41,7 @@
 #include "null_types.h"
 #include <ros/message_event.h>
 #include <ros/parameter_adapter.h>
+#include <tracetools/tracetools.h>
 
 #include <boost/bind.hpp>
 #include <boost/thread/mutex.hpp>

@@ -58,6 +58,7 @@
 #include "ros/file_log.h"
 #include "ros/transport_hints.h"
 #include "ros/subscription_callback_helper.h"
+#include <tracetools/tracetools.h>
 
 #include <boost/make_shared.hpp>
 
@@ -187,6 +188,9 @@ void Subscription::addLocalConnection(const PublicationPtr& pub)
 
   IntraProcessPublisherLinkPtr pub_link(boost::make_shared<IntraProcessPublisherLink>(shared_from_this(), XMLRPCManager::instance()->getServerURI(), transport_hints_));
   IntraProcessSubscriberLinkPtr sub_link(boost::make_shared<IntraProcessSubscriberLink>(pub));
+  ros::trace::new_connection("intraprocess", "intraprocess",
+    		  pub_link.get(), "intraprocess",
+			  name_.c_str(), pub->getDataType().c_str());
   pub_link->setPublisher(sub_link);
   sub_link->setSubscriber(pub_link);
 
@@ -511,6 +515,8 @@ void Subscription::pendingConnectionDone(const PendingConnectionPtr& conn, XmlRp
       ConnectionPtr connection(boost::make_shared<Connection>());
       TransportPublisherLinkPtr pub_link(boost::make_shared<TransportPublisherLink>(shared_from_this(), xmlrpc_uri, transport_hints_));
 
+      ros::trace::new_connection(transport->getAddress(true).c_str(),
+    		  transport->getAddress(false).c_str(), connection.get(), "TransportPublisherLink", name_.c_str(), datatype_.c_str());
       connection->initialize(transport, false, HeaderReceivedFunc());
       pub_link->initialize(connection);
 
@@ -593,7 +599,9 @@ void Subscription::pendingConnectionDone(const PendingConnectionPtr& conn, XmlRp
   }
 }
 
-uint32_t Subscription::handleMessage(const SerializedMessage& m, bool ser, bool nocopy, const boost::shared_ptr<M_string>& connection_header, const PublisherLinkPtr& link)
+uint32_t Subscription::handleMessage(const SerializedMessage& m, bool ser,
+		bool nocopy, const boost::shared_ptr<M_string>& connection_header,
+		const PublisherLinkPtr& link)
 {
   boost::mutex::scoped_lock lock(callbacks_mutex_);
 
@@ -643,7 +651,15 @@ uint32_t Subscription::handleMessage(const SerializedMessage& m, bool ser, bool 
         nonconst_need_copy = true;
       }
 
-      info->subscription_queue_->push(info->helper_, deserializer, info->has_tracked_object_, info->tracked_object_, nonconst_need_copy, receipt_time, &was_full);
+      ros::trace::subscription_message_queued(name_.c_str(),
+    		  m.message_start, info->subscription_queue_.get(),
+			  NULL, // callback unknown here
+			  deserializer.get(),
+    		  receipt_time.sec, receipt_time.nsec);
+
+      info->subscription_queue_->push(info->helper_, deserializer,
+    		  info->has_tracked_object_, info->tracked_object_,
+			  nonconst_need_copy, receipt_time, &was_full);
 
       if (was_full)
       {
@@ -715,6 +731,14 @@ bool Subscription::addCallback(const SubscriptionCallbackHelperPtr& helper, cons
     {
       ++nonconst_callbacks_;
     }
+
+    SubscriptionCallbackHelperT<boost::shared_ptr<void> > *hp =
+    		(SubscriptionCallbackHelperT<boost::shared_ptr<void> >*)(helper.get());
+
+    ros::trace::subscriber_callback_added(
+    		info->subscription_queue_.get(), helper.get(),
+        	ros::trace::impl::get_backtrace().c_str(),
+			this->datatype_.c_str(), this->name_.c_str(), queue_size);
 
     callbacks_.push_back(info);
     cached_deserializers_.reserve(callbacks_.size());

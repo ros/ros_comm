@@ -32,6 +32,7 @@
 #include "ros/common.h"
 #include "ros/file_log.h"
 #include "ros/io.h"
+#include <tracetools/tracetools.h>
 
 using namespace XmlRpc;
 
@@ -245,6 +246,8 @@ bool XMLRPCManager::validateXmlrpcResponse(const std::string& method, XmlRpcValu
 
 void XMLRPCManager::serverThreadFunc()
 {
+  ros::trace::task_init("XMLRPCManager");
+
   disableAllSignalsInThisThread();
 
   while(!shutting_down_)

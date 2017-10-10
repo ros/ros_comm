@@ -35,6 +35,7 @@
 #include "ros/connection_manager.h"
 #include "ros/topic_manager.h"
 #include "ros/file_log.h"
+#include <tracetools/tracetools.h>
 
 #include <boost/bind.hpp>
 
@@ -114,6 +115,10 @@ bool TransportSubscriberLink::handleHeader(const Header& header)
   m["topic"] = topic_;
   connection_->writeHeader(m, boost::bind(&TransportSubscriberLink::onHeaderWritten, this, _1));
 
+  ros::trace::new_connection(connection_->getTransport()->getAddress(true).c_str(),
+		  connection_->getTransport()->getAddress(false).c_str(), connection_.get(),
+		  "TransportSubscriberLink", topic.c_str(), pt->getDataType().c_str());
+
   pt->addSubscriberLink(shared_from_this());
 
   return true;
@@ -170,6 +175,7 @@ void TransportSubscriberLink::startMessageWrite(bool immediate_write)
 
   if (m.num_bytes > 0)
   {
+    ros::trace::subscriber_link_message_write(m.message_start, connection_.get());
     connection_->write(m.buf, m.num_bytes, boost::bind(&TransportSubscriberLink::onMessageWritten, this, _1), immediate_write);
   }
 }
@@ -202,7 +208,9 @@ void TransportSubscriberLink::enqueueMessage(const SerializedMessage& m, bool se
                topic_.c_str());
       }
 
-      outbox_.pop(); // toss out the oldest thing in the queue to make room for us
+      ros::trace::subscriber_link_message_dropped(outbox_.front().message_start);
+      // toss out the oldest thing in the queue to make room for us
+      outbox_.pop();
       queue_full_ = true;
     }
     else

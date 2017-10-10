@@ -148,6 +148,26 @@ bool TransportTCP::initializeSocket()
   return true;
 }
 
+const std::string TransportTCP::getAddress(bool local) const
+{
+	sockaddr_storage addr;
+	socklen_t len = sizeof(addr);
+	if(local)
+		getsockname(sock_, (sockaddr *)&addr, &len);
+	else
+		getpeername(sock_, (sockaddr *)&addr, &len);
+
+	char host[NI_MAXHOST], serv[NI_MAXSERV];
+	int ret;
+	if((ret = getnameinfo((const sockaddr*)&addr, len, host, NI_MAXHOST, serv, NI_MAXSERV, NI_NUMERICHOST)) == 0) {
+		std::stringstream ss;
+		ss << host << ':' << serv;
+		return ss.str();
+	} else {
+		return gai_strerror(ret);
+	}
+}
+
 void TransportTCP::parseHeader(const Header& header)
 {
   std::string nodelay;

@@ -28,6 +28,7 @@
 #include "ros/spinner.h"
 #include "ros/ros.h"
 #include "ros/callback_queue.h"
+#include <tracetools/tracetools.h>
 
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -143,6 +144,8 @@ namespace ros
 
 void SingleThreadedSpinner::spin(CallbackQueue* queue)
 {
+  ros::trace::task_init("SingleThreadedSpinner::spin");
+
   if (!queue)
   {
     queue = getGlobalCallbackQueue();
@@ -266,6 +269,8 @@ void AsyncSpinnerImpl::stop()
 
 void AsyncSpinnerImpl::threadFunc()
 {
+  ros::trace::task_init("AsyncSpinner::threadFunc");
+
   disableAllSignalsInThisThread();
 
   CallbackQueue* queue = callback_queue_;

@@ -122,6 +122,7 @@ public:
 
   virtual const char* getType() { return "TCPROS"; }
 
+  const std::string getAddress(bool local) const;
 private:
   /**
    * \brief Initializes the assigned socket -- sets it to non-blocking and enables reading

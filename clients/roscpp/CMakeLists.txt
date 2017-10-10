@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(roscpp)
 
+add_definitions("-std=c++11")
 if(NOT WIN32)
   set_directory_properties(PROPERTIES COMPILE_OPTIONS "-std=c++11;-Wall;-Wextra")
 endif()
 
 find_package(catkin REQUIRED COMPONENTS
-  cpp_common message_generation rosconsole roscpp_serialization roscpp_traits rosgraph_msgs rostime std_msgs xmlrpcpp
+  cpp_common message_generation rosconsole roscpp_serialization roscpp_traits rosgraph_msgs rostime std_msgs xmlrpcpp tracetools
 )
 
 catkin_package_xml()
@@ -54,7 +55,7 @@ endif()
 catkin_package(
   INCLUDE_DIRS include ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/ros
   LIBRARIES roscpp ${PTHREAD_LIB}
-  CATKIN_DEPENDS cpp_common message_runtime rosconsole roscpp_serialization roscpp_traits rosgraph_msgs rostime std_msgs xmlrpcpp
+  CATKIN_DEPENDS cpp_common message_runtime rosconsole roscpp_serialization roscpp_traits rosgraph_msgs rostime std_msgs xmlrpcpp tracetools
   DEPENDS Boost
 )
 

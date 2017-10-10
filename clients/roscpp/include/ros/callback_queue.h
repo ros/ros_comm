@@ -153,10 +153,12 @@ protected:
     CallbackInfo()
     : removal_id(0)
     , marked_for_removal(false)
+    , created(ros::WallTime::now())
     {}
     CallbackInterfacePtr callback;
     uint64_t removal_id;
     bool marked_for_removal;
+    ros::WallTime created;
   };
   typedef std::list<CallbackInfo> L_CallbackInfo;
   typedef std::deque<CallbackInfo> D_CallbackInfo;

@@ -39,6 +39,7 @@
 #include "ros/transport/transport.h"
 #include "ros/this_node.h"
 #include "ros/file_log.h"
+#include <tracetools/tracetools.h>
 
 #include <boost/bind.hpp>
 
@@ -125,6 +126,11 @@ bool ServiceServerLink::initialize(const ConnectionPtr& connection)
   header.insert(extra_outgoing_header_values_.begin(), extra_outgoing_header_values_.end());
 
   connection_->writeHeader(header, boost::bind(&ServiceServerLink::onHeaderWritten, this, _1));
+
+  ros::trace::new_connection(connection_->getTransport()->getAddress(true).c_str(),
+      		connection_->getTransport()->getAddress(false).c_str(),
+  			connection_.get(), "ServiceServerLink", service_name_.c_str(),
+			"");
 
   return true;
 }
