@@ -267,17 +267,17 @@ def play_cmd(argv):
     if options.pause_topics:
         cmd.extend(['--pause-topics'] + options.pause_topics)
 
-    # prevent bag files to be passed as --topics or --pause-topics
-    if options.topics or options.pause_topics:
-        cmd.extend(['--bags'])
-
-    cmd.extend(args)
-
     if options.rate_control_topic:
         cmd.extend(['--rate-control-topic', str(options.rate_control_topic)])
 
     if options.rate_control_max_delay:
         cmd.extend(['--rate-control-max-delay', str(options.rate_control_max_delay)])
+
+    # prevent bag files to be passed as --topics or --pause-topics
+    if options.topics or options.pause_topics:
+        cmd.extend(['--bags'])
+
+    cmd.extend(args)
 
     old_handler = signal.signal(
         signal.SIGTERM,
