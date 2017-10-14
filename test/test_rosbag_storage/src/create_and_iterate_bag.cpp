@@ -1,7 +1,10 @@
 #include "ros/time.h"
 #include "rosbag/bag.h"
 #include "rosbag/view.h"
+#include "std_msgs/Int8.h"
+#include "std_msgs/UInt16.h"
 #include "std_msgs/Int32.h"
+#include "std_msgs/UInt64.h"
 #include "std_msgs/String.h"
 
 #include <string>
@@ -10,24 +13,40 @@
 #include "boost/foreach.hpp"
 #include <gtest/gtest.h>
 
+template<typename T>
+T make_std_msg(const typename T::_data_type& data) {
+  T msg;
+  msg.data = data;
+  return msg;
+}
+
 void create_test_bag(const std::string &filename)
 {
   rosbag::Bag bag;
   bag.open(filename, rosbag::bagmode::Write);
 
-  std_msgs::String str;
-  str.data = std::string("foo");
+  bag.write("chatter", ros::Time::now(), make_std_msg<std_msgs::String>("foo"));
+  bag.write("numbers", ros::Time::now(), make_std_msg<std_msgs::Int32>(42));
 
-  std_msgs::Int32 i;
-  i.data = 42;
+  bag.close();
+}
 
-  bag.write("chatter", ros::Time::now(), str);
-  bag.write("numbers", ros::Time::now(), i);
+void create_a_different_test_bag(const std::string &filename)
+{
+  rosbag::Bag bag;
+  bag.open(filename, rosbag::bagmode::Write);
+
+  bag.write("a", ros::Time::now(), make_std_msg<std_msgs::String>("Hello World!"));
+  bag.write("b", ros::Time::now(), make_std_msg<std_msgs::Int8>(1));
+  bag.write("c", ros::Time::now(), make_std_msg<std_msgs::UInt16>(2));
+  bag.write("d", ros::Time::now(), make_std_msg<std_msgs::Int32>(3));
+  bag.write("e", ros::Time::now(), make_std_msg<std_msgs::UInt64>(4));
 
   bag.close();
 }
 
 const char* bag_filename = "/tmp/rosbag_storage_create_and_iterate_bag.bag";
+const char* bag_filename2 = "/tmp/rosbag_storage_create_and_iterate_bag2.bag";
 
 TEST(rosbag_storage, iterator_copy_constructor)
 {
@@ -105,9 +124,37 @@ TEST(rosbag_storage, iterate_bag)
   bag.close();
 }
 
+void serialize_bag(rosbag::Bag& bag, const char* filename)
+{
+  bag.open(filename);
+
+  rosbag::View bag_view(bag);
+  std::vector<uint8_t> buffer;
+
+  BOOST_FOREACH(const rosbag::MessageInstance& msg_instance, bag_view)
+  {
+    const size_t msg_size  = msg_instance.size();
+    buffer.resize(msg_size);
+    ros::serialization::OStream stream(buffer.data(), buffer.size());
+    msg_instance.write(stream);
+
+    printf("reading: %s\n",  msg_instance.getTopic().c_str() );
+  }
+  bag.close();
+}
+
+TEST(rosbag_storage, reuse_bag)
+{
+  rosbag::Bag bag;
+
+  serialize_bag(bag, bag_filename);
+  serialize_bag(bag, bag_filename2);
+}
+
 int main(int argc, char **argv) {
     ros::Time::init();
     create_test_bag(bag_filename);
+    create_a_different_test_bag(bag_filename2);
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
