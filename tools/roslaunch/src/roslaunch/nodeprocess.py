@@ -92,7 +92,7 @@ def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS
         args = [master, '--core', '-p', str(port), '-w', str(num_workers)]
         if timeout is not None:
             args += ['-t', str(timeout)]
-        if master_logger_level is not False:
+        if master_logger_level:
             args += ['--master-logger-level', str(master_logger_level)]
     else:
         raise RLException("unknown master typ_: %s"%type_)
