@@ -136,7 +136,7 @@ void View::iterator::increment() {
     {
         std::multiset<IndexEntry>::const_iterator last_iter = iters_.back().iter;
     
-        while (iters_.back().iter == last_iter)
+        while (!iters_.empty() && iters_.back().iter == last_iter)
         {
             iters_.back().iter++;
             if (iters_.back().iter == iters_.back().range->end)
