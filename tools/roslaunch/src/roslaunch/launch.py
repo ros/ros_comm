@@ -400,7 +400,9 @@ class ROSLaunchRunner(object):
             validate_master_launch(m, self.is_core, self.is_rostest)
 
             printlog("auto-starting new master")
-            p = create_master_process(self.run_id, m.type, get_ros_root(), m.get_port(), self.num_workers, self.timeout, self.master_logger_level)
+            p = create_master_process(
+                self.run_id, m.type, get_ros_root(), m.get_port(), self.num_workers,
+                self.timeout, master_logger_level=self.master_logger_level)
             self.pm.register_core_proc(p)
             success = p.start()
             if not success:
