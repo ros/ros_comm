@@ -180,6 +180,8 @@ void Bag::close() {
     chunks_.clear();
     connection_indexes_.clear();
     curr_chunk_connection_indexes_.clear();
+
+    init();
 }
 
 void Bag::closeWrite() {
