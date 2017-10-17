@@ -407,7 +407,7 @@ void Recorder::startWriting() {
         bag_.open(write_filename_, bagmode::Write);
         for (std::list<OutgoingMessage>::iterator it = latched_topics_.begin(); it != latched_topics_.end(); ++it)
         {
-            bag_.write(it->topic, it->time, *it->msg, it->connection_header);
+            bag_.write(it->topic, ros::Time::now(), *it->msg, it->connection_header);
         }
     }
     catch (rosbag::BagException e) {
