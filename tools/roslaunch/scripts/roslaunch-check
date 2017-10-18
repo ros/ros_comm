@@ -38,6 +38,7 @@ import sys
 
 import rospkg
 
+import roslaunch
 import roslaunch.rlutil
 import rosunit
 
@@ -116,7 +117,7 @@ if __name__ == '__main__':
             message = "roslaunch check [%s] failed"%(roslaunch_path)
             f.write(rosunit.junitxml.test_failure_junit_xml(test_name, message, stdout=error_msg,
                     class_name="roslaunch.RoslaunchCheck", testcase_name="%s_%s" % (pkg, outname)))
-        print("wrote test file to [%s]"%test_file)
+        roslaunch.core.printerrlog("wrote test file to [%s]"%test_file)
         sys.exit(1)
     else:
         print("passed")
