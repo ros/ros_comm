@@ -176,6 +176,8 @@ public:
 
     void swap(Bag&);
 
+    bool isOpen() const;
+
 private:
     Bag(const Bag&);
     Bag& operator=(const Bag&);
