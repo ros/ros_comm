@@ -57,6 +57,7 @@
 #include <set>
 #include <stdexcept>
 
+#include <boost/config.hpp>
 #include <boost/format.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 
@@ -110,6 +111,12 @@ public:
     explicit Bag(std::string const& filename, uint32_t mode = bagmode::Read);
 
     ~Bag();
+
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    Bag(Bag&& other);
+
+    Bag& operator=(Bag&& other);
+#endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
     //! Open a bag file.
     /*!
@@ -186,8 +193,11 @@ public:
     void swap(Bag&);
 
 private:
+    // disable copying
     Bag(const Bag&);
     Bag& operator=(const Bag&);
+
+    void init();
 
     // This helper function actually does the write with an arbitrary serializable message
     template<class T>

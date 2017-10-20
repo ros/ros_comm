@@ -57,43 +57,50 @@ using ros::Time;
 
 namespace rosbag {
 
-Bag::Bag() :
-    mode_(bagmode::Write),
-    version_(0),
-    compression_(compression::Uncompressed),
-    chunk_threshold_(768 * 1024),  // 768KB chunks
-    bag_revision_(0),
-    file_size_(0),
-    file_header_pos_(0),
-    index_data_pos_(0),
-    connection_count_(0),
-    chunk_count_(0),
-    chunk_open_(false),
-    curr_chunk_data_pos_(0),
-    current_buffer_(0),
-    decompressed_chunk_(0)
+Bag::Bag()
 {
+    init();
 }
 
-Bag::Bag(string const& filename, uint32_t mode) :
-    compression_(compression::Uncompressed),
-    chunk_threshold_(768 * 1024),  // 768KB chunks
-    bag_revision_(0),
-    file_size_(0),
-    file_header_pos_(0),
-    index_data_pos_(0),
-    connection_count_(0),
-    chunk_count_(0),
-    chunk_open_(false),
-    curr_chunk_data_pos_(0),
-    current_buffer_(0),
-    decompressed_chunk_(0)
+Bag::Bag(string const& filename, uint32_t mode)
 {
+    init();
     open(filename, mode);
 }
 
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+
+Bag::Bag(Bag&& other) {
+    init();
+    swap(other);
+}
+
+Bag& Bag::operator=(Bag&& other) {
+    swap(other);
+    return *this;
+}
+
+#endif // BOOST_NO_CXX11_RVALUE_REFERENCES
+
 Bag::~Bag() {
     close();
+}
+
+void Bag::init() {
+    mode_ = bagmode::Write;
+    version_ = 0;
+    compression_ = compression::Uncompressed;
+    chunk_threshold_ = 768 * 1024;  // 768KB chunks
+    bag_revision_ = 0;
+    file_size_ = 0;
+    file_header_pos_ = 0;
+    index_data_pos_ = 0;
+    connection_count_ = 0;
+    chunk_count_ = 0;
+    chunk_open_ = false;
+    curr_chunk_data_pos_ = 0;
+    current_buffer_ = 0;
+    decompressed_chunk_ = 0;
 }
 
 void Bag::open(string const& filename, uint32_t mode) {
