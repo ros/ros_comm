@@ -72,13 +72,6 @@ bool sel_srv_cb( topic_tools::DemuxSelect::Request  &req,
   bool ret = false;
   if (g_selected != g_pubs.end()) {
     res.prev_topic = g_selected->topic_name;
-
-    // Unregister old topic
-    ROS_INFO("Unregistering %s", res.prev_topic.c_str());
-    if (g_selected->pub)
-	  g_selected->pub->shutdown();
-    delete g_selected->pub;
-    g_selected->pub = NULL;
   }
   else
     res.prev_topic = string("");
@@ -104,6 +97,7 @@ bool sel_srv_cb( topic_tools::DemuxSelect::Request  &req,
         g_selected = it;
         ROS_INFO("demux selected output: [%s]", it->topic_name.c_str());
         ret = true;
+        break;
       }
     }
     if(!ret)
@@ -127,22 +121,30 @@ void in_cb(const boost::shared_ptr<ShapeShifter const>& msg)
   ROS_DEBUG("Received an incoming msg ...");
   // when a message is incoming, check, if the requested publisher is already existing.
   // if not, create it with the information available from the incoming message.
-  if(!g_selected->pub)
-  {
-	  try
-	  {
-		  g_selected->pub = new ros::Publisher(msg->advertise(*g_node, g_selected->topic_name, 10, false));
-	  }
-	  catch(ros::InvalidNameException& e)
-	  {
-		ROS_WARN("failed to add topic %s to demux, because it's an invalid name: %s",
-				g_selected->topic_name.c_str(), e.what());
-		return;
-	  }
+  bool selected_added = false;
+  for (list<struct pub_info_t>::iterator it = g_pubs.begin();
+     it != g_pubs.end(); ++it) {
+    if (!it->pub) {
+        if (it->topic_name == g_selected->topic_name)
+            selected_added = true;
 
-	  ROS_INFO("Added publisher %s to demux! Sleeping for 0.5 secs.", g_selected->topic_name.c_str());
-	  // This is needed, because it takes some time before publisher is registered and can send out messages.
-	  ros::Duration(0.5).sleep();
+        try {
+            it->pub = new ros::Publisher(msg->advertise(*g_node, it->topic_name, 10, false));
+        }
+        catch (ros::InvalidNameException& e) {
+          ROS_WARN("failed to add topic %s to demux, because it's an invalid name: %s",
+                  it->topic_name.c_str(), e.what());
+          return;
+        }
+
+        ROS_INFO("Added publisher %s to demux!", it->topic_name.c_str());
+    }
+  }
+
+  if (selected_added) {
+    // This is needed, because it takes some time before publisher is registered and can send out messages.
+    ROS_INFO("Sleeping 0.5 sec.");
+    ros::Duration(0.5).sleep();
   }
 
   // finally: send out the message over the active publisher
