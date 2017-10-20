@@ -57,8 +57,8 @@
 #include <set>
 #include <stdexcept>
 
-#include <boost/format.hpp>
 #include <boost/config.hpp>
+#include <boost/format.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 
 #include "console_bridge/console.h"
