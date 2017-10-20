@@ -192,6 +192,8 @@ public:
 
     void swap(Bag&);
 
+    bool isOpen() const;
+
 private:
     // disable copying
     Bag(const Bag&);
