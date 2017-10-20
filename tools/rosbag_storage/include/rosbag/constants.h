@@ -61,6 +61,7 @@ static const std::string TIME_FIELD_NAME             = "time";          // 2.0+
 static const std::string START_TIME_FIELD_NAME       = "start_time";    // 2.0+
 static const std::string END_TIME_FIELD_NAME         = "end_time";      // 2.0+
 static const std::string CHUNK_POS_FIELD_NAME        = "chunk_pos";     // 2.0+
+static const std::string ENCRYPTOR_FIELD_NAME        = "encryptor";     // 2.0+
 
 // Legacy header fields
 static const std::string MD5_FIELD_NAME      = "md5";           // <2.0
