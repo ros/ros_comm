@@ -122,26 +122,31 @@ void in_cb(const boost::shared_ptr<ShapeShifter const>& msg)
   // when a message is incoming, check, if the requested publisher is already existing.
   // if not, create it with the information available from the incoming message.
   bool selected_added = false;
-  for (list<struct pub_info_t>::iterator it = g_pubs.begin();
-     it != g_pubs.end(); ++it) {
-    if (!it->pub) {
-        if (it->topic_name == g_selected->topic_name)
-            selected_added = true;
+  for (list<struct pub_info_t>::iterator it = g_pubs.begin(); it != g_pubs.end(); ++it) {
+    if (!it->pub)
+    {
+      if (it->topic_name == g_selected->topic_name)
+      {
+        selected_added = true;
+      }
 
-        try {
-            it->pub = new ros::Publisher(msg->advertise(*g_node, it->topic_name, 10, false));
-        }
-        catch (ros::InvalidNameException& e) {
-          ROS_WARN("failed to add topic %s to demux, because it's an invalid name: %s",
-                  it->topic_name.c_str(), e.what());
-          return;
-        }
+      try
+      {
+        it->pub = new ros::Publisher(msg->advertise(*g_node, it->topic_name, 10, false));
+      }
+      catch (ros::InvalidNameException& e)
+      {
+        ROS_WARN("failed to add topic '%s' to demux, because it's an invalid name: %s",
+                 it->topic_name.c_str(), e.what());
+        return;
+      }
 
-        ROS_INFO("Added publisher %s to demux!", it->topic_name.c_str());
+      ROS_INFO("Added publisher %s to demux!", it->topic_name.c_str());
     }
   }
 
-  if (selected_added) {
+  if (selected_added)
+  {
     // This is needed, because it takes some time before publisher is registered and can send out messages.
     ROS_INFO("Sleeping 0.5 sec.");
     ros::Duration(0.5).sleep();
