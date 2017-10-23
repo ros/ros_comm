@@ -317,9 +317,44 @@ int main(int argc, char **argv)
 
     g_subs.push_back(sub_info);
   }
-  g_selected = g_subs.begin(); // select first topic to start
+
+  // Set initial input topic from optional param, defaults to second argument
+  std::string initial_topic;
+  pnh.getParam("initial_topic", initial_topic);
   std_msgs::String t;
-  t.data = g_selected->topic_name;
+  if (initial_topic.empty()) // If param is not set, default to first in list
+  {
+    g_selected = g_subs.begin();
+    t.data = g_selected->topic_name;
+  }
+  else if (initial_topic == g_none_topic) // Set no initial input if param was __none
+  {
+    ROS_INFO("mux selected to no input.");
+    g_selected = g_subs.end();
+    t.data = g_none_topic;
+  }
+  else // Attempt to set initial topic if it is in the list
+  {
+    ROS_INFO("trying to switch mux to %s", initial_topic.c_str());
+    // spin through our vector of inputs and find this guy
+    for (list<struct sub_info_t>::iterator it = g_subs.begin();
+	 it != g_subs.end();
+	 ++it)
+    {
+      if (ros::names::resolve(it->topic_name) == ros::names::resolve(initial_topic))
+      {
+        g_selected = it;
+        t.data = initial_topic;
+        ROS_INFO("mux selected input: [%s]", it->topic_name.c_str());
+        break;
+      }
+    }
+    if (t.data.empty()) // If it wasn't in the list, default to no input. Or should we crash here?
+    {
+      g_selected = g_subs.end();
+      t.data = g_none_topic;
+    }
+  }
   g_pub_selected.publish(t);
 
   // Backward compatibility
