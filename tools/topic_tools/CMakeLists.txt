@@ -108,10 +108,10 @@ if(CATKIN_ENABLE_TESTING)
   ## Latched test disabled until underlying issue in roscpp is resolved,
   ## #3385, #3434.
   #rosbuild_add_rostest(test/relay_latched.test)
-  #rosbuild_add_rostest(test/mux.test)
-  #rosbuild_add_rostest(test/switch_mux.test)
-  #rosbuild_add_rostest(test/switch_mux_leading_slash.test)
-  #rosbuild_add_rostest(test/switch_mux_none.test)
+  add_rostest(test/mux.test)
+  add_rostest(test/switch_mux.test)
+  add_rostest(test/switch_mux_leading_slash.test)
+  add_rostest(test/switch_mux_none.test)
   #rosbuild_add_rostest(test/mux_add.test)
 
   catkin_add_nosetests(test/args.py)
