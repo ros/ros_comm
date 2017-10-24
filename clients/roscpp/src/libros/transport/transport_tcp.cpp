@@ -50,6 +50,7 @@ bool TransportTCP::s_use_ipv6_ = false;
 
 TransportTCP::TransportTCP(PollSet* poll_set, int flags)
 : sock_(ROS_INVALID_SOCKET)
+, async_connected_(false)
 , closed_(false)
 , expecting_read_(false)
 , expecting_write_(false)
@@ -479,6 +480,22 @@ int32_t TransportTCP::read(uint8_t* buffer, uint32_t size)
   {
     boost::recursive_mutex::scoped_lock lock(close_mutex_);
 
+    // if socket is async and not connected, check if it's conneted
+    if (!(flags_ & SYNCHRONOUS) && !async_connected_ && !closed_) {
+      int ret, err;
+      ret = is_async_connected(sock_, err);
+      if (ret == 1) {
+        ROSCPP_CONN_LOG_DEBUG("Async socket[%d] is connected", sock_);
+        async_connected_ = true;
+      } else if (ret == -1) {
+        ROSCPP_LOG_DEBUG("Async connect on socket [%d] failed with error [%s]", sock_, socket_error_string(err));
+        close();
+      } else {
+        // socket is connecting
+        return 0;
+      }
+    }
+
     if (closed_)
     {
       ROSCPP_LOG_DEBUG("Tried to read on a closed socket [%d]", sock_);
@@ -517,6 +534,22 @@ int32_t TransportTCP::write(uint8_t* buffer, uint32_t size)
 {
   {
     boost::recursive_mutex::scoped_lock lock(close_mutex_);
+
+    // if socket is async and not connected, check if it's conneted
+    if (!(flags_ & SYNCHRONOUS) && !async_connected_ && !closed_) {
+      int ret, err;
+      ret = is_async_connected(sock_, err);
+      if (ret == 1) {
+        ROSCPP_CONN_LOG_DEBUG("Async socket[%d] is connected", sock_);
+        async_connected_ = true;
+      } else if (ret == -1) {
+        ROSCPP_LOG_DEBUG("Async connect on socket [%d] failed with error [%s]", sock_, socket_error_string(err));
+        close();
+      } else {
+        // socket is connecting
+        return 0;
+      }
+    }
 
     if (closed_)
     {

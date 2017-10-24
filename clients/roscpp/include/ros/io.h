@@ -143,9 +143,11 @@ namespace ros {
 *****************************************************************************/
 
 ROSCPP_DECL int last_socket_error();
+ROSCPP_DECL const char* socket_error_string(int err);
 ROSCPP_DECL const char* last_socket_error_string();
 ROSCPP_DECL bool last_socket_error_is_would_block();
 ROSCPP_DECL int poll_sockets(socket_pollfd *fds, nfds_t nfds, int timeout);
+ROSCPP_DECL int is_async_connected(socket_fd_t &socket, int &err);
 ROSCPP_DECL int set_non_blocking(socket_fd_t &socket);
 ROSCPP_DECL int close_socket(socket_fd_t &socket);
 ROSCPP_DECL int create_signal_pair(signal_fd_t signal_pair[2]);
