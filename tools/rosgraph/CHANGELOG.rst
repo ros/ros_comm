@@ -2,8 +2,8 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.13.3 (2017-10-25)
+-------------------
 * use defined error codes rather than hardcoded integers (`#1174 <https://github.com/ros/ros_comm/issues/1174>`_)
 * improve logger tests (`#1144 <https://github.com/ros/ros_comm/issues/1144>`_)
 

@@ -2,8 +2,8 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.13.3 (2017-10-25)
+-------------------
 * add initial_topic param (`#1199 <https://github.com/ros/ros_comm/issues/1199>`_)
 * make demux more agile (`#1196 <https://github.com/ros/ros_comm/issues/1196>`_)
 * add stealth mode for topic_tools/relay (`#1155 <https://github.com/ros/ros_comm/issues/1155>`_)
