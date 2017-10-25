@@ -2,6 +2,10 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix problem when configuring tests without gtest being available (`#1197 <https://github.com/ros/ros_comm/issues/1197>`_)
+
 1.13.2 (2017-08-15)
 -------------------
 * use poll() in favor of select() in the XmlRPCDispatcher (`#833 <https://github.com/ros/ros_comm/issues/833>`_)

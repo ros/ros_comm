@@ -2,6 +2,11 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* avoid unused parameter warning in TransportTCP (`#1195 <https://github.com/ros/ros_comm/issues/1195>`_)
+* check if socket options are available before using them (`#1172 <https://github.com/ros/ros_comm/issues/1172>`_)
+
 1.13.2 (2017-08-15)
 -------------------
 * only use CLOCK_MONOTONIC if not on OS X (`#1142 <https://github.com/ros/ros_comm/issues/1142>`_)

@@ -2,6 +2,15 @@
 Changelog for package rosbag_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix corrupted messages when reopening a rosbag with a different file (`#1176 <https://github.com/ros/ros_comm/issues/1176>`_)
+* addd rosbag::Bag::isOpen (`#1190 <https://github.com/ros/ros_comm/issues/1190>`_)
+* enable rosbag::Bag move operations if compiler support is available (`#1189 <https://github.com/ros/ros_comm/issues/1189>`_)
+* check if bzfile\_ and lz4s\_ handle is valid before reading/writing/closing (`#1183 <https://github.com/ros/ros_comm/issues/1183>`_)
+* fix an out of bounds read in rosbag::View::iterator::increment() (`#1191 <https://github.com/ros/ros_comm/issues/1191>`_)
+* replace usage deprecated console_bridge macros (`#1149 <https://github.com/ros/ros_comm/issues/1149>`_)
+
 1.13.2 (2017-08-15)
 -------------------
 * fix whitespace warnings with g++ 7 (`#1138 <https://github.com/ros/ros_comm/issues/1138>`_)

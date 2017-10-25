@@ -2,6 +2,12 @@
 Changelog for package rosnode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* return exit code 1 in case of errors (`#1178 <https://github.com/ros/ros_comm/issues/1178>`_)
+* sort output of rosnode info (`#1160 <https://github.com/ros/ros_comm/issues/1160>`_)
+* fix Python 3 compatibility (`#1166 <https://github.com/ros/ros_comm/issues/1166>`_)
+
 1.13.2 (2017-08-15)
 -------------------
 

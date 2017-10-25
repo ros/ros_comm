@@ -2,6 +2,14 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add --set-master-logger-level option for 'rosmaster' to output LOG_API (`#1180 <https://github.com/ros/ros_comm/issues/1180>`_)
+* use defined error codes rather than hardcoded integers (`#1174 <https://github.com/ros/ros_comm/issues/1174>`_, `#1181 <https://github.com/ros/ros_comm/issues/1181>`_)
+* fix parameter leaking into sibling scopes (`#1158 <https://github.com/ros/ros_comm/issues/1158>`_)
+* avoid full stack trace for ResourceNotFound (`#1147 <https://github.com/ros/ros_comm/issues/1147>`_)
+* remove mention of rosmake from error message (`#1140 <https://github.com/ros/ros_comm/issues/1140>`_)
+
 1.13.2 (2017-08-15)
 -------------------
 

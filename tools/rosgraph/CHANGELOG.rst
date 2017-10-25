@@ -2,6 +2,11 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* use defined error codes rather than hardcoded integers (`#1174 <https://github.com/ros/ros_comm/issues/1174>`_)
+* improve logger tests (`#1144 <https://github.com/ros/ros_comm/issues/1144>`_)
+
 1.13.2 (2017-08-15)
 -------------------
 * fix stack frame identification in rospy logging (`#1141 <https://github.com/ros/ros_comm/issues/1141>`_, regression from 1.13.1)
