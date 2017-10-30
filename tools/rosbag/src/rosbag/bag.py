@@ -75,24 +75,19 @@ class ROSBagException(Exception):
     """
     Base class for exceptions in rosbag.
     """
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return self.value
+    pass
 
 class ROSBagFormatException(ROSBagException):
     """
     Exceptions for errors relating to the bag file format.
     """
-    def __init__(self, value):
-        ROSBagException.__init__(self, value)
+    pass
 
 class ROSBagUnindexedException(ROSBagException):
     """
     Exception for unindexed bags.
     """
-    def __init__(self):
+    def __init__(self, *args):
         ROSBagException.__init__(self, 'Unindexed bag')
 
 class Compression:
