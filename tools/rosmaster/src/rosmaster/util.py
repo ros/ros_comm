@@ -78,8 +78,7 @@ def close_half_closed_sockets():
             except socket.error as e: # catch [Errno 92] Protocol not available
                 if e.args[0] is errno.ENOPROTOOPT:
                     return
-                else:
-                    raise
+                raise
             if state == 8: # CLOSE_WAIT
                 transport.close()
 
