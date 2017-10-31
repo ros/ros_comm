@@ -69,12 +69,16 @@ def xmlrpcapi(uri):
 
 
 def close_half_closed_sockets():
-    for proxy in _proxies.values():
-        transport = proxy("transport")
-        if transport._connection and transport._connection[1] is not None and transport._connection[1].sock is not None:
-            state = transport._connection[1].sock.getsockopt(socket.SOL_TCP, socket.TCP_INFO)
-            if state == 8:  # CLOSE_WAIT
-                transport.close()
+    try:
+        for proxy in _proxies.values():
+            transport = proxy("transport")
+            if transport._connection and transport._connection[1] is not None and transport._connection[1].sock is not None:
+                state = transport._connection[1].sock.getsockopt(socket.SOL_TCP, socket.TCP_INFO)
+                if state == 8: # CLOSE_WAIT
+                    transport.close()
+    except socket.error as e: # catch [Errno 92] Protocol not available
+        if e.args[0] is not 92:
+            raise e
 
 
 def remove_server_proxy(uri):
