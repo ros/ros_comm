@@ -119,6 +119,9 @@ add_library(roscpp
   src/libros/service.cpp
   src/libros/this_node.cpp
   src/libros/steady_timer.cpp
+  src/libros/shm_topic.cpp
+  src/libros/shm_publisher.cpp
+  src/libros/shm_subscriber.cpp
   )
 
 add_dependencies(roscpp ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -146,3 +149,4 @@ catkin_install_python(PROGRAMS
   rosbuild/scripts/gensrv_cpp.py
   rosbuild/scripts/msg_gen.py
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/rosbuild/scripts)
+
