@@ -114,7 +114,7 @@ def wait_for_service(service, timeout=None):
                   'callerid' : rospy.core.get_caller_id(),
                   'service': resolved_name }
             rosgraph.network.write_ros_handshake_header(s, h)
-            return True
+            return uri
         finally:
             if s is not None:
                 s.close()
@@ -126,7 +126,8 @@ def wait_for_service(service, timeout=None):
         timeout_t = time.time() + timeout
         while not rospy.core.is_shutdown() and time.time() < timeout_t:
             try:
-                if contact_service(resolved_name, timeout_t-time.time()):
+                uri = contact_service(resolved_name, timeout_t - time.time())
+                if uri:
                     if contact_failed:
                         rospy.core.loginfo("wait_for_service(%s): finally were able to contact [%s]"%(resolved_name, uri))
                     return
@@ -136,7 +137,7 @@ def wait_for_service(service, timeout=None):
                 raise 
             except: # service not actually up
                 contact_failed = True
-                rospy.core.logwarn_throttle(10, "wait_for_service(%s): failed to contact [%s], will keep trying"%(resolved_name, uri))
+                rospy.core.logwarn_throttle(10, "wait_for_service(%s): failed to contact, will keep trying"%resolved_name)
             time.sleep(0.3)
         if rospy.core.is_shutdown():
             raise ROSInterruptException("rospy shutdown")
@@ -145,7 +146,8 @@ def wait_for_service(service, timeout=None):
     else:
         while not rospy.core.is_shutdown():
             try:
-                if contact_service(resolved_name):
+                uri = contact_service(resolved_name)
+                if uri:
                     if contact_failed:
                         rospy.core.loginfo("wait_for_service(%s): finally were able to contact [%s]"%(resolved_name, uri))
                     return
@@ -155,7 +157,7 @@ def wait_for_service(service, timeout=None):
                 raise 
             except: # service not actually up
                 contact_failed = True
-                rospy.core.logwarn_throttle(10, "wait_for_service(%s): failed to contact [%s], will keep trying"%(resolved_name, uri))
+                rospy.core.logwarn_throttle(10, "wait_for_service(%s): failed to contact, will keep trying"%resolved_name)
             time.sleep(0.3)
         if rospy.core.is_shutdown():
             raise ROSInterruptException("rospy shutdown")
