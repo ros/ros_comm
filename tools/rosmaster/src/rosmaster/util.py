@@ -49,8 +49,8 @@ from defusedxml.xmlrpc import monkey_patch
 monkey_patch()
 del monkey_patch
 
-import socket
 import errno
+import socket
 
 _proxies = {} #cache ServerProxys
 def xmlrpcapi(uri):
@@ -79,7 +79,7 @@ def close_half_closed_sockets():
                 if e.args[0] is errno.ENOPROTOOPT:
                     return
                 raise
-            if state == 8: # CLOSE_WAIT
+            if state == 8:  # CLOSE_WAIT
                 transport.close()
 
 
