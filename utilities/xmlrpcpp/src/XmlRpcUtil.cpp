@@ -9,7 +9,6 @@
 # include <string.h>
 #endif
 
-#include "xmlrpcpp/XmlRpc.h"
 
 using namespace XmlRpc;
 
@@ -48,11 +47,11 @@ XmlRpcLogHandler* XmlRpcLogHandler::_logHandler = &defaultLogHandler;
 static class DefaultErrorHandler : public XmlRpcErrorHandler {
 public:
 
-#ifdef USE_WINDOWS_DEBUG
   void error(const char* msg) {
+#ifdef USE_WINDOWS_DEBUG
     OutputDebugString(msg); OutputDebugString("\n");
 #else
-  void error(const char*) {
+    std::cout << msg << std::endl;
 #endif  
     // As far as I can tell, throwing an exception here is a bug, unless
     // the intention is that the program should exit.  Throughout the code,
