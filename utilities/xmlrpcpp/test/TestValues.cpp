@@ -324,7 +324,6 @@ TEST(XmlRpc, testStruct) {
   XmlRpcValue structXml(csStructXml, &offset);
   EXPECT_EQ(struct1, structXml);
 
-  int i = 0;
   for (XmlRpcValue::iterator itr = struct1.begin(); itr != struct1.end();
        itr++) {
   }
@@ -446,7 +445,7 @@ TEST(XmpRpc, errors) {
 
   // Check that the exception that is thrown is populated correctly.
   try {
-    int err = (int)value;
+    (void)int(value);
   } catch (XmlRpcException& e) {
     EXPECT_EQ("type error", e.getMessage());
     EXPECT_EQ(-1, e.getCode());
