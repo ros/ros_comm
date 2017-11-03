@@ -14,7 +14,7 @@ find_package(BZip2 REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES rosbag_storage
-  CATKIN_DEPENDS roslz4
+  CATKIN_DEPENDS pluginlib roslz4
   DEPENDS console_bridge Boost
 )
 
