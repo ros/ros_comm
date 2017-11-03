@@ -14,6 +14,7 @@
   <author>Chris Morley</author>
   <author>Konstantin Pilipchuk</author>
   <author>Morgan Quigley</author>
+  <author>Austin Hendrix</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
