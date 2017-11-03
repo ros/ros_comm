@@ -130,7 +130,9 @@ TEST(AesCbcEncryptor, EncryptAndDecryptBag) {
     }
 
     // Write a message to an encrypted bag file
-    std::string bag_file_name = std::string(tmpnam(0));
+    char temp_dir_templ[] = "/tmp/bagXXXXXX";
+    char *temp_dir = mkdtemp(temp_dir_templ);
+    std::string bag_file_name = std::string(temp_dir) + "/foo.bag";
     rosbag::Bag bag(bag_file_name, rosbag::bagmode::Write);
     bag.setEncryptorPlugin("rosbag/AesCbcEncryptor", GPG_KEY_USER);
     std_msgs::String msg;
