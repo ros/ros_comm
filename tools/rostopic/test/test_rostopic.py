@@ -281,13 +281,19 @@ class TestRostopic(unittest.TestCase):
         # test main entry
         rostopic.rostopicmain([cmd, 'list'])
 
-        # test directly
+        # test through running command
         topics = ['/chatter', '/foo/chatter', '/bar/chatter', '/rosout', '/rosout_agg'] 
 
         with fakestdout() as b:
             rostopic.rostopicmain([cmd, 'list'])
             v = [x.strip() for x in b.getvalue().split('\n') if x.strip()]
             self.failIf(set(topics)-set(v))
+
+        # test through public function
+        topics = ['/chatter', '/foo/chatter', '/bar/chatter', '/rosout', '/rosout_agg'] 
+
+        v = rostopic.get_topic_list()
+        self.failIf(set(topics)-set(v))
 
         # publishers-only
         topics = ['/chatter', '/foo/chatter', '/bar/chatter', '/rosout', '/rosout_agg'] 
