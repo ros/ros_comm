@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../include/xmlrpcpp/XmlRpcValue.h"
+#include "xmlrpcpp/XmlRpcValue.h"
 
 #include <algorithm>
 #include <string>
