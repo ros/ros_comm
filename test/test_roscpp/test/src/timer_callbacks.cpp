@@ -74,16 +74,17 @@ class SteadyTimerHelper
     void callback(const SteadyTimerEvent& e)
     {
       bool first = last_call_.isZero();
-      last_call_ = e.current_real;
+      last_call_ = e.current_expired;
 
       if (!first)
       {
-        double time_error = e.current_real.toSec() - e.current_expected.toSec();
+        double time_error = e.current_expired.toSec() - e.current_expected.toSec();
         // Strict check if called early, loose check if called late.
         // Yes, this is very loose, but must pass in high-load, containerized/virtualized, contentious environments.
         if (time_error > 5.0 || time_error < -0.01)
         {
-          ROS_ERROR("Call came at wrong time (expected: %f, actual %f)", e.current_expected.toSec(), e.current_real.toSec());
+          ROS_ERROR("Call came at wrong time (expected: %f, expired: %f, callback: %f)",
+                    e.current_expected.toSec(), e.current_expired.toSec(), e.current_real.toSec());
           failed_ = true;
         }
       }
@@ -367,16 +368,17 @@ public:
   void callback(const WallTimerEvent& e)
   {
     bool first = last_call_.isZero();
-    last_call_ = e.current_real;
+    last_call_ = e.current_expired;
 
     if (!first)
     {
-      double time_error = e.current_real.toSec() - e.current_expected.toSec();
+      double time_error = e.current_expired.toSec() - e.current_expected.toSec();
       // Strict check if called early, loose check if called late.
       // Yes, this is very loose, but must pass in high-load, containerized/virtualized, contentious environments.
       if (time_error > 5.0 || time_error < -0.01)
       {
-        ROS_ERROR("Call came at wrong time (expected: %f, actual %f)", e.current_expected.toSec(), e.current_real.toSec());
+        ROS_ERROR("Call came at wrong time (expected: %f, expired: %f, callback: %f)",
+                  e.current_expected.toSec(), e.current_expired.toSec(), e.current_real.toSec());
         failed_ = true;
       }
     }
