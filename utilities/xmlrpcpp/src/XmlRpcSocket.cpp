@@ -197,7 +197,7 @@ XmlRpcSocket::accept(int fd)
 
 // Connect a socket to a server (from a client)
 bool
-XmlRpcSocket::connect(int fd, std::string& host, int port)
+XmlRpcSocket::connect(int fd, const std::string& host, int port)
 {
   sockaddr_storage ss;
   socklen_t ss_len;
@@ -207,9 +207,13 @@ XmlRpcSocket::connect(int fd, std::string& host, int port)
   struct addrinfo hints;
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_UNSPEC;
-  if (getaddrinfo(host.c_str(), NULL, &hints, &addr) != 0)
-  {
-    fprintf(stderr, "Couldn't find an %s address for [%s]\n", s_use_ipv6_ ? "AF_INET6" : "AF_INET", host.c_str());
+  int getaddr_err = getaddrinfo(host.c_str(), NULL, &hints, &addr);
+  if (0 != getaddr_err) {
+    if(getaddr_err == EAI_SYSTEM) {
+      XmlRpcUtil::error("Couldn't find an %s address for [%s]: %s\n", s_use_ipv6_ ? "AF_INET6" : "AF_INET", host.c_str(), XmlRpcSocket::getErrorMsg().c_str());
+    } else {
+      XmlRpcUtil::error("Couldn't find an %s address for [%s]: %s\n", s_use_ipv6_ ? "AF_INET6" : "AF_INET", host.c_str(), gai_strerror(getaddr_err));
+    }
     return false;
   }
 
@@ -251,7 +255,7 @@ XmlRpcSocket::connect(int fd, std::string& host, int port)
 
   if (!found)
   {
-    printf("Couldn't find an %s address for [%s]\n", s_use_ipv6_ ? "AF_INET6" : "AF_INET", host.c_str());
+    XmlRpcUtil::error("Couldn't find an %s address for [%s]\n", s_use_ipv6_ ? "AF_INET6" : "AF_INET", host.c_str());
     freeaddrinfo(addr);
     return false;
   }
@@ -259,16 +263,23 @@ XmlRpcSocket::connect(int fd, std::string& host, int port)
   // For asynch operation, this will return EWOULDBLOCK (windows) or
   // EINPROGRESS (linux) and we just need to wait for the socket to be writable...
   int result = ::connect(fd, (sockaddr*)&ss, ss_len);
+  bool success = true;
   if (result != 0 ) {
-	  int error = getError();
-	  if ( (error != EINPROGRESS) && error != EWOULDBLOCK) { // actually, should probably do a platform check here, EWOULDBLOCK on WIN32 and EINPROGRESS otherwise
-		    printf("::connect error = %d\n", getError());
-	  }
+    int error = getError();
+    // platform check here, EWOULDBLOCK on WIN32 and EINPROGRESS otherwise
+#if defined(_WINDOWS)
+    if (error != EWOULDBLOCK) {
+#else
+    if (error != EINPROGRESS) {
+#endif
+      XmlRpcUtil::error("::connect error = %s\n", getErrorMsg(error).c_str());
+      success = false;
+    }
   }
 
   freeaddrinfo(addr);
 
-  return result == 0 || nonFatalError();
+  return success;
 }
 
 
@@ -308,7 +319,7 @@ XmlRpcSocket::nbRead(int fd, std::string& s, bool *eof)
 
 // Write text to the specified socket. Returns false on error.
 bool
-XmlRpcSocket::nbWrite(int fd, std::string& s, int *bytesSoFar)
+XmlRpcSocket::nbWrite(int fd, const std::string& s, int *bytesSoFar)
 {
   int nToWrite = int(s.length()) - *bytesSoFar;
   char *sp = const_cast<char*>(s.c_str()) + *bytesSoFar;
@@ -372,18 +383,18 @@ int XmlRpcSocket::get_port(int socket)
 {
   sockaddr_storage ss;
   socklen_t ss_len = sizeof(ss);
-  getsockname(socket, (sockaddr *)&ss, &ss_len);
+  if(getsockname(socket, (sockaddr *)&ss, &ss_len) == 0) {
+    sockaddr_in *sin = (sockaddr_in *)&ss;
+    sockaddr_in6 *sin6 = (sockaddr_in6 *)&ss;
 
-  sockaddr_in *sin = (sockaddr_in *)&ss;
-  sockaddr_in6 *sin6 = (sockaddr_in6 *)&ss;
-  
-  switch (ss.ss_family)
-  {
-    case AF_INET:
-      return ntohs(sin->sin_port);
-    case AF_INET6:
-      return ntohs(sin6->sin6_port);
-  }  
+    switch (ss.ss_family)
+    {
+      case AF_INET:
+        return ntohs(sin->sin_port);
+      case AF_INET6:
+        return ntohs(sin6->sin6_port);
+    }
+  }
   return 0;
 }
 
