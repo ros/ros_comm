@@ -34,6 +34,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <utility>
 
 #include "rosbag/buffer.h"
 
@@ -69,6 +70,13 @@ void Buffer::ensureCapacity(uint32_t capacity) {
 
     buffer_ = (uint8_t*) realloc(buffer_, capacity_);
     assert(buffer_);
+}
+
+void Buffer::swap(Buffer& other) {
+    using std::swap;
+    swap(buffer_, other.buffer_);
+    swap(capacity_, other.capacity_);
+    swap(size_, other.size_);
 }
 
 } // namespace rosbag

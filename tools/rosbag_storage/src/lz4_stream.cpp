@@ -46,6 +46,7 @@ LZ4Stream::LZ4Stream(ChunkedFile* file)
     : Stream(file), block_size_id_(6) {
     buff_size_ = roslz4_blockSizeFromIndex(block_size_id_) + 64;
     buff_ = new char[buff_size_];
+    lz4s_.state = NULL;
 }
 
 LZ4Stream::~LZ4Stream() {
@@ -57,6 +58,10 @@ CompressionType LZ4Stream::getCompressionType() const {
 }
 
 void LZ4Stream::startWrite() {
+    if (lz4s_.state) {
+        throw BagException("cannot start writing to already opened lz4 stream");
+    }
+
     setCompressedIn(0);
 
     int ret = roslz4_compressStart(&lz4s_, block_size_id_);
@@ -71,6 +76,10 @@ void LZ4Stream::startWrite() {
 }
 
 void LZ4Stream::write(void* ptr, size_t size) {
+    if (!lz4s_.state) {
+        throw BagException("cannot write to unopened lz4 stream");
+    }
+
     lz4s_.input_left = size;
     lz4s_.input_next = (char*) ptr;
 
@@ -112,12 +121,20 @@ void LZ4Stream::writeStream(int action) {
 }
 
 void LZ4Stream::stopWrite() {
+    if (!lz4s_.state) {
+        throw BagException("cannot close unopened lz4 stream");
+    }
+
     writeStream(ROSLZ4_FINISH);
     setCompressedIn(0);
     roslz4_compressEnd(&lz4s_);
 }
 
 void LZ4Stream::startRead() {
+    if (lz4s_.state) {
+        throw BagException("cannot start reading from already opened lz4 stream");
+    }
+
     int ret = roslz4_decompressStart(&lz4s_);
     switch(ret) {
     case ROSLZ4_OK: break;
@@ -137,6 +154,10 @@ void LZ4Stream::startRead() {
 }
 
 void LZ4Stream::read(void* ptr, size_t size) {
+    if (!lz4s_.state) {
+        throw BagException("cannot read from unopened lz4 stream");
+    }
+
     // Setup stream by filling buffer with data from file
     int to_read = buff_size_ - lz4s_.input_left;
     char *input_start = buff_ + lz4s_.input_left;
@@ -181,6 +202,10 @@ void LZ4Stream::read(void* ptr, size_t size) {
 }
 
 void LZ4Stream::stopRead() {
+    if (!lz4s_.state) {
+        throw BagException("cannot close unopened lz4 stream");
+    }
+
     roslz4_decompressEnd(&lz4s_);
 }
 

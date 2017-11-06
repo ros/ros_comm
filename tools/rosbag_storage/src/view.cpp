@@ -59,6 +59,19 @@ View::iterator::iterator(View* view, bool end) : view_(view), view_revision_(0),
 
 View::iterator::iterator(const iterator& i) : view_(i.view_), iters_(i.iters_), view_revision_(i.view_revision_), message_instance_(NULL) { }
 
+View::iterator &View::iterator::operator=(iterator const& i) {
+    if (this != &i) {
+        view_ = i.view_;
+        iters_ = i.iters_;
+        view_revision_ = i.view_revision_;
+        if (message_instance_ != NULL) {
+            delete message_instance_;
+            message_instance_ = NULL;
+        }
+    }
+    return *this;
+}
+
 void View::iterator::populate() {
     assert(view_ != NULL);
 
@@ -123,7 +136,7 @@ void View::iterator::increment() {
     {
         std::multiset<IndexEntry>::const_iterator last_iter = iters_.back().iter;
     
-        while (iters_.back().iter == last_iter)
+        while (!iters_.empty() && iters_.back().iter == last_iter)
         {
             iters_.back().iter++;
             if (iters_.back().iter == iters_.back().range->end)
@@ -236,7 +249,7 @@ void View::addQuery(Bag const& bag, ros::Time const& start_time, ros::Time const
     if ((bag.getMode() & bagmode::Read) != bagmode::Read)
         throw BagException("Bag not opened for reading");
 
-	boost::function<bool(ConnectionInfo const*)> query = TrueQuery();
+    boost::function<bool(ConnectionInfo const*)> query = TrueQuery();
 
     queries_.push_back(new BagQuery(&bag, Query(query, start_time, end_time), bag.bag_revision_));
 

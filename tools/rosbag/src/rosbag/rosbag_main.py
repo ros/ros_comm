@@ -477,7 +477,7 @@ def check_cmd(argv):
     migrations = checkbag(mm, args[0])
        
     if len(migrations) == 0:
-        print('Bag file is up to date.')
+        print('Bag file does not need any migrations.')
         exit(0)
         
     print('The following migrations need to occur:')

@@ -181,38 +181,37 @@ class LoggingThrottle(object):
 _logging_throttle = LoggingThrottle()
 
 
-def _frame_record_to_caller_id(frame_record):
-    frame, _, lineno, _, code, _ = frame_record
+def _frame_to_caller_id(frame):
     caller_id = (
         inspect.getabsfile(frame),
-        lineno,
+        frame.f_lineno,
         frame.f_lasti,
     )
     return pickle.dumps(caller_id)
 
 
 def logdebug_throttle(period, msg):
-    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+    caller_id = _frame_to_caller_id(inspect.currentframe().f_back)
     _logging_throttle(caller_id, logdebug, period, msg)
 
 
 def loginfo_throttle(period, msg):
-    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+    caller_id = _frame_to_caller_id(inspect.currentframe().f_back)
     _logging_throttle(caller_id, loginfo, period, msg)
 
 
 def logwarn_throttle(period, msg):
-    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+    caller_id = _frame_to_caller_id(inspect.currentframe().f_back)
     _logging_throttle(caller_id, logwarn, period, msg)
 
 
 def logerr_throttle(period, msg):
-    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+    caller_id = _frame_to_caller_id(inspect.currentframe().f_back)
     _logging_throttle(caller_id, logerr, period, msg)
 
 
 def logfatal_throttle(period, msg):
-    caller_id = _frame_record_to_caller_id(inspect.stack()[1])
+    caller_id = _frame_to_caller_id(inspect.currentframe().f_back)
     _logging_throttle(caller_id, logfatal, period, msg)
 
 

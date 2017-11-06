@@ -63,8 +63,11 @@ typedef compression::CompressionType CompressionType;
 
 class ChunkedFile;
 
+class FileAccessor;
+
 class ROSBAG_DECL Stream
 {
+    friend class FileAccessor;
 public:
     Stream(ChunkedFile* file);
     virtual ~Stream();
@@ -108,6 +111,13 @@ private:
     boost::shared_ptr<Stream> uncompressed_stream_;
     boost::shared_ptr<Stream> bz2_stream_;
     boost::shared_ptr<Stream> lz4_stream_;
+};
+
+class FileAccessor {
+    friend class ChunkedFile;
+    static void setFile(Stream& a, ChunkedFile* file) {
+        a.file_ = file;
+    }
 };
 
 class ROSBAG_DECL UncompressedStream : public Stream
@@ -173,6 +183,8 @@ public:
     void decompress(uint8_t* dest, unsigned int dest_len, uint8_t* source, unsigned int source_len);
 
 private:
+    LZ4Stream(const LZ4Stream&);
+    LZ4Stream operator=(const LZ4Stream&);
     void writeStream(int action);
 
     char *buff_;

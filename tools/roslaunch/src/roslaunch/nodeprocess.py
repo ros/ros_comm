@@ -290,6 +290,12 @@ class LocalProcess(Process):
                 cwd = get_ros_root()
             else:
                 cwd = rospkg.get_ros_home()
+            if not os.path.exists(cwd):
+                try:
+                    os.makedirs(cwd)
+                except OSError:
+                    # exist_ok=True
+                    pass
 
             _logger.info("process[%s]: start w/ args [%s]", self.name, self.args)
             _logger.info("process[%s]: cwd will be [%s]", self.name, cwd)

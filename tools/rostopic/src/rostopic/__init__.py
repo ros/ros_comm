@@ -64,6 +64,12 @@ import rosgraph
 #TODO: lazy-import rospy or move rospy-dependent routines to separate location
 import rospy
 
+try:
+    long
+except NameError:
+    long = int
+
+
 class ROSTopicException(Exception):
     """
     Base exception class of rostopic-related errors
@@ -687,7 +693,7 @@ def _sub_str_plot_fields(val, f, field_filter):
     """recursive helper function for _str_plot_fields"""
     # CSV
     type_ = type(val)
-    if type_ in (bool, int, float) or \
+    if type_ in (bool, int, long, float) or \
            isinstance(val, genpy.TVal):
         return f
     # duck-type check for messages
@@ -708,7 +714,7 @@ def _sub_str_plot_fields(val, f, field_filter):
         val0 = val[0]
         type0 = type(val0)
         # no arrays of arrays
-        if type0 in (bool, int, float) or \
+        if type0 in (bool, int, long, float) or \
                isinstance(val0, genpy.TVal):
             return ','.join(["%s%s"%(f,x) for x in range(0,len(val))])
         elif _isstring_type(type0):
@@ -757,7 +763,7 @@ def _sub_str_plot(val, time_offset, field_filter):
     
     if type_ == bool:
         return '1' if val else '0'
-    elif type_ in (int, float) or \
+    elif type_ in (int, long, float) or \
            isinstance(val, genpy.TVal):
         if time_offset is not None and isinstance(val, genpy.Time):
             return str(val-time_offset)
@@ -783,7 +789,7 @@ def _sub_str_plot(val, time_offset, field_filter):
         type0 = type(val0)
         if type0 == bool:
             return ','.join([('1' if v else '0') for v in val])
-        elif type0 in (int, float) or \
+        elif type0 in (int, long, float) or \
                isinstance(val0, genpy.TVal):
             return ','.join([str(v) for v in val])
         elif _isstring_type(type0):
@@ -1482,11 +1488,7 @@ def _rostopic_cmd_hz(argv):
     if len(args) == 0:
         parser.error("topic must be specified")        
     try:
-        if options.window_size != -1:
-            import string
-            window_size = string.atoi(options.window_size)
-        else:
-            window_size = options.window_size
+        window_size = int(options.window_size)
     except:
         parser.error("window size must be an integer")
 
@@ -1534,11 +1536,7 @@ def _rostopic_cmd_bw(argv=sys.argv):
     if len(args) > 1:
         parser.error("you may only specify one input topic")
     try:
-        if options.window_size:
-            import string
-            window_size = string.atoi(options.window_size)
-        else:
-            window_size = options.window_size
+        window_size = int(options.window_size) if options.window_size is not None else None
     except:
         parser.error("window size must be an integer")
     topic = rosgraph.names.script_resolve_name('rostopic', args[0])
