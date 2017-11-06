@@ -2,6 +2,11 @@
 Changelog for package rosmaster
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* catch exception with `socket.TCP_INFO` on WSL (`#1212 <https://github.com/ros/ros_comm/issues/1212>`_, regression from 1.13.1)
+* close CLOSE_WAIT sockets by default (`#1104 <https://github.com/ros/ros_comm/issues/1104>`_)
+
 1.12.7 (2017-02-17)
 -------------------
 * add more logging to publisher update calls (`#979 <https://github.com/ros/ros_comm/issues/979>`_)

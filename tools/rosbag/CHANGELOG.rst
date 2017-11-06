@@ -2,6 +2,13 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix Python 3 compatibility (`#1150 <https://github.com/ros/ros_comm/issues/1150>`_)
+* fix handling connections without indices (`#1109 <https://github.com/ros/ros_comm/pull/1109>`_)
+* improve message of check command (`#1067 <https://github.com/ros/ros_comm/pull/1067>`_)
+* fix BZip2 inclusion (`#1016 <https://github.com/ros/ros_comm/pull/1016>`_)
+
 1.12.7 (2017-02-17)
 -------------------
 * throw exception instead of accessing invalid memory (`#971 <https://github.com/ros/ros_comm/pull/971>`_)

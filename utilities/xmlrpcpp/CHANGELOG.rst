@@ -2,6 +2,10 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* use poll() in favor of select() in the XmlRPCDispatcher (`#833 <https://github.com/ros/ros_comm/issues/833>`_)
+
 1.12.7 (2017-02-17)
 -------------------
 * move headers to include/xmlrpcpp (`#962 <https://github.com/ros/ros_comm/issues/962>`_)

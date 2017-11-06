@@ -2,6 +2,10 @@
 Changelog for package rosmsg
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix rosmsg show from bag (`#1006 <https://github.com/ros/ros_comm/pull/1006>`_)
+
 1.12.7 (2017-02-17)
 -------------------
 * add rosmsg info as alias of rosmsg show (`#941 <https://github.com/ros/ros_comm/issues/941>`_)

@@ -2,6 +2,15 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix parameter leaking into sibling scopes (`#1158 <https://github.com/ros/ros_comm/issues/1158>`_)
+* remove mention of rosmake from error message (`#1140 <https://github.com/ros/ros_comm/issues/1140>`_)
+* only launch core nodes if master was launched by roslaunch (`#1098 <https://github.com/ros/ros_comm/pull/1098>`_)
+* ensure pid file is removed on exit (`#1057 <https://github.com/ros/ros_comm/pull/1057>`_, `#1084 <https://github.com/ros/ros_comm/pull/1084>`_)
+* ensure cwd exists (`#1031 <https://github.com/ros/ros_comm/pull/1031>`_)
+* respect if/unless for roslaunch-check (`#998 <https://github.com/ros/ros_comm/pull/998>`_)
+
 1.12.7 (2017-02-17)
 -------------------
 * improve error message for invalid tags (`#989 <https://github.com/ros/ros_comm/pull/989>`_)
