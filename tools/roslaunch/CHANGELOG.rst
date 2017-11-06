@@ -2,8 +2,8 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.8 (2017-11-06)
+-------------------
 * fix parameter leaking into sibling scopes (`#1158 <https://github.com/ros/ros_comm/issues/1158>`_)
 * remove mention of rosmake from error message (`#1140 <https://github.com/ros/ros_comm/issues/1140>`_)
 * only launch core nodes if master was launched by roslaunch (`#1098 <https://github.com/ros/ros_comm/pull/1098>`_)

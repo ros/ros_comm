@@ -2,8 +2,8 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.8 (2017-11-06)
+-------------------
 * check clock publication neatly in publishtest (`#973 <https://github.com/ros/ros_comm/issues/973>`_)
 
 1.12.7 (2017-02-17)

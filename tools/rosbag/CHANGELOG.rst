@@ -2,8 +2,8 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.8 (2017-11-06)
+-------------------
 * fix Python 3 compatibility (`#1150 <https://github.com/ros/ros_comm/issues/1150>`_)
 * fix handling connections without indices (`#1109 <https://github.com/ros/ros_comm/pull/1109>`_)
 * improve message of check command (`#1067 <https://github.com/ros/ros_comm/pull/1067>`_)

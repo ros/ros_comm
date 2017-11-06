@@ -2,8 +2,8 @@
 Changelog for package rosbag_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.8 (2017-11-06)
+-------------------
 * check if bzfile\_ and lz4s\_ handle is valid before reading/writing/closing (`#1183 <https://github.com/ros/ros_comm/issues/1183>`_)
 * fix an out of bounds read in rosbag::View::iterator::increment() (`#1191 <https://github.com/ros/ros_comm/issues/1191>`_)
 * replace usage deprecated console_bridge macros (`#1149 <https://github.com/ros/ros_comm/issues/1149>`_)

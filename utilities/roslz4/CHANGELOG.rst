@@ -2,8 +2,8 @@
 Changelog for package roslz4
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.8 (2017-11-06)
+-------------------
 * replace deprecated lz4 function call (`#1136 <https://github.com/ros/ros_comm/issues/1136>`_)
 
 1.12.7 (2017-02-17)
