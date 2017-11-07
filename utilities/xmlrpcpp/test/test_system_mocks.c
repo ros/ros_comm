@@ -23,7 +23,9 @@
 
 // The auto-generated mocks here don't use their parameters, so we disable
 // that warning.
+#ifdef __GNUC__
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
 
 #define MOCK_SYSCALL(ret, name, ARG_TYPES, ARG_NAMES)                          \
   ret __real_##name ARG_TYPES;                                                 \
