@@ -2,6 +2,10 @@
 Changelog for package roslz4
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* revert replace deprecated lz4 function call (`#1220 <https://github.com/ros/ros_comm/issues/1220>`_, regression from 1.12.8 on Debian Jessie)
+
 1.12.10 (2017-11-06)
 --------------------
 
