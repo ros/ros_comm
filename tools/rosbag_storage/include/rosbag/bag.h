@@ -62,7 +62,13 @@
 
 #include "console_bridge/console.h"
 #if defined logDebug
-# undef logDebug
+# ifdef CONSOLE_BRIDGE_logDebug
+#  undef logDebug
+# else
+// Remove this when no longer supporting platforms with libconsole-bridge-dev < 0.3.0,
+// in particular Debian Jessie: https://packages.debian.org/jessie/libconsole-bridge-dev
+#  define CONSOLE_BRIDGE_logDebug logDebug
+# endif
 #endif
 #if defined logInform
 # undef logInform
@@ -71,13 +77,13 @@
 # undef logWarn
 #endif
 #if defined logError
-# undef logError
-#endif
-
+# ifdef CONSOLE_BRIDGE_logError
+#  undef logError
+# else
 // Remove this when no longer supporting platforms with libconsole-bridge-dev < 0.3.0,
 // in particular Debian Jessie: https://packages.debian.org/jessie/libconsole-bridge-dev
-#ifndef CONSOLE_BRIDGE_logDebug
-  #define CONSOLE_BRIDGE_logDebug logDebug
+#  define CONSOLE_BRIDGE_logError logError
+# endif
 #endif
 
 namespace rosbag {
