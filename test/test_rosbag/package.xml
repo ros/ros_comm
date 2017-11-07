@@ -1,6 +1,6 @@
 <package>
   <name>test_rosbag</name>
-  <version>1.12.9</version>
+  <version>1.12.10</version>
   <description>
     A package containing the unit tests for rosbag.
   </description>

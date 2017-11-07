@@ -2,8 +2,8 @@
 Changelog for package rosbag_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.10 (2017-11-06)
+--------------------
 * fix compatibility with libconsole-bridge in Jessie, take 2
 
 1.12.9 (2017-11-06)
