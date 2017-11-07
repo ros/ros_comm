@@ -66,6 +66,7 @@ public:
   ros::NodeHandle node_;
   ros::Subscriber rosout_sub_;
   ros::Publisher agg_pub_;
+  bool omit_topics_;
 
   Rosout() :
     log_file_name_(ros::file_log::getLogDirectory() + "/rosout.log"),
@@ -73,7 +74,8 @@ public:
     max_file_size_(100*1024*1024),
     current_file_size_(0),
     max_backup_index_(10),
-    current_backup_index_(0)
+    current_backup_index_(0),
+    omit_topics_(false)
   {
     init();
   }
@@ -112,9 +114,10 @@ public:
 
     rosout_sub_ = node_.subscribe("/rosout", 0, &Rosout::rosoutCallback, this);
     std::cout << "subscribed to /rosout" << std::endl;
+
   }
 
-  void rosoutCallback(const rosgraph_msgs::Log::ConstPtr& msg)
+    void rosoutCallback(const rosgraph_msgs::Log::ConstPtr& msg)
   {
     agg_pub_.publish(msg);
 
@@ -144,10 +147,10 @@ public:
     ss << msg->name << " ";
     ss << "[" << msg->file << ":" << msg->line << "(" << msg->function << ")] ";
 
-    // check parameter server for omit_topics_from_logs flag
-    int omit_topics_from_logs;
-    node_.param("/rosout/omit_topics_from_logs", omit_topics_from_logs, 0);
-    if (!omit_topics_from_logs)
+    // check parameter server for omit_topics flag and set class member
+    node_.getParamCached("/rosout/omit_topics", omit_topics_);
+
+    if (!omit_topics_)
     {
       ss << "[topics: ";
       std::vector<std::string>::const_iterator it = msg->topics.begin();
