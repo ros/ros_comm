@@ -116,7 +116,7 @@ public:
     std::cout << "subscribed to /rosout" << std::endl;
   }
 
-    void rosoutCallback(const rosgraph_msgs::Log::ConstPtr& msg)
+  void rosoutCallback(const rosgraph_msgs::Log::ConstPtr& msg)
   {
     agg_pub_.publish(msg);
 
