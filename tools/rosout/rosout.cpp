@@ -114,7 +114,6 @@ public:
 
     rosout_sub_ = node_.subscribe("/rosout", 0, &Rosout::rosoutCallback, this);
     std::cout << "subscribed to /rosout" << std::endl;
-
   }
 
     void rosoutCallback(const rosgraph_msgs::Log::ConstPtr& msg)
