@@ -184,9 +184,9 @@ pollfd_vector_ptr poll_sockets(int epfd, socket_pollfd *fds, nfds_t nfds, int ti
 	socket_fd_t max_fd;
 	int rc;
 	nfds_t i;
-        boost::shared_ptr<std::vector<socket_pollfd> > ofds;
+	boost::shared_ptr<std::vector<socket_pollfd> > ofds;
 
-        UNUSED(epfd);
+	UNUSED(epfd);
 
 	if (fds == NULL) {
 		errno = EFAULT;
@@ -247,8 +247,8 @@ pollfd_vector_ptr poll_sockets(int epfd, socket_pollfd *fds, nfds_t nfds, int ti
 	if (rc < 0) {
 		return ofds;
 	}
-        ofds.reset(new std::vector<socket_pollfd>);
-        if ( rc == 0 ) {
+	ofds.reset(new std::vector<socket_pollfd>);
+	if ( rc == 0 ) {
 		return ofds;
 	}
 
@@ -294,59 +294,61 @@ pollfd_vector_ptr poll_sockets(int epfd, socket_pollfd *fds, nfds_t nfds, int ti
 		} else {
 				fds[i].revents = POLLNVAL;
 		}
-                ofds->push_back(fds[i]);
+		ofds->push_back(fds[i]);
 	}
 	return ofds;
 #elif defined (HAVE_EPOLL)
-        UNUSED(nfds);
-        UNUSED(fds);
-        struct epoll_event ev[nfds];
-        pollfd_vector_ptr ofds;
+	UNUSED(nfds);
+	UNUSED(fds);
+	struct epoll_event ev[nfds];
+	pollfd_vector_ptr ofds;
 
-        int fd_cnt = ::epoll_wait(epfd, ev, nfds, timeout);
+	int fd_cnt = ::epoll_wait(epfd, ev, nfds, timeout);
 
-        if (fd_cnt < 0)
-        {
-          // EINTR means that we got interrupted by a signal, and is not an error
-          if(errno != EINTR) {
-            ROS_ERROR("Error in epoll_wait! %s", strerror(errno));
-            ofds.reset();
-          }
-        }
-        else
-        {
-          ofds.reset(new std::vector<socket_pollfd>);
-          for (int i = 0; i < fd_cnt; i++)
-          {
-            socket_pollfd pfd;
-            pfd.fd = ev[i].data.fd;
-            pfd.revents = ev[i].events;
-            ofds->push_back(pfd);
-          }
-        }
-        return ofds;
+	if (fd_cnt < 0)
+	{
+	// EINTR means that we got interrupted by a signal, and is not an error
+		if(errno != EINTR) {
+			ROS_ERROR("Error in epoll_wait! %s", strerror(errno));
+			ofds.reset();
+		}
+	}
+	else
+	{
+		ofds.reset(new std::vector<socket_pollfd>);
+		for (int i = 0; i < fd_cnt; i++)
+		{
+			socket_pollfd pfd;
+			pfd.fd = ev[i].data.fd;
+			pfd.revents = ev[i].events;
+			ofds->push_back(pfd);
+		}
+	}
+	return ofds;
 #else
-        UNUSED(epfd);
-        pollfd_vector_ptr ofds(new std::vector<socket_pollfd>);
-        // use an existing poll implementation
-        int result = poll(fds, nfds, timeout);
-        if ( result < 0 ) {
-          // EINTR means that we got interrupted by a signal, and is not an error
-          if(errno != EINTR) {
-            ROS_ERROR("Error in poll! %s", strerror(errno));
-            ofds.reset();
-          }
-        } else {
-          for (nfds_t i = 0; i < nfds; i++)
-          {
-            if (fds[i].revents)
-            {
-              ofds->push_back(fds[i]);
-              fds[i].revents = 0;
-            }
-          }
-        }
-        return ofds;
+	UNUSED(epfd);
+	pollfd_vector_ptr ofds(new std::vector<socket_pollfd>);
+	// use an existing poll implementation
+	int result = poll(fds, nfds, timeout);
+	if ( result < 0 )
+	{
+		// EINTR means that we got interrupted by a signal, and is not an error
+		if(errno != EINTR)
+		{
+			ROS_ERROR("Error in poll! %s", strerror(errno));
+			ofds.reset();
+		}
+	} else {
+		for (nfds_t i = 0; i < nfds; i++)
+		{
+			if (fds[i].revents)
+			{
+				ofds->push_back(fds[i]);
+				fds[i].revents = 0;
+			}
+		}
+	}
+	return ofds;
 #endif // poll_sockets functions
 }
 /*****************************************************************************
