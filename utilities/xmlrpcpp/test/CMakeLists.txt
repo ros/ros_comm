@@ -3,6 +3,20 @@ if(TARGET xmlrpcvalue_base64)
   target_link_libraries(xmlrpcvalue_base64 xmlrpcpp)
 endif()
 
+add_library(mock_socket mock_socket.cpp)
+
+catkin_add_gtest(test_client
+  test_client.cpp
+  ../src/XmlRpcClient.cpp
+  ../src/XmlRpcValue.cpp
+  ../src/XmlRpcUtil.cpp
+  ../src/XmlRpcDispatch.cpp
+  ../src/XmlRpcSource.cpp
+  ../libb64/src/cdecode.c
+  ../libb64/src/cencode.c
+)
+target_link_libraries(test_client mock_socket)
+
 if(NOT WIN32)
   catkin_add_gtest(test_socket
     test_socket.cpp
