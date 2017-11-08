@@ -38,6 +38,7 @@
 #include "ros/topic_manager.h"
 #include "ros/advertise_options.h"
 #include "ros/names.h"
+#include "ros/param.h"
 
 #include <rosgraph_msgs/Log.h>
 
@@ -45,7 +46,7 @@ namespace ros
 {
 
 ROSOutAppender::ROSOutAppender()
-: shutting_down_(false)
+  : shutting_down_(false)
 , publish_thread_(boost::bind(&ROSOutAppender::logThread, this))
 {
   AdvertiseOptions ops;
@@ -102,7 +103,18 @@ void ROSOutAppender::log(::ros::console::Level level, const char* str, const cha
   msg->file = file;
   msg->function = function;
   msg->line = line;
-  this_node::getAdvertisedTopics(msg->topics);
+  
+  // check parameter server/cache for omit_topics flag
+  ros::param::getCached("/rosclient/omit_topics", omit_topics_);
+
+  msg->name = omit_topics_;
+
+  if (!omit_topics_){
+    this_node::getAdvertisedTopics(msg->topics);
+  }
+  else {
+    msg->level = rosgraph_msgs::Log::FATAL;
+  }
 
   if (level == ::ros::console::levels::Fatal || level == ::ros::console::levels::Error)
   {
