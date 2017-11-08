@@ -85,7 +85,20 @@ def _rosout(level, msg, fname, line, func):
                 try:
                     _in_rosout = True
                     msg = str(msg)
-                    topics = get_topic_manager().get_topics()
+
+                    # check parameter server/cache for omit_topics flag
+                    # the same parameter is checked in rosout_appender.cpp for the same purpose
+                    # parameter accesses are cached automatically in python
+                    if rospy.has_param("/rosout_disable_topics_generation"):
+                        disable_topics_ = rospy.get_param("/rosout_disable_topics_generation")
+                    else:
+                        disable_topics_ = False
+
+                    if not disable_topics_:
+                        topics = get_topic_manager().get_topics()
+                    else:
+                        topics = ""
+
                     l = Log(level=level, name=str(rospy.names.get_caller_id()), msg=str(msg), topics=topics, file=fname, line=line, function=func)
                     l.header.stamp = Time.now()
                     _rosout_pub.publish(l)
