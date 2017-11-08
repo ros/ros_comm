@@ -138,7 +138,7 @@ namespace ros {
   typedef struct pollfd socket_pollfd;
 #endif
 
-  typedef boost::shared_ptr<std::vector<socket_pollfd> > pollfd_vector_ptr;
+typedef boost::shared_ptr<std::vector<socket_pollfd> > pollfd_vector_ptr;
 
 /*****************************************************************************
 ** Functions
