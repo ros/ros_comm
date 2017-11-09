@@ -75,6 +75,7 @@ protected:
   boost::mutex queue_mutex_;
   boost::condition_variable queue_condition_;
   bool shutting_down_;
+  bool omit_topics_;
 
   boost::thread publish_thread_;
 };
