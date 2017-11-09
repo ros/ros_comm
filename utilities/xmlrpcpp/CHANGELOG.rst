@@ -2,6 +2,11 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add unit tests and bug fixes for XmlRpcSocket (`#1218 <https://github.com/ros/ros_comm/issues/1218>`_)
+* add tests for XmlRpcValue and XML conversion (`#1216 <https://github.com/ros/ros_comm/issues/1216>`_)
+
 1.13.4 (2017-11-02)
 -------------------
 
