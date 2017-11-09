@@ -46,7 +46,7 @@ namespace ros
 {
 
 ROSOutAppender::ROSOutAppender()
-  : shutting_down_(false)
+: shutting_down_(false)
 , publish_thread_(boost::bind(&ROSOutAppender::logThread, this))
 {
   AdvertiseOptions ops;
