@@ -107,13 +107,8 @@ void ROSOutAppender::log(::ros::console::Level level, const char* str, const cha
   // check parameter server/cache for omit_topics flag
   ros::param::getCached("/rosclient/omit_topics", omit_topics_);
 
-  msg->name = omit_topics_;
-
   if (!omit_topics_){
     this_node::getAdvertisedTopics(msg->topics);
-  }
-  else {
-    msg->level = rosgraph_msgs::Log::FATAL;
   }
 
   if (level == ::ros::console::levels::Fatal || level == ::ros::console::levels::Error)
