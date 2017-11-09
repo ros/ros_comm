@@ -328,12 +328,7 @@ XmlRpcClient::generateHeader(size_t length) const
   header += buff;
   header += "Content-Type: text/xml\r\nContent-length: ";
 
-  // Windows and glibc have different modifier flags for printing size_t
-#ifdef _MSC_VER
-  snprintf(buff,40,"%Id\r\n\r\n", length);
-#else
   snprintf(buff,40,"%zd\r\n\r\n", length);
-#endif
 
   return header + buff;
 }
