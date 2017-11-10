@@ -80,7 +80,7 @@ namespace XmlRpc {
     virtual bool setupConnection();
 
     virtual bool generateRequest(const char* method, XmlRpcValue const& params);
-    virtual std::string generateHeader(std::string const& body);
+    virtual std::string generateHeader(size_t length) const;
     virtual bool writeRequest();
     virtual bool readHeader();
     virtual bool readResponse();
@@ -89,6 +89,8 @@ namespace XmlRpc {
     // Possible IO states for the connection
     enum ClientConnectionState { NO_CONNECTION, CONNECTING, WRITE_REQUEST, READ_HEADER, READ_RESPONSE, IDLE };
     ClientConnectionState _connectionState;
+
+    static const char * connectionStateStr(ClientConnectionState state);
 
     // Server location
     std::string _host;
@@ -107,6 +109,8 @@ namespace XmlRpc {
     // Number of times the client has attempted to send the request
     int _sendAttempts;
 
+    // NOTE(austin): Having multiple variables that imply that the fd is valid
+    //               smells funny.
     // Number of bytes of the request that have been written to the socket so far
     int _bytesWritten;
 
