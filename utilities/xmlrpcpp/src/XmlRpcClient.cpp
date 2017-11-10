@@ -328,7 +328,7 @@ XmlRpcClient::generateHeader(size_t length) const
   header += buff;
   header += "Content-Type: text/xml\r\nContent-length: ";
 
-  snprintf(buff,40,"%zd\r\n\r\n", length);
+  snprintf(buff,40,"%zu\r\n\r\n", length);
 
   return header + buff;
 }
