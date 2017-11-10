@@ -103,7 +103,7 @@ void getGpgKey(gpgme_ctx_t& ctx, std::string const& user, gpgme_key_t& key) {
  * This method encrypts the given string using the GPG key owned by the specified user.
  * This method throws BagException in case of errors.
  */
-static std::string encryptStringGpg(std::string const& user, std::basic_string<unsigned char> const& input) {
+static std::string encryptStringGpg(std::string& user, std::basic_string<unsigned char> const& input) {
     gpgme_ctx_t ctx;
     gpgme_error_t err = gpgme_new(&ctx);
     if (err) {
@@ -112,6 +112,9 @@ static std::string encryptStringGpg(std::string const& user, std::basic_string<u
 
     gpgme_key_t keys[2] = {NULL, NULL};
     getGpgKey(ctx, user, keys[0]);
+    if (user == std::string("*")) {
+        user = std::string(keys[0]->uids->name);
+    }
 
     gpgme_data_t input_data;
     err = gpgme_data_new_from_mem(&input_data, reinterpret_cast<const char*>(input.c_str()), input.length(), 1);
@@ -215,6 +218,7 @@ static std::string readHeaderField(ros::M_string const& header_fields, std::stri
 }
 
 void AesCbcEncryptor::initialize(rosbag::Bag const& bag, std::string const& gpg_key_user) {
+    // GPGME must be initialized even when reading
     initGpgme();
     // Encryption user can be set only when writing a bag file
     if (bag.getMode() != rosbag::bagmode::Write) {

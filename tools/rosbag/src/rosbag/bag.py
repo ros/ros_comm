@@ -95,6 +95,13 @@ class ROSBagUnindexedException(ROSBagException):
     def __init__(self):
         ROSBagException.__init__(self, 'Unindexed bag')
 
+class ROSBagEncryptNotSupportedException(ROSBagException):
+    """
+    Exception raised when encryption is not supported.
+    """
+    def __init__(self, value):
+        ROSBagException.__init__(self, value)
+
 class Compression:
     """
     Allowable compression types
@@ -2308,6 +2315,8 @@ class _BagReader200(_BagReader):
             if not self.bag._skip_index:
                 self._read_connection_index_records()
 
+        except ROSBagEncryptNotSupportedException:
+            raise
         except Exception as ex:
             raise ROSBagUnindexedException()
 
@@ -2346,6 +2355,13 @@ class _BagReader200(_BagReader):
         self.bag._index_data_pos   = _read_uint64_field(header, 'index_pos')
         self.bag._chunk_count      = _read_uint32_field(header, 'chunk_count')
         self.bag._connection_count = _read_uint32_field(header, 'conn_count')
+        try:
+            encryptor = _read_str_field(header, 'encryptor')
+            if encryptor and encryptor != 'rosbag/NoEncryptor':
+                raise ROSBagEncryptNotSupportedException('Encrypted bag cannot be read.  Decrypt the bag first using "rosbag decrypt"')
+        except ROSBagFormatException:
+            # If encryptor header is not found, keep going
+            pass
 
         _skip_sized(self.bag._file)  # skip over the record data, i.e. padding
 

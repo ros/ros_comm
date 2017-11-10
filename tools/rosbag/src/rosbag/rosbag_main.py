@@ -47,7 +47,7 @@ except ImportError:
 import roslib.message
 import roslib.packages
 
-from .bag import Bag, Compression, ROSBagException, ROSBagFormatException, ROSBagUnindexedException
+from .bag import Bag, Compression, ROSBagException, ROSBagFormatException, ROSBagUnindexedException, ROSBagEncryptNotSupportedException
 from .migration import MessageMigrator, fixbag2, checkbag
 
 def print_trans(old, new, indent):
@@ -167,6 +167,8 @@ def info_cmd(argv):
             if i < len(args) - 1:
                 print('---')
         
+        except ROSBagEncryptNotSupportedException as ex:
+            print('ERROR: %s' % str(ex), file=sys.stderr)
         except ROSBagUnindexedException as ex:
             print('ERROR bag unindexed: %s.  Run rosbag reindex.' % arg,
                   file=sys.stderr)
@@ -332,6 +334,9 @@ The following variables are available:
     
     try:
         inbag = Bag(inbag_filename)
+    except ROSBagEncryptNotSupportedException as ex:
+        print('ERROR: %s' % str(ex), file=sys.stderr)
+        return
     except ROSBagUnindexedException as ex:
         print('ERROR bag unindexed: %s.  Run rosbag reindex.' % inbag_filename, file=sys.stderr)
         return
@@ -429,6 +434,9 @@ def fix_cmd(argv):
     
     try:
         migrations = fixbag2(migrator, inbag_filename, outname, options.force)
+    except ROSBagEncryptNotSupportedException as ex:
+        print('ERROR: %s' % str(ex), file=sys.stderr)
+        return
     except ROSBagUnindexedException as ex:
         print('ERROR bag unindexed: %s.  Run rosbag reindex.' % inbag_filename,
               file=sys.stderr)
@@ -476,6 +484,9 @@ def check_cmd(argv):
     # First check that the bag is not unindexed 
     try:
         Bag(args[0])
+    except ROSBagEncryptNotSupportedException as ex:
+        print('ERROR: %s' % str(ex), file=sys.stderr)
+        return
     except ROSBagUnindexedException as ex:
         print('ERROR bag unindexed: %s.  Run rosbag reindex.' % args[0], file=sys.stderr)
         return
@@ -557,7 +568,7 @@ def compress_cmd(argv):
 
     op = lambda inbag, outbag, quiet: change_compression_op(inbag, outbag, options.compression, options.quiet)
 
-    bag_op(args, False, lambda b: False, op, options.output_dir, options.force, options.quiet)
+    bag_op(args, False, True, lambda b: False, op, options.output_dir, options.force, options.quiet)
 
 def decompress_cmd(argv):
     parser = optparse.OptionParser(usage='rosbag decompress [options] BAGFILE1 [BAGFILE2 ...]',
@@ -573,7 +584,7 @@ def decompress_cmd(argv):
     
     op = lambda inbag, outbag, quiet: change_compression_op(inbag, outbag, Compression.NONE, options.quiet)
     
-    bag_op(args, False, lambda b: False, op, options.output_dir, options.force, options.quiet)
+    bag_op(args, False, True, lambda b: False, op, options.output_dir, options.force, options.quiet)
 
 def reindex_cmd(argv):
     parser = optparse.OptionParser(usage='rosbag reindex [options] BAGFILE1 [BAGFILE2 ...]',
@@ -589,7 +600,7 @@ def reindex_cmd(argv):
     
     op = lambda inbag, outbag, quiet: reindex_op(inbag, outbag, options.quiet)
 
-    bag_op(args, True, lambda b: b.version > 102, op, options.output_dir, options.force, options.quiet)
+    bag_op(args, True, True, lambda b: b.version > 102, op, options.output_dir, options.force, options.quiet)
 
 def encrypt_cmd(argv):
     parser = optparse.OptionParser(usage='rosbag encrypt [options] BAGFILE1 [BAGFILE2 ...]',
@@ -608,7 +619,7 @@ def encrypt_cmd(argv):
 
     op = lambda inbag, outbag, quiet: change_encryption_op(inbag, outbag, options.plugin, options.param, options.compression, options.quiet)
 
-    bag_op(args, False, lambda b: False, op, options.output_dir, options.force, options.quiet)
+    bag_op(args, False, True, lambda b: False, op, options.output_dir, options.force, options.quiet)
 
 def decrypt_cmd(argv):
     parser = optparse.OptionParser(usage='rosbag decrypt [options] BAGFILE1 [BAGFILE2 ...]',
@@ -625,24 +636,27 @@ def decrypt_cmd(argv):
 
     op = lambda inbag, outbag, quiet: change_encryption_op(inbag, outbag, 'rosbag/NoEncryptor', '*', options.compression, options.quiet)
     # Note the second paramater is True: Python Bag class cannot read index information from encrypted bag files
-    bag_op(args, True, lambda b: False, op, options.output_dir, options.force, options.quiet)
+    bag_op(args, True, False, lambda b: False, op, options.output_dir, options.force, options.quiet)
 
-def bag_op(inbag_filenames, allow_unindexed, copy_fn, op, output_dir=None, force=False, quiet=False):
+def bag_op(inbag_filenames, allow_unindexed, open_inbag, copy_fn, op, output_dir=None, force=False, quiet=False):
     for inbag_filename in inbag_filenames:
-        # Check we can read the file
-        try:
-            inbag = Bag(inbag_filename, 'r', allow_unindexed=allow_unindexed)
-        except ROSBagUnindexedException:
-            print('ERROR bag unindexed: %s.  Run rosbag reindex.' % inbag_filename, file=sys.stderr)
-            continue
-        except (ROSBagException, IOError) as ex:
-            print('ERROR reading %s: %s' % (inbag_filename, str(ex)), file=sys.stderr)
-            continue
+        if open_inbag:
+            # Check we can read the file
+            try:
+                inbag = Bag(inbag_filename, 'r', allow_unindexed=allow_unindexed)
+            except ROSBagUnindexedException:
+                print('ERROR bag unindexed: %s.  Run rosbag reindex.' % inbag_filename, file=sys.stderr)
+                continue
+            except (ROSBagException, IOError) as ex:
+                print('ERROR reading %s: %s' % (inbag_filename, str(ex)), file=sys.stderr)
+                continue
 
-        # Determine whether we should copy the bag    
-        copy = copy_fn(inbag)
-        
-        inbag.close()
+            # Determine whether we should copy the bag
+            copy = copy_fn(inbag)
+
+            inbag.close()
+        else:
+            copy = False
 
         # Determine filename for output bag
         if output_dir is None:
@@ -678,30 +692,51 @@ def bag_op(inbag_filenames, allow_unindexed, copy_fn, op, output_dir=None, force
                 source_filename = inbag_filename
 
         try:
-            inbag = Bag(source_filename, 'r', allow_unindexed=allow_unindexed)
+            if open_inbag:
+                inbag = Bag(source_filename, 'r', allow_unindexed=allow_unindexed)
 
-            # Open the output bag file for writing
-            try:
-                if copy:
-                    outbag = Bag(outbag_filename, 'a', allow_unindexed=allow_unindexed)
-                else:
-                    outbag = Bag(outbag_filename, 'w')
-            except (ROSBagException, IOError) as ex:
-                print('ERROR writing to %s: %s' % (outbag_filename, str(ex)), file=sys.stderr)
-                inbag.close()
-                continue
+                # Open the output bag file for writing
+                try:
+                    if copy:
+                        outbag = Bag(outbag_filename, 'a', allow_unindexed=allow_unindexed)
+                    else:
+                        outbag = Bag(outbag_filename, 'w')
+                except (ROSBagException, IOError) as ex:
+                    print('ERROR writing to %s: %s' % (outbag_filename, str(ex)), file=sys.stderr)
+                    inbag.close()
+                    continue
 
-            # Perform the operation
-            try:
-                op(inbag, outbag, quiet=quiet)
-            except ROSBagException as ex:
-                print('\nERROR operating on %s: %s' % (source_filename, str(ex)), file=sys.stderr)
-                inbag.close()
+                # Perform the operation
+                try:
+                    op(inbag, outbag, quiet=quiet)
+                except ROSBagException as ex:
+                    print('\nERROR operating on %s: %s' % (source_filename, str(ex)), file=sys.stderr)
+                    inbag.close()
+                    outbag.close()
+                    continue
+
                 outbag.close()
-                continue
-                
-            outbag.close()
-            inbag.close()
+                inbag.close()
+            else:
+                # Open the output bag file for writing
+                try:
+                    if copy:
+                        outbag = Bag(outbag_filename, 'a', allow_unindexed=allow_unindexed)
+                    else:
+                        outbag = Bag(outbag_filename, 'w')
+                except (ROSBagException, IOError) as ex:
+                    print('ERROR writing to %s: %s' % (outbag_filename, str(ex)), file=sys.stderr)
+                    continue
+
+                # Perform the operation
+                try:
+                    op(source_filename, outbag, quiet=quiet)
+                except ROSBagException as ex:
+                    print('\nERROR operating on %s: %s' % (source_filename, str(ex)), file=sys.stderr)
+                    outbag.close()
+                    continue
+
+                outbag.close()
 
         except KeyboardInterrupt:
             if backup_filename is not None:
@@ -767,6 +802,8 @@ def reindex_op(inbag, outbag, quiet):
             try:
                 for offset in outbag.reindex():
                     pass
+            except ROSBagEncryptNotSupportedException as ex:
+                raise
             except:
                 pass
         else:
@@ -774,6 +811,8 @@ def reindex_op(inbag, outbag, quiet):
             try:
                 for offset in outbag.reindex():
                     meter.step(offset)
+            except ROSBagEncryptNotSupportedException as ex:
+                raise
             except:
                 pass
             meter.finish()
@@ -786,7 +825,10 @@ def change_encryption_op(inbag, outbag, plugin, param, compression, quiet):
     if not encryptpath:
         parser.error("Cannot find rosbag/encrypt executable")
     cmd = [encryptpath[0]]
-    cmd.extend([inbag.filename])
+    if type(inbag) is str:
+        cmd.extend([inbag])
+    else:
+        cmd.extend([inbag.filename])
     cmd.extend(['-o', outbag.filename])
     cmd.extend(['-p', plugin])
     cmd.extend(['-r', param])
