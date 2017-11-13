@@ -45,32 +45,6 @@
 // these, so the original symbols are available as __real_xxx and any uses of
 // those symbols instead use __wrap_xxx
 extern "C" {
-int __real_select(int nfds,
-    fd_set* readfds,
-    fd_set* writefds,
-    fd_set* exceptfds,
-    struct timeval* timeout);
-
-int (*fake_select)(int nfds,
-                   fd_set* readfds,
-                   fd_set* writefds,
-                   fd_set* exceptfds,
-                   struct timeval* timeout) = 0;
-
-// Intercept hook for select that executes fake_select if it is set, and
-// otherwise calls the actual __select
-int __wrap_select(int nfds,
-           fd_set* readfds,
-           fd_set* writefds,
-           fd_set* exceptfds,
-           struct timeval* timeout) {
-  if (fake_select) {
-    return fake_select(nfds, readfds, writefds, exceptfds, timeout);
-  } else {
-    return __real_select(nfds, readfds, writefds, exceptfds, timeout);
-  }
-}
-
 // Mock for poll
 int __real_poll(struct pollfd *fds, nfds_t nfds, int timeout);
 
@@ -84,117 +58,6 @@ int __wrap_poll(struct pollfd *fds, nfds_t nfds, int timeout) {
   }
 }
 
-}
-
-// Timeval comparator so that EXPECT_EQ works for timevals.
-bool operator==(struct timeval t1, struct timeval t2) {
-  return t1.tv_sec == t2.tv_sec && t1.tv_usec == t2.tv_usec;
-}
-
-// gtest print operator for timeval so that we get good messages if a timeval
-// comparison fails.
-void PrintTo(struct timeval tv, std::ostream *os) {
-  *os << "{ .tv_sec = " << tv.tv_sec << ", .tv_usec = " << tv.tv_usec << "}";
-}
-
-int select_calls = 0;
-int select_ret = 0;
-int select_errno = 0;
-int select_nfds = 0;
-struct timeval select_timeout;
-std::set<int> select_readin;
-std::set<int> select_writein;
-std::set<int> select_exceptin;
-std::set<int> select_readout;
-std::set<int> select_writeout;
-std::set<int> select_exceptout;
-int mock_select(int nfds,
-    fd_set* readfds,
-    fd_set* writefds,
-    fd_set* exceptfds,
-    struct timeval* timeout) {
-  EXPECT_EQ(1, select_calls);
-  select_calls--;
-
-  EXPECT_GE(FD_SETSIZE, nfds);
-  EXPECT_EQ(select_nfds, nfds);
-
-  // NOTE: This implementation of select() does not update the timeout, but
-  // the linux implementation does. Both variants are POSIX-compliant.
-  EXPECT_TRUE(NULL != timeout);
-  if(NULL != timeout) {
-    EXPECT_EQ(select_timeout, *timeout);
-  }
-
-  // Check that expected file descriptors are set or unset.
-  for(int i=0; i<std::max(nfds, select_nfds); i++) {
-    bool readin = select_readin.count(i) > 0;
-    EXPECT_EQ(readin, FD_ISSET(i, readfds));
-
-    bool writein = select_writein.count(i) > 0;
-    EXPECT_EQ(writein, FD_ISSET(i, writefds));
-
-    bool exceptin = select_exceptin.count(i) > 0;
-    EXPECT_EQ(exceptin, FD_ISSET(i, exceptfds));
-  }
-
-  // Update sets with output data.
-  FD_ZERO(readfds);
-  FD_ZERO(writefds);
-  FD_ZERO(exceptfds);
-  for(int i=0; i<std::max(nfds, select_nfds); i++) {
-    if( select_readout.count(i) > 0) {
-      FD_SET(i, readfds);
-    }
-    if( select_writeout.count(i) > 0) {
-      FD_SET(i, writefds);
-    }
-    if( select_exceptout.count(i) > 0) {
-      FD_SET(i, exceptfds);
-    }
-  }
-
-  // HACK: Sleep for the requested duration
-  // This can be thought of as a simulation of select() getting an event
-  // exactly at the end of the timeout window, but really it's just here
-  // because the dispatch loop has its own timer to determine if it should call
-  // select again, and we don't want multiple calls.
-  if(NULL != timeout) {
-    struct timespec ts = { .tv_sec = timeout->tv_sec, .tv_nsec = timeout->tv_usec*1000};
-    // Call nanosleep repeatedly until it returns 0 (success).
-    // On failure it will update ts with the remaining time to sleep.
-    int ret = 0;
-    do {
-      ret = nanosleep(&ts, &ts);
-    } while( ret != 0 && errno == EINTR);
-  }
-
-  // Output errno and return value.
-  errno = select_errno;
-  return select_ret;
-}
-
-void Expect_select(int nfds,
-    std::set<int> readin, std::set<int> writein, std::set<int> exceptin,
-    struct timeval timeout,
-    std::set<int> readout, std::set<int> writeout, std::set<int> exceptout,
-    int _errno, int ret) {
-  EXPECT_EQ(0, select_calls) << "Test bug: Cannot expect more than one call to select";
-  select_calls = 1;
-
-  EXPECT_GE(FD_SETSIZE, nfds);
-  select_nfds = nfds;
-  select_timeout = timeout;
-
-  select_readin = readin;
-  select_writein = writein;
-  select_exceptin = exceptin;
-  select_readout = readout;
-  select_writeout = writeout;
-  select_exceptout = exceptout;
-
-  select_errno = _errno;
-  select_ret = ret;
 }
 
 int poll_calls = 0;
@@ -297,26 +160,16 @@ public:
 class MockSourceTest : public ::testing::Test {
   protected:
     MockSourceTest() : m(4) {
-      tv.tv_sec = 0;
-      tv.tv_usec = 100000;
-
       pollfd f = { .fd = 4, .events = 0, .revents = 0 };
       fds.push_back(f);
     }
 
     void SetUp() {
-      fake_select = mock_select;
-      select_calls = 0;
-
       fake_poll = mock_poll;
       poll_calls = 0;
     }
 
     void TearDown() {
-      EXPECT_EQ(0, select_calls);
-      fake_select = 0;
-      select_calls = 0;
-
       EXPECT_EQ(0, poll_calls);
       fake_poll = 0;
       poll_calls = 0;
@@ -324,7 +177,6 @@ class MockSourceTest : public ::testing::Test {
 
     MockSource m;
     XmlRpcDispatch dispatch;
-    struct timeval tv;
     std::vector<pollfd> fds;
 };
 
