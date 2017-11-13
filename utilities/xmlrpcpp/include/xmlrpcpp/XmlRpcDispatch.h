@@ -31,7 +31,7 @@ namespace XmlRpc {
     enum EventType {
       ReadableEvent = 1,    //!< data available to read
       WritableEvent = 2,    //!< connected/data can be written without blocking
-      Exception     = 4     //!< uh oh
+      Exception     = 4     //!< out-of-band data has arrived
     };
     
     //! Monitor this source for the event types specified by the event mask

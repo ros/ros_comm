@@ -17,6 +17,20 @@ catkin_add_gtest(test_client
 )
 target_link_libraries(test_client mock_socket)
 
+catkin_add_gtest(test_dispatch
+  test_dispatch.cpp
+  ../src/XmlRpcDispatch.cpp
+  ../src/XmlRpcSource.cpp
+  ../src/XmlRpcUtil.cpp
+  ../libb64/src/cdecode.c
+  ../libb64/src/cencode.c
+)
+target_link_libraries(test_dispatch mock_socket)
+set_target_properties(test_dispatch PROPERTIES
+  LINK_FLAGS
+  "-Wl,--wrap=select -Wl,--wrap=poll"
+)
+
 if(NOT WIN32)
   catkin_add_gtest(test_socket
     test_socket.cpp
