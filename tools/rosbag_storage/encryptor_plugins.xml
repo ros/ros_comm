@@ -1,0 +1,8 @@
+<library path="lib/librosbag_storage">
+  <class name="rosbag/NoEncryptor" type="rosbag::NoEncryptor" base_class_type="rosbag::EncryptorBase">
+    <description>This is a plugin for no encryption.</description>
+  </class>
+  <class name="rosbag/AesCbcEncryptor" type="rosbag::AesCbcEncryptor" base_class_type="rosbag::EncryptorBase">
+    <description>This is a plugin for AES-128 CBC encryption using a GPG key.</description>
+  </class>
+</library>
