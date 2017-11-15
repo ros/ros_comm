@@ -78,6 +78,7 @@ private:
     T next_expected;
 
     T last_real;
+    T last_expired;
 
     bool removed;
 
@@ -143,12 +144,14 @@ private:
   class TimerQueueCallback : public CallbackInterface
   {
   public:
-    TimerQueueCallback(TimerManager<T, D, E>* parent, const TimerInfoPtr& info, T last_expected, T last_real, T current_expected)
+    TimerQueueCallback(TimerManager<T, D, E>* parent, const TimerInfoPtr& info, T last_expected, T last_real, T current_expected, T last_expired, T current_expired)
     : parent_(parent)
     , info_(info)
     , last_expected_(last_expected)
     , last_real_(last_real)
     , current_expected_(current_expected)
+    , last_expired_(last_expired)
+    , current_expired_(current_expired)
     , called_(false)
     {
       boost::mutex::scoped_lock lock(info->waiting_mutex);
@@ -190,8 +193,10 @@ private:
         E event;
         event.last_expected = last_expected_;
         event.last_real = last_real_;
+        event.last_expired = last_expired_;
         event.current_expected = current_expected_;
         event.current_real = T::now();
+        event.current_expired = current_expired_;
         event.profile.last_duration = info->last_cb_duration;
 
         SteadyTime cb_start = SteadyTime::now();
@@ -200,6 +205,7 @@ private:
         info->last_cb_duration = cb_end - cb_start;
 
         info->last_real = event.current_real;
+        info->last_expired = event.current_expired;
 
         parent_->schedule(info);
       }
@@ -213,6 +219,8 @@ private:
     T last_expected_;
     T last_real_;
     T current_expected_;
+    T last_expired_;
+    T current_expired_;
 
     bool called_;
   };
@@ -529,7 +537,7 @@ void TimerManager<T, D, E>::threadFunc()
           current = T::now();
 
           //ROS_DEBUG("Scheduling timer callback for timer [%d] of period [%f], [%f] off expected", info->handle, info->period.toSec(), (current - info->next_expected).toSec());
-          CallbackInterfacePtr cb(boost::make_shared<TimerQueueCallback>(this, info, info->last_expected, info->last_real, info->next_expected));
+          CallbackInterfacePtr cb(boost::make_shared<TimerQueueCallback>(this, info, info->last_expected, info->last_real, info->next_expected, info->last_expired, current));
           info->callback_queue->addCallback(cb, (uint64_t)info.get());
 
           waiting_.pop_front();
