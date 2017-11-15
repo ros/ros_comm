@@ -71,10 +71,22 @@
 # endif
 #endif
 #if defined logInform
-# undef logInform
+# ifdef CONSOLE_BRIDGE_logInform
+#  undef logInform
+# else
+// Remove this when no longer supporting platforms with libconsole-bridge-dev < 0.3.0,
+// in particular Debian Jessie: https://packages.debian.org/jessie/libconsole-bridge-dev
+#  define CONSOLE_BRIDGE_logInform logInform
+# endif
 #endif
 #if defined logWarn
-# undef logWarn
+# ifdef CONSOLE_BRIDGE_logWarn
+#  undef logWarn
+# else
+// Remove this when no longer supporting platforms with libconsole-bridge-dev < 0.3.0,
+// in particular Debian Jessie: https://packages.debian.org/jessie/libconsole-bridge-dev
+#  define CONSOLE_BRIDGE_logInform logWarn
+# endif
 #endif
 #if defined logError
 # ifdef CONSOLE_BRIDGE_logError
