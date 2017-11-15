@@ -47,11 +47,11 @@
 #define DEBUG(...)
 #endif
 
-// Make sure the LZ library has the function we need
-// Note that the later versions of LZ contain a macro that does this version math, but the earlier
+// Make sure the LZ4 library has the function we need
+// Note that the later versions of LZ4 contain a different macro that does this version math, but the earlier
 // versions lack it.
-#define LZ_VERSION (LZ4_VERSION_MAJOR * 10000 + LZ4_VERSION_MINOR * 100 + LZ4_VERSION_RELEASE)
-#if LZ_VERSION >= 10700
+#define LZ4_VERSION (LZ4_VERSION_MAJOR * 100 * 100 + LZ4_VERSION_MINOR * 100 + LZ4_VERSION_RELEASE)
+#if LZ4_VERSION >= 10702
 #define COMPRESS_DEFAULT LZ4_compress_default
 #else
 #define COMPRESS_DEFAULT LZ4_compress_limitedOutput
