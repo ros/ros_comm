@@ -14,12 +14,8 @@
   <build_depend>bzip2</build_depend>
   <build_depend version_gte="0.3.17">cpp_common</build_depend>
   <build_depend>libconsole-bridge-dev</build_depend>
-  <build_depend>libgpgme-dev</build_depend>
-  <build_depend>libssl-dev</build_depend>
-  <build_depend>pluginlib</build_depend>
   <build_depend>roscpp_serialization</build_depend>
   <build_depend version_gte="0.3.17">roscpp_traits</build_depend>
-  <build_depend>rostest</build_depend>
   <build_depend>rostime</build_depend>
   <build_depend>roslz4</build_depend>
 
@@ -27,9 +23,6 @@
   <run_depend>bzip2</run_depend>
   <run_depend version_gte="0.3.17">cpp_common</run_depend>
   <run_depend>libconsole-bridge-dev</run_depend>
-  <run_depend>libgpgme-dev</run_depend>
-  <run_depend>libssl-dev</run_depend>
-  <run_depend>pluginlib</run_depend>
   <run_depend>roscpp_serialization</run_depend>
   <run_depend version_gte="0.3.17">roscpp_traits</run_depend>
   <run_depend>rostime</run_depend>
@@ -37,6 +30,5 @@
 
   <export>
     <rosdoc config="${prefix}/rosdoc.yaml"/>
-    <rosbag_storage plugin="${prefix}/encryptor_plugins.xml" />
   </export>
 </package>

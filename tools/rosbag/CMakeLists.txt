@@ -38,11 +38,6 @@ target_link_libraries(record rosbag)
 add_executable(play src/play.cpp)
 target_link_libraries(play rosbag)
 
-if(NOT WIN32)
-  add_executable(encrypt src/encrypt.cpp)
-  target_link_libraries(encrypt ${catkin_LIBRARIES})
-endif()
-
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h")
@@ -54,12 +49,6 @@ install(TARGETS record play
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-if(NOT WIN32)
-  install(TARGETS encrypt
-    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-endif()
 catkin_install_python(PROGRAMS
   scripts/bag2png.py
   scripts/bagsort.py
