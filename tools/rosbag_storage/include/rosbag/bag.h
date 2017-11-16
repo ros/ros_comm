@@ -62,25 +62,23 @@
 
 #include "console_bridge/console.h"
 
-#ifdef logDebug
-# ifndef CONSOLE_BRIDGE_logDebug
-#  define CONSOLE_BRIDGE_logDebug logDebug
-# endif
+// Remove this when no longer supporting platforms with libconsole-bridge-dev < 0.3.0,
+// in particular Debian Jessie: https://packages.debian.org/jessie/libconsole-bridge-dev
+#ifndef CONSOLE_BRIDGE_logDebug
+# define CONSOLE_BRIDGE_logDebug(fmt, ...)  \
+  console_bridge::log(__FILE__, __LINE__, console_bridge::CONSOLE_BRIDGE_LOG_DEBUG, fmt, ##__VA_ARGS__)
 #endif
-#ifdef logInform
-# ifndef CONSOLE_BRIDGE_logInform
-#  define CONSOLE_BRIDGE_logInform logInform
-# endif
+#ifndef CONSOLE_BRIDGE_logInform
+# define CONSOLE_BRIDGE_logInform(fmt, ...) \
+  console_bridge::log(__FILE__, __LINE__, console_bridge::CONSOLE_BRIDGE_LOG_INFO,  fmt, ##__VA_ARGS__)
 #endif
-#ifdef logWarn
-# ifndef CONSOLE_BRIDGE_logWarn
-#  define CONSOLE_BRIDGE_logWarn logWarn
-# endif
+#ifndef CONSOLE_BRIDGE_logWarn
+# define CONSOLE_BRIDGE_logWarn(fmt, ...)   \
+  console_bridge::log(__FILE__, __LINE__, console_bridge::CONSOLE_BRIDGE_LOG_WARN,  fmt, ##__VA_ARGS__)
 #endif
-#ifdef logError
-# ifndef CONSOLE_BRIDGE_logError
-#  define CONSOLE_BRIDGE_logError logError
-# endif
+#ifndef CONSOLE_BRIDGE_logError
+# define CONSOLE_BRIDGE_logError(fmt, ...)  \
+  console_bridge::log(__FILE__, __LINE__, console_bridge::CONSOLE_BRIDGE_LOG_ERROR, fmt, ##__VA_ARGS__)
 #endif
 
 namespace rosbag {
