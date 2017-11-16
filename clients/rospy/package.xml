@@ -1,6 +1,6 @@
 <package>
   <name>rospy</name>
-  <version>1.12.11</version>
+  <version>1.12.12</version>
   <description>
     rospy is a pure Python client library for ROS. The rospy client
     API enables Python programmers to quickly interface with ROS <a
