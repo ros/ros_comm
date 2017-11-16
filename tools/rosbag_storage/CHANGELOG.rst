@@ -2,6 +2,10 @@
 Changelog for package rosbag_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* backward compatibility with libconsole-bridge in Jessie (take 3) (`#1235 <https://github.com/ros/ros_comm/issues/1235>`_)
+
 1.12.11 (2017-11-07)
 --------------------
 
