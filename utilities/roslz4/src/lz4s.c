@@ -51,10 +51,10 @@
 // Note that the later versions of LZ4 contain a different macro that does this version math, but the earlier
 // versions lack it.
 #define LZ4_VERSION (LZ4_VERSION_MAJOR * 100 * 100 + LZ4_VERSION_MINOR * 100 + LZ4_VERSION_RELEASE)
-#if LZ4_VERSION >= 10702
-#define COMPRESS_DEFAULT LZ4_compress_default
+#if LZ4_VERSION >= 10700
+#define LZ4_COMPRESS_DEFAULT LZ4_compress_default
 #else
-#define COMPRESS_DEFAULT LZ4_compress_limitedOutput
+#define LZ4_COMPRESS_DEFAULT LZ4_compress_limitedOutput
 #endif
 
 // magic numbers
@@ -191,10 +191,10 @@ int bufferToOutput(roslz4_stream *str) {
         state->buffer_offset, str->output_left);
 
   // Shrink output by 1 to detect if data is not compressible
-  uint32_t comp_size = COMPRESS_DEFAULT(state->buffer,
-                                        str->output_next + 4,
-                                        (int) state->buffer_offset,
-                                        (int) uncomp_size - 1);
+  uint32_t comp_size = LZ4_COMPRESS_DEFAULT(state->buffer,
+                                            str->output_next + 4,
+                                            (int) state->buffer_offset,
+                                            (int) uncomp_size - 1);
   uint32_t wrote;
   if (comp_size > 0) {
     DEBUG("bufferToOutput() Compressed to %i bytes\n", comp_size);
