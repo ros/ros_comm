@@ -159,9 +159,8 @@ XmlRpcDispatch::work(double timeout)
 
       if ( ! newMask) {
         _sources.erase(thisIt);  // Stop monitoring this one
-        if ( ! src->getKeepOpen()) {
+        if ( ! src->getKeepOpen())
           src->close();
-        }
       } else if (newMask != (unsigned) -1) {
         thisIt->getMask() = newMask;
       }
@@ -230,4 +229,5 @@ XmlRpcDispatch::getTime()
   return (tv.tv_sec + tv.tv_usec / 1000000.0);
 #endif /* USE_FTIME */
 }
+
 
