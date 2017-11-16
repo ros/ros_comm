@@ -61,39 +61,24 @@
 #include <boost/iterator/iterator_facade.hpp>
 
 #include "console_bridge/console.h"
-#if defined logDebug
-# ifdef CONSOLE_BRIDGE_logDebug
-#  undef logDebug
-# else
-// Remove this when no longer supporting platforms with libconsole-bridge-dev < 0.3.0,
-// in particular Debian Jessie: https://packages.debian.org/jessie/libconsole-bridge-dev
+
+#ifdef logDebug
+# ifndef CONSOLE_BRIDGE_logDebug
 #  define CONSOLE_BRIDGE_logDebug logDebug
 # endif
 #endif
-#if defined logInform
-# ifdef CONSOLE_BRIDGE_logInform
-#  undef logInform
-# else
-// Remove this when no longer supporting platforms with libconsole-bridge-dev < 0.3.0,
-// in particular Debian Jessie: https://packages.debian.org/jessie/libconsole-bridge-dev
+#ifdef logInform
+# ifndef CONSOLE_BRIDGE_logInform
 #  define CONSOLE_BRIDGE_logInform logInform
 # endif
 #endif
-#if defined logWarn
-# ifdef CONSOLE_BRIDGE_logWarn
-#  undef logWarn
-# else
-// Remove this when no longer supporting platforms with libconsole-bridge-dev < 0.3.0,
-// in particular Debian Jessie: https://packages.debian.org/jessie/libconsole-bridge-dev
+#ifdef logWarn
+# ifndef CONSOLE_BRIDGE_logWarn
 #  define CONSOLE_BRIDGE_logWarn logWarn
 # endif
 #endif
-#if defined logError
-# ifdef CONSOLE_BRIDGE_logError
-#  undef logError
-# else
-// Remove this when no longer supporting platforms with libconsole-bridge-dev < 0.3.0,
-// in particular Debian Jessie: https://packages.debian.org/jessie/libconsole-bridge-dev
+#ifdef logError
+# ifndef CONSOLE_BRIDGE_logError
 #  define CONSOLE_BRIDGE_logError logError
 # endif
 #endif
