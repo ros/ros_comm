@@ -47,6 +47,16 @@
 #define DEBUG(...)
 #endif
 
+// Make sure the LZ4 library has the function we need
+// Note that the later versions of LZ4 contain a different macro that does this version math, but the earlier
+// versions lack it.
+#define LZ4_VERSION (LZ4_VERSION_MAJOR * 100 * 100 + LZ4_VERSION_MINOR * 100 + LZ4_VERSION_RELEASE)
+#if LZ4_VERSION >= 10701
+#define LZ4_COMPRESS_DEFAULT LZ4_compress_default
+#else
+#define LZ4_COMPRESS_DEFAULT LZ4_compress_limitedOutput
+#endif
+
 // magic numbers
 const uint32_t kMagicNumber = 0x184D2204;
 const uint32_t kEndOfStream = 0x00000000;
@@ -181,7 +191,7 @@ int bufferToOutput(roslz4_stream *str) {
         state->buffer_offset, str->output_left);
 
   // Shrink output by 1 to detect if data is not compressible
-  uint32_t comp_size = LZ4_compress_default(state->buffer,
+  uint32_t comp_size = LZ4_COMPRESS_DEFAULT(state->buffer,
                                             str->output_next + 4,
                                             (int) state->buffer_offset,
                                             (int) uncomp_size - 1);
