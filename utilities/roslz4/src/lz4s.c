@@ -51,7 +51,7 @@
 // Note that the later versions of LZ4 contain a different macro that does this version math, but the earlier
 // versions lack it.
 #define LZ4_VERSION (LZ4_VERSION_MAJOR * 100 * 100 + LZ4_VERSION_MINOR * 100 + LZ4_VERSION_RELEASE)
-#if LZ4_VERSION >= 10700
+#if LZ4_VERSION >= 10701
 #define LZ4_COMPRESS_DEFAULT LZ4_compress_default
 #else
 #define LZ4_COMPRESS_DEFAULT LZ4_compress_limitedOutput
