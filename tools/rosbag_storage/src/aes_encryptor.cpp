@@ -136,7 +136,7 @@ static std::string encryptStringGpg(std::string& user, std::basic_string<unsigne
         gpgme_data_release(output_data);
         gpgme_data_release(input_data);
         gpgme_release(ctx);
-        throw rosbag::BagException((boost::format("Failed to encrypt: %1%") % gpgme_strerror(err)).str());
+        throw rosbag::BagException((boost::format("Failed to encrypt: %1%.  Have you installed a public key?") % gpgme_strerror(err)).str());
     }
     gpgme_key_release(keys[0]);
     std::size_t output_length = gpgme_data_seek(output_data, 0, SEEK_END);
@@ -172,7 +172,7 @@ static std::basic_string<unsigned char> decryptStringGpg(std::string const& inpu
     if (err) {
         gpgme_release(ctx);
         throw rosbag::BagException(
-            (boost::format("Failed to decrypt string: gpgme_data_new_from_mem returned %1%") % gpgme_strerror(err)).str());
+            (boost::format("Failed to decrypt bag: gpgme_data_new_from_mem returned %1%") % gpgme_strerror(err)).str());
     }
     gpgme_data_t output_data;
     err = gpgme_data_new(&output_data);
@@ -180,14 +180,14 @@ static std::basic_string<unsigned char> decryptStringGpg(std::string const& inpu
         gpgme_data_release(input_data);
         gpgme_release(ctx);
         throw rosbag::BagException(
-            (boost::format("Failed to decrypt string: gpgme_data_new returned %1%") % gpgme_strerror(err)).str());
+            (boost::format("Failed to decrypt bag: gpgme_data_new returned %1%") % gpgme_strerror(err)).str());
     }
     err = gpgme_op_decrypt(ctx, input_data, output_data);
     if (err) {
         gpgme_data_release(output_data);
         gpgme_data_release(input_data);
         gpgme_release(ctx);
-        throw rosbag::BagException((boost::format("Failed to decrypt string: %1%") % gpgme_strerror(err)).str());
+        throw rosbag::BagException((boost::format("Failed to decrypt bag: %1%.  Have you installed a required private key?") % gpgme_strerror(err)).str());
     }
     std::size_t output_length = gpgme_data_seek(output_data, 0, SEEK_END);
     if (output_length != AES_BLOCK_SIZE) {
@@ -283,15 +283,16 @@ void AesCbcEncryptor::addFieldsToFileHeader(ros::M_string &header_fields) const 
 }
 
 void AesCbcEncryptor::readFieldsFromFileHeader(ros::M_string const& header_fields) {
-    gpg_key_user_ = readHeaderField(header_fields, GPG_USER_FIELD_NAME);
     encrypted_symmetric_key_ = readHeaderField(header_fields, ENCRYPTED_KEY_FIELD_NAME);
-    if (!encrypted_symmetric_key_.empty()) {
-        if (gpg_key_user_.empty()) {
-            throw rosbag::BagFormatException("Encrypted symmetric key is found, but no GPG user is specified");
-        }
-        symmetric_key_ = decryptStringGpg(encrypted_symmetric_key_);
-        AES_set_decrypt_key(&symmetric_key_[0], AES_BLOCK_SIZE*8, &aes_decrypt_key_);
+    if (encrypted_symmetric_key_.empty()) {
+        throw rosbag::BagFormatException("Encrypted symmetric key is not found in header");
     }
+    gpg_key_user_ = readHeaderField(header_fields, GPG_USER_FIELD_NAME);
+    if (gpg_key_user_.empty()) {
+        throw rosbag::BagFormatException("GPG key user is not found in header");
+    }
+    symmetric_key_ = decryptStringGpg(encrypted_symmetric_key_);
+    AES_set_decrypt_key(&symmetric_key_[0], AES_BLOCK_SIZE*8, &aes_decrypt_key_);
 }
 
 void AesCbcEncryptor::writeEncryptedHeader(boost::function<void(ros::M_string const&)>, ros::M_string const& header_fields, ChunkedFile& file) {
@@ -317,7 +318,7 @@ bool AesCbcEncryptor::readEncryptedHeader(boost::function<bool(ros::Header&)>, r
     uint32_t encrypted_header_len;
     file.read((char*) &encrypted_header_len, 4);
     if (encrypted_header_len % AES_BLOCK_SIZE != 0) {
-        throw BagFormatException("Error in encrypted header length");
+        throw BagFormatException((boost::format("Error in encrypted header length, %d") % encrypted_header_len).str());
     }
     // Read encrypted header
     std::basic_string<unsigned char> encrypted_header(encrypted_header_len, 0);

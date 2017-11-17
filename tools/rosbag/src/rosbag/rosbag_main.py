@@ -47,7 +47,7 @@ except ImportError:
 import roslib.message
 import roslib.packages
 
-from .bag import Bag, Compression, ROSBagException, ROSBagFormatException, ROSBagUnindexedException, ROSBagEncryptNotSupportedException
+from .bag import Bag, Compression, ROSBagException, ROSBagFormatException, ROSBagUnindexedException, ROSBagEncryptNotSupportedException, ROSBagEncryptException
 from .migration import MessageMigrator, fixbag2, checkbag
 
 def print_trans(old, new, indent):
@@ -167,7 +167,7 @@ def info_cmd(argv):
             if i < len(args) - 1:
                 print('---')
         
-        except ROSBagEncryptNotSupportedException as ex:
+        except (ROSBagEncryptNotSupportedException, ROSBagEncryptException) as ex:
             print('ERROR: %s' % str(ex), file=sys.stderr)
         except ROSBagUnindexedException as ex:
             print('ERROR bag unindexed: %s.  Run rosbag reindex.' % arg,
@@ -334,7 +334,7 @@ The following variables are available:
     
     try:
         inbag = Bag(inbag_filename)
-    except ROSBagEncryptNotSupportedException as ex:
+    except (ROSBagEncryptNotSupportedException, ROSBagEncryptException) as ex:
         print('ERROR: %s' % str(ex), file=sys.stderr)
         return
     except ROSBagUnindexedException as ex:
@@ -434,7 +434,7 @@ def fix_cmd(argv):
     
     try:
         migrations = fixbag2(migrator, inbag_filename, outname, options.force)
-    except ROSBagEncryptNotSupportedException as ex:
+    except (ROSBagEncryptNotSupportedException, ROSBagEncryptException) as ex:
         print('ERROR: %s' % str(ex), file=sys.stderr)
         return
     except ROSBagUnindexedException as ex:
@@ -484,7 +484,7 @@ def check_cmd(argv):
     # First check that the bag is not unindexed 
     try:
         Bag(args[0])
-    except ROSBagEncryptNotSupportedException as ex:
+    except (ROSBagEncryptNotSupportedException, ROSBagEncryptException) as ex:
         print('ERROR: %s' % str(ex), file=sys.stderr)
         return
     except ROSBagUnindexedException as ex:
@@ -802,7 +802,7 @@ def reindex_op(inbag, outbag, quiet):
             try:
                 for offset in outbag.reindex():
                     pass
-            except ROSBagEncryptNotSupportedException as ex:
+            except (ROSBagEncryptNotSupportedException, ROSBagEncryptException) as ex:
                 raise
             except:
                 pass
@@ -811,7 +811,7 @@ def reindex_op(inbag, outbag, quiet):
             try:
                 for offset in outbag.reindex():
                     meter.step(offset)
-            except ROSBagEncryptNotSupportedException as ex:
+            except (ROSBagEncryptNotSupportedException, ROSBagEncryptException) as ex:
                 raise
             except:
                 pass

@@ -457,7 +457,7 @@ void Bag::stopWritingChunk() {
     uint32_t compressed_size = file_.getOffset() - curr_chunk_data_pos_;
 
     // When encryption is on, compressed_size represents encrypted chunk size;
-    // When decrypting, the compressed size can be deduced from the decrypted chunk
+    // When decrypting, the actual compressed size can be deduced from the decrypted chunk
     compressed_size = encryptor_->encryptChunk(compressed_size, curr_chunk_data_pos_, file_);
 
     // Rewrite the chunk header with the size of the chunk (remembering current offset)
@@ -663,11 +663,11 @@ void Bag::readConnectionIndexRecord200() {
 void Bag::writeConnectionRecords() {
     for (map<uint32_t, ConnectionInfo*>::const_iterator i = connections_.begin(); i != connections_.end(); i++) {
         ConnectionInfo const* connection_info = i->second;
-        writeConnectionRecord(connection_info);
+        writeConnectionRecord(connection_info, true);
     }
 }
 
-void Bag::writeConnectionRecord(ConnectionInfo const* connection_info) {
+void Bag::writeConnectionRecord(ConnectionInfo const* connection_info, const bool encrypt) {
     CONSOLE_BRIDGE_logDebug("Writing CONNECTION [%llu:%d]: topic=%s id=%d",
               (unsigned long long) file_.getOffset(), getChunkOffset(), connection_info->topic.c_str(), connection_info->id);
 
@@ -675,9 +675,16 @@ void Bag::writeConnectionRecord(ConnectionInfo const* connection_info) {
     header[OP_FIELD_NAME]         = toHeaderString(&OP_CONNECTION);
     header[TOPIC_FIELD_NAME]      = connection_info->topic;
     header[CONNECTION_FIELD_NAME] = toHeaderString(&connection_info->id);
-    encryptor_->writeEncryptedHeader(boost::bind(&Bag::writeHeader, this, _1), header, file_);
 
-    encryptor_->writeEncryptedHeader(boost::bind(&Bag::writeHeader, this, _1), *connection_info->header, file_);
+    if (encrypt)
+        encryptor_->writeEncryptedHeader(boost::bind(&Bag::writeHeader, this, _1), header, file_);
+    else
+        writeHeader(header);
+
+    if (encrypt)
+        encryptor_->writeEncryptedHeader(boost::bind(&Bag::writeHeader, this, _1), *connection_info->header, file_);
+    else
+        writeHeader(*connection_info->header);
 }
 
 void Bag::appendConnectionRecordToBuffer(Buffer& buf, ConnectionInfo const* connection_info) {
