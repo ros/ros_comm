@@ -237,7 +237,7 @@ private:
     
     void writeVersion();
     void writeFileHeaderRecord();
-    void writeConnectionRecord(ConnectionInfo const* connection_info);
+    void writeConnectionRecord(ConnectionInfo const* connection_info, const bool encrypt);
     void appendConnectionRecordToBuffer(Buffer& buf, ConnectionInfo const* connection_info);
     template<class T>
     void writeMessageDataRecord(uint32_t conn_id, ros::Time const& time, T const& msg);
@@ -587,8 +587,8 @@ void Bag::doWrite(std::string const& topic, ros::Time const& time, T const& msg,
                 (*connection_info->header)["message_definition"] = connection_info->msg_def;
             }
             connections_[conn_id] = connection_info;
-
-            writeConnectionRecord(connection_info);
+            // No need to encrypt connection records in chunks
+            writeConnectionRecord(connection_info, false);
             appendConnectionRecordToBuffer(outgoing_chunk_buffer_, connection_info);
         }
 
