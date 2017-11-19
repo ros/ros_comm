@@ -127,7 +127,7 @@ void BZ2Stream::read(void* ptr, size_t size) {
     case BZ_OK: return;
     case BZ_STREAM_END:
         if (getUnused() || getUnusedLength() > 0)
-            logError("unused data already available");
+            CONSOLE_BRIDGE_logError("unused data already available");
         else {
             char* unused;
             int nUnused;
