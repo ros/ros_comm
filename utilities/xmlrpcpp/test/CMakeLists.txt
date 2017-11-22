@@ -3,6 +3,10 @@ if(TARGET xmlrpcvalue_base64)
   target_link_libraries(xmlrpcvalue_base64 xmlrpcpp)
 endif()
 
+catkin_add_gtest(test_base64 test_base64.cpp)
+target_link_libraries(test_base64 xmlrpcpp)
+set_target_properties(test_base64 PROPERTIES COMPILE_FLAGS -std=c++11)
+
 add_library(mock_socket mock_socket.cpp)
 
 catkin_add_gtest(test_client

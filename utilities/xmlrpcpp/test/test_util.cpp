@@ -29,7 +29,7 @@ using namespace XmlRpc;
 
 class FakeLogHandler : public XmlRpcLogHandler {
 public:
-  FakeLogHandler() : last_level(-1), last_msg(NULL){};
+  FakeLogHandler() : last_level(-1), last_msg(""){};
 
   virtual void log(int level, const char* msg) {
     last_level = level;
@@ -37,7 +37,7 @@ public:
   }
 
   int last_level;
-  const char* last_msg;
+  std::string last_msg;
 };
 
 TEST(XmlRpc, Log) {
@@ -55,7 +55,7 @@ TEST(XmlRpc, Log) {
   for (int i = 1; i < 6; i++) {
     XmlRpcUtil::log(i, "Hello");
     ASSERT_EQ(-1, fakelog.last_level);
-    ASSERT_EQ(NULL, fakelog.last_msg);
+    ASSERT_EQ("", fakelog.last_msg);
   }
 
   // Test masking at levels below maximum verbosity.
@@ -65,15 +65,15 @@ TEST(XmlRpc, Log) {
     for (int j = 1; j <= i; j++) {
       XmlRpcUtil::log(j, "Hello1");
       EXPECT_EQ(j, fakelog.last_level);
-      EXPECT_STREQ("Hello1", fakelog.last_msg);
+      EXPECT_EQ("Hello1", fakelog.last_msg);
 
       fakelog.last_level = -1;
-      fakelog.last_msg = NULL;
+      fakelog.last_msg = "";
     }
 
     XmlRpcUtil::log(i + 1, "Hello2");
     ASSERT_EQ(-1, fakelog.last_level);
-    ASSERT_EQ(NULL, fakelog.last_msg);
+    ASSERT_EQ("", fakelog.last_msg);
   }
 
   // Test no messages masked at max verbosity.
@@ -81,27 +81,27 @@ TEST(XmlRpc, Log) {
   for (int i = 1; i < 5; i++) {
     XmlRpcUtil::log(i, "Hello3");
     EXPECT_EQ(i, fakelog.last_level);
-    EXPECT_STREQ("Hello3", fakelog.last_msg);
+    EXPECT_EQ("Hello3", fakelog.last_msg);
 
     fakelog.last_level = -1;
-    fakelog.last_msg = NULL;
+    fakelog.last_msg = "";
   }
 
   // Basic formatting test.
   XmlRpcUtil::log(2, "Hello %d", 42);
   EXPECT_EQ(2, fakelog.last_level);
-  EXPECT_STREQ("Hello 42", fakelog.last_msg);
+  EXPECT_EQ("Hello 42", fakelog.last_msg);
 }
 
 class FakeErrorHandler : public XmlRpcErrorHandler {
 public:
-  FakeErrorHandler() : last_msg(NULL){};
+  FakeErrorHandler() : last_msg(""){};
 
   virtual void error(const char* msg) {
     last_msg = msg;
   }
 
-  const char* last_msg;
+  std::string last_msg;
 };
 
 TEST(XmlRpc, error) {
@@ -113,12 +113,12 @@ TEST(XmlRpc, error) {
 
   // Basic error check.
   XmlRpcUtil::error("Error!");
-  EXPECT_STREQ("Error!", errors.last_msg);
-  errors.last_msg = NULL;
+  EXPECT_EQ("Error!", errors.last_msg);
+  errors.last_msg = "";
 
   // Error check with formatting.
   XmlRpcUtil::error("%d: I'm a teapot", 408);
-  EXPECT_STREQ("408: I'm a teapot", errors.last_msg);
+  EXPECT_EQ("408: I'm a teapot", errors.last_msg);
 }
 
 int main(int argc, char **argv)

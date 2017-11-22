@@ -28,6 +28,8 @@ int base64_decode_block(const char* code_in, const int length_in, char* plaintex
 	char* plainchar = plaintext_out;
 	char fragment;
 	
+	if(length_in == 0) return 0;
+
 	*plainchar = state_in->plainchar;
 	
 	switch (state_in->step)
@@ -39,7 +41,7 @@ int base64_decode_block(const char* code_in, const int length_in, char* plaintex
 				if (codechar == code_in+length_in)
 				{
 					state_in->step = step_a;
-					state_in->plainchar = *plainchar;
+					state_in->plainchar = 0; // no state to save; use default value
 					return plainchar - plaintext_out;
 				}
 				fragment = (char)base64_decode_value(*codechar++);
