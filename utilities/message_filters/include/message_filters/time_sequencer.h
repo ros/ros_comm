@@ -84,7 +84,7 @@ public:
    * \param delay The minimum time to hold a message before passing it through.
    * \param update_rate The rate at which to check for messages which have passed "delay"
    * \param queue_size The number of messages to store
-   * \param nh (optional) The NodeHandle to use to create the ros::Timer that runs at update_rate
+   * \param nh (optional) The NodeHandle to use to create the ros::SteadyTimer that runs at update_rate
    */
   template<class F>
   TimeSequencer(F& f, ros::Duration delay, ros::Duration update_rate, uint32_t queue_size, ros::NodeHandle nh = ros::NodeHandle())
@@ -105,7 +105,7 @@ public:
    * \param delay The minimum time to hold a message before passing it through.
    * \param update_rate The rate at which to check for messages which have passed "delay"
    * \param queue_size The number of messages to store
-   * \param nh (optional) The NodeHandle to use to create the ros::Timer that runs at update_rate
+   * \param nh (optional) The NodeHandle to use to create the ros::SteadyTimer that runs at update_rate
    */
   TimeSequencer(ros::Duration delay, ros::Duration update_rate, uint32_t queue_size, ros::NodeHandle nh = ros::NodeHandle())
   : delay_(delay)
@@ -213,14 +213,14 @@ private:
     }
   }
 
-  void update(const ros::TimerEvent&)
+  void update(const ros::SteadyTimerEvent&)
   {
     dispatch();
   }
 
   void init()
   {
-    update_timer_ = nh_.createTimer(update_rate_, &TimeSequencer::update, this);
+    update_timer_ = nh_.createSteadyTimer(ros::WallDuration(update_rate_.toSec()), &TimeSequencer::update, this);
   }
 
   ros::Duration delay_;
@@ -228,7 +228,7 @@ private:
   uint32_t queue_size_;
   ros::NodeHandle nh_;
 
-  ros::Timer update_timer_;
+  ros::SteadyTimer update_timer_;
 
   Connection incoming_connection_;
 
