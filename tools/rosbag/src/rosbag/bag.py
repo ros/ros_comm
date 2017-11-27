@@ -164,7 +164,7 @@ class _ROSBagNoEncryptor(_ROSBagEncryptor):
         pass
 
     def get_info_str(self):
-        return None
+        return ''
 
 class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
     """
