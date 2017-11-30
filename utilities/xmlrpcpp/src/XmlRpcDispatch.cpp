@@ -222,11 +222,9 @@ XmlRpcDispatch::getTime()
   return ((double) tbuff.time + ((double)tbuff.millitm / 1000.0) +
 	  ((double) tbuff.timezone * 60));
 #else
-  struct timeval	tv;
-  struct timezone	tz;
-
-  gettimeofday(&tv, &tz);
-  return (tv.tv_sec + tv.tv_usec / 1000000.0);
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  return (ts.tv_sec + ts.tv_nsec / 1000000000.0);
 #endif /* USE_FTIME */
 }
 
