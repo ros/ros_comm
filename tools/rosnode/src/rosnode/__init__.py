@@ -399,7 +399,7 @@ def rosnode_ping_all(verbose=False):
     
 def cleanup_master_blacklist(master, blacklist):
     """
-    Remove registrations from ROS Master that do not match blacklist.    
+    Remove registrations from ROS Master that match blacklist.    
     @param master: XMLRPC handle to ROS Master
     @type  master: xmlrpclib.ServerProxy
     @param blacklist: list of nodes to scrub
