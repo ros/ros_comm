@@ -2123,4 +2123,3 @@ def rostopicmain(argv=None):
         sys.stderr.write("ERROR: %s\n"%str(e))
         sys.exit(1)
     except KeyboardInterrupt: pass
-    except rospy.ROSInterruptException: pass

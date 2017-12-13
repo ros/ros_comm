@@ -181,5 +181,3 @@ def main(argv=None):
         error(1, str(e))
     except KeyboardInterrupt:
         pass
-    except rospy.ROSInterruptException:
-        pass
