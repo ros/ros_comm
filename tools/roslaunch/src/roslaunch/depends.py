@@ -171,7 +171,7 @@ def _parse_launch(tags, launch_file, file_deps, verbose, context):
                     launch_tag = dom[0]
                     sub_context = _parse_subcontext(tag.childNodes, context)
                     _parse_launch(launch_tag.childNodes, sub_launch_file, file_deps, verbose, sub_context)
-            except IOError as e:
+            except IOError:
                 raise RoslaunchDepsException("Cannot load roslaunch include '%s' in '%s'"%(sub_launch_file, launch_file))
 
         elif tag.tagName in ['node', 'test']:

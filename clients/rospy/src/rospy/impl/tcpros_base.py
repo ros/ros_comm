@@ -744,9 +744,9 @@ class TCPROSTransport(Transport):
         except DeserializationError as e:
             rospyerr(traceback.format_exc())            
             raise TransportException("receive_once[%s]: DeserializationError %s"%(self.name, str(e)))
-        except TransportTerminated as e:
+        except TransportTerminated:
             raise #reraise
-        except ServiceException as e:
+        except ServiceException:
             raise
         except Exception as e:
             rospyerr(traceback.format_exc())
@@ -795,7 +795,7 @@ class TCPROSTransport(Transport):
                     else:
                         self._reconnect()
 
-                except TransportException as e:
+                except TransportException:
                     # set socket to None so we reconnect
                     try:
                         if self.socket is not None:

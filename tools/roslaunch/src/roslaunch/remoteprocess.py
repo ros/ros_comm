@@ -154,12 +154,12 @@ class SSHChildROSLaunchProcess(roslaunch.server.ChildROSLaunchProcess):
             command = '%s %s' % (env_command, command)
         try:
             import Crypto
-        except ImportError as e:
+        except ImportError:
             _logger.error("cannot use SSH: pycrypto is not installed")
             return None, "pycrypto is not installed"
         try:
             import paramiko
-        except ImportError as e:
+        except ImportError:
             _logger.error("cannot use SSH: paramiko is not installed")
             return None, "paramiko is not installed"
 		#load user's ssh configuration

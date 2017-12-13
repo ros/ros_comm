@@ -457,7 +457,7 @@ class Graph(object):
             if uri:
                 api = ServerProxy(uri)
                 updated = self._node_refresh_businfo(node, api, bad_node)
-        except KeyError as e:
+        except KeyError:
             logger.warn('cannot contact node [%s] as it is not in the lookup table'%node)
         return updated
 

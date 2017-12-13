@@ -538,7 +538,7 @@ def msgevalgen(pattern):
             if slice_object is not None: # access slice
                 try:
                     msg = msg.__getitem__(slice_object)
-                except IndexError as e:
+                except IndexError:
                     print("%s: %s" % (str(e), pattern), file=sys.stderr)
                     return None
 

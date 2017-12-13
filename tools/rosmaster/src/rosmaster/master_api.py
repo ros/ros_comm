@@ -349,7 +349,7 @@ class ROSMasterHandler(object):
             self.param_server.delete_param(key, self._notify_param_subscribers)
             mloginfo("-PARAM [%s] by %s",key, caller_id)            
             return  1, "parameter %s deleted"%key, 0                
-        except KeyError as e:
+        except KeyError:
             return -1, "parameter [%s] is not set"%key, 0
         
     @apivalidate(0, (non_empty_str('key'), not_none('value')))
@@ -400,7 +400,7 @@ class ROSMasterHandler(object):
         try:
             key = resolve_name(key, caller_id)
             return 1, "Parameter [%s]"%key, self.param_server.get_param(key)
-        except KeyError as e: 
+        except KeyError:
             return -1, "Parameter [%s] is not set"%key, 0
 
     @apivalidate(0, (non_empty_str('key'),))
