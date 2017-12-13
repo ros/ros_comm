@@ -170,10 +170,13 @@ def info_cmd(argv):
         except ROSBagUnindexedException as ex:
             print('ERROR bag unindexed: %s.  Run rosbag reindex.' % arg,
                   file=sys.stderr)
+            sys.exit(1)
         except ROSBagException as ex:
             print('ERROR reading %s: %s' % (arg, str(ex)), file=sys.stderr)
+            sys.exit(1)
         except IOError as ex:
             print('ERROR reading %s: %s' % (arg, str(ex)), file=sys.stderr)
+            sys.exit(1)
 
 
 def handle_topics(option, opt_str, value, parser):
@@ -334,7 +337,7 @@ The following variables are available:
         inbag = Bag(inbag_filename)
     except ROSBagUnindexedException as ex:
         print('ERROR bag unindexed: %s.  Run rosbag reindex.' % inbag_filename, file=sys.stderr)
-        return
+        sys.exit(1)
 
     try:
         meter = ProgressMeter(outbag_filename, inbag._uncompressed_size)
@@ -432,7 +435,7 @@ def fix_cmd(argv):
     except ROSBagUnindexedException as ex:
         print('ERROR bag unindexed: %s.  Run rosbag reindex.' % inbag_filename,
               file=sys.stderr)
-        return
+        sys.exit(1)
 
     if len(migrations) == 0:
         os.rename(outname, outbag_filename)
@@ -449,6 +452,7 @@ def fix_cmd(argv):
                     
         print('Try running \'rosbag check\' to create the necessary rule files or run \'rosbag fix\' with the \'--force\' option.')
         os.remove(outname)
+        sys.exit(1)
 
 def check_cmd(argv):
     parser = optparse.OptionParser(usage='rosbag check BAG [-g RULEFILE] [EXTRARULES1 EXTRARULES2 ...]', description='Determine whether a bag is playable in the current system, or if it can be migrated.')
@@ -478,7 +482,7 @@ def check_cmd(argv):
         Bag(args[0])
     except ROSBagUnindexedException as ex:
         print('ERROR bag unindexed: %s.  Run rosbag reindex.' % args[0], file=sys.stderr)
-        return
+        sys.exit(1)
 
     mm = MessageMigrator(args[1:] + append_rule, not options.noplugins)
 
