@@ -578,7 +578,7 @@ class ProcessMonitor(Thread):
                         for l in self.listeners:
                             l.process_died(p.name, p.exit_code)
 
-                except Exception as e:
+                except Exception:
                     traceback.print_exc()
                     #don't respawn as this is an internal error
                     dead.append(p)

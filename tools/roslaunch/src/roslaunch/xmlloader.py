@@ -478,7 +478,7 @@ class XmlLoader(loader.Loader):
             try:
                 assignable = _assignable[default]
                 is_default = _is_default[default]
-            except KeyError as e:
+            except KeyError:
                 raise XmlParseException("Invalid value for 'attribute': %s"%default)
 
             # load env args
@@ -517,7 +517,7 @@ class XmlLoader(loader.Loader):
         try:
             self._check_attrs(tag, context, ros_config, XmlLoader.REMAP_ATTRS)
             return self.reqd_attrs(tag, context, XmlLoader.REMAP_ATTRS)
-        except KeyError as e:
+        except KeyError:
             raise XmlParseException("<remap> tag is missing required from/to attributes: %s"%tag.toxml())
         
     ENV_ATTRS = ('name', 'value')
@@ -528,7 +528,7 @@ class XmlLoader(loader.Loader):
             self.load_env(context, ros_config, *self.reqd_attrs(tag, context, XmlLoader.ENV_ATTRS))
         except ValueError as e:
             raise XmlParseException("Invalid <env> tag: %s. \nXML is %s"%(str(e), tag.toxml()))
-        except KeyError as e:
+        except KeyError:
             raise XmlParseException("<env> tag is missing required name/value attributes: %s"%tag.toxml())
     
     def _ns_clear_params_attr(self, tag_name, tag, context, ros_config, node_name=None, include_filename=None):

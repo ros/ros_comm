@@ -334,7 +334,7 @@ class ROSLaunchChildHandler(ROSLaunchBaseHandler):
             # enable the process monitor to exit of all processes die
             self.pm.registrations_complete()
             return 1, "launched", [ succeeded, failed ]
-        except Exception as e:
+        except Exception:
             return 0, "ERROR: %s"%traceback.format_exc(), [[], []]
     
 _STARTUP_TIMEOUT = 5.0 #seconds
@@ -467,7 +467,7 @@ class _ProcessListenerForwarder(ProcessListener):
     def process_died(self, process_name, exit_code):
         try:
             self.server.process_died(process_name, exit_code)
-        except Exception as e:
+        except Exception:
             logging.getLogger("roslaunch.remote").error(traceback.format_exc())
 
 class ROSLaunchChildNode(ROSLaunchNode):
@@ -507,7 +507,7 @@ class ROSLaunchChildNode(ROSLaunchNode):
             code, msg, _ = server.register(name, self.uri)
             if code != 1:
                 raise RLException("unable to register with roslaunch server: %s"%msg)
-        except Exception as e:
+        except Exception:
             self.logger.error("Exception while registering with roslaunch parent [%s]: %s"%(self.server_uri, traceback.format_exc()))
             # fail
             raise RLException("Exception while registering with roslaunch parent [%s]: %s"%(self.server_uri, traceback.format_exc()))

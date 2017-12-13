@@ -406,7 +406,7 @@ def fix_cmd(argv):
         try:
             file = open(outbag_filename, 'w')
             file.close()
-        except IOError as e:
+        except IOError:
             print('Cannot open %s for writing' % outbag_filename, file=sys.stderr)
             sys.exit(1)
 
@@ -418,7 +418,7 @@ def fix_cmd(argv):
         try:
             file = open(outname, 'w')
             file.close()
-        except IOError as e:
+        except IOError:
             print('Cannot open %s for writing' % outname, file=sys.stderr)
             sys.exit(1)
 

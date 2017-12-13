@@ -748,7 +748,7 @@ class _SubscriberImpl(_TopicImpl):
                 cb(msg, cb_args)
             else:
                 cb(msg)
-        except Exception as e:
+        except Exception:
             if not is_shutdown():
                 logerr("bad callback: %s\n%s"%(cb, traceback.format_exc()))
             else:
@@ -1073,10 +1073,10 @@ class _PublisherImpl(_TopicImpl):
                 try:
                     if not is_shutdown():
                         c.write_data(data)
-                except TransportTerminated as e:
+                except TransportTerminated:
                     logdebug("publisher connection to [%s] terminated, see errorlog for details:\n%s"%(c.endpoint_id, traceback.format_exc()))
                     err_con.append(c)
-                except Exception as e:
+                except Exception:
                     # greater severity level
                     logdebug("publisher connection to [%s] terminated, see errorlog for details:\n%s"%(c.endpoint_id, traceback.format_exc()))
                     err_con.append(c)
