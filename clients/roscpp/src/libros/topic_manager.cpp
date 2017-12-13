@@ -40,6 +40,7 @@
 #include "ros/init.h"
 #include "ros/file_log.h"
 #include "ros/subscribe_options.h"
+#include "ros/url.h"
 
 #include "xmlrpcpp/XmlRpc.h"
 
@@ -53,6 +54,51 @@ using namespace std; // sigh
 namespace ros
 {
 
+bool is_subscriber_authorized( const std::string& topic, const std::string& client_ip_address ) {
+  V_string sub_hosts;
+  master::getSubscriberHosts( sub_hosts, topic );
+  ROS_DEBUG_NAMED(AUTH_LOG_NAME, "Checking subscribers for %s (%zu hosts)", topic.c_str(), sub_hosts.size() );
+  std::string hosts_str;
+  for ( size_t i = 0; i < sub_hosts.size(); i++ ) {
+    ROS_DEBUG_NAMED(AUTH_LOG_NAME, "- matching %s to %s", client_ip_address.c_str(), sub_hosts[i].c_str() );
+    if ( is_uri_match( sub_hosts[i], client_ip_address ) ) {
+      ROS_INFO_NAMED(AUTH_LOG_NAME, "IP address (%s) matches authorized subscriber %s", client_ip_address.c_str(), sub_hosts[i].c_str() );
+      return true;
+    }
+    if ( i > 0 ) {
+      hosts_str += ", ";
+    }
+    hosts_str += sub_hosts[i];
+  }
+  ROS_WARN_NAMED(AUTH_LOG_NAME, "IP address (%s) does not match any subscribers [%s]", client_ip_address.c_str(), hosts_str.c_str() );
+
+  return false;
+}
+
+bool is_requester_authorized( const std::string& service, const std::string& client_ip_address ) {
+  V_string auth_ip_addresses;
+  std::string auth_list( "[" );
+  master::getServiceClients( auth_ip_addresses, service );
+  for ( size_t i = 0; i < auth_ip_addresses.size(); i++ ) {
+    if ( i > 0 ) {
+      auth_list += ", ";
+    }
+    auth_list += auth_ip_addresses[i];
+    if ( std::string( "255.255.255.255" ) == auth_ip_addresses[i] ) {
+      ROS_INFO_NAMED(AUTH_LOG_NAME, "is_requester_authorized( %s, %s ) noverify = True", service.c_str(), client_ip_address.c_str() );
+      return true;
+    }
+    else if ( client_ip_address == auth_ip_addresses[i] ) {
+      ROS_INFO_NAMED(AUTH_LOG_NAME, "is_requester_authorized( %s, %s ) OK", service.c_str(), client_ip_address.c_str() );
+      return true;
+    }
+  }
+  ROS_WARN_NAMED(AUTH_LOG_NAME, "is_requester_authorized( %s, %s ) not authorized. Authorized list is %s", service.c_str(), client_ip_address.c_str(), auth_list.c_str() );
+  return false;
+}
+
+TopicManagerPtr g_topic_manager;
+boost::mutex g_topic_manager_mutex;
 const TopicManagerPtr& TopicManager::instance()
 {
   static TopicManagerPtr topic_manager = boost::make_shared<TopicManager>();
@@ -78,8 +124,8 @@ void TopicManager::start()
   connection_manager_ = ConnectionManager::instance();
   xmlrpc_manager_ = XMLRPCManager::instance();
 
-  xmlrpc_manager_->bind("publisherUpdate", boost::bind(&TopicManager::pubUpdateCallback, this, _1, _2));
-  xmlrpc_manager_->bind("requestTopic", boost::bind(&TopicManager::requestTopicCallback, this, _1, _2));
+  xmlrpc_manager_->bind("publisherUpdate", boost::bind(&TopicManager::pubUpdateCallback, this, _1, _2, _3));
+  xmlrpc_manager_->bind("requestTopic", boost::bind(&TopicManager::requestTopicCallback, this, _1, _2, _3));
   xmlrpc_manager_->bind("getBusStats", boost::bind(&TopicManager::getBusStatsCallback, this, _1, _2));
   xmlrpc_manager_->bind("getBusInfo", boost::bind(&TopicManager::getBusInfoCallback, this, _1, _2));
   xmlrpc_manager_->bind("getSubscriptions", boost::bind(&TopicManager::getSubscriptionsCallback, this, _1, _2));
@@ -1002,27 +1048,42 @@ void TopicManager::getPublications(XmlRpcValue &pubs)
 
 extern std::string console::g_last_error_message;
 
-void TopicManager::pubUpdateCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
+void TopicManager::pubUpdateCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result, XmlRpc::XmlRpcClientInfo& client_info)
 {
-  std::vector<std::string> pubs;
-  for (int idx = 0; idx < params[2].size(); idx++)
-  {
-    pubs.push_back(params[2][idx]);
+  std::string caller_id( params[0] );
+  std::string topic( params[1] );
+  if ( !is_uri_match( ros::master::getURI(), client_info.ip ) ) {
+    ROS_WARN_NAMED(AUTH_LOG_NAME, "publisherUpdate( %s, %s, %s ) not authorized", caller_id.c_str(), topic.c_str(), client_info.ip.c_str() );
+    result = xmlrpc::responseInt(-1, "method not authorized", 0);
   }
-  if (pubUpdate(params[1], pubs))
-  {
-    result = xmlrpc::responseInt(1, "", 0);
-  }
-  else
-  {
-    result = xmlrpc::responseInt(0, console::g_last_error_message, 0);
+  else {
+    ROS_INFO_NAMED(AUTH_LOG_NAME, "publisherUpdate( %s, %s, %s ) OK", caller_id.c_str(), topic.c_str(), client_info.ip.c_str() );
+    std::vector<std::string> pubs;
+    for (int idx = 0; idx < params[2].size(); idx++)
+    {
+      pubs.push_back(params[2][idx]);
+    }
+    if (pubUpdate(params[1], pubs))
+    {
+      result = xmlrpc::responseInt(1, "", 0);
+    }
+    else
+    {
+      result = xmlrpc::responseInt(0, console::g_last_error_message, 0);
+    }
   }
 }
 
-void TopicManager::requestTopicCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
+void TopicManager::requestTopicCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result, XmlRpc::XmlRpcClientInfo& client_info)
 {
-  if (!requestTopic(params[1], params[2], result))
-  {
+  std::string caller_id( params[0] );
+  std::string topic( params[1] );
+  if ( !is_subscriber_authorized( topic, client_info.ip ) ) {
+    ROS_WARN_NAMED(AUTH_LOG_NAME, "requestTopic( %s, %s, %s ) not authorized", caller_id.c_str(), topic.c_str(), client_info.ip.c_str() );
+    result = xmlrpc::responseInt(-1, "method not authorized", 0);
+    return;
+  }
+  if (!requestTopic(params[1], params[2], result)) {
     result = xmlrpc::responseInt(0, console::g_last_error_message, 0);
   }
 }

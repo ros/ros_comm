@@ -19,6 +19,7 @@
 #include "xmlrpcpp/XmlRpcDispatch.h"
 #include "xmlrpcpp/XmlRpcSource.h"
 #include "xmlrpcpp/XmlRpcDecl.h"
+#include "xmlrpcpp/XmlRpcClientInfo.h"
 
 namespace XmlRpc {
 
@@ -82,6 +83,13 @@ namespace XmlRpc {
 
     inline int get_port() { return _port; }
 
+    XmlRpcClientInfo findClientInfo(int fd, XmlRpcClientInfo &ci) {
+      ci.ip = map_ip[fd];
+      ci.port = map_port[fd];
+      ci.family = map_family[fd];
+      return ci;
+    }
+
     XmlRpcDispatch *get_dispatch() { return &_disp; }
 
   protected:
@@ -107,7 +115,10 @@ namespace XmlRpc {
     XmlRpcServerMethod* _methodHelp;
 
     int _port;
-
+    XmlRpcClientInfo _clientInfo;
+    std::map<int,std::string> map_ip;
+    std::map<int,short> map_family;
+    std::map<int,int> map_port;
   };
 } // namespace XmlRpc
 

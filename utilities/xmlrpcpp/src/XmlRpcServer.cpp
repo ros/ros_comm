@@ -8,6 +8,7 @@
 #include "xmlrpcpp/XmlRpcSocket.h"
 #include "xmlrpcpp/XmlRpcUtil.h"
 #include "xmlrpcpp/XmlRpcException.h"
+#include "xmlrpcpp/XmlRpcClientInfo.h"
 
 
 using namespace XmlRpc;
@@ -150,7 +151,12 @@ XmlRpcServer::handleEvent(unsigned)
 void
 XmlRpcServer::acceptConnection()
 {
-  int s = XmlRpcSocket::accept(this->getfd());
+  int s = XmlRpcSocket::accept(this->getfd(), _clientInfo);
+
+  map_ip[s] = _clientInfo.ip;
+  map_port[s] = _clientInfo.port;
+  map_family[s] = _clientInfo.family;
+
   XmlRpcUtil::log(2, "XmlRpcServer::acceptConnection: socket %d", s);
   if (s < 0)
   {
@@ -215,7 +221,7 @@ class ListMethods : public XmlRpcServerMethod
 public:
   ListMethods(XmlRpcServer* s) : XmlRpcServerMethod(LIST_METHODS, s) {}
 
-  void execute(XmlRpcValue&, XmlRpcValue& result)
+  void execute(XmlRpcValue&, XmlRpcClientInfo&, XmlRpcValue& result)
   {
     _server->listMethods(result);
   }
@@ -230,8 +236,9 @@ class MethodHelp : public XmlRpcServerMethod
 public:
   MethodHelp(XmlRpcServer* s) : XmlRpcServerMethod(METHOD_HELP, s) {}
 
-  void execute(XmlRpcValue& params, XmlRpcValue& result)
+  void execute(XmlRpcValue& params, XmlRpcClientInfo& ci, XmlRpcValue& result)
   {
+    (void) ci;
     if (params[0].getType() != XmlRpcValue::TypeString)
       throw XmlRpcException(METHOD_HELP + ": Invalid argument type");
 

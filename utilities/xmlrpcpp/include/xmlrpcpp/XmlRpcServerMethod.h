@@ -9,6 +9,7 @@
 #endif
 
 #include "xmlrpcpp/XmlRpcDecl.h"
+#include "xmlrpcpp/XmlRpcClientInfo.h"
 
 #ifndef MAKEDEPEND
 # include <string>
@@ -34,7 +35,7 @@ namespace XmlRpc {
     std::string& name() { return _name; }
 
     //! Execute the method. Subclasses must provide a definition for this method.
-    virtual void execute(XmlRpcValue& params, XmlRpcValue& result) = 0;
+    virtual void execute(XmlRpcValue& params, XmlRpcClientInfo &ci, XmlRpcValue& result) = 0;
 
     //! Returns a help string for the method.
     //! Subclasses should define this method if introspection is being used.

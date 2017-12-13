@@ -49,6 +49,8 @@
 #include "ros/transport/transport_tcp.h"
 #include "ros/internal_timer_manager.h"
 #include "xmlrpcpp/XmlRpcSocket.h"
+#include "ros/master.h"
+#include "ros/url.h"
 
 #include "roscpp/GetLoggers.h"
 #include "roscpp/SetLoggerLevel.h"
@@ -153,8 +155,15 @@ void atexitCallback()
   }
 }
 
-void shutdownCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
+void shutdownCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result, XmlRpc::XmlRpcClientInfo& client_info)
 {
+  if ( !is_uri_match( ros::master::getURI(), client_info.ip ) ) {
+    std::string caller_id( params[0] );
+    ROS_WARN_NAMED(AUTH_LOG_NAME, "shutdown( %s, %s ) not authorized", caller_id.c_str(), client_info.ip.c_str() );
+    result = xmlrpc::responseInt(-1, "method not authorized", 0);
+    return;
+  }
+
   int num_params = 0;
   if (params.getType() == XmlRpc::XmlRpcValue::TypeArray)
     num_params = params.size();

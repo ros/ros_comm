@@ -1,5 +1,6 @@
 
 #include "xmlrpcpp/XmlRpcServerConnection.h"
+#include "xmlrpcpp/XmlRpcClientInfo.h"
 
 #include "xmlrpcpp/XmlRpcSocket.h"
 #include "xmlrpcpp/XmlRpc.h"
@@ -255,15 +256,18 @@ XmlRpcServerConnection::parseRequest(XmlRpcValue& params)
 }
 
 // Execute a named method with the specified params.
+// Note that it adds the XmlRpcClientInfo to allow authentication.
 bool
 XmlRpcServerConnection::executeMethod(const std::string& methodName, 
                                       XmlRpcValue& params, XmlRpcValue& result)
 {
+  XmlRpcClientInfo ci;
   XmlRpcServerMethod* method = _server->findMethod(methodName);
+  _server->findClientInfo(getfd(), ci);
 
   if ( ! method) return false;
 
-  method->execute(params, result);
+  method->execute(params, ci, result);
 
   // Ensure a valid result value
   if ( ! result.valid())

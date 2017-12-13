@@ -119,6 +119,7 @@ add_library(roscpp
   src/libros/service.cpp
   src/libros/this_node.cpp
   src/libros/steady_timer.cpp
+  src/libros/url.cpp
   )
 
 add_dependencies(roscpp ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

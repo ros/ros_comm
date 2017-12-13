@@ -43,6 +43,8 @@
 
 #include <boost/bind.hpp>
 
+#include "ros/topic_manager.h"
+
 namespace ros
 {
 
@@ -86,6 +88,16 @@ bool ServiceClientLink::handleHeader(const Header& header)
 
     ROS_ERROR("%s", msg.c_str());
     connection_->sendHeaderError(msg);
+
+    return false;
+  }
+  // check again if the client request is authorized
+  std::string client_ip_address = uri_to_ip_address( connection_->getClientURI() );
+  ROS_INFO_NAMED(AUTH_LOG_NAME, "received service connection for %s from %s (%s)", service.c_str(), client_callerid.c_str(), client_ip_address.c_str()  );
+  if ( !is_requester_authorized( service, client_ip_address ) ) {
+    ROS_WARN_NAMED(AUTH_LOG_NAME, "received service connection for %s from %s (%s)", service.c_str(), client_callerid.c_str(), client_ip_address.c_str()  );
+    std::string msg( "Client [" + client_callerid + "] wants service connection for " + service + ", but " + client_ip_address + " is not authorized" );
+    connection_->sendHeaderError( msg );
 
     return false;
   }

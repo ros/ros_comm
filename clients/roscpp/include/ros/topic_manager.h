@@ -31,12 +31,16 @@
 #include "forwards.h"
 #include "common.h"
 #include "ros/serialization.h"
+#include "ros/url.h"
 #include "rosout_appender.h"
 
 #include "xmlrpcpp/XmlRpcValue.h"
+#include "xmlrpcpp/XmlRpcClientInfo.h"
 
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
+
+static const char AUTH_LOG_NAME[] = "roscpp.auth";
 
 namespace ros
 {
@@ -59,6 +63,9 @@ typedef boost::shared_ptr<ConnectionManager> ConnectionManagerPtr;
 
 class SubscriptionCallbackHelper;
 typedef boost::shared_ptr<SubscriptionCallbackHelper> SubscriptionCallbackHelperPtr;
+
+bool is_subscriber_authorized( const std::string& topic, const std::string& client_ip_address );
+bool is_requester_authorized( const std::string& service, const std::string& client_ip_address );
 
 class ROSCPP_DECL TopicManager
 {
@@ -210,7 +217,9 @@ private:
   bool pubUpdate(const std::string &topic, const std::vector<std::string> &pubs);
 
   void pubUpdateCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result);
+  void pubUpdateCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result, XmlRpc::XmlRpcClientInfo& client_info);
   void requestTopicCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result);
+  void requestTopicCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result, XmlRpc::XmlRpcClientInfo& client_info);
   void getBusStatsCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result);
   void getBusInfoCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result);
   void getSubscriptionsCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result);

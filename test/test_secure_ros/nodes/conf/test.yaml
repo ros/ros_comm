@@ -1,0 +1,21 @@
+aliases:
+  machine1: [192.168.10.201]
+  machine2: [192.168.10.202]
+  machine3: [192.168.10.203]
+topics:
+  /chatter:
+    publishers: [machine1]
+    subscribers: [machine2]
+nodes:
+  /talker: [machine1]
+  /listener: [machine2]
+parameters:
+  /abc/def:
+    setters: [machine1]
+    getters: [machine1,machine2]
+  /talker: 
+    setters: [machine1]
+    getters: [machine1]
+  /listener: 
+    setters: [machine2]
+    getters: [machine2]

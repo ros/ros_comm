@@ -279,6 +279,12 @@ def main(argv=sys.argv):
         logger = logging.getLogger('roslaunch')
         logger.info("roslaunch starting with args %s"%str(argv))
         logger.info("roslaunch env is %s"%os.environ)
+        # resolve full path of auth file while os.curdir is still valid 
+        if os.environ.has_key( "ROS_AUTH_FILE" ):
+            os.environ["ROS_AUTH_FILE"] = os.path.realpath( os.path.expanduser( os.environ["ROS_AUTH_FILE"] ) )
+            logger.info( "Resolving ROS_AUTH_FILE to %s" % os.environ["ROS_AUTH_FILE"] )
+        else:
+            logger.warn( "ROS_AUTH_FILE environment variable not set!" )
             
         if options.child_name:
             logger.info('starting in child mode')

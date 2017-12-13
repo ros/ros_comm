@@ -86,6 +86,26 @@ def not_none(param_name):
 
 # Validators ######################################
 
+def is_ipv4(param_name):
+    """
+    Validator that checks that parameter is a valid IPv4 address
+    """
+    def validator(param_value, callerId):
+        #print( "validating: %s" % param_value )
+        if param_value == "":
+          param_value = "0.0.0.0"
+        if not isstring( param_value ):
+          print( "[xmlrpc] ERROR: parameter [%s] is not a string" % param_value )
+          raise ParameterInvalid("ERROR: parameter [%s] is not a string" % param_name)
+        try:
+          import socket 
+          socket.inet_aton( param_value )
+        except:
+          print( "[xmlrpc] ERROR: Parameter [%s] is illegal IP address" % param_value )
+          raise ParameterInvalid("ERROR: parameter [%s] is illegal IP address " % param_name)
+        return param_value
+    return validator
+
 def is_api(paramName):
     """
     Validator that checks that parameter is a valid API handle

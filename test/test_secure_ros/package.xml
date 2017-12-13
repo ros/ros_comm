@@ -1,0 +1,17 @@
+<package>
+  <name>test_secure_ros</name>
+  <version>1.11.20</version>
+  <description>
+    A package containing nodes to test Secure ROS features.
+  </description>
+  <maintainer email="aravind@ai.sri.com">Aravind Sundaresan</maintainer>
+  <license>BSD</license>
+  <author email="aravind@ai.sri.com">Aravind Sundaresan</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
+</package>

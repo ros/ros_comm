@@ -172,6 +172,92 @@ bool getNodes(V_string& nodes)
   return true;
 }
 
+bool getSubscriberNodes(V_string& sub_nodes, const std::string topic)
+{
+  XmlRpc::XmlRpcValue args, result, payload;
+  args[0] = this_node::getName();
+
+  // probe master to get the system state 
+  if (!execute("getSystemState", args, result, payload, true))
+  {
+    return false;
+  }
+
+  // parse the system state to determine which nodes are allowed to subscribe to topic
+  S_string node_set;
+  {
+    if ( payload.size() != 3 ) {
+      return false;
+    }
+    // check the subscribers for topic 
+    for (int j = 0; j < payload[1].size(); ++j)
+    {
+      std::string t = payload[1][j][0];
+      if ( t == topic ) {
+        XmlRpc::XmlRpcValue val = payload[1][j][1];
+        for (int k = 0; k < val.size(); ++k)
+        {
+          std::string name = payload[1][j][1][k];
+          node_set.insert(name);
+        }
+      }
+    }
+  }
+  sub_nodes.insert(sub_nodes.end(), node_set.begin(), node_set.end());
+  return true;
+}
+
+bool getSubscriberHosts(V_string& sub_hosts, const std::string topic) 
+{
+  V_string sub_nodes;
+  getSubscriberNodes( sub_nodes, topic );
+
+  // convert list of subscriber nodes to subscriber IP addresses
+  S_string host_set;
+  for ( size_t i = 0; i < sub_nodes.size(); i++ ) {
+    XmlRpc::XmlRpcValue args, result, payload;
+    args[0] = this_node::getName();
+    args[1] = sub_nodes[i];
+
+    if (!execute("lookupNode", args, result, payload, true)) {
+      return false;
+    }
+    if ( payload.getType() != XmlRpc::XmlRpcValue::TypeString ) {
+      return false;
+    }
+    std::string uri = payload;
+    std::string host;
+    uint32_t port;
+    // Split URI into
+    if (!network::splitURI(uri, host, port)) {
+      ROS_WARN( "Couldn't parse the URI [%s] into a host:port pair.", uri.c_str());
+      continue;
+    }
+    host_set.insert( host );
+  }
+  sub_hosts.insert( sub_hosts.end(), host_set.begin(), host_set.end() );
+  return true;
+}
+
+
+bool getServiceClients(V_string& sub_hosts, const std::string service) 
+{
+  XmlRpc::XmlRpcValue args, result, payload;
+  args[0] = this_node::getName();
+  args[1] = service;
+
+  if (!execute("getServiceClients", args, result, payload, true)) {
+    return false;
+  }
+
+  // get list of authorized service providers' IP address
+  for ( int j = 0; j < payload.size(); ++j ) {
+    std::string ip_address = payload[j];
+    sub_hosts.push_back( ip_address );
+  }
+  return true;
+}
+
 #if defined(__APPLE__)
 boost::mutex g_xmlrpc_call_mutex;
 #endif
