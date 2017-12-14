@@ -19,11 +19,9 @@
   <build_depend>roscpp</build_depend>
   <build_depend>rostest</build_depend>
   <build_depend>rosunit</build_depend>
-  <build_depend>xmlrpcpp</build_depend>
 
   <run_depend>rosconsole</run_depend>
   <run_depend>roscpp</run_depend>
-  <run_depend>xmlrpcpp</run_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>
