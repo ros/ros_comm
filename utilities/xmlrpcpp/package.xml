@@ -22,6 +22,8 @@
 
   <run_depend>cpp_common</run_depend>
 
+  <test_depend>boost</test_depend>
+
   <export>
     <rosdoc external="http://xmlrpcpp.sourceforge.net/doc/hierarchy.html"/>
   </export>
