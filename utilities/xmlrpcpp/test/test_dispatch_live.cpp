@@ -41,7 +41,8 @@
 
 using namespace XmlRpc;
 
-TEST_F(XmlRpcTest, Hello) {
+TEST_F(XmlRpcTest, Hello)
+{
   XmlRpcClient c("localhost", port);
   XmlRpcValue noArgs, result;
 
@@ -53,7 +54,8 @@ TEST_F(XmlRpcTest, Hello) {
   EXPECT_EQ(result, hello);
 }
 
-TEST_F(XmlRpcTest, HelloNonBlock) {
+TEST_F(XmlRpcTest, HelloNonBlock)
+{
   XmlRpcClient c("localhost", port);
   XmlRpcValue noArgs, result;
 
@@ -61,7 +63,8 @@ TEST_F(XmlRpcTest, HelloNonBlock) {
   ASSERT_TRUE(c.executeNonBlock("Hello", noArgs));
 
   bool done = false;
-  for (int i = 0; i < 30; i++) {
+  for (int i = 0; i < 30; i++)
+  {
     done = c.executeCheckDone(result);
     if (done)
       break;
@@ -75,7 +78,8 @@ TEST_F(XmlRpcTest, HelloNonBlock) {
   EXPECT_EQ(result, hello);
 }
 
-TEST_F(XmlRpcTest, HelloNonBlock2) {
+TEST_F(XmlRpcTest, HelloNonBlock2)
+{
   XmlRpcClient c("localhost", port);
   XmlRpcValue noArgs, result;
 
@@ -86,7 +90,8 @@ TEST_F(XmlRpcTest, HelloNonBlock2) {
   ASSERT_TRUE(c.executeNonBlock("Hello", noArgs));
 
   bool done = false;
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 100; i++)
+  {
     done = c.executeCheckDone(result);
     if (done)
       break;
@@ -104,7 +109,8 @@ TEST_F(XmlRpcTest, HelloNonBlock2) {
   EXPECT_EQ(result, hello);
 }
 
-TEST_F(XmlRpcTest, ClientDisconnect) {
+TEST_F(XmlRpcTest, ClientDisconnect)
+{
   XmlRpcClient* c = new XmlRpcClient("localhost", port);
   XmlRpcValue noArgs, result;
 
@@ -121,7 +127,8 @@ TEST_F(XmlRpcTest, ClientDisconnect) {
   hello.hello_mutex.unlock();
 }
 
-TEST_F(XmlRpcTest, ServerDisconnect) {
+TEST_F(XmlRpcTest, ServerDisconnect)
+{
   XmlRpcClient c("localhost", port);
   XmlRpcValue noArgs, result;
 
@@ -139,7 +146,8 @@ TEST_F(XmlRpcTest, ServerDisconnect) {
 
   // Run the client to completion
   bool done = false;
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 100; i++)
+  {
     done = c.executeCheckDone(result);
     if (done)
       break;
@@ -155,7 +163,8 @@ TEST_F(XmlRpcTest, ServerDisconnect) {
   EXPECT_EQ(result, XmlRpcValue()); // Expect empty result
 }
 
-TEST_F(XmlRpcTest, ServerDisconnect2) {
+TEST_F(XmlRpcTest, ServerDisconnect2)
+{
   XmlRpcClient c("localhost", port);
   XmlRpcValue noArgs, result;
 

@@ -27,7 +27,8 @@
 
 using namespace XmlRpc;
 
-TEST_F(XmlRpcTest, Ulimit) {
+TEST_F(XmlRpcTest, Ulimit)
+{
   XmlRpcClient c("localhost", port);
   XmlRpcValue noArgs, result;
 

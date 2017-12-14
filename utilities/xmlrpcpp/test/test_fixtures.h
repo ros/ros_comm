@@ -28,7 +28,8 @@
 #include <gtest/gtest.h>
 
 // No arguments, result is "Hello".
-class Hello : public XmlRpc::XmlRpcServerMethod {
+class Hello : public XmlRpc::XmlRpcServerMethod
+{
 public:
   Hello(XmlRpc::XmlRpcServer* s) : XmlRpc::XmlRpcServerMethod("Hello", s) {}
 
@@ -39,7 +40,8 @@ public:
   boost::mutex hello_mutex;
 };
 
-class XmlRpcTest : public ::testing::Test {
+class XmlRpcTest : public ::testing::Test
+{
 protected:
   XmlRpcTest();
 

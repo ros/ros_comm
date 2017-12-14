@@ -41,26 +41,31 @@ using XmlRpc::XmlRpcClient;
 using XmlRpc::XmlRpcValue;
 
 // No arguments, result is "Hello".
-class Hello : public XmlRpcServerMethod {
+class Hello : public XmlRpcServerMethod
+{
 public:
   Hello(XmlRpcServer* s) : XmlRpcServerMethod("Hello", s) {}
 
-  void execute(XmlRpcValue& params, XmlRpcValue& result) {
+  void execute(XmlRpcValue& params, XmlRpcValue& result)
+  {
     (void)params;
     result = "Hello";
   }
 
-  std::string help() {
+  std::string help()
+  {
     return std::string("Say hello");
   }
 };
 
 // One argument is passed, result is "Hello, " + arg.
-class HelloName : public XmlRpcServerMethod {
+class HelloName : public XmlRpcServerMethod
+{
 public:
   HelloName(XmlRpcServer* s) : XmlRpcServerMethod("HelloName", s) {}
 
-  void execute(XmlRpcValue& params, XmlRpcValue& result) {
+  void execute(XmlRpcValue& params, XmlRpcValue& result)
+  {
     std::string resultString = "Hello, ";
     resultString += std::string(params[0]);
     result = resultString;
@@ -68,11 +73,13 @@ public:
 };
 
 // A variable number of arguments are passed, all doubles, result is their sum.
-class Sum : public XmlRpcServerMethod {
+class Sum : public XmlRpcServerMethod
+{
 public:
   Sum(XmlRpcServer* s) : XmlRpcServerMethod("Sum", s) {}
 
-  void execute(XmlRpcValue& params, XmlRpcValue& result) {
+  void execute(XmlRpcValue& params, XmlRpcValue& result)
+  {
     int nArgs = params.size();
     double sum = 0.0;
     for (int i = 0; i < nArgs; ++i)
@@ -81,17 +88,21 @@ public:
   }
 };
 
-class XmlRpcTest : public ::testing::Test {
+class XmlRpcTest : public ::testing::Test
+{
 protected:
   XmlRpcTest() : hello(&s), helloName(&s), sum(&s), port(0), done(false) {}
 
-  void work() {
-    while (!done) {
+  void work()
+  {
+    while (!done)
+    {
       s.work(0.1); // run the worker queue for 100ms
     }
   }
 
-  virtual void SetUp() {
+  virtual void SetUp()
+  {
     // XmlRpc::setVerbosity(5);
 
     // Create the server socket. Passing 0 for the port number requests that
@@ -107,7 +118,8 @@ protected:
     server_thread = boost::thread(boost::mem_fn(&XmlRpcTest::work), this);
   }
 
-  virtual void TearDown() {
+  virtual void TearDown()
+  {
     // TODO(austin): determine if we need to do anything here to avoid
     // leaking resources
     done = true;
@@ -129,7 +141,8 @@ protected:
   boost::thread server_thread;
 };
 
-TEST_F(XmlRpcTest, Introspection) {
+TEST_F(XmlRpcTest, Introspection)
+{
   XmlRpcClient c("localhost", port);
 
   // Use introspection API to look up the supported methods
@@ -163,7 +176,8 @@ TEST_F(XmlRpcTest, Introspection) {
   EXPECT_EQ(result, XmlRpcValue(""));
 }
 
-TEST_F(XmlRpcTest, Hello) {
+TEST_F(XmlRpcTest, Hello)
+{
   XmlRpcClient c("localhost", port);
   XmlRpcValue noArgs, result;
 
@@ -173,7 +187,8 @@ TEST_F(XmlRpcTest, Hello) {
   EXPECT_EQ(result, XmlRpcValue("Hello"));
 }
 
-TEST_F(XmlRpcTest, HelloURI) {
+TEST_F(XmlRpcTest, HelloURI)
+{
   XmlRpcClient c("localhost", port, "/");
   XmlRpcValue noArgs, result;
 
@@ -183,7 +198,8 @@ TEST_F(XmlRpcTest, HelloURI) {
   EXPECT_EQ(result, XmlRpcValue("Hello"));
 }
 
-TEST_F(XmlRpcTest, HelloName) {
+TEST_F(XmlRpcTest, HelloName)
+{
   XmlRpcClient c("localhost", port);
   XmlRpcValue oneArg, result;
 
@@ -194,7 +210,8 @@ TEST_F(XmlRpcTest, HelloName) {
   EXPECT_EQ(result, XmlRpcValue("Hello, Chris"));
 }
 
-TEST_F(XmlRpcTest, Sum) {
+TEST_F(XmlRpcTest, Sum)
+{
   XmlRpcClient c("localhost", port);
   XmlRpcValue result;
 
@@ -218,7 +235,8 @@ TEST_F(XmlRpcTest, Sum) {
   EXPECT_EQ(result, fault);
 }
 
-TEST_F(XmlRpcTest, Multicall) {
+TEST_F(XmlRpcTest, Multicall)
+{
   XmlRpcClient c("localhost", port);
   XmlRpcValue result;
 
