@@ -289,7 +289,10 @@ class ROSLaunchParent(object):
         if self.process_listeners:
             for l in self.process_listeners:
                 self.runner.pm.add_process_listener(l)
-        
+                # Add listeners to server as well, otherwise they won't be
+                # called when a node on a remote machine dies.
+                self.server.add_process_listener(l)
+
     def spin_once(self):
         """
         Run the parent roslaunch event loop once
