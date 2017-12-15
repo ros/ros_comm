@@ -136,7 +136,7 @@ static std::string encryptStringGpg(std::string& user, std::basic_string<unsigne
         gpgme_data_release(output_data);
         gpgme_data_release(input_data);
         gpgme_release(ctx);
-        throw rosbag::BagException((boost::format("Failed to encrypt: %1%.  Have you installed a public key?") % gpgme_strerror(err)).str());
+        throw rosbag::BagException((boost::format("Failed to encrypt: %1%.  Have you installed a public key %2%?") % gpgme_strerror(err) % user).str());
     }
     gpgme_key_release(keys[0]);
     std::size_t output_length = gpgme_data_seek(output_data, 0, SEEK_END);
@@ -156,11 +156,12 @@ static std::string encryptStringGpg(std::string& user, std::basic_string<unsigne
 //! Decrypt string using GPGME
 /*!
  * \return Decrypted string
+ * \param user User name of the GPG key to be used for decryption
  * \param input Encrypted string
  *
  * This method decrypts the given encrypted string. This method throws BagException in case of errors.
  */
-static std::basic_string<unsigned char> decryptStringGpg(std::string const& input) {
+static std::basic_string<unsigned char> decryptStringGpg(std::string const& user, std::string const& input) {
     gpgme_ctx_t ctx;
     gpgme_error_t err = gpgme_new(&ctx);
     if (err) {
@@ -187,7 +188,7 @@ static std::basic_string<unsigned char> decryptStringGpg(std::string const& inpu
         gpgme_data_release(output_data);
         gpgme_data_release(input_data);
         gpgme_release(ctx);
-        throw rosbag::BagException((boost::format("Failed to decrypt bag: %1%.  Have you installed a required private key?") % gpgme_strerror(err)).str());
+        throw rosbag::BagException((boost::format("Failed to decrypt bag: %1%.  Have you installed a private key %2%?") % gpgme_strerror(err) % user).str());
     }
     std::size_t output_length = gpgme_data_seek(output_data, 0, SEEK_END);
     if (output_length != AES_BLOCK_SIZE) {
@@ -291,7 +292,7 @@ void AesCbcEncryptor::readFieldsFromFileHeader(ros::M_string const& header_field
     if (gpg_key_user_.empty()) {
         throw rosbag::BagFormatException("GPG key user is not found in header");
     }
-    symmetric_key_ = decryptStringGpg(encrypted_symmetric_key_);
+    symmetric_key_ = decryptStringGpg(gpg_key_user_, encrypted_symmetric_key_);
     AES_set_decrypt_key(&symmetric_key_[0], AES_BLOCK_SIZE*8, &aes_decrypt_key_);
 }
 
