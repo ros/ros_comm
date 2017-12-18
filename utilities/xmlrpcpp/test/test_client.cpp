@@ -79,6 +79,10 @@ TEST_F(MockSocketTest, constructor) {
   EXPECT_EQ(false, a._eof);
   EXPECT_EQ(true, a.getKeepOpen());
   EXPECT_EQ(-1, a.getfd());
+  EXPECT_EQ(0, a._sendAttempts);
+  EXPECT_EQ(0, a._bytesWritten);
+  EXPECT_EQ(0, a._contentLength);
+  EXPECT_FALSE(a._isFault);
   EXPECT_FALSE(sourceInList(&a, a._disp._sources));
 
   XmlRpcClient b("nowhere.com", 404, "/where");
@@ -768,9 +772,31 @@ TEST_F(MockSocketTest, readHeader_err) {
 
   // Expect a read and have it fail.
   Expect_nbRead(7, "", false, false);
-  Expect_getError(ENOTCONN);
   // Expect the client to close the socket.
   Expect_close(7);
+  // Expect a reconnect attempt
+  Expect_socket(8);
+  Expect_setNonBlocking(8, true);
+  Expect_connect(8, "localhost", 42, true);
+
+  EXPECT_TRUE(a.readHeader());
+
+  // Check that state machine is in the correct state after getting the header.
+  EXPECT_EQ(XmlRpcClient::WRITE_REQUEST, a._connectionState);
+  EXPECT_EQ(1, a._sendAttempts);
+
+  // Check that all expected function calls were made before destruction.
+  CheckCalls();
+
+  // Skip the state machine forward to READ_HEADER state again.
+  a._connectionState = XmlRpcClient::READ_HEADER;
+
+  // Do it again, but this time don't expect a reconnect attempt
+  // Expect a read and have it return eof and success.
+  Expect_nbRead(8, "", true, true);
+  Expect_getError(ENOTCONN);
+  // Expect the client to close the socket.
+  Expect_close(8);
 
   EXPECT_FALSE(a.readHeader());
 
@@ -792,9 +818,31 @@ TEST_F(MockSocketTest, readHeader_eof) {
 
   // Expect a read and have it return eof and success.
   Expect_nbRead(7, "", true, true);
-  Expect_getError(ENOTCONN);
   // Expect the client to close the socket.
   Expect_close(7);
+  // Expect a reconnect attempt
+  Expect_socket(8);
+  Expect_setNonBlocking(8, true);
+  Expect_connect(8, "localhost", 42, true);
+
+  EXPECT_TRUE(a.readHeader());
+
+  // Check that state machine is in the correct state after getting the header.
+  EXPECT_EQ(XmlRpcClient::WRITE_REQUEST, a._connectionState);
+  EXPECT_EQ(1, a._sendAttempts);
+
+  // Check that all expected function calls were made before destruction.
+  CheckCalls();
+
+  // Skip the state machine forward to READ_HEADER state again.
+  a._connectionState = XmlRpcClient::READ_HEADER;
+
+  // Do it again, but this time don't expect a reconnect attempt
+  // Expect a read and have it return eof and success.
+  Expect_nbRead(8, "", true, true);
+  Expect_getError(ENOTCONN);
+  // Expect the client to close the socket.
+  Expect_close(8);
 
   EXPECT_FALSE(a.readHeader());
 
@@ -829,14 +877,21 @@ TEST_F(MockSocketTest, readHeader_partial_err) {
 
   // Expect a read and have it return an error.
   Expect_nbRead(7, "", false, false);
-  Expect_getError(ENOTCONN);
   Expect_close(7);
-  EXPECT_FALSE(a.readHeader());
+  // Expect a reconnect attempt
+  Expect_socket(8);
+  Expect_setNonBlocking(8, true);
+  Expect_connect(8, "localhost", 42, true);
+
+  EXPECT_TRUE(a.readHeader());
   // Check that state machine is in the correct state after getting the header.
-  EXPECT_EQ(XmlRpcClient::NO_CONNECTION, a._connectionState);
+  EXPECT_EQ(XmlRpcClient::WRITE_REQUEST, a._connectionState);
 
   // Check that all expected function calls were made before destruction.
   CheckCalls();
+
+  // Expect socket close on destruction.
+  Expect_close(8);
 }
 
 // Test readResponse()
