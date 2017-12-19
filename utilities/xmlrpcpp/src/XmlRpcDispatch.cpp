@@ -62,7 +62,7 @@ XmlRpcDispatch::removeSource(XmlRpcSource* source)
 
 
 // Modify the types of events to watch for on this source
-void 
+void
 XmlRpcDispatch::setSourceEvents(XmlRpcSource* source, unsigned eventMask)
 {
   for (SourceList::iterator it=_sources.begin(); it!=_sources.end(); ++it)
@@ -222,8 +222,13 @@ XmlRpcDispatch::getTime()
   return ((double) tbuff.time + ((double)tbuff.millitm / 1000.0) +
 	  ((double) tbuff.timezone * 60));
 #else
-  struct timespec ts;
-# ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
+/*
+ * copied from ros_steadytime in rostime/src/time.cpp
+ */
+#ifndef WIN32
+  timespec ts;
+#if defined(__APPLE__)
+  // On macOS use clock_get_time.
   clock_serv_t cclock;
   mach_timespec_t mts;
   host_get_clock_service(mach_host_self(), SYSTEM_CLOCK, &cclock);
@@ -231,10 +236,33 @@ XmlRpcDispatch::getTime()
   mach_port_deallocate(mach_task_self(), cclock);
   ts.tv_sec = mts.tv_sec;
   ts.tv_nsec = mts.tv_nsec;
-#else
+#else  // defined(__APPLE__)
+  // Otherwise use clock_gettime.
   clock_gettime(CLOCK_MONOTONIC, &ts);
-#endif
+#endif  // defined(__APPLE__)
   return (ts.tv_sec + ts.tv_nsec / 1000000000.0);
+#else /* WIN32 */
+  static LARGE_INTEGER cpu_frequency, performance_count;
+  // These should not ever fail since XP is already end of life:
+  // From https://msdn.microsoft.com/en-us/library/windows/desktop/ms644905(v=vs.85).aspx and
+  //      https://msdn.microsoft.com/en-us/library/windows/desktop/ms644904(v=vs.85).aspx:
+  // "On systems that run Windows XP or later, the function will always succeed and will
+  //  thus never return zero."
+  QueryPerformanceFrequency(&cpu_frequency);
+  if (cpu_frequency.QuadPart == 0) {
+    throw NoHighPerformanceTimersException();
+  }
+  QueryPerformanceCounter(&performance_count);
+  double steady_time = performance_count.QuadPart / (double) cpu_frequency.QuadPart;
+  int64_t steady_sec = floor(steady_time);
+  int64_t steady_nsec = boost::math::round((steady_time - steady_sec) * 1e9);
+
+  // Throws an exception if we go out of 32-bit range
+  normalizeSecNSecUnsigned(steady_sec, steady_nsec);
+
+  return (steady_sec + steady_nsec / 1000000000.0);
+#endif /* WIN32 */
+
 #endif /* USE_FTIME */
 }
 
