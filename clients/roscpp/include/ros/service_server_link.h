@@ -106,6 +106,7 @@ public:
    * it has finished.
    */
   bool call(const SerializedMessage& req, SerializedMessage& resp);
+  bool call(const SerializedMessage& req, SerializedMessage& resp, double timeout);
 
 private:
   void onConnectionDropped(const ConnectionPtr& conn);

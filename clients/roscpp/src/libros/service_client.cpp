@@ -35,7 +35,7 @@ namespace ros
 {
 
 ServiceClient::Impl::Impl() 
-  : is_shutdown_(false)
+  : is_shutdown_(false), timeout (-1.0)
 { }
 
 ServiceClient::Impl::~Impl()
@@ -140,7 +140,7 @@ bool ServiceClient::call(const SerializedMessage& req, SerializedMessage& resp, 
     }
   }
 
-  bool ret = link->call(req, resp);
+  bool ret = link->call(req, resp, impl_->timeout);
   link.reset();
 
   // If we're shutting down but the node haven't finished yet, wait until we do
@@ -170,6 +170,14 @@ bool ServiceClient::isPersistent() const
   }
 
   return false;
+}
+
+void ServiceClient::setTimeout(double timeout)
+{
+  if(impl_)
+  {
+    impl_->timeout = timeout;
+  }
 }
 
 void ServiceClient::shutdown()
