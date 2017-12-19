@@ -383,7 +383,7 @@ bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& re
 
         if(info->finished_condition_.wait_until(lock, wall_time) == boost::cv_status::timeout)
         {
-          ROS_ERROR("Service [%s] call failed: no response for %fsec", service_name_.c_str(), timeout);
+          ROSCPP_LOG_DEBUG("Service [%s] call failed: no response for %fsec", service_name_.c_str(), timeout);
           interrupted = true;
           break;
         }
