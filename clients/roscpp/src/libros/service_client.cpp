@@ -34,8 +34,9 @@
 namespace ros
 {
 
-ServiceClient::Impl::Impl() 
-  : is_shutdown_(false), timeout (-1.0)
+ServiceClient::Impl::Impl()
+  : is_shutdown_(false)
+  , timeout(-1.0)
 { }
 
 ServiceClient::Impl::~Impl()
@@ -174,7 +175,7 @@ bool ServiceClient::isPersistent() const
 
 void ServiceClient::setTimeout(double timeout)
 {
-  if(impl_)
+  if (impl_)
   {
     impl_->timeout = timeout;
   }

@@ -377,11 +377,11 @@ bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& re
 
     while (!info->finished_)
     {
-      if(timeout > 0)
+      if (timeout > 0)
       {
         steady_clock::time_point wall_time = now + milliseconds(static_cast<int>(timeout * 1000));
 
-        if(info->finished_condition_.wait_until(lock, wall_time) == boost::cv_status::timeout)
+        if (info->finished_condition_.wait_until(lock, wall_time) == boost::cv_status::timeout)
         {
           ROSCPP_LOG_DEBUG("Service [%s] call failed: no response for %fsec", service_name_.c_str(), timeout);
           interrupted = true;
@@ -389,13 +389,16 @@ bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& re
         }
       }
       else
+      {
         info->finished_condition_.wait(lock);
+      }
     }
   }
   // Clear calls is properly protected
-  if(interrupted)
+  if (interrupted)
+  {
     this->clearCalls();
-
+  }
 
   info->call_finished_ = true;
 
