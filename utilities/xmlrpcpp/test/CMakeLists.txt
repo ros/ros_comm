@@ -7,6 +7,22 @@ catkin_add_gtest(test_base64 test_base64.cpp)
 target_link_libraries(test_base64 xmlrpcpp)
 set_target_properties(test_base64 PROPERTIES COMPILE_FLAGS -std=c++11)
 
+# Some of the tests that follow use boost threads.
+find_package(Boost REQUIRED COMPONENTS system thread)
+include_directories(${Boost_INCLUDE_DIRS})
+
+add_library(test_fixtures test_fixtures.cpp)
+target_link_libraries(test_fixtures ${Boost_LIBRARIES})
+
+catkin_add_gtest(HelloTest HelloTest.cpp)
+target_link_libraries(HelloTest xmlrpcpp ${Boost_LIBRARIES})
+
+catkin_add_gtest(test_dispatch_live test_dispatch_live.cpp)
+target_link_libraries(test_dispatch_live xmlrpcpp test_fixtures ${Boost_LIBRARIES})
+
+catkin_add_gtest(test_ulimit test_ulimit.cpp)
+target_link_libraries(test_ulimit xmlrpcpp test_fixtures ${Boost_LIBRARIES})
+
 add_library(mock_socket mock_socket.cpp)
 
 catkin_add_gtest(test_client
