@@ -373,13 +373,13 @@ bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& re
     boost::mutex::scoped_lock lock(info->finished_mutex_);
 
     using namespace boost::chrono;
-    system_clock::time_point now = system_clock::now();
+    steady_clock::time_point now = steady_clock::now();
 
     while (!info->finished_)
     {
       if(timeout > 0)
       {
-        system_clock::time_point wall_time = now + milliseconds(static_cast<int>(timeout * 1000));
+        steady_clock::time_point wall_time = now + milliseconds(static_cast<int>(timeout * 1000));
 
         if(info->finished_condition_.wait_until(lock, wall_time) == boost::cv_status::timeout)
         {
