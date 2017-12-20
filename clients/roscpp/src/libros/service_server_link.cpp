@@ -329,10 +329,10 @@ void ServiceServerLink::processNextCall()
 
 bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& resp)
 {
-  return call(req, resp, -1);
+  return call(req, resp, ros::WallDuration(-1));
 }
 
-bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& resp, double timeout)
+bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& resp, const ros::WallDuration& timeout)
 {
   CallInfoPtr info(boost::make_shared<CallInfo>());
   info->req_ = req;
@@ -372,18 +372,13 @@ bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& re
   {
     boost::mutex::scoped_lock lock(info->finished_mutex_);
 
-    using namespace boost::chrono;
-    steady_clock::time_point now = steady_clock::now();
-
     while (!info->finished_)
     {
-      if (timeout > 0)
+      if (timeout > ros::WallDuration(0.0))
       {
-        steady_clock::time_point wall_time = now + milliseconds(static_cast<int>(timeout * 1000));
-
-        if (info->finished_condition_.wait_until(lock, wall_time) == boost::cv_status::timeout)
+        if (info->finished_condition_.wait_for(lock, boost::chrono::nanoseconds(timeout.toNSec())) == boost::cv_status::timeout)
         {
-          ROSCPP_LOG_DEBUG("Service [%s] call failed: no response for %fsec", service_name_.c_str(), timeout);
+          ROSCPP_LOG_DEBUG("Service [%s] call failed: no response for %fsec", service_name_.c_str(), timeout.toSec());
           interrupted = true;
           break;
         }

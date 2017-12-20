@@ -173,7 +173,7 @@ bool ServiceClient::isPersistent() const
   return false;
 }
 
-void ServiceClient::setTimeout(double timeout)
+void ServiceClient::setTimeout(const ros::WallDuration& timeout)
 {
   if (impl_)
   {

@@ -186,9 +186,10 @@ TEST(SrvCall, callSrvLongRunningTimeout)
   req.str = std::string("case_FLIP");
 
   const std::string service_name = "service_adv_long";
-  const double service_time = 2.0;
-  const double short_timeout = 0.5 * service_time;
-  const double long_timeout = 1.5 * service_time;
+  const double service_time_seconds = 2.0;
+  const ros::WallDuration service_time(service_time_seconds);
+  const ros::WallDuration short_timeout(0.9 * service_time_seconds);
+  const ros::WallDuration long_timeout(1.1 * service_time_seconds);
 
   ASSERT_TRUE(ros::service::waitForService(service_name));
   ASSERT_FALSE(ros::service::call(service_name, req, res, short_timeout))

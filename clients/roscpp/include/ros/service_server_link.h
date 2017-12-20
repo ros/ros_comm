@@ -121,7 +121,7 @@ public:
    * it has finished.
    */
   bool call(const SerializedMessage& req, SerializedMessage& resp);
-  bool call(const SerializedMessage& req, SerializedMessage& resp, double timeout);
+  bool call(const SerializedMessage& req, SerializedMessage& resp, const ros::WallDuration& timeout);
 
 private:
   void onConnectionDropped(const ConnectionPtr& conn);

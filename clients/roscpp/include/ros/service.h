@@ -58,13 +58,12 @@ namespace service
  * @param service_name The name of the service.
  * @param req The request message.
  * @param[out] res Storage for the response message.
- * @param timeout The amount of time to wait for, in milliseconds.  If timeout is -1,
- * waits until the call is complete
+ * @param timeout The amount of time to wait for.  If timeout is -1, waits until the call is complete
  *
  * @return true on success, false otherwise.
  */
 template<class MReq, class MRes>
-bool call(const std::string& service_name, MReq& req, MRes& res, double timeout)
+bool call(const std::string& service_name, MReq& req, MRes& res, const ros::WallDuration& timeout)
 {
   namespace st = service_traits;
   NodeHandle nh;
@@ -88,7 +87,7 @@ bool call(const std::string& service_name, MReq& req, MRes& res, double timeout)
 template<class MReq, class MRes>
 bool call(const std::string& service_name, MReq& req, MRes& res)
 {
-  return call(service_name, req, res, -1);
+  return call(service_name, req, res, ros::WallDuration(-1));
 }
 
 /** @brief Invoke an RPC service.
@@ -98,13 +97,12 @@ bool call(const std::string& service_name, MReq& req, MRes& res)
  *
  * @param service_name The name of the service.
  * @param service The service class that contains the request and response messages
- * @param timeout The amount of time to wait for, in milliseconds.  If timeout is -1,
- * waits until the call is complete
+ * @param timeout The amount of time to wait for.  If timeout is -1, waits until the call is complete
  *
  * @return true on success, false otherwise.
  */
 template<class Service>
-bool call(const std::string& service_name, Service& service, double timeout)
+bool call(const std::string& service_name, Service& service, const ros::WallDuration& timeout)
 {
   namespace st = service_traits;
 
@@ -128,7 +126,7 @@ bool call(const std::string& service_name, Service& service, double timeout)
 template<class Service>
 bool call(const std::string& service_name, Service& service)
 {
-  return call(service_name, service, -1);
+  return call(service_name, service, ros::WallDuration(-1));
 }
 
 /**
