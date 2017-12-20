@@ -162,8 +162,7 @@ public:
 
   /**
    * \brief Set timeout for service calls
-   * \param timeout The amount of time to wait for call response. If timeout is -1 (default),
-   * waits until call is complete
+   * \param timeout The amount of time to wait for call response. If timeout is <= 0, waits until call is complete
    */
   void setTimeout(const ros::WallDuration& timeout);
 

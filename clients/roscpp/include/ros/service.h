@@ -58,7 +58,7 @@ namespace service
  * @param service_name The name of the service.
  * @param req The request message.
  * @param[out] res Storage for the response message.
- * @param timeout The amount of time to wait for.  If timeout is -1, waits until the call is complete
+ * @param timeout The amount of time to wait for.  If timeout is <= 0, waits until the call is complete
  *
  * @return true on success, false otherwise.
  */
@@ -97,7 +97,7 @@ bool call(const std::string& service_name, MReq& req, MRes& res)
  *
  * @param service_name The name of the service.
  * @param service The service class that contains the request and response messages
- * @param timeout The amount of time to wait for.  If timeout is -1, waits until the call is complete
+ * @param timeout The amount of time to wait for.  If timeout is <= 0, waits until the call is complete
  *
  * @return true on success, false otherwise.
  */
