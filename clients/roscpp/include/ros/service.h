@@ -58,17 +58,61 @@ namespace service
  * @param service_name The name of the service.
  * @param req The request message.
  * @param[out] res Storage for the response message.
+ * @param timeout The amount of time to wait for, in milliseconds.  If timeout is -1,
+ * waits until the call is complete
+ *
+ * @return true on success, false otherwise.
+ */
+template<class MReq, class MRes>
+bool call(const std::string& service_name, MReq& req, MRes& res, double timeout)
+{
+  namespace st = service_traits;
+  NodeHandle nh;
+  ServiceClientOptions ops(ros::names::resolve(service_name), st::md5sum(req), false, M_string());
+  ServiceClient client = nh.serviceClient(ops);
+  client.setTimeout(timeout);
+  return client.call(req, res);
+}
+
+/** @brief Invoke an RPC service.
+ *
+ * This method invokes an RPC service on a remote server, looking up the
+ * service location first via the master.
+ *
+ * @param service_name The name of the service.
+ * @param req The request message.
+ * @param[out] res Storage for the response message.
  *
  * @return true on success, false otherwise.
  */
 template<class MReq, class MRes>
 bool call(const std::string& service_name, MReq& req, MRes& res)
 {
+  return call(service_name, req, res, -1);
+}
+
+/** @brief Invoke an RPC service.
+ *
+ * This method invokes an RPC service on a remote server, looking up the
+ * service location first via the master.
+ *
+ * @param service_name The name of the service.
+ * @param service The service class that contains the request and response messages
+ * @param timeout The amount of time to wait for, in milliseconds.  If timeout is -1,
+ * waits until the call is complete
+ *
+ * @return true on success, false otherwise.
+ */
+template<class Service>
+bool call(const std::string& service_name, Service& service, double timeout)
+{
   namespace st = service_traits;
+
   NodeHandle nh;
-  ServiceClientOptions ops(ros::names::resolve(service_name), st::md5sum(req), false, M_string());
+  ServiceClientOptions ops(ros::names::resolve(service_name), st::md5sum(service), false, M_string());
   ServiceClient client = nh.serviceClient(ops);
-  return client.call(req, res);
+  client.setTimeout(timeout);
+  return client.call(service.request, service.response);
 }
 
 /** @brief Invoke an RPC service.
@@ -84,12 +128,7 @@ bool call(const std::string& service_name, MReq& req, MRes& res)
 template<class Service>
 bool call(const std::string& service_name, Service& service)
 {
-  namespace st = service_traits;
-
-  NodeHandle nh;
-  ServiceClientOptions ops(ros::names::resolve(service_name), st::md5sum(service), false, M_string());
-  ServiceClient client = nh.serviceClient(ops);
-  return client.call(service.request, service.response);
+  return call(service_name, service, -1);
 }
 
 /**
