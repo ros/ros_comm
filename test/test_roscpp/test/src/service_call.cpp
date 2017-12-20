@@ -187,7 +187,6 @@ TEST(SrvCall, callSrvLongRunningTimeout)
 
   const std::string service_name = "service_adv_long";
   const double service_time_seconds = 2.0;
-  const ros::WallDuration service_time(service_time_seconds);
   // Note that we need to use less than a 0.9 factor here b/c otherwise the test fails in the buildfarm; see e.g.
   // http://build.ros.org/job/Lpr__ros_comm__ubuntu_xenial_amd64/682/console
   const ros::WallDuration short_timeout(0.5 * service_time_seconds);
@@ -195,10 +194,10 @@ TEST(SrvCall, callSrvLongRunningTimeout)
 
   ASSERT_TRUE(ros::service::waitForService(service_name));
   ASSERT_FALSE(ros::service::call(service_name, req, res, short_timeout))
-      << service_name << " did NOT time out after " << short_timeout << "s";
+      << service_name << " did NOT time out after " << short_timeout.toSec() << "s (res = " << res.str << ")";
 
   ASSERT_TRUE(ros::service::call(service_name, req, res, long_timeout))
-      << service_name << " timed out after " << long_timeout << "s";
+      << service_name << " timed out after " << long_timeout.toSec() << "s";
 
   ASSERT_STREQ(res.str.c_str(), "CASE_flip");
 }
