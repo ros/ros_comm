@@ -188,7 +188,9 @@ TEST(SrvCall, callSrvLongRunningTimeout)
   const std::string service_name = "service_adv_long";
   const double service_time_seconds = 2.0;
   const ros::WallDuration service_time(service_time_seconds);
-  const ros::WallDuration short_timeout(0.9 * service_time_seconds);
+  // Note that we need to use less than a 0.9 factor here b/c otherwise the test fails in the buildfarm; see e.g.
+  // http://build.ros.org/job/Lpr__ros_comm__ubuntu_xenial_amd64/682/console
+  const ros::WallDuration short_timeout(0.5 * service_time_seconds);
   const ros::WallDuration long_timeout(1.1 * service_time_seconds);
 
   ASSERT_TRUE(ros::service::waitForService(service_name));
