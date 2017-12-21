@@ -207,7 +207,7 @@ class Timer(threading.Thread):
         self._oneshot  = oneshot
         self._reset = reset
         self._shutdown = False
-        self.setDaemon(True)
+        self.daemon = True
         self.start()
 
     def shutdown(self):

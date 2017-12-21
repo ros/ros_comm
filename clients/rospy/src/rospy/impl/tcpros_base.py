@@ -138,7 +138,7 @@ class TCPServer(object):
     def start(self):
         """Runs the run() loop in a separate thread"""
         t = threading.Thread(target=self.run, args=())
-        t.setDaemon(True)
+        t.daemon = True
         t.start()
 
     def run(self):

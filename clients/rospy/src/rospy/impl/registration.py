@@ -315,7 +315,7 @@ class RegManager(RegistrationListener):
                 for uri in uris:
                     # #1141: have to multithread this to prevent a bad publisher from hanging us
                     t = threading.Thread(target=self._connect_topic_thread, args=(topic, uri))
-                    t.setDaemon(True)
+                    t.daemon = True
                     t.start()
 
     def _connect_topic_thread(self, topic, uri):
