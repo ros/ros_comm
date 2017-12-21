@@ -198,7 +198,7 @@ class ThreadPoolThread(threading.Thread):
     def __init__(self, pool):
         """Initialize the thread and remember the pool."""
         threading.Thread.__init__(self)
-        self.setDaemon(True) #don't block program exit
+        self.daemon = True #don't block program exit
         self.__pool = pool
         self.__isDying = False
         

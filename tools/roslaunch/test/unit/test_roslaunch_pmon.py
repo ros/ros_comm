@@ -399,7 +399,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         # and run it -- but setup a safety timer to kill it if it doesn't exit
         marker = Marker()
         t = threading.Thread(target=kill_pmon, args=(pmon, marker, 10.))
-        t.setDaemon(True)
+        t.daemon = True
         t.start()
         
         pmon.run()
@@ -455,7 +455,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         # and run it -- but setup a safety timer to kill it if it doesn't exit
         marker = Marker()
         t = threading.Thread(target=kill_pmon, args=(self.pmon, marker, 10.))
-        t.setDaemon(True)
+        t.daemon = True
         t.start()
         
         pmon.run()
@@ -565,7 +565,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         # can't test actual spin as that would go forever
         self.pmon.done = False
         t = threading.Thread(target=kill_pmon, args=(self.pmon, Marker()))
-        t.setDaemon(True)
+        t.daemon = True
         t.start()
         self.pmon.mainthread_spin()
 
