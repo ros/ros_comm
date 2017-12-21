@@ -446,9 +446,13 @@ def load_config_default(roslaunch_files, port, roslaunch_strs=None, loader=None,
 
     # load the roslaunch_files into the config
     for f in roslaunch_files:
+        if isinstance(f, tuple):
+            f, args = f
+        else:
+            args = None
         try:
             logger.info('loading config file %s'%f)
-            loader.load(f, config, verbose=verbose)
+            loader.load(f, config, argv=args, verbose=verbose)
         except roslaunch.xmlloader.XmlParseException as e:
             raise RLException(e)
         except roslaunch.loader.LoadException as e:
