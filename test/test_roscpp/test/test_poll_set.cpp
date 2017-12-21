@@ -256,7 +256,16 @@ void delThread(PollSet* ps, SocketHelper* sh, boost::barrier* barrier)
   ps->delSocket(sh->socket_);
 }
 
-TEST_F(Poller, addDelMultiThread)
+/**
+ * This test has been disabled. The underlying logic which it tests has three
+ * different implementations (poll, epoll, Windows), and development of the epoll
+ * version exposed that the test was validating a buggy aspect of the original
+ * poll version. To reenable this test, the poll version and the test would both
+ * have to be updated.
+ *
+ * For more discussion, see: https://github.com/ros/ros_comm/pull/1217
+ */
+TEST_F(Poller, DISABLED_addDelMultiThread)
 {
   for (int i = 0; i < 100; ++i)
   {

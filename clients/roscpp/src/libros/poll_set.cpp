@@ -47,7 +47,7 @@ namespace ros
 {
 
 PollSet::PollSet()
-: sockets_changed_(false)
+    : sockets_changed_(false), epfd_(create_socket_watcher())
 {
 	if ( create_signal_pair(signal_pipe_) != 0 ) {
         ROS_FATAL("create_signal_pair() failed");
@@ -60,6 +60,7 @@ PollSet::PollSet()
 PollSet::~PollSet()
 {
   close_signal_pair(signal_pipe_);
+  close_socket_watcher(epfd_);
 }
 
 bool PollSet::addSocket(int fd, const SocketUpdateFunc& update_func, const TransportPtr& transport)
@@ -79,6 +80,8 @@ bool PollSet::addSocket(int fd, const SocketUpdateFunc& update_func, const Trans
       ROSCPP_LOG_DEBUG("PollSet: Tried to add duplicate fd [%d]", fd);
       return false;
     }
+
+    add_socket_to_watcher(epfd_, fd);
 
     sockets_changed_ = true;
   }
@@ -106,6 +109,8 @@ bool PollSet::delSocket(int fd)
       just_deleted_.push_back(fd);
     }
 
+    del_socket_from_watcher(epfd_, fd);
+
     sockets_changed_ = true;
     signal();
 
@@ -132,6 +137,8 @@ bool PollSet::addEvents(int sock, int events)
 
   it->second.events_ |= events;
 
+  set_events_on_socket(epfd_, sock, it->second.events_);
+
   signal();
 
   return true;
@@ -151,6 +158,8 @@ bool PollSet::delEvents(int sock, int events)
     ROSCPP_LOG_DEBUG("PollSet: Tried to delete events [%d] to fd [%d] which does not exist in this pollset", events, sock);
     return false;
   }
+
+  set_events_on_socket(epfd_, sock, it->second.events_);
 
   signal();
 
@@ -177,28 +186,28 @@ void PollSet::update(int poll_timeout)
   createNativePollset();
 
   // Poll across the sockets we're servicing
-  int ret;
-  size_t ufds_count = ufds_.size();
-  if((ret = poll_sockets(&ufds_.front(), ufds_count, poll_timeout)) < 0)
+  boost::shared_ptr<std::vector<socket_pollfd> > ofds = poll_sockets(epfd_, &ufds_.front(), ufds_.size(), poll_timeout);
+  if (!ofds)
   {
-	  ROS_ERROR_STREAM("poll failed with error " << last_socket_error_string());
-    }
-  else if (ret > 0)  // ret = 0 implies the poll timed out, nothing to do
+    ROS_ERROR_STREAM("poll failed with error " << last_socket_error_string());
+  }
+  else
   {
-    // We have one or more sockets to service
-    for(size_t i=0; i<ufds_count; i++)
+    for (std::vector<socket_pollfd>::iterator it = ofds->begin() ; it != ofds->end(); ++it)
     {
-      if (ufds_[i].revents == 0)
-      {
-        continue;
-      }
-
+      int fd = it->fd;
+      int revents = it->revents;
       SocketUpdateFunc func;
       TransportPtr transport;
       int events = 0;
+
+      if (revents == 0)
+      {
+        continue;
+      }
       {
         boost::mutex::scoped_lock lock(socket_info_mutex_);
-        M_SocketInfo::iterator it = socket_info_.find(ufds_[i].fd);
+        M_SocketInfo::iterator it = socket_info_.find(fd);
         // the socket has been entirely deleted
         if (it == socket_info_.end())
         {
@@ -215,7 +224,6 @@ void PollSet::update(int poll_timeout)
 
       // If these are registered events for this socket, OR the events are ERR/HUP/NVAL,
       // call through to the registered function
-      int revents = ufds_[i].revents;
       if (func
           && ((events & revents)
               || (revents & POLLERR)
@@ -231,7 +239,7 @@ void PollSet::update(int poll_timeout)
           // we ignore the first instance of one of these errors.  If it's a real error we'll
           // hit it again next time through.
           boost::mutex::scoped_lock lock(just_deleted_mutex_);
-          if (std::find(just_deleted_.begin(), just_deleted_.end(), ufds_[i].fd) != just_deleted_.end())
+          if (std::find(just_deleted_.begin(), just_deleted_.end(), fd) != just_deleted_.end())
           {
             skip = true;
           }
@@ -242,13 +250,12 @@ void PollSet::update(int poll_timeout)
           func(revents & (events|POLLERR|POLLHUP|POLLNVAL));
         }
       }
-
-      ufds_[i].revents = 0;
     }
-
-    boost::mutex::scoped_lock lock(just_deleted_mutex_);
-    just_deleted_.clear();
   }
+
+  boost::mutex::scoped_lock lock(just_deleted_mutex_);
+  just_deleted_.clear();
+
 }
 
 void PollSet::createNativePollset()
