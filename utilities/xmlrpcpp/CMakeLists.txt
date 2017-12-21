@@ -1,26 +1,24 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(xmlrpcpp)
 
 if(NOT WIN32)
   set_directory_properties(PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra")
 endif()
 
-find_package(catkin REQUIRED COMPONENTS cpp_common)
+find_package(ament_cmake REQUIRED)
 
 # The CFG_EXTRAS is only for compatibility, to be removed in Lunar.
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES xmlrpcpp
-  CATKIN_DEPENDS cpp_common
-  CFG_EXTRAS xmlrpcpp-extras.cmake
-)
+#catkin_package(
+#  INCLUDE_DIRS include
+#  LIBRARIES xmlrpcpp
+#  CATKIN_DEPENDS cpp_common
+#  CFG_EXTRAS xmlrpcpp-extras.cmake
+#)
 
 include_directories(
   include
   libb64/include
-  ${catkin_INCLUDE_DIRS}
 )
-link_directories(${catkin_LIBRARY_DIRS})
 
 if(WIN32)
   add_definitions(-D_WINDOWS)
@@ -44,15 +42,16 @@ if(WIN32)
   target_link_libraries(xmlrpcpp ws2_32)
 endif()
 
+ament_export_include_directories(include)
+ament_export_libraries(xmlrpcpp)
+ament_package()
+
 install(DIRECTORY include/${PROJECT_NAME}
-  DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+  DESTINATION include
   FILES_MATCHING PATTERN "*.h")
 
 install(TARGETS xmlrpcpp
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin)
 
-if (CATKIN_ENABLE_TESTING)
-  add_subdirectory(test)
-endif()
