@@ -35,6 +35,21 @@
 #ifndef ROSCPP_SERVICE_SERVER_LINK_H
 #define ROSCPP_SERVICE_SERVER_LINK_H
 
+// check if we might need to include our own backported version boost::condition_variable
+// in order to use CLOCK_MONOTONIC
+// the include order here is important!
+#ifdef BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
+#include <boost/version.hpp>
+#if BOOST_VERSION < 106100
+// use backported version of boost condition variable, see https://svn.boost.org/trac/boost/ticket/6377
+#include "boost_161_condition_variable.h"
+#else // Boost version is 1.61 or greater and has the steady clock fixes
+#include <boost/thread/condition_variable.hpp>
+#endif
+#else // !BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
+#include <boost/thread/condition_variable.hpp>
+#endif // BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
+
 #include "ros/common.h"
 
 #include <boost/thread/mutex.hpp>
@@ -106,6 +121,7 @@ public:
    * it has finished.
    */
   bool call(const SerializedMessage& req, SerializedMessage& resp);
+  bool call(const SerializedMessage& req, SerializedMessage& resp, const ros::WallDuration& timeout);
 
 private:
   void onConnectionDropped(const ConnectionPtr& conn);

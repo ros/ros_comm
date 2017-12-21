@@ -41,6 +41,7 @@
 #include "ros/file_log.h"
 
 #include <boost/bind.hpp>
+#include <boost/chrono.hpp>
 
 #include <sstream>
 
@@ -328,6 +329,11 @@ void ServiceServerLink::processNextCall()
 
 bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& resp)
 {
+  return call(req, resp, ros::WallDuration(-1));
+}
+
+bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& resp, const ros::WallDuration& timeout)
+{
   CallInfoPtr info(boost::make_shared<CallInfo>());
   info->req_ = req;
   info->resp_ = &resp;
@@ -362,13 +368,31 @@ bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& re
     processNextCall();
   }
 
+  bool interrupted = false;
   {
     boost::mutex::scoped_lock lock(info->finished_mutex_);
 
     while (!info->finished_)
     {
-      info->finished_condition_.wait(lock);
+      if (timeout > ros::WallDuration(0.0))
+      {
+        if (info->finished_condition_.wait_for(lock, boost::chrono::nanoseconds(timeout.toNSec())) == boost::cv_status::timeout)
+        {
+          ROS_WARN("Service [%s] call failed: no response for %fsec", service_name_.c_str(), timeout.toSec());
+          interrupted = true;
+          break;
+        }
+      }
+      else
+      {
+        info->finished_condition_.wait(lock);
+      }
     }
+  }
+  // Clear calls is properly protected
+  if (interrupted)
+  {
+    this->clearCalls();
   }
 
   info->call_finished_ = true;

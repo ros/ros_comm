@@ -178,6 +178,30 @@ TEST(SrvCall, callSrvLongRunning)
   ASSERT_STREQ(res.str.c_str(), "CASE_flip");
 }
 
+TEST(SrvCall, callSrvLongRunningTimeout)
+{
+  test_roscpp::TestStringString::Request req;
+  test_roscpp::TestStringString::Response res;
+
+  req.str = std::string("case_FLIP");
+
+  const std::string service_name = "service_adv_long";
+  const double service_time_seconds = 2.0;
+  // Note that we need to use less than a 0.9 factor here b/c otherwise the test fails in the buildfarm; see e.g.
+  // http://build.ros.org/job/Lpr__ros_comm__ubuntu_xenial_amd64/682/console
+  const ros::WallDuration short_timeout(0.5 * service_time_seconds);
+  const ros::WallDuration long_timeout(1.1 * service_time_seconds);
+
+  ASSERT_TRUE(ros::service::waitForService(service_name));
+  ASSERT_FALSE(ros::service::call(service_name, req, res, short_timeout))
+      << service_name << " did NOT time out after " << short_timeout.toSec() << "s (res = " << res.str << ")";
+
+  ASSERT_TRUE(ros::service::call(service_name, req, res, long_timeout))
+      << service_name << " timed out after " << long_timeout.toSec() << "s";
+
+  ASSERT_STREQ(res.str.c_str(), "CASE_flip");
+}
+
 TEST(SrvCall, callSrvWhichUnadvertisesInCallback)
 {
   test_roscpp::TestStringString::Request req;
