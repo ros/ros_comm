@@ -249,7 +249,7 @@ def service_connection_handler(sock, client_addr, header):
             # using threadpool reduced performance by an order of
             # magnitude, need to investigate better
             t = threading.Thread(target=service.handle, args=(transport, header))
-            t.setDaemon(True)
+            t.daemon = True
             t.start()
                 
         
