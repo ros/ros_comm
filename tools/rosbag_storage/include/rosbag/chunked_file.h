@@ -79,8 +79,12 @@ public:
     bool        truncate(uint64_t length);
     void        seek(uint64_t offset, int origin = std::ios_base::beg); //!< seek to given offset from origin
     void        decompress(CompressionType compression, uint8_t* dest, unsigned int dest_len, uint8_t* source, unsigned int source_len);
+    void        swap(ChunkedFile& other);
 
 private:
+    ChunkedFile(const ChunkedFile&);
+    ChunkedFile& operator=(const ChunkedFile&);
+
     void open(std::string const& filename, std::string const& mode);
     void clearUnused();
 
@@ -97,6 +101,10 @@ private:
     boost::shared_ptr<Stream> read_stream_;
     boost::shared_ptr<Stream> write_stream_;
 };
+
+inline void swap(ChunkedFile& a, ChunkedFile& b) {
+    a.swap(b);
+}
 
 } // namespace rosbag
 

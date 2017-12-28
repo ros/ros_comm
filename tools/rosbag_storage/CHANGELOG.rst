@@ -2,6 +2,33 @@
 Changelog for package rosbag_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.12.12 (2017-11-16)
+--------------------
+* backward compatibility with libconsole-bridge in Jessie (take 3) (`#1235 <https://github.com/ros/ros_comm/issues/1235>`_)
+
+1.12.11 (2017-11-07)
+--------------------
+
+1.12.10 (2017-11-06)
+--------------------
+* fix compatibility with libconsole-bridge in Jessie, take 2
+
+1.12.9 (2017-11-06)
+-------------------
+* fix compatibility with libconsole-bridge in Jessie (`#1219 <https://github.com/ros/ros_comm/issues/1219>`_, regression from 1.12.8)
+
+1.12.8 (2017-11-06)
+-------------------
+* check if bzfile\_ and lz4s\_ handle is valid before reading/writing/closing (`#1183 <https://github.com/ros/ros_comm/issues/1183>`_)
+* fix an out of bounds read in rosbag::View::iterator::increment() (`#1191 <https://github.com/ros/ros_comm/issues/1191>`_)
+* replace usage deprecated console_bridge macros (`#1149 <https://github.com/ros/ros_comm/issues/1149>`_)
+* fix whitespace warnings with g++ 7 (`#1138 <https://github.com/ros/ros_comm/issues/1138>`_)
+* remove deprecated dynamic exception specifications (`#1137 <https://github.com/ros/ros_comm/issues/1137>`_)
+* fix buffer overflow vulnerability (`#1092 <https://github.com/ros/ros_comm/issues/1092>`_)
+* fix rosbag::View::iterator copy assignment operator (`#1017 <https://github.com/ros/ros_comm/issues/1017>`_)
+* fix open mode on Windows (`#1005 <https://github.com/ros/ros_comm/pull/1005>`_)
+* add swap function instead of copy constructor / assignment operator for rosbag::Bag (`#1000 <https://github.com/ros/ros_comm/issues/1000>`_)
+
 1.12.7 (2017-02-17)
 -------------------
 

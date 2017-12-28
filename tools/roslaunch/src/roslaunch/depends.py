@@ -45,6 +45,7 @@ from xml.dom import Node as DomNode
 
 import rospkg
 
+from .loader import convert_value
 from .substitution_args import resolve_args
 
 NAME="roslaunch-deps"
@@ -94,20 +95,16 @@ def _get_arg_value(tag, context):
     else:
         raise RoslaunchDepsException("No value for arg [%s]"%(name))
 
-def _parse_arg(tag, context):
-    name = tag.attributes['name'].value
+def _check_ifunless(tag, context):
     if tag.attributes.has_key('if'):
         val = resolve_args(tag.attributes['if'].value, context)
-        if val == '1' or val == 'true':
-            return (name, _get_arg_value(tag, context))
+        if not convert_value(val, 'bool'):
+            return False
     elif tag.attributes.has_key('unless'):
         val = resolve_args(tag.attributes['unless'].value, context)
-        if val == '0' or val == 'false':
-            return (name, _get_arg_value(tag, context))
-    else:
-        return (name, _get_arg_value(tag, context))
-    # nothing to return (no value, or conditional wasn't satisfied)
-    return None
+        if convert_value(val, 'bool'):
+            return False
+    return True
 
 def _parse_subcontext(tags, context):
     subcontext = {'arg': {}}
@@ -116,12 +113,8 @@ def _parse_subcontext(tags, context):
        return subcontext
     
     for tag in [t for t in tags if t.nodeType == DomNode.ELEMENT_NODE]:
-        if tag.tagName == 'arg':
-            # None is returned for args with if/unless that evaluate to false
-            ret = _parse_arg(tag, context)
-            if ret is not None:
-                (name, val) = ret
-                subcontext['arg'][name] = val
+        if tag.tagName == 'arg' and _check_ifunless(tag, context):
+            subcontext['arg'][tag.attributes['name'].value] = _get_arg_value(tag, context)
     return subcontext
 
 def _parse_launch(tags, launch_file, file_deps, verbose, context):
@@ -130,6 +123,8 @@ def _parse_launch(tags, launch_file, file_deps, verbose, context):
             
     # process group, include, node, and test tags from launch file
     for tag in [t for t in tags if t.nodeType == DomNode.ELEMENT_NODE]:
+        if not _check_ifunless(tag, context):
+            continue
 
         if tag.tagName == 'group':
             
@@ -137,10 +132,8 @@ def _parse_launch(tags, launch_file, file_deps, verbose, context):
             _parse_launch(tag.childNodes, launch_file, file_deps, verbose, context)
 
         elif tag.tagName == 'arg':
-            v = _parse_arg(tag, context)
-            if v:
-                (name, val) = v
-                context['arg'][name] = val
+            context['arg'][tag.attributes['name'].value] = _get_arg_value(tag, context)
+
         elif tag.tagName == 'include':
             try:
                 sub_launch_file = resolve_args(tag.attributes['file'].value, context)

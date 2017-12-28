@@ -382,6 +382,9 @@ class ROSLaunchRunner(object):
     def _launch_master(self):
         """
         Launches master if requested. 
+        @return: True if a master was launched, False if a master was
+        already running.
+        @rtype: bool
         @raise RLException: if master launch fails
         """
         m = self.config.master
@@ -425,6 +428,8 @@ class ROSLaunchRunner(object):
             hostname = _hostname_to_rosname(hostname)
             self.logger.info("setting /roslaunch/uris/%s__%s' to %s"%(hostname, port, self.server_uri))
             param_server.setParam(_ID, '/roslaunch/uris/%s__%s'%(hostname, port),self.server_uri)
+
+        return not is_running
 
     def _check_and_set_run_id(self, param_server, run_id):
         """
@@ -534,10 +539,7 @@ class ROSLaunchRunner(object):
             process = create_node_process(self.run_id, node, master.uri)
         except roslaunch.node_args.NodeParamsException as e:
             self.logger.error(e)
-            if node.package == 'rosout' and node.type == 'rosout':
-                printerrlog("\n\n\nERROR: rosout is not built. Please run 'rosmake rosout'\n\n\n")
-            else:
-                printerrlog("ERROR: cannot launch node of type [%s/%s]: %s"%(node.package, node.type, str(e)))
+            printerrlog("ERROR: cannot launch node of type [%s/%s]: %s"%(node.package, node.type, str(e)))
             if node.name:
                 return node.name, False
             else:
@@ -627,8 +629,9 @@ class ROSLaunchRunner(object):
             self.remote_runner.add_process_listener(self.listeners)            
 
         # start up the core: master + core nodes defined in core.xml
-        self._launch_master()
-        self._launch_core_nodes()        
+        launched = self._launch_master()
+        if launched:
+            self._launch_core_nodes()
         
         # run exectuables marked as setup period. this will block
         # until these executables exit. setup executable have to run

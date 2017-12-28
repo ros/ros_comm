@@ -86,13 +86,14 @@ void ChunkedFile::open(string const& filename, string const& mode) {
 
     // Open the file
     if (mode == "r+b") {
-        // Read + write requires file to exists.  Create a new file if it doesn't exist.
+        // check if file already exists
         #if defined(_MSC_VER) && (_MSC_VER >= 1400 )
             fopen_s( &file_, filename.c_str(), "r" );
         #else
             file_ = fopen(filename.c_str(), "r");
         #endif
         if (file_ == NULL)
+            // create an empty file and open it for update
             #if defined(_MSC_VER) && (_MSC_VER >= 1400 )
                 fopen_s( &file_, filename.c_str(), "w+b" );
             #else
@@ -100,8 +101,9 @@ void ChunkedFile::open(string const& filename, string const& mode) {
             #endif
         else {
             fclose(file_);
+            // open existing file for update
             #if defined(_MSC_VER) && (_MSC_VER >= 1400 )
-                fopen_s( &file_, filename.c_str(), "w+b" );
+                fopen_s( &file_, filename.c_str(), "r+b" );
             #else
                 file_ = fopen(filename.c_str(), "r+b");
             #endif
@@ -219,6 +221,35 @@ void ChunkedFile::decompress(CompressionType compression, uint8_t* dest, unsigne
 void ChunkedFile::clearUnused() {
     unused_ = NULL;
     nUnused_ = 0;
+}
+
+void ChunkedFile::swap(ChunkedFile& other) {
+    using std::swap;
+    using boost::swap;
+    swap(filename_, other.filename_);
+    swap(file_, other.file_);
+    swap(offset_, other.offset_);
+    swap(compressed_in_, other.compressed_in_);
+    swap(unused_, other.unused_);
+    swap(nUnused_, other.nUnused_);
+
+    swap(stream_factory_, other.stream_factory_);
+
+    FileAccessor::setFile(*stream_factory_->getStream(compression::Uncompressed), this);
+    FileAccessor::setFile(*stream_factory_->getStream(compression::BZ2), this);
+    FileAccessor::setFile(*stream_factory_->getStream(compression::LZ4), this);
+
+    FileAccessor::setFile(*other.stream_factory_->getStream(compression::Uncompressed), &other);
+    FileAccessor::setFile(*other.stream_factory_->getStream(compression::BZ2), &other);
+    FileAccessor::setFile(*other.stream_factory_->getStream(compression::LZ4), &other);
+
+    swap(read_stream_, other.read_stream_);
+    FileAccessor::setFile(*read_stream_, this);
+    FileAccessor::setFile(*other.read_stream_, &other);
+
+    swap(write_stream_, other.write_stream_);
+    FileAccessor::setFile(*write_stream_, this);
+    FileAccessor::setFile(*other.write_stream_, &other);
 }
 
 } // namespace rosbag

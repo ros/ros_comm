@@ -38,6 +38,10 @@
 #include <cstring>
 #include "console_bridge/console.h"
 
+// Remove this include when no longer supporting platforms with libconsole-bridge-dev < 0.3.0,
+// in particular Debian Jessie: https://packages.debian.org/jessie/libconsole-bridge-dev
+#include "rosbag/console_bridge_compatibility.h"
+
 using std::string;
 
 namespace rosbag {
@@ -70,6 +74,10 @@ void BZ2Stream::startWrite() {
 }
 
 void BZ2Stream::write(void* ptr, size_t size) {
+    if (!bzfile_) {
+        throw BagException("cannot write to unopened bzfile");
+    }
+
     BZ2_bzWrite(&bzerror_, bzfile_, ptr, size);
 
     switch (bzerror_) {
@@ -80,6 +88,10 @@ void BZ2Stream::write(void* ptr, size_t size) {
 }
 
 void BZ2Stream::stopWrite() {
+    if (!bzfile_) {
+        throw BagException("cannot close unopened bzfile");
+    }
+
     unsigned int nbytes_in;
     unsigned int nbytes_out;
     BZ2_bzWriteClose(&bzerror_, bzfile_, 0, &nbytes_in, &nbytes_out);
@@ -107,6 +119,10 @@ void BZ2Stream::startRead() {
 }
 
 void BZ2Stream::read(void* ptr, size_t size) {
+    if (!bzfile_) {
+        throw BagException("cannot read from unopened bzfile");
+    }
+
     BZ2_bzRead(&bzerror_, bzfile_, ptr, size);
 
     advanceOffset(size);
@@ -115,7 +131,7 @@ void BZ2Stream::read(void* ptr, size_t size) {
     case BZ_OK: return;
     case BZ_STREAM_END:
         if (getUnused() || getUnusedLength() > 0)
-            logError("unused data already available");
+            CONSOLE_BRIDGE_logError("unused data already available");
         else {
             char* unused;
             int nUnused;
@@ -133,6 +149,10 @@ void BZ2Stream::read(void* ptr, size_t size) {
 }
 
 void BZ2Stream::stopRead() {
+    if (!bzfile_) {
+        throw BagException("cannot close unopened bzfile");
+    }
+
     BZ2_bzReadClose(&bzerror_, bzfile_);
 
     switch (bzerror_) {

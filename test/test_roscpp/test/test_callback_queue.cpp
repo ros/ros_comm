@@ -38,6 +38,7 @@
 #include <ros/console.h>
 #include <ros/timer.h>
 
+#include <boost/atomic.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
@@ -396,6 +397,81 @@ TEST(CallbackQueue, recursiveTimer)
 
   done = true;
   tg.join_all();
+}
+
+class ConditionObject
+{
+public:
+  ConditionObject(CallbackQueue * _queue)
+  : id(0), queue(_queue) {
+    condition_sync.store(true);
+    condition_one.store(false);
+    condition_stop.store(false);
+  }
+
+  void add();
+
+  unsigned long id;
+  CallbackQueue * queue;
+  boost::atomic<bool> condition_one;
+  boost::atomic<bool> condition_sync;
+  boost::atomic<bool> condition_stop;
+};
+
+class RaceConditionCallback : public CallbackInterface
+{
+public:
+  RaceConditionCallback(ConditionObject * _condition_object, unsigned long * _id)
+  : condition_object(_condition_object), id(_id)
+  {}
+
+  virtual CallResult call()
+  {
+    condition_object->condition_one.store(false);
+    return Success;
+  }
+
+  ConditionObject * condition_object;
+  unsigned long * id;
+};
+
+void ConditionObject::add()
+{
+  while(!condition_stop.load())
+  {
+    if(condition_sync.load())
+    {
+      condition_sync.store(false);
+      condition_one.store(true);
+      id++;
+      queue->addCallback(boost::make_shared<RaceConditionCallback>(this, &id), id);
+    }
+    boost::this_thread::sleep(boost::posix_time::microseconds(1));
+  }
+}
+
+TEST(CallbackQueue, raceConditionCallback)
+{
+  CallbackQueue queue;
+  ConditionObject condition_object(&queue);
+
+  boost::thread t(boost::bind(&ConditionObject::add, &condition_object));
+  for(unsigned int i = 0; i < 1000000; ++i)
+  {
+    if (queue.callOne() == CallbackQueue::Called)
+    {
+      if(condition_object.condition_one.load())
+      {
+        condition_object.condition_stop.store(true);
+        ASSERT_FALSE(condition_object.condition_one.load());
+      }
+    }
+
+    queue.clear();
+    condition_object.condition_sync.store(true);
+  }
+  condition_object.condition_stop.store(true);
+  t.join();
 }
 
 int main(int argc, char** argv)

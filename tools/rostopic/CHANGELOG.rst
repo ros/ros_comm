@@ -2,6 +2,24 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.12.12 (2017-11-16)
+--------------------
+
+1.12.11 (2017-11-07)
+--------------------
+
+1.12.10 (2017-11-06)
+--------------------
+
+1.12.9 (2017-11-06)
+-------------------
+
+1.12.8 (2017-11-06)
+-------------------
+* fix rostopic hz and bw in Python 3 (`#1126 <https://github.com/ros/ros_comm/issues/1126>`_)
+* update tests to match stringify changes (`#1125 <https://github.com/ros/ros_comm/issues/1125>`_)
+* fix rostopic prining long integers (`#1110 <https://github.com/ros/ros_comm/pull/1110>`_)
+
 1.12.7 (2017-02-17)
 -------------------
 

@@ -117,7 +117,7 @@
   do { \
     ROS_FATAL("BREAKPOINT HIT\n\tfile = %s\n\tline=%d\n", __FILE__, __LINE__); \
     ROS_ISSUE_BREAK() \
-  } while (0)
+  } while (false)
 
 #define ROS_ASSERT(cond) \
   do { \
@@ -125,7 +125,7 @@
       ROS_FATAL("ASSERTION FAILED\n\tfile = %s\n\tline = %d\n\tcond = %s\n", __FILE__, __LINE__, #cond); \
       ROS_ISSUE_BREAK() \
     } \
-  } while (0)
+  } while (false)
 
 #define ROS_ASSERT_MSG(cond, ...) \
   do { \
@@ -135,14 +135,14 @@
       ROS_FATAL("\n"); \
       ROS_ISSUE_BREAK(); \
     } \
-  } while (0)
+  } while (false)
 
 #define ROS_ASSERT_CMD(cond, cmd) \
   do { \
     if (!(cond)) { \
       cmd; \
     } \
-  } while (0)
+  } while (false)
 
 
 #else
