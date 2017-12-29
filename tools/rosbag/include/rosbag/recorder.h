@@ -112,6 +112,7 @@ struct ROSBAG_DECL RecorderOptions
     std::string min_space_str;
 
     std::vector<std::string> topics;
+    std::string file_timestamp_format_str;
 };
 
 class ROSBAG_DECL Recorder
@@ -151,7 +152,7 @@ private:
     bool shouldSubscribeToTopic(std::string const& topic, bool from_node = false);
 
     template<class T>
-    static std::string timeToStr(T ros_t);
+    static std::string timeToStr(T ros_t, const std::string &format="%Y-%m-%d-%H-%M-%S");
 
 private:
     RecorderOptions               options_;

@@ -112,7 +112,8 @@ RecorderOptions::RecorderOptions() :
     max_duration(-1.0),
     node(""),
     min_space(1024 * 1024 * 1024),
-    min_space_str("1G")
+    min_space_str("1G"),
+    file_timestamp_format_str("%Y-%m-%d-%H-%M-%S")
 {
 }
 
@@ -269,14 +270,14 @@ bool Recorder::shouldSubscribeToTopic(std::string const& topic, bool from_node) 
 }
 
 template<class T>
-std::string Recorder::timeToStr(T ros_t)
+string Recorder::timeToStr(T ros_t, const std::string &format)
 {
     (void)ros_t;
     std::stringstream msg;
     const boost::posix_time::ptime now=
         boost::posix_time::second_clock::local_time();
     boost::posix_time::time_facet *const f=
-        new boost::posix_time::time_facet("%Y-%m-%d-%H-%M-%S");
+        new boost::posix_time::time_facet(format.c_str());
     msg.imbue(std::locale(msg.getloc(),f));
     msg << now;
     return msg.str();
@@ -345,7 +346,7 @@ void Recorder::updateFilenames() {
     if (prefix.length() > 0)
         parts.push_back(prefix);
     if (options_.append_date)
-        parts.push_back(timeToStr(ros::WallTime::now()));
+        parts.push_back(timeToStr(ros::WallTime::now(), options_.file_timestamp_format_str));
     if (options_.split)
         parts.push_back(boost::lexical_cast<string>(split_count_));
 

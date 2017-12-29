@@ -66,6 +66,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       ("topic", po::value< std::vector<std::string> >(), "topic to record")
       ("size", po::value<uint64_t>(), "The maximum size of the bag to record in MB.")
       ("duration", po::value<std::string>(), "Record a bag of maximum duration in seconds, unless 'm', or 'h' is appended.")
+      ("time-format", po::value<std::string>()->default_value("%Y-%m-%d-%H-%M-%S"), "Change format of timestamps used in the output filename (Default: %Y-%m-%d-%H-%M-%S).")
       ("node", po::value<std::string>(), "Record all topics subscribed to by a specific node.");
 
   
@@ -226,6 +227,10 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       opts.max_duration = ros::Duration(duration * multiplier);
       if (opts.max_duration <= ros::Duration(0))
         throw ros::Exception("Duration must be positive.");
+    }
+    if (vm.count("time-format"))
+    {
+        opts.file_timestamp_format_str = vm["time-format"].as<std::string>();
     }
     if (vm.count("size"))
     {
