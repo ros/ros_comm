@@ -169,6 +169,23 @@ int Recorder::run() {
 
     start_time_ = ros::Time::now();
 
+    // Calculate a shift if we're splitting on time duration.  We want to
+    // end up splitting on "nice" wall clock values.  To do this we shift the
+    // start time by the time elapsed since the "previous" nice interval would
+    // have started.
+    if (options_.max_duration.toSec() > 0 && options_.split)
+    {
+        // Our last interval number
+        unsigned int prev_interval = (unsigned int) (floor(start_time_.toSec() / options_.max_duration.toSec()));
+
+        // This is the ros::Time that marks the beginning of the interval we've started recording in.
+        ros::Time prev_rollover_time;
+        prev_rollover_time.fromSec(prev_interval * options_.max_duration.toSec());
+
+        // Shift the start time backwards by our 'elapsed' time since the previous period begin
+        start_time_ -= (start_time_ - prev_rollover_time);
+    }
+
     // Don't bother doing anything if we never got a valid time
     if (!nh.ok())
         return 0;
