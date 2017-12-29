@@ -190,7 +190,7 @@ TEST(SrvCall, callSrvLongRunningTimeout)
   // Note that we need to use less than a 0.9 factor here b/c otherwise the test fails in the buildfarm; see e.g.
   // http://build.ros.org/job/Lpr__ros_comm__ubuntu_xenial_amd64/682/console
   const ros::WallDuration short_timeout(0.5 * service_time_seconds);
-  const ros::WallDuration long_timeout(1.5 * service_time_seconds);
+  const ros::WallDuration long_timeout(1.1 * service_time_seconds);
 
   ASSERT_TRUE(ros::service::waitForService(service_name));
 
@@ -211,6 +211,8 @@ TEST(SrvCall, callSrvLongRunningTimeout)
   d = ros::SteadyTime::now() - start;
   ASSERT_TRUE(success)
       << service_name << " finished successfully after " << d.toSec() << "s (timeout " <<long_timeout.toSec() << "s)";
+  ASSERT_TRUE(d.toSec() < long_timeout.toSec())
+      << service_name << " took " << d.toSec() << "s, but timeout was set to " << long_timeout.toSec();
 
   ASSERT_STREQ(res.str.c_str(), "CASE_flip");
 }
