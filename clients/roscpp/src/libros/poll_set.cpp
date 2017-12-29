@@ -279,6 +279,7 @@ void PollSet::createNativePollset()
     pfd.events = info.events_;
     pfd.revents = 0;
   }
+  sockets_changed_ = false;
 }
 
 void PollSet::onLocalPipeEvents(int events)
