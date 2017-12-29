@@ -370,7 +370,7 @@ void XMLRPCManager::releaseXMLRPCClient(XmlRpcClient *c)
   {
     if (c == i->client_)
     {
-      if (shutting_down_)
+      if (shutting_down_ || !c->getKeepOpen())
       {
         // if we are shutting down we won't be re-using the client
         i->client_->close();

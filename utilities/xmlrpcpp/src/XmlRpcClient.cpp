@@ -107,6 +107,7 @@ XmlRpcClient::execute(const char* method, XmlRpcValue const& params, XmlRpcValue
     return false;
 
   XmlRpcUtil::log(1, "XmlRpcClient::execute: method %s completed.", method);
+  _header = "";
   _response = "";
   return true;
 }
@@ -403,7 +404,6 @@ XmlRpcClient::readHeader()
 
   // Otherwise copy non-header data to response buffer and set state to read response.
   _response = bp;
-  _header = "";   // should parse out any interesting bits from the header (connection, etc)...
   _connectionState = READ_RESPONSE;
   return true;    // Continue monitoring this source
 }
@@ -447,6 +447,7 @@ XmlRpcClient::parseResponse(XmlRpcValue& result)
   int offset = 0;
   if ( ! XmlRpcUtil::findTag(METHODRESPONSE_TAG,_response,&offset)) {
     XmlRpcUtil::error("Error in XmlRpcClient::parseResponse: Invalid response - no methodResponse. Response:\n%s", _response.c_str());
+    _header = "";
     return false;
   }
 
@@ -458,15 +459,31 @@ XmlRpcClient::parseResponse(XmlRpcValue& result)
     if ( ! result.fromXml(_response, &offset)) {
       XmlRpcUtil::error("Error in XmlRpcClient::parseResponse: Invalid response value. Response:\n%s", _response.c_str());
       _response = "";
+      _header = "";
       return false;
     }
   } else {
     XmlRpcUtil::error("Error in XmlRpcClient::parseResponse: Invalid response - no param or fault tag. Response:\n%s", _response.c_str());
     _response = "";
+    _header = "";
     return false;
   }
       
   _response = "";
+
+  if (_header.size() < 8 || _header.find("HTTP/") != 0)
+    XmlRpcUtil::error("Error XmlRpcClient::parseResponse: Header does not start with protocol");
+  else
+  {
+    const unsigned protocolVersion = atoi(&_header[5]) * 10 + atoi(&_header[7]);
+    if (protocolVersion == 10)
+    {
+      setKeepOpen(false);
+      close();
+    }
+  }
+
+  _header = "";
   return result.valid();
 }
 
