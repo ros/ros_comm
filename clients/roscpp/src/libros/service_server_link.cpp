@@ -368,18 +368,21 @@ bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& re
     processNextCall();
   }
 
-  bool interrupted = false;
+  bool timed_out = false;
   {
     boost::mutex::scoped_lock lock(info->finished_mutex_);
+
+    using namespace boost::chrono;
+    steady_clock::time_point end_time = steady_clock::now() + nanoseconds(timeout.toNSec());
 
     while (!info->finished_)
     {
       if (timeout > ros::WallDuration(0.0))
       {
-        if (info->finished_condition_.wait_for(lock, boost::chrono::nanoseconds(timeout.toNSec())) == boost::cv_status::timeout)
+        if (info->finished_condition_.wait_until(lock, end_time) == boost::cv_status::timeout)
         {
           ROS_WARN("Service [%s] call failed: no response for %fsec", service_name_.c_str(), timeout.toSec());
-          interrupted = true;
+          timed_out = true;
           break;
         }
       }
@@ -389,10 +392,11 @@ bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& re
       }
     }
   }
+
   // Clear calls is properly protected
-  if (interrupted)
+  if (timed_out)
   {
-    this->clearCalls();
+    cancelCall(info);
   }
 
   info->call_finished_ = true;
