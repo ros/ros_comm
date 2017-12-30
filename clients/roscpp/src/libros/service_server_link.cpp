@@ -393,10 +393,11 @@ bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& re
     }
   }
 
-  // Clear calls is properly protected
   if (timed_out)
   {
-    cancelCall(info);
+    // TODO: actually properly cancel the request (connection read)
+    // we need to use callFinished here instead of cancelCall, otherwise we might get a segfault
+    callFinished();
   }
 
   info->call_finished_ = true;
