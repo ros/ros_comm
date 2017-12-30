@@ -201,18 +201,24 @@ TEST(SrvCall, callSrvLongRunningTimeout)
   start = ros::SteadyTime::now();
   success = ros::service::call(service_name, req, res, short_timeout);
   d = ros::SteadyTime::now() - start;
+  printf("call with timeout of %f s took %f s\n", short_timeout.toSec(), d.toSec());
   ASSERT_FALSE(success)
       << service_name << " did NOT fail after timeout (res = " << res.str << ")";
   ASSERT_TRUE(d.toSec() < service_time_seconds)
       << service_name << " did NOT time out after " << short_timeout.toSec() << "s, took " << d.toSec() << "s instead.";
 
+  // wait a bit so that the server is ready to immediately process the next service call,
+  // as we just canceled the call on our client side (and still runs on the server side)
+  ros::WallDuration(1.5).sleep();
+
   start = ros::SteadyTime::now();
   success = ros::service::call(service_name, req, res, long_timeout);
   d = ros::SteadyTime::now() - start;
+  printf("call with timoeut of %f s took %f s\n", long_timeout.toSec(), d.toSec());
   ASSERT_TRUE(success)
-      << service_name << " finished successfully after " << d.toSec() << "s (timeout " <<long_timeout.toSec() << "s)";
+      << service_name << " did NOT finish successfully before timeout (res = " << res.str << ")";
   ASSERT_TRUE(d.toSec() < long_timeout.toSec())
-      << service_name << " took " << d.toSec() << "s, but timeout was set to " << long_timeout.toSec();
+      << service_name << " took " << d.toSec() << "s, but expected ~" <<  service_time_seconds << "s, timeout: " << long_timeout.toSec();
 
   ASSERT_STREQ(res.str.c_str(), "CASE_flip");
 }
