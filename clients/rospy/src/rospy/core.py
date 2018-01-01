@@ -155,12 +155,14 @@ def _frame_to_caller_id(frame):
     return pickle.dumps(caller_id)
 
 
-def _base_logger(msg, args, kwargs, name=None, throttle=None,
+def _base_logger(msg, args, kwargs, throttle=None,
                  throttle_identical=False, level=None, once=False):
 
     rospy_logger = logging.getLogger('rosout')
+    name = kwargs.get('logger_name')
     if name:
         rospy_logger = rospy_logger.getChild(name)
+        del kwargs['logger_name']
     logfunc = getattr(rospy_logger, level)
 
     if once:
