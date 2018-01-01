@@ -36,6 +36,7 @@ Library for configuring python logging to standard ROS locations (e.g. ROS_LOG_D
 
 import os
 import sys
+import string
 import time
 import logging
 import logging.config
@@ -233,31 +234,32 @@ class RosStreamHandler(logging.Handler):
         except ImportError:
             self._get_time = None
             self._is_wallclock = None
+        self._template = string.Template(os.environ.get(
+            'ROSCONSOLE_FORMAT', '[${severity}] [${time}]: ${message}') + '\n')
 
     def emit(self, record):
         level, color = _logging_to_rospy_names[record.levelname]
         record_message = _defaultFormatter.format(record)
-        msg = os.environ.get(
-            'ROSCONSOLE_FORMAT', '[${severity}] [${time}]: ${message}')
-        msg = msg.replace('${severity}', level)
-        msg = msg.replace('${message}', str(record_message))
-        msg = msg.replace('${walltime}', '%f' % time.time())
-        msg = msg.replace('${thread}', str(record.thread))
-        msg = msg.replace('${logger}', str(record.name))
-        msg = msg.replace('${file}', str(record.pathname))
-        msg = msg.replace('${line}', str(record.lineno))
-        msg = msg.replace('${function}', str(record.funcName))
         try:
             from rospy import get_name
             node_name = get_name()
         except ImportError:
             node_name = '<unknown_node_name>'
-        msg = msg.replace('${node}', node_name)
+
         time_str = '%f' % time.time()
         if self._get_time is not None and not self._is_wallclock():
             time_str += ', %f' % self._get_time()
-        msg = msg.replace('${time}', time_str)
-        msg += '\n'
+
+        msg = self._template.substitute(severity=level,
+                                        message=record_message,
+                                        walltime='%f' % time.time(),
+                                        thread=record.thread,
+                                        logger=record.name,
+                                        file=record.pathname,
+                                        line=record.lineno,
+                                        function=record.funcName,
+                                        node=node_name,
+                                        time=time_str)
         if record.levelno < logging.WARNING:
             self._write(self._stdout, msg, color)
         else:
