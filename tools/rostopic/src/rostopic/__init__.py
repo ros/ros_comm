@@ -290,13 +290,14 @@ def _get_ascii_table(header, cols):
 def _sleep(duration):
     rospy.rostime.wallsleep(duration)
 
-def _rostopic_hz(topics, window_size=-1, filter_expr=None, use_wtime=False):
+def _rostopic_hz(topics, window_size=-1, filter_expr=None, use_wtime=False, tcp_nodelay=False):
     """
     Periodically print the publishing rate of a topic to console until
     shutdown
     :param topics: topic names, ``list`` of ``str``
     :param window_size: number of messages to average over, -1 for infinite, ``int``
     :param filter_expr: Python filter expression that is called with m, the message instance
+    :param tcp_nodelay: Subscribe with the TCP_NODELAY transport hint if true
     """
     _check_master()
     if rospy.is_shutdown():
@@ -309,9 +310,9 @@ def _rostopic_hz(topics, window_size=-1, filter_expr=None, use_wtime=False):
         # may parameterize this in the future
         if filter_expr is not None:
             # have to subscribe with topic_type
-            rospy.Subscriber(real_topic, msg_class, rt.callback_hz, callback_args=topic)
+            rospy.Subscriber(real_topic, msg_class, rt.callback_hz, callback_args=topic, tcp_nodelay=tcp_nodelay)
         else:
-            rospy.Subscriber(real_topic, rospy.AnyMsg, rt.callback_hz, callback_args=topic)
+            rospy.Subscriber(real_topic, rospy.AnyMsg, rt.callback_hz, callback_args=topic, tcp_nodelay=tcp_nodelay)
         print("subscribed to [%s]" % real_topic)
 
     if rospy.get_param('use_sim_time', False):
@@ -396,12 +397,13 @@ class ROSTopicDelay(object):
         print("average delay: %.3f\n\tmin: %.3fs max: %.3fs std dev: %.5fs window: %s"%(delay, min_delta, max_delta, std_dev, window))
 
 
-def _rostopic_delay(topic, window_size=-1):
+def _rostopic_delay(topic, window_size=-1, tcp_nodelay=False):
     """
     Periodically print the publishing delay of a topic to console until
     shutdown
     :param topic: topic name, ``str``
     :param window_size: number of messages to average over, -1 for infinite, ``int``
+    :param tcp_nodelay: Subscribe with the TCP_NODELAY transport hint if true
     """
     # pause hz until topic is published
     msg_class, real_topic, _ = get_topic_class(topic, blocking=True)
@@ -409,7 +411,7 @@ def _rostopic_delay(topic, window_size=-1):
         return
     rospy.init_node(NAME, anonymous=True)
     rt = ROSTopicDelay(window_size)
-    sub = rospy.Subscriber(real_topic, msg_class, rt.callback_delay)
+    sub = rospy.Subscriber(real_topic, msg_class, rt.callback_delay, tcp_nodelay=tcp_nodelay)
     print("subscribed to [%s]" % real_topic)
 
     if rospy.get_param('use_sim_time', False):
@@ -1482,7 +1484,10 @@ def _rostopic_cmd_hz(argv):
                       help="only measure messages matching the specified Python expression", metavar="EXPR")
     parser.add_option("--wall-time",
                       dest="use_wtime", default=False, action="store_true",
-                      help="calculates rate using wall time which can be helpful when clock isnt published during simulation")
+                      help="calculates rate using wall time which can be helpful when clock isn't published during simulation")
+    parser.add_option("--tcpnodelay",
+                      dest="tcp_nodelay", action="store_true",
+                      help="use the TCP_NODELAY transport hint when subscribing to topics")
 
     (options, args) = parser.parse_args(args)
     if len(args) == 0:
@@ -1504,7 +1509,7 @@ def _rostopic_cmd_hz(argv):
     else:
         filter_expr = None
     _rostopic_hz(topics, window_size=window_size, filter_expr=filter_expr,
-                 use_wtime=options.use_wtime)
+                 use_wtime=options.use_wtime, tcp_nodelay=options.tcp_nodelay)
 
 
 def _rostopic_cmd_delay(argv):
@@ -1515,12 +1520,15 @@ def _rostopic_cmd_delay(argv):
     parser.add_argument("-w", "--window",
                         dest="window_size", default=-1, type=int,
                         help="window size, in # of messages, for calculating rate")
+    parser.add_argument("--tcpnodelay",
+                        dest="tcp_nodelay", action="store_true",
+                        help="use the TCP_NODELAY transport hint when subscribing to topics")
 
     args = parser.parse_args(args)
     topic_name = args.topic
     window_size = args.window_size
     topic = rosgraph.names.script_resolve_name('rostopic', topic_name)
-    _rostopic_delay(topic, window_size=window_size)
+    _rostopic_delay(topic, window_size=window_size, tcp_nodelay=args.tcp_nodelay)
 
 
 def _rostopic_cmd_bw(argv=sys.argv):
