@@ -584,7 +584,7 @@ int roslz4_buffToBuffCompress(char *input, unsigned int input_size,
   int ret;
   ret = roslz4_compressStart(&stream, block_size_id);
   if (ret != ROSLZ4_OK) {
-    roslz4_decompressEnd(&stream);
+    roslz4_compressEnd(&stream);
     return ret;
   }
 
