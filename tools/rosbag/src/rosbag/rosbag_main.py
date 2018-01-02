@@ -77,6 +77,7 @@ def record_cmd(argv):
                                    description="Record a bag file with the contents of specified topics.",
                                    formatter=optparse.IndentedHelpFormatter())
 
+    parser.add_option("-m", "--mode",          dest="mode",          default="continuous",        action="store", help="Recording mode: continuous, snapshot, or startstop")
     parser.add_option("-a", "--all",           dest="all",           default=False, action="store_true",          help="record all topics")
     parser.add_option("-e", "--regex",         dest="regex",         default=False, action="store_true",          help="match topics using regular expressions")
     parser.add_option("-x", "--exclude",       dest="exclude_regex", default="",    action="store",               help="exclude topics matching the follow regular expression (subtracts from -a or regex)")
@@ -110,6 +111,7 @@ def record_cmd(argv):
     cmd.extend(['--buffsize',  str(options.buffsize)])
     cmd.extend(['--chunksize', str(options.chunksize)])
 
+    if options.mode:          cmd.extend(["--mode", options.mode])
     if options.num != 0:      cmd.extend(['--limit', str(options.num)])
     if options.quiet:         cmd.extend(["--quiet"])
     if options.prefix:        cmd.extend(["-o", options.prefix])

@@ -50,7 +50,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
 
     desc.add_options()
       ("help,h", "produce help message")
-      ("mode", po::value<std::string>()->implicit_value("continuous"), "Recording mode: continuous, snapshot, or startstop")
+      ("mode,m", po::value<std::string>()->implicit_value("continuous"), "Recording mode: continuous, snapshot, or startstop")
       ("all,a", "record all topics")
       ("regex,e", "match topics using regular expressions")
       ("exclude,x", po::value<std::string>(), "exclude topics matching regular expressions")
