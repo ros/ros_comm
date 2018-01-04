@@ -67,7 +67,7 @@ void getGpgKey(gpgme_ctx_t& ctx, std::string const& user, gpgme_key_t& key) {
         err = gpgme_op_keylist_start(ctx, user.c_str(), 0);
     }
     if (err) {
-        throw rosbag::BagException((boost::format("gpgme_op_keylist_start returned %1%") % gpgme_strerror(err)).str());
+        throw BagException((boost::format("gpgme_op_keylist_start returned %1%") % gpgme_strerror(err)).str());
     }
     while (true) {
         err = gpgme_op_keylist_next(ctx, &key);
@@ -80,17 +80,17 @@ void getGpgKey(gpgme_ctx_t& ctx, std::string const& user, gpgme_key_t& key) {
             if (user == std::string("*")) {
                 // A method throws an exception (instead of returning a specific value) if the key is not found
                 // This allows rosbag client applications to work without modifying their source code
-                throw rosbag::BagException("GPG key not found");
+                throw BagException("GPG key not found");
             } else {
-                throw rosbag::BagException((boost::format("GPG key not found for a user %1%") % user.c_str()).str());
+                throw BagException((boost::format("GPG key not found for a user %1%") % user.c_str()).str());
             }
         } else {
-            throw rosbag::BagException((boost::format("gpgme_op_keylist_next returned %1%") % err).str());
+            throw BagException((boost::format("gpgme_op_keylist_next returned %1%") % err).str());
         }
     }
     err = gpgme_op_keylist_end(ctx);
     if (err) {
-        throw rosbag::BagException((boost::format("gpgme_op_keylist_end returned %1%") % gpgme_strerror(err)).str());
+        throw BagException((boost::format("gpgme_op_keylist_end returned %1%") % gpgme_strerror(err)).str());
     }
 }
 
@@ -107,7 +107,7 @@ static std::string encryptStringGpg(std::string& user, std::basic_string<unsigne
     gpgme_ctx_t ctx;
     gpgme_error_t err = gpgme_new(&ctx);
     if (err) {
-        throw rosbag::BagException((boost::format("Failed to create a GPG context: %1%") % gpgme_strerror(err)).str());
+        throw BagException((boost::format("Failed to create a GPG context: %1%") % gpgme_strerror(err)).str());
     }
 
     gpgme_key_t keys[2] = {NULL, NULL};
@@ -120,7 +120,7 @@ static std::string encryptStringGpg(std::string& user, std::basic_string<unsigne
     err = gpgme_data_new_from_mem(&input_data, reinterpret_cast<const char*>(input.c_str()), input.length(), 1);
     if (err) {
         gpgme_release(ctx);
-        throw rosbag::BagException(
+        throw BagException(
             (boost::format("Failed to encrypt string: gpgme_data_new_from_mem returned %1%") % gpgme_strerror(err)).str());
     }
     gpgme_data_t output_data;
@@ -128,7 +128,7 @@ static std::string encryptStringGpg(std::string& user, std::basic_string<unsigne
     if (err) {
         gpgme_data_release(input_data);
         gpgme_release(ctx);
-        throw rosbag::BagException(
+        throw BagException(
             (boost::format("Failed to encrypt string: gpgme_data_new returned %1%") % gpgme_strerror(err)).str());
     }
     err = gpgme_op_encrypt(ctx, keys, static_cast<gpgme_encrypt_flags_t>(GPGME_ENCRYPT_ALWAYS_TRUST), input_data, output_data);
@@ -136,7 +136,7 @@ static std::string encryptStringGpg(std::string& user, std::basic_string<unsigne
         gpgme_data_release(output_data);
         gpgme_data_release(input_data);
         gpgme_release(ctx);
-        throw rosbag::BagException((boost::format("Failed to encrypt: %1%.  Have you installed a public key %2%?") % gpgme_strerror(err) % user).str());
+        throw BagException((boost::format("Failed to encrypt: %1%.  Have you installed a public key %2%?") % gpgme_strerror(err) % user).str());
     }
     gpgme_key_release(keys[0]);
     std::size_t output_length = gpgme_data_seek(output_data, 0, SEEK_END);
@@ -148,7 +148,7 @@ static std::string encryptStringGpg(std::string& user, std::basic_string<unsigne
     gpgme_data_release(input_data);
     gpgme_release(ctx);
     if (-1 == bytes_read) {
-        throw rosbag::BagException("Failed to read encrypted string");
+        throw BagException("Failed to read encrypted string");
     }
     return output;
 }
@@ -165,14 +165,14 @@ static std::basic_string<unsigned char> decryptStringGpg(std::string const& user
     gpgme_ctx_t ctx;
     gpgme_error_t err = gpgme_new(&ctx);
     if (err) {
-        throw rosbag::BagException((boost::format("Failed to create a GPG context: %1%") % gpgme_strerror(err)).str());
+        throw BagException((boost::format("Failed to create a GPG context: %1%") % gpgme_strerror(err)).str());
     }
 
     gpgme_data_t input_data;
     err = gpgme_data_new_from_mem(&input_data, input.c_str(), input.length(), 1);
     if (err) {
         gpgme_release(ctx);
-        throw rosbag::BagException(
+        throw BagException(
             (boost::format("Failed to decrypt bag: gpgme_data_new_from_mem returned %1%") % gpgme_strerror(err)).str());
     }
     gpgme_data_t output_data;
@@ -180,7 +180,7 @@ static std::basic_string<unsigned char> decryptStringGpg(std::string const& user
     if (err) {
         gpgme_data_release(input_data);
         gpgme_release(ctx);
-        throw rosbag::BagException(
+        throw BagException(
             (boost::format("Failed to decrypt bag: gpgme_data_new returned %1%") % gpgme_strerror(err)).str());
     }
     err = gpgme_op_decrypt(ctx, input_data, output_data);
@@ -188,14 +188,14 @@ static std::basic_string<unsigned char> decryptStringGpg(std::string const& user
         gpgme_data_release(output_data);
         gpgme_data_release(input_data);
         gpgme_release(ctx);
-        throw rosbag::BagException((boost::format("Failed to decrypt bag: %1%.  Have you installed a private key %2%?") % gpgme_strerror(err) % user).str());
+        throw BagException((boost::format("Failed to decrypt bag: %1%.  Have you installed a private key %2%?") % gpgme_strerror(err) % user).str());
     }
     std::size_t output_length = gpgme_data_seek(output_data, 0, SEEK_END);
     if (output_length != AES_BLOCK_SIZE) {
         gpgme_data_release(output_data);
         gpgme_data_release(input_data);
         gpgme_release(ctx);
-        throw rosbag::BagException("Decrypted string length mismatches");
+        throw BagException("Decrypted string length mismatches");
     }
     std::basic_string<unsigned char> output(output_length, 0);
     gpgme_data_seek(output_data, 0, SEEK_SET);
@@ -205,7 +205,7 @@ static std::basic_string<unsigned char> decryptStringGpg(std::string const& user
     gpgme_data_release(input_data);
     gpgme_release(ctx);
     if (-1 == bytes_read) {
-        throw rosbag::BagException("Failed to read decrypted symmetric key");
+        throw BagException("Failed to read decrypted symmetric key");
     }
     return output;
 }
@@ -218,11 +218,11 @@ static std::string readHeaderField(ros::M_string const& header_fields, std::stri
     return it->second;
 }
 
-void AesCbcEncryptor::initialize(rosbag::Bag const& bag, std::string const& gpg_key_user) {
+void AesCbcEncryptor::initialize(Bag const& bag, std::string const& gpg_key_user) {
     // GPGME must be initialized even when reading
     initGpgme();
     // Encryption user can be set only when writing a bag file
-    if (bag.getMode() != rosbag::bagmode::Write) {
+    if (bag.getMode() != bagmode::Write) {
         return;
     }
     if (gpg_key_user_ == gpg_key_user) {
@@ -234,12 +234,12 @@ void AesCbcEncryptor::initialize(rosbag::Bag const& bag, std::string const& gpg_
         AES_set_encrypt_key(&symmetric_key_[0], AES_BLOCK_SIZE*8, &aes_encrypt_key_);
     } else {
         // Encryption user cannot change once set
-        throw rosbag::BagException(
+        throw BagException(
             (boost::format("Encryption user has already been set to %s") % gpg_key_user_.c_str()).str());
     }
 }
 
-uint32_t AesCbcEncryptor::encryptChunk(const uint32_t chunk_size, const uint64_t chunk_data_pos, rosbag::ChunkedFile& file) {
+uint32_t AesCbcEncryptor::encryptChunk(const uint32_t chunk_size, const uint64_t chunk_data_pos, ChunkedFile& file) {
     // Read existing (compressed) chunk
     std::basic_string<unsigned char> compressed_chunk(chunk_size, 0);
     file.seek(chunk_data_pos);
@@ -250,35 +250,43 @@ uint32_t AesCbcEncryptor::encryptChunk(const uint32_t chunk_size, const uint64_t
     // Encrypt chunk
     std::basic_string<unsigned char> encrypted_chunk(compressed_chunk.length(), 0);
     std::basic_string<unsigned char> iv(AES_BLOCK_SIZE, 0);
+    if (!RAND_bytes(&iv[0], AES_BLOCK_SIZE)) {
+        throw BagException("Failed to build initialization vector");
+    }
+    file.seek(chunk_data_pos);
+    file.write((char*) &iv[0], AES_BLOCK_SIZE);
     AES_cbc_encrypt(&compressed_chunk[0], &encrypted_chunk[0], encrypted_chunk.length(), &aes_encrypt_key_, &iv[0], AES_ENCRYPT);
     // Write encrypted chunk
-    file.seek(chunk_data_pos);
     file.write((char*) &encrypted_chunk[0], encrypted_chunk.length());
     file.truncate(chunk_data_pos + encrypted_chunk.length());
-    return encrypted_chunk.length();
+    return AES_BLOCK_SIZE + encrypted_chunk.length();
 }
 
-void AesCbcEncryptor::decryptChunk(rosbag::ChunkHeader const& chunk_header, rosbag::Buffer& decrypted_chunk, rosbag::ChunkedFile& file) const {
+void AesCbcEncryptor::decryptChunk(ChunkHeader const& chunk_header, Buffer& decrypted_chunk, ChunkedFile& file) const {
     // Test encrypted chunk size
     if (chunk_header.compressed_size % AES_BLOCK_SIZE != 0) {
-        throw rosbag::BagFormatException("Error in encrypted chunk size");
+        throw BagFormatException((boost::format("Error in encrypted chunk size: %d") % chunk_header.compressed_size).str());
     }
     // Read encrypted chunk
-    std::basic_string<unsigned char> encrypted_chunk(chunk_header.compressed_size, 0);
-    file.read((char*) &encrypted_chunk[0], chunk_header.compressed_size);
-    // Decrypt chunk
-    decrypted_chunk.setSize(chunk_header.compressed_size);
+    if (chunk_header.compressed_size < AES_BLOCK_SIZE) {
+        throw BagFormatException((boost::format("No initialization vector in encrypted chunk: %d") % chunk_header.compressed_size).str());
+    }
     std::basic_string<unsigned char> iv(AES_BLOCK_SIZE, 0);
-    AES_cbc_encrypt(&encrypted_chunk[0], (unsigned char*) decrypted_chunk.getData(), chunk_header.compressed_size,
+    file.read((char*) &iv[0], AES_BLOCK_SIZE);
+    std::basic_string<unsigned char> encrypted_chunk(chunk_header.compressed_size - AES_BLOCK_SIZE, 0);
+    file.read((char*) &encrypted_chunk[0], chunk_header.compressed_size - AES_BLOCK_SIZE);
+    // Decrypt chunk
+    decrypted_chunk.setSize(chunk_header.compressed_size - AES_BLOCK_SIZE);
+    AES_cbc_encrypt(&encrypted_chunk[0], (unsigned char*) decrypted_chunk.getData(), chunk_header.compressed_size - AES_BLOCK_SIZE,
         &aes_decrypt_key_, &iv[0], AES_DECRYPT);
     if (decrypted_chunk.getSize() == 0) {
-        throw rosbag::BagFormatException("Decrypted chunk is empty");
+        throw BagFormatException("Decrypted chunk is empty");
     }
     decrypted_chunk.setSize(decrypted_chunk.getSize() - *(decrypted_chunk.getData()+decrypted_chunk.getSize()-1));
 }
 
 void AesCbcEncryptor::addFieldsToFileHeader(ros::M_string &header_fields) const {
-    header_fields[rosbag::ENCRYPTOR_FIELD_NAME] = "rosbag/AesCbcEncryptor";
+    header_fields[ENCRYPTOR_FIELD_NAME] = "rosbag/AesCbcEncryptor";
     header_fields[GPG_USER_FIELD_NAME] = gpg_key_user_;
     header_fields[ENCRYPTED_KEY_FIELD_NAME] = encrypted_symmetric_key_;
 }
@@ -286,11 +294,11 @@ void AesCbcEncryptor::addFieldsToFileHeader(ros::M_string &header_fields) const 
 void AesCbcEncryptor::readFieldsFromFileHeader(ros::M_string const& header_fields) {
     encrypted_symmetric_key_ = readHeaderField(header_fields, ENCRYPTED_KEY_FIELD_NAME);
     if (encrypted_symmetric_key_.empty()) {
-        throw rosbag::BagFormatException("Encrypted symmetric key is not found in header");
+        throw BagFormatException("Encrypted symmetric key is not found in header");
     }
     gpg_key_user_ = readHeaderField(header_fields, GPG_USER_FIELD_NAME);
     if (gpg_key_user_.empty()) {
-        throw rosbag::BagFormatException("GPG key user is not found in header");
+        throw BagFormatException("GPG key user is not found in header");
     }
     symmetric_key_ = decryptStringGpg(gpg_key_user_, encrypted_symmetric_key_);
     AES_set_decrypt_key(&symmetric_key_[0], AES_BLOCK_SIZE*8, &aes_decrypt_key_);
@@ -308,9 +316,15 @@ void AesCbcEncryptor::writeEncryptedHeader(boost::function<void(ros::M_string co
     // Encrypt chunk
     std::basic_string<unsigned char> encrypted_buffer(encrypted_buffer_size, 0);
     std::basic_string<unsigned char> iv(AES_BLOCK_SIZE, 0);
+    if (!RAND_bytes(&iv[0], AES_BLOCK_SIZE)) {
+        throw BagException("Failed to build initialization vector");
+    }
+    encrypted_buffer_size += AES_BLOCK_SIZE;
+    file.write((char*) &encrypted_buffer_size, 4);
+    encrypted_buffer_size -= AES_BLOCK_SIZE;
+    file.write((char*) &iv[0], AES_BLOCK_SIZE);
     AES_cbc_encrypt(&header_buffer_with_pad[0], &encrypted_buffer[0], encrypted_buffer_size, &aes_encrypt_key_, &iv[0], AES_ENCRYPT);
     // Write
-    file.write((char*) &encrypted_buffer_size, 4);
     file.write((char*) &encrypted_buffer[0], encrypted_buffer_size);
 }
 
@@ -319,14 +333,19 @@ bool AesCbcEncryptor::readEncryptedHeader(boost::function<bool(ros::Header&)>, r
     uint32_t encrypted_header_len;
     file.read((char*) &encrypted_header_len, 4);
     if (encrypted_header_len % AES_BLOCK_SIZE != 0) {
-        throw BagFormatException((boost::format("Error in encrypted header length, %d") % encrypted_header_len).str());
+        throw BagFormatException((boost::format("Error in encrypted header length: %d") % encrypted_header_len).str());
+    }
+    if (encrypted_header_len < AES_BLOCK_SIZE) {
+        throw BagFormatException((boost::format("No initialization vector in encrypted header: %d") % encrypted_header_len).str());
     }
     // Read encrypted header
+    std::basic_string<unsigned char> iv(AES_BLOCK_SIZE, 0);
+    file.read((char*) &iv[0], AES_BLOCK_SIZE);
+    encrypted_header_len -= AES_BLOCK_SIZE;
     std::basic_string<unsigned char> encrypted_header(encrypted_header_len, 0);
     file.read((char*) &encrypted_header[0], encrypted_header_len);
     // Decrypt header
     header_buffer.setSize(encrypted_header_len);
-    std::basic_string<unsigned char> iv(AES_BLOCK_SIZE, 0);
     AES_cbc_encrypt(&encrypted_header[0], (unsigned char*) header_buffer.getData(), encrypted_header_len, &aes_decrypt_key_, &iv[0], AES_DECRYPT);
     if (header_buffer.getSize() == 0) {
         throw BagFormatException("Decrypted header is empty");
@@ -344,7 +363,7 @@ void AesCbcEncryptor::buildSymmetricKey() {
     }
     symmetric_key_.resize(AES_BLOCK_SIZE);
     if (!RAND_bytes(&symmetric_key_[0], AES_BLOCK_SIZE)) {
-        throw rosbag::BagException("Failed to build symmetric key");
+        throw BagException("Failed to build symmetric key");
     }
     // Encrypted session key is written in bag file header
     encrypted_symmetric_key_ = encryptStringGpg(gpg_key_user_, symmetric_key_);

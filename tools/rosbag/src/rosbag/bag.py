@@ -214,20 +214,21 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
         @type  chunk_data_pos: int
         @param f: file stream
         @type  f: file
-        @return: size of encrypted chunk
+        @return: size of initialization vector and encrypted chunk
         @rtype:  int
         """
         f.seek(chunk_data_pos)
         chunk = _read(f, chunk_size)
         # Encrypt chunk
-        iv = 16 * b'\x00'
+        iv = Random.new().read(AES.block_size)
+        f.seek(chunk_data_pos)
+        f.write(iv)
         cipher = AES.new(self._symmetric_key, AES.MODE_CBC, iv)
         encrypted_chunk = cipher.encrypt(_add_padding(chunk))
         # Write encrypted chunk
-        f.seek(chunk_data_pos)
         f.write(encrypted_chunk)
         f.truncate(f.tell())
-        return len(encrypted_chunk)
+        return AES.block_size + len(encrypted_chunk)
 
     def decrypt_chunk(self, encrypted_chunk):
         """
@@ -239,11 +240,13 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
         @raise ROSBagFormatException: if size of input chunk is not multiple of AES block size
         """
         if len(encrypted_chunk) % AES.block_size != 0:
-            raise ROSBagFormatException('Error in encrypted chunk size')
+            raise ROSBagFormatException('Error in encrypted chunk size: {}'.format(len(encrypted_chunk)))
+        if len(encrypted_chunk) < AES.block_size:
+            raise ROSBagFormatException('No initialization vector in encrypted chunk: {}'.format(len(encrypted_chunk)))
 
-        iv = 16 * b'\x00'
+        iv = encrypted_chunk[:AES.block_size]
         cipher = AES.new(self._symmetric_key, AES.MODE_CBC, iv)
-        decrypted_chunk = cipher.decrypt(encrypted_chunk)
+        decrypted_chunk = cipher.decrypt(encrypted_chunk[AES.block_size:])
         return _remove_padding(decrypted_chunk)
 
     def add_fields_to_file_header(self, header):
@@ -295,9 +298,10 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
                 v = v.encode()
             header_str += _pack_uint32(len(k) + 1 + len(v)) + k + equal + v
 
-        iv = 16 * b'\x00'
+        iv = Random.new().read(AES.block_size)
+        enc_str = iv
         cipher = AES.new(self._symmetric_key, AES.MODE_CBC, iv)
-        enc_str = cipher.encrypt(_add_padding(header_str))
+        enc_str += cipher.encrypt(_add_padding(header_str))
         _write_sized(f, enc_str)
         return enc_str
 
@@ -350,10 +354,13 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
             raise ROSBagFormatException('error unpacking uint32: %s' % str(ex))
 
         if size % AES.block_size != 0:
-            raise ROSBagFormatException('Error in encrypted header size')
-        encrypted_header = _read(f, size)
+            raise ROSBagFormatException('Error in encrypted header size: {}'.format(size))
+        if size < AES.block_size:
+            raise ROSBagFormatException('No initialization vector in encrypted header: {}'.format(size))
 
-        iv = 16 * b'\x00'
+        iv = _read(f, AES.block_size)
+        size -= AES.block_size
+        encrypted_header = _read(f, size)
         cipher = AES.new(self._symmetric_key, AES.MODE_CBC, iv)
         header = cipher.decrypt(encrypted_header)
         return _remove_padding(header)
