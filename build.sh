@@ -24,7 +24,7 @@ VERSION=$(cat .version)
 
 cd /workspace
 
-COMMAND="fpm -x 'opt/mfp_chuck/.*'' -x 'opt/mfp_chuck/_setup*' -x 'opt/mfp_chuck/env.sh' -x 'opt/mfp_chuck/setup*' -s dir -t deb -n ros-comm --version ${VERSION} install/=/opt/mfp_chuck"
+COMMAND="fpm -x 'opt/mfp_chuck/.*' -x 'opt/mfp_chuck/_setup*' -x 'opt/mfp_chuck/env.sh' -x 'opt/mfp_chuck/setup*' -s dir -t deb -n ros-comm --version ${VERSION} install/=/opt/mfp_chuck"
 echo "${COMMAND}"
 eval "${COMMAND}"
 cp *.deb ${WORKSPACE}/
