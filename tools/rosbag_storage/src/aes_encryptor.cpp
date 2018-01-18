@@ -258,7 +258,7 @@ uint32_t AesCbcEncryptor::encryptChunk(const uint32_t chunk_size, const uint64_t
     AES_cbc_encrypt(&compressed_chunk[0], &encrypted_chunk[0], encrypted_chunk.length(), &aes_encrypt_key_, &iv[0], AES_ENCRYPT);
     // Write encrypted chunk
     file.write((char*) &encrypted_chunk[0], encrypted_chunk.length());
-    file.truncate(chunk_data_pos + encrypted_chunk.length());
+    file.truncate(chunk_data_pos + AES_BLOCK_SIZE + encrypted_chunk.length());
     return AES_BLOCK_SIZE + encrypted_chunk.length();
 }
 
