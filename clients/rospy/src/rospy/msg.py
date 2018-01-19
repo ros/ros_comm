@@ -69,7 +69,7 @@ class AnyMsg(genpy.Message):
     def serialize(self, buff):
         """AnyMsg provides an implementation so that a node can forward messages w/o (de)serialization"""
         if self._buff is None:
-            raise rospy.exceptions("AnyMsg is not initialized")
+            raise rospy.exceptions.ROSException("AnyMsg is not initialized")
         else:
             buff.write(self._buff)
             
