@@ -43,7 +43,7 @@ except ImportError:
     import pickle
 import inspect
 import logging
-from md5 import md5
+from hashlib import md5
 import os
 import signal
 import sys
