@@ -230,7 +230,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     }
     if (vm.count("time-format"))
     {
-        opts.file_timestamp_format_str = vm["time-format"].as<std::string>();
+      opts.file_timestamp_format_str = vm["time-format"].as<std::string>();
     }
     if (vm.count("size"))
     {
