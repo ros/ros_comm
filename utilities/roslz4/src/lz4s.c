@@ -616,10 +616,7 @@ int roslz4_buffToBuffDecompress(char *input, unsigned int input_size,
 
   int ret;
   ret = roslz4_decompressStart(&stream);
-  if (ret != ROSLZ4_OK) {
-    roslz4_decompressEnd(&stream);
-    return ret;
-  }
+  if (ret != ROSLZ4_OK) { return ret; }
 
   while (stream.input_left > 0 && ret != ROSLZ4_STREAM_END) {
     ret = roslz4_decompress(&stream);
