@@ -365,7 +365,7 @@ def roslaunch_deps_main(argv=sys.argv):
         print('\nMissing declarations:')
         for pkg, miss in missing.items():
             if miss:
-                print("%s/manifest.xml:"%pkg)
+                print("%s/package.xml:"%pkg)
                 for m in miss:
                     print('  <depend package="%s" />'%m)
     
