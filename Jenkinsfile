@@ -10,13 +10,15 @@ parallel(
             stage("amd64 build ros_comm"){
                 checkout scm
                 docker.image('ros:kinetic').inside("-u 0:0 -v ${env.WORKSPACE}:/workspace/src") {
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'artifactory_apt',
+                        usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD']]) {
                     withCredentials([string(credentialsId: 'github-access-token', variable: 'GITHUB_TOKEN')]) {
                         sh '''
                         export ARCH='amd64'
                         export DISTRO='xenial'
                         ./build.sh 
                         '''
-                    }
+                    } }
                 } 
             }
         }},
@@ -26,13 +28,15 @@ parallel(
             stage("arm64 build ros_comm"){
                 checkout scm
                 docker.image('arm64v8/ros:kinetic').inside("-u 0:0 -v ${env.WORKSPACE}:/workspace/src") {
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'artifactory_apt',
+                        usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD']]) {
                     withCredentials([string(credentialsId: 'github-access-token', variable: 'GITHUB_TOKEN')]) {
                         sh '''
                         export ARCH='arm64'
                         export DISTRO='xenial'
                         ./build.sh 
                         '''
-                    }
+                    } }
                 } 
             }
         }},
@@ -41,13 +45,15 @@ parallel(
             stage("arm64 build ros_comm"){
                 checkout scm
                 docker.image('arm64v8/ros:kinetic-ros-base-jessie').inside("-u 0:0 -v ${env.WORKSPACE}:/workspace/src") {
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'artifactory_apt',
+                        usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD']]) {
                     withCredentials([string(credentialsId: 'github-access-token', variable: 'GITHUB_TOKEN')]) {
                         sh '''
                         export ARCH='arm64'
                         export DISTRO='jessie'
                         ./build.sh 
                         '''
-                    }
+                    } }
                 } 
             }
         }}
