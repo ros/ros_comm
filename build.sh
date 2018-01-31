@@ -20,7 +20,7 @@ chmod +x /tmp/semantic-release
 cd ${WORKSPACE}
 /tmp/semantic-release -slug 6RiverSystems/ros_comm  -noci -nochange -flow -vf 
 
-VERSION=$(cat .version)
+VERSION=$(cat .version)${DISTRO}
 
 cd /workspace
 
@@ -28,4 +28,12 @@ COMMAND="fpm -x 'opt/mfp_chuck/.*' -x 'opt/mfp_chuck/_setup*' -x 'opt/mfp_chuck/
 echo "${COMMAND}"
 eval "${COMMAND}"
 cp *.deb ${WORKSPACE}/
+
+export ARTIFACT_DEB_NAME="ros-comm_${VERSION}_${ARCHITECTURE}.deb"
+time curl \
+	-H "X-JFrog-Art-Api: ${ARTIFACTORY_PASSWORD}" \
+	-T "${WORKSPACE}/artifacts/${ARTIFACT_DEB_NAME}" \
+	"https://sixriver.jfrog.io/sixriver/debian/pool/main/r/ros-comm/${ARTIFACT_DEB_NAME};deb.distribution=${DISTRO};deb.component=main;deb.architecture=${ARCHITECTURE}"
+	
+
 
