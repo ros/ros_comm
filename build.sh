@@ -32,7 +32,7 @@ cp *.deb ${WORKSPACE}/
 export ARTIFACT_DEB_NAME="ros-comm_${VERSION}_${ARCH}.deb"
 time curl \
 	-H "X-JFrog-Art-Api: ${ARTIFACTORY_PASSWORD}" \
-	-T "${WORKSPACE}/artifacts/${ARTIFACT_DEB_NAME}" \
+	-T "${WORKSPACE}/${ARTIFACT_DEB_NAME}" \
 	"https://sixriver.jfrog.io/sixriver/debian/pool/main/r/ros-comm/${ARTIFACT_DEB_NAME};deb.distribution=${DISTRO};deb.component=main;deb.architecture=${ARCH}"
 	
 
