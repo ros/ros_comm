@@ -441,15 +441,15 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
  *
  * \param level One of the levels specified in ::ros::console::levels::Level
  * \param name Name of the logger.  Note that this is the fully qualified name, and does NOT include "ros.<package_name>".  Use ROSCONSOLE_DEFAULT_NAME if you would like to use the default name.
- * \param rate The rate it should actually trigger at
+ * \param period The period it should actually trigger at most
  */
-#define ROS_LOG_THROTTLE(rate, level, name, ...) \
+#define ROS_LOG_THROTTLE(period, level, name, ...) \
   do \
   { \
     ROSCONSOLE_DEFINE_LOCATION(true, level, name); \
     static double last_hit = 0.0; \
     ::ros::Time now = ::ros::Time::now(); \
-    if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && ROS_UNLIKELY(last_hit + rate <= now.toSec())) \
+    if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && ROS_UNLIKELY(last_hit + period <= now.toSec())) \
     { \
       last_hit = now.toSec(); \
       ROSCONSOLE_PRINT_AT_LOCATION(__VA_ARGS__); \
@@ -462,15 +462,15 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
  *
  * \param level One of the levels specified in ::ros::console::levels::Level
  * \param name Name of the logger.  Note that this is the fully qualified name, and does NOT include "ros.<package_name>".  Use ROSCONSOLE_DEFAULT_NAME if you would like to use the default name.
- * \param rate The rate it should actually trigger at
+ * \param period The period it should actually trigger at most
  */
-#define ROS_LOG_STREAM_THROTTLE(rate, level, name, args) \
+#define ROS_LOG_STREAM_THROTTLE(period, level, name, args) \
   do \
   { \
     ROSCONSOLE_DEFINE_LOCATION(true, level, name); \
     static double __ros_log_stream_throttle__last_hit__ = 0.0; \
     ::ros::Time __ros_log_stream_throttle__now__ = ::ros::Time::now(); \
-    if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && ROS_UNLIKELY(__ros_log_stream_throttle__last_hit__ + rate <= __ros_log_stream_throttle__now__.toSec())) \
+    if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && ROS_UNLIKELY(__ros_log_stream_throttle__last_hit__ + period <= __ros_log_stream_throttle__now__.toSec())) \
     { \
       __ros_log_stream_throttle__last_hit__ = __ros_log_stream_throttle__now__.toSec(); \
       ROSCONSOLE_PRINT_STREAM_AT_LOCATION(args); \
@@ -482,15 +482,15 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
  *
  * \param level One of the levels specified in ::ros::console::levels::Level
  * \param name Name of the logger.  Note that this is the fully qualified name, and does NOT include "ros.<package_name>".  Use ROSCONSOLE_DEFAULT_NAME if you would like to use the default name.
- * \param rate The rate it should actually trigger at
+ * \param period The period it should actually trigger at most
  */
-#define ROS_LOG_DELAYED_THROTTLE(rate, level, name, ...) \
+#define ROS_LOG_DELAYED_THROTTLE(period, level, name, ...) \
   do \
   { \
     ROSCONSOLE_DEFINE_LOCATION(true, level, name); \
     ::ros::Time __ros_log_delayed_throttle__now__ = ::ros::Time::now(); \
     static double __ros_log_delayed_throttle__last_hit__ = __ros_log_delayed_throttle__now__.toSec(); \
-    if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && ROS_UNLIKELY(__ros_log_delayed_throttle__last_hit__ + rate <= __ros_log_delayed_throttle__now__.toSec())) \
+    if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && ROS_UNLIKELY(__ros_log_delayed_throttle__last_hit__ + period <= __ros_log_delayed_throttle__now__.toSec())) \
     { \
       __ros_log_delayed_throttle__last_hit__ = __ros_log_delayed_throttle__now__.toSec(); \
       ROSCONSOLE_PRINT_AT_LOCATION(__VA_ARGS__); \
@@ -503,15 +503,15 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
  *
  * \param level One of the levels specified in ::ros::console::levels::Level
  * \param name Name of the logger.  Note that this is the fully qualified name, and does NOT include "ros.<package_name>".  Use ROSCONSOLE_DEFAULT_NAME if you would like to use the default name.
- * \param rate The rate it should actually trigger at, and the delay before which no message will be shown.
+ * \param period The period it should actually trigger at most, and the delay before which no message will be shown.
  */
-#define ROS_LOG_STREAM_DELAYED_THROTTLE(rate, level, name, args) \
+#define ROS_LOG_STREAM_DELAYED_THROTTLE(period, level, name, args) \
   do \
   { \
     ROSCONSOLE_DEFINE_LOCATION(true, level, name); \
     ::ros::Time __ros_log_stream_delayed_throttle__now__ = ::ros::Time::now(); \
     static double __ros_log_stream_delayed_throttle__last_hit__ = __ros_log_stream_delayed_throttle__now__.toSec(); \
-    if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && ROS_UNLIKELY(__ros_log_stream_delayed_throttle__last_hit__ + rate <= __ros_log_stream_delayed_throttle__now__.toSec())) \
+    if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && ROS_UNLIKELY(__ros_log_stream_delayed_throttle__last_hit__ + period <= __ros_log_stream_delayed_throttle__now__.toSec())) \
     { \
       __ros_log_stream_delayed_throttle__last_hit__ = __ros_log_stream_delayed_throttle__now__.toSec(); \
       ROSCONSOLE_PRINT_STREAM_AT_LOCATION(args); \
