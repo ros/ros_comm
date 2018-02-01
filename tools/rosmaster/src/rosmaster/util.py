@@ -70,6 +70,8 @@ def xmlrpcapi(uri):
 
 
 def close_half_closed_sockets():
+    if not hasattr(socket, 'TCP_INFO'):
+        return
     for proxy in _proxies.values():
         transport = proxy("transport")
         if transport._connection and transport._connection[1] is not None and transport._connection[1].sock is not None:
