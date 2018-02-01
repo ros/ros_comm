@@ -1,6 +1,6 @@
 #!/bin/bash
 pwd
-apt-get update && apt-get install g++
+apt-get update && apt-get install -y g++
 cd /workspace/src
 ls -la 
 source /opt/ros/kinetic/setup.bash
