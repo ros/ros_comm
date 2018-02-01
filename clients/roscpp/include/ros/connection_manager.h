@@ -64,10 +64,23 @@ public:
   uint32_t getTCPPort();
   uint32_t getUDPPort();
 
+#ifndef ROS_UDS_EXT_DISABLE
+  const std::string getUDSStreamPath();
+  const std::string getUDSDatagramPath();
+#endif // ROS_UDS_EXT_DISABLE
+
   const TransportTCPPtr& getTCPServerTransport() { return tcpserver_transport_; }
   const TransportUDPPtr& getUDPServerTransport() { return udpserver_transport_; }
 
+#ifndef ROS_UDS_EXT_DISABLE
+  const TransportUDSStreamPtr& getUDSStreamServerTransport() { return uds_stream_server_transport_; }
+  const TransportUDSDatagramPtr& getUDSDatagramServerTransport() { return uds_datagram_server_transport_; }
+#endif // ROS_UDS_EXT_DISABLE
+
   void udprosIncomingConnection(const TransportUDPPtr& transport, Header& header);
+#ifndef ROS_UDS_EXT_DISABLE
+  void udprosIncomingConnection(const TransportUDSDatagramPtr& transport, Header& header);
+#endif // ROS_UDS_EXT_DISABLE
 
   void start();
   void shutdown();
@@ -81,6 +94,9 @@ private:
 
   bool onConnectionHeaderReceived(const ConnectionPtr& conn, const Header& header);
   void tcprosAcceptConnection(const TransportTCPPtr& transport);
+#ifndef ROS_UDS_EXT_DISABLE
+  void tcprosAcceptConnection(const TransportUDSStreamPtr& transport);
+#endif // ROS_UDS_EXT_DISABLE
 
   PollManagerPtr poll_manager_;
 
@@ -98,6 +114,12 @@ private:
 
   TransportTCPPtr tcpserver_transport_;
   TransportUDPPtr udpserver_transport_;
+
+#ifndef ROS_UDS_EXT_DISABLE
+  // Unix Domain Socket (stream, datagram)
+  TransportUDSStreamPtr uds_stream_server_transport_;
+  TransportUDSDatagramPtr uds_datagram_server_transport_;
+#endif // ROS_UDS_EXT_DISABLE
 
   const static int MAX_TCPROS_CONN_QUEUE = 100; // magic
 };

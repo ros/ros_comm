@@ -33,6 +33,9 @@
 #include <stddef.h>
 #include <string>
 
+// Define to 1 if you want to disable Unix Domain Socket transport feature.
+#cmakedefine ROS_UDS_EXT_DISABLE 1
+
 #include "ros/assert.h"
 #include "ros/forwards.h"
 #include "ros/serialized_message.h"

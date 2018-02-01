@@ -47,6 +47,9 @@
 #include "ros/rosout_appender.h"
 #include "ros/subscribe_options.h"
 #include "ros/transport/transport_tcp.h"
+#ifndef ROS_UDS_EXT_DISABLE
+#include "ros/transport/transport_uds.h"
+#endif // ROS_UDS_EXT_DISABLE
 #include "ros/internal_timer_manager.h"
 #include "xmlrpcpp/XmlRpcSocket.h"
 
@@ -316,12 +319,41 @@ void start()
     }
   }
 
+#ifndef ROS_UDS_EXT_DISABLE
+  char* env_uds = NULL;
+  env_uds = getenv("ROS_UDS_EXT_ENABLE");
+
+  bool use_uds = (env_uds && strcmp(env_uds, "on") == 0);
+  TransportUDS::s_use_uds_ = use_uds;
+  ROSCPP_LOG_DEBUG("ROS_UDS_EXT_ENABLE is %s", use_uds?"on":"off");
+
+  /*
+   * if the Unix Domain Socket extension is not used,
+   * fallback to the official check for IPv6, otherwise
+   * we never use the IPv6.
+   */
+  if (!use_uds) {
+#endif // ROS_UDS_EXT_DISABLE
+  char* env_ipv6 = NULL;
+#ifdef _MSC_VER
+  _dupenv_s(&env_ipv6, NULL, "ROS_IPV6");
+#else
+  env_ipv6 = getenv("ROS_IPV6");
+#endif
+
+  bool use_ipv6 = (env_ipv6 && strcmp(env_ipv6,"on") == 0);
+  TransportTCP::s_use_ipv6_ = use_ipv6;
+  XmlRpc::XmlRpcSocket::s_use_ipv6_ = use_ipv6;
+
 #ifdef _MSC_VER
   if (env_ipv6)
   {
     free(env_ipv6);
   }
 #endif
+#ifndef ROS_UDS_EXT_DISABLE
+  }
+#endif // ROS_UDS_EXT_DISABLE
 
   param::param("/tcp_keepalive", TransportTCP::s_use_keepalive_, TransportTCP::s_use_keepalive_);
 
@@ -404,10 +436,24 @@ void start()
   g_internal_queue_thread = boost::thread(internalCallbackQueueThreadFunc);
   getGlobalCallbackQueue()->enable();
 
-  ROSCPP_LOG_DEBUG("Started node [%s], pid [%d], bound on [%s], xmlrpc port [%d], tcpros port [%d], using [%s] time", 
-		   this_node::getName().c_str(), getpid(), network::getHost().c_str(), 
-		   XMLRPCManager::instance()->getServerPort(), ConnectionManager::instance()->getTCPPort(), 
-		   Time::useSystemTime() ? "real" : "sim");
+#ifndef ROS_UDS_EXT_DISABLE
+  if (TransportUDS::s_use_uds_)
+  {
+    ROSCPP_LOG_DEBUG("Started node [%s], pid [%d], bound on [%s], xmlrpc port [%d], tcpros uds_path [%s], using [%s] time",
+         this_node::getName().c_str(), getpid(), network::getHost().c_str(),
+         XMLRPCManager::instance()->getServerPort(), ConnectionManager::instance()->getUDSStreamPath().c_str(),
+         Time::useSystemTime() ? "real" : "sim");
+  }
+  else
+  {
+#endif // ROS_UDS_EXT_DISABLE
+    ROSCPP_LOG_DEBUG("Started node [%s], pid [%d], bound on [%s], xmlrpc port [%d], tcpros port [%d], using [%s] time",
+         this_node::getName().c_str(), getpid(), network::getHost().c_str(),
+         XMLRPCManager::instance()->getServerPort(), ConnectionManager::instance()->getTCPPort(),
+         Time::useSystemTime() ? "real" : "sim");
+#ifndef ROS_UDS_EXT_DISABLE
+  }
+#endif // ROS_UDS_EXT_DISABLE
 
   // Label used to abort if we've started shutting down in the middle of start(), which can happen in
   // threaded code or if Ctrl-C is pressed while we're initializing

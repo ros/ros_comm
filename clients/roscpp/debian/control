@@ -1,0 +1,13 @@
+Source: ros-kinetic-roscpp
+Section: misc
+Priority: extra
+Maintainer: Dirk Thomas <dthomas@osrfoundation.org>
+Build-Depends: debhelper (>= 9.0.0), pkg-config, ros-kinetic-catkin (>= 0.5.78), ros-kinetic-cpp-common (>= 0.3.17), ros-kinetic-message-generation, ros-kinetic-rosconsole, ros-kinetic-roscpp-serialization, ros-kinetic-roscpp-traits (>= 0.3.17), ros-kinetic-rosgraph-msgs (>= 1.10.3), ros-kinetic-roslang, ros-kinetic-rostime (>= 0.6.4), ros-kinetic-std-msgs, ros-kinetic-xmlrpcpp
+Homepage: http://ros.org/wiki/roscpp
+Standards-Version: 3.9.2
+
+Package: ros-kinetic-roscpp
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-kinetic-cpp-common (>= 0.3.17), ros-kinetic-message-runtime, ros-kinetic-rosconsole, ros-kinetic-roscpp-serialization, ros-kinetic-roscpp-traits (>= 0.3.17), ros-kinetic-rosgraph-msgs (>= 1.10.3), ros-kinetic-rostime (>= 0.6.4), ros-kinetic-std-msgs, ros-kinetic-xmlrpcpp
+Description: roscpp is a C++ implementation of ROS.
+ It provides a client library that enables C++ programmers to quickly interface with ROS Topics, Services, and Parameters. roscpp is the most widely used ROS client library and is designed to be the high-performance library for ROS.

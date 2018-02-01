@@ -38,6 +38,9 @@
 #include "ros/master.h"
 #include "ros/transport/transport_tcp.h"
 #include "ros/transport/transport_udp.h"
+#ifndef ROS_UDS_EXT_DISABLE
+#include "ros/transport/transport_uds_stream.h"
+#endif // ROS_UDS_EXT_DISABLE
 #include "ros/init.h"
 #include "ros/connection.h"
 #include "ros/file_log.h"
@@ -146,8 +149,20 @@ bool ServiceManager::advertiseService(const AdvertiseServiceOptions& ops)
   args[0] = this_node::getName();
   args[1] = ops.service;
   char uri_buf[1024];
-  snprintf(uri_buf, sizeof(uri_buf), "rosrpc://%s:%d",
-           network::getHost().c_str(), connection_manager_->getTCPPort());
+#ifndef ROS_UDS_EXT_DISABLE
+  if (TransportUDS::s_use_uds_)
+  {
+    snprintf(uri_buf, sizeof(uri_buf), "rosrpc://%s",
+             connection_manager_->getUDSStreamPath().c_str());
+  }
+  else
+  {
+#endif // ROS_UDS_EXT_DISABLE
+    snprintf(uri_buf, sizeof(uri_buf), "rosrpc://%s:%d",
+             network::getHost().c_str(), connection_manager_->getTCPPort());
+#ifndef ROS_UDS_EXT_DISABLE
+  }
+#endif // ROS_UDS_EXT_DISABLE
   args[2] = string(uri_buf);
   args[3] = xmlrpc_manager_->getServerURI();
   master::execute("registerService", args, result, payload, true);
@@ -196,8 +211,20 @@ bool ServiceManager::unregisterService(const std::string& service)
   args[0] = this_node::getName();
   args[1] = service;
   char uri_buf[1024];
-  snprintf(uri_buf, sizeof(uri_buf), "rosrpc://%s:%d",
-           network::getHost().c_str(), connection_manager_->getTCPPort());
+#ifndef ROS_UDS_EXT_DISABLE
+  if (TransportUDS::s_use_uds_)
+  {
+    snprintf(uri_buf, sizeof(uri_buf), "rosrpc://%s",
+             connection_manager_->getUDSStreamPath().c_str());
+  }
+  else
+  {
+#endif // ROS_UDS_EXT_DISABLE
+    snprintf(uri_buf, sizeof(uri_buf), "rosrpc://%s:%d",
+             network::getHost().c_str(), connection_manager_->getTCPPort());
+#ifndef ROS_UDS_EXT_DISABLE
+  }
+#endif // ROS_UDS_EXT_DISABLE
   args[2] = string(uri_buf);
 
   master::execute("unregisterService", args, result, payload, false);
@@ -247,20 +274,58 @@ ServiceServerLinkPtr ServiceManager::createServiceServerLink(const std::string& 
 
   uint32_t serv_port;
   std::string serv_host;
-  if (!lookupService(service, serv_host, serv_port))
+#ifndef ROS_UDS_EXT_DISABLE
+  std::string serv_uds_path;
+#endif // ROS_UDS_EXT_DISABLE
+  ConnectionPtr connection;
+  bool connect_ret = false;
+
+#ifndef ROS_UDS_EXT_DISABLE
+  if (TransportUDS::s_use_uds_)
   {
-    return ServiceServerLinkPtr();
+    if (!lookupService(service, serv_uds_path))
+    {
+      return ServiceServerLinkPtr();
+    }
+
+    TransportUDSStreamPtr transport(boost::make_shared<TransportUDSStream>(&poll_manager_->getPollSet()));
+
+    // Make sure to initialize the connection *before* transport->connect()
+    // is called, otherwise we might miss a connect error (see #434).
+    connection = boost::make_shared<Connection>();
+    connection_manager_->addConnection(connection);
+    connection->initialize(transport, false, HeaderReceivedFunc());
+
+    if (transport->connect(serv_uds_path))
+    {
+      connect_ret = true;
+    }
   }
+  else
+  {
+#endif // ROS_UDS_EXT_DISABLE
+    if (!lookupService(service, serv_host, serv_port))
+    {
+      return ServiceServerLinkPtr();
+    }
 
-  TransportTCPPtr transport(boost::make_shared<TransportTCP>(&poll_manager_->getPollSet()));
+    TransportTCPPtr transport(boost::make_shared<TransportTCP>(&poll_manager_->getPollSet()));
 
-  // Make sure to initialize the connection *before* transport->connect()
-  // is called, otherwise we might miss a connect error (see #434).
-  ConnectionPtr connection(boost::make_shared<Connection>());
-  connection_manager_->addConnection(connection);
-  connection->initialize(transport, false, HeaderReceivedFunc());
+    // Make sure to initialize the connection *before* transport->connect()
+    // is called, otherwise we might miss a connect error (see #434).
+    connection = boost::make_shared<Connection>();
+    connection_manager_->addConnection(connection);
+    connection->initialize(transport, false, HeaderReceivedFunc());
 
-  if (transport->connect(serv_host, serv_port))
+    if (transport->connect(serv_host, serv_port))
+    {
+      connect_ret = true;
+    }
+#ifndef ROS_UDS_EXT_DISABLE
+  }
+#endif // ROS_UDS_EXT_DISABLE
+
+  if (connect_ret)
   {
     ServiceServerLinkPtr client(boost::make_shared<ServiceServerLink>(service, persistent, request_md5sum, response_md5sum, header_values));
 
@@ -274,7 +339,18 @@ ServiceServerLinkPtr ServiceManager::createServiceServerLink(const std::string& 
     return client;
   }
 
-  ROSCPP_LOG_DEBUG("Failed to connect to service [%s] (mapped=[%s]) at [%s:%d]", service.c_str(), service.c_str(), serv_host.c_str(), serv_port);
+#ifndef ROS_UDS_EXT_DISABLE
+  if (TransportUDS::s_use_uds_)
+  {
+    ROSCPP_LOG_DEBUG("Failed to connect to service [%s] (mapped=[%s]) at [%s]", service.c_str(), service.c_str(), serv_uds_path.c_str());
+  }
+  else
+  {
+#endif // ROS_UDS_EXT_DISABLE
+    ROSCPP_LOG_DEBUG("Failed to connect to service [%s] (mapped=[%s]) at [%s:%d]", service.c_str(), service.c_str(), serv_host.c_str(), serv_port);
+#ifndef ROS_UDS_EXT_DISABLE
+  }
+#endif // ROS_UDS_EXT_DISABLE
 
   return ServiceServerLinkPtr();
 }
@@ -328,6 +404,34 @@ bool ServiceManager::lookupService(const string &name, string &serv_host, uint32
 
   return true;
 }
+
+#ifndef ROS_UDS_EXT_DISABLE
+bool ServiceManager::lookupService(const std::string& name, std::string& serv_uds_path)
+{
+  XmlRpcValue args, result, payload;
+  args[0] = this_node::getName();
+  args[1] = name;
+  if (!master::execute("lookupService", args, result, payload, false))
+    return false;
+
+  string serv_uri(payload);
+  if (!serv_uri.length()) // shouldn't happen. but let's be sure.
+  {
+    ROS_ERROR("lookupService: Empty server URI returned from master");
+
+    return false;
+  }
+
+  if (!network::splitURI(serv_uri, serv_uds_path))
+  {
+    ROS_ERROR("lookupService: Bad service uri [%s]", serv_uri.c_str());
+
+    return false;
+  }
+
+  return true;
+}
+#endif // ROS_UDS_EXT_DISABLE
 
 } // namespace ros
 

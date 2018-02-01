@@ -119,7 +119,7 @@ public:
   uint32_t getNumCallbacks() const { return callbacks_.size(); }
   uint32_t getNumPublishers();
 
-  // We'll keep a list of these objects, representing in-progress XMLRPC 
+  // We'll keep a list of these objects, representing in-progress XMLRPC
   // connections to other nodes.
   class ROSCPP_DECL PendingConnection : public ASyncXMLRPCConnection
   {
@@ -131,6 +131,15 @@ public:
       , remote_uri_(remote_uri)
       {}
 
+#ifndef ROS_UDS_EXT_DISABLE
+      PendingConnection(XmlRpc::XmlRpcClient* client, TransportUDSDatagramPtr uds_datagram_transport, const SubscriptionWPtr& parent, const std::string& remote_uri)
+      : client_(client)
+      , uds_datagram_transport_(uds_datagram_transport)
+      , parent_(parent)
+      , remote_uri_(remote_uri)
+      {}
+#endif // ROS_UDS_EXT_DISABLE
+
       ~PendingConnection()
       {
         delete client_;
@@ -138,6 +147,9 @@ public:
 
       XmlRpc::XmlRpcClient* getClient() const { return client_; }
       TransportUDPPtr getUDPTransport() const { return udp_transport_; }
+#ifndef ROS_UDS_EXT_DISABLE
+      TransportUDSDatagramPtr getUDSDatagramTransport() const { return uds_datagram_transport_; }
+#endif // ROS_UDS_EXT_DISABLE
 
       virtual void addToDispatch(XmlRpc::XmlRpcDispatch* disp)
       {
@@ -172,6 +184,9 @@ public:
     private:
       XmlRpc::XmlRpcClient* client_;
       TransportUDPPtr udp_transport_;
+#ifndef ROS_UDS_EXT_DISABLE
+      TransportUDSDatagramPtr uds_datagram_transport_;
+#endif // ROS_UDS_EXT_DISABLE
       SubscriptionWPtr parent_;
       std::string remote_uri_;
   };

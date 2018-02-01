@@ -36,6 +36,10 @@
 #include "ros/master.h"
 #include "ros/transport/transport_tcp.h"
 #include "ros/transport/transport_udp.h"
+#ifndef ROS_UDS_EXT_DISABLE
+#include "ros/transport/transport_uds_stream.h"
+#include "ros/transport/transport_uds_datagram.h"
+#endif // ROS_UDS_EXT_DISABLE
 #include "ros/rosout_appender.h"
 #include "ros/init.h"
 #include "ros/file_log.h"
@@ -605,12 +609,24 @@ bool TopicManager::requestTopic(const string &topic,
     }
 
     string proto_name = proto[0];
+    int index = 0;
     if (proto_name == string("TCPROS"))
     {
       XmlRpcValue tcpros_params;
-      tcpros_params[0] = string("TCPROS");
-      tcpros_params[1] = network::getHost();
-      tcpros_params[2] = int(connection_manager_->getTCPPort());
+      tcpros_params[index++] = string("TCPROS");
+#ifndef ROS_UDS_EXT_DISABLE
+      if (TransportUDS::s_use_uds_)
+      {
+        tcpros_params[index++] = connection_manager_->getUDSStreamPath();
+      }
+      else
+      {
+#endif // ROS_UDS_EXT_DISABLE
+        tcpros_params[index++] = network::getHost();
+        tcpros_params[index++] = int(connection_manager_->getTCPPort());
+#ifndef ROS_UDS_EXT_DISABLE
+      }
+#endif // ROS_UDS_EXT_DISABLE
       ret[0] = int(1);
       ret[1] = string();
       ret[2] = tcpros_params;
@@ -618,15 +634,33 @@ bool TopicManager::requestTopic(const string &topic,
     }
     else if (proto_name == string("UDPROS"))
     {
-      if (proto.size() != 5 ||
-          proto[1].getType() != XmlRpcValue::TypeBase64 ||
-          proto[2].getType() != XmlRpcValue::TypeString ||
-          proto[3].getType() != XmlRpcValue::TypeInt ||
-          proto[4].getType() != XmlRpcValue::TypeInt)
+#ifndef ROS_UDS_EXT_DISABLE
+      if (TransportUDS::s_use_uds_)
       {
-      	ROSCPP_LOG_DEBUG("Invalid protocol parameters for UDPROS");
-        return false;
+        if (proto.size() != 4 ||
+            proto[1].getType() != XmlRpcValue::TypeBase64 ||
+            proto[2].getType() != XmlRpcValue::TypeString ||
+            proto[3].getType() != XmlRpcValue::TypeInt)
+        {
+          ROSCPP_LOG_DEBUG("Invalid protocol parameters for UDPROS");
+          return false;
+        }
       }
+      else
+      {
+#endif // ROS_UDS_EXT_DISABLE
+        if (proto.size() != 5 ||
+            proto[1].getType() != XmlRpcValue::TypeBase64 ||
+            proto[2].getType() != XmlRpcValue::TypeString ||
+            proto[3].getType() != XmlRpcValue::TypeInt ||
+            proto[4].getType() != XmlRpcValue::TypeInt)
+        {
+          ROSCPP_LOG_DEBUG("Invalid protocol parameters for UDPROS");
+          return false;
+        }
+#ifndef ROS_UDS_EXT_DISABLE
+      }
+#endif // ROS_UDS_EXT_DISABLE
       std::vector<char> header_bytes = proto[1];
       boost::shared_array<uint8_t> buffer(new uint8_t[header_bytes.size()]);
       memcpy(buffer.get(), &header_bytes[0], header_bytes.size());
@@ -645,33 +679,90 @@ bool TopicManager::requestTopic(const string &topic,
         return false;
       }
 
-      std::string host = proto[2];
-      int port = proto[3];
+#ifndef ROS_UDS_EXT_DISABLE
+      std::string uds_path;
+#endif // ROS_UDS_EXT_DISABLE
+      std::string host;
+      int port;
+#ifndef ROS_UDS_EXT_DISABLE
+      if (TransportUDS::s_use_uds_)
+      {
+        uds_path = std::string(proto[2]);
+      }
+      else
+      {
+#endif // ROS_UDS_EXT_DISABLE
+        host = std::string(proto[2]);
+        port = int(proto[3]);
+#ifndef ROS_UDS_EXT_DISABLE
+      }
+#endif // ROS_UDS_EXT_DISABLE
 
       M_string m;
       std::string error_msg;
       if (!pub_ptr->validateHeader(h, error_msg))
       {
-        ROSCPP_LOG_DEBUG("Error validating header from [%s:%d] for topic [%s]: %s", host.c_str(), port, topic.c_str(), error_msg.c_str());
+#ifndef ROS_UDS_EXT_DISABLE
+        if (TransportUDS::s_use_uds_)
+        {
+          ROSCPP_LOG_DEBUG("Error validating header from [%s] for topic [%s]: %s", uds_path.c_str(), topic.c_str(), error_msg.c_str());
+        }
+        else
+        {
+#endif // ROS_UDS_EXT_DISABLE
+          ROSCPP_LOG_DEBUG("Error validating header from [%s:%d] for topic [%s]: %s", host.c_str(), port, topic.c_str(), error_msg.c_str());
+#ifndef ROS_UDS_EXT_DISABLE
+        }
+#endif // ROS_UDS_EXT_DISABLE
         return false;
       }
 
       int max_datagram_size = proto[4];
       int conn_id = connection_manager_->getNewConnectionID();
-      TransportUDPPtr transport = connection_manager_->getUDPServerTransport()->createOutgoing(host, port, conn_id, max_datagram_size);
-      if (!transport)
+#ifndef ROS_UDS_EXT_DISABLE
+      if (TransportUDS::s_use_uds_)
       {
-        ROSCPP_LOG_DEBUG("Error creating outgoing transport for [%s:%d]", host.c_str(), port);
-        return false;
+        TransportUDSDatagramPtr transport = connection_manager_->getUDSDatagramServerTransport()->createOutgoing(uds_path, conn_id, max_datagram_size);
+        if (!transport)
+        {
+          ROSCPP_LOG_DEBUG("Error creating outgoing transport for [%s]", uds_path.c_str());
+          return false;
+        }
+        connection_manager_->udprosIncomingConnection(transport, h);
       }
-      connection_manager_->udprosIncomingConnection(transport, h);
+      else
+      {
+#endif // ROS_UDS_EXT_DISABLE
+        TransportUDPPtr transport = connection_manager_->getUDPServerTransport()->createOutgoing(host, port, conn_id, max_datagram_size);
+        if (!transport)
+        {
+          ROSCPP_LOG_DEBUG("Error creating outgoing transport for [%s:%d]", host.c_str(), port);
+          return false;
+        }
+        connection_manager_->udprosIncomingConnection(transport, h);
+#ifndef ROS_UDS_EXT_DISABLE
+      }
+#endif // ROS_UDS_EXT_DISABLE
 
       XmlRpcValue udpros_params;
-      udpros_params[0] = string("UDPROS");
-      udpros_params[1] = network::getHost();
-      udpros_params[2] = connection_manager_->getUDPServerTransport()->getServerPort();
-      udpros_params[3] = conn_id;
-      udpros_params[4] = max_datagram_size;
+      udpros_params[index++] = string("UDPROS");
+
+#ifndef ROS_UDS_EXT_DISABLE
+      if (TransportUDS::s_use_uds_)
+      {
+        udpros_params[index++] = connection_manager_->getUDSDatagramServerTransport()->getServerUDSPath();
+      }
+      else
+      {
+#endif // ROS_UDS_EXT_DISABLE
+        udpros_params[index++] = network::getHost();
+        udpros_params[index++] = connection_manager_->getUDPServerTransport()->getServerPort();
+#ifndef ROS_UDS_EXT_DISABLE
+      }
+#endif // ROS_UDS_EXT_DISABLE
+
+      udpros_params[index++] = conn_id;
+      udpros_params[index++] = max_datagram_size;
       m["topic"] = topic;
       m["md5sum"] = pub_ptr->getMD5Sum();
       m["type"] = pub_ptr->getDataType();
@@ -681,7 +772,7 @@ bool TopicManager::requestTopic(const string &topic,
       uint32_t len;
       Header::write(m, msg_def_buffer, len);
       XmlRpcValue v(msg_def_buffer.get(), len);
-      udpros_params[5] = v;
+      udpros_params[index++] = v;
       ret[0] = int(1);
       ret[1] = string();
       ret[2] = udpros_params;

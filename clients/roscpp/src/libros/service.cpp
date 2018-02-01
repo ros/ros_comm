@@ -30,6 +30,9 @@
 #include "ros/service_server_link.h"
 #include "ros/service_manager.h"
 #include "ros/transport/transport_tcp.h"
+#ifndef ROS_UDS_EXT_DISABLE
+#include "ros/transport/transport_uds_stream.h"
+#endif // ROS_UDS_EXT_DISABLE
 #include "ros/poll_manager.h"
 #include "ros/init.h"
 #include "ros/names.h"
@@ -44,36 +47,81 @@ bool service::exists(const std::string& service_name, bool print_failure_reason)
 
   std::string host;
   uint32_t port;
+#ifndef ROS_UDS_EXT_DISABLE
+  std::string uds_path;
+#endif // ROS_UDS_EXT_DISABLE
+  bool lookup = false;
 
-  if (ServiceManager::instance()->lookupService(mapped_name, host, port))
+#ifndef ROS_UDS_EXT_DISABLE
+  if (TransportUDS::s_use_uds_)
   {
-    TransportTCPPtr transport(boost::make_shared<TransportTCP>(static_cast<ros::PollSet*>(NULL), TransportTCP::SYNCHRONOUS));
-
-    if (transport->connect(host, port))
+    if (ServiceManager::instance()->lookupService(mapped_name, uds_path))
     {
-      M_string m;
-      m["probe"] = "1";
-      m["md5sum"] = "*";
-      m["callerid"] = this_node::getName();
-      m["service"] = mapped_name;
-      boost::shared_array<uint8_t> buffer;
-      uint32_t size = 0;;
-      Header::write(m, buffer, size);
-      transport->write((uint8_t*)&size, sizeof(size));
-      transport->write(buffer.get(), size);
-      transport->close();
+      lookup = true;
+      TransportUDSStreamPtr transport(boost::make_shared<TransportUDSStream>(static_cast<ros::PollSet*>(NULL), TransportUDSStream::SYNCHRONOUS));
 
-      return true;
-    }
-    else
-    {
-      if (print_failure_reason)
+      if (transport->connect(uds_path))
       {
-        ROS_INFO("waitForService: Service [%s] could not connect to host [%s:%d], waiting...", mapped_name.c_str(), host.c_str(), port);
+        M_string m;
+        m["probe"] = "1";
+        m["md5sum"] = "*";
+        m["callerid"] = this_node::getName();
+        m["service"] = mapped_name;
+        boost::shared_array<uint8_t> buffer;
+        uint32_t size = 0;;
+        Header::write(m, buffer, size);
+        transport->write((uint8_t*)&size, sizeof(size));
+        transport->write(buffer.get(), size);
+        transport->close();
+
+        return true;
+      }
+      else
+      {
+        if (print_failure_reason)
+        {
+          ROS_INFO("waitForService: Service [%s] could not connect to Unix Domain Socket path [%s], waiting...", mapped_name.c_str(), uds_path.c_str());
+        }
       }
     }
   }
   else
+  {
+#endif // ROS_UDS_EXT_DISABLE
+    if (ServiceManager::instance()->lookupService(mapped_name, host, port))
+    {
+      lookup = true;
+      TransportTCPPtr transport(boost::make_shared<TransportTCP>(static_cast<ros::PollSet*>(NULL), TransportTCP::SYNCHRONOUS));
+
+      if (transport->connect(host, port))
+      {
+        M_string m;
+        m["probe"] = "1";
+        m["md5sum"] = "*";
+        m["callerid"] = this_node::getName();
+        m["service"] = mapped_name;
+        boost::shared_array<uint8_t> buffer;
+        uint32_t size = 0;;
+        Header::write(m, buffer, size);
+        transport->write((uint8_t*)&size, sizeof(size));
+        transport->write(buffer.get(), size);
+        transport->close();
+
+        return true;
+      }
+      else
+      {
+        if (print_failure_reason)
+        {
+          ROS_INFO("waitForService: Service [%s] could not connect to host [%s:%d], waiting...", mapped_name.c_str(), host.c_str(), port);
+        }
+      }
+    }
+#ifndef ROS_UDS_EXT_DISABLE
+  }
+#endif // ROS_UDS_EXT_DISABLE
+
+  if (!lookup)
   {
     if (print_failure_reason)
     {
