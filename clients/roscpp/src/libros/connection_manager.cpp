@@ -32,6 +32,10 @@
 #include "ros/service_client_link.h"
 #include "ros/transport/transport_tcp.h"
 #include "ros/transport/transport_udp.h"
+#ifndef ROS_UDS_EXT_DISABLE
+#include "ros/transport/transport_uds_stream.h"
+#include "ros/transport/transport_uds_datagram.h"
+#endif // ROS_UDS_EXT_DISABLE
 #include "ros/file_log.h"
 #include "ros/network.h"
 
@@ -62,38 +66,87 @@ void ConnectionManager::start()
   poll_conn_ = poll_manager_->addPollThreadListener(boost::bind(&ConnectionManager::removeDroppedConnections, 
 								this));
 
-  // Bring up the TCP listener socket
-  tcpserver_transport_ = boost::make_shared<TransportTCP>(&poll_manager_->getPollSet());
-  if (!tcpserver_transport_->listen(network::getTCPROSPort(), 
-				    MAX_TCPROS_CONN_QUEUE, 
-				    boost::bind(&ConnectionManager::tcprosAcceptConnection, this, _1)))
+#ifndef ROS_UDS_EXT_DISABLE
+  if (TransportUDS::s_use_uds_)
   {
-    ROS_FATAL("Listen on port [%d] failed", network::getTCPROSPort());
-    ROS_BREAK();
-  }
+    // Bring up the TCP listener socket for UDS
+    uds_stream_server_transport_ = boost::make_shared<TransportUDSStream>(&poll_manager_->getPollSet());
+    if (!uds_stream_server_transport_->listen(MAX_TCPROS_CONN_QUEUE,
+              boost::bind(static_cast<void (ConnectionManager::*)( const TransportUDSStreamPtr& )>
+                          (&ConnectionManager::tcprosAcceptConnection), this, _1)))
+    {
+      ROS_FATAL("Listen on Unix Domain Socket path [%s] failed", getUDSStreamPath().c_str());
+      ROS_BREAK();
+    }
 
-  // Bring up the UDP listener socket
-  udpserver_transport_ = boost::make_shared<TransportUDP>(&poll_manager_->getPollSet());
-  if (!udpserver_transport_->createIncoming(0, true))
-  {
-    ROS_FATAL("Listen failed");
-    ROS_BREAK();
+    // Bring up the UDP listener socket
+    uds_datagram_server_transport_ = boost::make_shared<TransportUDSDatagram>(&poll_manager_->getPollSet());
+    if (!uds_datagram_server_transport_->createIncoming(true))
+    {
+      ROS_FATAL("Listen failed");
+      ROS_BREAK();
+    }
   }
+  else
+  {
+#endif // ROS_UDS_EXT_DISABLE
+    // Bring up the TCP listener socket
+    tcpserver_transport_ = boost::make_shared<TransportTCP>(&poll_manager_->getPollSet());
+    if (!tcpserver_transport_->listen(network::getTCPROSPort(),
+              MAX_TCPROS_CONN_QUEUE,
+              boost::bind(static_cast<void (ConnectionManager::*)( const TransportTCPPtr& )>
+                          (&ConnectionManager::tcprosAcceptConnection), this, _1)))
+    {
+      ROS_FATAL("Listen on port [%d] failed", network::getTCPROSPort());
+      ROS_BREAK();
+    }
+
+    // Bring up the UDP listener socket
+    udpserver_transport_ = boost::make_shared<TransportUDP>(&poll_manager_->getPollSet());
+    if (!udpserver_transport_->createIncoming(0, true))
+    {
+      ROS_FATAL("Listen failed");
+      ROS_BREAK();
+    }
+#ifndef ROS_UDS_EXT_DISABLE
+  }
+#endif // ROS_UDS_EXT_DISABLE
 }
 
 void ConnectionManager::shutdown()
 {
-  if (udpserver_transport_)
+#ifndef ROS_UDS_EXT_DISABLE
+  if (TransportUDS::s_use_uds_)
   {
-    udpserver_transport_->close();
-    udpserver_transport_.reset();
-  }
+    if (uds_datagram_server_transport_)
+    {
+      uds_datagram_server_transport_->close();
+      uds_datagram_server_transport_.reset();
+    }
 
-  if (tcpserver_transport_)
-  {
-    tcpserver_transport_->close();
-    tcpserver_transport_.reset();
+    if (uds_stream_server_transport_)
+    {
+      uds_stream_server_transport_->close();
+      uds_stream_server_transport_.reset();
+    }
   }
+  else
+  {
+#endif // ROS_UDS_EXT_DISABLE
+    if (udpserver_transport_)
+    {
+      udpserver_transport_->close();
+      udpserver_transport_.reset();
+    }
+
+    if (tcpserver_transport_)
+    {
+      tcpserver_transport_->close();
+      tcpserver_transport_.reset();
+    }
+#ifndef ROS_UDS_EXT_DISABLE
+  }
+#endif // ROS_UDS_EXT_DISABLE
 
   poll_manager_->removePollThreadListener(poll_conn_);
 
@@ -129,6 +182,18 @@ uint32_t ConnectionManager::getUDPPort()
 {
   return udpserver_transport_->getServerPort();
 }
+
+#ifndef ROS_UDS_EXT_DISABLE
+const std::string ConnectionManager::getUDSStreamPath()
+{
+  return uds_stream_server_transport_->getServerUDSPath();
+}
+
+const std::string ConnectionManager::getUDSDatagramPath()
+{
+  return uds_datagram_server_transport_->getServerUDSPath();
+}
+#endif // ROS_UDS_EXT_DISABLE
 
 uint32_t ConnectionManager::getNewConnectionID()
 {
@@ -182,6 +247,20 @@ void ConnectionManager::udprosIncomingConnection(const TransportUDPPtr& transpor
   onConnectionHeaderReceived(conn, header);
 }
 
+#ifndef ROS_UDS_EXT_DISABLE
+void ConnectionManager::udprosIncomingConnection(const TransportUDSDatagramPtr& transport, Header& header)
+{
+  std::string client_uri = ""; // TODO: transport->getClientURI();
+  ROSCPP_LOG_DEBUG("UDPROS received a connection from [%s]", client_uri.c_str());
+
+  ConnectionPtr conn(boost::make_shared<Connection>());
+  addConnection(conn);
+
+  conn->initialize(transport, true, NULL);
+  onConnectionHeaderReceived(conn, header);
+}
+#endif // ROS_UDS_EXT_DISABLE
+
 void ConnectionManager::tcprosAcceptConnection(const TransportTCPPtr& transport)
 {
   std::string client_uri = transport->getClientURI();
@@ -192,6 +271,19 @@ void ConnectionManager::tcprosAcceptConnection(const TransportTCPPtr& transport)
 
   conn->initialize(transport, true, boost::bind(&ConnectionManager::onConnectionHeaderReceived, this, _1, _2));
 }
+
+#ifndef ROS_UDS_EXT_DISABLE
+void ConnectionManager::tcprosAcceptConnection(const TransportUDSStreamPtr& transport)
+{
+  std::string client_uri = transport->getClientURI();
+  ROSCPP_LOG_DEBUG("TCPROS received a connection from [%s]", client_uri.c_str());
+
+  ConnectionPtr conn(boost::make_shared<Connection>());
+  addConnection(conn);
+
+  conn->initialize(transport, true, boost::bind(&ConnectionManager::onConnectionHeaderReceived, this, _1, _2));
+}
+#endif // ROS_UDS_EXT_DISABLE
 
 bool ConnectionManager::onConnectionHeaderReceived(const ConnectionPtr& conn, const Header& header)
 {

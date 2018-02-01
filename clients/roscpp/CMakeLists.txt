@@ -73,7 +73,15 @@ CHECK_CXX_SYMBOL_EXISTS(epoll_wait "sys/epoll.h" HAVE_EPOLL)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/libros/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(roscpp 
+if (NOT ROS_UDS_EXT_DISABLE)
+  set(UDS_FEATURE_SRC
+    src/libros/transport/transport_uds.cpp
+    src/libros/transport/transport_uds_stream.cpp
+    src/libros/transport/transport_uds_datagram.cpp
+  )
+endif()
+
+add_library(roscpp
   src/libros/master.cpp
   src/libros/network.cpp
   src/libros/subscriber.cpp
@@ -122,6 +130,7 @@ add_library(roscpp
   src/libros/service.cpp
   src/libros/this_node.cpp
   src/libros/steady_timer.cpp
+  ${UDS_FEATURE_SRC}
   )
 
 if(WIN32)

@@ -1,0 +1,78 @@
+Index
+-----
+1. Background/Overview
+2. Unix Domain Socket(UDS) feature
+   a) How to use in runtime.
+   b) Limitations.
+   c) Devel environment.
+3. Debian
+   a) CHANGELOG.rst
+   b) Debian metadata
+   c) Copylight
+
+
+1. Background/Overview
+---------------------
+ this repository is to develop and distribute the Unix Domain Socket
+ feature extension for ROS message transmission layer. if the system
+ internal message use only, TCP/IP, UDP/IP protocal stack does not do
+ any good to the system, just a pure overhead. so then Unix Domain
+ Socket (UDS) is reasonable to get rid of the overhead with the system
+ internal use for ROS Inter-Process Communication.
+
+
+2. Unix Domain Socket(UDS) feature
+----------------------------------
+  a) How to use in runtime.
+     - for runtime, UDS feature is provided as BAS package for projects.
+       1st of all, you do need to install the BAS package as well.
+     - set environment variable 'ROS_UDS_EXT_ENABLE=on' to turn on the
+       UDS feature enabled, before running the applilcation.
+       e.g) # ROS_UDS_EXT_ENABLE=on roscore
+            # ROS_UDS_EXT_ENABLE=on rosrun test_rosuds talker_uds
+            # ROS_UDS_EXT_ENABLE=on rosrun test_rosuds listener_uds
+     - if the environment variable is not set,
+       TCP/IP or UDP/IP(default ROS communication) will be used.
+
+  b) Limitations.
+     - UDS feature is supported only roscpp, nothing else.
+     - UDS feature is exlusive from TCP/UDP IP default comm on each process.
+       you can not use UDS feature and TCP/UDP IP comm on the same process.
+     - No tools are suppoted via UDS feature. (might work but not confirmed)
+
+     (*) since a few development steps we make, there are some strong limitaions
+         at this time. but these are the limitation not specifications, we are
+         trying to get rid of the limitations for close future.
+
+  b) Devel environment.
+     - you can use this repository in your catkin environment, all you need to
+       do is the following.
+       # cd <CATKIN_WORkSPACE>/src
+       # git clone ros_comm-kinetic-devel
+       # cd <CATKIN_WORkSPACE>
+       # catkin_make
+       # source devel/setup.bash
+
+
+3. Debian
+---------
+  this description is most likely for developpers.
+
+  a) CHANGELOG.rst
+     we do not maintenance CHANGELOG.rst, just use the original files which
+     are provided ROS mainline repository.
+     (*) only exception, at the rebase from the mainline release, we will change
+         the date of the CHANGELOG.rst which belongs to our targeted packages.
+         so then the version number attached with debian package is newer than
+         original, and apt-get can automatically install our modified packages.
+  b) Debian metadata
+     - use the following command to make debian metadata on each package we modify.
+       # bloom-generate rosdebian --os-name ubuntu --os-version xenial --ros-distro kinetic
+     - the debian metadata should be created only for the packages we release.
+     - for test purpose, you can build the debian packages with the following command.
+       # fakeroot debian/rules binary
+  c) Copylight
+     - currently debian copylight is not our scope, since there are no sony specific pacakges.
+     - when the time comes, we will follow the basics below.
+       https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+

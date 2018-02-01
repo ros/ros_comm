@@ -72,6 +72,20 @@ bool splitURI(const std::string& uri, std::string& host, uint32_t& port)
   return true;
 }
 
+#ifndef ROS_UDS_EXT_DISABLE
+bool splitURI(const std::string& uri, std::string& uds_path)
+{
+  // skip over the protocol if it's there
+  if (uri.substr(0, 7) == std::string("http://"))
+    uds_path = uri.substr(7);
+  else if (uri.substr(0, 9) == std::string("rosrpc://"))
+    uds_path = uri.substr(9);
+  else
+    return false;
+  return true;
+}
+#endif // ROS_UDS_EXT_DISABLE
+
 uint16_t getTCPROSPort()
 {
   return g_tcpros_server_port;

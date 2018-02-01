@@ -99,6 +99,15 @@ public:
    */
   bool lookupService(const std::string& name, std::string& serv_host, uint32_t& serv_port);
 
+#ifndef ROS_UDS_EXT_DISABLE
+  /** @brief Lookup the uds path of a service.
+   *
+   * @param name The name of the service
+   * @param serv_uds_path OUT -- The uds path of the service
+   */
+  bool lookupService(const std::string& name, std::string& serv_uds_path);
+#endif // ROS_UDS_EXT_DISABLE
+
   /** @brief Unadvertise a service.
    *
    * This call unadvertises a service, which must have been previously
