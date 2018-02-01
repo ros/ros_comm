@@ -157,7 +157,7 @@ def configure_logging(logname, level=logging.INFO, filename=None, env=None):
         for config_dir in [os.path.join(rospkg.get_ros_home(), 'config'),
                            rospkg.get_etc_ros_dir(),
                            os.path.join(rosgraph_d, 'conf')]:
-            for extension in ('conf', 'yaml', 'yml'):
+            for extension in ('conf', 'yaml'):
                 f = os.path.join(config_dir,
                                  'python_logging{}{}'.format(os.path.extsep,
                                                              extension))
