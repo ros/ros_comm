@@ -149,17 +149,18 @@ def configure_logging(logname, level=logging.INFO, filename=None, env=None):
             except OSError as e:
                 sys.stderr.write("INFO: cannot create a symlink to latest log directory: %s\n" % e)
 
-    if 'ROS_PYTHON_LOG_CONFIG_FILE' in os.environ:
-        config_file = os.environ['ROS_PYTHON_LOG_CONFIG_FILE']
-    else:
-        # search for logging config file in /etc/.  If it's not there,
-        # look for it package-relative.
-        config_file = None
+    config_file = os.environ.get('ROS_PYTHON_LOG_CONFIG_FILE')
+    if not config_file:
+        # search for logging config file in ROS_HOME, ROS_ETC_DIR or relative
+        # to the rosgraph package directory.
         rosgraph_d = rospkg.RosPack().get_path('rosgraph')
-        for fname in ['python_logging.conf', 'python_logging.yaml']:
-            for f in [os.path.join(rospkg.get_ros_home(), 'config', fname),
-                      '/etc/ros/%s'%(fname),
-                      os.path.join(rosgraph_d, 'conf', fname)]:
+        for config_dir in [os.path.join(rospkg.get_ros_home(), 'config'),
+                           rospkg.get_etc_ros_dir(),
+                           os.path.join(rosgraph_d, 'conf')]:
+            for extension in ('conf', 'yaml'):
+                f = os.path.join(config_dir,
+                                 'python_logging{}{}'.format(os.path.extsep,
+                                                             extension))
                 if os.path.isfile(f):
                     config_file = f
                     break
