@@ -21,7 +21,7 @@ chmod +x /tmp/semantic-release
 cd ${WORKSPACE}
 /tmp/semantic-release -slug 6RiverSystems/ros_comm  -noci -nochange -flow -vf 
 
-VERSION=$(cat .version)${DISTRO}
+VERSION=$(cat .version)
 
 cd /workspace
 
@@ -31,10 +31,11 @@ eval "${COMMAND}"
 cp *.deb ${WORKSPACE}/
 
 export ARTIFACT_DEB_NAME="ros-comm_${VERSION}_${ARCH}.deb"
+export ARTIFACTORY_NAME="ros-comm_${VERSION}${DISTRO}_${ARCH}.deb"
 time curl \
 	-H "X-JFrog-Art-Api: ${ARTIFACTORY_PASSWORD}" \
 	-T "${WORKSPACE}/${ARTIFACT_DEB_NAME}" \
-	"https://sixriver.jfrog.io/sixriver/debian/pool/main/r/ros-comm/${ARTIFACT_DEB_NAME};deb.distribution=${DISTRO};deb.component=main;deb.architecture=${ARCH}"
+	"https://sixriver.jfrog.io/sixriver/debian/pool/main/r/ros-comm/${ARTIFACTORY_NAME};deb.distribution=${DISTRO};deb.component=main;deb.architecture=${ARCH}"
 	
 
 
