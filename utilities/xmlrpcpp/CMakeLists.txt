@@ -5,13 +5,13 @@ if(NOT WIN32)
   set_directory_properties(PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra")
 endif()
 
-find_package(catkin REQUIRED COMPONENTS cpp_common)
+find_package(catkin REQUIRED COMPONENTS cpp_common rostime)
 
 # The CFG_EXTRAS is only for compatibility, to be removed in Lunar.
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES xmlrpcpp
-  CATKIN_DEPENDS cpp_common
+  CATKIN_DEPENDS cpp_common rostime
   CFG_EXTRAS xmlrpcpp-extras.cmake
 )
 
