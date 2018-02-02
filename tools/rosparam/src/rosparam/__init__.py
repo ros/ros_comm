@@ -266,11 +266,7 @@ def _rosparam_cmd_get_param(param, pretty=False, verbose=False):
         if type(val) == dict:
             _pretty_print(val)
         else:
-            if '\n' in val:
-                for l in val.split('\n'):
-                    print('  '+l)
-            else:
-                print(val)
+            print(val)
     else:
         dump = yaml.dump(val)
         # #1617
