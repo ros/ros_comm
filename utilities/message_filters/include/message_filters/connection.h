@@ -48,8 +48,8 @@ namespace message_filters
 class MESSAGE_FILTERS_DECL Connection
 {
 public:
-  typedef boost::function<void(void)> VoidDisconnectFunction;
-  typedef boost::function<void(const Connection&)> WithConnectionDisconnectFunction;
+  typedef std::function<void(void)> VoidDisconnectFunction;
+  typedef std::function<void(const Connection&)> WithConnectionDisconnectFunction;
   Connection() {}
   Connection(const VoidDisconnectFunction& func);
   Connection(const WithConnectionDisconnectFunction& func, boost::signals2::connection conn);

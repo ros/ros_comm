@@ -40,7 +40,7 @@
 #ifndef XMLRPCPP_DECL_H_INCLUDED
 #define XMLRPCPP_DECL_H_INCLUDED
 
-#include <ros/macros.h>
+//#include <ros/macros.h>
 
 #ifdef ROS_BUILD_SHARED_LIBS // ros is being built around shared libraries
   #ifdef xmlrpcpp_EXPORTS // we are building a shared lib/dll

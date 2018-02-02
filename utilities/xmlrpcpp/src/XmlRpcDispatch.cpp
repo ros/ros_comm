@@ -6,9 +6,9 @@
 #include <math.h>
 #include <errno.h>
 #include <sys/timeb.h>
-#include <sys/poll.h>
 
 #if defined(_WINDOWS)
+# include <vector>
 # include <winsock2.h>
 static inline int poll( struct pollfd *pfd, int nfds, int timeout)
 {
@@ -22,6 +22,8 @@ static inline int poll( struct pollfd *pfd, int nfds, int timeout)
 # endif
 #else
 # include <sys/time.h>
+# include <sys/poll.h>
+
 #endif  // _WINDOWS
 
 
@@ -98,9 +100,12 @@ XmlRpcDispatch::work(double timeout)
   while (_sources.size() > 0) {
 
     // Construct the sets of descriptors we are interested in
-    const unsigned source_cnt = _sources.size();
-    pollfd fds[source_cnt];
-    XmlRpcSource * sources[source_cnt];
+    //const unsigned source_cnt = _sources.size();
+    //pollfd fds[source_cnt];
+    //XmlRpcSource * sources[source_cnt];
+    unsigned source_cnt = _sources.size();
+    std::vector<pollfd> fds(source_cnt);
+    std::vector<XmlRpcSource*> sources(source_cnt);
 
     SourceList::iterator it;
     std::size_t i = 0;
@@ -115,7 +120,7 @@ XmlRpcDispatch::work(double timeout)
     }
 
     // Check for events
-    int nEvents = poll(fds, source_cnt, (timeout_ms < 0) ? -1 : timeout_ms);
+    int nEvents = poll(fds.data(), source_cnt, (timeout_ms < 0) ? -1 : timeout_ms);
 
     if (nEvents < 0)
     {
