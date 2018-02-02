@@ -328,6 +328,12 @@ pollfd_vector_ptr poll_sockets(int epfd, socket_pollfd *fds, nfds_t nfds, int ti
 #else
 	UNUSED(epfd);
 	pollfd_vector_ptr ofds(new std::vector<socket_pollfd>);
+        // Clear the `revents` fields
+        for (nfds_t i = 0; i < nfds; i++)
+        {
+                fds[i].revents = 0;
+        }
+
 	// use an existing poll implementation
 	int result = poll(fds, nfds, timeout);
 	if ( result < 0 )
