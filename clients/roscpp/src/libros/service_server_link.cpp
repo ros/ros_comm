@@ -372,12 +372,12 @@ bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& re
   {
     boost::mutex::scoped_lock lock(info->finished_mutex_);
 
-    using namespace boost::chrono;
-    steady_clock::time_point end_time = steady_clock::now() + nanoseconds(timeout.toNSec());
-
-    while (!info->finished_)
+    if (timeout > ros::WallDuration(0.0))
     {
-      if (timeout > ros::WallDuration(0.0))
+      using namespace boost::chrono;
+      steady_clock::time_point end_time = steady_clock::now() + nanoseconds(timeout.toNSec());
+
+      while (!info->finished_)
       {
         if (info->finished_condition_.wait_until(lock, end_time) == boost::cv_status::timeout)
         {
@@ -386,7 +386,11 @@ bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& re
           break;
         }
       }
-      else
+    }
+    else
+    {
+      // no timeout set, so we really wait until service call is done
+      while (!info->finished_)
       {
         info->finished_condition_.wait(lock);
       }
