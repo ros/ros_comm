@@ -413,8 +413,10 @@ def load_config_default(roslaunch_files, port, roslaunch_strs=None, loader=None,
     roslaunch_files and or launch XML strings and initializing it. This
     config will have a core definition and also set the master to run
     on port.
-    @param roslaunch_files: list of launch files to load
-    @type  roslaunch_files: [str]
+    @param roslaunch_files: list of launch files to load. Each item may also
+      be a tuple where the first item is the launch file and the second item
+      is a string containing arguments.
+    @type  roslaunch_files: [str|(str, str)]
     @param port: roscore/master port override. Set to 0 or None to use default.
     @type  port: int
     @param roslaunch_strs: (optional) roslaunch XML strings to load
@@ -446,9 +448,13 @@ def load_config_default(roslaunch_files, port, roslaunch_strs=None, loader=None,
 
     # load the roslaunch_files into the config
     for f in roslaunch_files:
+        if isinstance(f, tuple):
+            f, args = f
+        else:
+            args = None
         try:
             logger.info('loading config file %s'%f)
-            loader.load(f, config, verbose=verbose)
+            loader.load(f, config, argv=args, verbose=verbose)
         except roslaunch.xmlloader.XmlParseException as e:
             raise RLException(e)
         except roslaunch.loader.LoadException as e:
