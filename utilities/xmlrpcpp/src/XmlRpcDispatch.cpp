@@ -226,7 +226,7 @@ XmlRpcDispatch::getTime()
 #else
   uint32_t sec, nsec;
 
-  ros_steadytime(sec, nsec);
+  ros::ros_steadytime(sec, nsec);
   return ((double)sec + (double)nsec / 1e9);
 #endif /* USE_FTIME */
 }
