@@ -40,6 +40,7 @@ add_library(xmlrpcpp
   libb64/src/cencode.c
 )
 
+target_link_libraries(xmlrpcpp ${catkin_LIBRARIES})
 if(WIN32)
   target_link_libraries(xmlrpcpp ws2_32)
 endif()
