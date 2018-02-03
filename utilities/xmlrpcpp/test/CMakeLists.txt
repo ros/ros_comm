@@ -15,7 +15,7 @@ catkin_add_gtest(test_client
   ../libb64/src/cdecode.c
   ../libb64/src/cencode.c
 )
-target_link_libraries(test_client mock_socket)
+target_link_libraries(test_client mock_socket ${catkin_LIBRARIES})
 
 catkin_add_gtest(test_dispatch
   test_dispatch.cpp
@@ -25,7 +25,7 @@ catkin_add_gtest(test_dispatch
   ../libb64/src/cdecode.c
   ../libb64/src/cencode.c
 )
-target_link_libraries(test_dispatch mock_socket)
+target_link_libraries(test_dispatch mock_socket ${catkin_LIBRARIES})
 set_target_properties(test_dispatch PROPERTIES
   LINK_FLAGS
   "-Wl,--wrap=select -Wl,--wrap=poll"
