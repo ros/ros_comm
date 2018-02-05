@@ -58,7 +58,7 @@ namespace XmlRpc {
     //! Clear all sources from the monitored sources list. Sources are closed.
     void clear();
 
-    // helper
+    // helper returning current steady/monotonic time
     double getTime();
 
     // A source to monitor and what to monitor it for

@@ -3,6 +3,8 @@
 #include "xmlrpcpp/XmlRpcSource.h"
 #include "xmlrpcpp/XmlRpcUtil.h"
 
+#include "ros/time.h"
+
 #include <math.h>
 #include <errno.h>
 #include <sys/timeb.h>
@@ -62,7 +64,7 @@ XmlRpcDispatch::removeSource(XmlRpcSource* source)
 
 
 // Modify the types of events to watch for on this source
-void 
+void
 XmlRpcDispatch::setSourceEvents(XmlRpcSource* source, unsigned eventMask)
 {
   for (SourceList::iterator it=_sources.begin(); it!=_sources.end(); ++it)
@@ -222,11 +224,10 @@ XmlRpcDispatch::getTime()
   return ((double) tbuff.time + ((double)tbuff.millitm / 1000.0) +
 	  ((double) tbuff.timezone * 60));
 #else
-  struct timeval	tv;
-  struct timezone	tz;
+  uint32_t sec, nsec;
 
-  gettimeofday(&tv, &tz);
-  return (tv.tv_sec + tv.tv_usec / 1000000.0);
+  ros::ros_steadytime(sec, nsec);
+  return ((double)sec + (double)nsec / 1e9);
 #endif /* USE_FTIME */
 }
 
