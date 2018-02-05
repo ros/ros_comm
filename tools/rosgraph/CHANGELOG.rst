@@ -2,8 +2,8 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.13.6 (2018-02-05)
+-------------------
 * fix search strategy for python_logging config (`#1292 <https://github.com/ros/ros_comm/issues/1292>`_)
 
 1.13.5 (2017-11-09)

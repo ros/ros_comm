@@ -2,8 +2,8 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.13.6 (2018-02-05)
+-------------------
 * add process listeners to XML RPC server (`#1319 <https://github.com/ros/ros_comm/issues/1319>`_)
 * pass through command-line args to the xmlloader when using the API (`#1115 <https://github.com/ros/ros_comm/issues/1115>`_)
 * make master process explicitly 'required' for parent launch (`#1228 <https://github.com/ros/ros_comm/issues/1228>`_)

@@ -2,8 +2,8 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.13.6 (2018-02-05)
+-------------------
 * return an error status on error in rosbag (`#1257 <https://github.com/ros/ros_comm/issues/1257>`_)
 * fix warn of --max-splits without --split (`#1237 <https://github.com/ros/ros_comm/issues/1237>`_)
 

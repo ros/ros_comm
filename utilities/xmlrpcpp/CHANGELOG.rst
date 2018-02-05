@@ -2,8 +2,8 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.13.6 (2018-02-05)
+-------------------
 * fix xmlrpc timeout using monotonic clock (`#1249 <https://github.com/ros/ros_comm/issues/1249>`_)
 * add tests and bug fixes for XmlRpcServer (`#1243 <https://github.com/ros/ros_comm/issues/1243>`_)
 * add test and fix uninitialized data in XmlRpcClient (`#1244 <https://github.com/ros/ros_comm/issues/1244>`_)

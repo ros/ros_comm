@@ -2,8 +2,8 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.13.6 (2018-02-05)
+-------------------
 * add_rostest_gmock function (`#1303 <https://github.com/ros/ros_comm/issues/1303>`_)
 
 1.13.5 (2017-11-09)
