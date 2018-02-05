@@ -2,6 +2,11 @@
 Changelog for package roslz4
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* adding decompress to free(state) before return (`#1313 <https://github.com/ros/ros_comm/issues/1313>`_)
+* allow building on Trusty (`#1236 <https://github.com/ros/ros_comm/issues/1236>`_)
+
 1.13.5 (2017-11-09)
 -------------------
 

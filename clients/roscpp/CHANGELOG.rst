@@ -2,6 +2,14 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* avoid recreating poll set (`#1281 <https://github.com/ros/ros_comm/pull/1281>`_)
+* switch to using epoll (`#1217 <https://github.com/ros/ros_comm/pull/1217>`_)
+* monotonic clock for callback queue timeouts (`#1250 <https://github.com/ros/ros_comm/pull/1250>`_)
+* fix IPv6 initialization order (`#1262 <https://github.com/ros/ros_comm/issues/1262>`_)
+* changed error message for single threaded spinner  (`#1164 <https://github.com/ros/ros_comm/pull/1164>`_)
+
 1.13.5 (2017-11-09)
 -------------------
 

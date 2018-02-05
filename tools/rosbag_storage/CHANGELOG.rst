@@ -2,6 +2,11 @@
 Changelog for package rosbag_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* performance improvement for lower/upper bound (`#1223 <https://github.com/ros/ros_comm/issues/1223>`_)
+* use namespaced logging macros of console_bridge instead of deprecated macros (`#1239 <https://github.com/ros/ros_comm/issues/1239>`_)
+
 1.13.5 (2017-11-09)
 -------------------
 

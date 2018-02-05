@@ -2,6 +2,11 @@
 Changelog for package rosmaster
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add TCP_INFO availability check (`#1211 <https://github.com/ros/ros_comm/issues/1211>`_)
+* replace Thread.setDaemon() using new API (`#1276 <https://github.com/ros/ros_comm/issues/1276>`_)
+
 1.13.5 (2017-11-09)
 -------------------
 

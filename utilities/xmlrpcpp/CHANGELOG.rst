@@ -2,6 +2,16 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix xmlrpc timeout using monotonic clock (`#1249 <https://github.com/ros/ros_comm/issues/1249>`_)
+* add tests and bug fixes for XmlRpcServer (`#1243 <https://github.com/ros/ros_comm/issues/1243>`_)
+* add test and fix uninitialized data in XmlRpcClient (`#1244 <https://github.com/ros/ros_comm/issues/1244>`_)
+* make xmlrpcpp specific include directory work in devel space (`#1261 <https://github.com/ros/ros_comm/issues/1261>`_)
+* add base64 tests (`#1242 <https://github.com/ros/ros_comm/issues/1242>`_)
+* add unit tests for XmlRpcDispatch (`#1232 <https://github.com/ros/ros_comm/issues/1232>`_)
+* add unit tests and bug fixes for XmlRpcClient (`#1221 <https://github.com/ros/ros_comm/issues/1221>`_)
+
 1.13.5 (2017-11-09)
 -------------------
 * add unit tests and bug fixes for XmlRpcSocket (`#1218 <https://github.com/ros/ros_comm/issues/1218>`_)

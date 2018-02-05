@@ -2,6 +2,10 @@
 Changelog for package rosout
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add parameter to omit topics list from rosout logs (`#1234 <https://github.com/ros/ros_comm/issues/1234>`_)
+
 1.13.5 (2017-11-09)
 -------------------
 
