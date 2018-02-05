@@ -58,7 +58,7 @@ MSG_TYPE_TO_CPP = {'byte': 'int8_t', 'char': 'uint8_t',
                    'uint64': 'uint64_t', 'int64': 'int64_t',
                    'float32': 'float',
                    'float64': 'double',
-                   'string': 'std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>',
+                   'string': 'std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > ',
                    'time': 'ros::Time',
                    'duration': 'ros::Duration'}
 
@@ -78,19 +78,19 @@ def msg_type_to_cpp(type):
         cpp_type = MSG_TYPE_TO_CPP[base_type]
     elif (len(base_type.split('/')) == 1):
         if (roslib.msgs.is_header_type(base_type)):
-            cpp_type = ' ::std_msgs::Header_<ContainerAllocator>'
+            cpp_type = ' ::std_msgs::Header_<ContainerAllocator> '
         else:
-            cpp_type = '%s_<ContainerAllocator>'%(base_type)
+            cpp_type = '%s_<ContainerAllocator> '%(base_type)
     else:
         pkg = base_type.split('/')[0]
         msg = base_type.split('/')[1]
-        cpp_type = ' ::%s::%s_<ContainerAllocator>'%(pkg, msg)
+        cpp_type = ' ::%s::%s_<ContainerAllocator> '%(pkg, msg)
         
     if (is_array):
         if (array_len is None):
-            return 'std::vector<%s, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<%s>>'%(cpp_type, cpp_type)
+            return 'std::vector<%s, typename ContainerAllocator::template rebind<%s>::other > '%(cpp_type, cpp_type)
         else:
-            return 'boost::array<%s, %s>'%(cpp_type, array_len)
+            return 'boost::array<%s, %s> '%(cpp_type, array_len)
     else:
         return cpp_type
     
@@ -148,7 +148,6 @@ def write_generic_includes(s):
     s.write('#include <string>\n')
     s.write('#include <vector>\n')
     s.write('#include <map>\n')
-    s.write('#include <memory>\n')
     s.write('#include <ostream>\n')
     s.write('#include "ros/serialization.h"\n')
     s.write('#include "ros/builtin_message_traits.h"\n')
