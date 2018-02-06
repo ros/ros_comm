@@ -8,7 +8,7 @@ TESTRES=0
 set -x
 
 unset ROS_UDS_EXT_ENABLE
-rosrun test_rosuds listener_uds >/dev/null 2>&1  &
+${CPP_LISTENER} >/dev/null 2>&1  &
 LISTENERPID1=$!
 sleep ${SLEEP_TIME}
 

@@ -51,7 +51,7 @@ from rospy.exceptions import TransportInitError, TransportTerminated, ROSExcepti
 from rospy.service import _Service, ServiceException
 
 from rospy.impl.registration import get_service_manager
-from rospy.impl.tcpros_base import TCPROSTransport, TCPROSTransportProtocol, \
+from rospy.impl.tcpros_base import TCPROSTransport, TCPROSUDSTransport, TCPROSTransportProtocol, \
     get_tcpros_server_address, start_tcpros_server, recv_buff, \
     DEFAULT_BUFF_SIZE
 
@@ -100,16 +100,22 @@ def wait_for_service(service, timeout=None):
             return False
 
         addr = rospy.core.parse_rosrpc_uri(uri)
-        if rosgraph.network.use_ipv6():
-            s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        if rosgraph.rosenv.use_uds():
+            s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         else:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            if rosgraph.network.use_ipv6():
+                s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+            else:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             # we always want to timeout just in case we're connecting
             # to a down service.
             s.settimeout(timeout)
             logdebug('connecting to ' + str(addr))
-            s.connect(addr)
+            if rosgraph.rosenv.use_uds() and rosgraph.rosenv.ros_uds_ext_is_enable(rosgraph.rosenv.ROS_UDS_EXT_ABSTRACT_SOCK_NAME):
+                s.connect('\0'+addr)
+            else:
+                s.connect(addr)
             h = { 'probe' : '1', 'md5sum' : '*',
                   'callerid' : rospy.core.get_caller_id(),
                   'service': resolved_name }
@@ -227,7 +233,10 @@ def service_connection_handler(sock, client_addr, header):
         if not required in header:
             return "Missing required '%s' field"%required
     else:
-        logger.debug("connection from %s:%s", client_addr[0], client_addr[1])
+        if rosgraph.rosenv.use_uds():
+            logger.debug("connection from Unix Domain Socket")
+        else:
+            logger.debug("connection from %s:%s", client_addr[0], client_addr[1])
         service_name = header['service']
         
         #TODO: make service manager configurable. I think the right
@@ -243,7 +252,10 @@ def service_connection_handler(sock, client_addr, header):
         elif md5sum != rospy.names.SERVICE_ANYTYPE and md5sum != service.service_class._md5sum:
             return "request from [%s]: md5sums do not match: [%s] vs. [%s]"%(header['callerid'], md5sum, service.service_class._md5sum)
         else:
-            transport = TCPROSTransport(service.protocol, service_name, header=header)
+            if rosgraph.rosenv.use_uds():
+                transport = TCPROSUDSTransport(service.protocol, service_name, header=header)
+            else:
+                transport = TCPROSTransport(service.protocol, service_name, header=header)
             transport.set_socket(sock, header['callerid'])
             transport.write_header()
             # using threadpool reduced performance by an order of
@@ -497,13 +509,21 @@ class ServiceProxy(_Service):
         # initialize transport
         if self.transport is None:
             service_uri = self._get_service_uri(request)
-            dest_addr, dest_port = rospy.core.parse_rosrpc_uri(service_uri)
+            if rosgraph.rosenv.use_uds():
+                dest_uds_path = rospy.core.parse_rosrpc_uri(service_uri)
+                # connect to service
+                transport = TCPROSUDSTransport(self.protocol, self.resolved_name)
+            else:
+                dest_addr, dest_port = rospy.core.parse_rosrpc_uri(service_uri)
+                # connect to service
+                transport = TCPROSTransport(self.protocol, self.resolved_name)
 
-            # connect to service            
-            transport = TCPROSTransport(self.protocol, self.resolved_name)
             transport.buff_size = self.buff_size
             try:
-                transport.connect(dest_addr, dest_port, service_uri)
+                if rosgraph.rosenv.use_uds():
+                    transport.connect(dest_uds_path, service_uri)
+                else:
+                    transport.connect(dest_addr, dest_port, service_uri)
             except TransportInitError as e:
                 # can be a connection or md5sum mismatch
                 raise ServiceException("unable to connect to service: %s"%e)
@@ -564,8 +584,12 @@ class ServiceImpl(_Service):
         self.buff_size=buff_size
 
         start_tcpros_server() #lazy-init the tcprosserver
-        host, port = get_tcpros_server_address()
-        self.uri = '%s%s:%s'%(rospy.core.ROSRPC, host, port)
+        if rosgraph.rosenv.use_uds():
+            uds_path = get_tcpros_server_address()
+            self.uri = '%s%s' % (rospy.core.ROSRPC, uds_path)
+        else:
+            host, port = get_tcpros_server_address()
+            self.uri = '%s%s:%s'%(rospy.core.ROSRPC, host, port)
         logdebug("... service URL is %s"%self.uri)
 
         self.protocol = TCPService(self.resolved_name, service_class, self.buff_size)

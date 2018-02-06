@@ -7,7 +7,7 @@ TESTRES=0
 
 set -x
 
-ROS_UDS_EXT_ENABLE=on rosrun test_rosuds listener_unreliable_uds >/dev/null 2>&1  &
+ROS_UDS_EXT_ENABLE=on ${CPP_LISTENER_UNRELIABLE} >/dev/null 2>&1  &
 LISTENERPID1=$!
 sleep ${SLEEP_TIME}
 OLD_SERVER_COUNT=`get_uds_datagram_server_count "${LISTENERPID1}"`
@@ -15,9 +15,9 @@ OLD_CONNECTED_OUT_COUNT=`get_uds_datagram_connected_out_count "${LISTENERPID1}"`
 EXPECTED_SERVER_COUNT=$((OLD_SERVER_COUNT+2))
 EXPECTED_CONNECTED_OUT_COUNT=$((OLD_CONNECTED_OUT_COUNT))
 
-ROS_UDS_EXT_ENABLE=on rosrun test_rosuds talker_uds __name:=t1 >/dev/null 2>&1  &
+ROS_UDS_EXT_ENABLE=on ${CPP_TALKER} __name:=t1 >/dev/null 2>&1  &
 TALKERPID1=$!
-ROS_UDS_EXT_ENABLE=on rosrun test_rosuds talker_uds __name:=t2 >/dev/null 2>&1  &
+ROS_UDS_EXT_ENABLE=on ${CPP_TALKER} __name:=t2 >/dev/null 2>&1  &
 TALKERPID2=$!
 sleep ${SLEEP_TIME}
 NEW_SERVER_COUNT=`get_uds_datagram_server_count "${LISTENERPID1}"`

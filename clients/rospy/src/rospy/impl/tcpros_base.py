@@ -44,6 +44,9 @@ except ImportError:
 import errno
 import socket
 import logging
+import tempfile
+import uuid
+import errno
 
 import threading
 import time
@@ -203,6 +206,104 @@ class TCPServer(object):
             self.is_shutdown = True
             self.server_sock.close()
 
+atomic_uds_counter = 0
+uds_counter_lock = threading.Lock()
+
+class TCPUDSServer(TCPServer):
+    """
+    Simple server that accepts inbound Unix Domain Socket connections and hands
+    them off to a handler function. TCPUDSServer use
+    '${TMP}/ros-uds-stream-${process_id}-${atomic_counter}' as Unix Domain Socket
+    path. the default value of ${TMP} is "/tmp".
+    Reference by TCPServer implementation
+    """
+
+    def __init__(self, inbound_handler):
+        """
+        Setup a server socket listening on Unix Domain Socket path.
+        @param inbound_handler: handler to invoke with
+        new connection
+        @type  inbound_handler: fn(sock, addr)
+        """
+        self.uds_path = None
+        self.addr = None  # set at socket bind
+        self.is_shutdown = False
+        self.inbound_handler = inbound_handler
+        try:
+            self.server_sock = self._create_server_sock()
+        except:
+            self.server_sock = None
+            raise
+
+    def run(self):
+        """
+        Main UDS receive loop. Should be run in a separate thread -- use start()
+        to do this automatically.
+        """
+        self.is_shutdown = False
+        if not self.server_sock:
+            raise ROSInternalException("%s did not connect" % self.__class__.__name__)
+        while not self.is_shutdown:
+            try:
+                (client_sock, client_addr) = self.server_sock.accept()
+            except socket.timeout:
+                continue
+            except IOError as e:
+                (errno, msg) = e.args
+                if errno == 4:  # interrupted system call
+                    continue
+                raise
+            if self.is_shutdown:
+                break
+            try:
+                # leave threading decisions up to inbound_handler
+                self.inbound_handler(client_sock, client_addr)
+            except socket.error as e:
+                if not self.is_shutdown:
+                    traceback.print_exc()
+                    logwarn("Failed to handle inbound connection due to socket error: %s" % e)
+        logdebug("TCPUDSServer [%s] shutting down", self.uds_path)
+
+    def get_full_addr(self):
+        """
+        @return: (uds_path) of server socket binding
+        @rtype: (str)
+        """
+        return (self.uds_path)
+
+    def _create_server_sock(self):
+        """
+        binds the server socket of Unix Domain Socket(stream).
+        """
+        server_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        if rosgraph.rosenv.ros_uds_ext_is_enable(rosgraph.rosenv.ROS_UDS_EXT_ABSTRACT_SOCK_NAME):
+            self.uds_path = str(uuid.uuid4())
+            uds_path = '\0' + self.uds_path
+        else:
+            global atomic_uds_counter
+            with uds_counter_lock:
+                counter = atomic_uds_counter
+                atomic_uds_counter = atomic_uds_counter + 1
+            self.uds_path = tempfile._candidate_tempdir_list()[0] + '/ros-uds-stream-' + str(os.getpid()) + '-' + str(counter)
+            uds_path = self.uds_path
+        logdebug('binding to ' + str(self.uds_path))
+        server_sock.bind(uds_path)
+        logdebug('bound to ' + str(self.uds_path))
+        server_sock.listen(5)
+        return server_sock
+
+    def shutdown(self):
+        """shutdown I/O resources uses by this server"""
+        if not self.is_shutdown:
+            self.is_shutdown = True
+            self.server_sock.close()
+            if self.uds_path:
+                if not rosgraph.rosenv.ros_uds_ext_is_enable(rosgraph.rosenv.ROS_UDS_EXT_ABSTRACT_SOCK_NAME):
+                    os.unlink(self.uds_path)
+                self.uds_path = None
+
+
+
 # base maintains a tcpros_server singleton that is shared between
 # services and topics for inbound connections. This global is set in
 # the tcprosserver constructor. Constructor is called by init_tcpros()
@@ -266,6 +367,7 @@ class TCPROSServer(object):
         """
         self.port = port
         self.tcp_ros_server = None #: server for receiving tcp conn
+        self.tcp_ros_uds_server = None  #: server for receiving UDS conn
         self.lock = threading.Lock()
         # should be set to fn(sock, client_addr, header) for topic connections
         self.topic_connection_handler = _error_connection_handler
@@ -274,15 +376,25 @@ class TCPROSServer(object):
         
     def start_server(self):
         """
-        Starts the TCP socket server if one is not already running
+        Starts the TCP(or UDS if ROS_UDS_EXT_ENABLE is on) socket server if one is not already running
         """
-        if self.tcp_ros_server:
-            return
+        if rosgraph.rosenv.use_uds():
+            if self.tcp_ros_uds_server:
+                return
+        else:
+            if self.tcp_ros_server:
+                return
+
         with self.lock:
             try:
-                if not self.tcp_ros_server:
-                    self.tcp_ros_server = TCPServer(self._tcp_server_callback, self.port) 
-                    self.tcp_ros_server.start()
+                if rosgraph.rosenv.use_uds():
+                    if not self.tcp_ros_uds_server:
+                        self.tcp_ros_uds_server = TCPUDSServer(self._tcp_server_uds_callback)
+                        self.tcp_ros_uds_server.start()
+                else:
+                    if not self.tcp_ros_server:
+                        self.tcp_ros_server = TCPServer(self._tcp_server_callback, self.port)
+                        self.tcp_ros_server.start()
             except Exception as e:
                 self.tcp_ros_server = None
                 logerr("unable to start TCPROS server: %s\n%s"%(e, traceback.format_exc()))
@@ -291,17 +403,25 @@ class TCPROSServer(object):
     def get_address(self):
         """
         @return: address and port of TCP server socket for accepting
-        inbound connections
+        inbound connections. (return UDS path if ROS_UDS_EXT_ENABLE is on)
         @rtype: str, int
         """
-        if self.tcp_ros_server is not None:
-            return self.tcp_ros_server.get_full_addr()
+        if rosgraph.rosenv.use_uds():
+            if self.tcp_ros_uds_server is not None:
+                return self.tcp_ros_uds_server.get_full_addr()
+        else:
+            if self.tcp_ros_server is not None:
+                return self.tcp_ros_server.get_full_addr()
         return None, None
     
     def shutdown(self, reason=''):
-        """stops the TCP/IP server responsible for receiving inbound connections"""
-        if self.tcp_ros_server:
-            self.tcp_ros_server.shutdown()
+        """stops the TCP/IP(or UDS) server responsible for receiving inbound connections"""
+        if rosgraph.rosenv.use_uds():
+            if self.tcp_ros_uds_server:
+                self.tcp_ros_uds_server.shutdown()
+        else:
+            if self.tcp_ros_server:
+                self.tcp_ros_server.shutdown()
 
     def _tcp_server_callback(self, sock, client_addr):
         """
@@ -311,6 +431,57 @@ class TCPROSServer(object):
         @type  sock: socket.socket
         @param client_addr: client address
         @type  client_addr: (str, int)
+        @raise TransportInitError: If transport cannot be succesfully initialized
+        """
+        # TODOXXX:rewrite this logic so it is possible to create TCPROSTransport object first, set its protocol,
+        # and then use that to do the writing
+        try:
+            buff_size = 4096  # size of read buffer
+            if python3 == 0:
+                # initialize read_ros_handshake_header with BytesIO for Python 3 (instead of bytesarray())
+                header = read_ros_handshake_header(sock, StringIO(), buff_size)
+            else:
+                header = read_ros_handshake_header(sock, BytesIO(), buff_size)
+
+            if 'topic' in header:
+                err_msg = self.topic_connection_handler(sock, client_addr, header)
+            elif 'service' in header:
+                err_msg = self.service_connection_handler(sock, client_addr, header)
+            else:
+                err_msg = 'no topic or service name detected'
+            if err_msg:
+                # shutdown race condition: nodes that come up and down
+                # quickly can receive connections during teardown.
+
+                # We use is_shutdown_requested() because we can get
+                # into bad connection states during client shutdown
+                # hooks.
+                if not rospy.core.is_shutdown_requested():
+                    write_ros_handshake_header(sock, {'error': err_msg})
+                    raise TransportInitError("Could not process inbound connection: " + err_msg + str(header))
+                else:
+                    write_ros_handshake_header(sock, {'error': 'node shutting down'})
+                    return
+        except rospy.exceptions.TransportInitError as e:
+            logwarn(str(e))
+            if sock is not None:
+                sock.close()
+        except Exception as e:
+            # collect stack trace separately in local log file
+            if not rospy.core.is_shutdown_requested():
+                logwarn("Inbound TCP/IP connection failed: %s", e)
+                rospyerr("Inbound TCP/IP connection failed:\n%s", traceback.format_exc())
+            if sock is not None:
+                sock.close()
+
+    def _tcp_server_uds_callback(self, sock, client_addr):
+        """
+        TCPUDSServer callback: detects incoming topic or service connection and passes connection accordingly
+
+        @param sock: socket connection
+        @type  sock: socket.socket
+        @param client_addr: client address
+        @type  client_addr: (Null)
         @raise TransportInitError: If transport cannot be succesfully initialized
         """
         #TODOXXX:rewrite this logic so it is possible to create TCPROSTransport object first, set its protocol,
@@ -349,8 +520,10 @@ class TCPROSServer(object):
         except Exception as e:
             # collect stack trace separately in local log file
             if not rospy.core.is_shutdown_requested():
-                logwarn("Inbound TCP/IP connection failed: %s", e)
-                rospyerr("Inbound TCP/IP connection failed:\n%s", traceback.format_exc())
+                # ignore case that remote connection closed immediately while service client request with 'probe'
+                if e[0] != errno.EPIPE:
+                    logwarn("Inbound UDS connection failed: %s", e)
+                    rospyerr("Inbound UDS connection failed:\n%s", traceback.format_exc())
             if sock is not None:
                 sock.close()
 
@@ -844,3 +1017,384 @@ class TCPROSTransport(Transport):
                 self.socket = self.read_buff = self.write_buff = self.protocol = None
                 super(TCPROSTransport, self).close()
 
+
+class TCPROSUDSTransport(Transport):
+    """
+    Generic implementation of TCPROS exchange routines for both topics and services
+    Reference by TCPROSTransport implementation
+    """
+    transport_type = 'TCPROS'
+
+    def __init__(self, protocol, name, header=None):
+        """
+        ctor
+        @param name str: identifier
+        @param protocol TCPROSTransportProtocol protocol implementation
+        @param header dict: (optional) handshake header if transport handshake header was
+        already read off of transport.
+        @raise TransportInitError if transport cannot be initialized according to arguments
+        """
+        super(TCPROSUDSTransport, self).__init__(protocol.direction, name=name)
+        if not name:
+            raise TransportInitError("Unable to initialize transport: name is not set")
+
+        self.protocol = protocol
+
+        self.socket = None
+        self.endpoint_id = 'unknown'
+        self.callerid_pub = 'unknown'
+
+        if python3 == 0:  # Python 2.x
+            self.read_buff = StringIO()
+            self.write_buff = StringIO()
+        else:  # Python 3.x
+            self.read_buff = BytesIO()
+            self.write_buff = BytesIO()
+
+        # self.write_buff = StringIO()
+        self.header = header
+
+        # #1852 have to hold onto latched messages on subscriber side
+        self.is_latched = False
+        self.latch = None
+
+        # save the fileno separately so we can garbage collect the
+        # socket but still unregister will poll objects
+        self._fileno = None
+
+        # these fields are actually set by the remote
+        # publisher/service. they are set for tools that connect
+        # without knowing the actual field name
+        self.md5sum = None
+        self.type = None
+
+        # Endpoint Details (path)
+        self.remote_uds_path = None
+
+    def get_transport_info(self):
+        """
+        Get detailed connection information.
+        Similar to getTransportInfo() in 'libros/transport/transport_uds_stream.cpp'
+        e.g. TCPROS connection on Unix Domain Socket to [/tmp/ros-uds-stream-30013-0 on socket 6]
+        """
+        return "%s connection on Unix Domain Socket to [%s on socket %s]" % (
+        self.transport_type, self.remote_uds_path, self._fileno)
+
+    def fileno(self):
+        """
+        Get descriptor for select
+        """
+        return self._fileno
+
+    def set_endpoint_id(self, endpoint_id):
+        """
+        Set the endpoint_id of this transport.
+        Allows the endpoint_id to be set before the socket is initialized.
+        """
+        self.endpoint_id = endpoint_id
+
+    def set_socket(self, sock, endpoint_id):
+        """
+        Set the socket for this transport
+        @param sock: socket
+        @type  sock: socket.socket
+        @param endpoint_id: identifier for connection endpoint
+        @type  endpoint_id: str
+        @raise TransportInitError: if socket has already been set
+        """
+        if self.socket is not None:
+            raise TransportInitError("socket already initialized")
+        self.socket = sock
+        self.endpoint_id = endpoint_id
+        self._fileno = sock.fileno()
+        self.local_endpoint = self.socket.getsockname()
+
+    def connect(self, dest_uds_path, endpoint_id, timeout=None):
+        """
+        Establish TCP connection to the specified
+        UDS path. connect() always calls L{write_header()} and
+        L{read_header()} after the connection is made
+        @param dest_uds_path: destination UDS path
+        @type  dest_uds_path: str
+        @param endpoint_id: string identifier for connection (for statistics)
+        @type  endpoint_id: str
+        @param timeout: (optional keyword) timeout in seconds
+        @type  timeout: float
+        @raise TransportInitError: if unable to create connection
+        """
+        # now we can proceed with trying to connect.
+        try:
+            self.endpoint_id = endpoint_id
+            s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            if _is_use_tcp_keepalive():
+                # turn on KEEPALIVE
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+            if timeout is not None:
+                s.settimeout(timeout)
+            self.socket = s
+            logdebug('connecting to ' + str(dest_uds_path))
+            self.remote_uds_path = dest_uds_path
+            if rosgraph.rosenv.ros_uds_ext_is_enable(rosgraph.rosenv.ROS_UDS_EXT_ABSTRACT_SOCK_NAME):
+                dest_uds_path = '\0' + dest_uds_path
+            self.socket.connect(dest_uds_path)
+            self.write_header()
+            self.read_header()
+        except TransportInitError as tie:
+            rospyerr("Unable to initiate UDS socket to %s (%s): %s" % (
+                dest_uds_path, endpoint_id, traceback.format_exc()))
+            raise
+        except Exception as e:
+            # logerr("Unknown error initiating TCP/IP socket to %s:%s (%s): %s"%(dest_addr, dest_port, endpoint_id, str(e)))
+            rospywarn("Unknown error initiating UDS socket to %s (%s): %s" % (
+                dest_uds_path, endpoint_id, traceback.format_exc()))
+            # check for error type and reason. On unknown errors the socket will be closed
+            # to avoid reconnection and error reproduction
+            if not isinstance(e, socket.error):
+                # FATAL: no reconnection as error is unknown
+                self.close()
+            elif not isinstance(e, socket.timeout) and e.errno not in [100, 101, 102, 103, 110, 112, 113]:
+                self.close()
+            raise TransportInitError(str(e))  # re-raise i/o error
+
+    def _validate_header(self, header):
+        """
+        Validate header and initialize fields accordingly
+        @param header: header fields from publisher
+        @type  header: dict
+        @raise TransportInitError: if header fails to validate
+        """
+        self.header = header
+        if 'error' in header:
+            raise TransportInitError("remote error reported: %s" % header['error'])
+        for required in ['md5sum', 'type']:
+            if not required in header:
+                raise TransportInitError("header missing required field [%s]" % required)
+        self.type = header['type']
+        self.md5sum = header['md5sum']
+        if 'callerid' in header:
+            self.callerid_pub = header['callerid']
+        if header.get('latching', '0') == '1':
+            self.is_latched = True
+
+    def write_header(self):
+        """Writes the TCPROS header to the active connection."""
+        # socket may still be getting spun up, so wait for it to be writable
+        sock = self.socket
+        protocol = self.protocol
+        # race condition on close, better fix is to pass these in,
+        # functional style, but right now trying to cause minimal
+        # perturbance to codebase.
+        if sock is None or protocol is None:
+            return
+        fileno = sock.fileno()
+        ready = None
+        poller = None
+        if hasattr(select, 'poll'):
+            poller = select.poll()
+            poller.register(fileno, select.POLLOUT)
+            while not ready:
+                events = poller.poll()
+                for _, flag in events:
+                    if flag & select.POLLOUT:
+                        ready = True
+        else:
+            while not ready:
+                try:
+                    _, ready, _ = select.select([], [fileno], [])
+                except ValueError as e:
+                    logger.error("[%s]: select fileno '%s': %s", self.name, str(fileno), str(e))
+                    raise
+
+        logger.debug("[%s]: writing header", self.name)
+        sock.setblocking(1)
+        self.stat_bytes += write_ros_handshake_header(sock, protocol.get_header_fields())
+        if poller:
+            poller.unregister(fileno)
+
+    def read_header(self):
+        """
+        Read TCPROS header from active socket
+        @raise TransportInitError if header fails to validate
+        """
+        sock = self.socket
+        if sock is None:
+            return
+        sock.setblocking(1)
+        # TODO: add bytes received to self.stat_bytes
+        self._validate_header(read_ros_handshake_header(sock, self.read_buff, self.protocol.buff_size))
+
+    def send_message(self, msg, seq):
+        """
+        Convenience routine for services to send a message across a
+        particular connection. NOTE: write_data is much more efficient
+        if same message is being sent to multiple connections. Not
+        threadsafe.
+        @param msg: message to send
+        @type  msg: Msg
+        @param seq: sequence number for message
+        @type  seq: int
+        @raise TransportException: if error occurred sending message
+        """
+        # this will call write_data(), so no need to keep track of stats
+        serialize_message(self.write_buff, seq, msg)
+        self.write_data(self.write_buff.getvalue())
+        self.write_buff.truncate(0)
+
+    def write_data(self, data):
+        """
+        Write raw data to transport
+        @raise TransportInitialiationError: could not be initialized
+        @raise TransportTerminated: no longer open for publishing
+        """
+        if not self.socket:
+            raise TransportInitError("TCPROS transport was not successfully initialized")
+        if self.done:
+            raise TransportTerminated("connection closed")
+        try:
+            # TODO: get rid of sendalls and replace with async-style publishing
+            self.socket.sendall(data)
+            self.stat_bytes += len(data)
+            self.stat_num_msg += 1
+        except IOError as ioe:
+            # for now, just document common errno's in code
+            (errno, msg) = ioe.args
+            if errno == 32:  # broken pipe
+                logdebug("ERROR: Broken Pipe")
+                self.close()
+                raise TransportTerminated(str(errno) + msg)
+            raise  # re-raise
+        except socket.error as se:
+            # for now, just document common errno's in code
+            (errno, msg) = se.args
+            if errno == 32:  # broken pipe
+                logdebug("[%s]: Closing connection [%s] due to broken pipe", self.name, self.endpoint_id)
+                self.close()
+                raise TransportTerminated(msg)
+            elif errno == 104:  # connection reset by peer
+                logdebug("[%s]: Peer [%s] has closed connection", self.name, self.endpoint_id)
+                self.close()
+                raise TransportTerminated(msg)
+            else:
+                rospydebug("unknown socket error writing data: %s", traceback.format_exc())
+                logdebug("[%s]: closing connection [%s] due to unknown socket error: %s", self.name, self.endpoint_id,
+                         msg)
+                self.close()
+                raise TransportTerminated(str(errno) + ' ' + msg)
+        return True
+
+    def receive_once(self):
+        """
+        block until messages are read off of socket
+        @return: list of newly received messages
+        @rtype: [Msg]
+        @raise TransportException: if unable to receive message due to error
+        """
+        sock = self.socket
+        if sock is None:
+            raise TransportException("connection not initialized")
+        b = self.read_buff
+        msg_queue = []
+        p = self.protocol
+        try:
+            sock.setblocking(1)
+            while not msg_queue and not self.done and not is_shutdown():
+                if b.tell() >= 4:
+                    p.read_messages(b, msg_queue, sock)
+                if not msg_queue:
+                    self.stat_bytes += recv_buff(sock, b, p.buff_size)
+            self.stat_num_msg += len(msg_queue)  # STATS
+            # set the _connection_header field
+            for m in msg_queue:
+                m._connection_header = self.header
+
+            # #1852: keep track of last latched message
+            if self.is_latched and msg_queue:
+                self.latch = msg_queue[-1]
+
+            return msg_queue
+
+        except DeserializationError as e:
+            rospyerr(traceback.format_exc())
+            raise TransportException("receive_once[%s]: DeserializationError %s" % (self.name, str(e)))
+        except TransportTerminated as e:
+            raise  # reraise
+        except ServiceException as e:
+            raise
+        except Exception as e:
+            rospyerr(traceback.format_exc())
+            raise TransportException("receive_once[%s]: unexpected error %s" % (self.name, str(e)))
+        return retval
+
+    def _reconnect(self):
+        # This reconnection logic is very hacky right now.  I need to
+        # rewrite the I/O core so that this is handled more centrally.
+        # It is not necessary for UDS.
+        pass
+
+    def receive_loop(self, msgs_callback):
+        """
+        Receive messages until shutdown
+        @param msgs_callback: callback to invoke for new messages received
+        @type  msgs_callback: fn([msg])
+        """
+        # - use assert here as this would be an internal error, aka bug
+        logger.debug("receive_loop for [%s]", self.name)
+        try:
+            while not self.done and not is_shutdown():
+                try:
+                    if self.socket is not None:
+                        msgs = self.receive_once()
+                        if not self.done and not is_shutdown():
+                            msgs_callback(msgs, self)
+                    else:
+                        self._reconnect()
+
+                except TransportException as e:
+                    # set socket to None so we reconnect
+                    try:
+                        if self.socket is not None:
+                            try:
+                                self.socket.shutdown()
+                            except:
+                                pass
+                            finally:
+                                self.socket.close()
+                    except:
+                        pass
+                    self.socket = None
+
+                except DeserializationError as e:
+                    # TODO: how should we handle reconnect in this case?
+
+                    logerr("[%s] error deserializing incoming request: %s" % self.name, str(e))
+                    rospyerr("[%s] error deserializing incoming request: %s" % self.name, traceback.format_exc())
+                except:
+                    # in many cases this will be a normal hangup, but log internally
+                    try:
+                        # 1467 sometimes we get exceptions due to
+                        # interpreter shutdown, so blanket ignore those if
+                        # the reporting fails
+                        rospydebug("exception in receive loop for [%s], may be normal. Exception is %s", self.name,
+                                   traceback.format_exc())
+                    except:
+                        pass
+
+            rospydebug("receive_loop[%s]: done condition met, exited loop" % self.name)
+        finally:
+            if not self.done:
+                self.close()
+
+    def close(self):
+        """close i/o and release resources"""
+        if not self.done:
+            try:
+                if self.socket is not None:
+                    try:
+                        self.socket.shutdown(socket.SHUT_RDWR)
+                    except:
+                        pass
+                    finally:
+                        self.socket.close()
+            finally:
+                self.socket = self.read_buff = self.write_buff = self.protocol = None
+                super(TCPROSUDSTransport, self).close()

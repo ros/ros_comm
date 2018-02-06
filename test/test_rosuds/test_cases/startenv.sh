@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# test applications
+export CPP_TALKER="rosrun test_rosuds talker_uds"
+export CPP_LISTENER="rosrun test_rosuds listener_uds"
+export CPP_LISTENER_UNRELIABLE="rosrun test_rosuds listener_unreliable_uds"
+export CPP_ADD_TWO_INTS_SERVER="rosrun test_rosuds add_two_ints_server_uds"
+export CPP_ADD_TWO_INTS_CLIENT="rosrun test_rosuds add_two_ints_client_uds"
+
+export PY_TALKER="rosrun test_rosuds talker.py"
+export PY_LISTENER="rosrun test_rosuds listener.py"
+export PY_ADD_TWO_INTS_SERVER="rosrun test_rosuds add_two_ints_server.py"
+export PY_ADD_TWO_INTS_CLIENT="rosrun test_rosuds add_two_ints_client.py"
+
+# key string of uds path
 export UDS_STREAM_PATH="/tmp/ros-uds-stream-"
 export UDS_DATAGRAM_PATH="/tmp/ros-uds-datagram-"
 

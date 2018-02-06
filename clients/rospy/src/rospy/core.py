@@ -110,17 +110,26 @@ def parse_rosrpc_uri(uri):
     @rtype: (str, int)
     @raise ParameterInvalid: if uri is not a valid ROSRPC URI
     """
+    dest_uds_path = None
     if uri.startswith(ROSRPC):
         dest_addr = uri[len(ROSRPC):]            
     else:
         raise ParameterInvalid("Invalid protocol for ROS service URL: %s"%uri)
     try:
-        if '/' in dest_addr:
-            dest_addr = dest_addr[:dest_addr.find('/')]
-        dest_addr, dest_port = dest_addr.split(':')
-        dest_port = int(dest_port)
+        colon_pos = dest_addr.find(':')
+        if colon_pos == -1:
+            dest_uds_path = dest_addr
+        else:
+            slash_pos = dest_addr.find('/', colon_pos)
+            if slash_pos != -1:
+                dest_addr = dest_addr[:slash_pos]
+            dest_addr, dest_port = dest_addr.split(':')
+            dest_port = int(dest_port)
     except:
         raise ParameterInvalid("ROS service URL is invalid: %s"%uri)
+
+    if dest_uds_path:
+        return dest_uds_path
     return dest_addr, dest_port
 
 #########################################################
