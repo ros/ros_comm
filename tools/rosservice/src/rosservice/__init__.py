@@ -106,18 +106,30 @@ def get_service_headers(service_name, service_uri):
     @raise ROSServiceIOException: if unable to communicate with service
     """
     try:
-        dest_addr, dest_port = rospy.parse_rosrpc_uri(service_uri)
+        if rosgraph.rosenv.use_uds():
+            dest_uds_path = rospy.parse_rosrpc_uri(service_uri)
+        else:
+            dest_addr, dest_port = rospy.parse_rosrpc_uri(service_uri)
     except:
         raise ROSServiceException("service [%s] has an invalid RPC URI [%s]"%(service_name, service_uri))
-    if rosgraph.network.use_ipv6():
-        s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+    if rosgraph.rosenv.use_uds():
+        s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     else:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        if rosgraph.network.use_ipv6():
+            s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        else:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         try:
             # connect to service and probe it to get the headers
             s.settimeout(5.0)
-            s.connect((dest_addr, dest_port))
+            if rosgraph.rosenv.use_uds():
+                if rosgraph.rosenv.ros_uds_ext_is_enable(rosgraph.rosenv.ROS_UDS_EXT_ABSTRACT_SOCK_NAME):
+                    s.connect('\0' + dest_uds_path)
+                else:
+                    s.connect(dest_uds_path)
+            else:
+                s.connect((dest_addr, dest_port))
             header = { 'probe':'1', 'md5sum':'*',
                        'callerid':'/rosservice', 'service':service_name}
             rosgraph.network.write_ros_handshake_header(s, header)

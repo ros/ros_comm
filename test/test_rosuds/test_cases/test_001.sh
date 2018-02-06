@@ -8,7 +8,7 @@ TESTRES=0
 set -x
 
 unset ROS_UDS_EXT_ENABLE
-rosrun test_rosuds talker_uds >/dev/null 2>&1  &
+${CPP_TALKER} >/dev/null 2>&1  &
 TALKERPID1=$!
 sleep ${SLEEP_TIME}
 

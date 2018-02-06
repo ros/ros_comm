@@ -312,7 +312,8 @@ def init_node(name, argv=None, anonymous=False, log_level=None, disable_rostime=
     
     logger = logging.getLogger("rospy.client")
     logger.info("init_node, name[%s], pid[%s]", resolved_node_name, os.getpid())
-            
+    logger.info("ROS_UDS_EXT_ENABLE is %s", "on" if rosgraph.rosenv.use_uds() else "off")
+
     # node initialization blocks until registration with master
     node = rospy.impl.init.start_node(os.environ, resolved_node_name, port=xmlrpc_port, tcpros_port=tcpros_port) 
     rospy.core.set_node_uri(node.uri)
