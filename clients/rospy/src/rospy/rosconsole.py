@@ -33,14 +33,22 @@
 from __future__ import print_function
 
 import os
+import re
 import socket
 import sys
+
+from datetime import datetime
+from dateutil.tz import tzlocal
+
+from argparse import ArgumentParser
 
 import rosgraph
 import rospy
 
 from .logger_level_service_caller import LoggerLevelServiceCaller
 from .logger_level_service_caller import ROSConsoleException
+
+from rosgraph_msgs.msg import Log
 
 NAME = 'rosconsole'
 
@@ -135,6 +143,99 @@ def _rosconsole_cmd_get(argv):
     print(logger_level._current_levels[args[1]])
 
 
+class RosConsoleEcho(object):
+    LEVEL_STRING_NO_COLOR = {
+        Log.DEBUG: 'DEBUG',
+        Log.INFO : 'INFO ',
+        Log.WARN : 'WARN ',
+        Log.ERROR: 'ERROR',
+        Log.FATAL: 'FATAL',
+    }
+
+    LEVEL_STRING_COLOR = {
+        Log.DEBUG: '\033[92mDEBUG\033[0m',
+        Log.INFO : '\033[97mINFO \033[0m',
+        Log.WARN : '\033[93mWARN \033[0m',
+        Log.ERROR: '\033[91mERROR\033[0m',
+        Log.FATAL: '\033[95mFATAL\033[0m',
+    }
+
+    STRING_LEVEL = {
+        'debug': Log.DEBUG,
+        'info' : Log.INFO,
+        'warn' : Log.WARN,
+        'error': Log.ERROR,
+        'fatal': Log.FATAL,
+    }
+
+    def __init__(self, options):
+        self._level_string_map = self.LEVEL_STRING_NO_COLOR if options.nocolor else \
+                                 self.LEVEL_STRING_COLOR
+
+        self._filter = re.compile(options.filter)
+        self._level = self.STRING_LEVEL[options.level.lower()]
+        self._detail = options.detail
+
+        callback = self._once_callback if options.once else self._callback
+        rospy.Subscriber(options.topic, Log, callback)
+
+    def _print(self, msg):
+        print('[ {} ] [\033[1m{}\033[21m]: {}'.format(
+            self._level_string_map[msg.level], msg.name, msg.msg))
+
+        if self._detail:
+            stamp_sec = msg.header.stamp.to_sec()
+            stamp_tz = datetime.fromtimestamp(stamp_sec, tzlocal())
+
+            print('          [{} ({:.6f})] [{}]: {}:{}'.format(
+                stamp_tz, stamp_sec, msg.function, msg.file, msg.line))
+
+    def _callback(self, msg):
+        if self._filter.search(msg.name) and msg.level >= self._level:
+            self._print(msg)
+
+    def _once_callback(self, msg):
+        self._callback(msg)
+        rospy.signal_shutdown('Done')
+
+
+def _get_cmd_echo_argparse(prog):
+    parser = ArgumentParser(prog=prog, description='Print logger messages')
+
+    parser.add_argument('filter', metavar='FILTER', type=str, nargs='?', default='.*',
+                        help='regular expression to filter the logger name (default: %(default)s)')
+
+    parser.add_argument('level', metavar='LEVEL', type=str, nargs='?', default='warn',
+                        choices=RosConsoleEcho.STRING_LEVEL.keys(),
+                        help='minimum logger level to print (default: %(default)s)')
+
+    parser.add_argument('-1', '--once', action='store_true', dest='once',
+                        help='prints one logger message and exits')
+
+    parser.add_argument('--topic', action='store', metavar='TOPIC',
+                        type=str, default='/rosout', dest='topic',
+                        help='topic to read the logger messages from (default: %(default)s)')
+
+    parser.add_argument('--nocolor', action='store_true', help='output without color')
+
+    parser.add_argument('-d', '--detail', action='store_true', help='print full logger details')
+
+    return parser
+
+
+def _rosconsole_cmd_echo(argv):
+    parser = _get_cmd_echo_argparse(' '.join([os.path.basename(argv[0]), argv[1]]))
+    args = parser.parse_args(argv[2:])
+
+    rospy.init_node('rosconsole', anonymous=True)
+
+    rosconsole = RosConsoleEcho(args)
+
+    rospy.spin()
+
+    del rosconsole
+
+
 def _fullusage():
     print("""rosconsole is a command-line tool for configuring the logger level of ROS nodes.
 
@@ -142,6 +243,7 @@ Commands:
 \trosconsole get\tdisplay level for a logger
 \trosconsole list\tlist loggers for a node
 \trosconsole set\tset level for a logger
+\trosconsole echo\tprint logger messages
 
 Type rosconsole <command> -h for more detailed usage, e.g. 'rosconsole list -h'
 """)
@@ -169,6 +271,8 @@ def main(argv=None):
             _rosconsole_cmd_list(argv)
         elif command == 'set':
             _rosconsole_cmd_set(argv)
+        elif command == 'echo':
+            _rosconsole_cmd_echo(argv)
         else:
             _fullusage()
     except socket.error as e:
