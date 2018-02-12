@@ -64,7 +64,7 @@ TEST(Expecter, impl)
       loop_rate.sleep();
     }
 
-  ASSERT_GT(nseen, 0);
+  ASSERT_GT(nseen, 0u);
 }
 
 int

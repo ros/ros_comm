@@ -213,7 +213,7 @@ class MockSourceTest : public ::testing::Test {
 TEST_F(MockSourceTest, ReadEvent) {
   m.event_result = XmlRpcDispatch::ReadableEvent;
   dispatch.addSource(&m, XmlRpcDispatch::ReadableEvent);
-  EXPECT_EQ(dispatch._sources.size(), 1);
+  EXPECT_EQ(dispatch._sources.size(), 1u);
 
   // Select returns not readable; expect no events.
   fds[0].events = POLLIN;
@@ -237,7 +237,7 @@ TEST_F(MockSourceTest, WriteEvent) {
   m.setKeepOpen();
   m.event_result = 0;
   dispatch.addSource(&m, XmlRpcDispatch::WritableEvent);
-  EXPECT_EQ(dispatch._sources.size(), 1);
+  EXPECT_EQ(dispatch._sources.size(), 1u);
 
   // Select returns writeable, expect one write event.
   fds[0].events = POLLOUT;
@@ -249,7 +249,7 @@ TEST_F(MockSourceTest, WriteEvent) {
   EXPECT_CLOSE_CALLS(0);
   // However, even if keepOpen is set, we expect the socket to be removed from
   // the sources list
-  EXPECT_EQ(dispatch._sources.size(), 0);
+  EXPECT_EQ(dispatch._sources.size(), 0u);
 
   // Expect no more events. Since there's nothing in the dispatch list, we
   // don't expect that select will be called.
@@ -261,7 +261,7 @@ TEST_F(MockSourceTest, WriteEvent) {
 TEST_F(MockSourceTest, NonWriteable) {
   m.event_result = XmlRpcDispatch::WritableEvent;
   dispatch.addSource(&m, XmlRpcDispatch::WritableEvent);
-  EXPECT_EQ(dispatch._sources.size(), 1);
+  EXPECT_EQ(dispatch._sources.size(), 1u);
 
   // Select doesn't return writable.
   fds[0].events = POLLOUT;
@@ -270,13 +270,13 @@ TEST_F(MockSourceTest, NonWriteable) {
   dispatch.work(0.1);
   EXPECT_EVENTS(0);
   EXPECT_CLOSE_CALLS(0);
-  EXPECT_EQ(dispatch._sources.size(), 1);
+  EXPECT_EQ(dispatch._sources.size(), 1u);
 }
 
 TEST_F(MockSourceTest, WriteClose) {
   m.event_result = 0;
   dispatch.addSource(&m, XmlRpcDispatch::WritableEvent);
-  EXPECT_EQ(dispatch._sources.size(), 1);
+  EXPECT_EQ(dispatch._sources.size(), 1u);
 
   // Socket is always writeable. Expect 1 write event since we clear the write
   // event flag after we write once
@@ -290,7 +290,7 @@ TEST_F(MockSourceTest, WriteClose) {
   // that the dispatch has called close() once and that the size of sources is
   // now 0
   EXPECT_CLOSE_CALLS(1);
-  EXPECT_EQ(dispatch._sources.size(), 0);
+  EXPECT_EQ(dispatch._sources.size(), 0u);
 
   // Expect no more events. Since there's nothing in the dispatch list, we
   // don't expect that select will be called.
@@ -302,7 +302,7 @@ TEST_F(MockSourceTest, WriteClose) {
 TEST_F(MockSourceTest, Exception) {
   m.event_result = XmlRpcDispatch::Exception;
   dispatch.addSource(&m, XmlRpcDispatch::Exception);
-  EXPECT_EQ(dispatch._sources.size(), 1);
+  EXPECT_EQ(dispatch._sources.size(), 1u);
 
   // Select returns no exception, so expect that the handler was not called.
   fds[0].events = POLLPRI;
@@ -326,7 +326,7 @@ TEST_F(MockSourceTest, LargeFd) {
   m.setfd(1025);
   m.event_result = XmlRpcDispatch::WritableEvent;
   dispatch.addSource(&m, XmlRpcDispatch::WritableEvent);
-  EXPECT_EQ(dispatch._sources.size(), 1);
+  EXPECT_EQ(dispatch._sources.size(), 1u);
 
   // Make select return writable, expect 1 write event.
   fds[0].fd = 1025;
@@ -336,7 +336,7 @@ TEST_F(MockSourceTest, LargeFd) {
   dispatch.work(0.1);
   EXPECT_EVENT(XmlRpcDispatch::WritableEvent);
   EXPECT_CLOSE_CALLS(0);
-  EXPECT_EQ(dispatch._sources.size(), 1);
+  EXPECT_EQ(dispatch._sources.size(), 1u);
 }
 
 int main(int argc, char **argv)
