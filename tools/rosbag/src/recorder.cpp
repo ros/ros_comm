@@ -113,7 +113,8 @@ RecorderOptions::RecorderOptions() :
     node(""),
     min_space(1024 * 1024 * 1024),
     min_space_str("1G"),
-    file_timestamp_format_str("%Y-%m-%d-%H-%M-%S")
+    file_timestamp_format_str("%Y-%m-%d-%H-%M-%S"),
+    nice_split_times(false)
 {
 }
 
@@ -169,11 +170,10 @@ int Recorder::run() {
 
     start_time_ = ros::Time::now();
 
-    // Calculate a shift if we're splitting on time duration.  We want to
-    // end up splitting on "nice" wall clock values.  To do this we shift the
+    // We want to end up splitting on "nice" wall clock values.  To do this we shift the
     // start time by the time elapsed since the "previous" nice interval would
     // have started.
-    if (options_.max_duration.toSec() > 0 && options_.split)
+    if (options_.nice_split_times && options_.max_duration.toSec() > 0 && options_.split)
     {
         // Our last interval number
         unsigned int prev_interval = (unsigned int) (floor(start_time_.toSec() / options_.max_duration.toSec()));

@@ -113,6 +113,7 @@ struct ROSBAG_DECL RecorderOptions
 
     std::vector<std::string> topics;
     std::string file_timestamp_format_str;
+    bool nice_split_times;
 };
 
 class ROSBAG_DECL Recorder

@@ -67,6 +67,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       ("size", po::value<uint64_t>(), "The maximum size of the bag to record in MB.")
       ("duration", po::value<std::string>(), "Record a bag of maximum duration in seconds, unless 'm', or 'h' is appended.")
       ("time-format", po::value<std::string>()->default_value("%Y-%m-%d-%H-%M-%S"), "Change format of timestamps used in the output filename (Default: %Y-%m-%d-%H-%M-%S).")
+      ("nice-split-times", "Split bag files at nice wall-clock times")
       ("node", po::value<std::string>(), "Record all topics subscribed to by a specific node.");
 
   
@@ -231,6 +232,10 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     if (vm.count("time-format"))
     {
       opts.file_timestamp_format_str = vm["time-format"].as<std::string>();
+    }
+    if (vm.count("nice-split-times"))
+    {
+      opts.nice_split_times = true;
     }
     if (vm.count("size"))
     {

@@ -88,6 +88,7 @@ def record_cmd(argv):
     parser.add_option(      "--size",          dest="size",                         type='int',   action="store", help="record a bag of maximum size SIZE MB. (Default: infinite)", metavar="SIZE")
     parser.add_option(      "--duration",      dest="duration",                     type='string',action="store", help="record a bag of maximum duration DURATION in seconds, unless 'm', or 'h' is appended.", metavar="DURATION")
     parser.add_option(      "--time-format",   dest="time_format",                  type='string',action="store", help="Change format of timestamps used in the output filename (Default: %Y-%m-%d-%H-%M-%S).", metavar="FORMAT")
+    parser.add_option(      "--nice-split-times", dest="nice_split_times",             action="store_true",          help="Split bag files at nice wall-clock times")
     parser.add_option("-b", "--buffsize",      dest="buffsize",      default=256,   type='int',   action="store", help="use an internal buffer of SIZE MB (Default: %default, 0 = infinite)", metavar="SIZE")
     parser.add_option("--chunksize",           dest="chunksize",     default=768,   type='int',   action="store", help="Advanced. Record to chunks of SIZE KB (Default: %default)", metavar="SIZE")
     parser.add_option("-l", "--limit",         dest="num",           default=0,     type='int',   action="store", help="only record NUM messages on each topic")
@@ -127,6 +128,7 @@ def record_cmd(argv):
             cmd.extend(["--max-splits", str(options.max_splits)])
     if options.duration:    cmd.extend(["--duration", options.duration])
     if options.time_format: cmd.extend(["--time-format", options.time_format])
+    if options.nice_split_times: cmd.extend(["--nice-split-times"])
     if options.size:        cmd.extend(["--size", str(options.size)])
     if options.node:
         cmd.extend(["--node", options.node])
