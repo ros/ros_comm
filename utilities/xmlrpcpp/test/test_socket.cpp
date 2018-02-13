@@ -315,7 +315,7 @@ ssize_t mock_read(int fd, void* buf, size_t count) {
 
   // Check that we have another call in the queue. If not, fail the test and
   // return 0 (EOF).
-  EXPECT_LE(1, expected_reads.size());
+  EXPECT_LE(1u, expected_reads.size());
   if (expected_reads.size() < 1) {
     errno = 0;
     return 0;
@@ -331,7 +331,7 @@ ssize_t mock_read(int fd, void* buf, size_t count) {
 
   // Sanity check on count. Man pages say a count above SSIZE_MAX is undefined,
   // so check that the count that is passed doesn't trigger undefined behavior.
-  EXPECT_GT(SSIZE_MAX, count);
+  EXPECT_GT(static_cast<size_t>(SSIZE_MAX), count);
 
   // Check that the buffer size is less or equal to the requested buffer size.
   EXPECT_LE(r.sz, count);
@@ -344,7 +344,7 @@ ssize_t mock_read(int fd, void* buf, size_t count) {
 
   // Check that the return value is what we expect it to be.
   if (r.ret >= 0) {
-    EXPECT_EQ(cnt, r.ret);
+    EXPECT_EQ(cnt, static_cast<size_t>(r.ret));
   }
 
   // Update errno and return.
@@ -369,7 +369,7 @@ TEST_F(XmlRpcSocketTest, nbRead) {
   EXPECT_TRUE(eof);
   EXPECT_EQ(2, read_calls);
   EXPECT_EQ(0, XmlRpcSocket::getError());
-  EXPECT_EQ(0, expected_reads.size());
+  EXPECT_EQ(0u, expected_reads.size());
   expected_reads.clear();
 }
 
@@ -386,7 +386,7 @@ TEST_F(XmlRpcSocketTest, nbRead) {
     EXPECT_FALSE(eof);                                                         \
     EXPECT_EQ(1, read_calls);                                                  \
     EXPECT_EQ(ERR, XmlRpcSocket::getError());                                  \
-    EXPECT_EQ(0, expected_reads.size());                                       \
+    EXPECT_EQ(0u, expected_reads.size());                                       \
     expected_reads.clear();                                                    \
   }
 
@@ -477,7 +477,7 @@ ssize_t mock_write(int fd, const void* buf, size_t count) {
 
   // Check that we have another call in the queue. If not, fail the test and
   // return 0 (EOF).
-  EXPECT_LE(1, expected_writes.size());
+  EXPECT_LE(1u, expected_writes.size());
   if (expected_writes.size() < 1) {
     // Since the socket is supposed to be non-blocking, return EWOULDBLOCK
     // if we can't write.
@@ -494,7 +494,8 @@ ssize_t mock_write(int fd, const void* buf, size_t count) {
   if (sz > 0) {
     std::string data((const char*)buf, sz);
     EXPECT_EQ(w.data, data);
-    EXPECT_EQ(w.ret, sz);
+    EXPECT_GE(w.ret, 0u);
+    EXPECT_EQ(static_cast<size_t>(w.ret), sz);
   }
 
   errno = w._errno;
@@ -514,7 +515,7 @@ TEST_F(XmlRpcSocketTest, nbWrite) {
   EXPECT_TRUE(XmlRpcSocket::nbWrite(10, hello, &count));
   EXPECT_EQ(count, 11);
   EXPECT_EQ(0, XmlRpcSocket::getError());
-  EXPECT_EQ(0, expected_writes.size());
+  EXPECT_EQ(0u, expected_writes.size());
   EXPECT_EQ(1, write_calls);
 
   // Write in two parts, both succeed.
@@ -526,7 +527,7 @@ TEST_F(XmlRpcSocketTest, nbWrite) {
   EXPECT_TRUE(XmlRpcSocket::nbWrite(10, hello, &count));
   EXPECT_EQ(count, 11);
   EXPECT_EQ(0, XmlRpcSocket::getError());
-  EXPECT_EQ(0, expected_writes.size());
+  EXPECT_EQ(0u, expected_writes.size());
   EXPECT_EQ(2, write_calls);
 
   // Partial write.
@@ -538,7 +539,7 @@ TEST_F(XmlRpcSocketTest, nbWrite) {
   EXPECT_TRUE(XmlRpcSocket::nbWrite(10, hello, &count));
   EXPECT_EQ(count, 5);
   EXPECT_EQ(EWOULDBLOCK, XmlRpcSocket::getError());
-  EXPECT_EQ(0, expected_writes.size());
+  EXPECT_EQ(0u, expected_writes.size());
   EXPECT_EQ(2, write_calls);
 }
 
@@ -552,7 +553,7 @@ TEST_F(XmlRpcSocketTest, nbWrite) {
     EXPECT_##RES(XmlRpcSocket::nbWrite(10, hello, &count));                    \
     EXPECT_EQ(count, 0);                                                       \
     EXPECT_EQ(ERR, XmlRpcSocket::getError());                                  \
-    EXPECT_EQ(0, expected_writes.size());                                      \
+    EXPECT_EQ(0u, expected_writes.size());                                     \
     EXPECT_EQ(1, write_calls);                                                 \
     expected_writes.clear();                                                   \
   }

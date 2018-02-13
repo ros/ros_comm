@@ -129,8 +129,9 @@ TEST_F(Subscriptions, multipleSubscriptions)
            should_have_it[3]);
 
     for (int j = 0; j < 4; j++)
-      if (should_have_it[j])
+      if (should_have_it[j]) {
         ASSERT_TRUE(sub(j));
+      }
     ASSERT_TRUE(sub_wrappers());
 
     ros::Time t_start = ros::Time::now();
@@ -146,8 +147,9 @@ TEST_F(Subscriptions, multipleSubscriptions)
     }
     
     for (int j = 0; j < 4; j++)
-      if (should_have_it[j])
+      if (should_have_it[j]) {
         ASSERT_TRUE(unsub(j));
+      }
     ASSERT_TRUE(unsub_wrappers());
   }
   SUCCEED();

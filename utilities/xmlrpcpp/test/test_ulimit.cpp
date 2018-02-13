@@ -49,8 +49,8 @@ TEST_F(XmlRpcTest, Ulimit)
   // a very wide margin above that.
   struct rlimit limit = {.rlim_cur = 0, .rlim_max = 0};
   ASSERT_EQ(0, getrlimit(RLIMIT_NOFILE, &limit));
-  ASSERT_LT(64, limit.rlim_max);
-  ASSERT_LT(64, limit.rlim_cur);
+  ASSERT_LT(64u, limit.rlim_max);
+  ASSERT_LT(64u, limit.rlim_cur);
 
   // Reduce the number of open file descriptors so that we can create a client
   // but can't accept the connection on the server side. 32 is more than the

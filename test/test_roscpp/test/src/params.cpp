@@ -563,7 +563,7 @@ TEST(Params, paramNodeHandleTemplateFunction)
 TEST(Params, getParamNames) {
   std::vector<std::string> test_params;
   EXPECT_TRUE(ros::param::getParamNames(test_params));
-  EXPECT_LT(10, test_params.size());
+  EXPECT_LT(10u, test_params.size());
 }
 
 int

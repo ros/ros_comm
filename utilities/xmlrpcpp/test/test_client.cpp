@@ -501,7 +501,7 @@ TEST_F(MockSocketTest, writeRequest) {
   a._request = "FAKE_REQUEST";
 
   // Check that request length is the correct size.
-  ASSERT_EQ(12, a._request.size());
+  ASSERT_EQ(12u, a._request.size());
 
   // Expect a write; write all bytes and return success.
   Expect_nbWrite(7, "FAKE_REQUEST", 12, true);
@@ -528,7 +528,7 @@ TEST_F(MockSocketTest, writeRequest_partial) {
   a._request = "FAKE_REQUEST";
 
   // Check that request length is the correct size.
-  ASSERT_EQ(12, a._request.size());
+  ASSERT_EQ(12u, a._request.size());
 
   // Expect a write; only write 5 bytes and return success.
   Expect_nbWrite(7, "FAKE_REQUEST", 5, true);
@@ -561,7 +561,7 @@ TEST_F(MockSocketTest, writeRequest_partial_error) {
   a._request = "FAKE_REQUEST";
 
   // Check that request length is the correct size.
-  ASSERT_EQ(12, a._request.size());
+  ASSERT_EQ(12u, a._request.size());
 
   // Expect a write; only write 5 bytes and return success.
   Expect_nbWrite(7, "FAKE_REQUEST", 5, true);
@@ -595,7 +595,7 @@ TEST_F(MockSocketTest, writeRequest_error) {
   a._request = "FAKE_REQUEST";
 
   // Check that request length is the correct size.
-  ASSERT_EQ(12, a._request.size());
+  ASSERT_EQ(12u, a._request.size());
 
   // Expect a write; write no bytes and return error.
   Expect_nbWrite(7, "FAKE_REQUEST", 0, false);
@@ -646,7 +646,7 @@ TEST_F(MockSocketTest, readHeader) {
   a._connectionState = XmlRpcClient::READ_HEADER;
 
   // Self-test that response length matches encoded values above.
-  ASSERT_EQ(114, response.length());
+  ASSERT_EQ(114u, response.length());
 
   // Expect a read and have it return the header and the response.
   Expect_nbRead(7, header + response, false, true);
@@ -913,7 +913,7 @@ TEST_F(MockSocketTest, readResponse_noop) {
   // (verified by previous tests).
   a._response = response;
   a._contentLength = 114;
-  ASSERT_EQ(a._contentLength, a._response.length());
+  ASSERT_EQ(114u, a._response.length());
 
   // Don't expect any calls. Expect readResponse to return false since we don't
   // need to keep monitoring this client.
@@ -942,7 +942,7 @@ TEST_F(MockSocketTest, readResponse) {
   // Start with empty response and pre-populated content length.
   a._response = "";
   a._contentLength = 114;
-  ASSERT_EQ(114, response.length());
+  ASSERT_EQ(114u, response.length());
 
   // Expect a read, have it return the full response and success.
   Expect_nbRead(7, response, false, true);
@@ -972,7 +972,7 @@ TEST_F(MockSocketTest, readResponse_partial) {
   // Start with empty response and pre-populated content length.
   a._response = "";
   a._contentLength = 114;
-  ASSERT_EQ(114, response.length());
+  ASSERT_EQ(114u, response.length());
 
   const std::string response_part1 = response.substr(0, 60);
   const std::string response_part2 = response.substr(60);
@@ -1019,7 +1019,7 @@ TEST_F(MockSocketTest, readResponse_err) {
   // Start with empty response and pre-populated content length.
   a._response = "";
   a._contentLength = 114;
-  ASSERT_EQ(114, response.length());
+  ASSERT_EQ(114u, response.length());
 
   // Expect a read, have it return an error.
   Expect_nbRead(7, "", false, false);
@@ -1047,7 +1047,7 @@ TEST_F(MockSocketTest, readResponse_eof) {
   // Start with empty response and pre-populated content length.
   a._response = "";
   a._contentLength = 114;
-  ASSERT_EQ(114, response.length());
+  ASSERT_EQ(114u, response.length());
 
   // Expect a read, have it return nothing and EOF.
   Expect_nbRead(7, "", true, true);

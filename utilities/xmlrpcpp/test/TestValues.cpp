@@ -432,7 +432,7 @@ TEST(XmlRpc, base64) {
   d = bin3;
   EXPECT_EQ(XmlRpcValue::TypeBase64, bin3.getType());
   EXPECT_EQ(0, bin3.size());
-  EXPECT_EQ(0, d.size());
+  EXPECT_EQ(0u, d.size());
 
   // Copy operator
   XmlRpcValue bin4;
@@ -457,7 +457,7 @@ TEST(XmpRpc, errors) {
   EXPECT_FALSE(v);
 
   // Conversions to other types should now throw an XmlRpcException.
-  EXPECT_THROW((int)value, XmlRpcException);
+  EXPECT_THROW((void)(int)value, XmlRpcException);
   EXPECT_THROW(value[0], XmlRpcException);
   EXPECT_THROW(value["bar"], XmlRpcException);
 
@@ -491,7 +491,7 @@ TEST(XmlRpc, int_errors) {
   EXPECT_EQ(0, (int)value);
 
   // Conversion to other types should now thrown an exception.
-  EXPECT_THROW((bool)value, XmlRpcException);
+  EXPECT_THROW((void)(bool)value, XmlRpcException);
 }
 
 TEST(XmlRpc, array_errors) {
@@ -499,7 +499,7 @@ TEST(XmlRpc, array_errors) {
   // Implicit array creation.
   int v = value[0];
   EXPECT_EQ(0, v);
-  EXPECT_THROW((bool)value, XmlRpcException);
+  EXPECT_THROW((void)(bool)value, XmlRpcException);
   EXPECT_EQ(1, value.size());
 
   // Access on a non-const array should implicitly create another element.
