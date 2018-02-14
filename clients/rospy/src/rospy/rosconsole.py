@@ -174,7 +174,7 @@ class RosConsoleEcho(object):
 
         self._filter = re.compile(options.filter)
         self._level = self.STRING_LEVEL[options.level.lower()]
-        self._detail = options.detail
+        self._verbose = options.verbose
 
         callback = self._once_callback if options.once else self._callback
         rospy.Subscriber(options.topic, Log, callback)
@@ -183,7 +183,7 @@ class RosConsoleEcho(object):
         print('[ {} ] [\033[1m{}\033[21m]: {}'.format(
             self._level_string_map[msg.level], msg.name, msg.msg))
 
-        if self._detail:
+        if self._verbose:
             stamp_sec = msg.header.stamp.to_sec()
             stamp_tz = datetime.fromtimestamp(stamp_sec, tzlocal())
 
@@ -218,7 +218,7 @@ def _get_cmd_echo_argparse(prog):
 
     parser.add_argument('--nocolor', action='store_true', help='output without color')
 
-    parser.add_argument('-d', '--detail', action='store_true', help='print full logger details')
+    parser.add_argument('-v', '--verbose', action='store_true', help='print full logger details')
 
     return parser
 
