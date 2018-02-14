@@ -160,20 +160,12 @@ class RosConsoleEcho(object):
         Log.FATAL: '\033[95mFATAL\033[0m',
     }
 
-    STRING_LEVEL = {
-        'debug': Log.DEBUG,
-        'info' : Log.INFO,
-        'warn' : Log.WARN,
-        'error': Log.ERROR,
-        'fatal': Log.FATAL,
-    }
-
     def __init__(self, options):
         self._level_string_map = self.LEVEL_STRING_NO_COLOR if options.nocolor else \
                                  self.LEVEL_STRING_COLOR
 
         self._filter = re.compile(options.filter)
-        self._level = self.STRING_LEVEL[options.level.lower()]
+        self._level = getattr(Log, options.level.upper())
         self._verbose = options.verbose
 
         callback = self._once_callback if options.once else self._callback
