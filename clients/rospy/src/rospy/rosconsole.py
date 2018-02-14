@@ -233,8 +233,6 @@ def _rosconsole_cmd_echo(argv):
 
     rospy.spin()
 
-    del rosconsole
-
 
 def _fullusage():
     print("""rosconsole is a command-line tool for configuring the logger level of ROS nodes.
