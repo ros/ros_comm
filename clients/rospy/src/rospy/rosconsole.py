@@ -144,32 +144,36 @@ def _rosconsole_cmd_get(argv):
 
 
 class RosConsoleEcho(object):
-    LEVEL_STRING_NO_COLOR = {
-        Log.DEBUG: 'DEBUG',
-        Log.INFO : 'INFO ',
-        Log.WARN : 'WARN ',
-        Log.ERROR: 'ERROR',
-        Log.FATAL: 'FATAL',
-    }
-
-    LEVEL_STRING_COLOR = {
-        Log.DEBUG: '\033[92mDEBUG\033[0m',
-        Log.INFO : '\033[97mINFO \033[0m',
-        Log.WARN : '\033[93mWARN \033[0m',
-        Log.ERROR: '\033[91mERROR\033[0m',
-        Log.FATAL: '\033[95mFATAL\033[0m',
+    # See ANSI/VT100 terminal color codes here:
+    # https://misc.flogisoft.com/bash/tip_colors_and_formatting
+    LEVEL_COLOR = {
+        'DEBUG': 92,  # Light green
+        'INFO' : 97,  # White
+        'WARN' : 93,  # Light yellow
+        'ERROR': 91,  # Light red
+        'FATAL': 95,  # Light magenta
     }
 
     def __init__(self, options):
-        self._level_string_map = self.LEVEL_STRING_NO_COLOR if options.nocolor else \
-                                 self.LEVEL_STRING_COLOR
-
         self._filter = re.compile(options.filter)
         self._level = getattr(Log, options.level.upper())
+        self._nocolor = options.nocolor
         self._verbose = options.verbose
+
+        self._level_string_map = {getattr(Log, level): self._stringify(level) for level in self.LEVEL_COLOR.keys()}
 
         callback = self._once_callback if options.once else self._callback
         rospy.Subscriber(options.topic, Log, callback)
+
+    def _stringify(self, level):
+        string = level.ljust(5)
+
+        return string if self._nocolor else '\033[{}m{}\033[0m'.format(self.LEVEL_COLOR[level], string)
+
+    @staticmethod
+    def get_levels():
+        """Get levels sorted by increasing severity."""
+        return sorted(RosConsoleEcho.LEVEL_COLOR.keys(), key=lambda level: getattr(Log, level))
 
     def _print(self, msg):
         print('[ {} ] [\033[1m{}\033[21m]: {}'.format(
@@ -198,7 +202,7 @@ def _get_cmd_echo_argparse(prog):
                         help='regular expression to filter the logger name (default: %(default)s)')
 
     parser.add_argument('level', metavar='LEVEL', type=str, nargs='?', default='warn',
-                        choices=RosConsoleEcho.STRING_LEVEL.keys(),
+                        choices=[level.lower() for level in RosConsoleEcho.get_levels()],
                         help='minimum logger level to print (default: %(default)s)')
 
     parser.add_argument('-1', '--once', action='store_true', dest='once',
