@@ -287,7 +287,7 @@ bool Recorder::shouldSubscribeToTopic(std::string const& topic, bool from_node) 
 }
 
 template<class T>
-string Recorder::timeToStr(T ros_t, const std::string &format)
+std::string Recorder::timeToStr(T ros_t, const std::string &format)
 {
     (void)ros_t;
     std::stringstream msg;
