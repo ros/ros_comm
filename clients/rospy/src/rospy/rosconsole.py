@@ -201,7 +201,8 @@ def _get_cmd_echo_argparse(prog):
     parser.add_argument('filter', metavar='FILTER', type=str, nargs='?', default='.*',
                         help='regular expression to filter the logger name (default: %(default)s)')
 
-    parser.add_argument('level', metavar='LEVEL', type=str, nargs='?', default='warn',
+    parser.add_argument('-l', '--level', action='store', metavar='LEVEL',
+                        type=str, default='warn', dest='level',
                         choices=[level.lower() for level in RosConsoleEcho.get_levels()],
                         help='minimum logger level to print (default: %(default)s)')
 
