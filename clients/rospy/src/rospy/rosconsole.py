@@ -154,6 +154,8 @@ class RosConsoleEcho(object):
         'FATAL': 95,  # Light magenta
     }
 
+    LEVEL_MAX_LENGTH = max([len(level) for level in LEVEL_COLOR.keys()])
+
     def __init__(self, options):
         self._filter = re.compile(options.filter)
         self._level = getattr(Log, options.level.upper())
@@ -166,9 +168,10 @@ class RosConsoleEcho(object):
         rospy.Subscriber(options.topic, Log, callback)
 
     def _stringify(self, level):
-        string = level.ljust(5)
+        string = level.ljust(RosConsoleEcho.LEVEL_MAX_LENGTH)
 
-        return string if self._nocolor else '\033[{}m{}\033[0m'.format(self.LEVEL_COLOR[level], string)
+        return string if self._nocolor else \
+               '\033[{}m{}\033[0m'.format(self.LEVEL_COLOR[level], string)
 
     @staticmethod
     def get_levels():
