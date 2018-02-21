@@ -2,6 +2,11 @@
 Changelog for package rosnode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix docstrings (`#1278 <https://github.com/ros/ros_comm/issues/1278>`_)
+* fix documentation for cleanup_master_blacklist() (`#1253 <https://github.com/ros/ros_comm/issues/1253>`_)
+
 1.12.12 (2017-11-16)
 --------------------
 

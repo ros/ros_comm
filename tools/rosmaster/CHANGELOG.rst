@@ -2,6 +2,10 @@
 Changelog for package rosmaster
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add TCP_INFO availability check (`#1211 <https://github.com/ros/ros_comm/issues/1211>`_)
+
 1.12.12 (2017-11-16)
 --------------------
 
