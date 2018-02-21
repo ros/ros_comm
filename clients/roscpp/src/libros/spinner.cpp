@@ -35,9 +35,8 @@
 namespace {
 
 const std::string DEFAULT_ERROR_MESSAGE =
-    "\nAttempt to spin a callback queue from two spinners, one of them being single-threaded."
-    "\nThis will probably result in callbacks being executed out-of-order."
-    "\nIn future this will throw an exception!";
+    "Attempt to spin a callback queue from two spinners, one of them being single-threaded."
+    "\nIn the future this will throw an exception!";
 
 /** class to monitor running single-threaded spinners.
  *
@@ -150,7 +149,7 @@ void SingleThreadedSpinner::spin(CallbackQueue* queue)
 
   if (!spinner_monitor.add(queue, true))
   {
-    ROS_ERROR_STREAM("SingleThreadedSpinner: " << DEFAULT_ERROR_MESSAGE);
+    ROS_ERROR_STREAM("SingleThreadedSpinner: " << DEFAULT_ERROR_MESSAGE + " You might want to use a MultiThreadedSpinner instead.");
     return;
   }
 

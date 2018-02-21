@@ -84,7 +84,7 @@ def _succeed(args):
 _caller_apis = {}
 def get_api_uri(master, caller_id, skip_cache=False):
     """
-    @param master: XMLRPC handle to ROS Master
+    @param master: rosgraph Master instance
     @type  master: rosgraph.Master
     @param caller_id: node name
     @type  caller_id: str
@@ -399,9 +399,9 @@ def rosnode_ping_all(verbose=False):
     
 def cleanup_master_blacklist(master, blacklist):
     """
-    Remove registrations from ROS Master that do not match blacklist.    
-    @param master: XMLRPC handle to ROS Master
-    @type  master: xmlrpclib.ServerProxy
+    Remove registrations from ROS Master that match blacklist.    
+    @param master: rosgraph Master instance
+    @type  master: rosgraph.Master
     @param blacklist: list of nodes to scrub
     @type  blacklist: [str]
     """
@@ -426,8 +426,8 @@ def cleanup_master_blacklist(master, blacklist):
 def cleanup_master_whitelist(master, whitelist):
     """
     Remove registrations from ROS Master that do not match whitelist.
-    @param master: XMLRPC handle to ROS Master
-    @type  master: xmlrpclib.ServerProxy
+    @param master: rosgraph Master instance
+    @type  master: rosgraph.Master
     @param whitelist: list of nodes to keep
     @type  whitelist: list of nodes to keep
    """

@@ -108,6 +108,7 @@ RecorderOptions::RecorderOptions() :
     limit(0),
     split(false),
     max_size(0),
+    max_splits(0),
     max_duration(-1.0),
     node(""),
     min_space(1024 * 1024 * 1024),
