@@ -2,8 +2,8 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.13 (2018-02-21)
+--------------------
 * avoid recreating poll set (`#1281 <https://github.com/ros/ros_comm/pull/1281>`_)
 * switch to using epoll (`#1217 <https://github.com/ros/ros_comm/pull/1217>`_)
 * monotonic clock for callback queue timeouts (`#1250 <https://github.com/ros/ros_comm/pull/1250>`_)

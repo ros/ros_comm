@@ -2,8 +2,8 @@
 Changelog for package rosbag_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.13 (2018-02-21)
+--------------------
 * performance improvement for lower/upper bound (`#1223 <https://github.com/ros/ros_comm/issues/1223>`_)
 * place console_bridge macros definition in header and use it everywhere console_bridge is included (`#1238 <https://github.com/ros/ros_comm/issues/1238>`_)
 
