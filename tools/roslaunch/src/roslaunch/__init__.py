@@ -140,6 +140,9 @@ def _get_optparse():
     parser.add_option("--screen",
                       dest="force_screen", default=False, action="store_true",
                       help="Force output of all local nodes to screen")
+    parser.add_option("--log",
+                      dest="force_log", default=False, action="store_true",
+                      help="Force output of all local nodes to log")
     parser.add_option("-u", "--server_uri",
                       dest="server_uri", default=None,
                       help="URI of server. Required with -c", metavar="URI")
@@ -313,6 +316,7 @@ def main(argv=sys.argv):
             p = roslaunch_parent.ROSLaunchParent(uuid, args, roslaunch_strs=roslaunch_strs,
                     is_core=options.core, port=options.port, local_only=options.local_only,
                     verbose=options.verbose, force_screen=options.force_screen,
+                    force_log=options.force_log,
                     num_workers=options.num_workers, timeout=options.timeout,
                     master_logger_level=options.master_logger_level)
             p.start()

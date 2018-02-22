@@ -73,7 +73,7 @@ class ROSLaunchParent(object):
     """
 
     def __init__(self, run_id, roslaunch_files, is_core=False, port=None, local_only=False, process_listeners=None,
-            verbose=False, force_screen=False, is_rostest=False, roslaunch_strs=None, num_workers=NUM_WORKERS, timeout=None, master_logger_level=False):
+            verbose=False, force_screen=False, force_log=False, is_rostest=False, roslaunch_strs=None, num_workers=NUM_WORKERS, timeout=None, master_logger_level=False):
         """
         @param run_id: UUID of roslaunch session
         @type  run_id: str
@@ -93,6 +93,8 @@ class ROSLaunchParent(object):
         @type  verbose: boolean
         @param force_screen: (optional) force output of all nodes to screen
         @type  force_screen: boolean
+        @param force_log: (optional) force output of all nodes to log
+        @type  force_log: boolean
         @param is_rostest bool: if True, this launch is a rostest
             instance. This affects validation checks.
         @type  is_rostest: bool
@@ -124,6 +126,7 @@ class ROSLaunchParent(object):
         # the outside into the roslaunch parent. One possibility is to
         # allow alternate config loaders to be passed in.
         self.force_screen = force_screen
+        self.force_log = force_log
         
         # flag to prevent multiple shutdown attempts
         self._shutting_down = False
@@ -138,6 +141,9 @@ class ROSLaunchParent(object):
         if self.force_screen:
             for n in self.config.nodes:
                 n.output = 'screen'
+        if self.force_log:
+            for n in self.config.nodes:
+                n.output = 'log'
 
     def _start_pm(self):
         """
