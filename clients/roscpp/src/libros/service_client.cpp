@@ -34,7 +34,7 @@
 namespace ros
 {
 
-ServiceClient::Impl::Impl() 
+ServiceClient::Impl::Impl()
   : is_shutdown_(false)
 { }
 

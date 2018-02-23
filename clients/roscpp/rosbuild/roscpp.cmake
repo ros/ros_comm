@@ -8,16 +8,16 @@ macro(genmsg_cpp)
   foreach(_msg ${_msglist})
     # Construct the path to the .msg file
     set(_input ${PROJECT_SOURCE_DIR}/msg/${_msg})
-  
+
     rosbuild_gendeps(${PROJECT_NAME} ${_msg})
-  
+
     set(genmsg_cpp_exe ${roscpp_PACKAGE_PATH}/rosbuild/scripts/genmsg_cpp.py)
 
     set(_output_cpp ${PROJECT_SOURCE_DIR}/msg_gen/cpp/include/${PROJECT_NAME}/${_msg})
     string(REPLACE ".msg" ".h" _output_cpp ${_output_cpp})
-  
+
     # Add the rule to build the .h the .msg
-    add_custom_command(OUTPUT ${_output_cpp} 
+    add_custom_command(OUTPUT ${_output_cpp}
                        COMMAND ${genmsg_cpp_exe} ${_input}
                        DEPENDS ${_input} ${genmsg_cpp_exe} ${gendeps_exe} ${${PROJECT_NAME}_${_msg}_GENDEPS} ${ROS_MANIFEST_LIST})
     list(APPEND _autogen ${_output_cpp})
@@ -50,17 +50,17 @@ macro(gensrv_cpp)
   foreach(_srv ${_srvlist})
     # Construct the path to the .srv file
     set(_input ${PROJECT_SOURCE_DIR}/srv/${_srv})
-  
+
     rosbuild_gendeps(${PROJECT_NAME} ${_srv})
-  
+
     set(gensrv_cpp_exe ${roscpp_PACKAGE_PATH}/rosbuild/scripts/gensrv_cpp.py)
     set(genmsg_cpp_exe ${roscpp_PACKAGE_PATH}/rosbuild/scripts/genmsg_cpp.py)
 
     set(_output_cpp ${PROJECT_SOURCE_DIR}/srv_gen/cpp/include/${PROJECT_NAME}/${_srv})
     string(REPLACE ".srv" ".h" _output_cpp ${_output_cpp})
-  
+
     # Add the rule to build the .h from the .srv
-    add_custom_command(OUTPUT ${_output_cpp} 
+    add_custom_command(OUTPUT ${_output_cpp}
                        COMMAND ${gensrv_cpp_exe} ${_input}
                        DEPENDS ${_input} ${gensrv_cpp_exe} ${genmsg_cpp_exe} ${gendeps_exe} ${${PROJECT_NAME}_${_srv}_GENDEPS} ${ROS_MANIFEST_LIST})
     list(APPEND _autogen ${_output_cpp})

@@ -134,7 +134,7 @@ def wait_for_service(service, timeout=None):
             except KeyboardInterrupt:
                 # re-raise
                 rospy.core.logdebug("wait_for_service: received keyboard interrupt, assuming signals disabled and re-raising")
-                raise 
+                raise
             except: # service not actually up
                 contact_failed = True
                 rospy.core.logwarn_throttle(10, "wait_for_service(%s): failed to contact, will keep trying"%resolved_name)
@@ -154,14 +154,14 @@ def wait_for_service(service, timeout=None):
             except KeyboardInterrupt:
                 # re-raise
                 rospy.core.logdebug("wait_for_service: received keyboard interrupt, assuming signals disabled and re-raising")
-                raise 
+                raise
             except: # service not actually up
                 contact_failed = True
                 rospy.core.logwarn_throttle(10, "wait_for_service(%s): failed to contact, will keep trying"%resolved_name)
             time.sleep(0.3)
         if rospy.core.is_shutdown():
             raise ROSInterruptException("rospy shutdown")
-    
+
 
 def convert_return_to_response(response, response_class):
     """
@@ -220,7 +220,7 @@ def service_connection_handler(sock, client_addr, header):
     @type  client_addr: (str, int)
     @param header: key/value pairs from handshake header
     @type  header: dict
-    @return: error string or None 
+    @return: error string or None
     @rtype: str
     """
     for required in ['service', 'md5sum', 'callerid']:
@@ -229,12 +229,12 @@ def service_connection_handler(sock, client_addr, header):
     else:
         logger.debug("connection from %s:%s", client_addr[0], client_addr[1])
         service_name = header['service']
-        
+
         #TODO: make service manager configurable. I think the right
         #thing to do is to make these singletons private members of a
         #Node instance and enable rospy to have multiple node
         #instances.
-        
+
         sm = get_service_manager()
         md5sum = header['md5sum']
         service = sm.get_service(service_name)
@@ -251,8 +251,8 @@ def service_connection_handler(sock, client_addr, header):
             t = threading.Thread(target=service.handle, args=(transport, header))
             t.daemon = True
             t.start()
-                
-        
+
+
 class TCPService(TCPROSTransportProtocol):
     """
     Protocol implementation for Services over TCPROS
@@ -282,27 +282,27 @@ class TCPService(TCPROSTransportProtocol):
 
 class TCPROSServiceClient(TCPROSTransportProtocol):
     """Protocol Implementation for Service clients over TCPROS"""
-    
+
     def __init__(self, resolved_name, service_class, headers=None, buff_size=DEFAULT_BUFF_SIZE):
         """
         ctor.
-        @param resolved_name: resolved service name 
+        @param resolved_name: resolved service name
         @type  resolved_name: str
         @param service_class: Service data type class
         @type  service_class: Service
         @param headers: identifier for Service session
         @type  headers: dict
-        @param buff_size: size of buffer (bytes) for reading responses from Service. 
+        @param buff_size: size of buffer (bytes) for reading responses from Service.
         @type  buff_size: int
         """
         super(TCPROSServiceClient, self).__init__(resolved_name, service_class._response_class)
         self.service_class = service_class
         self.headers = headers or {}
         self.buff_size = buff_size
-        
+
     def get_header_fields(self):
         """
-        TCPROSTransportProtocol API        
+        TCPROSTransportProtocol API
         """
         headers = {'service': self.resolved_name, 'md5sum': self.service_class._md5sum,
                    'callerid': rospy.names.get_caller_id()}
@@ -312,7 +312,7 @@ class TCPROSServiceClient(TCPROSTransportProtocol):
         for k, v in self.headers.items():
             headers[k] = v
         return headers
-    
+
     def _read_ok_byte(self, b, sock):
         """
         Utility for reading the OK-byte/error-message header preceding each message.
@@ -330,7 +330,7 @@ class TCPROSServiceClient(TCPROSTransportProtocol):
         b.seek(pos)
         if not ok:
             str = self._read_service_error(sock, b)
-            
+
             #_read_ok_byte has to reset state of the buffer to
             #consumed as this exception will bypass rest of
             #deserialized_messages logic. we currently can't have
@@ -341,7 +341,7 @@ class TCPROSServiceClient(TCPROSTransportProtocol):
         else:
             # success, set seek point to start of message
             b.seek(pos)
-        
+
     def read_messages(self, b, msg_queue, sock):
         """
         In service implementation, reads in OK byte that preceeds each
@@ -361,10 +361,10 @@ class TCPROSServiceClient(TCPROSTransportProtocol):
         #it.
         if b.tell() == 1:
             b.seek(0)
-        
+
     def _read_service_error(self, sock, b):
         """
-        Read service error from sock 
+        Read service error from sock
         @param sock: socket to read from
         @type  sock: socket
         @param b: currently read data from sock
@@ -380,7 +380,7 @@ class TCPROSServiceClient(TCPROSTransportProtocol):
         bval = b.getvalue()
         return struct.unpack('<%ss'%length, bval[5:5+length])[0] # ready in len byte
 
-    
+
 class ServiceProxy(_Service):
     """
     Create a handle to a ROS service for invoking calls.
@@ -389,7 +389,7 @@ class ServiceProxy(_Service):
       add_two_ints = ServiceProxy('add_two_ints', AddTwoInts)
       resp = add_two_ints(1, 2)
     """
-    
+
     def __init__(self, name, service_class, persistent=False, headers=None):
         """
         ctor.
@@ -402,7 +402,7 @@ class ServiceProxy(_Service):
         performance, persistent connections are discouraged as they are
         less resistent to network issues and service restarts.
         @type  persistent: bool
-        @param headers: (optional) arbitrary headers 
+        @param headers: (optional) arbitrary headers
         @type  headers: dict
         """
         super(ServiceProxy, self).__init__(name, service_class)
@@ -426,18 +426,18 @@ class ServiceProxy(_Service):
         """
         Callable-style version of the service API. This accepts either a request message instance,
         or you can call directly with arguments to create a new request instance. e.g.::
-        
+
           add_two_ints(AddTwoIntsRequest(1, 2))
           add_two_ints(1, 2)
-          add_two_ints(a=1, b=2)          
-        
+          add_two_ints(a=1, b=2)
+
         @param args: arguments to remote service
         @param kwds: message keyword arguments
         @raise ROSSerializationException: If unable to serialize
         message. This is usually a type error with one of the fields.
         """
         return self.call(*args, **kwds)
-    
+
     def _get_service_uri(self, request):
         """
         private routine for getting URI of service to call
@@ -465,7 +465,7 @@ class ServiceProxy(_Service):
                 except rosgraph.MasterError as e:
                     logger.error("[%s]: lookup service failed with message [%s]", self.resolved_name, str(e))
                     raise ServiceException("service [%s] unavailable"%self.resolved_name)
-                
+
                 # validate
                 try:
                     rospy.core.parse_rosrpc_uri(self.uri)
@@ -479,11 +479,11 @@ class ServiceProxy(_Service):
         """
         Call the service. This accepts either a request message instance,
         or you can call directly with arguments to create a new request instance. e.g.::
-        
+
           add_two_ints(AddTwoIntsRequest(1, 2))
           add_two_ints(1, 2)
-          add_two_ints(a=1, b=2)          
-        
+          add_two_ints(a=1, b=2)
+
         @raise TypeError: if request is not of the valid type (Message)
         @raise ServiceException: if communication with remote service fails
         @raise ROSInterruptException: if node shutdown (e.g. ctrl-C) interrupts service call
@@ -492,14 +492,14 @@ class ServiceProxy(_Service):
         """
 
         # convert args/kwds to request message class
-        request = rospy.msg.args_kwds_to_message(self.request_class, args, kwds) 
-            
+        request = rospy.msg.args_kwds_to_message(self.request_class, args, kwds)
+
         # initialize transport
         if self.transport is None:
             service_uri = self._get_service_uri(request)
             dest_addr, dest_port = rospy.core.parse_rosrpc_uri(service_uri)
 
-            # connect to service            
+            # connect to service
             transport = TCPROSTransport(self.protocol, self.resolved_name)
             transport.buff_size = self.buff_size
             try:
@@ -533,7 +533,7 @@ class ServiceProxy(_Service):
                 self.transport = None
         return responses[0]
 
-    
+
     def close(self):
         """Close this ServiceProxy. This only has an effect on persistent ServiceProxy instances."""
         if self.transport is not None:
@@ -543,7 +543,7 @@ class ServiceImpl(_Service):
     """
     Implementation of ROS Service. This intermediary class allows for more configuration of behavior than the Service class.
     """
-    
+
     def __init__(self, name, service_class, handler, buff_size=DEFAULT_BUFF_SIZE, error_handler=None):
         super(ServiceImpl, self).__init__(name, service_class)
 
@@ -554,7 +554,7 @@ class ServiceImpl(_Service):
             import warnings
             warnings.warn("'%s' is not a legal ROS graph resource name. This may cause problems with other ROS tools"%name, stacklevel=2)
 
-        
+
         self.handler = handler
         if error_handler is not None:
             self.error_handler = error_handler
@@ -586,7 +586,7 @@ class ServiceImpl(_Service):
         self.done = True
         logdebug('[%s].shutdown: reason [%s]'%(self.resolved_name, reason))
         try:
-            #TODO: make service manager configurable            
+            #TODO: make service manager configurable
             get_service_manager().unregister(self.resolved_name, self)
         except Exception as e:
             logerr("Unable to unregister with master: "+traceback.format_exc())
@@ -607,7 +607,7 @@ class ServiceImpl(_Service):
     def _write_service_error(self, transport, err_msg):
         """
         Send error message to client
-        @param transport: transport connection to client 
+        @param transport: transport connection to client
         @type  transport: Transport
         @param err_msg: error message to send to client
         @type  err_msg: str
@@ -677,12 +677,12 @@ class ServiceImpl(_Service):
 class Service(ServiceImpl):
     """
     Declare a ROS service. Service requests are passed to the
-    specified handler. 
+    specified handler.
 
     Service Usage::
       s = Service('getmapservice', GetMap, get_map_handler)
     """
-    
+
     def __init__(self, name, service_class, handler,
                  buff_size=DEFAULT_BUFF_SIZE, error_handler=None):
         """
@@ -690,7 +690,7 @@ class Service(ServiceImpl):
 
         @param name: service name, ``str``
         @param service_class: Service definition class
-        
+
         @param handler: callback function for processing service
         request. Function takes in a ServiceRequest and returns a
         ServiceResponse of the appropriate type. Function may also
@@ -701,7 +701,7 @@ class Service(ServiceImpl):
         to indicate failure, or it may raise a rospy.ServiceException
         to send a specific error message to the client. Returning None
         is always considered a failure.
-        
+
         @type  handler: fn(req)->resp
 
         @param buff_size: size of buffer for reading incoming requests. Should be at least size of request message

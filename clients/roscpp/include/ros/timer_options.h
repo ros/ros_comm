@@ -50,7 +50,7 @@ struct ROSCPP_DECL TimerOptions
    * \brief Constructor
    * \param
    */
-  TimerOptions(Duration _period, const TimerCallback& _callback, 
+  TimerOptions(Duration _period, const TimerCallback& _callback,
                CallbackQueueInterface* _queue, bool oneshot = false, bool autostart = true)
     : period(_period)
     , callback(_callback)

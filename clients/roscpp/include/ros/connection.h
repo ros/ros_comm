@@ -167,7 +167,7 @@ public:
   Header& getHeader() { return header_; }
 
   /**
-   * \brief Set the Header associated with this connection (used with UDPROS, 
+   * \brief Set the Header associated with this connection (used with UDPROS,
    *        which receives the connection during XMLRPC negotiation).
    */
   void setHeader(const Header& header) { header_ = header; }

@@ -48,7 +48,7 @@ class Rate(object):
     """
     Convenience class for sleeping in a loop at a specified rate
     """
-    
+
     def __init__(self, hz, reset=False):
         """
         Constructor.
@@ -92,7 +92,7 @@ class Rate(object):
         Attempt sleep at the specified rate. sleep() takes into
         account the time elapsed since the last successful
         sleep().
-        
+
         @raise ROSInterruptException: if ROS shutdown occurs before
         sleep completes
         @raise ROSTimeMovedBackwardsException: if ROS time is set
@@ -117,7 +117,7 @@ def sleep(duration):
     """
     sleep for the specified duration in ROS time. If duration
     is negative, sleep immediately returns.
-    
+
     @param duration: seconds (or rospy.Duration) to sleep
     @type  duration: float or Duration
     @raise ROSInterruptException: if ROS shutdown occurs before sleep
@@ -215,7 +215,7 @@ class Timer(threading.Thread):
         Stop firing callbacks.
         """
         self._shutdown = True
-        
+
     def run(self):
         r = Rate(1.0 / self._period.to_sec(), reset=self._reset)
         current_expected = rospy.rostime.get_rostime() + self._period

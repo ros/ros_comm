@@ -85,7 +85,7 @@ class TCPROSSub(TCPROSTransportProtocol):
         super(TCPROSSub, self).__init__(resolved_name, recv_data_class, queue_size, buff_size)
         self.direction = rospy.impl.transport.INBOUND
         self.tcp_nodelay = tcp_nodelay
-        
+
     def get_header_fields(self):
         """
         @return: dictionary of subscriber fields
@@ -96,7 +96,7 @@ class TCPROSSub(TCPROSTransportProtocol):
                 'tcp_nodelay': '1' if self.tcp_nodelay else '0',
                 'md5sum': self.recv_data_class._md5sum,
                 'type': self.recv_data_class._type,
-                'callerid': rospy.names.get_caller_id()}        
+                'callerid': rospy.names.get_caller_id()}
 
 # Separate method for easier testing
 def _configure_pub_socket(sock, is_tcp_nodelay):
@@ -119,9 +119,9 @@ def _configure_pub_socket(sock, is_tcp_nodelay):
 class TCPROSPub(TCPROSTransportProtocol):
     """
     Publisher transport implementation for publishing topic data via
-    peer-to-peer TCP/IP sockets. 
+    peer-to-peer TCP/IP sockets.
     """
-    
+
     def __init__(self, resolved_name, pub_data_class, is_latch=False, headers=None):
         """
         ctor.
@@ -138,15 +138,15 @@ class TCPROSPub(TCPROSTransportProtocol):
         self.direction = rospy.impl.transport.OUTBOUND
         self.is_latch = is_latch
         self.headers = headers if headers else {}
-        
+
     def get_header_fields(self):
         base = {'topic': self.resolved_name,
                 'type': self.pub_data_class._type,
                 'latching': '1' if self.is_latch else '0',
                 'message_definition': self.pub_data_class._full_text,
-                'md5sum': self.pub_data_class._md5sum, 
+                'md5sum': self.pub_data_class._md5sum,
                 'callerid': rospy.names.get_caller_id() }
-        
+
         # this implementation allows the user to override builtin
         # fields.  this could potentially enable some interesting
         # features... or it could be really bad.
@@ -160,7 +160,7 @@ def robust_connect_subscriber(conn, dest_addr, dest_port, pub_uri, receive_cb, r
     """
     # kwc: this logic is not very elegant.  I am waiting to rewrite
     # the I/O loop with async i/o to clean this up.
-    
+
     # timeout is really generous. for now just choosing one that is large but not infinite
     interval = 0.5
     while conn.socket is None and not conn.done and not rospy.is_shutdown():
@@ -177,12 +177,12 @@ def robust_connect_subscriber(conn, dest_addr, dest_port, pub_uri, receive_cb, r
               # exponential backoff (maximum 32 seconds)
               interval = interval * 2
             time.sleep(interval)
-            
+
             # check to see if publisher state has changed
             conn.done = not check_if_still_publisher(resolved_topic_name, pub_uri)
-	
+
     if not conn.done:
-        conn.receive_loop(receive_cb)	    
+        conn.receive_loop(receive_cb)
 
 def check_if_still_publisher(resolved_topic_name, pub_uri):
     try:
@@ -206,7 +206,7 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
     def __init__(self):
         """ctor"""
         self.tcp_nodelay_map = {} # { topic : tcp_nodelay}
-    
+
     def set_tcp_nodelay(self, resolved_name, tcp_nodelay):
         """
         @param resolved_name: resolved topic name
@@ -221,7 +221,7 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
 
     def shutdown(self):
         """
-        stops the TCP/IP server responsible for receiving inbound connections        
+        stops the TCP/IP server responsible for receiving inbound connections
         """
         pass
 
@@ -230,14 +230,14 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
         Connect to topic resolved_name on Publisher pub_uri using TCPROS.
         @param resolved_name str: resolved topic name
         @type  resolved_name: str
-        @param pub_uri: XML-RPC URI of publisher 
+        @param pub_uri: XML-RPC URI of publisher
         @type  pub_uri: str
         @param protocol_params: protocol parameters to use for connecting
         @type protocol_params: [XmlRpcLegal]
         @return: code, message, debug
         @rtype: (int, str, int)
         """
-        
+
         #Validate protocol params = [TCPROS, address, port]
         if type(protocol_params) != list or len(protocol_params) != 3:
             return 0, "ERROR: invalid TCPROS parameters", 0
@@ -247,7 +247,7 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
 
         sub = rospy.impl.registration.get_topic_manager().get_subscriber_impl(resolved_name)
 
-        #Create connection 
+        #Create connection
         protocol = TCPROSSub(resolved_name, sub.data_class, \
                              queue_size=sub.queue_size, buff_size=sub.buff_size,
                              tcp_nodelay=sub.tcp_nodelay)
@@ -278,21 +278,21 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
         @rtype: bool
         """
         return protocol == TCPROS
-    
+
     def get_supported(self):
         """
         Get supported protocols
         """
         return [[TCPROS]]
-        
+
     def init_publisher(self, resolved_name, protocol):
         """
         Initialize this node to receive an inbound TCP connection,
         i.e. startup a TCP server if one is not already running.
-        
+
         @param resolved_name: topic name
         @type  resolved__name: str
-        
+
         @param protocol: negotiated protocol
           parameters. protocol[0] must be the string 'TCPROS'
         @type  protocol: [str, value*]
@@ -316,7 +316,7 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
         @type client_addr: (str, int)
         @param header: key/value pairs from handshake header
         @type header: dict
-        @return: error string or None 
+        @return: error string or None
         @rtype: str
         """
         if rospy.core.is_shutdown_requested():
@@ -365,7 +365,7 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
                 transport.remote_endpoint = client_addr
                 transport.write_header()
                 topic.add_connection(transport)
-            
+
 
 class QueuedConnection(object):
     """

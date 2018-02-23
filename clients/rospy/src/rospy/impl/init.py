@@ -92,7 +92,7 @@ def start_node(environ, resolved_name, master_uri=None, port=0, tcpros_port=0):
         master_uri = DEFAULT_MASTER_URI
 
     # this will go away in future versions of API
-    _set_caller_id(resolved_name) 
+    _set_caller_id(resolved_name)
 
     handler = ROSHandler(resolved_name, master_uri)
     node = rosgraph.xmlrpc.XmlRpcNode(port, handler, on_run_error=_node_run_error)

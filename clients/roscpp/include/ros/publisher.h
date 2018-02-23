@@ -164,8 +164,8 @@ namespace ros
 
   private:
 
-    Publisher(const std::string& topic, const std::string& md5sum, 
-              const std::string& datatype, const NodeHandle& node_handle, 
+    Publisher(const std::string& topic, const std::string& md5sum,
+              const std::string& datatype, const NodeHandle& node_handle,
               const SubscriberCallbacksPtr& callbacks);
 
     void publish(const boost::function<SerializedMessage(void)>& serfunc, SerializedMessage& m) const;

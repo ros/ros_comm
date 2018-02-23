@@ -51,7 +51,7 @@ struct ROSCPP_DECL WallTimerOptions
    * \brief Constructor
    * \param
    */
-  WallTimerOptions(WallDuration _period, const WallTimerCallback& _callback, CallbackQueueInterface* _queue, 
+  WallTimerOptions(WallDuration _period, const WallTimerCallback& _callback, CallbackQueueInterface* _queue,
                    bool oneshot = false, bool autostart = true)
   : period(_period)
   , callback(_callback)

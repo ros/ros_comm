@@ -74,7 +74,7 @@ Transport::Transport()
 #if !defined(__ANDROID__)
   // for ipv4 loopback, we'll explicitly search for 127.* in isHostAllowed()
   // now we need to iterate all local interfaces and add their addresses
-  // from the getifaddrs manpage:  (maybe something similar for windows ?) 
+  // from the getifaddrs manpage:  (maybe something similar for windows ?)
   ifaddrs *ifaddr;
   if (-1 == getifaddrs(&ifaddr))
   {
@@ -112,7 +112,7 @@ bool Transport::isHostAllowed(const std::string &host) const
   if (host.length() >= 4 && host.substr(0, 4) == std::string("127."))
     return true; // ipv4 localhost
   // now, loop through the list of valid hostnames and see if we find it
-  for (std::vector<std::string>::const_iterator it = allowed_hosts_.begin(); 
+  for (std::vector<std::string>::const_iterator it = allowed_hosts_.begin();
        it != allowed_hosts_.end(); ++it)
   {
     if (host == *it)

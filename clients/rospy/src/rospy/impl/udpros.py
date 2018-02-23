@@ -39,7 +39,7 @@ UDPROS connection protocol.
 """
 ## UDPROS connection protocol.
 #  http://ros.org/wiki/ROS/UDPROS
-# 
+#
 
 import rosgraph.network
 
@@ -54,14 +54,14 @@ class UDPROSHandler(rospy.transport.ProtocolHandler):
     """
     rospy protocol handler for UDPROS. Stores the datagram server if necessary.
     """
-    
+
     def __init__(self, port=0):
         """
         ctor
         """
         self.port = port
         self.buff_size = get_max_datagram_size()
-        
+
     def init_server(self):
         """
         Initialize and start the server thread, if not already initialized.
@@ -71,7 +71,7 @@ class UDPROSHandler(rospy.transport.ProtocolHandler):
         if rosgraph.network.use_ipv6():
             s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
         else:
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) 
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.bind((rosgraph.network.get_bind_address(), self.port))
         if self.port == 0:
             self.port = s.getsockname()[1]
@@ -98,7 +98,7 @@ class UDPROSHandler(rospy.transport.ProtocolHandler):
         Connect to topic resolved_name on Publisher pub_uri using UDPROS.
         @param resolved_name str: resolved topic name
         @type  resolved_name: str
-        @param pub_uri: XML-RPC URI of publisher 
+        @param pub_uri: XML-RPC URI of publisher
         @type  pub_uri: str
         @param protocol_params: protocol parameters to use for connecting
         @type protocol_params: [XmlRpcLegal]
@@ -116,17 +116,17 @@ class UDPROSHandler(rospy.transport.ProtocolHandler):
         id, dest_addr, dest_port, headers = protocol_params
 
         self.init_server()
-        
+
         #TODO: parse/validate headers
 
         sub = rospy.registration.get_topic_manager().get_subscriber_impl(topic_name)
         # Create Transport
-        
+
         # TODO: create just a single 'connection' instance to represent
         # all UDP connections. 'connection' can take care of unifying
         # publication if addresses are the same
-        transport = UDPTransport(protocol, topic_name, sub.receive_callback) 
-        
+        transport = UDPTransport(protocol, topic_name, sub.receive_callback)
+
         # Attach connection to _SubscriberImpl
         if sub.add_connection(transport): #pass udp connection to handler
             return 1, "Connected topic[%s]. Transport impl[%s]"%(topic_name, transport.__class__.__name__), dest_port
@@ -142,20 +142,20 @@ class UDPROSHandler(rospy.transport.ProtocolHandler):
         @rtype: bool
         """
         return protocol == UDPROS
-    
+
     def get_supported(self):
         """
         Get supported protocols
         """
         return [[UDPROS]]
-        
-    def init_publisher(self, topic_name, protocol_params): 
+
+    def init_publisher(self, topic_name, protocol_params):
         """
         Initialize this node to start publishing to a new UDP location.
-        
+
         @param resolved_name: topic name
         @type  resolved__name: str
-        
+
         @param protocol_params: requested protocol
           parameters. protocol[0] must be the string 'UDPROS'
         @type  protocol_params: [str, value*]
@@ -181,7 +181,7 @@ class UDPROSHandler(rospy.transport.ProtocolHandler):
         @type client_addr: (str, int)
         @param header: key/value pairs from handshake header
         @type header: dict
-        @return: error string or None 
+        @return: error string or None
         @rtype: str
         """
         for required in ['topic', 'md5sum', 'callerid']:
@@ -225,20 +225,20 @@ class UDPROSHandler(rospy.transport.ProtocolHandler):
                 transport.set_socket(sock, header['callerid'])
                 transport.write_header()
                 topic.add_connection(transport)
-            
-    
+
+
 
 ## UDPROS communication routines
 class UDPROSTransport(rospy.transport.Transport):
     transport_type = 'UDPROS'
-    
+
     def __init__(self, protocol, name, header):
         """
         ctor
-        @param name: topic name    
+        @param name: topic name
         @type  name: str:
-        @param protocol: protocol implementation    
-        @param protocol: UDPROSTransportProtocol 
+        @param protocol: protocol implementation
+        @param protocol: UDPROSTransportProtocol
         @param header: handshake header if transport handshake header was
         already read off of transport.
         @type  header: dict
@@ -250,7 +250,7 @@ class UDPROSTransport(rospy.transport.Transport):
 
         self.done = False
         self.header = header
-            
+
     def send_message(self, msg, seq):
         """
         Convenience routine for services to send a message across a
@@ -278,7 +278,7 @@ class UDPROSTransport(rospy.transport.Transport):
         # - cut into packets
         # write to address
         pass
-    
+
     def receive_once(self):
         """
         block until messages are read off of socket
@@ -290,16 +290,16 @@ class UDPROSTransport(rospy.transport.Transport):
 
     ## Receive messages until shutdown
     ## @param self
-    ## @param msgs_callback fn([msg]): callback to invoke for new messages received    
+    ## @param msgs_callback fn([msg]): callback to invoke for new messages received
     def receive_loop(self, msgs_callback):
         pass
-    
+
     ## close i/o and release resources
     def close(super):
         self(UDPROSTransport, self).close()
         #TODO
         self.done = True
-    
+
 _handler = UDPROSHandler()
 
 def get_handler():

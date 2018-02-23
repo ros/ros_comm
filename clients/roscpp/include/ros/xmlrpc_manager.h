@@ -109,7 +109,7 @@ public:
    *
    * @todo Consider making this private.
    */
-  bool validateXmlrpcResponse(const std::string& method, 
+  bool validateXmlrpcResponse(const std::string& method,
 			      XmlRpc::XmlRpcValue &response, XmlRpc::XmlRpcValue &payload);
 
   /**

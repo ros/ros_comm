@@ -212,7 +212,7 @@ std::string parentNamespace(const std::string& name)
   }
 
   if (!name.compare(""))  return "";
-  if (!name.compare("/")) return "/"; 
+  if (!name.compare("/")) return "/";
 
   std::string stripped_name;
 

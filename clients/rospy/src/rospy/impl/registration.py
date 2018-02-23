@@ -69,17 +69,17 @@ def set_service_manager(sm):
 def get_service_manager():
     return _service_manager
 
-    
+
 class Registration(object):
     """Registration types"""
     PUB = 'pub'
     SUB = 'sub'
     SRV = 'srv'
-    
+
 class RegistrationListener(object):
     """Listener API for subscribing to changes in Publisher/Subscriber/Service declarations"""
 
-    def reg_added(self, resolved_name, data_type_or_uri, reg_type): 
+    def reg_added(self, resolved_name, data_type_or_uri, reg_type):
         """
         New pub/sub/service declared.
         @param resolved_name: resolved topic/service name
@@ -89,8 +89,8 @@ class RegistrationListener(object):
         @type  reg_type: str
         """
         pass
-    
-    def reg_removed(self, resolved_name, data_type_or_uri, reg_type): 
+
+    def reg_removed(self, resolved_name, data_type_or_uri, reg_type):
         """
         New pub/sub/service removed.
         @param resolved_name: topic/service name
@@ -103,7 +103,7 @@ class RegistrationListener(object):
         pass
 
 class RegistrationListeners(object):
-    
+
     def __init__(self):
         """
         ctor.
@@ -138,7 +138,7 @@ class RegistrationListeners(object):
                     l.reg_removed(resolved_name, data_type_or_uri, reg_type)
                 except Exception as e:
                     logerr("error notifying listener of removal: %s"%traceback.format_exc())
-            
+
     def notify_added(self, resolved_name, data_type, reg_type):
         """
         @param resolved_name: topic/service name
@@ -154,7 +154,7 @@ class RegistrationListeners(object):
                     l.reg_added(resolved_name, data_type, reg_type)
                 except Exception as e:
                     logerr(traceback.format_exc())
-                    
+
     def clear(self):
         """
         Remove all registration listeners
@@ -170,7 +170,7 @@ class RegistrationListeners(object):
             del self.listeners[:]
             if locked:
                 self.lock.release()
-            
+
 _registration_listeners = RegistrationListeners()
 def get_registration_listeners():
     return _registration_listeners
@@ -198,7 +198,7 @@ class RegManager(RegistrationListener):
         self.registered = False
         # cleanup has to occur before official shutdown
         add_preshutdown_hook(self.cleanup)
-        
+
     def start(self, uri, master_uri):
         """
         Start the RegManager. This should be passed in as an argument to a thread
@@ -208,7 +208,7 @@ class RegManager(RegistrationListener):
         @param master_uri: Master URI
         @type  master_uri: str
         """
-        self.registered = False 
+        self.registered = False
         self.master_uri = master_uri
         self.uri = uri
         first = True
@@ -229,7 +229,7 @@ class RegManager(RegistrationListener):
                 try:
                     # prevent TopicManager and ServiceManager from accepting registrations until we are done
                     tm.lock.acquire()
-                    sm.lock.acquire()                    
+                    sm.lock.acquire()
 
                     pub, sub, srv = tm.get_publications(), tm.get_subscriptions(), sm.get_services()
                     for resolved_name, data_type in pub:
@@ -243,7 +243,7 @@ class RegManager(RegistrationListener):
                         code, msg, val = master.registerSubscriber(caller_id, resolved_name, data_type, uri)
                         if code != 1:
                             logfatal("cannot register subscription topic [%s] with master: %s"%(resolved_name, msg))
-                            signal_shutdown("master/node incompatibility with register subscriber")                        
+                            signal_shutdown("master/node incompatibility with register subscriber")
                         else:
                             self.publisher_update(resolved_name, val)
                     for resolved_name, service_uri in srv:
@@ -251,21 +251,21 @@ class RegManager(RegistrationListener):
                         code, msg, val = master.registerService(caller_id, resolved_name, service_uri, uri)
                         if code != 1:
                             logfatal("cannot register service [%s] with master: %s"%(resolved_name, msg))
-                            signal_shutdown("master/node incompatibility with register service")                        
- 
+                            signal_shutdown("master/node incompatibility with register service")
+
                     registered = True
-                    
+
                     # Subscribe to updates to our state
                     get_registration_listeners().add_listener(self)
                 finally:
-                    sm.lock.release()                    
+                    sm.lock.release()
                     tm.lock.release()
-                
+
                 if pub or sub:
                     logdebug("Registered [%s] with master node %s", caller_id, master_uri)
                 else:
                     logdebug("No topics to register with master node %s", master_uri)
-                    
+
             except Exception as e:
                 if first:
                     # this use to print to console always, arguable whether or not this should be subjected to same configuration options as logging
@@ -274,14 +274,14 @@ class RegManager(RegistrationListener):
                 time.sleep(0.2)
         self.registered = True
         self.run()
-        
+
     def is_registered(self):
         """
         Check if Node has been registered yet.
         @return: True if registration has occurred with master
         @rtype: bool
         """
-        return self.registered 
+        return self.registered
 
     def run(self):
         """
@@ -326,7 +326,7 @@ class RegManager(RegistrationListener):
         except Exception as e:
             if not is_shutdown():
                 logdebug("Unable to connect to publisher [%s] for topic [%s]: %s"%(uri, topic, traceback.format_exc()))
-        
+
     def cleanup(self, reason):
         """
         Cleans up registrations with master and releases topic and service resources
@@ -338,24 +338,24 @@ class RegManager(RegistrationListener):
             self.cond.acquire()
             self.cond.notifyAll()
         finally:
-            self.cond.release()        
+            self.cond.release()
 
         # we never successfully initialized master_uri
         if not self.master_uri:
             return
-        
+
         master = xmlrpcapi(self.master_uri)
         # we never successfully initialized master
         if master is None:
             return
-        
+
         caller_id = get_caller_id()
 
         # clear the registration listeners as we are going to do a quick unregister here
         rl = get_registration_listeners()
         if rl is not None:
             rl.clear()
-            
+
         tm = get_topic_manager()
         sm = get_service_manager()
         try:
@@ -365,12 +365,12 @@ class RegManager(RegistrationListener):
                     self.logger.debug("unregisterSubscriber [%s]"%resolved_name)
                     multi.unregisterSubscriber(caller_id, resolved_name, self.uri)
                 for resolved_name, _ in tm.get_publications():
-                    self.logger.debug("unregisterPublisher [%s]"%resolved_name)                    
+                    self.logger.debug("unregisterPublisher [%s]"%resolved_name)
                     multi.unregisterPublisher(caller_id, resolved_name, self.uri)
 
             if sm is not None:
                 for resolved_name, service_uri in sm.get_services():
-                    self.logger.debug("unregisterService [%s]"%resolved_name) 
+                    self.logger.debug("unregisterService [%s]"%resolved_name)
                     multi.unregisterService(caller_id, resolved_name, service_uri)
             multi()
         except socket.error as se:
@@ -382,7 +382,7 @@ class RegManager(RegistrationListener):
         except:
             self.logger.warn("unclean shutdown\n%s"%traceback.format_exc())
 
-        self.logger.debug("registration cleanup: master calls complete")            
+        self.logger.debug("registration cleanup: master calls complete")
 
         #TODO: cleanup() should actually be orchestrated by a separate
         #cleanup routine that calls the reg manager/sm/tm
@@ -410,7 +410,7 @@ class RegManager(RegistrationListener):
                 if reg_type == Registration.PUB:
                     self.logger.debug("unregisterPublisher(%s, %s)", resolved_name, self.uri)
                     master.unregisterPublisher(get_caller_id(), resolved_name, self.uri)
-                elif reg_type == Registration.SUB:            
+                elif reg_type == Registration.SUB:
                     self.logger.debug("unregisterSubscriber(%s, %s)", resolved_name, data_type_or_uri)
                     master.unregisterSubscriber(get_caller_id(), resolved_name, self.uri)
                 elif reg_type == Registration.SRV:
@@ -419,7 +419,7 @@ class RegManager(RegistrationListener):
             except:
                 logwarn("unable to communicate with ROS Master, registrations are now out of sync")
                 self.logger.error(traceback.format_exc())
-    
+
     def reg_added(self, resolved_name, data_type_or_uri, reg_type):
         """
         RegistrationListener callback
@@ -460,7 +460,7 @@ class RegManager(RegistrationListener):
                         code, msg, val = master.registerService(*args)
                         if code != 1:
                             logfatal("unable to register service [%s] with master: %s"%(resolved_name, msg))
-                        
+
                     registered = True
                 except Exception as e:
                     if first:
@@ -483,6 +483,6 @@ class RegManager(RegistrationListener):
         try:
             self.cond.acquire()
             self.updates.append((resolved_name, uris))
-            self.cond.notifyAll()              
+            self.cond.notifyAll()
         finally:
             self.cond.release()

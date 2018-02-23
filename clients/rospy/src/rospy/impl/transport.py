@@ -62,7 +62,7 @@ BIDIRECTIONAL = 'b'
 ## Base API of Transport implementations
 class Transport(object):
     transport_type = 'UNKNOWN'
-    
+
     ## @param self
     ## @param direction str: INBOUND | OUTBOUND | BIDIRECTIONAL
     ## @param name str
@@ -74,11 +74,11 @@ class Transport(object):
         self.endpoint_id = ''
 
         #STATS
-        self.id           = _nextId() 
+        self.id           = _nextId()
         self.stat_bytes   = 0
         # Number of messages that have passed through this transport
-        self.stat_num_msg = 0         
-    
+        self.stat_num_msg = 0
+
         # Endpoint Details (IP, Port)
         self.local_endpoint = (0, 0)
         self.remote_endpoint = (0, 0)
@@ -88,7 +88,7 @@ class Transport(object):
         Get a file descriptor for select() if available
         """
         return None
-    
+
     ## callback function to invoke when this connection is
     ## closed. Function will be passed this transport as an argument.
     ## @param self
@@ -119,7 +119,7 @@ class Transport(object):
 class DeadTransport(Transport):
 
     ## @param self
-    ## @param transport str: transport name    
+    ## @param transport str: transport name
     def __init__(self, transport):
         super(DeadTransport, self).__init__(
             transport.direction, transport.name)
@@ -149,20 +149,20 @@ class DeadTransport(Transport):
 ## e.g. ['MPI', LaneWidth, BusSpeed], since a protocol may have
 ## associated parameters. This is considered the start of the
 ## 'negotiation phase'.
-##        
+##
 ##    subscriber -> pub.requestTopic(protocols)
 ##
 ## The Publisher selects a protocol from the lists and tells the
 ## appropriate protocol handler to prepare the outbound connection:
-##                
+##
 ##    pub.requestTopic() -> pub.protocol_handler.init_publisher(selected_protocol)
 ##
 ## The protocol handler will return a new set of parameters
 ## representing connection parameters, e.g. [TCPROS, address,
 ## port]. These new parameters are passed back to the subscriber,
 ## which tells its protocol handler to establish the connection.
-##                
-##    subscriber -> subscriber.protocol_handler.create_transport(protocolParams)               
+##
+##    subscriber -> subscriber.protocol_handler.create_transport(protocolParams)
 class ProtocolHandler(object): #interface
 
     ## shutdown any resources associated with handling this protocol
@@ -187,14 +187,14 @@ class ProtocolHandler(object): #interface
     ## @return bool: True if this handler supports the specified protocol"""
     def supports(self, protocol):
         return False
-    
+
     ## This method is called on subscribers and returns the protocol list
     ## @param self
     ## @return [[str, val*]]: list of supported protocol params. Each set of protocol params is a
     ##     list where the first element is the string identifier for the protocol.
     def get_supported(self):
         return []
-        
+
     ## Prepare a transport based on one of the supported protocols
     ## declared by a Subscriber. Subscribers supply a list of
     ## supported protocols, of which one is selected by the Publisher
@@ -206,6 +206,6 @@ class ProtocolHandler(object): #interface
     ## @return (int, str, list): (code, statusMessage, params). params
     ## is protocol specific. These params will be sent to the Subscriber
     ## so that it can create_transport().
-    def init_publisher(self, topic, protocol): 
+    def init_publisher(self, topic, protocol):
         raise Exception("interface impl")
-    
+

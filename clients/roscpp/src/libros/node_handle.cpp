@@ -119,7 +119,7 @@ NodeHandle::NodeHandle(const NodeHandle& rhs)
   remappings_ = rhs.remappings_;
   unresolved_remappings_ = rhs.unresolved_remappings_;
 
-  construct(rhs.namespace_, true); 
+  construct(rhs.namespace_, true);
 
   unresolved_namespace_ = rhs.unresolved_namespace_;
 }
@@ -297,7 +297,7 @@ Publisher NodeHandle::advertise(AdvertiseOptions& ops)
     }
   }
 
-  SubscriberCallbacksPtr callbacks(boost::make_shared<SubscriberCallbacks>(ops.connect_cb, ops.disconnect_cb, 
+  SubscriberCallbacksPtr callbacks(boost::make_shared<SubscriberCallbacks>(ops.connect_cb, ops.disconnect_cb,
                                                                            ops.tracked_object, ops.callback_queue));
 
   if (TopicManager::instance()->advertise(ops, callbacks))
@@ -389,7 +389,7 @@ ServiceClient NodeHandle::serviceClient(ServiceClientOptions& ops)
   return client;
 }
 
-Timer NodeHandle::createTimer(Duration period, const TimerCallback& callback, 
+Timer NodeHandle::createTimer(Duration period, const TimerCallback& callback,
                               bool oneshot, bool autostart) const
 {
   TimerOptions ops;
@@ -420,7 +420,7 @@ Timer NodeHandle::createTimer(TimerOptions& ops) const
   return timer;
 }
 
-WallTimer NodeHandle::createWallTimer(WallDuration period, const WallTimerCallback& callback, 
+WallTimer NodeHandle::createWallTimer(WallDuration period, const WallTimerCallback& callback,
                                       bool oneshot, bool autostart) const
 {
   WallTimerOptions ops;

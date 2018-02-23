@@ -404,9 +404,9 @@ void start()
   g_internal_queue_thread = boost::thread(internalCallbackQueueThreadFunc);
   getGlobalCallbackQueue()->enable();
 
-  ROSCPP_LOG_DEBUG("Started node [%s], pid [%d], bound on [%s], xmlrpc port [%d], tcpros port [%d], using [%s] time", 
-		   this_node::getName().c_str(), getpid(), network::getHost().c_str(), 
-		   XMLRPCManager::instance()->getServerPort(), ConnectionManager::instance()->getTCPPort(), 
+  ROSCPP_LOG_DEBUG("Started node [%s], pid [%d], bound on [%s], xmlrpc port [%d], tcpros port [%d], using [%s] time",
+		   this_node::getName().c_str(), getpid(), network::getHost().c_str(),
+		   XMLRPCManager::instance()->getServerPort(), ConnectionManager::instance()->getTCPPort(),
 		   Time::useSystemTime() ? "real" : "sim");
 
   // Label used to abort if we've started shutting down in the middle of start(), which can happen in

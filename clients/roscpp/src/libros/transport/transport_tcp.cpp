@@ -245,7 +245,7 @@ bool TransportTCP::connect(const std::string& host, int port)
   {
     sockaddr_in *address = (sockaddr_in*) &sas;
     sas_len = sizeof(sockaddr_in);
-    
+
     la_len_ = sizeof(sockaddr_in);
     address->sin_family = AF_INET;
     address->sin_port = htons(port);
@@ -283,11 +283,11 @@ bool TransportTCP::connect(const std::string& host, int port)
       {
         sockaddr_in *address = (sockaddr_in*) &sas;
         sas_len = sizeof(*address);
-        
+
         memcpy(address, it->ai_addr, it->ai_addrlen);
         address->sin_family = it->ai_family;
         address->sin_port = htons(port);
-	
+
         strcpy(namebuf, inet_ntoa(address->sin_addr));
         found = true;
         break;
@@ -296,11 +296,11 @@ bool TransportTCP::connect(const std::string& host, int port)
       {
         sockaddr_in6 *address = (sockaddr_in6*) &sas;
         sas_len = sizeof(*address);
-      
+
         memcpy(address, it->ai_addr, it->ai_addrlen);
         address->sin6_family = it->ai_family;
         address->sin6_port = htons((u_short) port);
-      
+
         // TODO IPV6: does inet_ntop need other includes for Windows?
         inet_ntop(AF_INET6, (void*)&(address->sin6_addr), namebuf, sizeof(namebuf));
         found = true;
@@ -323,7 +323,7 @@ bool TransportTCP::connect(const std::string& host, int port)
   // windows might need some time to sleep (input from service robotics hack) add this if testing proves it is necessary.
   // ROS_ASSERT((flags_ & SYNCHRONOUS) || ret != 0);
   if (((flags_ & SYNCHRONOUS) && ret != 0) || // synchronous, connect() should return 0
-      (!(flags_ & SYNCHRONOUS) && ret != 0 && last_socket_error() != ROS_SOCKETS_ASYNCHRONOUS_CONNECT_RETURN)) 
+      (!(flags_ & SYNCHRONOUS) && ret != 0 && last_socket_error() != ROS_SOCKETS_ASYNCHRONOUS_CONNECT_RETURN))
       // asynchronous, connect() may return 0 or -1. When return -1, WSAGetLastError()=WSAEWOULDBLOCK/errno=EINPROGRESS
   {
     ROSCPP_CONN_LOG_DEBUG("Connect to tcpros publisher [%s:%d] failed with error [%d, %s]", host.c_str(), port, ret, last_socket_error_string());
@@ -371,8 +371,8 @@ bool TransportTCP::listen(int port, int backlog, const AcceptCallback& accept_cb
     sock_ = socket(AF_INET6, SOCK_STREAM, 0);
     sockaddr_in6 *address = (sockaddr_in6 *)&server_address_;
     address->sin6_family = AF_INET6;
-    address->sin6_addr = isOnlyLocalhostAllowed() ? 
-                         in6addr_loopback : 
+    address->sin6_addr = isOnlyLocalhostAllowed() ?
+                         in6addr_loopback :
                          in6addr_any;
     address->sin6_port = htons(port);
     sa_len_ = sizeof(sockaddr_in6);
@@ -382,8 +382,8 @@ bool TransportTCP::listen(int port, int backlog, const AcceptCallback& accept_cb
     sock_ = socket(AF_INET, SOCK_STREAM, 0);
     sockaddr_in *address = (sockaddr_in *)&server_address_;
     address->sin_family = AF_INET;
-    address->sin_addr.s_addr = isOnlyLocalhostAllowed() ? 
-                               htonl(INADDR_LOOPBACK) : 
+    address->sin_addr.s_addr = isOnlyLocalhostAllowed() ?
+                               htonl(INADDR_LOOPBACK) :
                                INADDR_ANY;
     address->sin_port = htons(port);
     sa_len_ = sizeof(sockaddr_in);
@@ -730,7 +730,7 @@ std::string TransportTCP::getClientURI()
   sockaddr_storage sas;
   socklen_t sas_len = sizeof(sas);
   getpeername(sock_, (sockaddr *)&sas, &sas_len);
-  
+
   sockaddr_in *sin = (sockaddr_in *)&sas;
   sockaddr_in6 *sin6 = (sockaddr_in6 *)&sas;
 

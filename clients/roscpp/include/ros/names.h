@@ -84,7 +84,7 @@ ROSCPP_DECL const M_string& getUnresolvedRemappings();
 
 /**
  * \brief Get the parent namespace of a name
- * \param name The namespace of which to get the parent namespace.  
+ * \param name The namespace of which to get the parent namespace.
  * \throws InvalidNameException if the name passed is not a valid graph resource name
  */
 ROSCPP_DECL std::string parentNamespace(const std::string& name);

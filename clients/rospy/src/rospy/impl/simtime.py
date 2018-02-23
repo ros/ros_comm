@@ -61,18 +61,18 @@ def _is_use_simtime():
     if code == 1 and val:
         return True
     return False
-    
+
 from rospy.rostime import _set_rostime
 def _set_rostime_clock_wrapper(time_msg):
     _set_rostime(time_msg.clock)
 def _set_rostime_time_wrapper(time_msg):
     _set_rostime(time_msg.rostime)
-    
+
 def init_simtime():
     """
     Initialize the ROS time system by connecting to the /time topic
     IFF the /use_sim_time parameter is set.
-    """    
+    """
     import logging
     logger = logging.getLogger("rospy.simtime")
     try:
