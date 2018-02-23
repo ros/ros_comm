@@ -48,7 +48,7 @@
 namespace ros
 {
 
-PublisherLink::PublisherLink(const SubscriptionPtr& parent, const std::string& xmlrpc_uri, 
+PublisherLink::PublisherLink(const SubscriptionPtr& parent, const std::string& xmlrpc_uri,
 			     const TransportHints& transport_hints)
 : parent_(parent)
 , connection_id_(0)

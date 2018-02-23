@@ -58,7 +58,7 @@ import rospy.names
 import rospy.rostime
 
 import rospy.impl.init
-import rospy.impl.rosout 
+import rospy.impl.rosout
 import rospy.impl.simtime
 
 TIMEOUT_READY = 15.0 #seconds
@@ -90,7 +90,7 @@ def load_command_line_node_params(argv):
     command-line arguments, e.g. _foo:=bar. See also rosgraph.names.load_mappings.
     @param argv: command-line arguments
     @param argv: [str]
-    @return: param->value remappings. 
+    @return: param->value remappings.
     @rtype: {str: val}
     @raises: ROSInitException
     """
@@ -114,16 +114,16 @@ def on_shutdown(h):
     @type  h: fn()
     """
     rospy.core.add_client_shutdown_hook(h)
-    
+
 def spin():
     """
     Blocks until ROS node is shutdown. Yields activity to other threads.
     @raise ROSInitException: if node is not in a properly initialized state
     """
-    
+
     if not rospy.core.is_initialized():
         raise rospy.exceptions.ROSInitException("client code must call rospy.init_node() first")
-    logdebug("node[%s, %s] entering spin(), pid[%s]", rospy.core.get_caller_id(), rospy.core.get_node_uri(), os.getpid())        
+    logdebug("node[%s, %s] entering spin(), pid[%s]", rospy.core.get_caller_id(), rospy.core.get_node_uri(), os.getpid())
     try:
         while not rospy.core.is_shutdown():
             rospy.rostime.wallsleep(0.5)
@@ -149,7 +149,7 @@ def _get_loggers(request):
        level = _logging_level_names[level]
        ret.loggers.append(Logger(n, level))
     return ret
-    
+
 _names_to_logging_levels = {
       'DEBUG':    logging.DEBUG,
       'INFO':     logging.INFO,
@@ -198,7 +198,7 @@ def init_node(name, argv=None, anonymous=False, log_level=None, disable_rostime=
     @param name: Node's name. This parameter must be a base name,
         meaning that it cannot contain namespaces (i.e. '/')
     @type  name: str
-    
+
     @param argv: Command line arguments to this program, including
         remapping arguments (default: sys.argv). If you provide argv
         to init_node(), any previously created rospy data structure
@@ -212,14 +212,14 @@ def init_node(name, argv=None, anonymous=False, log_level=None, disable_rostime=
         have multiple instances of the same node and don't care about
         their actual names (e.g. tools, guis). name will be used as
         the stem of the auto-generated name. NOTE: you cannot remap
-        the name of an anonymous node.  
+        the name of an anonymous node.
     @type anonymous: bool
 
     @param log_level: log level for sending message to /rosout and log
         file, which is INFO by default. For convenience, you may use
         rospy.DEBUG, rospy.INFO, rospy.ERROR, rospy.WARN, rospy.FATAL
     @type  log_level: int
-    
+
     @param disable_signals: If True, rospy will not register its own
         signal handlers. You must set this flag if (a) you are unable
         to call init_node from the main thread and/or you are using
@@ -229,9 +229,9 @@ def init_node(name, argv=None, anonymous=False, log_level=None, disable_rostime=
 
         NOTE: disable_signals is overridden to True if
         roslib.is_interactive() is True.
-        
+
     @type  disable_signals: bool
-    
+
     @param disable_rostime: for internal testing only: suppresses
         automatic subscription to rostime
     @type  disable_rostime: bool
@@ -241,7 +241,7 @@ def init_node(name, argv=None, anonymous=False, log_level=None, disable_rostime=
     @type  disable_rostime: bool
 
     @param xmlrpc_port: If provided, it will use this port number for the client
-        XMLRPC node. 
+        XMLRPC node.
     @type  xmlrpc_port: int
 
     @param tcpros_port: If provided, the TCPROS server will listen for
@@ -279,7 +279,7 @@ def init_node(name, argv=None, anonymous=False, log_level=None, disable_rostime=
     # handlers
     disable_signals = disable_signals or roslib.is_interactive()
     _init_node_args = (name, argv, anonymous, log_level, disable_rostime, disable_signals)
-        
+
     if not disable_signals:
         # NOTE: register_signals must be called from main thread
         rospy.core.register_signals() # add handlers for SIGINT/etc...
@@ -293,7 +293,7 @@ def init_node(name, argv=None, anonymous=False, log_level=None, disable_rostime=
         if anonymous:
             logdebug("[%s] WARNING: due to __name setting, anonymous setting is being changed to false"%name)
             anonymous = False
-        
+
     if anonymous:
         # not as good as a uuid/guid, but more readable. can't include
         # hostname as that is not guaranteed to be a legal ROS name
@@ -309,15 +309,15 @@ def init_node(name, argv=None, anonymous=False, log_level=None, disable_rostime=
     rospy.core.configure_logging(resolved_node_name)
     # #1810
     rospy.names.initialize_mappings(resolved_node_name)
-    
+
     logger = logging.getLogger("rospy.client")
     logger.info("init_node, name[%s], pid[%s]", resolved_node_name, os.getpid())
-            
+
     # node initialization blocks until registration with master
-    node = rospy.impl.init.start_node(os.environ, resolved_node_name, port=xmlrpc_port, tcpros_port=tcpros_port) 
+    node = rospy.impl.init.start_node(os.environ, resolved_node_name, port=xmlrpc_port, tcpros_port=tcpros_port)
     rospy.core.set_node_uri(node.uri)
-    rospy.core.add_shutdown_hook(node.shutdown)    
-    
+    rospy.core.add_shutdown_hook(node.shutdown)
+
     if rospy.core.is_shutdown():
         logger.warn("aborting node initialization as shutdown has been triggered")
         raise rospy.exceptions.ROSInitException("init_node interrupted before it could complete")
@@ -337,7 +337,7 @@ def init_node(name, argv=None, anonymous=False, log_level=None, disable_rostime=
     else:
         rospy.rostime.set_rostime_initialized(True)
 
-    logdebug("init_node, name[%s], pid[%s]", resolved_node_name, os.getpid())    
+    logdebug("init_node, name[%s], pid[%s]", resolved_node_name, os.getpid())
     # advertise logging level services
     Service('~get_loggers', GetLoggers, _get_loggers)
     Service('~set_logger_level', SetLoggerLevel, _set_logger_level)
@@ -387,11 +387,11 @@ class _WFM(object):
     def cb(self, msg):
         if self.msg is None:
             self.msg = msg
-            
+
 def wait_for_message(topic, topic_type, timeout=None):
     """
     Receive one message from topic.
-    
+
     This will create a new subscription to the topic, receive one message, then unsubscribe.
 
     @param topic: name of topic
@@ -418,7 +418,7 @@ def wait_for_message(topic, topic_type, timeout=None):
 
         else:
             while not rospy.core.is_shutdown() and wfm.msg is None:
-                rospy.rostime.wallsleep(0.01)            
+                rospy.rostime.wallsleep(0.01)
     finally:
         if s is not None:
             s.unregister()
@@ -442,7 +442,7 @@ def _init_param_server():
             if _param_server is None:
                 _param_server = get_master()
     return _param_server_lock
-        
+
 # class and singleton to distinguish whether or not user has passed us a default value
 class _Unspecified(object): pass
 _unspecified = _Unspecified()
@@ -452,7 +452,7 @@ def get_param(param_name, default=_unspecified):
     Retrieve a parameter from the param server
 
     NOTE: this method is thread-safe.
-    
+
     @param default: (optional) default value to return if key is not set
     @type  default: any
     @return: parameter value
@@ -474,7 +474,7 @@ def get_param_names():
     Retrieve list of parameter names.
 
     NOTE: this method is thread-safe.
-    
+
     @return: parameter names
     @rtype: [str]
     @raise ROSException: if parameter server reports an error
@@ -518,27 +518,27 @@ def search_param(param_name):
     Search for a parameter on the param server
 
     NOTE: this method is thread-safe.
-    
+
     @param param_name: parameter name
     @type  param_name: str
-    @return: key of matching parameter or None if no matching parameter. 
+    @return: key of matching parameter or None if no matching parameter.
     @rtype: str
     @raise ROSException: if parameter server reports an error
     """
     _init_param_server()
     return _param_server.search_param(param_name)
-    
+
 def delete_param(param_name):
     """
     Delete a parameter on the param server
 
     NOTE: this method is thread-safe.
-    
+
     @param param_name: parameter name
     @type  param_name: str
-    @raise KeyError: if parameter is not set    
+    @raise KeyError: if parameter is not set
     @raise ROSException: if parameter server reports an error
-    """    
+    """
     _init_param_server()
     del _param_server[param_name] #MasterProxy does all the magic for us
 
@@ -547,7 +547,7 @@ def has_param(param_name):
     Test if parameter exists on the param server
 
     NOTE: this method is thread-safe.
-    
+
     @param param_name: parameter name
     @type  param_name: str
     @raise ROSException: if parameter server reports an error

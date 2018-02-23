@@ -122,21 +122,21 @@ class Time(genpy.Time):
       import time
       py_time = rospy.Time.from_sec(time.time())
     """
-    __slots__ = []    
+    __slots__ = []
 
     def __init__(self, secs=0, nsecs=0):
         """
         Constructor: secs and nsecs are integers and correspond to the
         ROS 'time' primitive type. You may prefer to use the static
         L{from_sec()} and L{now()} factory methods instead.
-        
+
         @param secs: seconds since epoch
         @type  secs: int
         @param nsecs: nanoseconds since seconds (since epoch)
         @type  nsecs: int
         """
         super(Time, self).__init__(secs, nsecs)
-        
+
     def __repr__(self):
         return 'rospy.Time[%d]' % self.to_nsec()
 
@@ -148,7 +148,7 @@ class Time(genpy.Time):
         strongly recommended that you use the now() factory to create
         current time representations instead of reading wall-clock
         time and create Time instances from it.
-        
+
         @return: L{Time} instance for current time
         @rtype: L{Time}
         """
@@ -158,14 +158,14 @@ class Time(genpy.Time):
     def from_seconds(cls, float_secs):
         """
         Use Time.from_sec() instead. Retained for backwards compatibility.
-        
+
         @param float_secs: time value in time.time() format
         @type  float_secs: float
         @return: Time instance for specified time
         @rtype: L{Time}
         """
         return cls.from_sec(float_secs)
-    
+
 def _set_rostime(t):
     """Callback to update ROS time from a ROS Topic"""
     if isinstance(t, genpy.Time):
@@ -179,10 +179,10 @@ def _set_rostime(t):
         _rostime_cond.notifyAll()
     finally:
         _rostime_cond.release()
-    
+
 def get_rostime():
     """
-    Get the current time as a L{Time} object    
+    Get the current time as a L{Time} object
     @return: current time as a L{rospy.Time} object
     @rtype: L{Time}
     """
@@ -201,7 +201,7 @@ def get_rostime():
 def get_time():
     """
     Get the current time as float secs (time.time() format)
-    @return: time in secs (time.time() format)    
+    @return: time in secs (time.time() format)
     @rtype: float
     """
     return Time.now().to_sec()
@@ -224,7 +224,7 @@ def is_rostime_initialized():
     @return: True if rostime has been initialized
     @rtype: bool
     """
-    return _rostime_initialized    
+    return _rostime_initialized
 
 def get_rostime_cond():
     """
@@ -241,7 +241,7 @@ def is_wallclock():
     @rtype: bool
     """
     return _rostime_current == None
-    
+
 def switch_to_wallclock():
     """
     Internal use.
@@ -261,7 +261,7 @@ def wallsleep(duration):
     Windows interrupts time.sleep with an IOError exception
     when a signal is caught. Even when the signal is handled
     by a callback, it will then proceed to throw IOError when
-    the handling has completed. 
+    the handling has completed.
 
     Refer to https://code.ros.org/trac/ros/ticket/3421.
 
@@ -274,4 +274,4 @@ def wallsleep(duration):
         except IOError:
             pass
     else:
-        time.sleep(duration) 
+        time.sleep(duration)

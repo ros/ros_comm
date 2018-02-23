@@ -62,7 +62,7 @@ class _Service(object):
 
 class ServiceManager(object):
     """Keeps track of currently registered services in the ROS system"""
-    
+
     def __init__(self, registration_listeners=None):
         """
         ctor
@@ -74,7 +74,7 @@ class ServiceManager(object):
         if registration_listeners is None:
             self.registration_listeners = get_registration_listeners()
         else:
-            self.registration_listeners = registration_listeners       
+            self.registration_listeners = registration_listeners
 
     def get_services(self):
         """
@@ -87,13 +87,13 @@ class ServiceManager(object):
                 ret_val.append((name, service.uri))
             services = list(self.map.values())
         return ret_val
-    
+
     def unregister_all(self):
         """
         Unregister all registered services
         """
         self.map.clear()
-    
+
     def register(self, resolved_service_name, service):
         """
         Register service with ServiceManager and ROS master
@@ -108,13 +108,13 @@ class ServiceManager(object):
                 err = "service [%s] already registered"%resolved_service_name
             else:
                 self.map[resolved_service_name] = service
-                
+
             # NOTE: this call can potentially take a long time under lock and thus needs to be reimplmented
             self.registration_listeners.notify_added(resolved_service_name, service.uri, Registration.SRV)
 
         if err:
             raise ServiceException(err)
-        
+
     def unregister(self, resolved_service_name, service):
         """
         Unregister service with L{ServiceManager} and ROS Master
@@ -122,14 +122,14 @@ class ServiceManager(object):
         @type  resolved_service_name: str
         @param service: service implementation
         @type  service: L{_Service}
-        """        
+        """
         with self.lock:
             curr = self.map.get(resolved_service_name, None)
             if curr == service:
                 del self.map[resolved_service_name]
-                
+
             # NOTE: this call can potentially take a long time under lock
-            self.registration_listeners.notify_removed(resolved_service_name, service.uri, Registration.SRV)                
+            self.registration_listeners.notify_removed(resolved_service_name, service.uri, Registration.SRV)
 
     def get_service(self, resolved_service_name):
         """

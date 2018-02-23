@@ -58,7 +58,7 @@ namespace ros
       }
   }
 
-  Subscriber::Subscriber(const std::string& topic, const NodeHandle& node_handle, 
+  Subscriber::Subscriber(const std::string& topic, const NodeHandle& node_handle,
 			 const SubscriptionCallbackHelperPtr& helper)
   : impl_(boost::make_shared<Impl>())
   {

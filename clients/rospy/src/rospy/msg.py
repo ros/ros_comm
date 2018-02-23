@@ -72,7 +72,7 @@ class AnyMsg(genpy.Message):
             raise rospy.exceptions.ROSException("AnyMsg is not initialized")
         else:
             buff.write(self._buff)
-            
+
     def deserialize(self, str):
         """Copies raw buffer into self._buff"""
         self._buff = str
@@ -125,7 +125,7 @@ def args_kwds_to_message(data_class, args, kwds):
 
 def serialize_message(b, seq, msg):
     """
-    Serialize the message to the buffer 
+    Serialize the message to the buffer
     @param b: buffer to write to. WARNING: buffer will be reset after call
     @type  b: StringIO
     @param msg: message to write
@@ -160,18 +160,18 @@ def serialize_message(b, seq, msg):
     b.seek(start)
     b.write(struct.pack('<I', size))
     b.seek(end)
-   
+
 def deserialize_messages(b, msg_queue, data_class, queue_size=None, max_msgs=None, start=0):
     """
-    Read all messages off the buffer 
-        
+    Read all messages off the buffer
+
     @param b: buffer to read data from
     @type  b: StringIO
     @param msg_queue: queue to append deserialized data to
     @type  msg_queue: list
     @param data_class: message deserialization class
     @type  data_class: Message class
-    @param queue_size: message queue size. all but the last 
+    @param queue_size: message queue size. all but the last
     queue_size messages are discarded if this parameter is specified.
     @type  queue_size: int
     @param start: starting position to read in b
@@ -179,7 +179,7 @@ def deserialize_messages(b, msg_queue, data_class, queue_size=None, max_msgs=Non
     @param max_msgs int: maximum number of messages to deserialize or None
     @type  max_msgs: int
     @raise genpy.DeserializationError: if an error/exception occurs during deserialization
-    """    
+    """
     try:
         pos = start
         btell = b.tell()
@@ -188,7 +188,7 @@ def deserialize_messages(b, msg_queue, data_class, queue_size=None, max_msgs=Non
         # check to see if we even have a message
         if left < 4:
             return
-        
+
         # read in each message from the buffer as a string. each
         # message is preceded by a 4-byte integer length. the
         # serialized messages are appended to buff.
@@ -223,7 +223,7 @@ def deserialize_messages(b, msg_queue, data_class, queue_size=None, max_msgs=Non
             msg_queue.append(data.deserialize(q))
         if queue_size is not None:
             del msg_queue[:-queue_size]
-        
+
         #update buffer b to its correct write position.
         if btell == pos:
             #common case: no leftover data, reset the buffer

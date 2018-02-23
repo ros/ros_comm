@@ -47,7 +47,7 @@ Publisher example::
 
     from rospy.numpy_msg import numpy_msg
     import numpy
-    
+
     pub = rospy.Publisher('mytopic', numpy_msg(TopicType), queue_size=10)
     rospy.init_node('mynode')
     a = numpy.array([1.0, 2.1, 3.2, 4.3, 5.4, 6.5], dtype=numpy.float32)
@@ -69,16 +69,16 @@ def _serialize_numpy(self, buff):
 
 def _deserialize_numpy(self, str):
     """
-    wrapper for factory-generated class that passes numpy module into deserialize    
+    wrapper for factory-generated class that passes numpy module into deserialize
     """
     # pass in numpy module reference to prevent import in auto-generated code
     return self.deserialize_numpy(str, numpy)
-    
+
 _numpy_msg_types = {}
 ## Use this function to generate message instances using numpy array
-## types for numerical arrays. 
+## types for numerical arrays.
 ## @msg_type Message class: call this functioning on the message type that you pass
-## into a Publisher or Subscriber call. 
+## into a Publisher or Subscriber call.
 ## @returns Message class
 def numpy_msg(msg_type):
     if msg_type in _numpy_msg_types:

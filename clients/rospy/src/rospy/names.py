@@ -73,7 +73,7 @@ def canonicalize_name(name):
     elif name[0] == SEP:
         return '/' + '/'.join([x for x in name.split(SEP) if x])
     else:
-        return '/'.join([x for x in name.split(SEP) if x])        
+        return '/'.join([x for x in name.split(SEP) if x])
     ##if len(name) > 1 and name[-1] == SEP:
     ##    return name[:-1]
     ##return name
@@ -91,7 +91,7 @@ def reload_mappings(argv):
     Re-initialize the name remapping table.
 
     @param argv: Command line arguments to this program. ROS reads
-        these arguments to find renaming params. 
+        these arguments to find renaming params.
     @type  argv: [str]
     """
     global _mappings
@@ -144,7 +144,7 @@ def resolve_name_without_node_name(name):
 def get_mappings():
     """
     Get mapping table with unresolved names
-    
+
     @return: command-line remappings {name: name}
     @rtype: {str: str}
     """
@@ -153,7 +153,7 @@ def get_mappings():
 def get_resolved_mappings():
     """
     Get mapping table with resolved names
-    
+
     @return: command-line remappings {name: name}
     @rtype: {str: str}
     """
@@ -163,7 +163,7 @@ def get_resolved_mappings():
 def resolve_name(name, caller_id=None):
     """
     Resolve a ROS name to its global, canonical form. Private ~names
-    are resolved relative to the node name. 
+    are resolved relative to the node name.
 
     @param name: name to resolve.
     @type  name: str
@@ -204,10 +204,10 @@ def remap_name(name, caller_id=None, resolved=True):
     unless it is remapped.
     @param name: name to remap
     @type  name: str
-    
-    @param resolved: if True (default), use resolved names in remappings, which is the standard for ROS. 
+
+    @param resolved: if True (default), use resolved names in remappings, which is the standard for ROS.
     @type  resolved: bool
-    
+
     @return: Remapped name
     @rtype: str
     """
@@ -229,7 +229,7 @@ def scoped_name(caller_id, name):
     @type  caller_id: str
     @param name: name to scope
     @type  name: str
-    @return: name scoped to the caller_id's namespace. 
+    @return: name scoped to the caller_id's namespace.
     @rtype: str
     """
     if not is_global(caller_id):
@@ -245,23 +245,23 @@ def scoped_name(caller_id, name):
 
 def valid_name_validator_resolved(param_name, param_value, caller_id):
     if not param_value or not isstring(param_value):
-        raise ParameterInvalid("ERROR: parameter [%s] must be a non-empty string"%param_name)            
+        raise ParameterInvalid("ERROR: parameter [%s] must be a non-empty string"%param_name)
     #TODO: actual validation of chars
     # I added the colon check as the common error will be to send an URI instead of name
     if ':' in param_value or ' ' in param_value:
-        raise ParameterInvalid("ERROR: parameter [%s] contains illegal chars"%param_name) 
+        raise ParameterInvalid("ERROR: parameter [%s] contains illegal chars"%param_name)
     #don't use our own resolve_name because we do not want to remap
     return rosgraph.names.resolve_name(param_value, caller_id, remappings=None)
 
 def valid_name_validator_unresolved(param_name, param_value, caller_id):
     if not param_value or not isstring(param_value):
-        raise ParameterInvalid("ERROR: parameter [%s] must be a non-empty string"%param_name)            
-    #TODO: actual validation of chars        
+        raise ParameterInvalid("ERROR: parameter [%s] must be a non-empty string"%param_name)
+    #TODO: actual validation of chars
     # I added the colon check as the common error will be to send an URI instead of name
     if ':' in param_value or ' ' in param_value:
-        raise ParameterInvalid("ERROR: parameter [%s] contains illegal chars"%param_name) 
+        raise ParameterInvalid("ERROR: parameter [%s] contains illegal chars"%param_name)
     return param_value
-    
+
 def valid_name(param_name, resolve=True):
     """
     Validator that resolves names and also ensures that they are not empty
@@ -276,7 +276,7 @@ def valid_name(param_name, resolve=True):
     def validator(param_value, caller_id):
         if resolve:
             return valid_name_validator_resolved(param_name, param_value, caller_id)
-        return valid_name_validator_unresolved(param_name, param_value, caller_id)        
+        return valid_name_validator_unresolved(param_name, param_value, caller_id)
     return validator
 
 def global_name(param_name):
@@ -290,7 +290,7 @@ def global_name(param_name):
             raise ParameterInvalid("ERROR: parameter [%s] must be a non-empty string"%param_name)
         #TODO: actual validation of chars
         if not is_global(param_value):
-            raise ParameterInvalid("ERROR: parameter [%s] must be a globally referenced name"%param_name)            
+            raise ParameterInvalid("ERROR: parameter [%s] must be a globally referenced name"%param_name)
         return param_value
     return validator
 
@@ -299,11 +299,11 @@ def global_name(param_name):
 # - Global state, e.g. singletons and namespace
 
 _caller_namespace = get_ros_namespace()
-_caller_id = _caller_namespace+'unnamed' #default for non-node. 
+_caller_id = _caller_namespace+'unnamed' #default for non-node.
 
 def get_namespace():
     """
-    Get namespace of local node. 
+    Get namespace of local node.
     @return: fully-qualified name of local node or '' if not applicable
     @rtype: str
     """
@@ -315,7 +315,7 @@ def get_name():
     use empty string
     @return: fully-qualified name of local node or '' if not applicable
     @rtype: str
-    """    
+    """
     return _caller_id
 
 # backwards compatibility
@@ -331,7 +331,7 @@ def _set_caller_id(caller_id):
     call on a remote node.  Invoked by ROSNode constructor
     @param caller_id: new caller ID
     @type  caller_id: str
-    """    
+    """
     global _caller_id, _caller_namespace
     _caller_id = caller_id
     _caller_namespace = namespace(caller_id)

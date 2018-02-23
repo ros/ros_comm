@@ -111,7 +111,7 @@ __all__ = [
     'logerr_once', 'logfatal_once',
     'parse_rosrpc_uri',
     'MasterProxy',
-    'NodeProxy',    
+    'NodeProxy',
     'ROSException',
     'ROSSerializationException',
     'ROSInitException',
@@ -127,7 +127,7 @@ __all__ = [
     'resolve_name',
     'remap_name',
     'Time', 'Duration', 'get_rostime', 'get_time',
-    'ServiceException', 
+    'ServiceException',
     'Service', 'ServiceProxy',
     'SubscribeListener', 'Publisher', 'Subscriber',
     ]

@@ -66,14 +66,14 @@ include(CheckCXXSymbolExists)
 CHECK_INCLUDE_FILES(ifaddrs.h HAVE_IFADDRS_H)
 # Not everybody has trunc (e.g., Windows, embedded arm-linux)
 CHECK_FUNCTION_EXISTS(trunc HAVE_TRUNC)
-# Not everybody has epoll (e.g., Windows, BSD, embedded arm-linux) 
+# Not everybody has epoll (e.g., Windows, BSD, embedded arm-linux)
 CHECK_CXX_SYMBOL_EXISTS(epoll_wait "sys/epoll.h" HAVE_EPOLL)
 
 # Output test results to config.h
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/libros/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(roscpp 
+add_library(roscpp
   src/libros/master.cpp
   src/libros/network.cpp
   src/libros/subscriber.cpp

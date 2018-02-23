@@ -12,15 +12,15 @@ macro(genmsg_py)
     set(_input ${PROJECT_SOURCE_DIR}/msg/${_msg})
     # Append it to a list, which we'll pass back to gensrv below
     list(APPEND _inlist ${_input})
-  
+
     rosbuild_gendeps(${PROJECT_NAME} ${_msg})
-  
+
 
     set(_output_py ${PROJECT_SOURCE_DIR}/src/${PROJECT_NAME}/msg/_${_msg})
     string(REPLACE ".msg" ".py" _output_py ${_output_py})
-  
+
     # Add the rule to build the .py from the .msg.
-    add_custom_command(OUTPUT ${_output_py} 
+    add_custom_command(OUTPUT ${_output_py}
                        COMMAND ${genmsg_py_exe} --noinitpy ${_input}
                        DEPENDS ${_input} ${genmsg_py_exe} ${gendeps_exe} ${${PROJECT_NAME}_${_msg}_GENDEPS} ${ROS_MANIFEST_LIST})
     list(APPEND _autogen ${_output_py})
@@ -66,15 +66,15 @@ macro(gensrv_py)
     set(_input ${PROJECT_SOURCE_DIR}/srv/${_srv})
     # Append it to a list, which we'll pass back to gensrv below
     list(APPEND _inlist ${_input})
-  
+
     rosbuild_gendeps(${PROJECT_NAME} ${_srv})
-  
+
 
     set(_output_py ${PROJECT_SOURCE_DIR}/src/${PROJECT_NAME}/srv/_${_srv})
     string(REPLACE ".srv" ".py" _output_py ${_output_py})
-  
+
     # Add the rule to build the .py from the .srv
-    add_custom_command(OUTPUT ${_output_py} 
+    add_custom_command(OUTPUT ${_output_py}
                        COMMAND ${gensrv_py_exe} --noinitpy ${_input}
                        DEPENDS ${_input} ${gensrv_py_exe} ${gendeps_exe} ${${PROJECT_NAME}_${_srv}_GENDEPS} ${ROS_MANIFEST_LIST})
     list(APPEND _autogen ${_output_py})
@@ -88,7 +88,7 @@ macro(gensrv_py)
     add_custom_command(OUTPUT ${_output_py}
                        COMMAND ${gensrv_py_exe} --initpy ${_inlist}
                        DEPENDS ${_autogen})
-  
+
     # A target that depends on generation of the __init__.py
     add_custom_target(ROSBUILD_gensrv_py DEPENDS ${_output_py})
     # Make our target depend on rosbuild_premsgsrvgen, to allow any

@@ -38,7 +38,7 @@ import logging
 import sys
 import traceback
 
-import rospy.names 
+import rospy.names
 
 from rospy.core import get_caller_id
 from rospy.exceptions import ROSException
@@ -94,7 +94,7 @@ def _rosout(level, msg, fname, line, func):
     except Exception as e:
         #traceback.print_exc()
         # don't use logerr in this case as that is recursive here
-        logger = logging.getLogger("rospy.rosout")        
+        logger = logging.getLogger("rospy.rosout")
         logger.error("Unable to report rosout: %s\n%s", e, traceback.format_exc())
         return False
 
