@@ -1,0 +1,23 @@
+1. preconditions and build
+  create directory for ROS catkin workspace
+  $ mkdir -p ros_catkin_ws/src
+
+  ("${ros_comm}" is repository pj/BDK/ROS/ros_comm-kinetic-devel in gerrit)
+  put "${ros_comm}" into ros_catkin_ws/src and then build
+  $ cd ros_catkin_ws
+  $ catkin_make               // Use '-j4' option at hikey machine.
+  $ source devel/setup.bash
+
+  Before running test, please run roscore first. Make sure that
+  "roscore" for TCPROS/UDPROS and "ROS_UDS_EXT_ENABLE=on roscore"
+  for UDSROS.
+
+2. run
+  $ cd src/"${ros_comm}"/test/test_perf_benchmark
+  $ ./run_perf_test.sh test_loop_count subscirber_count transmission_type
+
+  test_loop_count: the number of transmission
+  subscirber_count: the number of subscriber
+  transmission_type: choose in UDS and TCP_UDP
+  note: The throughput size of this benchmark is 256B, 4KB, 256KB, 2MB and 8MB.
+
