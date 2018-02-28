@@ -70,6 +70,7 @@ Subscription::Subscription(const std::string &name, const std::string& md5sum, c
 : name_(name)
 , md5sum_(md5sum)
 , datatype_(datatype)
+, hasHeader_(false)
 , nonconst_callbacks_(0)
 , dropped_(false)
 , shutting_down_(false)
@@ -683,7 +684,7 @@ bool Subscription::addCallback(const SubscriptionCallbackHelperPtr& helper, cons
   ROS_ASSERT(helper);
   ROS_ASSERT(queue);
 
-  statistics_.init(helper);
+  hasHeader_ = helper->hasHeader();
 
   // Decay to a real type as soon as we have a subscriber with a real type
   {
@@ -783,6 +784,10 @@ void Subscription::removeCallback(const SubscriptionCallbackHelperPtr& helper)
     info->subscription_queue_->clear();
     info->callback_queue_->removeByID((uint64_t)info.get());
   }
+}
+
+void Subscription::initializeStatisticsLogger() {
+  statistics_.init(hasHeader_, name_);
 }
 
 void Subscription::headerReceived(const PublisherLinkPtr& link, const Header& h)

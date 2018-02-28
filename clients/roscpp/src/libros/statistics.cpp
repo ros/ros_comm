@@ -37,25 +37,17 @@ namespace ros
 {
 
 StatisticsLogger::StatisticsLogger()
-: pub_frequency_(1.0)
+: initialized_(false), pub_frequency_(1.0)
 {
 }
 
-void StatisticsLogger::init(const SubscriptionCallbackHelperPtr& helper) {
-  hasHeader_ = helper->hasHeader();
+void StatisticsLogger::init(const bool hasHeader, const std::string& topic) {
+  hasHeader_ = hasHeader;
   param::param("/enable_statistics", enable_statistics, false);
   param::param("/statistics_window_min_elements", min_elements, 10);
   param::param("/statistics_window_max_elements", max_elements, 100);
   param::param("/statistics_window_min_size", min_window, 4);
   param::param("/statistics_window_max_size", max_window, 64);
-}
-
-void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_header,
-                                const std::string& topic, const std::string& callerid, const SerializedMessage& m, const uint64_t& bytes_sent,
-                                const ros::Time& received_time, bool dropped)
-{
-  (void)connection_header;
-  struct StatData stats;
 
   if (!enable_statistics)
   {
@@ -65,6 +57,26 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
   // ignore /clock for safety and /statistics to reduce noise
   if (topic == "/statistics" || topic == "/clock")
   {
+    return;
+  }
+
+  if (!initialized_)
+  {
+    ros::NodeHandle n("~");
+    // creating the publisher in the constructor results in a deadlock. so do it here.
+    pub_ = n.advertise<rosgraph_msgs::TopicStatistics>("/statistics", 1);
+    initialized_ = true;
+  }
+}
+
+void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_header,
+                                const std::string& topic, const std::string& callerid, const SerializedMessage& m, const uint64_t& bytes_sent,
+                                const ros::Time& received_time, bool dropped)
+{
+  (void)connection_header;
+  struct StatData stats;
+
+  if (!initialized_) {
     return;
   }
 
@@ -224,13 +236,6 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
       msg.period_mean = ros::Duration(0);
       msg.period_stddev = ros::Duration(0);
       msg.period_max = ros::Duration(0);
-    }
-
-    if (!pub_.getTopic().length())
-    {
-      ros::NodeHandle n("~");
-      // creating the publisher in the constructor results in a deadlock. so do it here.
-      pub_ = n.advertise<rosgraph_msgs::TopicStatistics>("/statistics", 1);
     }
 
     pub_.publish(msg);

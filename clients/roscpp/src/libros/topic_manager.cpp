@@ -244,7 +244,7 @@ bool TopicManager::addSubCallback(const SubscribeOptions& ops)
 // this function has the subscription code that doesn't need to be templated.
 bool TopicManager::subscribe(const SubscribeOptions& ops)
 {
-  boost::mutex::scoped_lock lock(subs_mutex_);
+  boost::unique_lock<boost::mutex> lock(subs_mutex_);
 
   if (addSubCallback(ops))
   {
@@ -286,6 +286,9 @@ bool TopicManager::subscribe(const SubscribeOptions& ops)
 
   subscriptions_.push_back(s);
 
+  // initialize statistics logger from the same thread but not under a lock
+  lock.unlock();
+  s->initializeStatisticsLogger();
   return true;
 }
 

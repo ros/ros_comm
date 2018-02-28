@@ -34,6 +34,7 @@
 #include "publisher.h"
 #include <ros/time.h>
 #include "ros/subscription_callback_helper.h"
+#include <boost/atomic.hpp>
 #include <map>
 
 namespace ros
@@ -56,9 +57,9 @@ public:
   StatisticsLogger();
 
   /**
-   * Actual initialization. Must be called before the first call to callback()
+   * Actual initialization. Must be called early for callback() to not skip first messages.
    */
-  void init(const SubscriptionCallbackHelperPtr& helper);
+  void init(bool hasHeader, const std::string& topic);
 
   /**
    * Callback function. Must be called for every message received.
@@ -66,6 +67,8 @@ public:
   void callback(const boost::shared_ptr<M_string>& connection_header, const std::string& topic, const std::string& callerid, const SerializedMessage& m, const uint64_t& bytes_sent, const ros::Time& received_time, bool dropped);
 
 private:
+  // indicates parameter and publisher initialization for callback()
+  boost::atomic<bool> initialized_;
 
   // these are hard constrains
   int max_window;

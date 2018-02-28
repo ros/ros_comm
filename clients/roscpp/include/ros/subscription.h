@@ -99,6 +99,14 @@ public:
   bool addCallback(const SubscriptionCallbackHelperPtr& helper, const std::string& md5sum, CallbackQueueInterface* queue, int32_t queue_size, const VoidConstPtr& tracked_object, bool allow_concurrent_callbacks);
   void removeCallback(const SubscriptionCallbackHelperPtr& helper);
 
+  /**
+   * \brief Initializes statistics logger
+   * Performs eager initialization of StatisticsLogger, should be called from the same thread
+   * creating this Subscription instance to avoid possible deadlock with multiple subscriptions
+   * to the same topic
+   */
+  void initializeStatisticsLogger();
+
   typedef std::map<std::string, std::string> M_string;
 
   /**
@@ -208,6 +216,7 @@ private:
   boost::mutex md5sum_mutex_;
   std::string md5sum_;
   std::string datatype_;
+  bool hasHeader_;
   boost::mutex callbacks_mutex_;
   V_CallbackInfo callbacks_;
   uint32_t nonconst_callbacks_;
