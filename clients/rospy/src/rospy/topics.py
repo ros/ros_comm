@@ -617,9 +617,7 @@ class _SubscriberImpl(_TopicImpl):
         self.queue_size = None
         self.buff_size = DEFAULT_BUFF_SIZE
         self.tcp_nodelay = False
-        self.statistics_logger = SubscriberStatisticsLogger(self) \
-            if SubscriberStatisticsLogger.is_enabled() \
-            else None
+        self.statistics_logger = SubscriberStatisticsLogger(self)
 
     def close(self):
         """close I/O and release resources"""

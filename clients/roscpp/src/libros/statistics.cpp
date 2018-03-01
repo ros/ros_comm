@@ -43,7 +43,7 @@ StatisticsLogger::StatisticsLogger()
 
 void StatisticsLogger::init(const SubscriptionCallbackHelperPtr& helper) {
   hasHeader_ = helper->hasHeader();
-  param::param("/enable_statistics", enable_statistics, false);
+  param::param("/enable_statistics", enable_statistics, true);
   param::param("/statistics_window_min_elements", min_elements, 10);
   param::param("/statistics_window_max_elements", max_elements, 100);
   param::param("/statistics_window_min_size", min_window, 4);
@@ -57,11 +57,18 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
   (void)connection_header;
   struct StatData stats;
 
-  if (!enable_statistics)
+  if (!pub_.getTopic().length())
+  {
+    ros::NodeHandle n("~");
+    // creating the publisher in the constructor results in a deadlock. so do it here.
+    pub_ = n.advertise<rosgraph_msgs::TopicStatistics>("/statistics", 1);
+  }
+
+  if (!enable_statistics || !pub_.getNumSubscribers())
   {
     return;
   }
-
+  
   // ignore /clock for safety and /statistics to reduce noise
   if (topic == "/statistics" || topic == "/clock")
   {
@@ -224,13 +231,6 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
       msg.period_mean = ros::Duration(0);
       msg.period_stddev = ros::Duration(0);
       msg.period_max = ros::Duration(0);
-    }
-
-    if (!pub_.getTopic().length())
-    {
-      ros::NodeHandle n("~");
-      // creating the publisher in the constructor results in a deadlock. so do it here.
-      pub_ = n.advertise<rosgraph_msgs::TopicStatistics>("/statistics", 1);
     }
 
     pub_.publish(msg);
