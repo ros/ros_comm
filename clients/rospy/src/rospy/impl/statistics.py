@@ -54,7 +54,7 @@ class SubscriberStatisticsLogger():
         # disable statistics if node can't talk to parameter server
         # which is the case in unit tests
         try:
-            return rospy.get_param("/enable_statistics", False)
+            return rospy.get_param("/enable_statistics", True)
         except Exception:
             return False
 
@@ -103,7 +103,9 @@ class SubscriberStatisticsLogger():
             if logger is None:
                 logger = ConnectionStatisticsLogger(self.subscriber_name, rospy.get_name(), publisher)
                 self.connections[publisher] = logger
-
+            if logger.pub.get_num_connections() == 0:
+                return
+                
             # delegate stuff to that instance
             logger.callback(self, msg, stat_bytes)
         except Exception as e:
