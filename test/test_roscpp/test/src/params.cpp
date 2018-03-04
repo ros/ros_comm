@@ -76,6 +76,24 @@ TEST(Params, setThenGetString)
   XmlRpc::XmlRpcValue v;
   param::get("test_set_param", v);
   ASSERT_EQ(v.getType(), XmlRpc::XmlRpcValue::TypeString);
+
+  // numerical string
+  param::set( "test_set_param_string", std::string("1234") );
+  param = "";
+  ASSERT_TRUE( param::get( "test_set_param_string", param ) );
+  ASSERT_STREQ( "1234", param.c_str() );
+
+  param::get("test_set_param_string", v);
+  ASSERT_EQ(v.getType(), XmlRpc::XmlRpcValue::TypeString);
+
+  // float string
+  param::set( "test_set_param_string", std::string("57.34") );
+  param = "";
+  ASSERT_TRUE( param::get( "test_set_param_string", param ) );
+  ASSERT_STREQ( "57.34", param.c_str() );
+
+  param::get("test_set_param_string", v);
+  ASSERT_EQ(v.getType(), XmlRpc::XmlRpcValue::TypeString);
 }
 
 TEST(Params, setThenGetStringCached)
