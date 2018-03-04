@@ -814,7 +814,7 @@ void init(const M_string& remappings)
   for (; it != end; ++it)
   {
     const std::string& name = it->first;
-    const std::string& param = it->second;
+    std::string param = it->second;
 
     if (name.size() < 2)
     {
@@ -857,6 +857,18 @@ void init(const M_string& remappings)
       if (success)
       {
         continue;
+      }
+
+      // Eliminate double or single quotes around text, which will
+      // save numerical strings like "'583'" as "583"
+      // (while "583" will have been turned into an int above.)
+      // This should be identical behavior to doing the same in python.
+      if ((param.length() > 1) &&
+          (((param[0] == '\'') && (param[param.length() - 1] == '\'')) ||
+           ((param[0] == '"') && (param[param.length() - 1] == '"'))))
+      {
+        param.erase(0, 1);
+        param.erase(param.length() - 1, 1);
       }
 
       if (param == "true" || param == "True" || param == "TRUE")
