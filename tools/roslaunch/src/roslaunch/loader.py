@@ -51,6 +51,14 @@ class LoadException(RLException):
     """Error loading data as specified (e.g. cannot find included files, etc...)"""
     pass
 
+# strip one layer of quotes
+def strip_quotes(value):
+    if len(value) > 1:
+        if ((value[0] == "'" and value[-1] == "'") or
+            (value[0] == '"' and value[-1] == '"')):
+            value = value[1:-1]
+    return value
+
 #TODO: lists, maps(?)
 def convert_value(value, type_):
     """
@@ -80,9 +88,10 @@ def convert_value(value, type_):
         if lval == 'true' or lval == 'false':
             return convert_value(value, 'bool')
         #string
-        return value
+        # strip quotes like rosparam set
+        return strip_quotes(value)
     elif type_ == 'str' or type_ == 'string':
-        return value
+        return strip_quotes(value)
     elif type_ == 'int':
         return int(value)
     elif type_ == 'double':
