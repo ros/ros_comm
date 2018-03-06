@@ -39,6 +39,7 @@ Process handler for launching ssh-based roslaunch child processes.
 import os
 import socket
 import traceback
+import time
 try:
     from xmlrpc.client import ServerProxy
 except ImportError:
@@ -48,12 +49,14 @@ import rosgraph
 from roslaunch.core import printlog, printerrlog
 import roslaunch.pmon
 import roslaunch.server
-
+import rosgraph.network as network
 import logging
 _logger = logging.getLogger("roslaunch.remoteprocess")
 
 # #1975 timeout for creating ssh connections
-TIMEOUT_SSH_CONNECT = 30.
+TIMEOUT_SSH_CONNECT = 10.
+TIMEOUT_SSH_REBOOT = 30.
+
 
 def ssh_check_known_hosts(ssh, address, port, username=None, logger=None):
     """
@@ -138,9 +141,13 @@ class SSHChildROSLaunchProcess(roslaunch.server.ChildROSLaunchProcess):
         super(SSHChildROSLaunchProcess, self).__init__(name, args, {})
         self.machine = machine
         self.master_uri = master_uri
+        self.respawn = machine.respawn
+        self.respawn_delay = machine.respawn_delay or 0.0
+        self.time_of_death = None
         self.ssh = self.sshin = self.sshout = self.ssherr = None
         self.started = False
         self.uri = None
+        self.nodes_xml = None
         # self.is_dead is a flag set by is_alive that affects whether or not we
         # log errors during a stop(). 
         self.is_dead = False
@@ -185,28 +192,37 @@ class SSHChildROSLaunchProcess(roslaunch.server.ChildROSLaunchProcess):
         
         if not err_msg:
             username_str = '%s@'%username if username else ''
-            try:
-                if not password: #use SSH agent
-                    ssh.connect(address, port, username, timeout=TIMEOUT_SSH_CONNECT, key_filename=identity_file)
-                else: #use SSH with login/pass
-                    ssh.connect(address, port, username, password, timeout=TIMEOUT_SSH_CONNECT)
-            except paramiko.BadHostKeyException:
-                _logger.error(traceback.format_exc())
-                err_msg =  "Unable to verify host key for remote computer[%s:%s]"%(address, port)
-            except paramiko.AuthenticationException:
-                _logger.error(traceback.format_exc())
-                err_msg = "Authentication to remote computer[%s%s:%s] failed.\nA common cause of this error is a missing key in your authorized_keys file."%(username_str, address, port)
-            except paramiko.SSHException as e:
-                _logger.error(traceback.format_exc())
-                if str(e).startswith("Unknown server"):
-                    pass
-                err_msg = "Unable to establish ssh connection to [%s%s:%s]: %s"%(username_str, address, port, e)
-            except socket.error as e:
-                # #1824
-                if e[0] == 111:
-                    err_msg = "network connection refused by [%s:%s]"%(address, port)
-                else:
-                    err_msg = "network error connecting to [%s:%s]: %s"%(address, port, str(e))
+            start_time = time.time()
+            while 1:
+                err_msg = None
+                try:
+                    if not password: #use SSH agent
+                        ssh.connect(address, port, username, timeout=TIMEOUT_SSH_CONNECT, key_filename=identity_file)
+                    else: #use SSH with login/pass
+                        ssh.connect(address, port, username, password, timeout=TIMEOUT_SSH_CONNECT)
+                except paramiko.BadHostKeyException:
+                    _logger.error(traceback.format_exc())
+                    err_msg =  "Unable to verify host key for remote computer[%s:%s]"%(address, port)
+                except paramiko.AuthenticationException:
+                    _logger.error(traceback.format_exc())
+                    err_msg = "Authentication to remote computer[%s%s:%s] failed.\nA common cause of this error is a missing key in your authorized_keys file."%(username_str, address, port)
+                except paramiko.SSHException as e:
+                    _logger.error(traceback.format_exc())
+                    if str(e).startswith("Unknown server"):
+                        pass
+                    err_msg = "Unable to establish ssh connection to [%s%s:%s]: %s"%(username_str, address, port, e)
+                except socket.error as e:
+                    # #1824
+                    if e[0] == 111:
+                        err_msg = "network connection refused by [%s:%s]"%(address, port)
+                    else:
+                        err_msg = "network error connecting to [%s:%s]: %s"%(address, port, str(e))
+                    if time.time() - start_time < TIMEOUT_SSH_REBOOT:
+                        printlog(err_msg)
+                        time.sleep(1)
+                        printlog("Retrying to connect.")
+                        continue
+                break
         if err_msg:
             return None, err_msg
         else:
@@ -238,6 +254,36 @@ class SSHChildROSLaunchProcess(roslaunch.server.ChildROSLaunchProcess):
             self.started = True            
             return True
 
+    def relaunch_nodes(self):
+        succeeded = []
+        failed = []
+        api = self.getapi()
+        if self.nodes_xml is not None:
+            try:
+                _logger.debug("sending [%s] XML [\n%s\n]" % (self.uri, self.nodes_xml))
+                code, msg, val = api.launch(self.nodes_xml)
+                if code == 1:
+                    c_succ, c_fail = val
+                    succeeded.extend(c_succ)
+                    failed.extend(c_fail)
+                else:
+                    printerrlog('error launching on [%s, uri %s]: %s' % (
+                    self.name, self.uri, msg))
+            except socket.error as e:
+                errno, msg = e
+                printerrlog('error launching on [%s, uri %s]: %s' % (
+                self.name, self.uri, str(msg)))
+            except socket.gaierror as e:
+                errno, msg = e
+                # usually errno == -2. See #815.
+                child_host, _ = network.parse_http_host_and_port(self.uri)
+                printerrlog("Unable to contact remote roslaunch at [%s]. This is most likely due to a network misconfiguration with host lookups. Please make sure that you can contact '%s' from this machine"%(child.uri, child_host))
+
+            except Exception as e:
+                printerrlog('error launching on [%s, uri %s]: %s'%(self.name, self.uri, str(e)))
+        else:
+            _logger.error("xml provided is not defined")
+
     def getapi(self):
         """
         :returns: ServerProxy to remote client XMLRPC server, `ServerProxy`
@@ -263,6 +309,7 @@ class SSHChildROSLaunchProcess(roslaunch.server.ChildROSLaunchProcess):
             data = s.read(2048)
             if not len(data):
                 self.is_dead = True
+                self.time_of_death = time.time()
                 return False
             # #2012 il8n: ssh *should* be UTF-8, but often isn't
             # (e.g. Japan)

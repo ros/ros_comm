@@ -446,7 +446,8 @@ class XmlLoader(loader.Loader):
                 "Invalid <node> tag: %s. \n\nNode xml is %s"%(e, tag.toxml()))
 
     MACHINE_ATTRS = ('name', 'address', 'env-loader', 
-                     'ssh-port', 'user', 'password', 'default', 'timeout')
+                     'ssh-port', 'user', 'password',
+                     'default', 'timeout', 'respawn', 'respawn_delay')
     @ifunless
     def _machine_tag(self, tag, context, ros_config, verbose=True):
         try:
@@ -466,8 +467,8 @@ class XmlLoader(loader.Loader):
             # optional attributes
             attrs = self.opt_attrs(tag, context,
                                    ('env-loader', 
-                                    'ssh-port', 'user', 'password', 'default', 'timeout'))
-            env_loader, ssh_port, user, password, default, timeout = attrs
+                                    'ssh-port', 'user', 'password', 'default', 'timeout', 'respawn', 'respawn_delay'))
+            env_loader, ssh_port, user, password, default, timeout, respawn, respawn_delay = attrs
 
             ssh_port = int(ssh_port or '22')
 
@@ -498,7 +499,8 @@ class XmlLoader(loader.Loader):
 
             m = Machine(name, address, env_loader=env_loader,
                         ssh_port=ssh_port, user=user, password=password, 
-                        assignable=assignable, env_args=context.env_args, timeout=timeout)
+                        assignable=assignable, env_args=context.env_args,
+                        timeout=timeout, respawn=respawn, respawn_delay=respawn_delay)
             return (m, is_default)
         except KeyError as e:
             raise XmlParseException("<machine> tag is missing required attribute: %s"%e)
