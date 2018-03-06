@@ -614,6 +614,10 @@ class ProcessMonitor(Thread):
                         # stop process, don't accumulate errors
                         r.stop([])
                         r.start()
+                        if r.__class__.__name__ == "SSHChildROSLaunchProcess":
+                            time.sleep(3)
+                            printlog("Remote child Roslaunch respawned. Respawning its remote nodes.")
+                            r.relaunch_nodes()
                     else:
                         # not ready yet, keep it around
                         _respawn.append(r)

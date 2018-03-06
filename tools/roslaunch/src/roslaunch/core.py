@@ -332,10 +332,11 @@ class Machine(object):
     specification.
     """
     __slots__ = ['name', 'address', 'ssh_port', 'user', 'password', 'assignable',
-                 'env_loader', 'timeout']
+                 'env_loader', 'timeout', 'respawn', 'respawn_delay']
     def __init__(self, name, address,
                  env_loader=None, ssh_port=22, user=None, password=None, 
-                 assignable=True, env_args=[], timeout=None):
+                 assignable=True, env_args=[], timeout=None, respawn=None,
+                 respawn_delay=None):
         """
         :param name: machine name, ``str``
         :param address: network address of machine, ``str``
@@ -343,6 +344,8 @@ class Machine(object):
         :param ssh_port: SSH port number, ``int``
         :param user: SSH username, ``str``
         :param password: SSH password. Not recommended for use. Use SSH keys instead., ``str``
+        :param respawn: should the roslaunch client on this machine be respawned when it is lost on the remote machine
+        :param respawn_delay: time before respawn
         """
         self.name = name
         self.env_loader = env_loader
@@ -351,10 +354,12 @@ class Machine(object):
         self.address = address
         self.ssh_port = ssh_port
         self.assignable = assignable
+        self.respawn = respawn
+        self.respawn_delay = respawn_delay
         self.timeout = timeout or _DEFAULT_REGISTER_TIMEOUT
         
     def __str__(self):
-        return "Machine(name[%s] env_loader[%s] address[%s] ssh_port[%s] user[%s] assignable[%s] timeout[%s])"%(self.name, self.env_loader, self.address, self.ssh_port, self.user, self.assignable, self.timeout)
+        return "Machine(name[%s] env_loader[%s] address[%s] ssh_port[%s] user[%s] assignable[%s] timeout[%s] respawn[%s] respawn_delay[%s])"%(self.name, self.env_loader, self.address, self.ssh_port, self.user, self.assignable, self.timeout, self.respawn, self.respawn_delay)
     def __eq__(self, m2):
         if not isinstance(m2, Machine):
             return False

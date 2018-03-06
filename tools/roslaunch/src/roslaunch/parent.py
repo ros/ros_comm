@@ -52,7 +52,7 @@ from roslaunch.core import printlog_bold, printerrlog, RLException
 import roslaunch.launch
 import roslaunch.pmon
 import roslaunch.server
-import roslaunch.xmlloader 
+import roslaunch.xmlloader
 
 from rosmaster.master_api import NUM_WORKERS
 

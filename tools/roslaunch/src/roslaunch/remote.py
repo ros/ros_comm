@@ -190,9 +190,9 @@ in your launch"""%'\n'.join([" * %s (timeout %ss)"%(m.name, m.timeout) for m in 
         for child in self.remote_processes:
             nodes = self.remote_nodes[child.machine.config_key()]
             body = '\n'.join([n.to_remote_xml() for n in nodes])
-            # #3799: force utf-8 encoding 
-            xml = '<?xml version="1.0" encoding="utf-8"?>\n<launch>\n%s</launch>'%body 
-                
+            # #3799: force utf-8 encoding
+            xml = '<?xml version="1.0" encoding="utf-8"?>\n<launch>\n%s</launch>'%body
+            child.nodes_xml = xml
             api = child.getapi()
             # TODO: timeouts
             try:
@@ -212,7 +212,7 @@ in your launch"""%'\n'.join([" * %s (timeout %ss)"%(m.name, m.timeout) for m in 
 
             except socket.gaierror as e:
                 errno, msg = e
-                # usually errno == -2. See #815. 
+                # usually errno == -2. See #815.
                 child_host, _ = network.parse_http_host_and_port(child.uri)
                 printerrlog("Unable to contact remote roslaunch at [%s]. This is most likely due to a network misconfiguration with host lookups. Please make sure that you can contact '%s' from this machine"%(child.uri, child_host))
                 self._assume_failed(nodes, failed)
