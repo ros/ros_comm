@@ -310,6 +310,7 @@ void Player::updateRateTopicTime(const ros::MessageEvent<topic_tools::ShapeShift
             if (s.find("Header ") == 0) {
                 flag = true;
             }
+            break;
         }
     }
     // If the header is not the first element in the message according to the definition, throw an error.
