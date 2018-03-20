@@ -305,7 +305,7 @@ void Player::updateRateTopicTime(const ros::MessageEvent<topic_tools::ShapeShift
     std::string s;
     bool flag = false;
     while(std::getline(f, s, '\n')) {
-        if (s.find("#") != 0) {
+        if (!s.empty() && s.find("#") != 0) {
             // Does not start with #, is not a comment.
             if(s == "Header header") {
                 flag = true;
