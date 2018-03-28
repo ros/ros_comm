@@ -94,13 +94,22 @@ def wait_for_service(service, timeout=None):
     """
     master = rosgraph.Master(rospy.names.get_caller_id())
     def contact_service(resolved_name, timeout=10.0):
+        uds_uri = None
         try:
-            uri = master.lookupService(resolved_name)
-        except rosgraph.MasterException:
+            try:
+                uri, uds_uri = master.lookupServiceExt(resolved_name)
+            except Exception:
+                uri = master.lookupService(resolved_name)
+        except Exception as e:
             return False
 
+        is_internal = False
         addr = rospy.core.parse_rosrpc_uri(uri)
-        if rosgraph.rosenv.use_uds():
+        if uds_uri is not None:
+            uds_path = rospy.core.parse_rosrpc_uri(uds_uri)
+            is_internal = rosgraph.network.is_internal(uds_path, addr[0])
+
+        if is_internal:
             s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         else:
             if rosgraph.network.use_ipv6():
@@ -111,10 +120,14 @@ def wait_for_service(service, timeout=None):
             # we always want to timeout just in case we're connecting
             # to a down service.
             s.settimeout(timeout)
-            logdebug('connecting to ' + str(addr))
-            if rosgraph.rosenv.use_uds() and rosgraph.rosenv.ros_uds_ext_is_enable(rosgraph.rosenv.ROS_UDS_EXT_ABSTRACT_SOCK_NAME):
-                s.connect('\0'+addr)
+            if is_internal:
+                logdebug('connecting to ' + str(uds_path))
+                if rosgraph.rosenv.ros_uds_ext_is_enable(rosgraph.rosenv.ROS_UDS_EXT_ABSTRACT_SOCK_NAME):
+                    s.connect('\0'+uds_path)
+                else:
+                    s.connect(uds_path)
             else:
+                logdebug('connecting to ' + str(addr))
                 s.connect(addr)
             h = { 'probe' : '1', 'md5sum' : '*',
                   'callerid' : rospy.core.get_caller_id(),
@@ -215,7 +228,7 @@ def convert_return_to_response(response, response_class):
         except TypeError as e:
             raise ServiceException("handler returned wrong number of values: %s"%str(e))
 
-def service_connection_handler(sock, client_addr, header):
+def service_connection_handler(sock, client_addr, header, use_uds=False):
     """
     Process incoming service connection. For use with
     TCPROSServer. Reads in service name from handshake and creates the
@@ -233,7 +246,7 @@ def service_connection_handler(sock, client_addr, header):
         if not required in header:
             return "Missing required '%s' field"%required
     else:
-        if rosgraph.rosenv.use_uds():
+        if use_uds:
             logger.debug("connection from Unix Domain Socket")
         else:
             logger.debug("connection from %s:%s", client_addr[0], client_addr[1])
@@ -252,7 +265,7 @@ def service_connection_handler(sock, client_addr, header):
         elif md5sum != rospy.names.SERVICE_ANYTYPE and md5sum != service.service_class._md5sum:
             return "request from [%s]: md5sums do not match: [%s] vs. [%s]"%(header['callerid'], md5sum, service.service_class._md5sum)
         else:
-            if rosgraph.rosenv.use_uds():
+            if use_uds:
                 transport = TCPROSUDSTransport(service.protocol, service_name, header=header)
             else:
                 transport = TCPROSTransport(service.protocol, service_name, header=header)
@@ -467,11 +480,15 @@ class ServiceProxy(_Service):
 
         #TODO: subscribe to service changes
         #if self.uri is None:
+        uri_uds = None
         if 1: #always do lookup for now, in the future we need to optimize
             try:
                 try:
                     master = rosgraph.Master(rospy.names.get_caller_id())
-                    self.uri = master.lookupService(self.resolved_name)
+                    try:
+                        self.uri, uri_uds = master.lookupServiceExt(self.resolved_name)
+                    except Exception as e:
+                        self.uri = master.lookupService(self.resolved_name)
                 except socket.error:
                     raise ServiceException("unable to contact master")
                 except rosgraph.MasterError as e:
@@ -481,11 +498,16 @@ class ServiceProxy(_Service):
                 # validate
                 try:
                     rospy.core.parse_rosrpc_uri(self.uri)
+                    if uri_uds is not None:
+                        rospy.core.parse_rosrpc_uri(uri_uds)
                 except rospy.impl.validators.ParameterInvalid:
-                    raise ServiceException("master returned invalid ROSRPC URI: %s"%self.uri)
+                    if uri_uds is not None:
+                        raise ServiceException("master returned invalid ROSRPC URI: %s, %s"%(self.uri, uri_uds))
+                    else:
+                        raise ServiceException("master returned invalid ROSRPC URI: %s"%self.uri)
             except socket.error as e:
                 logger.error("[%s]: socket error contacting service, master is probably unavailable",self.resolved_name)
-        return self.uri
+        return self.uri, uri_uds
 
     def call(self, *args, **kwds):
         """
@@ -507,20 +529,25 @@ class ServiceProxy(_Service):
         request = rospy.msg.args_kwds_to_message(self.request_class, args, kwds) 
             
         # initialize transport
+        service_uri_uds = None
         if self.transport is None:
-            service_uri = self._get_service_uri(request)
-            if rosgraph.rosenv.use_uds():
-                dest_uds_path = rospy.core.parse_rosrpc_uri(service_uri)
+            service_uri, service_uri_uds = self._get_service_uri(request)
+            is_internal = False
+            dest_addr, dest_port = rospy.core.parse_rosrpc_uri(service_uri)
+            if service_uri_uds is not None:
+                dest_uds_path = rospy.core.parse_rosrpc_uri(service_uri_uds)
+                is_internal = rosgraph.network.is_internal(dest_uds_path, dest_addr)
+
+            if is_internal:
                 # connect to service
                 transport = TCPROSUDSTransport(self.protocol, self.resolved_name)
             else:
-                dest_addr, dest_port = rospy.core.parse_rosrpc_uri(service_uri)
                 # connect to service
                 transport = TCPROSTransport(self.protocol, self.resolved_name)
 
             transport.buff_size = self.buff_size
             try:
-                if rosgraph.rosenv.use_uds():
+                if is_internal:
                     transport.connect(dest_uds_path, service_uri)
                 else:
                     transport.connect(dest_addr, dest_port, service_uri)
@@ -584,13 +611,10 @@ class ServiceImpl(_Service):
         self.buff_size=buff_size
 
         start_tcpros_server() #lazy-init the tcprosserver
-        if rosgraph.rosenv.use_uds():
-            uds_path = get_tcpros_server_address()
-            self.uri = '%s%s' % (rospy.core.ROSRPC, uds_path)
-        else:
-            host, port = get_tcpros_server_address()
-            self.uri = '%s%s:%s'%(rospy.core.ROSRPC, host, port)
-        logdebug("... service URL is %s"%self.uri)
+        host, port, uds_path = get_tcpros_server_address()
+        self.uri = '%s%s:%s' % (rospy.core.ROSRPC, host, port)
+        self.uds_uri = '%s%s' % (rospy.core.ROSRPC, uds_path)
+        logdebug("... service URL are %s, %s"%(self.uri, self.uds_uri))
 
         self.protocol = TCPService(self.resolved_name, service_class, self.buff_size)
 

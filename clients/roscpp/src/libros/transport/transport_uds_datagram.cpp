@@ -18,8 +18,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef ROS_UDS_EXT_DISABLE
-
 #include "ros/transport/transport_uds_datagram.h"
 #include "ros/poll_set.h"
 #include "ros/file_log.h"
@@ -136,7 +134,7 @@ void TransportUDSDatagram::socketUpdate(int events)
 std::string TransportUDSDatagram::getTransportInfo()
 {
   std::stringstream str;
-  str << "UDPROS connection to [" << cached_remote_host_ << "]";
+  str << "UDPROS UDS connection to [" << cached_remote_host_ << "]";
   return str.str();
 }
 
@@ -633,5 +631,3 @@ std::string TransportUDSDatagram::getClientURI()
 }
 
 }
-
-#endif // ROS_UDS_EXT_DISABLE

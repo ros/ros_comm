@@ -160,6 +160,15 @@ def get_address_override():
         return ip
     return None
 
+def is_internal(uds_path, hostname):
+    """
+    :param uds_path: UDS file path, ``str``
+    :param hostname: host name/address, ``str``
+    :returns True: if hostname maps to a local address or uds_path exists at system, False otherwise.
+    False conditions include invalid empty uds_path or hostname.
+    """
+    return uds_path is not None and len(uds_path) != 0 and (is_local_address(hostname) or os.path.exists(uds_path))
+
 def is_local_address(hostname):
     """
     :param hostname: host name/address, ``str``

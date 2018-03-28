@@ -7,7 +7,7 @@ TESTRES=0
 
 set -x
 
-ROS_UDS_EXT_ENABLE=on ${CPP_TALKER} >/dev/null 2>&1  &
+${CPP_TALKER} >/dev/null 2>&1  &
 TALKERPID1=$!
 sleep ${SLEEP_TIME}
 

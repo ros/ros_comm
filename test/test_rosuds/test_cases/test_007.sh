@@ -7,7 +7,7 @@ TESTRES=0
 
 set -x
 
-ROS_UDS_EXT_ENABLE=on ${CPP_ADD_TWO_INTS_SERVER} >/dev/null 2>&1  &
+${CPP_ADD_TWO_INTS_SERVER} >/dev/null 2>&1  &
 SERVICE_SERVERPID1=$!
 sleep ${SLEEP_TIME}
 

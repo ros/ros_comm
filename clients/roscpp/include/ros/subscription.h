@@ -131,14 +131,13 @@ public:
       , remote_uri_(remote_uri)
       {}
 
-#ifndef ROS_UDS_EXT_DISABLE
-      PendingConnection(XmlRpc::XmlRpcClient* client, TransportUDSDatagramPtr uds_datagram_transport, const SubscriptionWPtr& parent, const std::string& remote_uri)
+      PendingConnection(XmlRpc::XmlRpcClient* client, TransportUDPPtr udp_transport, TransportUDSDatagramPtr uds_datagram_transport, const SubscriptionWPtr& parent, const std::string& remote_uri)
       : client_(client)
+      , udp_transport_(udp_transport)
       , uds_datagram_transport_(uds_datagram_transport)
       , parent_(parent)
       , remote_uri_(remote_uri)
       {}
-#endif // ROS_UDS_EXT_DISABLE
 
       ~PendingConnection()
       {
@@ -147,9 +146,9 @@ public:
 
       XmlRpc::XmlRpcClient* getClient() const { return client_; }
       TransportUDPPtr getUDPTransport() const { return udp_transport_; }
-#ifndef ROS_UDS_EXT_DISABLE
       TransportUDSDatagramPtr getUDSDatagramTransport() const { return uds_datagram_transport_; }
-#endif // ROS_UDS_EXT_DISABLE
+      const std::string& getUDSPath() const { return uds_path_; }
+      void setUDSPath(const std::string& uds_path) { uds_path_ = uds_path; }
 
       virtual void addToDispatch(XmlRpc::XmlRpcDispatch* disp)
       {
@@ -184,13 +183,75 @@ public:
     private:
       XmlRpc::XmlRpcClient* client_;
       TransportUDPPtr udp_transport_;
-#ifndef ROS_UDS_EXT_DISABLE
       TransportUDSDatagramPtr uds_datagram_transport_;
-#endif // ROS_UDS_EXT_DISABLE
+      std::string uds_path_;
       SubscriptionWPtr parent_;
       std::string remote_uri_;
   };
   typedef boost::shared_ptr<PendingConnection> PendingConnectionPtr;
+
+  class ROSCPP_DECL PendingConnectionUDS : public ASyncXMLRPCConnection
+  {
+    public:
+      PendingConnectionUDS(XmlRpc::XmlRpcClient* client, const SubscriptionWPtr& parent, const std::string& remote_uri, PendingConnectionPtr pending_connection)
+      : client_(client)
+      , parent_(parent)
+      , remote_uri_(remote_uri)
+      , pending_connection_(pending_connection)
+      {}
+
+      ~PendingConnectionUDS()
+      {
+        delete client_;
+      }
+
+      virtual void addToDispatch(XmlRpc::XmlRpcDispatch* disp)
+      {
+        disp->addSource(client_, XmlRpc::XmlRpcDispatch::WritableEvent | XmlRpc::XmlRpcDispatch::Exception);
+      }
+
+      virtual void removeFromDispatch(XmlRpc::XmlRpcDispatch* disp)
+      {
+        disp->removeSource(client_);
+      }
+
+      virtual bool check()
+      {
+        SubscriptionPtr parent = parent_.lock();
+        if (!parent)
+        {
+          return true;
+        }
+
+        XmlRpc::XmlRpcValue result;
+        if (client_->executeCheckDone(result))
+        {
+
+          XmlRpc::XmlRpcValue proto;
+          // validate the requestTopicUds response data
+          if (result.size() == 3
+                  && XMLRPCManager::instance()->validateXmlrpcResponse("requestTopicUds", result, proto)) {
+            // if requestTopicUDS has a response data, protocol data contains (TCPROS, uds_path);
+            if (proto.size() == 2) {
+              std::string uds_path = std::string(proto[1]);
+              pending_connection_->setUDSPath(uds_path);
+            }
+          }
+
+          XMLRPCManager::instance()->addASyncConnection(pending_connection_);
+          return true;
+        }
+
+        return false;
+      }
+
+    private:
+      XmlRpc::XmlRpcClient* client_;
+      SubscriptionWPtr parent_;
+      std::string remote_uri_;
+      PendingConnectionPtr pending_connection_;
+  };
+  typedef boost::shared_ptr<PendingConnectionUDS> PendingConnectionUDSPtr;
 
   void pendingConnectionDone(const PendingConnectionPtr& pending_conn, XmlRpc::XmlRpcValue& result);
 

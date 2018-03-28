@@ -378,23 +378,20 @@ class TCPROSServer(object):
         """
         Starts the TCP(or UDS if ROS_UDS_EXT_ENABLE is on) socket server if one is not already running
         """
-        if rosgraph.rosenv.use_uds():
-            if self.tcp_ros_uds_server:
-                return
-        else:
-            if self.tcp_ros_server:
-                return
+        if self.tcp_ros_uds_server:
+            return
+
+        if self.tcp_ros_server:
+            return
 
         with self.lock:
             try:
-                if rosgraph.rosenv.use_uds():
-                    if not self.tcp_ros_uds_server:
-                        self.tcp_ros_uds_server = TCPUDSServer(self._tcp_server_uds_callback)
-                        self.tcp_ros_uds_server.start()
-                else:
-                    if not self.tcp_ros_server:
-                        self.tcp_ros_server = TCPServer(self._tcp_server_callback, self.port)
-                        self.tcp_ros_server.start()
+                if not self.tcp_ros_uds_server:
+                    self.tcp_ros_uds_server = TCPUDSServer(self._tcp_server_uds_callback)
+                    self.tcp_ros_uds_server.start()
+                if not self.tcp_ros_server:
+                    self.tcp_ros_server = TCPServer(self._tcp_server_callback, self.port)
+                    self.tcp_ros_server.start()
             except Exception as e:
                 self.tcp_ros_server = None
                 logerr("unable to start TCPROS server: %s\n%s"%(e, traceback.format_exc()))
@@ -406,22 +403,24 @@ class TCPROSServer(object):
         inbound connections. (return UDS path if ROS_UDS_EXT_ENABLE is on)
         @rtype: str, int
         """
-        if rosgraph.rosenv.use_uds():
-            if self.tcp_ros_uds_server is not None:
-                return self.tcp_ros_uds_server.get_full_addr()
-        else:
-            if self.tcp_ros_server is not None:
-                return self.tcp_ros_server.get_full_addr()
-        return None, None
+        uds_path = ""
+        ip = ""
+        port = 0
+        if self.tcp_ros_uds_server is not None:
+            uds_path = self.tcp_ros_uds_server.get_full_addr()
+
+        if self.tcp_ros_server is not None:
+            ip, port = self.tcp_ros_server.get_full_addr()
+            return ip, port, uds_path
+        return None, None, None
     
     def shutdown(self, reason=''):
         """stops the TCP/IP(or UDS) server responsible for receiving inbound connections"""
-        if rosgraph.rosenv.use_uds():
-            if self.tcp_ros_uds_server:
-                self.tcp_ros_uds_server.shutdown()
-        else:
-            if self.tcp_ros_server:
-                self.tcp_ros_server.shutdown()
+        if self.tcp_ros_uds_server:
+            self.tcp_ros_uds_server.shutdown()
+
+        if self.tcp_ros_server:
+            self.tcp_ros_server.shutdown()
 
     def _tcp_server_callback(self, sock, client_addr):
         """
@@ -495,9 +494,9 @@ class TCPROSServer(object):
                 header = read_ros_handshake_header(sock, BytesIO(), buff_size)
             
             if 'topic' in header:
-                err_msg = self.topic_connection_handler(sock, client_addr, header)
+                err_msg = self.topic_connection_handler(sock, client_addr, header, use_uds=True)
             elif 'service' in header:
-                err_msg = self.service_connection_handler(sock, client_addr, header)
+                err_msg = self.service_connection_handler(sock, client_addr, header, use_uds=True)
             else:
                 err_msg = 'no topic or service name detected'
             if err_msg:

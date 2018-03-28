@@ -446,8 +446,19 @@ class ROSHandler(XmlRpcHandler):
         # we know for sure the URI is invalid
         while not success and not is_shutdown():
             try:
+                resultExt = None
+                try:
+                    code, msg, resultExt = \
+                        xmlrpcapi(pub_uri).requestTopicUds(caller_id, topic, protocols)
+                except Exception as e:
+                    pass
+
                 code, msg, result = \
                       xmlrpcapi(pub_uri).requestTopic(caller_id, topic, protocols)
+
+                if resultExt is not None:
+                    result.append(resultExt[1])
+
                 success = True
             except Exception as e:
                 if getattr(e, 'errno', None) == errno.ECONNREFUSED:
@@ -544,5 +555,39 @@ class ROSHandler(XmlRpcHandler):
                 if h.supports(protocol_id):
                     _logger.debug("requestTopic[%s]: choosing protocol %s", topic, protocol_id)
                     return h.init_publisher(topic, protocol)
+        return 0, "no supported protocol implementations", []
+
+    _remap_table['requestTopicUds'] = [0]  # remap topic
+    @apivalidate([], (is_topic('topic'), non_empty('protocols')))
+    def requestTopicUds(self, caller_id, topic, protocols):
+        """
+        Publisher node API method called by a subscriber node.
+
+        Request that source allocate a channel for communication. Subscriber provides
+        a list of desired protocols for communication. Publisher returns the
+        selected protocol along with any additional params required for
+        establishing connection. For example, for a UDS connection,
+        the source node may return a uds path of UDS server.
+        @param caller_id str: ROS caller id
+        @type  caller_id: str
+        @param topic: topic name
+        @type  topic: str
+        @param protocols: list of desired
+         protocols for communication in order of preference. Each
+         protocol is a list of the form [ProtocolName,
+         ProtocolParam1, ProtocolParam2...N]
+        @type  protocols: [[str, XmlRpcLegalValue*]]
+        @return: [code, msg, protocolParams]. protocolParams may be an
+        empty list if there are no compatible protocols.
+        @rtype: [int, str, [str, XmlRpcLegalValue*]]
+        """
+        if not get_topic_manager().has_publication(topic):
+            return -1, "Not a publisher of [%s]" % topic, []
+        for protocol in protocols:  # simple for now: select first implementation
+            protocol_id = protocol[0]
+            for h in self.protocol_handlers:
+                if h.supports(protocol_id):
+                    _logger.debug("requestTopic[%s]: choosing protocol %s", topic, protocol_id)
+                    return h.init_publisher_ext(topic, protocol)
         return 0, "no supported protocol implementations", []
 

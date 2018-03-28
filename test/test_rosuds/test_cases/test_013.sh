@@ -7,7 +7,7 @@ TESTRES=0
 
 set -x
 
-ROS_UDS_EXT_ENABLE=on ${CPP_LISTENER} >/dev/null 2>&1  &
+${CPP_LISTENER} >/dev/null 2>&1  &
 LISTENERPID1=$!
 sleep ${SLEEP_TIME}
 OLD_SERVER_COUNT=`get_uds_stream_server_count "${LISTENERPID1}"`
@@ -15,7 +15,7 @@ OLD_CONNECTED_OUT_COUNT=`get_uds_stream_connected_out_count "${LISTENERPID1}"`
 EXPECTED_SERVER_COUNT=$((OLD_SERVER_COUNT))
 EXPECTED_CONNECTED_OUT_COUNT=$((OLD_CONNECTED_OUT_COUNT+1))
 
-ROS_UDS_EXT_ENABLE=on ${CPP_TALKER} >/dev/null 2>&1  &
+${CPP_TALKER} >/dev/null 2>&1  &
 TALKERPID1=$!
 sleep ${SLEEP_TIME}
 NEW_SERVER_COUNT=`get_uds_stream_server_count "${LISTENERPID1}"`

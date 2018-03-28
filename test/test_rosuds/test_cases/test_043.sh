@@ -7,7 +7,7 @@ TESTRES=0
 
 set -x
 
-ROS_UDS_EXT_ENABLE=on ${PY_TALKER} >/dev/null 2>&1  &
+${PY_TALKER} >/dev/null 2>&1  &
 TALKERPID1=$!
 sleep ${SLEEP_TIME}
 OLD_SERVER_COUNT=`get_uds_stream_server_count "${TALKERPID1}"`
@@ -15,25 +15,25 @@ OLD_CONNECTED_IN_COUNT=`get_uds_stream_connected_in_count "${TALKERPID1}"`
 EXPECTED_SERVER_COUNT=$((OLD_SERVER_COUNT))
 EXPECTED_CONNECTED_IN_COUNT=$((OLD_CONNECTED_IN_COUNT+10))
 
-ROS_UDS_EXT_ENABLE=on ${PY_LISTENER} __name:=no1 >/dev/null 2>&1  &
+${PY_LISTENER} __name:=no1 >/dev/null 2>&1  &
 LISTENERPID1=$!
-ROS_UDS_EXT_ENABLE=on ${PY_LISTENER} __name:=no2 >/dev/null 2>&1  &
+${PY_LISTENER} __name:=no2 >/dev/null 2>&1  &
 LISTENERPID2=$!
-ROS_UDS_EXT_ENABLE=on ${PY_LISTENER} __name:=no3 >/dev/null 2>&1  &
+${PY_LISTENER} __name:=no3 >/dev/null 2>&1  &
 LISTENERPID3=$!
-ROS_UDS_EXT_ENABLE=on ${PY_LISTENER} __name:=no4 >/dev/null 2>&1  &
+${PY_LISTENER} __name:=no4 >/dev/null 2>&1  &
 LISTENERPID4=$!
-ROS_UDS_EXT_ENABLE=on ${PY_LISTENER} __name:=no5 >/dev/null 2>&1  &
+${PY_LISTENER} __name:=no5 >/dev/null 2>&1  &
 LISTENERPID5=$!
-ROS_UDS_EXT_ENABLE=on ${PY_LISTENER} __name:=no6 >/dev/null 2>&1  &
+${PY_LISTENER} __name:=no6 >/dev/null 2>&1  &
 LISTENERPID6=$!
-ROS_UDS_EXT_ENABLE=on ${PY_LISTENER} __name:=no7 >/dev/null 2>&1  &
+${PY_LISTENER} __name:=no7 >/dev/null 2>&1  &
 LISTENERPID7=$!
-ROS_UDS_EXT_ENABLE=on ${PY_LISTENER} __name:=no8 >/dev/null 2>&1  &
+${PY_LISTENER} __name:=no8 >/dev/null 2>&1  &
 LISTENERPID8=$!
-ROS_UDS_EXT_ENABLE=on ${PY_LISTENER} __name:=no9 >/dev/null 2>&1  &
+${PY_LISTENER} __name:=no9 >/dev/null 2>&1  &
 LISTENERPID9=$!
-ROS_UDS_EXT_ENABLE=on ${PY_LISTENER} __name:=no10 >/dev/null 2>&1  &
+${PY_LISTENER} __name:=no10 >/dev/null 2>&1  &
 LISTENERPID10=$!
 sleep $((SLEEP_TIME*3))
 NEW_SERVER_COUNT=`get_uds_stream_server_count "${TALKERPID1}"`

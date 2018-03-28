@@ -18,8 +18,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef ROS_UDS_EXT_DISABLE
-
 #include "ros/io.h"
 #include "ros/transport/transport_uds_stream.h"
 #include "ros/poll_set.h"
@@ -536,7 +534,7 @@ void TransportUDSStream::socketUpdate(int events)
 std::string TransportUDSStream::getTransportInfo()
 {
   std::stringstream str;
-  str << "TCPROS connection to [" << cached_remote_host_ << "]";
+  str << "TCPROS UDS connection to [" << cached_remote_host_ << "]";
   return str.str();
 }
 
@@ -549,5 +547,3 @@ std::string TransportUDSStream::getClientURI()
 }
 
 } // namespace ros
-
-#endif // ROS_UDS_EXT_DISABLE

@@ -7,7 +7,7 @@ TESTRES=0
 
 set -x
 
-ROS_UDS_EXT_ENABLE=on ${PY_TALKER} >/dev/null 2>&1  &
+${PY_TALKER} >/dev/null 2>&1  &
 TALKERPID1=$!
 sleep ${SLEEP_TIME}
 
