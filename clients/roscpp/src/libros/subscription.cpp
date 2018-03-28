@@ -48,10 +48,8 @@
 #include "ros/connection.h"
 #include "ros/transport/transport_tcp.h"
 #include "ros/transport/transport_udp.h"
-#ifndef ROS_UDS_EXT_DISABLE
 #include "ros/transport/transport_uds_stream.h"
 #include "ros/transport/transport_uds_datagram.h"
-#endif // ROS_UDS_EXT_DISABLE
 #include "ros/callback_queue_interface.h"
 #include "ros/this_node.h"
 #include "ros/network.h"
@@ -348,10 +346,11 @@ bool Subscription::negotiateConnection(const std::string& xmlrpc_uri)
   XmlRpcValue tcpros_array, protos_array, params;
   XmlRpcValue udpros_array;
   TransportUDPPtr udp_transport;
-#ifndef ROS_UDS_EXT_DISABLE
+  XmlRpcValue protos_array_uds, params_uds;
+  XmlRpcValue udpros_array_uds;
   TransportUDSDatagramPtr uds_datagram_transport;
-#endif // ROS_UDS_EXT_DISABLE
   int protos = 0;
+  int protos_uds = 0;
   V_string transports = transport_hints_.getTransports();
   if (transports.empty())
   {
@@ -366,26 +365,18 @@ bool Subscription::negotiateConnection(const std::string& xmlrpc_uri)
     {
       int max_datagram_size = transport_hints_.getMaxDatagramSize();
 
-#ifndef ROS_UDS_EXT_DISABLE
-      if (TransportUDS::s_use_uds_)
-      {
-        uds_datagram_transport = boost::make_shared<TransportUDSDatagram>(&PollManager::instance()->getPollSet());
-        if (!max_datagram_size)
-          max_datagram_size = uds_datagram_transport->getMaxDatagramSize();
-        uds_datagram_transport->createIncoming(false);
-      }
-      else
-      {
-#endif // ROS_UDS_EXT_DISABLE
-        udp_transport = boost::make_shared<TransportUDP>(&PollManager::instance()->getPollSet());
-        if (!max_datagram_size)
-          max_datagram_size = udp_transport->getMaxDatagramSize();
-        udp_transport->createIncoming(0, false);
-#ifndef ROS_UDS_EXT_DISABLE
-      }
-#endif // ROS_UDS_EXT_DISABLE
+      uds_datagram_transport = boost::make_shared<TransportUDSDatagram>(&PollManager::instance()->getPollSet());
+      if (!max_datagram_size)
+        max_datagram_size = uds_datagram_transport->getMaxDatagramSize();
+      uds_datagram_transport->createIncoming(false);
+
+      udp_transport = boost::make_shared<TransportUDP>(&PollManager::instance()->getPollSet());
+      if (!max_datagram_size)
+        max_datagram_size = udp_transport->getMaxDatagramSize();
+      udp_transport->createIncoming(0, false);
 
       int index = 0;
+      int index_uds = 0;
       udpros_array[index++] = "UDPROS";
       M_string m;
       m["topic"] = getName();
@@ -397,26 +388,21 @@ bool Subscription::negotiateConnection(const std::string& xmlrpc_uri)
       Header::write(m, buffer, len);
       XmlRpcValue v(buffer.get(), len);
       udpros_array[index++] = v;
-#ifndef ROS_UDS_EXT_DISABLE
-      if (TransportUDS::s_use_uds_)
-      {
-        udpros_array[index++] = uds_datagram_transport->getServerUDSPath();
-      }
-      else
-      {
-#endif // ROS_UDS_EXT_DISABLE
-        udpros_array[index++] = network::getHost();
-        udpros_array[index++] = udp_transport->getServerPort();
-#ifndef ROS_UDS_EXT_DISABLE
-      }
-#endif // ROS_UDS_EXT_DISABLE
-      udpros_array[index++] = max_datagram_size;
+      udpros_array[index++] = network::getHost();
+      udpros_array[index++] = udp_transport->getServerPort();
 
+      udpros_array_uds = udpros_array;
+      index_uds = index;
+      udpros_array_uds[index_uds++] = uds_datagram_transport->getServerUDSPath();
+      udpros_array_uds[index_uds++] = max_datagram_size;
+      protos_array_uds[protos_uds++] = udpros_array_uds;
+      udpros_array[index++] = max_datagram_size;
       protos_array[protos++] = udpros_array;
     }
     else if (*it == "TCP")
     {
       tcpros_array[0] = std::string("TCPROS");
+      protos_array_uds[protos_uds++] = tcpros_array;
       protos_array[protos++] = tcpros_array;
     }
     else
@@ -426,12 +412,33 @@ bool Subscription::negotiateConnection(const std::string& xmlrpc_uri)
   }
   params[0] = this_node::getName();
   params[1] = name_;
+  params_uds = params;
   params[2] = protos_array;
+  params_uds[2] = protos_array_uds;
   std::string peer_host;
   uint32_t peer_port;
   if (!network::splitURI(xmlrpc_uri, peer_host, peer_port))
   {
     ROS_ERROR("Bad xml-rpc URI: [%s]", xmlrpc_uri.c_str());
+    return false;
+  }
+
+  XmlRpc::XmlRpcClient* c_uds = new XmlRpc::XmlRpcClient(peer_host.c_str(),
+                                                         peer_port, "/");
+  if (!c_uds->executeNonBlock("requestTopicUds", params_uds))
+  {
+    ROSCPP_LOG_DEBUG("Failed to contact publisher [%s:%d] for topic [%s]",
+              peer_host.c_str(), peer_port, name_.c_str());
+    delete c_uds;
+    if (uds_datagram_transport)
+    {
+      uds_datagram_transport->close();
+    }
+    if (udp_transport)
+    {
+      udp_transport->close();
+    }
+
     return false;
   }
 
@@ -445,6 +452,10 @@ bool Subscription::negotiateConnection(const std::string& xmlrpc_uri)
     ROSCPP_LOG_DEBUG("Failed to contact publisher [%s:%d] for topic [%s]",
               peer_host.c_str(), peer_port, name_.c_str());
     delete c;
+    if (uds_datagram_transport)
+    {
+      uds_datagram_transport->close();
+    }
     if (udp_transport)
     {
       udp_transport->close();
@@ -458,20 +469,14 @@ bool Subscription::negotiateConnection(const std::string& xmlrpc_uri)
   // The PendingConnectionPtr takes ownership of c, and will delete it on
   // destruction.
   PendingConnectionPtr conn;
-#ifndef ROS_UDS_EXT_DISABLE
-  if (TransportUDS::s_use_uds_)
-  {
-    conn = boost::make_shared<PendingConnection>(c, uds_datagram_transport, shared_from_this(), xmlrpc_uri);
-  }
-  else
-  {
-#endif // ROS_UDS_EXT_DISABLE
-    conn = boost::make_shared<PendingConnection>(c, udp_transport, shared_from_this(), xmlrpc_uri);
-#ifndef ROS_UDS_EXT_DISABLE
-  }
-#endif // ROS_UDS_EXT_DISABLE
+  conn = boost::make_shared<PendingConnection>(c, udp_transport, uds_datagram_transport, shared_from_this(), xmlrpc_uri);
 
-  XMLRPCManager::instance()->addASyncConnection(conn);
+  // The PendingConnectionUDSPtr takes ownership of c_uds, and will delete it on
+  // destruction.
+  PendingConnectionUDSPtr conn_uds;
+  conn_uds = boost::make_shared<PendingConnectionUDS>(c_uds, shared_from_this(), xmlrpc_uri, conn);
+
+  XMLRPCManager::instance()->addASyncConnection(conn_uds);
   // Put this connection on the list that we'll look at later.
   {
     boost::mutex::scoped_lock pending_connections_lock(pending_connections_mutex_);
@@ -489,7 +494,6 @@ void closeTransport(const TransportUDPPtr& trans)
   }
 }
 
-#ifndef ROS_UDS_EXT_DISABLE
 void closeTransport(const TransportUDSDatagramPtr& trans)
 {
   if (trans)
@@ -497,7 +501,6 @@ void closeTransport(const TransportUDSDatagramPtr& trans)
     trans->close();
   }
 }
-#endif // ROS_UDS_EXT_DISABLE
 
 void Subscription::pendingConnectionDone(const PendingConnectionPtr& conn, XmlRpcValue& result)
 {
@@ -513,115 +516,68 @@ void Subscription::pendingConnectionDone(const PendingConnectionPtr& conn, XmlRp
   }
 
   TransportUDPPtr udp_transport;
-#ifndef ROS_UDS_EXT_DISABLE
   TransportUDSDatagramPtr uds_datagram_transport;
-#endif // ROS_UDS_EXT_DISABLE
 
   std::string peer_host = conn->getClient()->getHost();
   uint32_t peer_port = conn->getClient()->getPort();
   std::stringstream ss;
   ss << "http://" << peer_host << ":" << peer_port << "/";
   std::string xmlrpc_uri = ss.str();
-#ifndef ROS_UDS_EXT_DISABLE
-  if (TransportUDS::s_use_uds_)
-  {
-    uds_datagram_transport = conn->getUDSDatagramTransport();
-  }
-  else
-  {
-#endif // ROS_UDS_EXT_DISABLE
-    udp_transport = conn->getUDPTransport();
-#ifndef ROS_UDS_EXT_DISABLE
-  }
-#endif // ROS_UDS_EXT_DISABLE
+  uds_datagram_transport = conn->getUDSDatagramTransport();
+  udp_transport = conn->getUDPTransport();
 
   XmlRpc::XmlRpcValue proto;
   if(!XMLRPCManager::instance()->validateXmlrpcResponse("requestTopic", result, proto))
   {
     ROSCPP_LOG_DEBUG("Failed to contact publisher [%s:%d] for topic [%s]",
               peer_host.c_str(), peer_port, name_.c_str());
-#ifndef ROS_UDS_EXT_DISABLE
-    if (TransportUDS::s_use_uds_)
-    {
-      closeTransport(uds_datagram_transport);
-    }
-    else
-    {
-#endif // ROS_UDS_EXT_DISABLE
-      closeTransport(udp_transport);
-#ifndef ROS_UDS_EXT_DISABLE
-    }
-#endif // ROS_UDS_EXT_DISABLE
-  	return;
+    closeTransport(uds_datagram_transport);
+    closeTransport(udp_transport);
+    return;
   }
 
   if (proto.size() == 0)
   {
     ROSCPP_LOG_DEBUG("Couldn't agree on any common protocols with [%s] for topic [%s]", xmlrpc_uri.c_str(), name_.c_str());
-#ifndef ROS_UDS_EXT_DISABLE
-    if (TransportUDS::s_use_uds_)
-    {
-      closeTransport(uds_datagram_transport);
-    }
-    else
-    {
-#endif // ROS_UDS_EXT_DISABLE
-      closeTransport(udp_transport);
-#ifndef ROS_UDS_EXT_DISABLE
-    }
-#endif // ROS_UDS_EXT_DISABLE
-  	return;
+    closeTransport(uds_datagram_transport);
+    closeTransport(udp_transport);
+    return;
   }
 
   if (proto.getType() != XmlRpcValue::TypeArray)
   {
     ROSCPP_LOG_DEBUG("Available protocol info returned from %s is not a list.", xmlrpc_uri.c_str());
-#ifndef ROS_UDS_EXT_DISABLE
-    if (TransportUDS::s_use_uds_)
-    {
-      closeTransport(uds_datagram_transport);
-    }
-    else
-    {
-#endif // ROS_UDS_EXT_DISABLE
-      closeTransport(udp_transport);
-#ifndef ROS_UDS_EXT_DISABLE
-    }
-#endif // ROS_UDS_EXT_DISABLE
-  	return;
+    closeTransport(uds_datagram_transport);
+    closeTransport(udp_transport);
+    return;
   }
   if (proto[0].getType() != XmlRpcValue::TypeString)
   {
     ROSCPP_LOG_DEBUG("Available protocol info list doesn't have a string as its first element.");
-#ifndef ROS_UDS_EXT_DISABLE
-    if (TransportUDS::s_use_uds_)
-    {
-      closeTransport(uds_datagram_transport);
-    }
-    else
-    {
-#endif // ROS_UDS_EXT_DISABLE
-      closeTransport(udp_transport);
-#ifndef ROS_UDS_EXT_DISABLE
-    }
-#endif // ROS_UDS_EXT_DISABLE
-  	return;
+    closeTransport(uds_datagram_transport);
+    closeTransport(udp_transport);
+    return;
   }
 
   std::string proto_name = proto[0];
   if (proto_name == "TCPROS")
   {
-#ifndef ROS_UDS_EXT_DISABLE
-    if (TransportUDS::s_use_uds_)
+    if (proto.size() != 3 ||
+        proto[1].getType() != XmlRpcValue::TypeString ||
+        proto[2].getType() != XmlRpcValue::TypeInt)
     {
-      if (proto.size() != 2 ||
-          proto[1].getType() != XmlRpcValue::TypeString)
-      {
-        ROSCPP_LOG_DEBUG("publisher implements TCPROS, but the " \
-                  "parameters aren't string");
-        return;
-      }
-      std::string pub_path = proto[1];
+      ROSCPP_LOG_DEBUG("publisher implements TCPROS, but the " \
+                "parameters aren't string");
+      return;
+    }
+
+    std::string pub_host = proto[1];
+    int pub_port = proto[2];
+
+    std::string pub_path = conn->getUDSPath();
+    bool is_internal = network::isInternal(pub_path, pub_host);
+    if ( is_internal)
+    {
       ROSCPP_CONN_LOG_DEBUG("Connecting via tcpros to topic [%s] at host [%s]", name_.c_str(), pub_path.c_str());
 
       TransportUDSStreamPtr transport(boost::make_shared<TransportUDSStream>(&PollManager::instance()->getPollSet()));
@@ -647,17 +603,6 @@ void Subscription::pendingConnectionDone(const PendingConnectionPtr& conn, XmlRp
     }
     else
     {
-#endif // ROS_UDS_EXT_DISABLE
-      if (proto.size() != 3 ||
-          proto[1].getType() != XmlRpcValue::TypeString ||
-          proto[2].getType() != XmlRpcValue::TypeInt)
-      {
-        ROSCPP_LOG_DEBUG("publisher implements TCPROS, but the " \
-                  "parameters aren't string,int");
-        return;
-      }
-      std::string pub_host = proto[1];
-      int pub_port = proto[2];
       ROSCPP_CONN_LOG_DEBUG("Connecting via tcpros to topic [%s] at host [%s:%d]", name_.c_str(), pub_host.c_str(), pub_port);
 
       TransportTCPPtr transport(boost::make_shared<TransportTCP>(&PollManager::instance()->getPollSet()));
@@ -680,30 +625,37 @@ void Subscription::pendingConnectionDone(const PendingConnectionPtr& conn, XmlRp
       {
         ROSCPP_CONN_LOG_DEBUG("Failed to connect to publisher of topic [%s] at [%s:%d]", name_.c_str(), pub_host.c_str(), pub_port);
       }
-#ifndef ROS_UDS_EXT_DISABLE
     }
-#endif // ROS_UDS_EXT_DISABLE
   }
   else if (proto_name == "UDPROS")
   {
-#ifndef ROS_UDS_EXT_DISABLE
-    if (TransportUDS::s_use_uds_)
+    if (proto.size() != 6 ||
+        proto[1].getType() != XmlRpcValue::TypeString ||
+        proto[2].getType() != XmlRpcValue::TypeInt ||
+        proto[3].getType() != XmlRpcValue::TypeInt ||
+        proto[4].getType() != XmlRpcValue::TypeInt ||
+        proto[5].getType() != XmlRpcValue::TypeBase64)
     {
-      if (proto.size() != 5 ||
-          proto[1].getType() != XmlRpcValue::TypeString ||
-          proto[2].getType() != XmlRpcValue::TypeInt ||
-          proto[3].getType() != XmlRpcValue::TypeInt ||
-          proto[4].getType() != XmlRpcValue::TypeBase64)
-      {
-        ROSCPP_LOG_DEBUG("publisher implements UDPROS, but the " \
-                 "parameters aren't string,int,int,base64");
-        closeTransport(uds_datagram_transport);
-        return;
-      }
-      std::string pub_uds_path = proto[1];
-      int conn_id = proto[2];
-      int max_datagram_size = proto[3];
-      std::vector<char> header_bytes = proto[4];
+      ROSCPP_LOG_DEBUG("publisher implements UDPROS, but the " \
+               "parameters aren't string,int,int,base64");
+      closeTransport(uds_datagram_transport);
+      closeTransport(udp_transport);
+      return;
+    }
+
+    int index = 1;
+    std::string pub_host = proto[index++];
+    int pub_port = proto[index++];
+    int conn_id = proto[index++];
+    int max_datagram_size = proto[index++];
+    std::vector<char> header_bytes = proto[index++];
+
+    std::string pub_uds_path = conn->getUDSPath();
+    bool is_internal = network::isInternal(pub_uds_path, pub_host);
+    if (is_internal)
+    {
+      // not need udp_transport any more, close it
+      closeTransport(udp_transport);
       boost::shared_array<uint8_t> buffer(new uint8_t[header_bytes.size()]);
       memcpy(buffer.get(), &header_bytes[0], header_bytes.size());
       Header h;
@@ -748,24 +700,8 @@ void Subscription::pendingConnectionDone(const PendingConnectionPtr& conn, XmlRp
     }
     else
     {
-#endif // ROS_UDS_EXT_DISABLE
-      if (proto.size() != 6 ||
-          proto[1].getType() != XmlRpcValue::TypeString ||
-          proto[2].getType() != XmlRpcValue::TypeInt ||
-          proto[3].getType() != XmlRpcValue::TypeInt ||
-          proto[4].getType() != XmlRpcValue::TypeInt ||
-          proto[5].getType() != XmlRpcValue::TypeBase64)
-      {
-        ROSCPP_LOG_DEBUG("publisher implements UDPROS, but the " \
-                 "parameters aren't string,int,int,int,base64");
-        closeTransport(udp_transport);
-        return;
-      }
-      std::string pub_host = proto[1];
-      int pub_port = proto[2];
-      int conn_id = proto[3];
-      int max_datagram_size = proto[4];
-      std::vector<char> header_bytes = proto[5];
+      // not need uds_datagram_transport any more, close it
+      closeTransport(uds_datagram_transport);
       boost::shared_array<uint8_t> buffer(new uint8_t[header_bytes.size()]);
       memcpy(buffer.get(), &header_bytes[0], header_bytes.size());
       Header h;
@@ -807,9 +743,7 @@ void Subscription::pendingConnectionDone(const PendingConnectionPtr& conn, XmlRp
         closeTransport(udp_transport);
         return;
       }
-#ifndef ROS_UDS_EXT_DISABLE
     }
-#endif // ROS_UDS_EXT_DISABLE
   }
   else
   {

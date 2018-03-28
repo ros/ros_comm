@@ -614,11 +614,36 @@ class ROSMasterHandler(object):
         @type  caller_api: str
         @return: (code, message, ignore)
         @rtype: (int, str, int)
-        """        
+        """
         try:
             self.ps_lock.acquire()
             self.reg_manager.register_service(service, caller_id, caller_api, service_api)
-            mloginfo("+SERVICE [%s] %s %s", service, caller_id, caller_api)
+            mloginfo("+SERVICE [%s] %s %s %s", service, caller_id, caller_api, service_api)
+        finally:
+            self.ps_lock.release()
+        return 1, "Registered [%s] as provider of [%s]"%(caller_id, service), 1
+
+    @apivalidate(0, ( is_service('service'), is_api('service_api'), is_api('service_uds_api'), is_api('caller_api')))
+    def registerServiceExt(self, caller_id, service, service_api, service_uds_api, caller_api):
+        """
+        Register the caller as a provider of the specified service.
+        @param caller_id str: ROS caller id
+        @type  caller_id: str
+        @param service: Fully-qualified name of service
+        @type  service: str
+        @param service_api: Service URI
+        @type  service_api: str
+        @param service_uds_api: Service UDS URI
+        @type  service_uds_api: str
+        @param caller_api: XML-RPC URI of caller node
+        @type  caller_api: str
+        @return: (code, message, ignore)
+        @rtype: (int, str, int)
+        """
+        try:
+            self.ps_lock.acquire()
+            self.reg_manager.register_service(service, caller_id, caller_api, service_api, service_uds_api)
+            mloginfo("+SERVICE [%s] %s %s %s %s", service, caller_id, caller_api, service_api, service_uds_api)
         finally:
             self.ps_lock.release()
         return 1, "Registered [%s] as provider of [%s]"%(caller_id, service), 1
@@ -631,17 +656,39 @@ class ROSMasterHandler(object):
         @type  caller_id: str
         @param service: fully-qualified name of service to lookup.
         @type: service: str
-        @return: (code, message, serviceUrl). service URL is provider's
+        @return: (code, message, serviceUrl, serviceUDSUrl). service URL is provider's
            ROSRPC URI with address and port.  Fails if there is no provider.
         @rtype: (int, str, str)
         """
         try:
             self.ps_lock.acquire()
-            service_url = self.services.get_service_api(service)
+            service_url, _ = self.services.get_service_api(service)
         finally:
             self.ps_lock.release()
         if service_url:
             return 1, "rosrpc URI: [%s]"%service_url, service_url
+        else:
+            return -1, "no provider", ''
+
+    @apivalidate(0, (is_service('service'),))
+    def lookupServiceExt(self, caller_id, service):
+        """
+        Lookup all provider of a particular service.
+        @param caller_id str: ROS caller id
+        @type  caller_id: str
+        @param service: fully-qualified name of service to lookup.
+        @type: service: str
+        @return: (code, message, serviceUrl, serviceUDSUrl). service URL is provider's
+           ROSRPC URI with address and port.  Fails if there is no provider.
+        @rtype: (int, str, str)
+        """
+        try:
+            self.ps_lock.acquire()
+            service_url, service_uds_url = self.services.get_service_api(service)
+        finally:
+            self.ps_lock.release()
+        if service_url:
+            return 1, "rosrpc URI: [%s,%s]"%(service_url, service_uds_url), [service_url, service_uds_url]
         else:
             return -1, "no provider", ''
 
@@ -664,11 +711,39 @@ class ROSMasterHandler(object):
         try:
             self.ps_lock.acquire()
             retval = self.reg_manager.unregister_service(service, caller_id, service_api)
-            mloginfo("-SERVICE [%s] %s %s", service, caller_id, service_api)
+            if retval[2] == 1:
+                mloginfo("-SERVICE [%s] %s %s", service, caller_id, service_api)
             return retval
         finally:
             self.ps_lock.release()
 
+    @apivalidate(0, ( is_service('service'), is_api('service_api'), is_api('service_uds_api')))
+    def unregisterServiceExt(self, caller_id, service, service_api, service_uds_api):
+        """
+        Unregister the caller as a provider of the specified service.
+        @param caller_id str: ROS caller id
+        @type  caller_id: str
+        @param service: Fully-qualified name of service
+        @type  service: str
+        @param service_api: API URI of service to unregister. Unregistration will only occur if current
+           registration matches.
+        @type  service_api: str
+        @param service_uds_api: API URI of uds service to unregister. Unregistration will only occur if current
+           registration matches.
+        @type  service_uds_api: str
+        @return: (code, message, numUnregistered). Number of unregistrations (either 0 or 1).
+           If this is zero it means that the caller was not registered as a service provider.
+           The call still succeeds as the intended final state is reached.
+        @rtype: (int, str, int)
+        """
+        try:
+            self.ps_lock.acquire()
+            retval = self.reg_manager.unregister_service(service, caller_id, service_api, service_uds_api)
+            if retval[2] == 1:
+                mloginfo("-SERVICE [%s] %s %s %s", service, caller_id, service_api, service_uds_api)
+            return retval
+        finally:
+            self.ps_lock.release()
     ##################################################################################
     # PUBLISH/SUBSCRIBE
 

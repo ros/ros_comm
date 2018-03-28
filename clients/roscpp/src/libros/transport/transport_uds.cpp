@@ -18,8 +18,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef ROS_UDS_EXT_DISABLE
-
 #include "ros/transport/transport_uds.h"
 #include <sstream>
 #include <boost/filesystem.hpp>
@@ -33,7 +31,6 @@
 namespace ros
 {
 
-bool TransportUDS::s_use_uds_ = false;
 uint32_t TransportUDS::s_uds_feature_ = 0;
 
 const std::string TransportUDS::generateServerUDSPath()
@@ -54,5 +51,3 @@ const std::string TransportUDS::generateServerUDSPath(uint32_t counter)
 }
 
 }
-
-#endif // ROS_UDS_EXT_DISABLE

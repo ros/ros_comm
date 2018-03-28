@@ -44,9 +44,7 @@
 #include "ros/file_log.h"
 #include "ros/poll_manager.h"
 #include "ros/transport/transport_tcp.h"
-#ifndef ROS_UDS_EXT_DISABLE
 #include "ros/transport/transport_uds.h"
-#endif // ROS_UDS_EXT_DISABLE
 #include "ros/timer_manager.h"
 #include "ros/callback_queue.h"
 #include "ros/internal_timer_manager.h"
@@ -259,13 +257,12 @@ void TransportPublisherLink::onConnectionDropped(const ConnectionPtr& conn, Conn
     return;
   }
 
-#ifndef ROS_UDS_EXT_DISABLE
-  if (TransportUDS::s_use_uds_)
+  if (getTransportInfo().find("UDS") != std::string::npos)
   {
+    // only for UDS Transport
     drop();
     return;
   }
-#endif // ROS_UDS_EXT_DISABLE
 
   ROS_ASSERT(conn == connection_);
 

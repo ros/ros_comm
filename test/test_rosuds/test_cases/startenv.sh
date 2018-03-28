@@ -70,7 +70,7 @@ sleep_time=3
 if [ -f /etc/lsb-integrator ]; then
     ROSUDS_TEST_PLATFORM=`grep 'DISTRIB_CODENAME' /etc/lsb-integrator | awk -F'=' '{print $2}'`
     if [ "$ROSUDS_TEST_PLATFORM" = "BDK16-arm64" ]; then
-        sleep_time=5
+        sleep_time=10
     fi
 fi
 export SLEEP_TIME=${sleep_time}

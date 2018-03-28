@@ -5,7 +5,7 @@ SCRIPT_DIR=$(dirname $(readlink -f $0))
 # check roscore running
 ROS_CORE_COUNT=`ps -ef | grep "roscore" | grep -v "grep" | wc -l`
 if [ ${ROS_CORE_COUNT} -eq 0 ]; then
-        echo "please run 'ROS_UDS_EXT_ENABLE=on roscore' first"
+        echo "please run 'roscore' first"
         exit 1
 fi
 

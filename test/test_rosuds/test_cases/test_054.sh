@@ -10,7 +10,7 @@ set -x
 # pub exec -> sub exec -> sub exit -> sub exec -> pub exit -> sub exit
 
 # pub exec
-ROS_UDS_EXT_ENABLE=on ${PY_TALKER} >/dev/null 2>&1  &
+${PY_TALKER} >/dev/null 2>&1  &
 TALKERPID1=$!
 sleep ${SLEEP_TIME}
 OLD_SERVER_COUNT=`get_uds_stream_server_count "${TALKERPID1}"`
@@ -19,7 +19,7 @@ EXPECTED_SERVER_COUNT=$((OLD_SERVER_COUNT))
 EXPECTED_CONNECTED_IN_COUNT=$((OLD_CONNECTED_IN_COUNT+1))
 
 # sub exec
-ROS_UDS_EXT_ENABLE=on ${PY_LISTENER} >/dev/null 2>&1  &
+${PY_LISTENER} >/dev/null 2>&1  &
 LISTENERPID1=$!
 sleep ${SLEEP_TIME}
 NEW_SERVER_COUNT=`get_uds_stream_server_count "${TALKERPID1}"`
@@ -48,7 +48,7 @@ if [ ${NEW_CONNECTED_IN_COUNT} -ne ${EXPECTED_CONNECTED_IN_COUNT} ]; then
 fi
 
 # sub exec
-ROS_UDS_EXT_ENABLE=on ${PY_LISTENER} >/dev/null 2>&1  &
+${PY_LISTENER} >/dev/null 2>&1  &
 LISTENERPID1=$!
 sleep ${SLEEP_TIME}
 EXPECTED_SERVER_COUNT=$((OLD_SERVER_COUNT))

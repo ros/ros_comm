@@ -60,12 +60,10 @@ class TransportTCP;
 typedef boost::shared_ptr<TransportTCP> TransportTCPPtr;
 class TransportUDP;
 typedef boost::shared_ptr<TransportUDP> TransportUDPPtr;
-#ifndef ROS_UDS_EXT_DISABLE
 class TransportUDSStream;
 typedef boost::shared_ptr<TransportUDSStream> TransportUDSStreamPtr;
 class TransportUDSDatagram;
 typedef boost::shared_ptr<TransportUDSDatagram> TransportUDSDatagramPtr;
-#endif // ROS_UDS_EXT_DISABLE
 class Connection;
 typedef boost::shared_ptr<Connection> ConnectionPtr;
 typedef std::set<ConnectionPtr> S_Connection;

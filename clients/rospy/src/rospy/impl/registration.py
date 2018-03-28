@@ -47,6 +47,8 @@ try:
 except ImportError:
     import xmlrpclib as xmlrpcclient
 
+import rosgraph.rosenv
+
 from rospy.core import is_shutdown, is_shutdown_requested, xmlrpcapi, \
     logfatal, logwarn, loginfo, logerr, logdebug, \
     signal_shutdown, add_preshutdown_hook
@@ -122,7 +124,7 @@ class RegistrationListeners(object):
         with self.lock:
             self.listeners.append(l)
 
-    def notify_removed(self, resolved_name, data_type_or_uri, reg_type):
+    def notify_removed(self, resolved_name, data_type_or_uri, reg_type, uds_uri=None):
         """
         @param resolved_name: resolved_topic/service name
         @type  resolved_name: str
@@ -130,15 +132,17 @@ class RegistrationListeners(object):
         @type  data_type_or_uri: str
         @param reg_type: Valid values are L{Registration.PUB}, L{Registration.SUB}, L{Registration.SRV}
         @type  reg_type: str
+        @param uds_uri: uds service uri
+        @type  uds_uri: str
         """
         with self.lock:
             for l in self.listeners:
                 try:
-                    l.reg_removed(resolved_name, data_type_or_uri, reg_type)
+                    l.reg_removed(resolved_name, data_type_or_uri, reg_type, uds_uri)
                 except Exception as e:
                     logerr("error notifying listener of removal: %s"%traceback.format_exc())
             
-    def notify_added(self, resolved_name, data_type, reg_type):
+    def notify_added(self, resolved_name, data_type, reg_type, uds_uri=None):
         """
         @param resolved_name: topic/service name
         @type  resolved_name: str
@@ -146,11 +150,13 @@ class RegistrationListeners(object):
         @type  data_type: str
         @param reg_type: Valid values are L{Registration.PUB}, L{Registration.SUB}, L{Registration.SRV}
         @type  reg_type: str
+        @param uds_uri: uds service uri
+        @type  uds_uri: str
         """
         with self.lock:
             for l in self.listeners:
                 try:
-                    l.reg_added(resolved_name, data_type, reg_type)
+                    l.reg_added(resolved_name, data_type, reg_type, uds_uri)
                 except Exception as e:
                     logerr(traceback.format_exc())
                     
@@ -368,8 +374,10 @@ class RegManager(RegistrationListener):
                     multi.unregisterPublisher(caller_id, resolved_name, self.uri)
 
             if sm is not None:
-                for resolved_name, service_uri in sm.get_services():
-                    self.logger.debug("unregisterService [%s]"%resolved_name) 
+                for resolved_name, service_uri, uds_service_uri in sm.get_services():
+                    self.logger.debug("unregisterServiceExt [%s]" % resolved_name)
+                    multi.unregisterServiceExt(caller_id, resolved_name, service_uri, uds_service_uri)
+                    self.logger.debug("unregisterService [%s]" % resolved_name)
                     multi.unregisterService(caller_id, resolved_name, service_uri)
             multi()
         except socket.error as se:
@@ -390,7 +398,7 @@ class RegManager(RegistrationListener):
         if sm is not None:
             sm.unregister_all()
 
-    def reg_removed(self, resolved_name, data_type_or_uri, reg_type):
+    def reg_removed(self, resolved_name, data_type_or_uri, reg_type, uds_uri="rosrpc://"):
         """
         RegistrationListener callback
         @param resolved_name: resolved name of topic or service
@@ -399,6 +407,8 @@ class RegManager(RegistrationListener):
         @type  data_type_or_uri: str
         @param reg_type: Valid values are L{Registration.PUB}, L{Registration.SUB}, L{Registration.SRV}
         @type  reg_type: str
+        @param uds_uri: uds service uri
+        @type  uds_uri: str
         """
         master_uri = self.master_uri
         if not master_uri:
@@ -413,13 +423,17 @@ class RegManager(RegistrationListener):
                     self.logger.debug("unregisterSubscriber(%s, %s)", resolved_name, data_type_or_uri)
                     master.unregisterSubscriber(get_caller_id(), resolved_name, self.uri)
                 elif reg_type == Registration.SRV:
-                    self.logger.debug("unregisterService(%s, %s)", resolved_name, data_type_or_uri)
-                    master.unregisterService(get_caller_id(), resolved_name, data_type_or_uri)
+                    try:
+                        self.logger.debug("unregisterServiceExt(%s, %s, uds_uri)", resolved_name, data_type_or_uri, uds_uri)
+                        master.unregisterServiceExt(get_caller_id(), resolved_name, data_type_or_uri, uds_uri)
+                    except Exception as e:
+                        self.logger.debug("unregisterService(%s, %s, uds_uri)", resolved_name, data_type_or_uri)
+                        master.unregisterService(get_caller_id(), resolved_name, data_type_or_uri)
             except:
                 logwarn("unable to communicate with ROS Master, registrations are now out of sync")
                 self.logger.error(traceback.format_exc())
     
-    def reg_added(self, resolved_name, data_type_or_uri, reg_type):
+    def reg_added(self, resolved_name, data_type_or_uri, reg_type, uds_uri="rosrpc://"):
         """
         RegistrationListener callback
         @param resolved_name: resolved name of topic or service
@@ -428,6 +442,8 @@ class RegManager(RegistrationListener):
         @type  data_type_or_uri: str
         @param reg_type: Valid values are L{Registration.PUB}, L{Registration.SUB}, L{Registration.SRV}
         @type  reg_type: str
+        @param uds_uri: uds service uri
+        @type  uds_uri: str
         """
         #TODO: this needs to be made robust to master outages
         master_uri = self.master_uri
@@ -455,8 +471,14 @@ class RegManager(RegistrationListener):
                             # timer
                             logfatal("unable to register subscription [%s] with master: %s"%(resolved_name, msg))
                     elif reg_type == Registration.SRV:
-                        self.logger.debug("master.registerService(%s, %s, %s, %s)"%args)
-                        code, msg, val = master.registerService(*args)
+                        try:
+                            args_uds = (get_caller_id(), resolved_name, data_type_or_uri, uds_uri, self.uri)
+                            self.logger.debug("master.registerServiceExt(%s, %s, %s, %s, %s)" % args_uds)
+                            code, msg, val = master.registerServiceExt(*args_uds)
+                        except Exception:
+                            self.logger.debug("master.registerService(%s, %s, %s, %s)" % args)
+                            code, msg, val = master.registerService(*args)
+
                         if code != 1:
                             logfatal("unable to register service [%s] with master: %s"%(resolved_name, msg))
                         

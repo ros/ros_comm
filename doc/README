@@ -29,13 +29,11 @@ Index
   a) How to use in runtime.
      - for runtime, UDS feature is provided as BAS package for projects.
        1st of all, you do need to install the BAS package as well.
-     - set environment variable 'ROS_UDS_EXT_ENABLE=on' to turn on the
-       UDS feature enabled, before running the applilcation.
-       e.g) # ROS_UDS_EXT_ENABLE=on roscore
-            # ROS_UDS_EXT_ENABLE=on rosrun test_rosuds talker_uds
-            # ROS_UDS_EXT_ENABLE=on rosrun test_rosuds listener_uds
-     - if the environment variable is not set,
-       TCP/IP or UDP/IP(default ROS communication) will be used.
+     - TCP/IP and UDS feature are supported in hybrid mode.
+       UDS feature will be used automaticlly, you can just use ROS as usual.
+       e.g) # roscore
+            # rosrun test_rosuds talker_uds
+            # rosrun test_rosuds listener_uds
 
   b) Additional Sub Features
      - using UDS, there are some additional sub features.
@@ -55,14 +53,8 @@ Index
          e.g) # export ROS_NO_ROSOUT=1
 
   c) Limitations.
-     - UDS feature is supported only roscpp, nothing else.
-     - UDS feature is exlusive from TCP/UDP IP default comm on each process.
-       you can not use UDS feature and TCP/UDP IP comm on the same process.
-     - No tools are suppoted via UDS feature. (might work but not confirmed)
-
-     (*) since a few development steps we make, there are some strong limitaions
-         at this time. but these are the limitation not specifications, we are
-         trying to get rid of the limitations for close future.
+     - the hybrid system is not supported if rosmaster is constructed via
+       ros_comm original.
 
   d) Devel environment.
      - you can use this repository in your catkin environment, all you need to

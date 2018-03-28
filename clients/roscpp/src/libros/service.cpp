@@ -30,9 +30,8 @@
 #include "ros/service_server_link.h"
 #include "ros/service_manager.h"
 #include "ros/transport/transport_tcp.h"
-#ifndef ROS_UDS_EXT_DISABLE
 #include "ros/transport/transport_uds_stream.h"
-#endif // ROS_UDS_EXT_DISABLE
+#include "ros/network.h"
 #include "ros/poll_manager.h"
 #include "ros/init.h"
 #include "ros/names.h"
@@ -47,17 +46,19 @@ bool service::exists(const std::string& service_name, bool print_failure_reason)
 
   std::string host;
   uint32_t port;
-#ifndef ROS_UDS_EXT_DISABLE
   std::string uds_path;
-#endif // ROS_UDS_EXT_DISABLE
   bool lookup = false;
 
-#ifndef ROS_UDS_EXT_DISABLE
-  if (TransportUDS::s_use_uds_)
+  if (ServiceManager::instance()->lookupServiceExt(mapped_name, host, port, uds_path))
   {
-    if (ServiceManager::instance()->lookupService(mapped_name, uds_path))
+    lookup = true;
+  }
+
+  bool is_internal = network::isInternal(uds_path, host);
+  if (is_internal)
+  {
+    if (lookup)
     {
-      lookup = true;
       TransportUDSStreamPtr transport(boost::make_shared<TransportUDSStream>(static_cast<ros::PollSet*>(NULL), TransportUDSStream::SYNCHRONOUS));
 
       if (transport->connect(uds_path))
@@ -87,10 +88,8 @@ bool service::exists(const std::string& service_name, bool print_failure_reason)
   }
   else
   {
-#endif // ROS_UDS_EXT_DISABLE
-    if (ServiceManager::instance()->lookupService(mapped_name, host, port))
+    if (lookup)
     {
-      lookup = true;
       TransportTCPPtr transport(boost::make_shared<TransportTCP>(static_cast<ros::PollSet*>(NULL), TransportTCP::SYNCHRONOUS));
 
       if (transport->connect(host, port))
@@ -117,9 +116,7 @@ bool service::exists(const std::string& service_name, bool print_failure_reason)
         }
       }
     }
-#ifndef ROS_UDS_EXT_DISABLE
   }
-#endif // ROS_UDS_EXT_DISABLE
 
   if (!lookup)
   {

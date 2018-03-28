@@ -7,7 +7,7 @@ TESTRES=0
 
 set -x
 
-ROS_UDS_EXT_ENABLE=on ${PY_ADD_TWO_INTS_SERVER} >/dev/null 2>&1  &
+${PY_ADD_TWO_INTS_SERVER} >/dev/null 2>&1  &
 SERVICE_SERVERPID1=$!
 sleep ${SLEEP_TIME}
 

@@ -21,8 +21,6 @@
 #ifndef ROSCPP_TRANSPORT_UDS_STREAM_H
 #define ROSCPP_TRANSPORT_UDS_STREAM_H
 
-#ifndef ROS_UDS_EXT_DISABLE
-
 #include <ros/types.h>
 #include <ros/transport/transport_uds.h>
 
@@ -132,5 +130,4 @@ private:
 
 }
 
-#endif // ROS_UDS_EXT_DISABLE
 #endif // ROSCPP_TRANSPORT_UDS_STREAM_H

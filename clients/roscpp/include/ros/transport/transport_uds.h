@@ -21,8 +21,6 @@
 #ifndef ROSCPP_TRANSPORT_UDS_H
 #define ROSCPP_TRANSPORT_UDS_H
 
-#ifndef ROS_UDS_EXT_DISABLE
-
 #include <ros/transport/transport.h>
 
 /*! @name UDS Feature Bit Field
@@ -43,7 +41,6 @@ namespace ros
 class TransportUDS : public Transport
 {
 public:
-  static bool s_use_uds_;
   static uint32_t s_uds_feature_;
 
   /**
@@ -67,5 +64,4 @@ protected:
 
 }
 
-#endif // ROS_UDS_EXT_DISABLE
 #endif // ROSCPP_TRANSPORT_UDS_H
