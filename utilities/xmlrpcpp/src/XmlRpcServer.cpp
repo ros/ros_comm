@@ -31,6 +31,9 @@ XmlRpcServer::XmlRpcServer()
 
   if(getrlimit(RLIMIT_NOFILE, &limit) == 0) {
     max_files = limit.rlim_max;
+    if( max_files == RLIM_INFINITY ) {
+      max_files = 0;
+    }
   } else {
     XmlRpcUtil::error("Could not get open file limit: %s", strerror(errno));
   }
@@ -218,6 +221,11 @@ int XmlRpcServer::countFreeFDs() {
 
   // Get the current soft limit on the number of file descriptors.
   if(getrlimit(RLIMIT_NOFILE, &limit) == 0) {
+    // If we have infinite file descriptors, always return FREE_FD_BUFFER so
+    // that we never hit the low-water mark.
+    if( limit.rlim_max == RLIM_INFINITY ) {
+      return FREE_FD_BUFFER;
+    }
 
     // Poll the available file descriptors.
     // The POSIX specification guarantees that rlim_cur will always be less or
