@@ -27,18 +27,18 @@ XmlRpcServer::XmlRpcServer()
     _accept_retry_time_sec(0.0)
 {
   struct rlimit limit = { .rlim_cur = 0, .rlim_max = 0 };
-  int max_files = 1024;
+  unsigned int max_files = 1024;
 
   if(getrlimit(RLIMIT_NOFILE, &limit) == 0) {
     max_files = limit.rlim_max;
-    if( max_files == RLIM_INFINITY ) {
+    if( limit.rlim_max == RLIM_INFINITY ) {
       max_files = 0;
     }
   } else {
     XmlRpcUtil::error("Could not get open file limit: %s", strerror(errno));
   }
   pollfds.resize(max_files);
-  for(int i=0; i<max_files; i++) {
+  for(unsigned int i=0; i<max_files; i++) {
     // Set up file descriptor query for all events.
     pollfds[i].fd = i;
     pollfds[i].events = POLLIN | POLLPRI | POLLOUT;
