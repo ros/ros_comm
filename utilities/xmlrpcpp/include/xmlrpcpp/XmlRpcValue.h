@@ -189,7 +189,7 @@ namespace XmlRpc {
 } // namespace XmlRpc
 
 
-std::ostream& operator<<(std::ostream& os, const XmlRpc::XmlRpcValue& v);
+std::ostream& operator<<(std::ostream& os, XmlRpc::XmlRpcValue& v);
 
 
 #endif // _XMLRPCVALUE_H_
