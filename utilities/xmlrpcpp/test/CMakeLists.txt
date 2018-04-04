@@ -13,6 +13,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 add_library(test_fixtures test_fixtures.cpp)
 target_link_libraries(test_fixtures xmlrpcpp ${Boost_LIBRARIES} ${GTEST_LIBRARIES})
+set_target_properties(test_fixtures PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
 catkin_add_gtest(HelloTest HelloTest.cpp)
 target_link_libraries(HelloTest xmlrpcpp ${Boost_LIBRARIES})
@@ -25,6 +26,7 @@ target_link_libraries(test_ulimit xmlrpcpp test_fixtures ${Boost_LIBRARIES})
 
 add_library(mock_socket mock_socket.cpp)
 target_link_libraries(mock_socket ${GTEST_LIBRARIES})
+set_target_properties(mock_socket PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
 catkin_add_gtest(test_client
   test_client.cpp
