@@ -28,13 +28,12 @@
 #endif
 
 #define MOCK_SYSCALL(ret, name, ARG_TYPES, ARG_NAMES)                          \
-  ret __real_##name ARG_TYPES;                                                 \
   ret(*fake_##name) ARG_TYPES = 0;                                             \
   ret __wrap_##name ARG_TYPES {                                                \
     if (fake_##name) {                                                         \
       return fake_##name ARG_NAMES;                                            \
     } else {                                                                   \
-      return __real_##name ARG_NAMES;                                          \
+      return -1;                                                                \
     }                                                                          \
   }                                                                            \
   int name##_calls = 0;                                                        \
@@ -47,7 +46,6 @@
 
 // custom mock for fcntl because it is varargs
 // the mocked version always takes the third argument
-int __real_fcntl(int fd, int cmd, ...);
 int (*fake_fcntl)(int fd, int cmd, unsigned long) = 0;
 int __wrap_fcntl(int fd, int cmd, ...) {
   va_list ap;
@@ -58,7 +56,7 @@ int __wrap_fcntl(int fd, int cmd, ...) {
   if (fake_fcntl) {
     return fake_fcntl(fd, cmd, arg);
   } else {
-    return __real_fcntl(fd, cmd, arg);
+    return -1;
   }
 }
 int fcntl_calls = 0;
@@ -68,13 +66,12 @@ int count_fcntl(int fd, int cmd, unsigned long arg) {
 }
 
 // Custom mock for freeaddrinfo because it returns void.
-void __real_freeaddrinfo(struct addrinfo* res);
 void (*fake_freeaddrinfo)(struct addrinfo* res) = 0;
 void __wrap_freeaddrinfo(struct addrinfo* res) {
   if (fake_freeaddrinfo) {
     return fake_freeaddrinfo(res);
   } else {
-    return __real_freeaddrinfo(res);
+    return;
   }
 }
 int freeaddrinfo_calls = 0;
