@@ -358,7 +358,7 @@ class Loader(object):
         else:
             ros_config.add_param(Param(param_name, param_value), verbose=verbose)
         
-    def load_rosparam(self, context, ros_config, cmd, param, file_, text, verbose=True):
+    def load_rosparam(self, context, ros_config, cmd, param, file_, text, verbose=True, subst_function=None):
         """
         Load rosparam setting
         
@@ -394,6 +394,8 @@ class Loader(object):
                 with open(file_, 'r') as f:
                     text = f.read()
                     
+            if subst_function is not None:
+                text = subst_function(text)
             # parse YAML text
             # - lazy import
             global yaml

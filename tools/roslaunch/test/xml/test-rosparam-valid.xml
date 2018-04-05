@@ -12,6 +12,10 @@
     <rosparam file="$(find roslaunch)/test/params.yaml" command="load" />      
   </node>
 
+  <group ns="rosparam_subst">
+    <rosparam file="$(find roslaunch)/test/params_subst.yaml" command="load" subst_value="true" />
+  </group>
+
   <rosparam param="inline_str">value1</rosparam>
   <rosparam param="inline_list">[1, 2, 3, 4]</rosparam>  
   <rosparam param="inline_dict">{key1: value1, key2: value2}</rosparam>    
@@ -19,6 +23,8 @@
      key3: value3
      key4: value4
   </rosparam>
+
+  <rosparam param="inline_subst" subst_value="true">$(anon foo)</rosparam>
   
   <rosparam param="override">{key1: value1, key2: value2}</rosparam>
   <rosparam param="override">{key1: override1}</rosparam>  
