@@ -1124,20 +1124,20 @@ def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, ve
 
         if not subscribers_only:
             print("\n%sPublished topics:"%indent)
-            for t, y, l in pubs:
-                if len(l) > 1:
-                    print(indent+" * %s [%s] %s publishers"%(t, y, len(l)))
+            for t, ttype, tlist in pubs:
+                if len(tlist) > 1:
+                    print(indent+" * %s [%s] %s publishers"%(t, ttype, len(tlist)))
                 else:
-                    print(indent+" * %s [%s] 1 publisher"%(t, y))                    
+                    print(indent+" * %s [%s] 1 publisher"%(t, ttype))                    
 
         if not publishers_only:
             print(indent)
             print(indent+"Subscribed topics:")
-            for t, y, l in subs:
-                if len(l) > 1:
-                    print(indent+" * %s [%s] %s subscribers"%(t, y, len(l)))
+            for t, ttype, tlist in subs:
+                if len(tlist) > 1:
+                    print(indent+" * %s [%s] %s subscribers"%(t, ttype, len(llist)))
                 else:
-                    print(indent+" * %s [%s] 1 subscriber"%(t, y))
+                    print(indent+" * %s [%s] 1 subscriber"%(t, ttype))
         print('')
     else:
         if publishers_only:
@@ -1149,7 +1149,9 @@ def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, ve
         topics.sort()
         print('\n'.join(["%s%s"%(indent, t) for t in topics]))
 
-def get_topic_list():
+def get_topic_list(master=None):
+    if not master:
+        master = rosgraph.Master('/rostopic')
     def topic_type(t, topic_types):
         matches = [t_type for t_name, t_type in topic_types if t_name == t]
         if matches:
@@ -1157,7 +1159,6 @@ def get_topic_list():
         return 'unknown type'
 
     # Return an array of tuples; (<topic>, <type>, <node_count>)
-    master = rosgraph.Master('/rostopic')
     state = master.getSystemState()
     topic_types = _master_get_topic_types(master)
     
@@ -1219,8 +1220,11 @@ def _rostopic_list(topic, verbose=False,
     
     master = rosgraph.Master('/rostopic')
     try:
-        pubs, subs = get_topic_list()
-            
+        pubs, subs = get_topic_list(master=master)
+        if topic:
+            topic_ns = rosgraph.names.make_global_ns(topic)
+            subs = (x for x in subs if x[0] == topic or x[0].startswith(topic_ns))
+            pubs = (x for x in pubs if x[0] == topic or x[0].startswith(topic_ns))
     except socket.error:
         raise ROSTopicIOException("Unable to communicate with master!")
 
@@ -1259,7 +1263,7 @@ def get_info_text(topic):
 
     master = rosgraph.Master('/rostopic')
     try:
-        pubs, subs = get_topic_list()
+        pubs, subs = get_topic_list(master=master)
         # filter based on topic
         subs = [x for x in subs if x[0] == topic]
         pubs = [x for x in pubs if x[0] == topic]
@@ -1276,7 +1280,7 @@ def get_info_text(topic):
 
     if pubs:
         buff.write("Publishers: \n")
-        for p in itertools.chain(*[l for x, l in pubs]):
+        for p in itertools.chain(*[nodes for topic, ttype, nodes in pubs]):
             buff.write(" * %s (%s)\n"%(p, get_api(master, p)))
     else:
         buff.write("Publishers: None\n")
@@ -1284,7 +1288,7 @@ def get_info_text(topic):
 
     if subs:
         buff.write("Subscribers: \n")
-        for p in itertools.chain(*[l for x, l in subs]):
+        for p in itertools.chain(*[nodes for topic, ttype, nodes in subs]):
             buff.write(" * %s (%s)\n"%(p, get_api(master, p)))
     else:
         buff.write("Subscribers: None\n")

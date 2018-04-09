@@ -292,9 +292,8 @@ class TestRostopic(unittest.TestCase):
         # test through public function
         topics = ['/chatter', '/foo/chatter', '/bar/chatter', '/rosout', '/rosout_agg'] 
 
-        with fakestdout() as b:
-            v = rostopic.get_topic_list()
-            self.failIf(set(topics)-set(v))
+        v = rostopic.get_topic_list()
+        self.failIf(set(topics)-set(v))
 
         # publishers-only
         topics = ['/chatter', '/foo/chatter', '/bar/chatter', '/rosout', '/rosout_agg'] 
