@@ -144,7 +144,16 @@ def rospyerr(msg, *args):
 def rospywarn(msg, *args):
     """Internal rospy client library warn logging"""
     _rospy_logger.warn(msg, *args)
-    
+
+
+def _frame_to_caller_id(frame):
+    caller_id = (
+        inspect.getabsfile(frame),
+        frame.f_lineno,
+        frame.f_lasti,
+    )
+    return pickle.dumps(caller_id)
+
 
 def _base_logger(msg, *args, **kwargs):
 
@@ -224,6 +233,22 @@ class LoggingThrottle(object):
 _logging_throttle = LoggingThrottle()
 
 
+def logdebug_throttle(period, msg):
+    _base_logger(msg, logger_throttle=period, logger_level='debug')
+
+def loginfo_throttle(period, msg):
+    _base_logger(msg, logger_throttle=period, logger_level='info')
+
+def logwarn_throttle(period, msg):
+    _base_logger(msg, logger_throttle=period, logger_level='warn')
+
+def logerr_throttle(period, msg):
+    _base_logger(msg, logger_throttle=period, logger_level='error')
+
+def logfatal_throttle(period, msg):
+    _base_logger(msg, logger_throttle=period, logger_level='critical')
+
+
 class LoggingIdentical(object):
 
     last_logging_msg_table = {}
@@ -245,29 +270,26 @@ class LoggingIdentical(object):
 _logging_identical = LoggingIdentical()
 
 
-def _frame_to_caller_id(frame):
-    caller_id = (
-        inspect.getabsfile(frame),
-        frame.f_lineno,
-        frame.f_lasti,
-    )
-    return pickle.dumps(caller_id)
+def logdebug_throttle_identical(period, msg):
+    _base_logger(msg, logger_throttle=period, logger_throttle_identical=True,
+                 logger_level='debug')
 
+def loginfo_throttle_identical(period, msg):
+    _base_logger(msg, logger_throttle=period, logger_throttle_identical=True,
+                 logger_level='info')
 
-def logdebug_throttle(period, msg):
-    _base_logger(msg, logger_throttle=period, logger_level='debug')
+def logwarn_throttle_identical(period, msg):
+    _base_logger(msg, logger_throttle=period, logger_throttle_identical=True,
+                 logger_level='warn')
 
-def loginfo_throttle(period, msg):
-    _base_logger(msg, logger_throttle=period, logger_level='info')
+def logerr_throttle_identical(period, msg):
+    _base_logger(msg, logger_throttle=period, logger_throttle_identical=True,
+                 logger_level='error')
 
-def logwarn_throttle(period, msg):
-    _base_logger(msg, logger_throttle=period, logger_level='warn')
+def logfatal_throttle_identical(period, msg):
+    _base_logger(msg, logger_throttle=period, logger_throttle_identical=True,
+                 logger_level='critical')
 
-def logerr_throttle(period, msg):
-    _base_logger(msg, logger_throttle=period, logger_level='error')
-
-def logfatal_throttle(period, msg):
-    _base_logger(msg, logger_throttle=period, logger_level='critical')
 
 class LoggingOnce(object):
 
