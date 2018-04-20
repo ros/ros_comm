@@ -52,7 +52,7 @@ class MuxServiceTestCase(unittest.TestCase):
             rospy.wait_for_service('mux/list', 5)
             rospy.wait_for_service('mux/select', 5)
         except rospy.ROSException as e:
-            self.fail('failed to find a required service: ' + `e`)
+            self.fail('failed to find a required service: ' + repr(e))
 
         add_srv = rospy.ServiceProxy('mux/add', MuxAdd)
         delete_srv = rospy.ServiceProxy('mux/delete', MuxDelete)

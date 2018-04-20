@@ -1,6 +1,6 @@
-<package>
+<package format="2">
   <name>xmlrpcpp</name>
-  <version>1.12.12</version>
+  <version>1.12.13</version>
   <description>
     XmlRpc++ is a C++ implementation of the XML-RPC protocol. This version is
     heavily modified from the package available on SourceForge in order to
@@ -17,9 +17,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>cpp_common</build_depend>
-
-  <run_depend>cpp_common</run_depend>
+  <depend>cpp_common</depend>
+  <depend version_gte="0.6.9">rostime</depend>
 
   <export>
     <rosdoc external="http://xmlrpcpp.sourceforge.net/doc/hierarchy.html"/>
