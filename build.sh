@@ -9,10 +9,8 @@ cd ..
 pwd 
 catkin_make -DCMAKE_BUILD_TYPE=Release -j8 install
 
-
 apt-get update 
 apt-get install -y git curl ruby ruby-dev rubygems libffi-dev build-essential
-
 
 gem install --no-ri --no-rdoc fpm
 SEMREL_VERSION=v1.7.0-sameShaGetVersion.5
