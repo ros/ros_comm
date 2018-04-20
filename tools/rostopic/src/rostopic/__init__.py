@@ -1141,11 +1141,11 @@ def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, ve
         print('')
     else:
         if publishers_only:
-            topics = [t for t,_,_ in pubs]
+            topics = [t for t, _, _ in pubs]
         elif subscribers_only:
-            topics = [t for t,_,_ in subs]
+            topics = [t for t, _, _ in subs]
         else:
-            topics = list(set([t for t,_,_ in pubs] + [t for t,_,_ in subs]))                
+            topics = list(set([t for t, _, _ in pubs] + [t for t, _, _ in subs]))                
         topics.sort()
         print('\n'.join(["%s%s"%(indent, t) for t in topics]))
 
