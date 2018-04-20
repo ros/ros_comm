@@ -1,6 +1,7 @@
 #!/bin/bash
 pwd
-apt-get update && apt-get install -y g++
+apt-get update && apt-get install -y g++ ros-core
+apt-get dist-upgrade
 cd /workspace/src
 ls -la 
 source /opt/ros/kinetic/setup.bash
