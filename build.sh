@@ -1,5 +1,6 @@
 #!/bin/bash
 pwd
+apt-get update && apt-get install -y g++
 cd /workspace/src
 ls -la 
 source /opt/ros/kinetic/setup.bash
@@ -28,4 +29,13 @@ COMMAND="fpm -x 'opt/mfp_chuck/.*' -x 'opt/mfp_chuck/_setup*' -x 'opt/mfp_chuck/
 echo "${COMMAND}"
 eval "${COMMAND}"
 cp *.deb ${WORKSPACE}/
+
+export ARTIFACT_DEB_NAME="ros-comm_${VERSION}_${ARCH}.deb"
+export ARTIFACTORY_NAME="ros-comm_${VERSION}${DISTRO}_${ARCH}.deb"
+time curl \
+	-H "X-JFrog-Art-Api: ${ARTIFACTORY_PASSWORD}" \
+	-T "${WORKSPACE}/${ARTIFACT_DEB_NAME}" \
+	"https://sixriver.jfrog.io/sixriver/debian/pool/main/r/ros-comm/${ARTIFACTORY_NAME};deb.distribution=${DISTRO};deb.component=main;deb.architecture=${ARCH}"
+	
+
 
