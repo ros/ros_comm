@@ -350,27 +350,27 @@ The following variables are available:
         if options.verbose_pattern:
             verbose_pattern = expr_eval(options.verbose_pattern)
     
-            for topic, raw_msg, t in inbag.read_messages(raw=True):
+            for topic, raw_msg, t, conn_header in inbag.read_messages(raw=True, return_connection_header=True):
                 msg_type, serialized_bytes, md5sum, pos, pytype = raw_msg
                 msg = pytype()
                 msg.deserialize(serialized_bytes)
 
                 if filter_fn(topic, msg, t):
                     print('MATCH', verbose_pattern(topic, msg, t))
-                    outbag.write(topic, msg, t)
+                    outbag.write(topic, msg, t, connection_header=conn_header)
                 else:
                     print('NO MATCH', verbose_pattern(topic, msg, t))          
 
                 total_bytes += len(serialized_bytes) 
                 meter.step(total_bytes)
         else:
-            for topic, raw_msg, t in inbag.read_messages(raw=True):
+            for topic, raw_msg, t, conn_header in inbag.read_messages(raw=True, return_connection_header=True):
                 msg_type, serialized_bytes, md5sum, pos, pytype = raw_msg
                 msg = pytype()
                 msg.deserialize(serialized_bytes)
 
                 if filter_fn(topic, msg, t):
-                    outbag.write(topic, msg, t)
+                    outbag.write(topic, msg, t, connection_header=conn_header)
 
                 total_bytes += len(serialized_bytes)
                 meter.step(total_bytes)
@@ -693,16 +693,16 @@ def change_compression_op(inbag, outbag, compression, quiet):
     outbag.compression = compression
 
     if quiet:
-        for topic, msg, t in inbag.read_messages(raw=True):
-            outbag.write(topic, msg, t, raw=True)
+        for topic, msg, t, conn_header in inbag.read_messages(raw=True, return_connection_header=True):
+            outbag.write(topic, msg, t, raw=True, connection_header=conn_header)
     else:
         meter = ProgressMeter(outbag.filename, inbag._uncompressed_size)
 
         total_bytes = 0
-        for topic, msg, t in inbag.read_messages(raw=True):
+        for topic, msg, t, conn_header in inbag.read_messages(raw=True, return_connection_header=True):
             msg_type, serialized_bytes, md5sum, pos, pytype = msg
     
-            outbag.write(topic, msg, t, raw=True)
+            outbag.write(topic, msg, t, raw=True, connection_header=conn_header)
             
             total_bytes += len(serialized_bytes) 
             meter.step(total_bytes)
@@ -718,8 +718,8 @@ def reindex_op(inbag, outbag, quiet):
             except:
                 pass
 
-            for (topic, msg, t) in inbag.read_messages():
-                outbag.write(topic, msg, t)
+            for (topic, msg, t, conn_header) in inbag.read_messages(return_connection_header=True):
+                outbag.write(topic, msg, t, connection_header=conn_header)
         else:
             meter = ProgressMeter(outbag.filename, inbag.size)
             try:
@@ -730,8 +730,8 @@ def reindex_op(inbag, outbag, quiet):
             meter.finish()
 
             meter = ProgressMeter(outbag.filename, inbag.size)
-            for (topic, msg, t) in inbag.read_messages():
-                outbag.write(topic, msg, t)
+            for (topic, msg, t, conn_header) in inbag.read_messages(return_connection_header=True):
+                outbag.write(topic, msg, t, connection_header=conn_header)
                 meter.step(inbag._file.tell())
             meter.finish()
     else:
