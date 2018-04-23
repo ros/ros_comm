@@ -66,7 +66,9 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       ("topic", po::value< std::vector<std::string> >(), "topic to record")
       ("size", po::value<uint64_t>(), "The maximum size of the bag to record in MB.")
       ("duration", po::value<std::string>(), "Record a bag of maximum duration in seconds, unless 'm', or 'h' is appended.")
-      ("node", po::value<std::string>(), "Record all topics subscribed to by a specific node.");
+      ("node", po::value<std::string>(), "Record all topics subscribed to by a specific node.")
+      ("tcpnodelay", "Use the TCP_NODELAY transport hint when subscribing to topics.")
+      ("udp", "Use the UDP transport hint when subscribing to topics.");
 
   
     po::positional_options_description p;
@@ -237,6 +239,14 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     {
       opts.node = vm["node"].as<std::string>();
       std::cout << "Recording from: " << opts.node << std::endl;
+    }
+    if (vm.count("tcpnodelay"))
+    {
+      opts.transport_hints.tcpNoDelay();
+    }
+    if (vm.count("udp"))
+    {
+      opts.transport_hints.udp();
     }
 
     // Every non-option argument is assumed to be a topic
