@@ -2,6 +2,44 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.6 (2018-02-05)
+-------------------
+* raise the correct exception from AnyMsg.serialize (`#1311 <https://github.com/ros/ros_comm/issues/1311>`_)
+* remove unreachable exceptions (`#1260 <https://github.com/ros/ros_comm/issues/1260>`_)
+* replace Thread.setDaemon() using new API (`#1276 <https://github.com/ros/ros_comm/issues/1276>`_)
+
+1.13.5 (2017-11-09)
+-------------------
+* fix regresssion from 1.13.3 (`#1224 <https://github.com/ros/ros_comm/issues/1224>`_)
+
+1.13.4 (2017-11-02)
+-------------------
+* fix uri in message (`#1213 <https://github.com/ros/ros_comm/issues/1213>`_, regression from 1.13.3)
+
+1.13.3 (2017-10-25)
+-------------------
+* change rospy.Rate hz type from int to float (`#1177 <https://github.com/ros/ros_comm/issues/1177>`_)
+* use defined error codes rather than hardcoded integers (`#1174 <https://github.com/ros/ros_comm/issues/1174>`_)
+* improve log messages when waiting for service (`#1026 <https://github.com/ros/ros_comm/issues/1026>`_)
+* improve logger tests (`#1144 <https://github.com/ros/ros_comm/issues/1144>`_)
+
+1.13.2 (2017-08-15)
+-------------------
+* fix stack frame identification in rospy logging (`#1141 <https://github.com/ros/ros_comm/issues/1141>`_, regression from 1.13.1)
+
+1.13.1 (2017-07-27)
+-------------------
+* improve rospy.logXXX_throttle performance (`#1091 <https://github.com/ros/ros_comm/pull/1091>`_)
+* add option to reset timer when time moved backwards (`#1083 <https://github.com/ros/ros_comm/issues/1083>`_)
+* abort topic lookup on connection refused (`#1044 <https://github.com/ros/ros_comm/pull/1044>`_)
+* add rospy.logXXX_once (`#1041 <https://github.com/ros/ros_comm/issues/1041>`_)
+* remove "ROS time moved backwards" log message (`#1027 <https://github.com/ros/ros_comm/pull/1027>`_)
+* sleep in rospy wait_for_service even if exceptions raised (`#1025 <https://github.com/ros/ros_comm/pull/1025>`_)
+* add named loggers (`#948 <https://github.com/ros/ros_comm/pull/948>`_)
+
+1.13.0 (2017-02-22)
+-------------------
+
 1.12.7 (2017-02-17)
 -------------------
 * make get_published_topics threadsafe (`#958 <https://github.com/ros/ros_comm/issues/958>`_)

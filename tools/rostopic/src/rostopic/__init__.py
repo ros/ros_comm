@@ -64,6 +64,12 @@ import rosgraph
 #TODO: lazy-import rospy or move rospy-dependent routines to separate location
 import rospy
 
+try:
+    long
+except NameError:
+    long = int
+
+
 class ROSTopicException(Exception):
     """
     Base exception class of rostopic-related errors
@@ -284,13 +290,14 @@ def _get_ascii_table(header, cols):
 def _sleep(duration):
     rospy.rostime.wallsleep(duration)
 
-def _rostopic_hz(topics, window_size=-1, filter_expr=None, use_wtime=False):
+def _rostopic_hz(topics, window_size=-1, filter_expr=None, use_wtime=False, tcp_nodelay=False):
     """
     Periodically print the publishing rate of a topic to console until
     shutdown
     :param topics: topic names, ``list`` of ``str``
     :param window_size: number of messages to average over, -1 for infinite, ``int``
     :param filter_expr: Python filter expression that is called with m, the message instance
+    :param tcp_nodelay: Subscribe with the TCP_NODELAY transport hint if true
     """
     _check_master()
     if rospy.is_shutdown():
@@ -303,9 +310,9 @@ def _rostopic_hz(topics, window_size=-1, filter_expr=None, use_wtime=False):
         # may parameterize this in the future
         if filter_expr is not None:
             # have to subscribe with topic_type
-            rospy.Subscriber(real_topic, msg_class, rt.callback_hz, callback_args=topic)
+            rospy.Subscriber(real_topic, msg_class, rt.callback_hz, callback_args=topic, tcp_nodelay=tcp_nodelay)
         else:
-            rospy.Subscriber(real_topic, rospy.AnyMsg, rt.callback_hz, callback_args=topic)
+            rospy.Subscriber(real_topic, rospy.AnyMsg, rt.callback_hz, callback_args=topic, tcp_nodelay=tcp_nodelay)
         print("subscribed to [%s]" % real_topic)
 
     if rospy.get_param('use_sim_time', False):
@@ -390,12 +397,13 @@ class ROSTopicDelay(object):
         print("average delay: %.3f\n\tmin: %.3fs max: %.3fs std dev: %.5fs window: %s"%(delay, min_delta, max_delta, std_dev, window))
 
 
-def _rostopic_delay(topic, window_size=-1):
+def _rostopic_delay(topic, window_size=-1, tcp_nodelay=False):
     """
     Periodically print the publishing delay of a topic to console until
     shutdown
     :param topic: topic name, ``str``
     :param window_size: number of messages to average over, -1 for infinite, ``int``
+    :param tcp_nodelay: Subscribe with the TCP_NODELAY transport hint if true
     """
     # pause hz until topic is published
     msg_class, real_topic, _ = get_topic_class(topic, blocking=True)
@@ -403,7 +411,7 @@ def _rostopic_delay(topic, window_size=-1):
         return
     rospy.init_node(NAME, anonymous=True)
     rt = ROSTopicDelay(window_size)
-    sub = rospy.Subscriber(real_topic, msg_class, rt.callback_delay)
+    sub = rospy.Subscriber(real_topic, msg_class, rt.callback_delay, tcp_nodelay=tcp_nodelay)
     print("subscribed to [%s]" % real_topic)
 
     if rospy.get_param('use_sim_time', False):
@@ -687,7 +695,7 @@ def _sub_str_plot_fields(val, f, field_filter):
     """recursive helper function for _str_plot_fields"""
     # CSV
     type_ = type(val)
-    if type_ in (bool, int, float) or \
+    if type_ in (bool, int, long, float) or \
            isinstance(val, genpy.TVal):
         return f
     # duck-type check for messages
@@ -708,7 +716,7 @@ def _sub_str_plot_fields(val, f, field_filter):
         val0 = val[0]
         type0 = type(val0)
         # no arrays of arrays
-        if type0 in (bool, int, float) or \
+        if type0 in (bool, int, long, float) or \
                isinstance(val0, genpy.TVal):
             return ','.join(["%s%s"%(f,x) for x in range(0,len(val))])
         elif _isstring_type(type0):
@@ -757,7 +765,7 @@ def _sub_str_plot(val, time_offset, field_filter):
     
     if type_ == bool:
         return '1' if val else '0'
-    elif type_ in (int, float) or \
+    elif type_ in (int, long, float) or \
            isinstance(val, genpy.TVal):
         if time_offset is not None and isinstance(val, genpy.Time):
             return str(val-time_offset)
@@ -783,7 +791,7 @@ def _sub_str_plot(val, time_offset, field_filter):
         type0 = type(val0)
         if type0 == bool:
             return ','.join([('1' if v else '0') for v in val])
-        elif type0 in (int, float) or \
+        elif type0 in (int, long, float) or \
                isinstance(val0, genpy.TVal):
             return ','.join([str(v) for v in val])
         elif _isstring_type(type0):
@@ -1113,41 +1121,59 @@ def _rostopic_list_bag(bag_file, topic=None):
                     break
 
 def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, verbose, indent=''):
+    if verbose:
+        topic_types = _master_get_topic_types(master)
+
+        if not subscribers_only:
+            print("\n%sPublished topics:"%indent)
+            for t, ttype, tlist in pubs:
+                if len(tlist) > 1:
+                    print(indent+" * %s [%s] %s publishers"%(t, ttype, len(tlist)))
+                else:
+                    print(indent+" * %s [%s] 1 publisher"%(t, ttype))                    
+
+        if not publishers_only:
+            print(indent)
+            print(indent+"Subscribed topics:")
+            for t, ttype, tlist in subs:
+                if len(tlist) > 1:
+                    print(indent+" * %s [%s] %s subscribers"%(t, ttype, len(llist)))
+                else:
+                    print(indent+" * %s [%s] 1 subscriber"%(t, ttype))
+        print('')
+    else:
+        if publishers_only:
+            topics = [t for t, _, _ in pubs]
+        elif subscribers_only:
+            topics = [t for t, _, _ in subs]
+        else:
+            topics = list(set([t for t, _, _ in pubs] + [t for t, _, _ in subs]))                
+        topics.sort()
+        print('\n'.join(["%s%s"%(indent, t) for t in topics]))
+
+def get_topic_list(master=None):
+    if not master:
+        master = rosgraph.Master('/rostopic')
     def topic_type(t, topic_types):
         matches = [t_type for t_name, t_type in topic_types if t_name == t]
         if matches:
             return matches[0]
         return 'unknown type'
 
-    if verbose:
-        topic_types = _master_get_topic_types(master)
+    # Return an array of tuples; (<topic>, <type>, <node_count>)
+    state = master.getSystemState()
+    topic_types = _master_get_topic_types(master)
+    
+    pubs, subs, _ = state
+    pubs_out = []
+    for topic, nodes in pubs:
+        pubs_out.append((topic, topic_type(topic, topic_types), nodes))
+    subs_out = []
+    for topic, nodes in subs:
+        subs_out.append((topic, topic_type(topic, topic_types), nodes))
 
-        if not subscribers_only:
-            print("\n%sPublished topics:"%indent)
-            for t, l in pubs:
-                if len(l) > 1:
-                    print(indent+" * %s [%s] %s publishers"%(t, topic_type(t, topic_types), len(l)))
-                else:
-                    print(indent+" * %s [%s] 1 publisher"%(t, topic_type(t, topic_types)))                    
-
-        if not publishers_only:
-            print(indent)
-            print(indent+"Subscribed topics:")
-            for t,l in subs:
-                if len(l) > 1:
-                    print(indent+" * %s [%s] %s subscribers"%(t, topic_type(t, topic_types), len(l)))
-                else:
-                    print(indent+" * %s [%s] 1 subscriber"%(t, topic_type(t, topic_types)))
-        print('')
-    else:
-        if publishers_only:
-            topics = [t for t,_ in pubs]
-        elif subscribers_only:
-            topics = [t for t,_ in subs]
-        else:
-            topics = list(set([t for t,_ in pubs] + [t for t,_ in subs]))                
-        topics.sort()
-        print('\n'.join(["%s%s"%(indent, t) for t in topics]))
+    # List of published topics, list of subscribed topics.
+    return (pubs_out, subs_out)
 
 # #3145
 def _rostopic_list_group_by_host(master, pubs, subs):
@@ -1157,7 +1183,7 @@ def _rostopic_list_group_by_host(master, pubs, subs):
     """
     def build_map(master, state, uricache):
         tmap = {}
-        for topic, tnodes in state:
+        for topic, ttype, tnodes in state:
             for p in tnodes:
                 if not p in uricache:
                    uricache[p] = master.lookupNode(p)
@@ -1196,15 +1222,11 @@ def _rostopic_list(topic, verbose=False,
     
     master = rosgraph.Master('/rostopic')
     try:
-        state = master.getSystemState()
-
-        pubs, subs, _ = state
+        pubs, subs = get_topic_list(master=master)
         if topic:
-            # filter based on topic
-            topic_ns = rosgraph.names.make_global_ns(topic)        
+            topic_ns = rosgraph.names.make_global_ns(topic)
             subs = (x for x in subs if x[0] == topic or x[0].startswith(topic_ns))
             pubs = (x for x in pubs if x[0] == topic or x[0].startswith(topic_ns))
-            
     except socket.error:
         raise ROSTopicIOException("Unable to communicate with master!")
 
@@ -1243,9 +1265,7 @@ def get_info_text(topic):
 
     master = rosgraph.Master('/rostopic')
     try:
-        state = master.getSystemState()
-
-        pubs, subs, _ = state
+        pubs, subs = get_topic_list(master=master)
         # filter based on topic
         subs = [x for x in subs if x[0] == topic]
         pubs = [x for x in pubs if x[0] == topic]
@@ -1262,7 +1282,7 @@ def get_info_text(topic):
 
     if pubs:
         buff.write("Publishers: \n")
-        for p in itertools.chain(*[l for x, l in pubs]):
+        for p in itertools.chain(*[nodes for topic, ttype, nodes in pubs]):
             buff.write(" * %s (%s)\n"%(p, get_api(master, p)))
     else:
         buff.write("Publishers: None\n")
@@ -1270,7 +1290,7 @@ def get_info_text(topic):
 
     if subs:
         buff.write("Subscribers: \n")
-        for p in itertools.chain(*[l for x, l in subs]):
+        for p in itertools.chain(*[nodes for topic, ttype, nodes in subs]):
             buff.write(" * %s (%s)\n"%(p, get_api(master, p)))
     else:
         buff.write("Subscribers: None\n")
@@ -1476,17 +1496,16 @@ def _rostopic_cmd_hz(argv):
                       help="only measure messages matching the specified Python expression", metavar="EXPR")
     parser.add_option("--wall-time",
                       dest="use_wtime", default=False, action="store_true",
-                      help="calculates rate using wall time which can be helpful when clock isnt published during simulation")
+                      help="calculates rate using wall time which can be helpful when clock isn't published during simulation")
+    parser.add_option("--tcpnodelay",
+                      dest="tcp_nodelay", action="store_true",
+                      help="use the TCP_NODELAY transport hint when subscribing to topics")
 
     (options, args) = parser.parse_args(args)
     if len(args) == 0:
         parser.error("topic must be specified")        
     try:
-        if options.window_size != -1:
-            import string
-            window_size = string.atoi(options.window_size)
-        else:
-            window_size = options.window_size
+        window_size = int(options.window_size)
     except:
         parser.error("window size must be an integer")
 
@@ -1502,7 +1521,7 @@ def _rostopic_cmd_hz(argv):
     else:
         filter_expr = None
     _rostopic_hz(topics, window_size=window_size, filter_expr=filter_expr,
-                 use_wtime=options.use_wtime)
+                 use_wtime=options.use_wtime, tcp_nodelay=options.tcp_nodelay)
 
 
 def _rostopic_cmd_delay(argv):
@@ -1513,12 +1532,15 @@ def _rostopic_cmd_delay(argv):
     parser.add_argument("-w", "--window",
                         dest="window_size", default=-1, type=int,
                         help="window size, in # of messages, for calculating rate")
+    parser.add_argument("--tcpnodelay",
+                        dest="tcp_nodelay", action="store_true",
+                        help="use the TCP_NODELAY transport hint when subscribing to topics")
 
     args = parser.parse_args(args)
     topic_name = args.topic
     window_size = args.window_size
     topic = rosgraph.names.script_resolve_name('rostopic', topic_name)
-    _rostopic_delay(topic, window_size=window_size)
+    _rostopic_delay(topic, window_size=window_size, tcp_nodelay=args.tcp_nodelay)
 
 
 def _rostopic_cmd_bw(argv=sys.argv):
@@ -1534,11 +1556,7 @@ def _rostopic_cmd_bw(argv=sys.argv):
     if len(args) > 1:
         parser.error("you may only specify one input topic")
     try:
-        if options.window_size:
-            import string
-            window_size = string.atoi(options.window_size)
-        else:
-            window_size = options.window_size
+        window_size = int(options.window_size) if options.window_size is not None else None
     except:
         parser.error("window size must be an integer")
     topic = rosgraph.names.script_resolve_name('rostopic', args[0])
@@ -2125,4 +2143,3 @@ def rostopicmain(argv=None):
         sys.stderr.write("ERROR: %s\n"%str(e))
         sys.exit(1)
     except KeyboardInterrupt: pass
-    except rospy.ROSInterruptException: pass

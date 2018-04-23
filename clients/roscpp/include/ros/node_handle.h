@@ -36,6 +36,7 @@
 #include "ros/timer.h"
 #include "ros/rate.h"
 #include "ros/wall_timer.h"
+#include "ros/steady_timer.h"
 #include "ros/advertise_options.h"
 #include "ros/advertise_service_options.h"
 #include "ros/subscribe_options.h"
@@ -1465,6 +1466,85 @@ if (service)  // Enter if advertised service is valid
    * \param ops The options to use when creating the timer
    */
   WallTimer createWallTimer(WallTimerOptions& ops) const;
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Versions of createSteadyTimer()
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * \brief Create a timer which will call a callback at the specified rate, using wall time to determine
+   * when to call the callback instead of ROS time.
+   * This variant takes a class member function, and a bare pointer to the object to call the method on.
+   *
+   * When the Timer (and all copies of it) returned goes out of scope, the timer will automatically
+   * be stopped, and the callback will no longer be called.
+   *
+   * \param period The period at which to call the callback
+   * \param callback The method to call
+   * \param obj The object to call the method on
+   * \param oneshot If true, this timer will only fire once
+   * \param autostart If true (default), return timer that is already started
+   */
+  template<class T>
+  SteadyTimer createSteadyTimer(WallDuration period, void(T::*callback)(const SteadyTimerEvent&), T* obj,
+                                bool oneshot = false, bool autostart = true) const
+  {
+    return createSteadyTimer(period, boost::bind(callback, obj, _1), oneshot, autostart);
+  }
+
+  /**
+   * \brief Create a timer which will call a callback at the specified rate, using wall time to determine
+   * when to call the callback instead of ROS time.  This variant takes
+   * a class member function, and a shared pointer to the object to call the method on.
+   *
+   * When the Timer (and all copies of it) returned goes out of scope, the timer will automatically
+   * be stopped, and the callback will no longer be called.
+   *
+   * \param period The period at which to call the callback
+   * \param callback The method to call
+   * \param obj The object to call the method on.  Since this is a shared pointer, the object will
+   * automatically be tracked with a weak_ptr so that if it is deleted before the Timer goes out of
+   * scope the callback will no longer be called (and therefore will not crash).
+   * \param oneshot If true, this timer will only fire once
+   */
+  template<class T>
+  SteadyTimer createSteadyTimer(WallDuration period, void(T::*callback)(const SteadyTimerEvent&),
+                                const boost::shared_ptr<T>& obj,
+                                bool oneshot = false, bool autostart = true) const
+  {
+    SteadyTimerOptions ops(period, boost::bind(callback, obj.get(), _1), 0);
+    ops.tracked_object = obj;
+    ops.oneshot = oneshot;
+    ops.autostart = autostart;
+    return createSteadyTimer(ops);
+  }
+
+  /**
+   * \brief Create a timer which will call a callback at the specified rate, using wall time to determine
+   * when to call the callback instead of ROS time.  This variant takes
+   * anything that can be bound to a Boost.Function, including a bare function
+   *
+   * When the Timer (and all copies of it) returned goes out of scope, the timer will automatically
+   * be stopped, and the callback will no longer be called.
+   *
+   * \param period The period at which to call the callback
+   * \param callback The function to call
+   * \param oneshot If true, this timer will only fire once
+   */
+  SteadyTimer createSteadyTimer(WallDuration period, const SteadyTimerCallback& callback,
+                                bool oneshot = false, bool autostart = true) const;
+
+  /**
+   * \brief Create a timer which will call a callback at the specified rate, using wall time to determine
+   * when to call the callback instead of ROS time.  This variant allows
+   * the full range of TimerOptions.
+   *
+   * When the Timer (and all copies of it) returned goes out of scope, the timer will automatically
+   * be stopped, and the callback will no longer be called.
+   *
+   * \param ops The options to use when creating the timer
+   */
+  SteadyTimer createSteadyTimer(SteadyTimerOptions& ops) const;
 
   /** \brief Set an arbitrary XML/RPC value on the parameter server.
    *

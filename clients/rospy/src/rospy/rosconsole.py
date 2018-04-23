@@ -33,14 +33,22 @@
 from __future__ import print_function
 
 import os
+import re
 import socket
 import sys
+
+from datetime import datetime
+from dateutil.tz import tzlocal
+
+from argparse import ArgumentParser
 
 import rosgraph
 import rospy
 
 from .logger_level_service_caller import LoggerLevelServiceCaller
 from .logger_level_service_caller import ROSConsoleException
+
+from rosgraph_msgs.msg import Log
 
 NAME = 'rosconsole'
 
@@ -135,6 +143,97 @@ def _rosconsole_cmd_get(argv):
     print(logger_level._current_levels[args[1]])
 
 
+class RosConsoleEcho(object):
+    # See ANSI/VT100 terminal color codes here:
+    # https://misc.flogisoft.com/bash/tip_colors_and_formatting
+    LEVEL_COLOR = {
+        'DEBUG': 92,  # Light green
+        'INFO' : 97,  # White
+        'WARN' : 93,  # Light yellow
+        'ERROR': 91,  # Light red
+        'FATAL': 95,  # Light magenta
+    }
+
+    LEVEL_MAX_LENGTH = max([len(level) for level in LEVEL_COLOR.keys()])
+
+    def __init__(self, options):
+        self._filter = re.compile(options.filter)
+        self._level = getattr(Log, options.level.upper())
+        self._nocolor = options.nocolor
+        self._verbose = options.verbose
+
+        self._level_string_map = {getattr(Log, level): self._stringify(level) for level in self.LEVEL_COLOR.keys()}
+
+        callback = self._once_callback if options.once else self._callback
+        rospy.Subscriber(options.topic, Log, callback)
+
+    def _stringify(self, level):
+        string = level.ljust(RosConsoleEcho.LEVEL_MAX_LENGTH)
+
+        return string if self._nocolor else \
+               '\033[{}m{}\033[0m'.format(self.LEVEL_COLOR[level], string)
+
+    @staticmethod
+    def get_levels():
+        """Get levels sorted by increasing severity."""
+        return sorted(RosConsoleEcho.LEVEL_COLOR.keys(), key=lambda level: getattr(Log, level))
+
+    def _print(self, msg):
+        print('[ {} ] [\033[1m{}\033[21m]: {}'.format(
+            self._level_string_map[msg.level], msg.name, msg.msg))
+
+        if self._verbose:
+            stamp_sec = msg.header.stamp.to_sec()
+            stamp_tz = datetime.fromtimestamp(stamp_sec, tzlocal())
+
+            print('          [{} ({:.6f})] [{}]: {}:{}'.format(
+                stamp_tz, stamp_sec, msg.function, msg.file, msg.line))
+
+    def _callback(self, msg):
+        if self._filter.search(msg.name) and msg.level >= self._level:
+            self._print(msg)
+
+    def _once_callback(self, msg):
+        self._callback(msg)
+        rospy.signal_shutdown('Done')
+
+
+def _get_cmd_echo_argparse(prog):
+    parser = ArgumentParser(prog=prog, description='Print logger messages')
+
+    parser.add_argument('filter', metavar='FILTER', type=str, nargs='?', default='.*',
+                        help='regular expression to filter the logger name (default: %(default)s)')
+
+    parser.add_argument('-l', '--level', action='store', metavar='LEVEL',
+                        type=str, default='warn', dest='level',
+                        choices=[level.lower() for level in RosConsoleEcho.get_levels()],
+                        help='minimum logger level to print (default: %(default)s)')
+
+    parser.add_argument('-1', '--once', action='store_true', dest='once',
+                        help='prints one logger message and exits')
+
+    parser.add_argument('--topic', action='store', metavar='TOPIC',
+                        type=str, default='/rosout', dest='topic',
+                        help='topic to read the logger messages from (default: %(default)s)')
+
+    parser.add_argument('--nocolor', action='store_true', help='output without color')
+
+    parser.add_argument('-v', '--verbose', action='store_true', help='print full logger details')
+
+    return parser
+
+
+def _rosconsole_cmd_echo(argv):
+    parser = _get_cmd_echo_argparse(' '.join([os.path.basename(argv[0]), argv[1]]))
+    args = parser.parse_args(argv[2:])
+
+    rospy.init_node('rosconsole', anonymous=True)
+
+    rosconsole = RosConsoleEcho(args)
+
+    rospy.spin()
+
+
 def _fullusage():
     print("""rosconsole is a command-line tool for configuring the logger level of ROS nodes.
 
@@ -142,6 +241,7 @@ Commands:
 \trosconsole get\tdisplay level for a logger
 \trosconsole list\tlist loggers for a node
 \trosconsole set\tset level for a logger
+\trosconsole echo\tprint logger messages
 
 Type rosconsole <command> -h for more detailed usage, e.g. 'rosconsole list -h'
 """)
@@ -169,6 +269,8 @@ def main(argv=None):
             _rosconsole_cmd_list(argv)
         elif command == 'set':
             _rosconsole_cmd_set(argv)
+        elif command == 'echo':
+            _rosconsole_cmd_echo(argv)
         else:
             _fullusage()
     except socket.error as e:
@@ -180,6 +282,4 @@ def main(argv=None):
     except ROSConsoleException as e:
         error(1, str(e))
     except KeyboardInterrupt:
-        pass
-    except rospy.ROSInterruptException:
         pass

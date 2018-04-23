@@ -242,6 +242,10 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEquals('bar', p.value)
         p = [p for p in mock.params if p.key == '/node_rosparam/robots/childparam'][0]
         self.assertEquals('a child namespace parameter', p.value)
+
+        # test substitution in yaml files
+        p = [p for p in mock.params if p.key == '/rosparam_subst/string1'][0]
+        self.assertTrue('$(anon foo)' not in p.value)
         
         exes = [e for e in mock.executables if e.command == 'rosparam']
         self.assertEquals(len(exes), 2, "expected 2 rosparam exes, got %s"%len(exes))
@@ -273,6 +277,10 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEquals('value3', p.value)
         p = [p for p in mock.params if p.key == '/inline_dict2/key4'][0]
         self.assertEquals('value4', p.value)
+
+        # test substitution in inline yaml
+        p = [p for p in mock.params if p.key == '/inline_subst'][0]
+        self.assertTrue('$(anon foo)' not in p.value)
 
         # verify that later tags override 
         # - key2 is overriden
@@ -1064,3 +1072,18 @@ class TestXmlLoader(unittest.TestCase):
         #    self.fail('should have thrown an exception')
         #except roslaunch.xmlloader.XmlParseException:
         #    pass
+
+    # Test for $(dirname) behaviour across included files.
+    def test_dirname(self):
+        loader = roslaunch.xmlloader.XmlLoader()
+        filename = os.path.join(self.xml_dir, 'test-dirname.xml')
+
+        mock = RosLaunchMock()
+        loader.load(filename, mock)
+
+        param_d = {}
+        for p in mock.params:
+            param_d[p.key] = p.value
+
+        self.assertEquals(param_d['/foo'], self.xml_dir + '/bar')
+        self.assertEquals(param_d['/bar'], self.xml_dir + '/test-dirname/baz')

@@ -39,7 +39,7 @@ namespace XmlRpc {
     static bool nbRead(int socket, std::string& s, bool *eof);
 
     //! Write text to the specified socket. Returns false on error.
-    static bool nbWrite(int socket, std::string& s, int *bytesSoFar);
+    static bool nbWrite(int socket, const std::string& s, int *bytesSoFar);
 
 
     // The next four methods are appropriate for servers.
@@ -62,7 +62,7 @@ namespace XmlRpc {
 
 
     //! Connect a socket to a server (from a client)
-    static bool connect(int socket, std::string& host, int port);
+    static bool connect(int socket, const std::string& host, int port);
 
 
     //! Returns last errno

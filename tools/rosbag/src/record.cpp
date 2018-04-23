@@ -62,11 +62,13 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       ("bz2,j", "use BZ2 compression")
       ("lz4", "use LZ4 compression")
       ("split", po::value<int>()->implicit_value(0), "Split the bag file and continue recording when maximum size or maximum duration reached.")
-      ("max-splits", po::value<int>()->default_value(0), "Keep a maximum of N bag files, when reaching the maximum erase the oldest one to keep a constant number of files.")
+      ("max-splits", po::value<int>(), "Keep a maximum of N bag files, when reaching the maximum erase the oldest one to keep a constant number of files.")
       ("topic", po::value< std::vector<std::string> >(), "topic to record")
       ("size", po::value<uint64_t>(), "The maximum size of the bag to record in MB.")
       ("duration", po::value<std::string>(), "Record a bag of maximum duration in seconds, unless 'm', or 'h' is appended.")
-      ("node", po::value<std::string>(), "Record all topics subscribed to by a specific node.");
+      ("node", po::value<std::string>(), "Record all topics subscribed to by a specific node.")
+      ("tcpnodelay", "Use the TCP_NODELAY transport hint when subscribing to topics.")
+      ("udp", "Use the UDP transport hint when subscribing to topics.");
 
   
     po::positional_options_description p;
@@ -237,6 +239,14 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     {
       opts.node = vm["node"].as<std::string>();
       std::cout << "Recording from: " << opts.node << std::endl;
+    }
+    if (vm.count("tcpnodelay"))
+    {
+      opts.transport_hints.tcpNoDelay();
+    }
+    if (vm.count("udp"))
+    {
+      opts.transport_hints.udp();
     }
 
     // Every non-option argument is assumed to be a topic

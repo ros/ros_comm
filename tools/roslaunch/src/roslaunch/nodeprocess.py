@@ -36,6 +36,7 @@
 Local process implementation for running and monitoring nodes.
 """
 
+import errno
 import os
 import signal
 import subprocess 
@@ -63,7 +64,7 @@ def _next_counter():
     _counter += 1
     return _counter
 
-def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS, timeout=None):
+def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS, timeout=None, master_logger_level=False):
     """
     Launch a master
     @param type_: name of master executable (currently just Master.ZENMASTER)
@@ -77,11 +78,13 @@ def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS
     @param timeout: socket timeout for connections.
     @type  timeout: float
     @raise RLException: if type_ or port is invalid
+    @param master_logger_level: rosmaster.master logger debug level
+    @type  master_logger_level=: str or False
     """    
     if port < 1 or port > 65535:
         raise RLException("invalid port assignment: %s"%port)
 
-    _logger.info("create_master_process: %s, %s, %s, %s, %s", type_, ros_root, port, num_workers, timeout)
+    _logger.info("create_master_process: %s, %s, %s, %s, %s, %s", type_, ros_root, port, num_workers, timeout, master_logger_level)
     # catkin/fuerte: no longer use ROS_ROOT-relative executables, search path instead
     master = type_
     # zenmaster is deprecated and aliased to rosmaster
@@ -90,12 +93,14 @@ def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS
         args = [master, '--core', '-p', str(port), '-w', str(num_workers)]
         if timeout is not None:
             args += ['-t', str(timeout)]
+        if master_logger_level:
+            args += ['--master-logger-level', str(master_logger_level)]
     else:
         raise RLException("unknown master typ_: %s"%type_)
 
     _logger.info("process[master]: launching with args [%s]"%args)
     log_output = False
-    return LocalProcess(run_id, package, 'master', args, os.environ, log_output, None)
+    return LocalProcess(run_id, package, 'master', args, os.environ, log_output, None, required=True)
 
 def create_node_process(run_id, node, master_uri):
     """
@@ -220,7 +225,7 @@ class LocalProcess(Process):
             try:
                 os.makedirs(log_dir)
             except OSError as e:
-                if e.errno == 13:
+                if e.errno == errno.EACCES:
                     raise RLException("unable to create directory for log file [%s].\nPlease check permissions."%log_dir)
                 else:
                     raise RLException("unable to create directory for log file [%s]: %s"%(log_dir, e.strerror))
@@ -290,6 +295,12 @@ class LocalProcess(Process):
                 cwd = get_ros_root()
             else:
                 cwd = rospkg.get_ros_home()
+            if not os.path.exists(cwd):
+                try:
+                    os.makedirs(cwd)
+                except OSError:
+                    # exist_ok=True
+                    pass
 
             _logger.info("process[%s]: start w/ args [%s]", self.name, self.args)
             _logger.info("process[%s]: cwd will be [%s]", self.name, cwd)
@@ -299,9 +310,9 @@ class LocalProcess(Process):
             except OSError as e:
                 self.started = True # must set so is_alive state is correct
                 _logger.error("OSError(%d, %s)", e.errno, e.strerror)
-                if e.errno == 8: #Exec format error
+                if e.errno == errno.ENOEXEC: #Exec format error
                     raise FatalProcessLaunch("Unable to launch [%s]. \nIf it is a script, you may be missing a '#!' declaration at the top."%self.name)
-                elif e.errno == 2: #no such file or directory
+                elif e.errno == errno.ENOENT: #no such file or directory
                     raise FatalProcessLaunch("""Roslaunch got a '%s' error while attempting to run:
 
 %s

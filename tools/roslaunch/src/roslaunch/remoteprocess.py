@@ -203,7 +203,7 @@ class SSHChildROSLaunchProcess(roslaunch.server.ChildROSLaunchProcess):
                 err_msg = "Unable to establish ssh connection to [%s%s:%s]: %s"%(username_str, address, port, e)
             except socket.error as e:
                 # #1824
-                if e[0] == 111:
+                if e.args[0] == 111:
                     err_msg = "network connection refused by [%s:%s]"%(address, port)
                 else:
                     err_msg = "network error connecting to [%s:%s]: %s"%(address, port, str(e))

@@ -57,12 +57,41 @@ function(add_rostest file)
   catkin_run_tests_target("rostest" ${_testname} "rostest-${_output_name}" COMMAND ${cmd} WORKING_DIRECTORY ${_rostest_WORKING_DIRECTORY} DEPENDENCIES ${_rostest_DEPENDENCIES})
 endfunction()
 
+# This is an internal function, use add_rostest_gtest or
+# add_rostest_gmock instead
+#
+# :param type: "gtest" or "gmock"
+# The remaining arguments are the same as for add_rostest_gtest
+# and add_rostest_gmock
+#
+function(_add_rostest_google_test type target launch_file)
+  if (NOT "${type}" STREQUAL "gtest" AND NOT "${type}" STREQUAL "gmock")
+    message(FATAL_ERROR
+      "Invalid use of _add_rostest_google_test function, "
+      "first argument must be 'gtest' or 'gmock'")
+    return()
+  endif()
+  string(TOUPPER "${type}" type_upper)
+  if("${ARGN}" STREQUAL "")
+    message(FATAL_ERROR "add_rostest_${type}() needs at least one file argument to compile a ${type_upper} executable")
+  endif()
+  if(${type_upper}_FOUND)
+    include_directories(${${type_upper}_INCLUDE_DIRS})
+    add_executable(${target} EXCLUDE_FROM_ALL ${ARGN})
+    target_link_libraries(${target} ${${type_upper}_LIBRARIES})
+    if(TARGET tests)
+      add_dependencies(tests ${target})
+    endif()
+    add_rostest(${launch_file} DEPENDENCIES ${target})
+  endif()
+endfunction()
+
 #
 # Register the launch file with add_rostest() and compile all
 # passed files into a GTest binary.
 #
 # .. note:: The function does nothing if GTest was not found.  The
-#   target is only compiled when tests are build and linked against
+#   target is only compiled when tests are built and linked against
 #   the GTest libraries.
 #
 # :param target: target name of the GTest executable
@@ -73,18 +102,26 @@ endfunction()
 # :type ARGN: list of files
 #
 function(add_rostest_gtest target launch_file)
-  if("${ARGN}" STREQUAL "")
-    message(FATAL_ERROR "add_rostest_gtest() needs at least one file argument to compile a GTest executable")
-  endif()
-  if(GTEST_FOUND)
-    include_directories(${GTEST_INCLUDE_DIRS})
-    add_executable(${target} EXCLUDE_FROM_ALL ${ARGN})
-    target_link_libraries(${target} ${GTEST_LIBRARIES})
-    if(TARGET tests)
-      add_dependencies(tests ${target})
-    endif()
-    add_rostest(${launch_file} DEPENDENCIES ${target})
-  endif()
+  _add_rostest_google_test("gtest" ${target} ${launch_file} ${ARGN})
+endfunction()
+
+#
+# Register the launch file with add_rostest() and compile all
+# passed files into a GMock binary.
+#
+# .. note:: The function does nothing if GMock was not found.  The
+#   target is only compiled when tests are built and linked against
+#   the GMock libraries.
+#
+# :param target: target name of the GMock executable
+# :type target: string
+# :param launch_file: the relative path to the roslaunch file
+# :type launch_file: string
+# :param ARGN: the files to compile into a GMock executable
+# :type ARGN: list of files
+#
+function(add_rostest_gmock target launch_file)
+  _add_rostest_google_test("gmock" ${target} ${launch_file} ${ARGN})
 endfunction()
 
 macro(rostest__strip_prefix var prefix)

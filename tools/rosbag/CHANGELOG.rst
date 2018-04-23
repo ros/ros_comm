@@ -2,6 +2,36 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.6 (2018-02-05)
+-------------------
+* return an error status on error in rosbag (`#1257 <https://github.com/ros/ros_comm/issues/1257>`_)
+* fix warn of --max-splits without --split (`#1237 <https://github.com/ros/ros_comm/issues/1237>`_)
+
+1.13.5 (2017-11-09)
+-------------------
+
+1.13.4 (2017-11-02)
+-------------------
+
+1.13.3 (2017-10-25)
+-------------------
+* fix publishing of selected topics from bag file (`#1156 <https://github.com/ros/ros_comm/issues/1156>`_)
+* fix Python 3 compatibility (`#1150 <https://github.com/ros/ros_comm/issues/1150>`_)
+
+1.13.2 (2017-08-15)
+-------------------
+
+1.13.1 (2017-07-27)
+-------------------
+* fix handling connections without indices (`#1109 <https://github.com/ros/ros_comm/pull/1109>`_)
+* improve message of check command (`#1067 <https://github.com/ros/ros_comm/pull/1067>`_)
+* fix BZip2 inclusion (`#1016 <https://github.com/ros/ros_comm/pull/1016>`_)
+* expose rate-control-topic and rate-control-max-delay args to command line tool (`#1015 <https://github.com/ros/ros_comm/pull/1015>`_)
+* improve migration rule generation (`#1009 <https://github.com/ros/ros_comm/pull/1009>`_, `#1010 <https://github.com/ros/ros_comm/pull/1010>`_, `#1011 <https://github.com/ros/ros_comm/pull/1011>`_)
+
+1.13.0 (2017-02-22)
+-------------------
+
 1.12.7 (2017-02-17)
 -------------------
 * throw exception instead of accessing invalid memory (`#971 <https://github.com/ros/ros_comm/pull/971>`_)

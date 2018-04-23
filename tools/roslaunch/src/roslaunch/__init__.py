@@ -36,6 +36,7 @@ from __future__ import print_function
 
 import os
 import logging
+import rospkg
 import sys
 import traceback
 
@@ -180,6 +181,9 @@ def _get_optparse():
     parser.add_option("-t", "--timeout",
                       dest="timeout",
                       help="override the socket connection timeout (in seconds). Only valid for core services.", metavar="TIMEOUT")
+    parser.add_option("--master-logger-level",
+                      dest="master_logger_level", default=False, type=str,
+                      help="set rosmaster.master logger level ('debug', 'info', 'warn', 'error', 'fatal')")
 
     return parser
     
@@ -214,6 +218,13 @@ def _validate_args(parser, options, args):
     if len([x for x in [options.node_list, options.find_node, options.node_args, options.ros_args] if x]) > 1:
         parser.error("only one of [--nodes, --find-node, --args --ros-args] may be specified")
     
+def handle_exception(roslaunch_core, logger, msg, e):
+    roslaunch_core.printerrlog(msg + str(e))
+    roslaunch_core.printerrlog('The traceback for the exception was written to the log file')
+    if logger:
+        logger.error(traceback.format_exc())
+    sys.exit(1)
+
 def main(argv=sys.argv):
     options = None
     logger = None
@@ -296,38 +307,33 @@ def main(argv=sys.argv):
             # This is a roslaunch parent, spin up parent server and launch processes.
             # args are the roslaunch files to load
             from . import parent as roslaunch_parent
-            try:
-                # force a port binding spec if we are running a core
-                if options.core:
-                    options.port = options.port or DEFAULT_MASTER_PORT
-                p = roslaunch_parent.ROSLaunchParent(uuid, args, roslaunch_strs=roslaunch_strs,
-                        is_core=options.core, port=options.port, local_only=options.local_only,
-                        verbose=options.verbose, force_screen=options.force_screen,
-                        num_workers=options.num_workers, timeout=options.timeout)
-                p.start()
-                p.spin()
-            finally:
-                # remove the pid file
-                if options.pid_fn:
-                    try: os.unlink(options.pid_fn)
-                    except os.error: pass
+            # force a port binding spec if we are running a core
+            if options.core:
+                options.port = options.port or DEFAULT_MASTER_PORT
+            p = roslaunch_parent.ROSLaunchParent(uuid, args, roslaunch_strs=roslaunch_strs,
+                    is_core=options.core, port=options.port, local_only=options.local_only,
+                    verbose=options.verbose, force_screen=options.force_screen,
+                    num_workers=options.num_workers, timeout=options.timeout,
+                    master_logger_level=options.master_logger_level)
+            p.start()
+            p.spin()
 
     except RLException as e:
-        roslaunch_core.printerrlog(str(e))
-        roslaunch_core.printerrlog('The traceback for the exception was written to the log file')
-        if logger:
-            logger.error(traceback.format_exc())
-        sys.exit(1)
+        handle_exception(roslaunch_core, logger, "RLException: ", e)
     except ValueError as e:
         # TODO: need to trap better than this high-level trap
-        roslaunch_core.printerrlog(str(e))
-        roslaunch_core.printerrlog('The traceback for the exception was written to the log file')
-        if logger:
-            logger.error(traceback.format_exc())
-        sys.exit(1)
+        handle_exception(roslaunch_core, logger, "Value error: ", e)
+    except rospkg.ResourceNotFound as e:
+        handle_exception(roslaunch_core, logger, "Resource not found: ", e)
     except Exception as e:
         traceback.print_exc()
         sys.exit(1)
+    finally:
+        # remove the pid file
+        if options is not None and options.pid_fn:
+            try: os.unlink(options.pid_fn)
+            except os.error: pass
+
 
 if __name__ == '__main__':
     main()

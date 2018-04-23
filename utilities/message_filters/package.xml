@@ -1,6 +1,6 @@
 <package>
   <name>message_filters</name>
-  <version>1.12.7</version>
+  <version>1.13.6</version>
   <description>
     A set of message filters which take in messages and may output those messages at a later time, based on the conditions that filter needs met.
   </description>
@@ -19,11 +19,9 @@
   <build_depend>roscpp</build_depend>
   <build_depend>rostest</build_depend>
   <build_depend>rosunit</build_depend>
-  <build_depend>xmlrpcpp</build_depend>
 
   <run_depend>rosconsole</run_depend>
   <run_depend>roscpp</run_depend>
-  <run_depend>xmlrpcpp</run_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>

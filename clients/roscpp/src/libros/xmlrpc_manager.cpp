@@ -156,20 +156,31 @@ void XMLRPCManager::shutdown()
   server_.close();
 
   // kill the last few clients that were started in the shutdown process
-  for (V_CachedXmlRpcClient::iterator i = clients_.begin();
-       i != clients_.end(); ++i)
   {
-    for (int wait_count = 0; i->in_use_ && wait_count < 10; wait_count++)
-    {
-      ROSCPP_LOG_DEBUG("waiting for xmlrpc connection to finish...");
-      ros::WallDuration(0.01).sleep();
-    }
+    boost::mutex::scoped_lock lock(clients_mutex_);
 
-    i->client_->close();
-    delete i->client_;
+    for (V_CachedXmlRpcClient::iterator i = clients_.begin();
+         i != clients_.end();)
+    {
+      if (!i->in_use_)
+      {
+        i->client_->close();
+        delete i->client_;
+        i = clients_.erase(i);
+      }
+      else
+      {
+        ++i;
+      }
+    }
   }
 
-  clients_.clear();
+  // Wait for the clients that are in use to finish and remove themselves from clients_
+  for (int wait_count = 0; !clients_.empty() && wait_count < 10; wait_count++)
+  {
+    ROSCPP_LOG_DEBUG("waiting for xmlrpc connection to finish...");
+    ros::WallDuration(0.01).sleep();
+  }
 
   boost::mutex::scoped_lock lock(functions_mutex_);
   functions_.clear();
@@ -328,10 +339,10 @@ XmlRpcClient* XMLRPCManager::getXMLRPCClient(const std::string &host, const int 
         // hooray, it's pointing at our destination. re-use it.
         c = i->client_;
         i->in_use_ = true;
-        i->last_use_time_ = WallTime::now();
+        i->last_use_time_ = SteadyTime::now();
         break;
       }
-      else if (i->last_use_time_ + CachedXmlRpcClient::s_zombie_time_ < WallTime::now())
+      else if (i->last_use_time_ + CachedXmlRpcClient::s_zombie_time_ < SteadyTime::now())
       {
         // toast this guy. he's dead and nobody is reusing him.
         delete i->client_;
@@ -354,7 +365,7 @@ XmlRpcClient* XMLRPCManager::getXMLRPCClient(const std::string &host, const int 
     c = new XmlRpcClient(host.c_str(), port, uri.c_str());
     CachedXmlRpcClient mc(c);
     mc.in_use_ = true;
-    mc.last_use_time_ = WallTime::now();
+    mc.last_use_time_ = SteadyTime::now();
     clients_.push_back(mc);
     //ROS_INFO("%d xmlrpc clients allocated\n", xmlrpc_clients.size());
   }
@@ -372,7 +383,17 @@ void XMLRPCManager::releaseXMLRPCClient(XmlRpcClient *c)
   {
     if (c == i->client_)
     {
-      i->in_use_ = false;
+      if (shutting_down_)
+      {
+        // if we are shutting down we won't be re-using the client
+        i->client_->close();
+        delete i->client_;
+        clients_.erase(i);
+      }
+      else
+      {
+        i->in_use_ = false;
+      }
       break;
     }
   }

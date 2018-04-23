@@ -96,7 +96,7 @@ def test_resolve_args():
 
     anon_context = {'foo': 'bar'}
     arg_context = {'fuga': 'hoge', 'car': 'cdr', 'arg': 'foo', 'True': 'False'}
-    context = {'anon': anon_context, 'arg': arg_context }
+    context = {'anon': anon_context, 'arg': arg_context, 'filename': '/path/to/file.launch'}
         
     tests = [
         ('$(find roslaunch)', roslaunch_dir),
@@ -119,6 +119,7 @@ def test_resolve_args():
         ('$(optenv NOT_ROS_ROOT)more stuff', 'more stuff'),
         ('$(optenv NOT_ROS_ROOT alternate)', 'alternate'),
         ('$(optenv NOT_ROS_ROOT alternate text)', 'alternate text'),
+        ('$(dirname)/foo', '/path/to/foo'),
 
         # #1776
         ('$(anon foo)', 'bar'),
@@ -177,6 +178,8 @@ def test_resolve_args():
         '$(optenv)',
         '$(anon)',
         '$(anon foo bar)',            
+        # Should fail without the supplied context.
+        '$(dirname)'
         ]
     for f in failures:
         try:

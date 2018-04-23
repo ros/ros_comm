@@ -1,6 +1,6 @@
 <package>
   <name>rosgraph</name>
-  <version>1.12.7</version>
+  <version>1.13.6</version>
   <description>
     rosgraph contains the rosgraph command-line tool, which prints
     information about the ROS Computation Graph. It also provides an
@@ -16,6 +16,7 @@
 
   <run_depend>python-netifaces</run_depend>
   <run_depend>python-rospkg</run_depend>
+  <run_depend>python-yaml</run_depend>
 
   <test_depend>python-mock</test_depend>
 

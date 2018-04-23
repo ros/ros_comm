@@ -240,8 +240,9 @@ TEST(rosbag, read_indexed_1_2_succeeds) {
 
     foreach(rosbag::MessageInstance const m, view) {
         std_msgs::Int32::ConstPtr imsg = m.instantiate<std_msgs::Int32>();
-        if (imsg != NULL)
+        if (imsg != NULL) {
             ASSERT_EQ(imsg->data, i++);
+        }
     }
 
     b.close();
@@ -259,8 +260,9 @@ TEST(rosbag, write_then_read_without_read_mode_fails) {
         rosbag::View view(b);
         foreach(rosbag::MessageInstance const m, view) {
             std_msgs::String::ConstPtr s = m.instantiate<std_msgs::String>();
-            if (s != NULL)
+            if (s != NULL) {
                 ASSERT_EQ(s->data, std::string("foo"));
+            }
         }
         FAIL();
     }
@@ -350,8 +352,9 @@ TEST(rosbag, topic_query_works) {
     rosbag::View view(bag, rosbag::TopicQuery(t));
     foreach(rosbag::MessageInstance const m, view) {
         std_msgs::Int32::ConstPtr imsg = m.instantiate<std_msgs::Int32>();
-        if (imsg != NULL)
+        if (imsg != NULL) {
             ASSERT_EQ(imsg->data, i++);
+        }
     }
 
     bag.close();
@@ -425,8 +428,9 @@ TEST(rosbag, multiple_bag_works) {
 
     foreach(rosbag::MessageInstance const m, view) {
         std_msgs::Int32::ConstPtr imsg = m.instantiate<std_msgs::Int32>();
-        if (imsg != NULL)
+        if (imsg != NULL) {
             ASSERT_EQ(imsg->data, i++);
+        }
     }
 
     bag1.close();
@@ -474,8 +478,9 @@ TEST(rosbag, overlapping_query_works) {
 
     foreach(rosbag::MessageInstance const m, view1) {
       std_msgs::Int32::ConstPtr imsg = m.instantiate<std_msgs::Int32>();
-      if (imsg != NULL)
+      if (imsg != NULL) {
         ASSERT_EQ(imsg->data, i);
+      }
       if (i >= 250 && i < 750)
       {
         i += (j++ % 2);
@@ -488,8 +493,9 @@ TEST(rosbag, overlapping_query_works) {
 
     foreach(rosbag::MessageInstance const m, view2) {
         std_msgs::Int32::ConstPtr imsg = m.instantiate<std_msgs::Int32>();
-        if (imsg != NULL)
+        if (imsg != NULL) {
             ASSERT_EQ(imsg->data, i++);
+        }
     }
 
     bag1.close();

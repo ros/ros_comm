@@ -63,6 +63,7 @@ public:
     {
     public:
         iterator(iterator const& i);
+        iterator &operator=(iterator const& i);
         iterator();
         ~iterator();
 

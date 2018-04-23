@@ -23,7 +23,7 @@ list(GET roscpp_VERSION_LIST 2 roscpp_VERSION_PATCH)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ros/common.h.in ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/ros/common.h)
 
-find_package(Boost REQUIRED COMPONENTS signals filesystem system)
+find_package(Boost REQUIRED COMPONENTS chrono filesystem signals system)
 
 include_directories(include ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/ros ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
@@ -61,11 +61,14 @@ catkin_package(
 
 include(CheckIncludeFiles)
 include(CheckFunctionExists)
+include(CheckCXXSymbolExists)
 
 # Not everybody has <ifaddrs.h> (e.g., embedded arm-linux)
 CHECK_INCLUDE_FILES(ifaddrs.h HAVE_IFADDRS_H)
 # Not everybody has trunc (e.g., Windows, embedded arm-linux)
 CHECK_FUNCTION_EXISTS(trunc HAVE_TRUNC)
+# Not everybody has epoll (e.g., Windows, BSD, embedded arm-linux) 
+CHECK_CXX_SYMBOL_EXISTS(epoll_wait "sys/epoll.h" HAVE_EPOLL)
 
 # Output test results to config.h
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/libros/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
@@ -119,6 +122,7 @@ add_library(roscpp
   src/libros/poll_set.cpp
   src/libros/service.cpp
   src/libros/this_node.cpp
+  src/libros/steady_timer.cpp
   )
 
 add_dependencies(roscpp ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

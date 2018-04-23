@@ -38,8 +38,9 @@
 #include "ros/topic_manager.h"
 #include "ros/advertise_options.h"
 #include "ros/names.h"
-#include <tracetools/tracetools.h>
+#include "ros/param.h"
 
+#include <tracetools/tracetools.h>
 #include <rosgraph_msgs/Log.h>
 
 namespace ros
@@ -103,7 +104,14 @@ void ROSOutAppender::log(::ros::console::Level level, const char* str, const cha
   msg->file = file;
   msg->function = function;
   msg->line = line;
-  this_node::getAdvertisedTopics(msg->topics);
+  
+  // check parameter server/cache for omit_topics flag
+  // the same parameter is checked in rosout.py for the same purpose
+  ros::param::getCached("/rosout_disable_topics_generation", disable_topics_);
+
+  if (!disable_topics_){
+    this_node::getAdvertisedTopics(msg->topics);
+  }
 
   if (level == ::ros::console::levels::Fatal || level == ::ros::console::levels::Error)
   {

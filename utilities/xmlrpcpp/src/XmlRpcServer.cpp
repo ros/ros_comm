@@ -9,16 +9,40 @@
 #include "xmlrpcpp/XmlRpcUtil.h"
 #include "xmlrpcpp/XmlRpcException.h"
 
+#include <errno.h>
+#include <string.h>
+#include <sys/resource.h>
 
 using namespace XmlRpc;
 
+const int XmlRpcServer::FREE_FD_BUFFER = 32;
+const double XmlRpcServer::ACCEPT_RETRY_INTERVAL_SEC = 1.0;
 
 XmlRpcServer::XmlRpcServer()
+  : _introspectionEnabled(false),
+    _listMethods(0),
+    _methodHelp(0),
+    _port(0),
+    _accept_error(false),
+    _accept_retry_time_sec(0.0)
 {
-  _introspectionEnabled = false;
-  _listMethods = 0;
-  _methodHelp = 0;
-  _port = 0;
+  struct rlimit limit = { .rlim_cur = 0, .rlim_max = 0 };
+  int max_files = 1024;
+
+  if(getrlimit(RLIMIT_NOFILE, &limit) == 0) {
+    max_files = limit.rlim_max;
+  } else {
+    XmlRpcUtil::error("Could not get open file limit: %s", strerror(errno));
+  }
+  pollfds.resize(max_files);
+  for(int i=0; i<max_files; i++) {
+    // Set up file descriptor query for all events.
+    pollfds[i].fd = i;
+    pollfds[i].events = POLLIN | POLLPRI | POLLOUT;
+  }
+
+  // Ask dispatch not to close this socket if it becomes unreadable.
+  setKeepOpen(true);
 }
 
 
@@ -130,6 +154,9 @@ void
 XmlRpcServer::work(double msTime)
 {
   XmlRpcUtil::log(2, "XmlRpcServer::work: waiting for a connection");
+  if(_accept_error && _disp.getTime() > _accept_retry_time_sec) {
+    _disp.addSource(this, XmlRpcDispatch::ReadableEvent);
+  }
   _disp.work(msTime);
 }
 
@@ -140,14 +167,13 @@ XmlRpcServer::work(double msTime)
 unsigned
 XmlRpcServer::handleEvent(unsigned)
 {
-  acceptConnection();
-  return XmlRpcDispatch::ReadableEvent;		// Continue to monitor this fd
+  return acceptConnection();
 }
 
 
 // Accept a client connection request and create a connection to
 // handle method calls from the client.
-void
+unsigned
 XmlRpcServer::acceptConnection()
 {
   int s = XmlRpcSocket::accept(this->getfd());
@@ -156,6 +182,16 @@ XmlRpcServer::acceptConnection()
   {
     //this->close();
     XmlRpcUtil::error("XmlRpcServer::acceptConnection: Could not accept connection (%s).", XmlRpcSocket::getErrorMsg().c_str());
+
+    // Note that there was an accept error; retry in 1 second
+    _accept_error = true;
+    _accept_retry_time_sec = _disp.getTime() + ACCEPT_RETRY_INTERVAL_SEC;
+    return 0; // Stop monitoring this FD
+  }
+  else if( countFreeFDs() < FREE_FD_BUFFER )
+  {
+    XmlRpcSocket::close(s);
+    XmlRpcUtil::error("XmlRpcServer::acceptConnection: Rejecting client, not enough free file descriptors");
   }
   else if ( ! XmlRpcSocket::setNonBlocking(s))
   {
@@ -167,6 +203,48 @@ XmlRpcServer::acceptConnection()
     XmlRpcUtil::log(2, "XmlRpcServer::acceptConnection: creating a connection");
     _disp.addSource(this->createConnection(s), XmlRpcDispatch::ReadableEvent);
   }
+  return XmlRpcDispatch::ReadableEvent; // Continue to monitor this fd
+}
+
+int XmlRpcServer::countFreeFDs() {
+  // NOTE(austin): this function is not free, but in a few small tests it only
+  // takes about 1.2mS when querying 50k file descriptors.
+  //
+  // If the underlying system calls here fail, this will print an error and
+  // return 0
+  int free_fds = 0;
+
+  struct rlimit limit = { .rlim_cur = 0, .rlim_max = 0 };
+
+  // Get the current soft limit on the number of file descriptors.
+  if(getrlimit(RLIMIT_NOFILE, &limit) == 0) {
+
+    // Poll the available file descriptors.
+    // The POSIX specification guarantees that rlim_cur will always be less or
+    // equal to the process's initial rlim_max, so we don't need an additonal
+    // bounds check here.
+    if(poll(&pollfds[0], limit.rlim_cur, 1) >= 0) {
+      for(rlim_t i=0; i<limit.rlim_cur; i++) {
+        if(pollfds[i].revents & POLLNVAL) {
+          free_fds++;
+        }
+      }
+    } else {
+      // poll() may fail if interrupted, if the pollfds array is a bad pointer,
+      // if nfds exceeds RLIMIT_NOFILE, or if the system is out of memory.
+      XmlRpcUtil::error("XmlRpcServer::countFreeFDs: poll() failed: %s",
+                        strerror(errno));
+    }
+  } else {
+    // The man page for getrlimit says that it can fail if the requested
+    // resource is invalid or the second argument is invalid. I'm not sure
+    // either of these can actually fail in this code, but it's better to
+    // check.
+    XmlRpcUtil::error("XmlRpcServer::countFreeFDs: Could not get open file "
+                      "limit, getrlimit() failed: %s", strerror(errno));
+  }
+
+  return free_fds;
 }
 
 

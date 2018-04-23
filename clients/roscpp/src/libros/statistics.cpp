@@ -100,7 +100,10 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
       std_msgs::Header header;
       ros::serialization::IStream stream(m.message_start, m.num_bytes - (m.message_start - m.buf.get()));
       ros::serialization::deserialize(stream, header);
-      stats.age_list.push_back(received_time - header.stamp);
+      if (!header.stamp.isZero())
+      {
+        stats.age_list.push_back(received_time - header.stamp);
+      }
     }
     catch (ros::serialization::StreamOverrunException& e)
     {

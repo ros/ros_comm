@@ -48,6 +48,9 @@
 #elif defined(__ANDROID__)
   // For readv() and writev() on ANDROID
   #include <sys/uio.h>
+#elif defined(_POSIX_VERSION)
+  // For readv() and writev()
+  #include <sys/uio.h>
 #endif
 
 namespace ros

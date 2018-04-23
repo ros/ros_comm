@@ -1,0 +1,21 @@
+<launch>
+  <node name="topic_pub" pkg="rostopic" type="rostopic"
+	args="pub -r 10 /original_topic std_msgs/String foo" />
+  <node name="topic_relay" pkg="topic_tools" type="relay"
+	args="/original_topic /original_topic/relay">
+    <rosparam>
+      lazy: true
+    </rosparam>
+  </node>
+  <test test-name="test_relay_stealth"
+	pkg="topic_tools" type="test_relay_stealth.py" />
+
+  <node name="relay_stealth" pkg="topic_tools" type="relay"
+	args="/original_topic/relay /relay_stealth/output"
+	output="screen">
+    <rosparam>
+      stealth: true
+      monitor_topic: /original_topic/relay
+    </rosparam>
+  </node>
+</launch>

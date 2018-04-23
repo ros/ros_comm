@@ -219,10 +219,10 @@ def check_roslaunch(f, use_test_depends=False):
             print(e, file=sys.stderr)
             miss_all = True
         if miss_all:
-            print("Missing package dependencies: %s/package.xml: %s"%(pkg, ', '.join(miss)), file=sys.stderr)
+            roslaunch.core.printerrlog("Missing package dependencies: %s/package.xml: %s"%(pkg, ', '.join(miss)))
             errors.append("Missing package dependencies: %s/package.xml: %s"%(pkg, ', '.join(miss)))
         elif miss:
-            print("Missing package dependencies: %s/package.xml: %s (notify upstream maintainer)"%(pkg, ', '.join(miss)), file=sys.stderr)
+            roslaunch.core.printerrlog("Missing package dependencies: %s/package.xml: %s (notify upstream maintainer)"%(pkg, ', '.join(miss)))
     
     # load all node defs
     nodes = []

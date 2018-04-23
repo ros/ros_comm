@@ -3,15 +3,19 @@
 #include "xmlrpcpp/XmlRpcSource.h"
 #include "xmlrpcpp/XmlRpcUtil.h"
 
+#include "ros/time.h"
+
 #include <math.h>
 #include <errno.h>
 #include <sys/timeb.h>
-#if defined (__ANDROID__)
-#include <sys/select.h>
-#endif
+#include <sys/poll.h>
 
 #if defined(_WINDOWS)
 # include <winsock2.h>
+static inline int poll( struct pollfd *pfd, int nfds, int timeout)
+{
+  return WSAPoll(pfd, nfds, timeout);
+}
 
 # define USE_FTIME
 # if defined(_MSC_VER)
@@ -60,7 +64,7 @@ XmlRpcDispatch::removeSource(XmlRpcSource* source)
 
 
 // Modify the types of events to watch for on this source
-void 
+void
 XmlRpcDispatch::setSourceEvents(XmlRpcSource* source, unsigned eventMask)
 {
   for (SourceList::iterator it=_sources.begin(); it!=_sources.end(); ++it)
@@ -77,87 +81,90 @@ XmlRpcDispatch::setSourceEvents(XmlRpcSource* source, unsigned eventMask)
 void
 XmlRpcDispatch::work(double timeout)
 {
+  // Loosely based on `man select` > Correspondence between select() and poll() notifications
+  // and cloudius-systems/osv#35, cloudius-systems/osv@b53d39a using poll to emulate select
+  const unsigned POLLIN_REQ = POLLIN; // Request read
+  const unsigned POLLIN_CHK = (POLLIN | POLLHUP | POLLERR); // Readable or connection lost
+  const unsigned POLLOUT_REQ = POLLOUT; // Request write
+  const unsigned POLLOUT_CHK = (POLLOUT | POLLERR); // Writable or connection lost
+  const unsigned POLLEX_REQ = POLLPRI; // Out-of-band data received
+  const unsigned POLLEX_CHK = (POLLPRI | POLLNVAL); // Out-of-band data or invalid fd
+
   // Compute end time
   _endTime = (timeout < 0.0) ? -1.0 : (getTime() + timeout);
   _doClear = false;
   _inWork = true;
+  int timeout_ms = static_cast<int>(floor(timeout * 1000.));
 
   // Only work while there is something to monitor
   while (_sources.size() > 0) {
 
     // Construct the sets of descriptors we are interested in
-    fd_set inFd, outFd, excFd;
-	  FD_ZERO(&inFd);
-	  FD_ZERO(&outFd);
-	  FD_ZERO(&excFd);
+    const unsigned source_cnt = _sources.size();
+    pollfd fds[source_cnt];
+    XmlRpcSource * sources[source_cnt];
 
-    int maxFd = -1;     // Not used on windows
     SourceList::iterator it;
-    for (it=_sources.begin(); it!=_sources.end(); ++it) {
-      int fd = it->getSource()->getfd();
-      if (it->getMask() & ReadableEvent) FD_SET(fd, &inFd);
-      if (it->getMask() & WritableEvent) FD_SET(fd, &outFd);
-      if (it->getMask() & Exception)     FD_SET(fd, &excFd);
-      if (it->getMask() && fd > maxFd)   maxFd = fd;
+    std::size_t i = 0;
+    for (it=_sources.begin(); it!=_sources.end(); ++it, ++i) {
+      sources[i] = it->getSource();
+      fds[i].fd = sources[i]->getfd();
+      fds[i].revents = 0; // some platforms may not clear this in poll()
+      fds[i].events = 0;
+      if (it->getMask() & ReadableEvent) fds[i].events |= POLLIN_REQ;
+      if (it->getMask() & WritableEvent) fds[i].events |= POLLOUT_REQ;
+      if (it->getMask() & Exception) fds[i].events |= POLLEX_REQ;
     }
 
     // Check for events
-    int nEvents;
-    if (timeout < 0.0)
-      nEvents = select(maxFd+1, &inFd, &outFd, &excFd, NULL);
-    else 
-    {
-      struct timeval tv;
-      tv.tv_sec = (int)floor(timeout);
-      tv.tv_usec = ((int)floor(1000000.0 * (timeout-floor(timeout)))) % 1000000;
-      nEvents = select(maxFd+1, &inFd, &outFd, &excFd, &tv);
-    }
+    int nEvents = poll(fds, source_cnt, (timeout_ms < 0) ? -1 : timeout_ms);
 
     if (nEvents < 0)
     {
       if(errno != EINTR)
-        XmlRpcUtil::error("Error in XmlRpcDispatch::work: error in select (%d).", nEvents);
+        XmlRpcUtil::error("Error in XmlRpcDispatch::work: error in poll (%d).", nEvents);
       _inWork = false;
       return;
     }
 
     // Process events
-    for (it=_sources.begin(); it != _sources.end(); )
+    for (i=0; i < source_cnt; ++i)
     {
-      SourceList::iterator thisIt = it++;
-      XmlRpcSource* src = thisIt->getSource();
-      int fd = src->getfd();
+      XmlRpcSource* src = sources[i];
+      pollfd & pfd = fds[i];
       unsigned newMask = (unsigned) -1;
-      if (fd <= maxFd) {
-        // If you select on multiple event types this could be ambiguous
-        if (FD_ISSET(fd, &inFd))
-          newMask &= src->handleEvent(ReadableEvent);
-        if (FD_ISSET(fd, &outFd))
-          newMask &= src->handleEvent(WritableEvent);
-        if (FD_ISSET(fd, &excFd))
-          newMask &= src->handleEvent(Exception);
+      // Only handle requested events to avoid being prematurely removed from dispatch
+      bool readable = (pfd.events & POLLIN_REQ) == POLLIN_REQ;
+      bool writable = (pfd.events & POLLOUT_REQ) == POLLOUT_REQ;
+      bool oob = (pfd.events & POLLEX_REQ) == POLLEX_REQ;
+      if (readable && (pfd.revents & POLLIN_CHK))
+        newMask &= src->handleEvent(ReadableEvent);
+      if (writable && (pfd.revents & POLLOUT_CHK))
+        newMask &= src->handleEvent(WritableEvent);
+      if (oob && (pfd.revents & POLLEX_CHK))
+        newMask &= src->handleEvent(Exception);
 
-        // Find the source again.  It may have moved as a result of the way
-        // that sources are removed and added in the call stack starting
-        // from the handleEvent() calls above.
-        for (thisIt=_sources.begin(); thisIt != _sources.end(); thisIt++)
-        {
-          if(thisIt->getSource() == src)
-            break;
-        }
-        if(thisIt == _sources.end())
-        {
-          XmlRpcUtil::error("Error in XmlRpcDispatch::work: couldn't find source iterator");
-          continue;
-        }
+      // Find the source iterator. It may have moved as a result of the way
+      // that sources are removed and added in the call stack starting
+      // from the handleEvent() calls above.
+      SourceList::iterator thisIt;
+      for (thisIt = _sources.begin(); thisIt != _sources.end(); thisIt++)
+      {
+        if(thisIt->getSource() == src)
+          break;
+      }
+      if(thisIt == _sources.end())
+      {
+        XmlRpcUtil::error("Error in XmlRpcDispatch::work: couldn't find source iterator");
+        continue;
+      }
 
-        if ( ! newMask) {
-          _sources.erase(thisIt);  // Stop monitoring this one
-          if ( ! src->getKeepOpen())
-            src->close();
-        } else if (newMask != (unsigned) -1) {
-          thisIt->getMask() = newMask;
-        }
+      if ( ! newMask) {
+        _sources.erase(thisIt);  // Stop monitoring this one
+        if ( ! src->getKeepOpen())
+          src->close();
+      } else if (newMask != (unsigned) -1) {
+        thisIt->getMask() = newMask;
       }
     }
 
@@ -217,11 +224,10 @@ XmlRpcDispatch::getTime()
   return ((double) tbuff.time + ((double)tbuff.millitm / 1000.0) +
 	  ((double) tbuff.timezone * 60));
 #else
-  struct timeval	tv;
-  struct timezone	tz;
+  uint32_t sec, nsec;
 
-  gettimeofday(&tv, &tz);
-  return (tv.tv_sec + tv.tv_usec / 1000000.0);
+  ros::ros_steadytime(sec, nsec);
+  return ((double)sec + (double)nsec / 1e9);
 #endif /* USE_FTIME */
 }
 

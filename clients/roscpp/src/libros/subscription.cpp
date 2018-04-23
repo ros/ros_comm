@@ -228,10 +228,13 @@ bool Subscription::pubUpdate(const V_string& new_pubs)
     }
 
     ss << " already have these connections: ";
-    for (V_PublisherLink::iterator spc = publisher_links_.begin();
-         spc!= publisher_links_.end(); ++spc)
     {
-      ss << (*spc)->getPublisherXMLRPCURI() << ", ";
+      boost::mutex::scoped_lock lock(publisher_links_mutex_);
+      for (V_PublisherLink::iterator spc = publisher_links_.begin();
+           spc!= publisher_links_.end(); ++spc)
+      {
+        ss << (*spc)->getPublisherXMLRPCURI() << ", ";
+      }
     }
 
     boost::mutex::scoped_lock lock(pending_connections_mutex_);

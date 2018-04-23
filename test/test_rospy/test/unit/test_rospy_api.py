@@ -66,12 +66,13 @@ class TestRospyApi(unittest.TestCase):
         except ImportError:
             from io import StringIO
         import rospy
+        import rospy.exceptions
         #trip wires against AnyMsg API
         m = rospy.AnyMsg()
         try:
             m.serialize(StringIO())
             self.fail("AnyMsg should not allow serialization")
-        except:
+        except rospy.exceptions.ROSException:
             pass
 
         teststr = 'foostr-%s'%time.time()
@@ -123,6 +124,11 @@ class TestRospyApi(unittest.TestCase):
         rospy.logfatal_throttle
         rospy.loginfo_throttle
         rospy.logwarn_throttle
+        rospy.logdebug_once
+        rospy.logerr_once
+        rospy.logfatal_once
+        rospy.loginfo_once
+        rospy.logwarn_once
         rospy.myargv
         rospy.on_shutdown
         rospy.parse_rosrpc_uri

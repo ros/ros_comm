@@ -5,7 +5,7 @@
 namespace rosbag
 {
 
-BagPlayer::BagPlayer(const std::string &fname) throw(BagException) {
+BagPlayer::BagPlayer(const std::string &fname) {
     bag.open(fname, rosbag::bagmode::Read);
     ros::Time::init();
     View v(bag);

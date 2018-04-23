@@ -2,6 +2,31 @@
 Changelog for package rosout
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.6 (2018-02-05)
+-------------------
+* add parameter to omit topics list from rosout logs (`#1234 <https://github.com/ros/ros_comm/issues/1234>`_)
+
+1.13.5 (2017-11-09)
+-------------------
+
+1.13.4 (2017-11-02)
+-------------------
+
+1.13.3 (2017-10-25)
+-------------------
+
+1.13.2 (2017-08-15)
+-------------------
+
+1.13.1 (2017-07-27)
+-------------------
+* move code from init to initializer (`#990 <https://github.com/ros/ros_comm/issues/990>`_)
+
+1.13.0 (2017-02-22)
+-------------------
+* modify rosout log rotation to actually "rotate" old files (`#854 <https://github.com/ros/ros_comm/issues/854>`_)
+* add node name to the output in rosout.log (`#912 <https://github.com/ros/ros_comm/issues/912>`_)
+
 1.12.7 (2017-02-17)
 -------------------
 

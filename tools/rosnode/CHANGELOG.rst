@@ -2,6 +2,32 @@
 Changelog for package rosnode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.6 (2018-02-05)
+-------------------
+* fix docstrings (`#1278 <https://github.com/ros/ros_comm/issues/1278>`_)
+* fix documentation for cleanup_master_blacklist() (`#1253 <https://github.com/ros/ros_comm/issues/1253>`_)
+
+1.13.5 (2017-11-09)
+-------------------
+
+1.13.4 (2017-11-02)
+-------------------
+
+1.13.3 (2017-10-25)
+-------------------
+* return exit code 1 in case of errors (`#1178 <https://github.com/ros/ros_comm/issues/1178>`_)
+* sort output of rosnode info (`#1160 <https://github.com/ros/ros_comm/issues/1160>`_)
+* fix Python 3 compatibility (`#1166 <https://github.com/ros/ros_comm/issues/1166>`_)
+
+1.13.2 (2017-08-15)
+-------------------
+
+1.13.1 (2017-07-27)
+-------------------
+
+1.13.0 (2017-02-22)
+-------------------
+
 1.12.7 (2017-02-17)
 -------------------
 

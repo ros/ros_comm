@@ -80,7 +80,7 @@ public:
   }
 
   bool in_use_;
-  ros::WallTime last_use_time_; // for reaping
+  ros::SteadyTime last_use_time_; // for reaping
   XmlRpc::XmlRpcClient* client_;
 
   static const ros::WallDuration s_zombie_time_; // how long before it is toasted

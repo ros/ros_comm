@@ -65,3 +65,76 @@ string frame_id
         new_msg.field1 = old_msg.field1
         self.migrate(old_msg.field2, new_msg.field2)
         new_msg.field3 = 'radasdk'
+
+class update_test_rosbag_PartiallyMigrated_aba12af164ecf3f5cd150fb990205c4b(MessageUpdateRule):
+    old_type = "test_rosbag/PartiallyMigrated"
+    old_full_text = """
+int32            field1 # 40
+MigratedExplicit field2 # (17, 58.2, "aldfkja", 82)
+string           field3 # "radasdk"
+
+================================================================================
+MSG: test_rosbag/MigratedExplicit
+Header  header
+int32   afield1 #17
+float32 afield2 #58.2
+string  afield3 #"aldfkja"
+int32   afield4 #82
+================================================================================
+MSG: std_msgs/Header
+#Standard metadata for higher-level flow data types
+#sequence ID: consecutively increasing ID
+uint32 seq
+#Two-integer timestamp that is expressed as:
+# * stamp.secs: seconds (stamp_secs) since epoch
+# * stamp.nsecs: nanoseconds since stamp_secs
+# time-handling sugar is provided by the client library
+time stamp
+#Frame this data is associated with
+# 0: no frame
+# 1: global frame
+string frame_id
+"""
+
+    new_type = "test_rosbag/PartiallyMigrated"
+    new_full_text = """
+int32            field1 # 40
+MigratedExplicit field2 # (58.2, "aldfkja 17", 82)
+string           field3 # "radasdk"
+float32          field4 # 63.4
+
+================================================================================
+MSG: test_rosbag/MigratedExplicit
+Header  header
+float32 afield2 #58.2
+string  combo_field3 #"aldfkja 17"
+int32   afield4 #82
+================================================================================
+MSG: std_msgs/Header
+# Standard metadata for higher-level stamped data types.
+# This is generally used to communicate timestamped data 
+# in a particular coordinate frame.
+# 
+# sequence ID: consecutively increasing ID 
+uint32 seq
+#Two-integer timestamp that is expressed as:
+# * stamp.sec: seconds (stamp_secs) since epoch (in Python the variable is called 'secs')
+# * stamp.nsec: nanoseconds since stamp_secs (in Python the variable is called 'nsecs')
+# time-handling sugar is provided by the client library
+time stamp
+#Frame this data is associated with
+# 0: no frame
+# 1: global frame
+string frame_id
+"""
+
+    order = 1
+    migrated_types = [("MigratedExplicit","MigratedExplicit"),]
+
+    valid = True
+
+    def update(self, old_msg, new_msg):
+        new_msg.field1 = old_msg.field1
+        self.migrate(old_msg.field2, new_msg.field2)
+        new_msg.field3 = old_msg.field3
+        new_msg.field4 = 63.4

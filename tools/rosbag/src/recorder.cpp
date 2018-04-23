@@ -108,6 +108,7 @@ RecorderOptions::RecorderOptions() :
     limit(0),
     split(false),
     max_size(0),
+    max_splits(0),
     max_duration(-1.0),
     node(""),
     min_space(1024 * 1024 * 1024),
@@ -208,7 +209,7 @@ int Recorder::run() {
 }
 
 shared_ptr<ros::Subscriber> Recorder::subscribe(string const& topic) {
-	ROS_INFO("Subscribing to %s", topic.c_str());
+    ROS_INFO("Subscribing to %s", topic.c_str());
 
     ros::NodeHandle nh;
     shared_ptr<int> count(boost::make_shared<int>(options_.limit));
@@ -222,6 +223,7 @@ shared_ptr<ros::Subscriber> Recorder::subscribe(string const& topic) {
     ops.helper = boost::make_shared<ros::SubscriptionCallbackHelperT<
         const ros::MessageEvent<topic_tools::ShapeShifter const> &> >(
             boost::bind(&Recorder::doQueue, this, _1, topic, sub, count));
+    ops.transport_hints = options_.transport_hints;
     *sub = nh.subscribe(ops);
 
     currently_recording_.insert(topic);

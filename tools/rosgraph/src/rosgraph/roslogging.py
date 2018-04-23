@@ -39,11 +39,56 @@ import sys
 import time
 import logging
 import logging.config
+import inspect
+
+import yaml
 
 import rospkg
 from rospkg.environment import ROS_LOG_DIR
 
 class LoggingException(Exception): pass
+
+class RospyLogger(logging.getLoggerClass()):
+    def findCaller(self, dummy=False): # Dummy second arg to match Python3 function declaration
+        """
+        Find the stack frame of the caller so that we can note the source
+        file name, line number, and function name with class name if possible.
+        """
+        file_name, lineno, func_name = super(RospyLogger, self).findCaller()[:3]
+
+        f = inspect.currentframe()
+        if f is not None:
+            f = f.f_back
+        while hasattr(f, "f_code"):
+            # Search for the right frame using the data already found by parent class.
+            co = f.f_code
+            filename = os.path.normcase(co.co_filename)
+            if filename == file_name and f.f_lineno == lineno and co.co_name == func_name:
+                break
+            f = f.f_back
+
+        # Jump up two more frames, as the logger methods have been double wrapped.
+        if f.f_back and f.f_code and f.f_code.co_name == '_base_logger':
+            f = f.f_back
+            if f.f_back:
+                f = f.f_back
+        co = f.f_code
+        func_name = co.co_name
+
+        # Now extend the function name with class name, if available.
+        try:
+            class_name = f.f_locals['self'].__class__.__name__
+            func_name = '%s.%s' % (class_name, func_name)
+        except KeyError:  # if the function is unbound, there is no self.
+            pass
+
+        if sys.version_info > (3, 2):
+            # Dummy last argument to match Python3 return type
+            return co.co_filename, f.f_lineno, func_name, None
+        else:
+            return co.co_filename, f.f_lineno, func_name
+
+logging.setLoggerClass(RospyLogger)
 
 def renew_latest_logdir(logfile_dir):
     log_dir = os.path.dirname(logfile_dir)
@@ -83,7 +128,13 @@ def configure_logging(logname, level=logging.INFO, filename=None, env=None):
             makedirs_with_parent_perms(logfile_dir)
         except OSError:
             # cannot print to screen because command-line tools with output use this
-            sys.stderr.write("WARNING: cannot create log directory [%s]. Please set %s to a writable location.\n"%(logfile_dir, ROS_LOG_DIR))
+            if os.path.exists(logfile_dir):
+                # We successfully created the logging folder, but could not change
+                # permissions of the new folder to the same as the parent folder
+                sys.stderr.write("WARNING: Could not change permissions for folder [%s], make sure that the parent folder has correct permissions.\n"%logfile_dir)
+            else:
+                # Could not create folder
+                sys.stderr.write("WARNING: cannot create log directory [%s]. Please set %s to a writable location.\n"%(logfile_dir, ROS_LOG_DIR))
             return None
     elif os.path.isfile(logfile_dir):
         raise LoggingException("Cannot save log files: file [%s] is in the way"%logfile_dir)
@@ -98,21 +149,23 @@ def configure_logging(logname, level=logging.INFO, filename=None, env=None):
             except OSError as e:
                 sys.stderr.write("INFO: cannot create a symlink to latest log directory: %s\n" % e)
 
-    if 'ROS_PYTHON_LOG_CONFIG_FILE' in os.environ:
-        config_file = os.environ['ROS_PYTHON_LOG_CONFIG_FILE']
-    else:
-        # search for logging config file in /etc/.  If it's not there,
-        # look for it package-relative.
-        fname = 'python_logging.conf'
+    config_file = os.environ.get('ROS_PYTHON_LOG_CONFIG_FILE')
+    if not config_file:
+        # search for logging config file in ROS_HOME, ROS_ETC_DIR or relative
+        # to the rosgraph package directory.
         rosgraph_d = rospkg.RosPack().get_path('rosgraph')
-        for f in [os.path.join(rospkg.get_ros_home(), 'config', fname),
-                  '/etc/ros/%s'%(fname),
-                  os.path.join(rosgraph_d, 'conf', fname)]:
-            if os.path.isfile(f):
-                config_file = f
+        for config_dir in [os.path.join(rospkg.get_ros_home(), 'config'),
+                           rospkg.get_etc_ros_dir(),
+                           os.path.join(rosgraph_d, 'conf')]:
+            for extension in ('conf', 'yaml'):
+                f = os.path.join(config_dir,
+                                 'python_logging{}{}'.format(os.path.extsep,
+                                                             extension))
+                if os.path.isfile(f):
+                    config_file = f
+                    break
+            if config_file is not None:
                 break
-        else:
-            config_file = None
 
     if config_file is None or not os.path.isfile(config_file):
         # logging is considered soft-fail
@@ -122,9 +175,17 @@ def configure_logging(logname, level=logging.INFO, filename=None, env=None):
     
     # pass in log_filename as argument to pylogging.conf
     os.environ['ROS_LOG_FILENAME'] = log_filename
-    # #3625: disabling_existing_loggers=False
-    logging.config.fileConfig(config_file, disable_existing_loggers=False)
+    if config_file.endswith(('.yaml', '.yml')):
+        with open(config_file) as f:
+            dict_conf = yaml.load(f)
+        dict_conf.setdefault('version', 1)
+        logging.config.dictConfig(dict_conf)
+    else:
+        # #3625: disabling_existing_loggers=False
+        logging.config.fileConfig(config_file, disable_existing_loggers=False)
+
     return log_filename
+
 
 def makedirs_with_parent_perms(p):
     """
@@ -160,8 +221,10 @@ _color_reset = '\033[0m'
 _defaultFormatter = logging.Formatter()
 
 class RosStreamHandler(logging.Handler):
-    def __init__(self, colorize=True):
+    def __init__(self, colorize=True, stdout=None, stderr=None):
         super(RosStreamHandler, self).__init__()
+        self._stdout = stdout or sys.stdout
+        self._stderr = stderr or sys.stderr
         self._colorize = colorize
         try:
             from rospy.rostime import get_time, is_wallclock
@@ -196,9 +259,9 @@ class RosStreamHandler(logging.Handler):
         msg = msg.replace('${time}', time_str)
         msg += '\n'
         if record.levelno < logging.WARNING:
-            self._write(sys.stdout, msg, color)
+            self._write(self._stdout, msg, color)
         else:
-            self._write(sys.stderr, msg, color)
+            self._write(self._stderr, msg, color)
 
     def _write(self, fd, msg, color):
         if self._colorize and color and hasattr(fd, 'isatty') and fd.isatty():

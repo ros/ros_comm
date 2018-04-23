@@ -2,6 +2,41 @@
 Changelog for package rosbag_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.6 (2018-02-05)
+-------------------
+* performance improvement for lower/upper bound (`#1223 <https://github.com/ros/ros_comm/issues/1223>`_)
+* use namespaced logging macros of console_bridge instead of deprecated macros (`#1239 <https://github.com/ros/ros_comm/issues/1239>`_)
+
+1.13.5 (2017-11-09)
+-------------------
+
+1.13.4 (2017-11-02)
+-------------------
+
+1.13.3 (2017-10-25)
+-------------------
+* fix corrupted messages when reopening a rosbag with a different file (`#1176 <https://github.com/ros/ros_comm/issues/1176>`_)
+* addd rosbag::Bag::isOpen (`#1190 <https://github.com/ros/ros_comm/issues/1190>`_)
+* enable rosbag::Bag move operations if compiler support is available (`#1189 <https://github.com/ros/ros_comm/issues/1189>`_)
+* check if bzfile\_ and lz4s\_ handle is valid before reading/writing/closing (`#1183 <https://github.com/ros/ros_comm/issues/1183>`_)
+* fix an out of bounds read in rosbag::View::iterator::increment() (`#1191 <https://github.com/ros/ros_comm/issues/1191>`_)
+* replace usage deprecated console_bridge macros (`#1149 <https://github.com/ros/ros_comm/issues/1149>`_)
+
+1.13.2 (2017-08-15)
+-------------------
+* fix whitespace warnings with g++ 7 (`#1138 <https://github.com/ros/ros_comm/issues/1138>`_)
+* remove deprecated dynamic exception specifications (`#1137 <https://github.com/ros/ros_comm/issues/1137>`_)
+
+1.13.1 (2017-07-27)
+-------------------
+* fix buffer overflow vulnerability (`#1092 <https://github.com/ros/ros_comm/issues/1092>`_)
+* fix rosbag::View::iterator copy assignment operator (`#1017 <https://github.com/ros/ros_comm/issues/1017>`_)
+* fix open mode on Windows (`#1005 <https://github.com/ros/ros_comm/pull/1005>`_)
+* add swap function instead of copy constructor / assignment operator for rosbag::Bag (`#1000 <https://github.com/ros/ros_comm/issues/1000>`_)
+
+1.13.0 (2017-02-22)
+-------------------
+
 1.12.7 (2017-02-17)
 -------------------
 

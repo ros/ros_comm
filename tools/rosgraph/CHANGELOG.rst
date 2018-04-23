@@ -2,6 +2,35 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.6 (2018-02-05)
+-------------------
+* fix search strategy for python_logging config (`#1292 <https://github.com/ros/ros_comm/issues/1292>`_)
+
+1.13.5 (2017-11-09)
+-------------------
+
+1.13.4 (2017-11-02)
+-------------------
+
+1.13.3 (2017-10-25)
+-------------------
+* use defined error codes rather than hardcoded integers (`#1174 <https://github.com/ros/ros_comm/issues/1174>`_)
+* improve logger tests (`#1144 <https://github.com/ros/ros_comm/issues/1144>`_)
+
+1.13.2 (2017-08-15)
+-------------------
+* fix stack frame identification in rospy logging (`#1141 <https://github.com/ros/ros_comm/issues/1141>`_, regression from 1.13.1)
+* make RospyLogger.findCaller compatible with Python 3 (`#1121 <https://github.com/ros/ros_comm/issues/1121>`_)
+
+1.13.1 (2017-07-27)
+-------------------
+* improve message when `roslogging` cannot change permissions (`#1068 <https://github.com/ros/ros_comm/issues/1068>`_)
+* allow python_logging.yaml for logging configuration (`#1061 <https://github.com/ros/ros_comm/issues/1061>`_)
+* write log for class method with class name (`#1043 <https://github.com/ros/ros_comm/issues/1043>`_)
+
+1.13.0 (2017-02-22)
+-------------------
+
 1.12.7 (2017-02-17)
 -------------------
 

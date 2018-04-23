@@ -73,7 +73,7 @@ class ROSLaunchParent(object):
     """
 
     def __init__(self, run_id, roslaunch_files, is_core=False, port=None, local_only=False, process_listeners=None,
-            verbose=False, force_screen=False, is_rostest=False, roslaunch_strs=None, num_workers=NUM_WORKERS, timeout=None):
+            verbose=False, force_screen=False, is_rostest=False, roslaunch_strs=None, num_workers=NUM_WORKERS, timeout=None, master_logger_level=False):
         """
         @param run_id: UUID of roslaunch session
         @type  run_id: str
@@ -101,6 +101,8 @@ class ROSLaunchParent(object):
         @param timeout: If this is the core, the socket-timeout to use.
         @type timeout: Float or None
         @throws RLException
+        @param master_logger_level: Specify roscore's rosmaster.master logger level, use default if it is False.
+        @type master_logger_level: str or False
         """
         
         self.logger = logging.getLogger('roslaunch.parent')
@@ -116,6 +118,7 @@ class ROSLaunchParent(object):
         self.verbose = verbose
         self.num_workers = num_workers
         self.timeout = timeout
+        self.master_logger_level = master_logger_level
 
         # I don't think we should have to pass in so many options from
         # the outside into the roslaunch parent. One possibility is to
@@ -152,7 +155,7 @@ class ROSLaunchParent(object):
             raise RLException("pm is not initialized")
         if self.server is None:
             raise RLException("server is not initialized")
-        self.runner = roslaunch.launch.ROSLaunchRunner(self.run_id, self.config, server_uri=self.server.uri, pmon=self.pm, is_core=self.is_core, remote_runner=self.remote_runner, is_rostest=self.is_rostest, num_workers=self.num_workers, timeout=self.timeout)
+        self.runner = roslaunch.launch.ROSLaunchRunner(self.run_id, self.config, server_uri=self.server.uri, pmon=self.pm, is_core=self.is_core, remote_runner=self.remote_runner, is_rostest=self.is_rostest, num_workers=self.num_workers, timeout=self.timeout, master_logger_level=self.master_logger_level)
 
         # print runner info to user, put errors last to make the more visible
         if self.is_core:
@@ -286,7 +289,10 @@ class ROSLaunchParent(object):
         if self.process_listeners:
             for l in self.process_listeners:
                 self.runner.pm.add_process_listener(l)
-        
+                # Add listeners to server as well, otherwise they won't be
+                # called when a node on a remote machine dies.
+                self.server.add_process_listener(l)
+
     def spin_once(self):
         """
         Run the parent roslaunch event loop once

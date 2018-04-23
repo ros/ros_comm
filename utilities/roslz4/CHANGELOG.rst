@@ -2,6 +2,31 @@
 Changelog for package roslz4
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.6 (2018-02-05)
+-------------------
+* adding decompress to free(state) before return (`#1313 <https://github.com/ros/ros_comm/issues/1313>`_)
+* allow building on Trusty (`#1236 <https://github.com/ros/ros_comm/issues/1236>`_)
+
+1.13.5 (2017-11-09)
+-------------------
+
+1.13.4 (2017-11-02)
+-------------------
+
+1.13.3 (2017-10-25)
+-------------------
+
+1.13.2 (2017-08-15)
+-------------------
+* replace deprecated lz4 function call (`#1136 <https://github.com/ros/ros_comm/issues/1136>`_)
+
+1.13.1 (2017-07-27)
+-------------------
+* add XXH_NAMESPACE, for namespace emulation in C (`#1065 <https://github.com/ros/ros_comm/pull/1065>`_)
+
+1.13.0 (2017-02-22)
+-------------------
+
 1.12.7 (2017-02-17)
 -------------------
 

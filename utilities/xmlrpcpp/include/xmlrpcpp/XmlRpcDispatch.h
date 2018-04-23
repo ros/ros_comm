@@ -31,7 +31,7 @@ namespace XmlRpc {
     enum EventType {
       ReadableEvent = 1,    //!< data available to read
       WritableEvent = 2,    //!< connected/data can be written without blocking
-      Exception     = 4     //!< uh oh
+      Exception     = 4     //!< out-of-band data has arrived
     };
     
     //! Monitor this source for the event types specified by the event mask
@@ -58,7 +58,7 @@ namespace XmlRpc {
     //! Clear all sources from the monitored sources list. Sources are closed.
     void clear();
 
-    // helper
+    // helper returning current steady/monotonic time
     double getTime();
 
     // A source to monitor and what to monitor it for

@@ -496,7 +496,8 @@ class Bag(object):
         else:
             if not self._connection_indexes:
                 raise ROSBagException('Bag contains no message')
-            start_stamp = min([index[0].time.to_sec() for index in self._connection_indexes.values()])
+            start_stamps = [index[0].time.to_sec() for index in self._connection_indexes.values() if index]
+            start_stamp = min(start_stamps) if start_stamps else 0
         
         return start_stamp
     
@@ -512,7 +513,8 @@ class Bag(object):
         else:
             if not self._connection_indexes:
                 raise ROSBagException('Bag contains no message')
-            end_stamp = max([index[-1].time.to_sec() for index in self._connection_indexes.values()])
+            end_stamps = [index[-1].time.to_sec() for index in self._connection_indexes.values() if index]
+            end_stamp = max(end_stamps) if end_stamps else 0
         
         return end_stamp
     
@@ -625,8 +627,10 @@ class Bag(object):
                     start_stamp = self._chunks[ 0].start_time.to_sec()
                     end_stamp   = self._chunks[-1].end_time.to_sec()
                 else:
-                    start_stamp = min([index[ 0].time.to_sec() for index in self._connection_indexes.values()])
-                    end_stamp   = max([index[-1].time.to_sec() for index in self._connection_indexes.values()])
+                    start_stamps = [index[0].time.to_sec() for index in self._connection_indexes.values() if index]
+                    start_stamp = min(start_stamps) if start_stamps else 0
+                    end_stamps = [index[-1].time.to_sec() for index in self._connection_indexes.values() if index]
+                    end_stamp = max(end_stamps) if end_stamps else 0
     
                 # Show duration
                 duration = end_stamp - start_stamp
@@ -808,8 +812,10 @@ class Bag(object):
                     start_stamp = self._chunks[ 0].start_time.to_sec()
                     end_stamp   = self._chunks[-1].end_time.to_sec()
                 else:
-                    start_stamp = min([index[ 0].time.to_sec() for index in self._connection_indexes.values()])
-                    end_stamp   = max([index[-1].time.to_sec() for index in self._connection_indexes.values()])
+                    start_stamps = [index[0].time.to_sec() for index in self._connection_indexes.values() if index]
+                    start_stamp = min(start_stamps) if start_stamps else 0
+                    end_stamps = [index[-1].time.to_sec() for index in self._connection_indexes.values() if index]
+                    end_stamp = max(end_stamps) if end_stamps else 0
                 
                 duration = end_stamp - start_stamp
                 s += 'duration: %.6f\n' % duration
@@ -1580,6 +1586,7 @@ def _read_uint32(f): return _unpack_uint32(f.read(4))
 def _read_uint64(f): return _unpack_uint64(f.read(8))
 def _read_time  (f): return _unpack_time  (f.read(8))
 
+def _decode_str(v):    return v if type(v) is str else v.decode()
 def _unpack_uint8(v):  return struct.unpack('<B', v)[0]
 def _unpack_uint32(v): return struct.unpack('<L', v)[0]
 def _unpack_uint64(v): return struct.unpack('<Q', v)[0]
@@ -1628,8 +1635,7 @@ def _read_field(header, field, unpack_fn):
     
     return value
 
-def _read_str_field   (header, field):
-    return _read_field(header, field, lambda v: v)
+def _read_str_field   (header, field): return _read_field(header, field, _decode_str)
 def _read_uint8_field (header, field): return _read_field(header, field, _unpack_uint8)
 def _read_uint32_field(header, field): return _read_field(header, field, _unpack_uint32)
 def _read_uint64_field(header, field): return _read_field(header, field, _unpack_uint64)

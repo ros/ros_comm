@@ -57,10 +57,23 @@
 #include <set>
 #include <stdexcept>
 
+#include <boost/config.hpp>
 #include <boost/format.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 
 #include "console_bridge/console.h"
+#if defined logDebug
+# undef logDebug
+#endif
+#if defined logInform
+# undef logInform
+#endif
+#if defined logWarn
+# undef logWarn
+#endif
+#if defined logError
+# undef logError
+#endif
 
 namespace rosbag {
 
@@ -98,6 +111,12 @@ public:
     explicit Bag(std::string const& filename, uint32_t mode = bagmode::Read);
 
     ~Bag();
+
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    Bag(Bag&& other);
+
+    Bag& operator=(Bag&& other);
+#endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
     //! Open a bag file.
     /*!
@@ -171,7 +190,17 @@ public:
     void write(std::string const& topic, ros::Time const& time, boost::shared_ptr<T> const& msg,
                boost::shared_ptr<ros::M_string> connection_header = boost::shared_ptr<ros::M_string>());
 
+    void swap(Bag&);
+
+    bool isOpen() const;
+
 private:
+    // disable copying
+    Bag(const Bag&);
+    Bag& operator=(const Bag&);
+
+    void init();
+
     // This helper function actually does the write with an arbitrary serializable message
     template<class T>
     void doWrite(std::string const& topic, ros::Time const& time, T const& msg, boost::shared_ptr<ros::M_string> const& connection_header);
@@ -564,7 +593,7 @@ void Bag::doWrite(std::string const& topic, ros::Time const& time, T const& msg,
 
         // Check if we want to stop this chunk
         uint32_t chunk_size = getChunkOffset();
-        logDebug("  curr_chunk_size=%d (threshold=%d)", chunk_size, chunk_threshold_);
+        CONSOLE_BRIDGE_logDebug("  curr_chunk_size=%d (threshold=%d)", chunk_size, chunk_threshold_);
         if (chunk_size > chunk_threshold_) {
             // Empty the outgoing chunk
             stopWritingChunk();
@@ -599,7 +628,7 @@ void Bag::writeMessageDataRecord(uint32_t conn_id, ros::Time const& time, T cons
     seek(0, std::ios::end);
     file_size_ = file_.getOffset();
 
-    logDebug("Writing MSG_DATA [%llu:%d]: conn=%d sec=%d nsec=%d data_len=%d",
+    CONSOLE_BRIDGE_logDebug("Writing MSG_DATA [%llu:%d]: conn=%d sec=%d nsec=%d data_len=%d",
               (unsigned long long) file_.getOffset(), getChunkOffset(), conn_id, time.sec, time.nsec, msg_ser_len);
 
     writeHeader(header);
@@ -619,6 +648,10 @@ void Bag::writeMessageDataRecord(uint32_t conn_id, ros::Time const& time, T cons
     	curr_chunk_info_.end_time = time;
     else if (time < curr_chunk_info_.start_time)
         curr_chunk_info_.start_time = time;
+}
+
+inline void swap(Bag& a, Bag& b) {
+    a.swap(b);
 }
 
 } // namespace rosbag

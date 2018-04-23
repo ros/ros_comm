@@ -84,7 +84,7 @@ def _succeed(args):
 _caller_apis = {}
 def get_api_uri(master, caller_id, skip_cache=False):
     """
-    @param master: XMLRPC handle to ROS Master
+    @param master: rosgraph Master instance
     @type  master: rosgraph.Master
     @param caller_id: node name
     @type  caller_id: str
@@ -182,7 +182,6 @@ def get_nodes_by_machine(machine):
     @raise ROSNodeException: if machine name cannot be resolved to an address
     @raise ROSNodeIOException: if unable to communicate with master
     """
-    import urlparse
     
     master = rosgraph.Master(ID)
     try:
@@ -338,7 +337,7 @@ def rosnode_ping(node_name, max_count=None, verbose=False):
                 # 3786: catch ValueError on unpack as socket.error is not always a tuple
                 try:
                     # #3659
-                    errnum, msg = e
+                    errnum, msg = e.args
                     if errnum == -2: #name/service unknown
                         p = urlparse.urlparse(node_api)
                         print("ERROR: Unknown host [%s] for node [%s]"%(p.hostname, node_name), file=sys.stderr)
@@ -400,9 +399,9 @@ def rosnode_ping_all(verbose=False):
     
 def cleanup_master_blacklist(master, blacklist):
     """
-    Remove registrations from ROS Master that do not match blacklist.    
-    @param master: XMLRPC handle to ROS Master
-    @type  master: xmlrpclib.ServerProxy
+    Remove registrations from ROS Master that match blacklist.    
+    @param master: rosgraph Master instance
+    @type  master: rosgraph.Master
     @param blacklist: list of nodes to scrub
     @type  blacklist: [str]
     """
@@ -427,8 +426,8 @@ def cleanup_master_blacklist(master, blacklist):
 def cleanup_master_whitelist(master, whitelist):
     """
     Remove registrations from ROS Master that do not match whitelist.
-    @param master: XMLRPC handle to ROS Master
-    @type  master: xmlrpclib.ServerProxy
+    @param master: rosgraph Master instance
+    @type  master: rosgraph.Master
     @param whitelist: list of nodes to keep
     @type  whitelist: list of nodes to keep
    """
@@ -492,9 +491,9 @@ def get_node_info_description(node_name):
         pub_topics = master.getPublishedTopics('/')
     except socket.error:
         raise ROSNodeIOException("Unable to communicate with master!")
-    pubs = [t for t, l in state[0] if node_name in l]
-    subs = [t for t, l in state[1] if node_name in l]
-    srvs = [t for t, l in state[2] if node_name in l]  
+    pubs = sorted([t for t, l in state[0] if node_name in l])
+    subs = sorted([t for t, l in state[1] if node_name in l])
+    srvs = sorted([t for t, l in state[2] if node_name in l])
 
     buff = "Node [%s]"%node_name
     if pubs:
@@ -808,9 +807,12 @@ def rosnodemain(argv=None):
             _fullusage()
     except socket.error:
         print("Network communication failed. Most likely failed to communicate with master.", file=sys.stderr)
+        sys.exit(1)
     except rosgraph.MasterError as e:
         print("ERROR: "+str(e), file=sys.stderr)
+        sys.exit(1)
     except ROSNodeException as e:
         print("ERROR: "+str(e), file=sys.stderr)
+        sys.exit(1)
     except KeyboardInterrupt:
         pass

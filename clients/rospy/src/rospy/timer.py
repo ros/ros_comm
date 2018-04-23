@@ -49,15 +49,18 @@ class Rate(object):
     Convenience class for sleeping in a loop at a specified rate
     """
     
-    def __init__(self, hz):
+    def __init__(self, hz, reset=False):
         """
         Constructor.
         @param hz: hz rate to determine sleeping
-        @type  hz: int
+        @type  hz: float
+        @param reset: if True, timer is reset when rostime moved backward. [default: False]
+        @type  reset: bool
         """
         # #1403
         self.last_time = rospy.rostime.get_rostime()
         self.sleep_dur = rospy.rostime.Duration(0, int(1e9/hz))
+        self._reset = reset
 
     def _remaining(self, curr_time):
         """
@@ -96,7 +99,13 @@ class Rate(object):
         backwards
         """
         curr_time = rospy.rostime.get_rostime()
-        sleep(self._remaining(curr_time))
+        try:
+            sleep(self._remaining(curr_time))
+        except rospy.exceptions.ROSTimeMovedBackwardsException:
+            if not self._reset:
+                raise
+            self.last_time = rospy.rostime.get_rostime()
+            return
         self.last_time = self.last_time + self.sleep_dur
 
         # detect time jumping forwards, as well as loops that are
@@ -151,7 +160,6 @@ def sleep(duration):
 
         if rospy.rostime.get_rostime() < initial_rostime:
             time_jump = (initial_rostime - rospy.rostime.get_rostime()).to_sec()
-            rospy.core.logerr("ROS time moved backwards: %ss", time_jump)
             raise rospy.exceptions.ROSTimeMovedBackwardsException(time_jump)
         if rospy.core.is_shutdown():
             raise rospy.exceptions.ROSInterruptException("ROS shutdown request")
@@ -181,7 +189,7 @@ class Timer(threading.Thread):
     Convenience class for calling a callback at a specified rate
     """
 
-    def __init__(self, period, callback, oneshot=False):
+    def __init__(self, period, callback, oneshot=False, reset=False):
         """
         Constructor.
         @param period: desired period between callbacks
@@ -190,13 +198,16 @@ class Timer(threading.Thread):
         @type  callback: function taking rospy.TimerEvent
         @param oneshot: if True, fire only once, otherwise fire continuously until shutdown is called [default: False]
         @type  oneshot: bool
+        @param reset: if True, timer is reset when rostime moved backward. [default: False]
+        @type  reset: bool
         """
         super(Timer, self).__init__()
         self._period   = period
         self._callback = callback
         self._oneshot  = oneshot
+        self._reset = reset
         self._shutdown = False
-        self.setDaemon(True)
+        self.daemon = True
         self.start()
 
     def shutdown(self):
@@ -206,7 +217,7 @@ class Timer(threading.Thread):
         self._shutdown = True
         
     def run(self):
-        r = Rate(1.0 / self._period.to_sec())
+        r = Rate(1.0 / self._period.to_sec(), reset=self._reset)
         current_expected = rospy.rostime.get_rostime() + self._period
         last_expected, last_real, last_duration = None, None, None
         while not rospy.core.is_shutdown() and not self._shutdown:

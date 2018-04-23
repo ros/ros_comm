@@ -2,6 +2,32 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.6 (2018-02-05)
+-------------------
+* add --tcpnodelay TransportHint option to hz and delay commands (`#1296 <https://github.com/ros/ros_comm/issues/1296>`_)
+* remove unreachable exceptions (`#1260 <https://github.com/ros/ros_comm/issues/1260>`_)
+
+1.13.5 (2017-11-09)
+-------------------
+
+1.13.4 (2017-11-02)
+-------------------
+
+1.13.3 (2017-10-25)
+-------------------
+
+1.13.2 (2017-08-15)
+-------------------
+* fix rostopic hz and bw in Python 3 (`#1126 <https://github.com/ros/ros_comm/issues/1126>`_)
+* update tests to match stringify changes (`#1125 <https://github.com/ros/ros_comm/issues/1125>`_)
+
+1.13.1 (2017-07-27)
+-------------------
+* fix rostopic prining long integers (`#1110 <https://github.com/ros/ros_comm/pull/1110>`_)
+
+1.13.0 (2017-02-22)
+-------------------
+
 1.12.7 (2017-02-17)
 -------------------
 

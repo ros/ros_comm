@@ -2,6 +2,31 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.6 (2018-02-05)
+-------------------
+* rename log macro argument from rate to period (`#1318 <https://github.com/ros/ros_comm/issues/1318>`_)
+
+1.13.5 (2017-11-09)
+-------------------
+
+1.13.4 (2017-11-02)
+-------------------
+
+1.13.3 (2017-10-25)
+-------------------
+* replace 'while(0)' with 'while(false)' to avoid warnings (`#1179 <https://github.com/ros/ros_comm/issues/1179>`_)
+
+1.13.2 (2017-08-15)
+-------------------
+
+1.13.1 (2017-07-27)
+-------------------
+* remove extra semicolon in definition of macro ROSCONSOLE_PRINTF_ATTRIBUTE(a, b) (`#1056 <https://github.com/ros/ros_comm/pull/1056>`_)
+* add ROSCONSOLE_STDOUT_LINE_BUFFERED env var to force flushing stdout in Formatter::print (`#1012 <https://github.com/ros/ros_comm/issues/1012>`_)
+
+1.13.0 (2017-02-22)
+-------------------
+
 1.12.7 (2017-02-17)
 -------------------
 

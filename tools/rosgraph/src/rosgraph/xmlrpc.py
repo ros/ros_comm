@@ -42,6 +42,7 @@ calculation based on ROS environment variables.
 The common entry point for most libraries is the L{XmlRpcNode} class.
 """
 
+import errno
 import logging
 import select
 import socket
@@ -263,7 +264,7 @@ class XmlRpcNode(object):
             self.server.register_instance(self.handler)
 
         except socket.error as e:
-            if e.errno == 98:
+            if e.errno == errno.EADDRINUSE:
                 msg = "ERROR: Unable to start XML-RPC server, port %s is already in use"%self.port
             else:
                 msg = "ERROR: Unable to start XML-RPC server: %s" % e.strerror
@@ -291,7 +292,7 @@ class XmlRpcNode(object):
                 # exceptions break _run.
                 if self.is_shutdown:
                     pass
-                elif e.errno != 4:
+                elif e.errno != errno.EINTR:
                     self.is_shutdown = True
                     logging.getLogger('xmlrpc').error("serve forever IOError: %s, %s"%(e.errno, e.strerror))
                     

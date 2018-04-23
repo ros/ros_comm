@@ -199,24 +199,34 @@ void TransportTCP::setKeepAlive(bool use, uint32_t idle, uint32_t interval, uint
     }
 
 /* cygwin SOL_TCP does not seem to support TCP_KEEPIDLE, TCP_KEEPINTVL, TCP_KEEPCNT */
-#if defined(SOL_TCP) && !defined(__CYGWIN__)
+#if defined(SOL_TCP) && defined(TCP_KEEPIDLE)
     val = idle;
     if (setsockopt(sock_, SOL_TCP, TCP_KEEPIDLE, &val, sizeof(val)) != 0)
     {
       ROS_DEBUG("setsockopt failed to set TCP_KEEPIDLE on socket [%d] [%s]", sock_, cached_remote_host_.c_str());
     }
+#else
+    (void)idle;
+#endif
 
+#if defined(SOL_TCP) && defined(TCP_KEEPINTVL)
     val = interval;
     if (setsockopt(sock_, SOL_TCP, TCP_KEEPINTVL, &val, sizeof(val)) != 0)
     {
       ROS_DEBUG("setsockopt failed to set TCP_KEEPINTVL on socket [%d] [%s]", sock_, cached_remote_host_.c_str());
     }
+#else
+    (void)interval;
+#endif
 
+#if defined(SOL_TCP) && defined(TCP_KEEPCNT)
     val = count;
     if (setsockopt(sock_, SOL_TCP, TCP_KEEPCNT, &val, sizeof(val)) != 0)
     {
       ROS_DEBUG("setsockopt failed to set TCP_KEEPCNT on socket [%d] [%s]", sock_, cached_remote_host_.c_str());
     }
+#else
+    (void)count;
 #endif
   }
   else
@@ -331,9 +341,10 @@ bool TransportTCP::connect(const std::string& host, int port)
 
   int ret = ::connect(sock_, (sockaddr*) &sas, sas_len);
   // windows might need some time to sleep (input from service robotics hack) add this if testing proves it is necessary.
-  ROS_ASSERT((flags_ & SYNCHRONOUS) || ret != 0);
+  // ROS_ASSERT((flags_ & SYNCHRONOUS) || ret != 0);
   if (((flags_ & SYNCHRONOUS) && ret != 0) || // synchronous, connect() should return 0
-      (!(flags_ & SYNCHRONOUS) && last_socket_error() != ROS_SOCKETS_ASYNCHRONOUS_CONNECT_RETURN)) // asynchronous, connect() should return -1 and WSAGetLastError()=WSAEWOULDBLOCK/errno=EINPROGRESS
+      (!(flags_ & SYNCHRONOUS) && ret != 0 && last_socket_error() != ROS_SOCKETS_ASYNCHRONOUS_CONNECT_RETURN)) 
+      // asynchronous, connect() may return 0 or -1. When return -1, WSAGetLastError()=WSAEWOULDBLOCK/errno=EINPROGRESS
   {
     ROSCPP_CONN_LOG_DEBUG("Connect to tcpros publisher [%s:%d] failed with error [%d, %s]", host.c_str(), port, ret, last_socket_error_string());
     close();

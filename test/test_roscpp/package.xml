@@ -1,6 +1,6 @@
 <package>
   <name>test_roscpp</name>
-  <version>1.12.7</version>
+  <version>1.13.6</version>
   <description>
     Tests for roscpp which depend on rostest.
   </description>

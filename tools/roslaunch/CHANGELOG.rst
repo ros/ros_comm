@@ -2,6 +2,45 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.6 (2018-02-05)
+-------------------
+* add process listeners to XML RPC server (`#1319 <https://github.com/ros/ros_comm/issues/1319>`_)
+* pass through command-line args to the xmlloader when using the API (`#1115 <https://github.com/ros/ros_comm/issues/1115>`_)
+* make master process explicitly 'required' for parent launch (`#1228 <https://github.com/ros/ros_comm/issues/1228>`_)
+* remove unreachable exceptions (`#1260 <https://github.com/ros/ros_comm/issues/1260>`_)
+* replace Thread.setDaemon() using new API (`#1276 <https://github.com/ros/ros_comm/issues/1276>`_)
+* use roslaunch.core.printerrlog for printing error message (`#1193 <https://github.com/ros/ros_comm/issues/1193>`_, `#1317 <https://github.com/ros/ros_comm/issues/1317>`_)
+
+1.13.5 (2017-11-09)
+-------------------
+
+1.13.4 (2017-11-02)
+-------------------
+
+1.13.3 (2017-10-25)
+-------------------
+* add --set-master-logger-level option for 'rosmaster' to output LOG_API (`#1180 <https://github.com/ros/ros_comm/issues/1180>`_)
+* use defined error codes rather than hardcoded integers (`#1174 <https://github.com/ros/ros_comm/issues/1174>`_, `#1181 <https://github.com/ros/ros_comm/issues/1181>`_)
+* fix parameter leaking into sibling scopes (`#1158 <https://github.com/ros/ros_comm/issues/1158>`_)
+* avoid full stack trace for ResourceNotFound (`#1147 <https://github.com/ros/ros_comm/issues/1147>`_)
+* remove mention of rosmake from error message (`#1140 <https://github.com/ros/ros_comm/issues/1140>`_)
+
+1.13.2 (2017-08-15)
+-------------------
+
+1.13.1 (2017-07-27)
+-------------------
+* add $(dirname) to get directory of current launch file (`#1103 <https://github.com/ros/ros_comm/pull/1103>`_)
+* clean the namespace to get rid of double or trailing forward slashes (`#1100 <https://github.com/ros/ros_comm/issues/1100>`_)
+* only launch core nodes if master was launched by roslaunch (`#1098 <https://github.com/ros/ros_comm/pull/1098>`_)
+* ensure pid file is removed on exit (`#1057 <https://github.com/ros/ros_comm/pull/1057>`_, `#1084 <https://github.com/ros/ros_comm/pull/1084>`_)
+* add yaml type for param tag (`#1045 <https://github.com/ros/ros_comm/issues/1045>`_)
+* ensure cwd exists (`#1031 <https://github.com/ros/ros_comm/pull/1031>`_)
+* respect if/unless for roslaunch-check (`#998 <https://github.com/ros/ros_comm/pull/998>`_)
+
+1.13.0 (2017-02-22)
+-------------------
+
 1.12.7 (2017-02-17)
 -------------------
 * improve error message for invalid tags (`#989 <https://github.com/ros/ros_comm/pull/989>`_)

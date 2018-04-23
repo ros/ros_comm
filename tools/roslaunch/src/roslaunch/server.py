@@ -48,6 +48,7 @@ processes it launches in order to handle remote launching (or
 execution as a different user).
 """
 
+import errno
 import logging
 import os
 import socket
@@ -384,7 +385,7 @@ class ROSLaunchNode(xmlrpc.XmlRpcNode):
                 # is highly unlikely and unconfirmed
                 time.sleep(0.1)
             except socket.error as e:
-                if e.errno == 113:
+                if e.errno == errno.EHOSTUNREACH:
                     p = urlparse(self.uri)
                     raise RLException("Unable to contact the address [%s], which should be local.\nThis is generally caused by:\n * bad local network configuration\n * bad ROS_IP environment variable\n * bad ROS_HOSTNAME environment variable\nCan you ping %s?"%(self.uri, p.hostname))
                 else:
