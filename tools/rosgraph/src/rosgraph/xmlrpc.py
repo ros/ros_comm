@@ -77,9 +77,6 @@ def isstring(s):
         return isinstance(s, str)
 
 class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
-
-    protocol_version = 'HTTP/1.1'
-
     def log_message(self, format, *args):
         if 0:
             SimpleXMLRPCRequestHandler.log_message(self, format, *args)
@@ -89,9 +86,6 @@ class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
     Adds ThreadingMixin to SimpleXMLRPCServer to support multiple concurrent
     requests via threading. Also makes logging toggleable.
     """
-
-    daemon_threads = True
-
     def __init__(self, addr, log_requests=1):
         """
         Overrides SimpleXMLRPCServer to set option to allow_reuse_address.
