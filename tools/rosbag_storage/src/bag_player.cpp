@@ -43,7 +43,7 @@ ros::Time BagPlayer::real_time(const ros::Time &msg_time) {
 void BagPlayer::start_play() {
 
     std::vector<std::string> topics;
-    std::pair<std::string, BagCallback *> cb;
+    std::pair<std::string, boost::shared_ptr<BagCallback> > cb;
     foreach(cb, cbs_)
         topics.push_back(cb.first);
 
@@ -63,7 +63,6 @@ void BagPlayer::start_play() {
 }
 
 void BagPlayer::unregister_callback(const std::string &topic) {
-    delete cbs_[topic];
     cbs_.erase(topic);
 }
 
