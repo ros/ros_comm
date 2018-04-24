@@ -73,7 +73,7 @@ void TimerManager<SteadyTime, WallDuration, SteadyTimerEvent>::threadFunc()
           current = SteadyTime::now();
 
           //ROS_DEBUG("Scheduling timer callback for timer [%d] of period [%f], [%f] off expected", info->handle, info->period.toSec(), (current - info->next_expected).toSec());
-          CallbackInterfacePtr cb(boost::make_shared<TimerQueueCallback>(this, info, info->last_expected, info->last_real, info->next_expected));
+          CallbackInterfacePtr cb(boost::make_shared<TimerQueueCallback>(this, info, info->last_expected, info->last_real, info->next_expected, info->last_expired, current));
           info->callback_queue->addCallback(cb, (uint64_t)info.get());
 
           waiting_.pop_front();
