@@ -115,9 +115,10 @@ bool TransportSubscriberLink::handleHeader(const Header& header)
   m["topic"] = topic_;
   connection_->writeHeader(m, boost::bind(&TransportSubscriberLink::onHeaderWritten, this, _1));
 
-  ros::trace::new_connection(connection_->getTransport()->getAddress(true).c_str(),
-		  connection_->getTransport()->getAddress(false).c_str(), connection_.get(),
-		  "TransportSubscriberLink", topic.c_str(), pt->getDataType().c_str());
+  ros::trace::new_connection(
+    connection_->getTransport()->getAddress(true).c_str(),
+    connection_->getTransport()->getAddress(false).c_str(), connection_.get(),
+    "TransportSubscriberLink", topic.c_str(), pt->getDataType().c_str());
 
   pt->addSubscriberLink(shared_from_this());
 

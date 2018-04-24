@@ -155,9 +155,11 @@ bool ServiceClientLink::handleHeader(const Header& header)
     m["callerid"] = this_node::getName();
     connection_->writeHeader(m, boost::bind(&ServiceClientLink::onHeaderWritten, this, _1));
 
-    ros::trace::new_connection(connection_->getTransport()->getAddress(true).c_str(),
-    		connection_->getTransport()->getAddress(false).c_str(),
-			connection_.get(), "ServiceClientLink", service.c_str(), ss->getDataType().c_str());
+    ros::trace::new_connection(
+      connection_->getTransport()->getAddress(true).c_str(),
+      connection_->getTransport()->getAddress(false).c_str(),
+      connection_.get(), "ServiceClientLink", service.c_str(),
+      ss->getDataType().c_str());
 
     ss->addServiceClientLink(shared_from_this());
   }
@@ -247,4 +249,3 @@ void ServiceClientLink::processResponse(bool ok, const SerializedMessage& res)
 
 
 } // namespace ros
-

@@ -127,10 +127,10 @@ bool ServiceServerLink::initialize(const ConnectionPtr& connection)
 
   connection_->writeHeader(header, boost::bind(&ServiceServerLink::onHeaderWritten, this, _1));
 
-  ros::trace::new_connection(connection_->getTransport()->getAddress(true).c_str(),
-      		connection_->getTransport()->getAddress(false).c_str(),
-  			connection_.get(), "ServiceServerLink", service_name_.c_str(),
-			"");
+  ros::trace::new_connection(
+    connection_->getTransport()->getAddress(true).c_str(),
+    connection_->getTransport()->getAddress(false).c_str(),
+    connection_.get(), "ServiceServerLink", service_name_.c_str(), "");
 
   return true;
 }
@@ -393,4 +393,3 @@ bool ServiceServerLink::isValid() const
 }
 
 } // namespace ros
-

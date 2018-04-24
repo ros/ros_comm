@@ -60,15 +60,11 @@ void SubscriptionQueue::push(const SubscriptionCallbackHelperPtr& helper, const 
 
   if(fullNoLock())
   {
-	const Item& item = queue_.front();
-	ros::trace::subscription_message_dropped(topic_.c_str(), 
-			NULL,
-			this,
-			item.helper.get(),
-			item.deserializer.get(),
-			item.receipt_time.sec,
-			item.receipt_time.nsec);
-			
+    const Item& item = queue_.front();
+    ros::trace::subscription_message_dropped(topic_.c_str(), NULL, this,
+    item.helper.get(), item.deserializer.get(),
+    item.receipt_time.sec, item.receipt_time.nsec);
+
     queue_.pop_front();
     --queue_size_;
 
@@ -172,10 +168,10 @@ CallbackInterface::CallResult SubscriptionQueue::call()
     SubscriptionCallbackHelperCallParams params;
     params.event = MessageEvent<void const>(msg, i.deserializer->getConnectionHeader(), i.receipt_time, i.nonconst_need_copy, MessageEvent<void const>::CreateFunction());
     ros::trace::subscriber_call_start(topic_, this, i.helper.get(),
-    		i.deserializer.get(), i.receipt_time.sec, i.receipt_time.nsec);
+      i.deserializer.get(), i.receipt_time.sec, i.receipt_time.nsec);
     i.helper->call(params);
     ros::trace::subscriber_call_end(topic_, this, i.helper.get(),
-    		i.deserializer.get(), i.receipt_time.sec, i.receipt_time.nsec);
+      i.deserializer.get(), i.receipt_time.sec, i.receipt_time.nsec);
   }
 
   return CallbackInterface::Success;
@@ -198,4 +194,3 @@ bool SubscriptionQueue::fullNoLock()
 }
 
 }
-
