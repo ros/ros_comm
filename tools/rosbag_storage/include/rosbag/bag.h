@@ -40,6 +40,7 @@
 #include "rosbag/buffer.h"
 #include "rosbag/chunked_file.h"
 #include "rosbag/constants.h"
+#include "rosbag/encryptor.h"
 #include "rosbag/exceptions.h"
 #include "rosbag/structures.h"
 
@@ -60,6 +61,8 @@
 #include <boost/config.hpp>
 #include <boost/format.hpp>
 #include <boost/iterator/iterator_facade.hpp>
+
+#include <pluginlib/class_loader.hpp>
 
 #include "console_bridge/console.h"
 #if defined logDebug
@@ -140,6 +143,16 @@ public:
     CompressionType getCompression() const;                       //!< Get the compression method to use for writing chunks
     void            setChunkThreshold(uint32_t chunk_threshold);  //!< Set the threshold for creating new chunks
     uint32_t        getChunkThreshold() const;                    //!< Get the threshold for creating new chunks
+
+    //! Set encryptor of the bag file
+    /*!
+     * \param plugin_name The name of the encryptor plugin
+     * \param plugin_param The string parameter to be passed to the plugin initialization method
+     *
+     * Call this method to specify an encryptor for writing bag contents. This method need not be called when
+     * reading or appending a bag file: The encryptor is read from the bag file header.
+     */
+    void setEncryptorPlugin(const std::string& plugin_name, const std::string& plugin_param = std::string());
 
     //! Write a message into the bag file
     /*!
@@ -224,7 +237,7 @@ private:
     
     void writeVersion();
     void writeFileHeaderRecord();
-    void writeConnectionRecord(ConnectionInfo const* connection_info);
+    void writeConnectionRecord(ConnectionInfo const* connection_info, const bool encrypt);
     void appendConnectionRecordToBuffer(Buffer& buf, ConnectionInfo const* connection_info);
     template<class T>
     void writeMessageDataRecord(uint32_t conn_id, ros::Time const& time, T const& msg);
@@ -337,6 +350,11 @@ private:
     mutable Buffer*  current_buffer_;
 
     mutable uint64_t decompressed_chunk_;      //!< position of decompressed chunk
+
+    // Encryptor plugin loader
+    pluginlib::ClassLoader<rosbag::EncryptorBase> encryptor_loader_;
+    // Active encryptor
+    boost::shared_ptr<rosbag::EncryptorBase> encryptor_;
 };
 
 } // namespace rosbag
@@ -569,8 +587,8 @@ void Bag::doWrite(std::string const& topic, ros::Time const& time, T const& msg,
                 (*connection_info->header)["message_definition"] = connection_info->msg_def;
             }
             connections_[conn_id] = connection_info;
-
-            writeConnectionRecord(connection_info);
+            // No need to encrypt connection records in chunks
+            writeConnectionRecord(connection_info, false);
             appendConnectionRecordToBuffer(outgoing_chunk_buffer_, connection_info);
         }
 
