@@ -70,7 +70,7 @@ Bag::Bag(string const& filename, uint32_t mode) : encryptor_loader_("rosbag_stor
 
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 
-Bag::Bag(Bag&& other) {
+Bag::Bag(Bag&& other) : encryptor_loader_("rosbag_storage", "rosbag::EncryptorBase") {
     init();
     swap(other);
 }
@@ -1178,6 +1178,7 @@ void Bag::swap(Bag& other) {
     swap(outgoing_chunk_buffer_, other.outgoing_chunk_buffer_);
     swap(current_buffer_, other.current_buffer_);
     swap(decompressed_chunk_, other.decompressed_chunk_);
+    swap(encryptor_, other.encryptor_);
 }
 
 bool Bag::isOpen() const { return file_.isOpen(); }

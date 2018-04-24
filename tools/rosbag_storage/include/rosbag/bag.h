@@ -62,7 +62,7 @@
 #include <boost/format.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 
-#include <pluginlib/class_loader.h>
+#include <pluginlib/class_loader.hpp>
 
 #include "console_bridge/console.h"
 #if defined logDebug
