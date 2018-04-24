@@ -46,6 +46,7 @@
 #include "ros/forwards.h"
 #include "ros/time.h"
 #include "ros/file_log.h"
+#include <tracetools/tracetools.h>
 
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -530,6 +531,7 @@ void TimerManager<T, D, E>::threadFunc()
 
           //ROS_DEBUG("Scheduling timer callback for timer [%d] of period [%f], [%f] off expected", info->handle, info->period.toSec(), (current - info->next_expected).toSec());
           CallbackInterfacePtr cb(boost::make_shared<TimerQueueCallback>(this, info, info->last_expected, info->last_real, info->next_expected));
+          ros::trace::timer_scheduled(cb.get(), (void*)info->callback.functor.func_ptr);
           info->callback_queue->addCallback(cb, (uint64_t)info.get());
 
           waiting_.pop_front();

@@ -40,6 +40,7 @@
 #include "ros/callback_queue.h"
 #include "ros/assert.h"
 #include <boost/scope_exit.hpp>
+#include <tracetools/tracetools.h>
 
 // check if we have really included the backported boost condition variable
 // just in case someone messes with the include order...
@@ -403,7 +404,15 @@ CallbackQueue::CallOneResult CallbackQueue::callOneCB(TLS* tls)
       else
       {
         tls->cb_it = tls->callbacks.erase(tls->cb_it);
+
+        const void* callback_ref = ros::trace::impl::getCallbackFunction(cb);
+        ros::trace::call_start(callback_ref, NULL, 0);
+        ros::trace::queue_delay("callback queue", callback_ref, NULL,
+          info.created.sec, info.created.nsec);
+
         result = cb->call();
+
+        ros::trace::call_end(callback_ref, NULL, 0);
       }
     }
 

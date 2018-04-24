@@ -39,6 +39,7 @@
 
 #include "connection.h"
 #include "signal1.h"
+#include <tracetools/tracetools.h>
 #include <ros/message_event.h>
 #include <ros/subscription_callback_helper.h>
 
@@ -73,6 +74,7 @@ public:
   Connection registerCallback(const C& callback)
   {
     typename CallbackHelper1<M>::Ptr helper = signal_.addCallback(Callback(callback));
+    ros::trace::fn_name_info((void*)&callback, (void*)helper.get());
     return Connection(boost::bind(&Signal::removeCallback, &signal_, helper));
   }
 
@@ -105,6 +107,7 @@ public:
   Connection registerCallback(void(T::*callback)(P), T* t)
   {
     typename CallbackHelper1<M>::Ptr helper = signal_.template addCallback<P>(boost::bind(callback, t, _1));
+    ros::trace::fn_name_info((void*)callback, (void*)helper.get());
     return Connection(boost::bind(&Signal::removeCallback, &signal_, helper));
   }
 
@@ -124,7 +127,8 @@ protected:
   void signalMessage(const MConstPtr& msg)
   {
     ros::MessageEvent<M const> event(msg);
-
+    ros::trace::link_step("mf::sf::signal", this, msg.get(),
+      event.getMessage().get(), 0);
     signal_.call(event);
   }
 
@@ -133,6 +137,8 @@ protected:
    */
   void signalMessage(const ros::MessageEvent<M const>& event)
   {
+    ros::trace::link_step("mf::sf::signal", this, event.getMessage().get(),
+      event.getMessage().get(), event.getReceiptTime().toNSec());
     signal_.call(event);
   }
 
@@ -147,4 +153,3 @@ private:
 }
 
 #endif
-

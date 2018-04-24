@@ -28,6 +28,7 @@
 #ifndef ROSCPP_SUBSCRIBE_OPTIONS_H
 #define ROSCPP_SUBSCRIBE_OPTIONS_H
 
+#include <tracetools/tracetools.h>
 #include "ros/forwards.h"
 #include "common.h"
 #include "ros/transport_hints.h"
@@ -89,6 +90,7 @@ struct ROSCPP_DECL SubscribeOptions
     md5sum = message_traits::md5sum<MessageType>();
     datatype = message_traits::datatype<MessageType>();
     helper = boost::make_shared<SubscriptionCallbackHelperT<P> >(_callback, factory_fn);
+    ros::trace::callback_wrapper((void*)_callback.functor.func_ptr, helper);
   }
 
   /**
@@ -106,10 +108,12 @@ struct ROSCPP_DECL SubscribeOptions
   {
     typedef typename ParameterAdapter<M>::Message MessageType;
     topic = _topic;
+
     queue_size = _queue_size;
     md5sum = message_traits::md5sum<MessageType>();
     datatype = message_traits::datatype<MessageType>();
     helper = boost::make_shared<SubscriptionCallbackHelperT<const boost::shared_ptr<MessageType const>&> >(_callback, factory_fn);
+    ros::trace::callback_wrapper((void*)_callback.functor.func_ptr, helper);
   }
 
   std::string topic;                                                ///< Topic to subscribe to
