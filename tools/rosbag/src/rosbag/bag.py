@@ -122,6 +122,7 @@ class Compression:
     LZ4  = 'lz4'
 
 BagMessage = collections.namedtuple('BagMessage', 'topic message timestamp')
+BagMessageWithConnectionHeader = collections.namedtuple('BagMessageWithConnectionHeader', 'topic message timestamp connection_header')
 
 class _ROSBagEncryptor(object):
     """
@@ -534,7 +535,7 @@ class Bag(object):
         
     chunk_threshold = property(_get_chunk_threshold, _set_chunk_threshold)
 
-    def read_messages(self, topics=None, start_time=None, end_time=None, connection_filter=None, raw=False):
+    def read_messages(self, topics=None, start_time=None, end_time=None, connection_filter=None, raw=False, return_connection_header=False):
         """
         Read messages from the bag, optionally filtered by topic, timestamp and connection details.
         @param topics: list of topics or a single topic. if an empty list is given all topics will be read [optional]
@@ -555,7 +556,7 @@ class Bag(object):
         if topics and type(topics) is str:
             topics = [topics]
         
-        return self._reader.read_messages(topics, start_time, end_time, connection_filter, raw)
+        return self._reader.read_messages(topics, start_time, end_time, connection_filter, raw, return_connection_header)
 
     def flush(self):
         """
@@ -568,7 +569,7 @@ class Bag(object):
         if self._chunk_open:
             self._stop_writing_chunk()
 
-    def write(self, topic, msg, t=None, raw=False):
+    def write(self, topic, msg, t=None, raw=False, connection_header=None):
         """
         Write a message to the bag.
         @param topic: name of topic
@@ -627,10 +628,20 @@ class Bag(object):
                 if pytype._md5sum != md5sum:
                     print('WARNING: md5sum of loaded type [%s] does not match that specified' % msg_type, file=sys.stderr)
                     #raise ROSBagException('md5sum of loaded type does not match that of data being recorded')
-            
-                header = { 'topic' : topic, 'type' : msg_type, 'md5sum' : md5sum, 'message_definition' : pytype._full_text }
+
+                header = connection_header if connection_header is not None else {
+                    'topic': topic,
+                    'type': msg_type,
+                    'md5sum': md5sum,
+                    'message_definition': pytype._full_text
+                }
             else:
-                header = { 'topic' : topic, 'type' : msg.__class__._type, 'md5sum' : msg.__class__._md5sum, 'message_definition' : msg._full_text }
+                header = connection_header if connection_header is not None else {
+                    'topic': topic,
+                    'type': msg.__class__._type,
+                    'md5sum': msg.__class__._md5sum,
+                    'message_definition': msg._full_text
+                }
 
             connection_info = _ConnectionInfo(conn_id, topic, header)
             # No need to encrypt connection records in chunk (encrypt=False)
@@ -2041,7 +2052,7 @@ class _BagReader(object):
     def start_reading(self):
         raise NotImplementedError()
 
-    def read_messages(self, topics, start_time, end_time, connection_filter, raw):
+    def read_messages(self, topics, start_time, end_time, connection_filter, raw, return_connection_header):
         raise NotImplementedError()
 
     def reindex(self):
@@ -2106,7 +2117,7 @@ class _BagReader102_Unindexed(_BagReader):
             
             offset = f.tell()
 
-    def read_messages(self, topics, start_time, end_time, topic_filter, raw):
+    def read_messages(self, topics, start_time, end_time, topic_filter, raw, return_connection_header):
         f = self.bag._file
 
         f.seek(self.bag._file_header_pos)
@@ -2166,7 +2177,10 @@ class _BagReader102_Unindexed(_BagReader):
                 msg = msg_type()
                 msg.deserialize(data)
 
-            yield BagMessage(topic, msg, t)
+            if return_connection_header:
+                yield BagMessageWithConnectionHeader(topic, msg, t, info.header)
+            else:
+                yield BagMessage(topic, msg, t)
 
         self.bag._connection_indexes_read = True
 
@@ -2656,10 +2670,10 @@ class _BagReader200(_BagReader):
 
         self.bag._connection_indexes_read = True
 
-    def read_messages(self, topics, start_time, end_time, connection_filter, raw):
+    def read_messages(self, topics, start_time, end_time, connection_filter, raw, return_connection_header):
         connections = self.bag._get_connections(topics, connection_filter)
         for entry in self.bag._get_entries(connections, start_time, end_time):
-            yield self.seek_and_read_message_data_record((entry.chunk_pos, entry.offset), raw)
+            yield self.seek_and_read_message_data_record((entry.chunk_pos, entry.offset), raw, return_connection_header)
 
     ###
 
@@ -2760,7 +2774,7 @@ class _BagReader200(_BagReader):
 
         return (connection_id, index)
 
-    def seek_and_read_message_data_record(self, position, raw):
+    def seek_and_read_message_data_record(self, position, raw, return_connection_header):
         chunk_pos, offset = position
 
         chunk_header = self.bag._chunk_headers.get(chunk_pos)
@@ -2835,8 +2849,11 @@ class _BagReader200(_BagReader):
         else:
             msg = msg_type()
             msg.deserialize(data)
-        
-        return BagMessage(connection_info.topic, msg, t)
+
+        if return_connection_header:
+            return BagMessageWithConnectionHeader(connection_info.topic, msg, t, connection_info.header)
+        else:
+            return BagMessage(connection_info.topic, msg, t)
 
 def _time_to_str(secs):
     secs_frac = secs - int(secs) 
