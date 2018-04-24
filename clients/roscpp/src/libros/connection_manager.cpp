@@ -40,20 +40,10 @@
 namespace ros
 {
 
-ConnectionManagerPtr g_connection_manager;
-boost::mutex g_connection_manager_mutex;
 const ConnectionManagerPtr& ConnectionManager::instance()
 {
-  if (!g_connection_manager)
-  {
-    boost::mutex::scoped_lock lock(g_connection_manager_mutex);
-    if (!g_connection_manager)
-    {
-      g_connection_manager = boost::make_shared<ConnectionManager>();
-    }
-  }
-
-  return g_connection_manager;
+  static ConnectionManagerPtr connection_manager = boost::make_shared<ConnectionManager>();
+  return connection_manager;
 }
 
 ConnectionManager::ConnectionManager()
