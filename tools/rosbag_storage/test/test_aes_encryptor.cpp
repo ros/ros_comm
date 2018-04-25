@@ -143,7 +143,7 @@ TEST(AesCbcEncryptor, EncryptAndDecryptBag) {
     // Test the message decrypted from the bag file
     bag.open(bag_file_name, rosbag::bagmode::Read);
     rosbag::View view(bag);
-    EXPECT_EQ(view.size(), 1);
+    EXPECT_EQ(view.size(), 1u);
     EXPECT_EQ(TOPIC_NAME, view.begin()->getTopic());
     EXPECT_EQ(MESSAGE, view.begin()->instantiate<std_msgs::String>()->data);
     bag.close();
