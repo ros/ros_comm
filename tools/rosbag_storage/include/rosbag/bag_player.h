@@ -70,6 +70,24 @@ private:
     Callback cb_;
 };
 
+template<>
+class BagCallbackT<MessageInstance> : public BagCallback
+{
+public:
+    typedef boost::function<void (const MessageInstance&)> Callback;
+
+    BagCallbackT(Callback cb) :
+        cb_(cb)
+    {}
+
+    void call(MessageInstance m) {
+        cb_(m);
+    }
+
+private:
+    Callback cb_;
+};
+
 
 /* A class for playing back bag files at an API level. It supports
    relatime, as well as accelerated and slowed playback. */
