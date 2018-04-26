@@ -1,0 +1,4 @@
+<launch>
+  <arg name="test_foo" default="value_foo" />
+  <include file="$(find roslaunch)/resources/example-args.launch" pass_all_args="true" />
+</launch>
