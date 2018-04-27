@@ -202,7 +202,7 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
       msg.period_mean *= 1.0 / (stats.arrival_time_list.size() - 1);
 
       // then, calc the stddev
-      msg.period_stddev = ros::Duration(0);
+      double period_variance = 0.0;
       for(std::list<ros::Time>::iterator it = stats.arrival_time_list.begin(); it != stats.arrival_time_list.end(); it++)
       {
         if (it == stats.arrival_time_list.begin())
@@ -212,11 +212,11 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
         }
         ros::Duration period = *it - prev;
         ros::Duration t = msg.period_mean - period;
-        msg.period_stddev += ros::Duration(t.toSec() * t.toSec());
+        period_variance += t.toSec() * t.toSec();
         prev = *it;
       }
-      msg.period_stddev = ros::Duration(sqrt(msg.period_stddev.toSec() / (stats.arrival_time_list.size() - 1)));
-
+      double period_stddev = sqrt(period_variance / (stats.arrival_time_list.size() - 1));
+      msg.period_stddev = ros::Duration(period_stddev);
     }
     else
     {
