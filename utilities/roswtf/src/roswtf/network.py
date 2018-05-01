@@ -88,8 +88,11 @@ def ros_ip_check(ctx):
     # best we can do is compare roslib's routine against socket resolution and make sure they agree
     addrs = rosgraph.network.get_local_addresses()
 
+    if " " in ip:
+        return "ROS_IP [%s] contains whitespace. This is not a valid IP."%ip
+
     if ip not in addrs:
-        return "ROS_IP [%s] does not appear to be a local IP address %s."%(ip, str(addrs))
+        return "ROS_IP [%s] does not appear to be an IP address of a local network interface (one of %s)."%(ip, str(addrs))
     
 # Error/Warning Rules
 
