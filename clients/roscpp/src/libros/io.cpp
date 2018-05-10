@@ -119,6 +119,8 @@ void close_socket_watcher(int fd) {
 void add_socket_to_watcher(int epfd, int fd) {
 #if defined(HAVE_EPOLL)
   struct epoll_event ev;
+  bzero(&ev, sizeof(ev));
+
   ev.events = 0;
   ev.data.fd = fd;
 
@@ -147,6 +149,8 @@ void del_socket_from_watcher(int epfd, int fd) {
 void set_events_on_socket(int epfd, int fd, int events) {
 #if defined(HAVE_EPOLL)
   struct epoll_event ev;
+  bzero(&ev, sizeof(ev));
+
   ev.events = events;
   ev.data.fd = fd;
   if (::epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev))
