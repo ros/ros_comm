@@ -126,6 +126,11 @@ void in_cb(const ros::MessageEvent<ShapeShifter>& msg_event)
         now.fromSec(ros::WallTime::now().toSec());
       else
         now = ros::Time::now();
+      if (g_last_time > now)
+      {
+        ROS_WARN("Detected jump back in time, resetting throttle period to now for.");
+        g_last_time = now;
+      }
       if((now - g_last_time) > g_period)
       {
         g_pub.publish(msg);
