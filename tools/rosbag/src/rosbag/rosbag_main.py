@@ -146,6 +146,21 @@ def record_cmd(argv):
     process = subprocess.Popen(cmd)
     process.wait()
 
+def snapshot_cmd(argv):
+    exepath = roslib.packages.find_node('rosbag', 'snapshot')
+    if not exepath:
+        parser.error("Cannot find rosbag/snapshot executable")
+    cmd = [exepath[0]]
+    cmd.extend(argv)
+
+    old_handler = signal.signal(
+        signal.SIGTERM,
+        lambda signum, frame: _stop_process(signum, frame, old_handler, process)
+    )
+    # Better way of handling it than os.execv
+    # This makes sure stdin handles are passed to the process.
+    process = subprocess.Popen(cmd)
+    process.wait()
 
 def info_cmd(argv):
     parser = optparse.OptionParser(usage='rosbag info [options] BAGFILE1 [BAGFILE2 BAGFILE3 ...]',
@@ -983,6 +998,7 @@ class ProgressMeter(object):
 def rosbagmain(argv=None):
     cmds = RosbagCmds()
     cmds.add_cmd('record', record_cmd, "Record a bag file with the contents of specified topics.")
+    cmds.add_cmd('snapshot', snapshot_cmd, "Keep a buffer of recent message then write to bag file when externally triggered.")
     cmds.add_cmd('info', info_cmd, 'Summarize the contents of one or more bag files.')
     cmds.add_cmd('play', play_cmd, "Play back the contents of one or more bag files in a time-synchronized fashion.")
     cmds.add_cmd('check', check_cmd, 'Determine whether a bag is playable in the current system, or if it can be migrated.')

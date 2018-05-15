@@ -1,0 +1,20 @@
+<launch>
+  <node name="snapshot" pkg="rosbag" type="snapshot" args="">
+    <rosparam>
+        default_duration_limit: 1  # Maximum time difference between newest and oldest message, seconds, overrides -d flag
+        default_memory_limit: 0.1  # Maximum memory used by messages in each topic's buffer, MB, override -s flag
+        topics:
+            - test1                # Inherit defaults
+            - test2:               # Override duration limit, inherit memory limit
+                duration: 2
+            - test3:               # Override both limits
+                duration: -1       # Negative means no duration limit
+                memory: 0.00
+    </rosparam>
+  </node>
+  <!-- A bunch of fixed frequency publishers, each 64bits to make size calculations easy -->
+  <node name="test1pub" pkg="rostopic" type="rostopic" args="pub /test1 std_msgs/Time '{data:{ secs: 0, nsecs: 0}}' -r2"/>
+  <node name="test2pub" pkg="rostopic" type="rostopic" args="pub /test2 std_msgs/Int64 'data: 1337' -r12"/>
+  <node name="test3pub" pkg="rostopic" type="rostopic" args="pub /test3 std_msgs/Float64 'data: 42.00' -r25" />
+  <test test-name="snapshot_test" pkg="test_rosbag" type="test_snapshot.py"/>
+</launch>

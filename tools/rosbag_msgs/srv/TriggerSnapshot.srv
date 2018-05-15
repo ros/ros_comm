@@ -1,0 +1,18 @@
+string filename   # Name of bag file to save snapshot to. 
+                  # if it ends in .bag, this exact filename will be saved.
+                  # otherwise, the current datatime and .bag will be appended to the name
+                  #   example: "test" -> test2018-05-23-10-04-20.bag
+                  #   example: "test.bag" -> test.bag
+string[] topics   # List of topics to include in snapshot. 
+                  # If empty, all buffered topics will be written
+time start_time   # Earliest timestamp for a message to be included in written bag
+                  # If time(0), start at the ealiest message in each topic's buffer
+time stop_time    # Latest timestamp for a message to be includued in written bag
+                  # If time(0), stop at the most recent message in each topic's buffer
+
+---
+
+bool success    # True if snapshot succesfully written to disk
+
+string NO_DATA=no messages buffered on selected topics
+string message  # Error description if failed

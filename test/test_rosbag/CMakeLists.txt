@@ -50,6 +50,7 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(${PROJECT_BINARY_DIR}/test/latched_sub.test)
   add_rostest(test/record_two_publishers.test)
   add_rostest(test/record_one_publisher_two_topics.test)
+  add_rostest(test/snapshot.test)
 
   include_directories(${GTEST_INCLUDE_DIRS})
   add_executable(double_pub EXCLUDE_FROM_ALL test/double_pub.cpp)
