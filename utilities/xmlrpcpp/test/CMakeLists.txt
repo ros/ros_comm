@@ -12,7 +12,8 @@ find_package(Boost REQUIRED COMPONENTS system thread)
 include_directories(${Boost_INCLUDE_DIRS})
 
 add_library(test_fixtures test_fixtures.cpp)
-target_link_libraries(test_fixtures ${Boost_LIBRARIES})
+target_link_libraries(test_fixtures xmlrpcpp ${Boost_LIBRARIES} ${GTEST_LIBRARIES})
+set_target_properties(test_fixtures PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
 catkin_add_gtest(HelloTest HelloTest.cpp)
 target_link_libraries(HelloTest xmlrpcpp ${Boost_LIBRARIES})
@@ -24,6 +25,8 @@ catkin_add_gtest(test_ulimit test_ulimit.cpp)
 target_link_libraries(test_ulimit xmlrpcpp test_fixtures ${Boost_LIBRARIES})
 
 add_library(mock_socket mock_socket.cpp)
+target_link_libraries(mock_socket ${GTEST_LIBRARIES})
+set_target_properties(mock_socket PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
 catkin_add_gtest(test_client
   test_client.cpp
@@ -46,10 +49,17 @@ catkin_add_gtest(test_dispatch
   ../libb64/src/cencode.c
 )
 target_link_libraries(test_dispatch mock_socket ${catkin_LIBRARIES})
+if(APPLE)
 set_target_properties(test_dispatch PROPERTIES
   LINK_FLAGS
-  "-Wl,--wrap=select -Wl,--wrap=poll"
+  "-Wl,-alias,___wrap_poll,_poll"
 )
+elseif(UNIX)
+set_target_properties(test_dispatch PROPERTIES
+  LINK_FLAGS
+  "-Wl,--wrap=poll"
+)
+endif()
 
 if(NOT WIN32)
   catkin_add_gtest(test_socket
@@ -58,10 +68,17 @@ if(NOT WIN32)
     ../src/XmlRpcSocket.cpp
     ../src/XmlRpcUtil.cpp
   )
-  set_target_properties(test_socket PROPERTIES
-    LINK_FLAGS
-    "-Wl,--wrap=accept -Wl,--wrap=bind -Wl,--wrap=close -Wl,--wrap=connect -Wl,--wrap=getaddrinfo -Wl,--wrap=getsockname -Wl,--wrap=listen -Wl,--wrap=read -Wl,--wrap=setsockopt -Wl,--wrap=select -Wl,--wrap=socket -Wl,--wrap=write -Wl,--wrap=fcntl -Wl,--wrap=freeaddrinfo"
-  )
+  if(APPLE)
+    set_target_properties(test_socket PROPERTIES
+      LINK_FLAGS
+      "-Wl,-alias,___wrap_accept,_accept -Wl,-alias,___wrap_bind,_bind -Wl,-alias,___wrap_close,_close -Wl,-alias,___wrap_connect,_connect -Wl,-alias,___wrap_getaddrinfo,_getaddrinfo -Wl,-alias,___wrap_getsockname,_getsockname -Wl,-alias,___wrap_listen,_listen -Wl,-alias,___wrap_read,_read -Wl,-alias,___wrap_setsockopt,_setsockopt -Wl,-alias,___wrap_select,_select -Wl,-alias,___wrap_select,_select$1050 -Wl,-alias,___wrap_socket,_socket -Wl,-alias,___wrap_write,_write -Wl,-alias,___wrap_fcntl,_fcntl -Wl,-alias,___wrap_freeaddrinfo,_freeaddrinfo"
+    )
+  elseif(UNIX)
+    set_target_properties(test_socket PROPERTIES
+      LINK_FLAGS
+      "-Wl,--wrap=accept -Wl,--wrap=bind -Wl,--wrap=close -Wl,--wrap=connect -Wl,--wrap=getaddrinfo -Wl,--wrap=getsockname -Wl,--wrap=listen -Wl,--wrap=read -Wl,--wrap=setsockopt -Wl,--wrap=select -Wl,--wrap=socket -Wl,--wrap=write -Wl,--wrap=fcntl -Wl,--wrap=freeaddrinfo"
+    )
+  endif()
 endif()
 
 catkin_add_gtest(TestValues TestValues.cpp)

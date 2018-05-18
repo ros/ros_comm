@@ -60,7 +60,7 @@ std::string XmlRpcSocket::getErrorMsg(int error) {
 
 std::deque<int> close_calls;
 void XmlRpcSocket::close(int fd) {
-  EXPECT_LE(1, close_calls.size());
+  EXPECT_LE(1u, close_calls.size());
   if (close_calls.size() > 0) {
     int close_fd = close_calls.front();
     close_calls.pop_front();
@@ -299,7 +299,7 @@ void MockSocketTest::TearDown() {
 void MockSocketTest::CheckCalls() {
   // Check that call counters and queues are empty.
   EXPECT_EQ(0, socket_calls);
-  EXPECT_EQ(0, close_calls.size());
+  EXPECT_EQ(0u, close_calls.size());
   EXPECT_EQ(0, setNonBlocking_calls);
   EXPECT_EQ(0, setReuseAddr_calls);
   EXPECT_EQ(0, bind_calls);
