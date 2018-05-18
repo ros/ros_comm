@@ -27,15 +27,18 @@ XmlRpcServer::XmlRpcServer()
     _accept_retry_time_sec(0.0)
 {
   struct rlimit limit = { .rlim_cur = 0, .rlim_max = 0 };
-  int max_files = 1024;
+  unsigned int max_files = 1024;
 
   if(getrlimit(RLIMIT_NOFILE, &limit) == 0) {
     max_files = limit.rlim_max;
+    if( limit.rlim_max == RLIM_INFINITY ) {
+      max_files = 0;
+    }
   } else {
     XmlRpcUtil::error("Could not get open file limit: %s", strerror(errno));
   }
   pollfds.resize(max_files);
-  for(int i=0; i<max_files; i++) {
+  for(unsigned int i=0; i<max_files; i++) {
     // Set up file descriptor query for all events.
     pollfds[i].fd = i;
     pollfds[i].events = POLLIN | POLLPRI | POLLOUT;
@@ -218,6 +221,11 @@ int XmlRpcServer::countFreeFDs() {
 
   // Get the current soft limit on the number of file descriptors.
   if(getrlimit(RLIMIT_NOFILE, &limit) == 0) {
+    // If we have infinite file descriptors, always return FREE_FD_BUFFER so
+    // that we never hit the low-water mark.
+    if( limit.rlim_max == RLIM_INFINITY ) {
+      return FREE_FD_BUFFER;
+    }
 
     // Poll the available file descriptors.
     // The POSIX specification guarantees that rlim_cur will always be less or
