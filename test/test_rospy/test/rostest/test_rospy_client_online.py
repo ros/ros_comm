@@ -164,7 +164,7 @@ class TestRospyClientOnline(unittest.TestCase):
                     self.assert_("test 1" in lout_last)
                     lout_len = len(lout.getvalue())
                     rospy.sleep(rospy.Duration(1))
-                elif i == 1:  # making sure the length of lerr doesnt change
+                elif i == 1:  # making sure the length of lout doesnt change
                     self.assert_(lout_len == len(lout.getvalue()))
                     rospy.sleep(rospy.Duration(2))
                 else:
@@ -211,7 +211,96 @@ class TestRospyClientOnline(unittest.TestCase):
                     rospy.sleep(rospy.Duration(2))
                 else:
                     self.assert_("test 4" in lerr_last)
-            
+
+            # logXXX_throttle_identical
+            lout_len = -1
+            for i in range(5):
+                if i < 2:
+                    test_text = "test 1"
+                else:
+                    test_text = "test 1a"
+                rospy.loginfo_throttle_identical(2, test_text)
+                lout_last = lout.getvalue().splitlines()[-1]
+                if i == 0:  # Confirm test text was logged
+                    self.assert_(test_text in lout_last)
+                    lout_len = len(lout.getvalue())
+                elif i == 1:  # Confirm the length of lout hasn't changed
+                    self.assert_(lout_len == len(lout.getvalue()))
+                elif i == 2:  # Confirm the new message was logged correctly
+                    self.assert_(test_text in lout_last)
+                    lout_len = len(lout.getvalue())
+                    rospy.sleep(rospy.Duration(2))
+                elif i == 3:  # Confirm the length of lout has changed
+                    self.assert_(lout_len != len(lout.getvalue()))
+                else:  # Confirm new test text is in last log
+                    self.assert_(test_text in lout_last)
+
+            lerr_len = -1
+            for i in range(5):
+                if i < 2:
+                    test_text = "test 2"
+                else:
+                    test_text = "test 2a"
+                rospy.logwarn_throttle_identical(2, test_text)
+                lerr_last = lerr.getvalue().splitlines()[-1]
+                if i == 0:  # Confirm test text was logged
+                    self.assert_(test_text in lerr_last)
+                    lerr_len = len(lerr.getvalue())
+                elif i == 1:  # Confirm the length of lerr hasn't changed
+                    self.assert_(lerr_len == len(lerr.getvalue()))
+                elif i == 2:  # Confirm the new message was logged correctly
+                    self.assert_(test_text in lerr_last)
+                    lerr_len = len(lerr.getvalue())
+                    rospy.sleep(rospy.Duration(2))
+                elif i == 3:  # Confirm the length of lerr has incremented
+                    self.assert_(lerr_len != len(lerr.getvalue()))
+                else:  # Confirm new test text is in last log
+                    self.assert_(test_text in lerr_last)
+
+            lerr_len = -1
+            for i in range(5):
+                if i < 2:
+                    test_text = "test 3"
+                else:
+                    test_text = "test 3a"
+                rospy.logerr_throttle_identical(2, test_text)
+                lerr_last = lerr.getvalue().splitlines()[-1]
+                if i == 0:  # Confirm test text was logged
+                    self.assert_(test_text in lerr_last)
+                    lerr_len = len(lerr.getvalue())
+                elif i == 1:  # Confirm the length of lerr hasn't changed
+                    self.assert_(lerr_len == len(lerr.getvalue()))
+                elif i == 2:  # Confirm the new message was logged correctly
+                    self.assert_(test_text in lerr_last)
+                    lerr_len = len(lerr.getvalue())
+                    rospy.sleep(rospy.Duration(2))
+                elif i == 3:  # Confirm the length of lerr has incremented
+                    self.assert_(lerr_len != len(lerr.getvalue()))
+                else:  # Confirm new test text is in last log
+                    self.assert_(test_text in lerr_last)
+
+            lerr_len = -1
+            for i in range(5):
+                if i < 2:
+                    test_text = "test 4"
+                else:
+                    test_text = "test 4a"
+                rospy.logfatal_throttle_identical(2, test_text)
+                lerr_last = lerr.getvalue().splitlines()[-1]
+                if i == 0:  # Confirm test text was logged
+                    self.assert_(test_text in lerr_last)
+                    lerr_len = len(lerr.getvalue())
+                elif i == 1:  # Confirm the length of lerr hasn't changed
+                    self.assert_(lerr_len == len(lerr.getvalue()))
+                elif i == 2:  # Confirm the new message was logged correctly
+                    self.assert_(test_text in lerr_last)
+                    lerr_len = len(lerr.getvalue())
+                    rospy.sleep(rospy.Duration(2))
+                elif i == 3:  # Confirm the length of lerr has incremented
+                    self.assert_(lerr_len != len(lerr.getvalue()))
+                else:  # Confirm new test text is in last log
+                    self.assert_(test_text in lerr_last)
+
             rospy.loginfo("test child logger 1", logger_name="log1")
             lout_last = lout.getvalue().splitlines()[-1]
             self.assert_("test child logger 1" in lout_last)
