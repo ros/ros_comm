@@ -2,6 +2,13 @@
 Changelog for package rosbag_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* specialize BagCallbackT for MessageInstance (`#1374 <https://github.com/ros/ros_comm/issues/1374>`_)
+* fix compiler warning of test_aes_encryptor (`#1376 <https://github.com/ros/ros_comm/issues/1376>`_)
+* implement bag encryption/decryption (`#1206 <https://github.com/ros/ros_comm/issues/1206>`_)
+* use boost::shared_ptr to fix memory leak (`#1373 <https://github.com/ros/ros_comm/issues/1373>`_)
+
 1.13.6 (2018-02-05)
 -------------------
 * performance improvement for lower/upper bound (`#1223 <https://github.com/ros/ros_comm/issues/1223>`_)

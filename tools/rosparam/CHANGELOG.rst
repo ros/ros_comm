@@ -2,6 +2,9 @@
 Changelog for package rosparam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.13.6 (2018-02-05)
 -------------------
 * remove preprended '|' from pretty-printed strings (`#1114 <https://github.com/ros/ros_comm/issues/1114>`_)

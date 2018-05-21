@@ -2,6 +2,10 @@
 Changelog for package rosout
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* allow disabling rosout file logging (to rosout.log) (`#1381 <https://github.com/ros/ros_comm/issues/1381>`_)
+
 1.13.6 (2018-02-05)
 -------------------
 * add parameter to omit topics list from rosout logs (`#1234 <https://github.com/ros/ros_comm/issues/1234>`_)

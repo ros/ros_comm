@@ -2,6 +2,13 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* keep connection header info in rosbag filter/compress (`#1372 <https://github.com/ros/ros_comm/issues/1372>`_)
+* implement bag encryption/decryption (`#1206 <https://github.com/ros/ros_comm/issues/1206>`_)
+* add TransportHint options --tcpnodelay and --udp (`#1295 <https://github.com/ros/ros_comm/issues/1295>`_)
+* fix check for header first in rosbag play for rate control topic (`#1352 <https://github.com/ros/ros_comm/issues/1352>`_)
+
 1.13.6 (2018-02-05)
 -------------------
 * return an error status on error in rosbag (`#1257 <https://github.com/ros/ros_comm/issues/1257>`_)

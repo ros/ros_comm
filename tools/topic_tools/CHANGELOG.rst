@@ -2,6 +2,12 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* throttling when rostime jump backward (`#1397 <https://github.com/ros/ros_comm/issues/1397>`_)
+* check that output topic is valid in demux (`#1367 <https://github.com/ros/ros_comm/issues/1367>`_)
+* add latch functionality to topic_tools/transform (`#1341 <https://github.com/ros/ros_comm/issues/1341>`_)
+
 1.13.6 (2018-02-05)
 -------------------
 * replace deprecated syntax (backticks with repr()) (`#1259 <https://github.com/ros/ros_comm/issues/1259>`_)

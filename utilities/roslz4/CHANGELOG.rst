@@ -2,6 +2,9 @@
 Changelog for package roslz4
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.13.6 (2018-02-05)
 -------------------
 * adding decompress to free(state) before return (`#1313 <https://github.com/ros/ros_comm/issues/1313>`_)

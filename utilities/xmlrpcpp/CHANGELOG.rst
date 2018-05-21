@@ -2,6 +2,12 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fixes for OSX (`#1402 <https://github.com/ros/ros_comm/issues/1402>`_)
+* take XmlRpcValue by *const* ref. in operator<< (`#1350 <https://github.com/ros/ros_comm/issues/1350>`_)
+* fix various compiler warnings on bionic (`#1325 <https://github.com/ros/ros_comm/issues/1325>`_)
+
 1.13.6 (2018-02-05)
 -------------------
 * fix xmlrpc timeout using monotonic clock (`#1249 <https://github.com/ros/ros_comm/issues/1249>`_)

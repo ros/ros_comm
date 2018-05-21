@@ -2,6 +2,10 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* use HTTP/1.1 in XMLRPC Server (`#1287 <https://github.com/ros/ros_comm/issues/1287>`_)
+
 1.13.6 (2018-02-05)
 -------------------
 * fix search strategy for python_logging config (`#1292 <https://github.com/ros/ros_comm/issues/1292>`_)
