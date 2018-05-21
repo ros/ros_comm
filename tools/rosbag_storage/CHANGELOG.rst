@@ -2,8 +2,8 @@
 Changelog for package rosbag_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.14.0 (2018-05-21)
+-------------------
 * specialize BagCallbackT for MessageInstance (`#1374 <https://github.com/ros/ros_comm/issues/1374>`_)
 * fix compiler warning of test_aes_encryptor (`#1376 <https://github.com/ros/ros_comm/issues/1376>`_)
 * implement bag encryption/decryption (`#1206 <https://github.com/ros/ros_comm/issues/1206>`_)

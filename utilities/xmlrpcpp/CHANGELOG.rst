@@ -2,8 +2,8 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.14.0 (2018-05-21)
+-------------------
 * fixes for OSX (`#1402 <https://github.com/ros/ros_comm/issues/1402>`_)
 * take XmlRpcValue by *const* ref. in operator<< (`#1350 <https://github.com/ros/ros_comm/issues/1350>`_)
 * fix various compiler warnings on bionic (`#1325 <https://github.com/ros/ros_comm/issues/1325>`_)
