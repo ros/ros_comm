@@ -12,6 +12,7 @@ find_package(Boost REQUIRED COMPONENTS date_time filesystem program_options rege
 find_package(BZip2 REQUIRED)
 
 catkin_package(
+  CFG_EXTRAS rosbag_storage-extras.cmake
   INCLUDE_DIRS include
   LIBRARIES rosbag_storage
   CATKIN_DEPENDS pluginlib roslz4
