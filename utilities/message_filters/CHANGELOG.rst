@@ -2,6 +2,9 @@
 Changelog for package message_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.14.0 (2018-05-21)
 -------------------
 * change invocation to `add` to conform template syntax (`#1388 <https://github.com/ros/ros_comm/issues/1388>`_)

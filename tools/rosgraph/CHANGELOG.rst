@@ -2,6 +2,9 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.14.0 (2018-05-21)
 -------------------
 * use HTTP/1.1 in XMLRPC Server (`#1287 <https://github.com/ros/ros_comm/issues/1287>`_)

@@ -2,6 +2,9 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.14.0 (2018-05-21)
 -------------------
 * add API to suppress sequential identical messages (`#1309 <https://github.com/ros/ros_comm/issues/1309>`_)

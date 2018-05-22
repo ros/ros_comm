@@ -2,6 +2,9 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.14.0 (2018-05-21)
 -------------------
 * force a rebuild of the pollset on flag changes (`#1393 <https://github.com/ros/ros_comm/issues/1393>`_)

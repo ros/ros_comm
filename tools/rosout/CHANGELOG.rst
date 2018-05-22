@@ -2,6 +2,9 @@
 Changelog for package rosout
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.14.0 (2018-05-21)
 -------------------
 * allow disabling rosout file logging (to rosout.log) (`#1381 <https://github.com/ros/ros_comm/issues/1381>`_)

@@ -2,6 +2,9 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.14.0 (2018-05-21)
 -------------------
 * keep connection header info in rosbag filter/compress (`#1372 <https://github.com/ros/ros_comm/issues/1372>`_)
