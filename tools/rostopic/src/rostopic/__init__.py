@@ -1137,7 +1137,7 @@ def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, ve
             print(indent+"Subscribed topics:")
             for t, ttype, tlist in subs:
                 if len(tlist) > 1:
-                    print(indent+" * %s [%s] %s subscribers"%(t, ttype, len(llist)))
+                    print(indent+" * %s [%s] %s subscribers"%(t, ttype, len(tlist)))
                 else:
                     print(indent+" * %s [%s] 1 subscriber"%(t, ttype))
         print('')
