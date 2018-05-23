@@ -216,6 +216,10 @@ add_executable(${PROJECT_NAME}-subscriber EXCLUDE_FROM_ALL subscriber.cpp)
 target_link_libraries(${PROJECT_NAME}-subscriber ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME}-subscriber ${std_msgs_EXPORTED_TARGETS})
 
+add_executable(${PROJECT_NAME}-test_1408 EXCLUDE_FROM_ALL test_1408.cpp)
+target_link_libraries(${PROJECT_NAME}-test_1408 ${GTEST_LIBRARIES} ${catkin_LIBRARIES})
+add_dependencies(${PROJECT_NAME}-test_1408 ${std_msgs_EXPORTED_TARGETS})
+
 if(TARGET tests)
   add_dependencies(tests
     ${PROJECT_NAME}-handles
@@ -281,6 +285,7 @@ if(TARGET tests)
     ${PROJECT_NAME}-publisher
     ${PROJECT_NAME}-subscriber
     ${PROJECT_NAME}-stamped_topic_statistics_empty_timestamp
+    ${PROJECT_NAME}-test_1408
   )
 endif()
 
@@ -344,5 +349,5 @@ add_dependencies(${PROJECT_NAME}-test_ns_node_remapping ${${PROJECT_NAME}_EXPORT
 add_dependencies(${PROJECT_NAME}-test_search_param ${${PROJECT_NAME}_EXPORTED_TARGETS})
 add_dependencies(${PROJECT_NAME}-left_right ${${PROJECT_NAME}_EXPORTED_TARGETS})
 add_dependencies(${PROJECT_NAME}-string_msg_expect ${${PROJECT_NAME}_EXPORTED_TARGETS})
-add_dependencies(${PROJECT_NAME}-stamped_topic_statistics_empty_timestamp
- ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}-stamped_topic_statistics_empty_timestamp ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}-test_1408 ${${PROJECT_NAME}_EXPORTED_TARGETS})

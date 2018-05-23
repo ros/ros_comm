@@ -147,5 +147,7 @@ add_rostest(launch/search_param.xml)
 
 add_rostest(launch/stamped_topic_statistics_with_empty_timestamp.xml)
 
+add_rostest(launch/test_1408.xml)
+
 # Test spinners
 add_rostest(launch/spinners.xml)
