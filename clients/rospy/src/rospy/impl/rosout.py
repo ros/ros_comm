@@ -95,7 +95,7 @@ def _rosout(level, msg, fname, line, func):
                         disable_topics_ = False
 
                     if not disable_topics_:
-                        topics = get_topic_manager().get_topics()
+                        topics = get_topic_manager().get_topics().copy()
                     else:
                         topics = ""
 
