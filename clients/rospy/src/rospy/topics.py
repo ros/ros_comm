@@ -1348,7 +1348,7 @@ class _TopicManager(object):
         @return: list of topic names this node subscribes to/publishes
         @rtype: [str]
         """                
-        return self.topics
+        return self.topics.copy()
     
     def _get_list(self, rmap):
         return [[k, v.type] for k, v in rmap.items()]
