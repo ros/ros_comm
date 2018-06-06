@@ -51,7 +51,6 @@ import genmsg
 from genpy.dynamic import generate_dynamic
 
 import roslib.message
-import rosbag
 
 from optparse import OptionParser
 
@@ -580,6 +579,7 @@ def _stdin_arg(parser, full):
         return options, args[0]
     
 def rosmsg_cmd_show(mode, full, alias='show'):
+    import rosbag
     cmd = "ros%s"%(mode[1:])
     parser = OptionParser(usage="usage: %s %s [options] <%s>"%(cmd, alias, full))
     parser.add_option("-r", "--raw",
