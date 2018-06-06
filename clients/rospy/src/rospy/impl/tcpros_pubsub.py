@@ -242,7 +242,7 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
         if type(protocol_params) != list or len(protocol_params) != 3:
             return 0, "ERROR: invalid TCPROS parameters", 0
         if protocol_params[0] != TCPROS:
-            return 0, "INTERNAL ERROR: protocol id is not TCPROS: %s"%id, 0
+            return 0, "INTERNAL ERROR: protocol id is not TCPROS: %s"%protocol_params[0], 0
         id, dest_addr, dest_port = protocol_params
 
         sub = rospy.impl.registration.get_topic_manager().get_subscriber_impl(resolved_name)
