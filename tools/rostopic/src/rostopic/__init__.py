@@ -1933,7 +1933,14 @@ def stdin_publish(pub, msg_class, rate, once, filename, verbose):
     else:
         iterator = stdin_yaml_arg
 
-    number_of_messages = len(list(iterator()))
+    # determine whether there is exactly one message
+    exactly_one_message = True
+    number_of_messages = 0
+    for _ in iterator():
+        number_of_messages += 1
+        if number_of_messages > 1:
+            exactly_one_message = False
+            break
 
     r = rospy.Rate(rate) if rate is not None else None
 
@@ -1951,7 +1958,7 @@ def stdin_publish(pub, msg_class, rate, once, filename, verbose):
             try:
                 # if exactly one message is provided and rate is not
                 # None, repeatedly publish it
-                if number_of_messages == 1 and rate is not None:
+                if exactly_one_message and rate is not None:
                     print("Got one message and a rate, publishing repeatedly")
                     publish_message(pub, msg_class, pub_args, rate=rate, once=once, verbose=verbose)
 
