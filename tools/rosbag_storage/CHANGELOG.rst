@@ -2,6 +2,9 @@
 Changelog for package rosbag_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.14.1 (2018-05-21)
 -------------------
 * add in -D_FILE_OFFSET_BITS=64 on machines less than 64-bits (`#1406 <https://github.com/ros/ros_comm/issues/1406>`_)

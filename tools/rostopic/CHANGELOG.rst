@@ -2,6 +2,10 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix the count of subscribers, regression from 1.14.0 (`#1407 <https://github.com/ros/ros_comm/issues/1407>`_)
+
 1.14.1 (2018-05-21)
 -------------------
 
