@@ -46,7 +46,7 @@ from rosgraph.names import namespace, get_ros_namespace, ns_join, make_global_ns
      is_global, is_private
 import rosgraph.names
 
-from rospy.exceptions import ROSException
+from rospy.exceptions import ROSException, ROSInitException
 from rospy.impl.validators import ParameterInvalid
 
 TOPIC_ANYTYPE = ANYTYPE #indicates that a subscriber will connect any datatype given to it
