@@ -27,6 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <boost/algorithm/string.hpp>
 #include <cstring>
 #include <cstdlib>
 
@@ -82,10 +83,8 @@ public:
 
   void init()
   {
-    bool disable_file_logging = false;
-    node_.getParamCached("/rosout/disable_file_logging", disable_file_logging);
-
-    if (!disable_file_logging)
+    const char* disable_file_logging = getenv("ROSOUT_DISABLE_FILE_LOGGING");
+    if (!disable_file_logging || !boost::iequals(disable_file_logging, "true"))
     {
       handle_ = fopen(log_file_name_.c_str(), "w");
 
