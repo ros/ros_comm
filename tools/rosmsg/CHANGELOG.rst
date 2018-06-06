@@ -2,8 +2,8 @@
 Changelog for package rosmsg
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.14.2 (2018-06-06)
+-------------------
 * import rosbag locally instead of at module level (`#1424 <https://github.com/ros/ros_comm/issues/1424>`_)
 
 1.14.1 (2018-05-21)
