@@ -604,8 +604,6 @@ void shutdown()
     XMLRPCManager::instance()->shutdown();
   }
 
-  WallTime end = WallTime::now();
-
   g_started = false;
   g_ok = false;
   Time::shutdown();
