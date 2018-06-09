@@ -91,7 +91,6 @@ def roswtf_main():
         print(str(e), file=sys.stderr)
         
 def _roswtf_main():
-    launch_files = names = None
     # performance optimization
     rospack = rospkg.RosPack()
     all_pkgs = rospack.list()
@@ -118,6 +117,14 @@ def _roswtf_main():
                         help="launch files to check. 0...n files can be passed")
     #TODO: --all-pkgs option
     args = parser.parse_args()
+    roswtf_node(args)
+
+
+def roswtf_node(args):
+    """
+    @type args: argparse.Namespace
+    """
+    launch_files = names = None
     if args.launch_files:
         launch_files = args.launch_files
         if 0:

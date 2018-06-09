@@ -55,7 +55,7 @@ class TestRoswtfOffline(unittest.TestCase):
         cmd = 'roswtf'
         output = Popen([cmd, '-h'], stdout=PIPE).communicate()[0]
         output = output.decode()
-        self.assert_('Options' in output)
+        self.assert_('optional arguments' in output)
             
     def test_offline(self):
         cmd = 'roswtf'

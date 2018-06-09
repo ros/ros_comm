@@ -65,7 +65,7 @@ class TestRostopicOnline(unittest.TestCase):
     def test_cmd_help(self):
         cmd = 'roswtf'
         output = Popen([cmd, '-h'], stdout=PIPE).communicate()[0].decode()
-        self.assert_('Options' in output)
+        self.assert_('optional arguments' in output)
             
     def test_offline(self):
         # this test is disabled for now; now that test_roswtf is part
