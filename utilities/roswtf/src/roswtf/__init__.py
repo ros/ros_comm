@@ -96,28 +96,30 @@ def _roswtf_main():
     rospack = rospkg.RosPack()
     all_pkgs = rospack.list()
 
-    import optparse
-    parser = optparse.OptionParser(usage="usage: roswtf [launch file]", description="roswtf is a tool for verifying a ROS installation and running system. Checks provided launchfile if provided, else current stack or package.")
+    import argparse
+    parser = argparse.ArgumentParser(usage="usage: roswtf [launch file]", description="roswtf is a tool for verifying a ROS installation and running system. Checks provided launchfile if provided, else current stack or package.")
     # #2268
-    parser.add_option("--all", 
+    parser.add_argument("--all", 
                       dest="all_packages", default=False,
                       action="store_true",
                       help="run roswtf against all packages")
     # #2270
-    parser.add_option("--no-plugins", 
+    parser.add_argument("--no-plugins", 
                       dest="disable_plugins", default=False,
                       action="store_true",
                       help="disable roswtf plugins")
 
-    parser.add_option("--offline", 
+    parser.add_argument("--offline", 
                       dest="offline", default=False,
                       action="store_true",
                       help="only run offline tests")
 
+    parser.add_argument("launch_files",  nargs='*',
+                        help="launch files to check. 0...n files can be passed")
     #TODO: --all-pkgs option
-    options, args = parser.parse_args()
-    if args:
-        launch_files = args
+    args = parser.parse_args()
+    if args.launch_files:
+        launch_files = args.launch_files
         if 0:
             # disable names for now as don't have any rules yet
             launch_files = [a for a in args if os.path.isfile(a)]
@@ -134,7 +136,7 @@ def _roswtf_main():
     import roswtf.roslaunchwtf
     import roswtf.stacks    
     import roswtf.plugins
-    if not options.disable_plugins:
+    if not args.disable_plugins:
         static_plugins, online_plugins = roswtf.plugins.load_plugins()
     else:
         static_plugins, online_plugins = [], []
@@ -164,7 +166,7 @@ def _roswtf_main():
         else:
             print("No package or stack in the current directory")
             ctx = WtfContext.from_env()
-        if options.all_packages:
+        if args.all_packages:
             print("roswtf will run against all packages")
             ctx.pkgs = all_pkgs
 
@@ -194,7 +196,7 @@ def _roswtf_main():
 
     try:
 
-        if options.offline or not ctx.ros_master_uri or invalid_url(ctx.ros_master_uri) or not rosgraph.is_master_online():
+        if args.offline or not ctx.ros_master_uri or invalid_url(ctx.ros_master_uri) or not rosgraph.is_master_online():
             online_checks = False
         else:
             online_checks = True
