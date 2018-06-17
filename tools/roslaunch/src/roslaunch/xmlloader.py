@@ -655,6 +655,7 @@ class XmlLoader(loader.Loader):
                     default_machine = \
                         self._recurse_load(ros_config, tag.childNodes, child_ns, \
                                                default_machine, is_core, verbose)
+                    context.arg_names.extend(child_ns.arg_names) # copy is need to extend args within group
             elif name == 'node':
                 n = self._node_tag(tag, context, ros_config, default_machine, verbose=verbose)
                 if n is not None:
