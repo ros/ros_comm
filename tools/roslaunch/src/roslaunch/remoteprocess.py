@@ -149,6 +149,9 @@ class SSHChildROSLaunchProcess(roslaunch.server.ChildROSLaunchProcess):
         """
         :returns: (ssh pipes, message).  If error occurs, returns (None, error message).
         """
+        if rosgraph.network.parse_http_host_and_port(self.master_uri)[0] == 'localhost':
+            printerrlog("%s=%s: using 'localhost' as ROS_MASTER_URI may cause problem" % (rosgraph.ROS_MASTER_URI, self.master_uri))
+            printerrlog("please use resolvable hostname or IP address")
         if self.master_uri:
             env_command = 'env %s=%s' % (rosgraph.ROS_MASTER_URI, self.master_uri)
             command = '%s %s' % (env_command, command)
@@ -201,6 +204,26 @@ class SSHChildROSLaunchProcess(roslaunch.server.ChildROSLaunchProcess):
                 if str(e).startswith("Unknown server"):
                     pass
                 err_msg = "Unable to establish ssh connection to [%s%s:%s]: %s"%(username_str, address, port, e)
+                err_msg +="""
+
+The fingerprint for the key sent by the remote host is different from the key stored in the known_hosts.
+(or it is also possible that someone is doing something nasty, s
+ omeone could be eavesdropping on you right now .i.e man-in-the-middle attack! )
+
+we have deleted the known_hosts file (or the line in particular) and
+regenerated it (storing the new host when asked) doing the first
+ssh connection with the following command:
+
+Please manually delete current key in known_hosts file by
+  ssh-keygen -f ~/.ssh/known_hosts -R %s
+
+and regenerate the key again
+  ssh -oHostKeyAlgorithms='ssh-rsa' -p %s %s%s
+
+If you wish to configure roslaunch to automatically recognize unknown
+hosts, please set the environment variable ROSLAUNCH_SSH_UNKNOWN=1
+See https://answers.ros.org/question/41446/a-is-not-in-your-ssh-known_hosts-file/
+"""%(address, port, username_str, address)
             except socket.error as e:
                 # #1824
                 if e.args[0] == 111:
