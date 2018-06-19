@@ -253,6 +253,9 @@ class ApproximateTimeSynchronizer(TimeSynchronizer):
 
         self.lock.acquire()
         my_queue[stamp] = msg
+        # remove messages that jump backwards in time
+        while msg.header.stamp.to_time() - max(my_queue.keys()).to_time() < 0:
+            del my_queue[max(my_queue)]
         while len(my_queue) > self.queue_size:
             del my_queue[min(my_queue)]
         # self.queues = [topic_0 {stamp: msg}, topic_1 {stamp: msg}, ...]
