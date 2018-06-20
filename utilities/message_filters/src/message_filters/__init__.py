@@ -57,7 +57,7 @@ class SimpleFilter(object):
             cb(*(msg + args))
 
 class Subscriber(SimpleFilter):
-    
+
     """
     ROS subscription filter.  Identical arguments as :class:`rospy.Subscriber`.
 
@@ -167,7 +167,7 @@ class Cache(SimpleFilter):
         if not self.cache_times:
             return None
         return self.cache_times[0]
-        
+
     def getLast(self):
         if self.getLastestTime() is None:
             return None
@@ -239,6 +239,7 @@ class ApproximateTimeSynchronizer(TimeSynchronizer):
         TimeSynchronizer.__init__(self, fs, queue_size)
         self.slop = rospy.Duration.from_sec(slop)
         self.allow_headerless = allow_headerless
+        self.last_added = rospy.Time()
 
     def add(self, msg, my_queue, my_queue_index=None):
         if not hasattr(msg, 'header') or not hasattr(msg.header, 'stamp'):
@@ -253,9 +254,14 @@ class ApproximateTimeSynchronizer(TimeSynchronizer):
 
         self.lock.acquire()
         my_queue[stamp] = msg
-        # remove messages that jump backwards in time
-        while msg.header.stamp.to_time() - max(my_queue.keys()).to_time() < 0:
-            del my_queue[max(my_queue)]
+
+        # clear all buffers if jump backwards in time is detected
+        now = rospy.Time.now()
+        if now < self.last_added:
+            for q in self.queues:
+                q.clear()
+        self.last_added = now
+
         while len(my_queue) > self.queue_size:
             del my_queue[min(my_queue)]
         # self.queues = [topic_0 {stamp: msg}, topic_1 {stamp: msg}, ...]
