@@ -476,7 +476,7 @@ void Recorder::doRecord() {
     {
         checkDisk();
     }
-    catch (rosbag::BagException ex)
+    catch (rosbag::BagException &ex)
     {
         ROS_ERROR_STREAM(ex.what());
         exit_code_ = 1;
@@ -534,7 +534,7 @@ void Recorder::doRecord() {
             if (scheduledCheckDisk() && checkLogging())
                 bag_.write(out.topic, out.time, *out.msg, out.connection_header);
         }
-        catch (rosbag::BagException ex)
+        catch (rosbag::BagException &ex)
         {
             ROS_ERROR_STREAM(ex.what());
             exit_code_ = 1;
