@@ -566,12 +566,23 @@ TEST(Params, getParamNames) {
   EXPECT_LT(10u, test_params.size());
 }
 
+TEST(Params, getParamCachedSetParamLoop) {
+  NodeHandle nh;
+  const std::string name = "changeable_int";
+  for (int i = 0; i < 100; i++) {
+    nh.setParam(name, i);
+    int v = 0;
+    ASSERT_TRUE(nh.getParamCached(name, v));
+    ASSERT_EQ(i, v);
+  }
+}
+
 int
 main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
-  ros::init( argc, argv, "params" );
-//  ros::NodeHandle nh;
+  ros::init(argc, argv, "params");
+  ros::NodeHandle nh;
 
   return RUN_ALL_TESTS();
 }
