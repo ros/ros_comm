@@ -65,6 +65,7 @@ class TestApproxSync(unittest.TestCase):
         m0 = MockFilter()
         m1 = MockFilter()
         ts = ApproximateTimeSynchronizer([m0, m1], 1, 0.1)
+        rospy.rostime.set_rostime_initialized(True)
         ts.registerCallback(self.cb_collector_2msg)
 
         if 0:
@@ -98,7 +99,6 @@ class TestApproxSync(unittest.TestCase):
 
         # Scramble sequences of length N of headerless and header-having messages.
         # Make sure that TimeSequencer recombines them.
-        rospy.rostime.set_rostime_initialized(True)
         random.seed(0)
         for N in range(1, 10):
             m0 = MockFilter()
