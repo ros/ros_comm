@@ -375,7 +375,7 @@ class ROSMasterHandler(object):
         @rtype: [int, str, int]
         """
         key = resolve_name(key, caller_id)
-        self.param_server.set_param(key, value, self._notify_param_subscribers)
+        self.param_server.set_param(key, value, self._notify_param_subscribers, caller_id)
         mloginfo("+PARAM [%s] by %s",key, caller_id)
         return 1, "parameter %s set"%key, 0
 
