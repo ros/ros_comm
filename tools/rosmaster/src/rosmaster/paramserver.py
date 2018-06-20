@@ -367,13 +367,11 @@ def compute_param_updates(subscribers, param_key, param_value, caller_id_to_igno
     
     # subscriber gets update if anything in the subscribed namespace is updated or if its deleted
     for sub_key in subscribers.iterkeys():
-        if subscribers[sub_key][0][0] == caller_id_to_ignore:
-            continue
         ns_key = sub_key
         if ns_key[-1] != SEP:
             ns_key = sub_key + SEP
         if param_key.startswith(ns_key):
-            node_apis = subscribers[sub_key]
+            node_apis = [(caller_id, caller_api) for (caller_id, caller_api) in subscribers[sub_key] if not caller_id == caller_id_to_ignore]
             updates.append((node_apis, param_key, param_value))
         elif all_keys is not None and ns_key.startswith(param_key) \
              and not sub_key in all_keys:
