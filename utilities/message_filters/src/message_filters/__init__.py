@@ -258,6 +258,7 @@ class ApproximateTimeSynchronizer(TimeSynchronizer):
         # clear all buffers if jump backwards in time is detected
         now = rospy.Time.now()
         if now < self.last_added:
+            rospy.loginfo("ApproximateTimeSynchronizer: Detected jump back in time. Clearing  buffer.")
             for q in self.queues:
                 q.clear()
         self.last_added = now
