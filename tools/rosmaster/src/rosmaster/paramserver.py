@@ -371,7 +371,7 @@ def compute_param_updates(subscribers, param_key, param_value, caller_id_to_igno
         if ns_key[-1] != SEP:
             ns_key = sub_key + SEP
         if param_key.startswith(ns_key):
-            node_apis = [(caller_id, caller_api) for (caller_id, caller_api) in subscribers[sub_key] if not caller_id == caller_id_to_ignore]
+            node_apis = subscribers[sub_key] if caller_id_to_ignore == None else [(caller_id, caller_api) for (caller_id, caller_api) in subscribers[sub_key] if not caller_id == caller_id_to_ignore]
             updates.append((node_apis, param_key, param_value))
         elif all_keys is not None and ns_key.startswith(param_key) \
              and not sub_key in all_keys:
