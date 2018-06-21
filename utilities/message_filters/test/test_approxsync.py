@@ -36,6 +36,7 @@ import rostest
 import rospy
 import unittest
 import random
+import copy
 
 import message_filters
 from message_filters import ApproximateTimeSynchronizer
@@ -105,18 +106,20 @@ class TestApproxSync(unittest.TestCase):
             m1 = MockFilter()
             seq0 = [MockMessage(rospy.Time(t), random.random()) for t in range(N)]
             seq1 = [MockHeaderlessMessage(random.random()) for t in range(N)]
-            # random.shuffle(seq0)
+            # new shuffled sequences
+            seq0r = copy.copy(seq0)
+            seq1r = copy.copy(seq1)
+            random.shuffle(seq0r)
+            random.shuffle(seq1r)
             ts = ApproximateTimeSynchronizer([m0, m1], N, 0.1, allow_headerless=True)
             ts.registerCallback(self.cb_collector_2msg)
             self.collector = []
-            for msg in random.sample(seq0, N):
-                m0.signalMessage(msg)
-            self.assertEqual(self.collector, [])
-            for i in random.sample(range(N), N):
-                msg = seq1[i]
-                rospy.rostime._set_rostime(rospy.Time(i+0.05))
-                m1.signalMessage(msg)
-            self.assertEqual(set(self.collector), set(zip(seq0, seq1)))
+            for i in range(N):
+                # clock time needs to be continuous
+                rospy.rostime._set_rostime(rospy.Time(i))
+                m0.signalMessage(seq0r[i])
+                m1.signalMessage(seq1r[i])
+            self.assertEqual(set(self.collector), set(zip(seq0, seq1r)))
 
 if __name__ == '__main__':
     if 1:
