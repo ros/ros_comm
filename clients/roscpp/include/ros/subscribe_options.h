@@ -90,7 +90,7 @@ struct ROSCPP_DECL SubscribeOptions
     md5sum = message_traits::md5sum<MessageType>();
     datatype = message_traits::datatype<MessageType>();
     helper = boost::make_shared<SubscriptionCallbackHelperT<P> >(_callback, factory_fn);
-    ros::trace::callback_wrapper((void*)_callback.functor.func_ptr, helper);
+    ros::trace::callback_wrapper(ros::trace::get_ptr(_callback), helper);
   }
 
   /**
@@ -113,7 +113,7 @@ struct ROSCPP_DECL SubscribeOptions
     md5sum = message_traits::md5sum<MessageType>();
     datatype = message_traits::datatype<MessageType>();
     helper = boost::make_shared<SubscriptionCallbackHelperT<const boost::shared_ptr<MessageType const>&> >(_callback, factory_fn);
-    ros::trace::callback_wrapper((void*)_callback.functor.func_ptr, helper);
+    ros::trace::callback_wrapper(ros::trace::get_ptr(_callback), helper);
   }
 
   std::string topic;                                                ///< Topic to subscribe to
@@ -170,5 +170,3 @@ struct ROSCPP_DECL SubscribeOptions
 }
 
 #endif
-
-

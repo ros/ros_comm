@@ -416,7 +416,7 @@ Timer NodeHandle::createTimer(TimerOptions& ops) const
   }
 
   Timer timer(ops);
-  ros::trace::timer_added((const void*)ops.callback.functor.func_ptr,
+  ros::trace::timer_added(ros::trace::get_ptr(ops.callback),
     ros::trace::impl::get_backtrace().c_str(),
     ops.period.sec, ops.period.nsec);
 
