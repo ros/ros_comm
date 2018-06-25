@@ -47,6 +47,7 @@
 #include "ros/timer_manager.h"
 #include "ros/callback_queue.h"
 #include "ros/internal_timer_manager.h"
+#include <tracetools/tracetools.h>
 
 #include <boost/bind.hpp>
 
@@ -295,6 +296,8 @@ void TransportPublisherLink::handleMessage(const SerializedMessage& m, bool ser,
 {
   stats_.bytes_received_ += m.num_bytes;
   stats_.messages_received_++;
+
+  ros::trace::publisher_link_handle_message(connection_.get(), m.message_start);
 
   SubscriptionPtr parent = parent_.lock();
 

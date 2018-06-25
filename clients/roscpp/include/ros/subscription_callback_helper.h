@@ -157,6 +157,8 @@ public:
 private:
   Callback callback_;
   CreateFunction create_;
+
+  friend class Subscription;
 };
 
 }
