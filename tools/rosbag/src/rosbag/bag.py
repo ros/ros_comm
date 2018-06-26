@@ -2355,7 +2355,7 @@ class _BagReader102_Indexed(_BagReader102_Unindexed):
             
         return (topic, topic_index)
 
-    def seek_and_read_message_data_record(self, position, raw):
+    def seek_and_read_message_data_record(self, position, raw, return_connection_header=False):
         f = self.bag._file
 
         # Seek to the message position
@@ -2399,7 +2399,10 @@ class _BagReader102_Indexed(_BagReader102_Unindexed):
             msg = msg_type()
             msg.deserialize(data)
         
-        return BagMessage(topic, msg, t)
+        if return_connection_header:
+            return BagMessageWithConnectionHeader(topic, msg, t, header)
+        else:
+            return BagMessage(topic, msg, t)
 
 class _BagReader200(_BagReader):
     """
