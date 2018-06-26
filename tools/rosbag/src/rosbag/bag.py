@@ -1291,12 +1291,12 @@ class Bag(object):
 
         return sum((h.uncompressed_size for h in self._chunk_headers.values()))
 
-    def _read_message(self, position, raw=False):
+    def _read_message(self, position, raw=False, return_connection_header=None):
         """
         Read the message from the given position in the file.
         """
         self.flush()
-        return self._reader.seek_and_read_message_data_record(position, raw)
+        return self._reader.seek_and_read_message_data_record(position, raw, return_connection_header)
 
     # Index accessing
 
