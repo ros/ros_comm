@@ -69,17 +69,17 @@ public:
   CallbackHelper1T(const Callback& cb)
   : callback_(cb)
   {
-    ros::trace::fn_name_info((void*)cb.functor.func_ptr,
-      (void*)callback_.functor.func_ptr);
+    ros::trace::fn_name_info(ros::trace::get_ptr(cb),
+      ros::trace::get_ptr(callback_));
   }
 
   virtual void call(const ros::MessageEvent<M const>& event, bool nonconst_force_copy)
   {
     Event my_event(event, nonconst_force_copy || event.nonConstWillCopy());
-    ros::trace::call_start((void*)callback_.functor.func_ptr,
+    ros::trace::call_start(ros::trace::get_ptr(callback_),
       event.getMessage().get(), (uint64_t)this);
     callback_(Adapter::getParameter(my_event));
-    ros::trace::call_end((void*)callback_.functor.func_ptr,
+    ros::trace::call_end(ros::trace::get_ptr(callback_),
       event.getMessage().get(), (uint64_t)this);
   }
 
@@ -100,7 +100,7 @@ public:
     CallbackHelper1T<P, M>* helper = new CallbackHelper1T<P, M>(callback);
     boost::mutex::scoped_lock lock(mutex_);
     callbacks_.push_back(CallbackHelper1Ptr(helper));
-    ros::trace::fn_name_info((void*)callback.functor.func_ptr,
+    ros::trace::fn_name_info(ros::trace::get_ptr(callback),
       callbacks_.back().get());
     return callbacks_.back();
   }
