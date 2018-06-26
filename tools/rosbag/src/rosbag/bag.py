@@ -1291,7 +1291,7 @@ class Bag(object):
 
         return sum((h.uncompressed_size for h in self._chunk_headers.values()))
 
-    def _read_message(self, position, raw=False, return_connection_header=None):
+    def _read_message(self, position, raw=False, return_connection_header=False):
         """
         Read the message from the given position in the file.
         """
