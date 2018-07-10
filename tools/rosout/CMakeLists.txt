@@ -7,7 +7,7 @@ endif()
 
 find_package(catkin REQUIRED COMPONENTS roscpp rosgraph_msgs)
 
-find_package(Boost)
+find_package(Boost REQUIRED)
 
 catkin_package()
 
