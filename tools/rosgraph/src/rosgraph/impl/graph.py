@@ -213,6 +213,7 @@ class Edge(object):
         return "%s->%s"%(self.start, self.end)
     def __eq__(self, other):
         return self.start == other.start and self.end == other.end
+    __hash__ = object.__hash__
 
 def edge_args(start, dest, direction, label):
     """
