@@ -39,6 +39,7 @@ import sys
 import time
 import logging
 import logging.config
+import datetime
 
 import rospkg
 from rospkg.environment import ROS_LOG_DIR
@@ -184,7 +185,18 @@ class RosStreamHandler(logging.Handler):
             'ROSCONSOLE_FORMAT', '[${severity}] [${time}]: ${message}')
         msg = msg.replace('${severity}', level)
         msg = msg.replace('${message}', str(record_message))
-        msg = msg.replace('${walltime}', '%f' % time.time())
+
+        # walltime tag
+        msg = msg.replace('${walltime}', '%f' % time.time())  # for performance reasons
+
+        start = msg.find('${walltime:')
+        while start > 0:
+            time_format = msg[start + len('${walltime:'): msg.index('}')]
+            time_str = time.strftime(time_format)
+            msg = msg.replace('${walltime:' + time_format + '}', time_str)
+
+            start = msg.find('${walltime:')
+
         msg = msg.replace('${thread}', str(record.thread))
         msg = msg.replace('${logger}', str(record.name))
         msg = msg.replace('${file}', str(record.pathname))
@@ -196,10 +208,25 @@ class RosStreamHandler(logging.Handler):
         except ImportError:
             node_name = '<unknown_node_name>'
         msg = msg.replace('${node}', node_name)
+
+        # time tag
         time_str = '%f' % time.time()
         if self._get_time is not None and not self._is_wallclock():
             time_str += ', %f' % self._get_time()
-        msg = msg.replace('${time}', time_str)
+        msg = msg.replace('${time}', time_str)   # for performance reasons
+
+        start = msg.find('${time:')
+        while start > 0:
+            time_format = msg[start + len('${time:'): msg.index('}')]
+            time_str = time.strftime(time_format)
+
+            if self._get_time is not None and not self._is_wallclock():
+                time_str += ', %f' % self._get_time()
+
+            msg = msg.replace('${time:' + time_format + '}', time_str)
+
+            start = msg.find('${time:')
+
         msg += '\n'
         if record.levelno < logging.WARNING:
             self._write(sys.stdout, msg, color)
