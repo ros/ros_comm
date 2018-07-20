@@ -26,7 +26,7 @@
  */
 
 // Make sure we use CLOCK_MONOTONIC for the condition variable if not Apple.
-#ifndef __APPLE__
+#if !defined(__APPLE__) && !defined(WIN32)
 #define BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
 #endif
 

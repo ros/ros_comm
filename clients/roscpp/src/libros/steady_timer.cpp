@@ -26,7 +26,7 @@
  */
 
 // Make sure we use CLOCK_MONOTONIC for the condition variable if not Apple.
-#ifndef __APPLE__
+#if !defined(__APPLE__) && !defined(WIN32)
 #define BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
 #endif
 
@@ -44,6 +44,7 @@
 namespace ros
 {
 
+#if !defined(WIN32)
 // specialization for SteadyTimer, to make sure we use a version with wait_until that uses the monotonic clock
 template<>
 void TimerManager<SteadyTime, WallDuration, SteadyTimerEvent>::threadFunc()
@@ -111,6 +112,7 @@ void TimerManager<SteadyTime, WallDuration, SteadyTimerEvent>::threadFunc()
     new_timer_ = false;
   }
 }
+#endif
 
 SteadyTimer::Impl::Impl()
   : started_(false)

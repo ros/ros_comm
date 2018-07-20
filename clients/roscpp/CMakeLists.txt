@@ -124,12 +124,20 @@ add_library(roscpp
   src/libros/steady_timer.cpp
   )
 
+if(WIN32)
+  add_definitions(-DNOGDI)
+endif()
+
 add_dependencies(roscpp ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(roscpp
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
   )
+
+if(WIN32)
+  target_link_libraries(roscpp ws2_32)
+endif()
 
 #explicitly install library and includes
 install(TARGETS roscpp
