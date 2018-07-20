@@ -38,8 +38,16 @@
   #else // we are using shared lib/dll
     #define ROSBAG_DECL ROS_HELPER_IMPORT
   #endif
+
+  #ifdef rosbag_storage_EXPORTS // we are building a shared lib/dll
+    #define ROSBAG_STORAGE_DECL ROS_HELPER_EXPORT
+  #else // we are using shared lib/dll
+    #define ROSBAG_STORAGE_DECL ROS_HELPER_IMPORT
+  #endif
+
 #else // ros is being built around static libraries
   #define ROSBAG_DECL
+  #define ROSBAG_STORAGE_DECL
 #endif
 
 #endif /* ROSBAG_MACROS_H_ */
