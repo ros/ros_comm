@@ -15,7 +15,11 @@
 # include <map>
 # include <string>
 # include <vector>
-# include <poll.h>
+# if defined(_WINDOWS)
+#  include <winsock2.h>
+# else
+#  include <poll.h>
+# endif
 #endif
 
 #include "xmlrpcpp/XmlRpcDispatch.h"
