@@ -36,6 +36,18 @@
 #define ROSLZ4_LZ4S_H
 
 #include <lz4.h>
+#include <ros/macros.h>
+
+// Import/export for windows dll's and visibility for gcc shared libraries.
+#ifdef ROS_BUILD_SHARED_LIBS // ros is being built around shared libraries
+  #ifdef roslz4_EXPORTS // we are building a shared lib/dll
+    #define ROSLZ4S_DECL ROS_HELPER_EXPORT
+  #else // we are using shared lib/dll
+    #define ROSLZ4S_DECL ROS_HELPER_IMPORT
+  #endif
+#else // ros is being built around static libraries
+  #define ROSLZ4S_DECL
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -71,22 +83,22 @@ typedef struct {
 } roslz4_stream;
 
 // Low level functions
-int roslz4_blockSizeFromIndex(int block_id);
+ROSLZ4S_DECL int roslz4_blockSizeFromIndex(int block_id);
 
-int roslz4_compressStart(roslz4_stream *stream, int block_size_id);
-int roslz4_compress(roslz4_stream *stream, int action);
-void roslz4_compressEnd(roslz4_stream *stream);
+ROSLZ4S_DECL int roslz4_compressStart(roslz4_stream *stream, int block_size_id);
+ROSLZ4S_DECL int roslz4_compress(roslz4_stream *stream, int action);
+ROSLZ4S_DECL void roslz4_compressEnd(roslz4_stream *stream);
 
-int roslz4_decompressStart(roslz4_stream *stream);
-int roslz4_decompress(roslz4_stream *stream);
-void roslz4_decompressEnd(roslz4_stream *str);
+ROSLZ4S_DECL int roslz4_decompressStart(roslz4_stream *stream);
+ROSLZ4S_DECL int roslz4_decompress(roslz4_stream *stream);
+ROSLZ4S_DECL void roslz4_decompressEnd(roslz4_stream *str);
 
 // Oneshot compression / decompression
-int roslz4_buffToBuffCompress(char *input, unsigned int input_size,
-                              char *output, unsigned int *output_size,
-                              int block_size_id);
-int roslz4_buffToBuffDecompress(char *input, unsigned int input_size,
-                                char *output, unsigned int *output_size);
+ROSLZ4S_DECL int roslz4_buffToBuffCompress(char *input, unsigned int input_size,
+                                           char *output, unsigned int *output_size,
+                                           int block_size_id);
+ROSLZ4S_DECL int roslz4_buffToBuffDecompress(char *input, unsigned int input_size,
+                                             char *output, unsigned int *output_size);
 
 #ifdef __cplusplus
 }
