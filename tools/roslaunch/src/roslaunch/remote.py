@@ -39,6 +39,7 @@ Integrates roslaunch remote process launching capabilities.
 import logging
 import socket
 import time
+from urlparse import urlparse
 
 import rosgraph.network as network
 
@@ -105,6 +106,10 @@ class ROSRemoteRunner(roslaunch.launch.ROSRemoteRunnerIF):
         server_node_uri = self.server.uri
         if not server_node_uri:
             raise RLException("server URI is not initialized")
+        server_hostname = urlparse(self.server.uri).hostname
+        master_hostname = urlparse(self.rosconfig.master.uri).hostname
+        if server_hostname != master_hostname:
+            raise RLException("server hostname (%s) is not identical to ros master hostname (%s)"%(server_hostname, master_hostname))
         
         # TODOXXX: break out table building code into a separate
         # routine so we can unit test it _start_child() should not be
