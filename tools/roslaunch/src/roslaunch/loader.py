@@ -381,9 +381,11 @@ class Loader(object):
         @type  text: str
         @raise ValueError: if parameters cannot be processed into valid rosparam setting
         """
-        if not cmd in ('load', 'dump', 'delete'):
+        if not cmd in ('load', 'dump', 'delete', 'loadopt'):
             raise ValueError("command must be 'load', 'dump', or 'delete'")
         if file_ is not None:
+            if cmd == 'loadopt' and not os.path.isfile(file_):
+                return;
             if cmd == 'load' and not os.path.isfile(file_):
                 raise ValueError("file does not exist [%s]"%file_)
             if cmd == 'delete':
@@ -395,7 +397,7 @@ class Loader(object):
             ros_config.add_executable(RosbinExecutable('rosparam', (cmd, file_, full_param), PHASE_SETUP))
         elif cmd == 'delete':
             ros_config.add_executable(RosbinExecutable('rosparam', (cmd, full_param), PHASE_SETUP))
-        elif cmd == 'load':
+        elif cmd == 'load' or cmd == 'loadopt':
             # load YAML text
             if file_:
                 with open(file_, 'r') as f:
