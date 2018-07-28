@@ -165,6 +165,9 @@ def _get_optparse():
     parser.add_option("-v", action="store_true",
                       dest="verbose", default=False,
                       help="verbose printing")
+    parser.add_option("--no-summary", action="store_true",
+                      dest="no_summary", default=None,
+                      help="hide summary printing")
     # 2685 - Dump parameters of launch files
     parser.add_option("--dump-params", default=False, action="store_true",
                       dest="dump_params",
@@ -315,7 +318,7 @@ def main(argv=sys.argv):
                 options.port = options.port or DEFAULT_MASTER_PORT
             p = roslaunch_parent.ROSLaunchParent(uuid, args, roslaunch_strs=roslaunch_strs,
                     is_core=options.core, port=options.port, local_only=options.local_only,
-                    verbose=options.verbose, force_screen=options.force_screen,
+                    verbose=options.verbose, no_summary=options.no_summary, force_screen=options.force_screen,
                     force_log=options.force_log,
                     num_workers=options.num_workers, timeout=options.timeout,
                     master_logger_level=options.master_logger_level)
