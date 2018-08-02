@@ -79,7 +79,11 @@ class TopicOp:
 
         self.expression = args.expression
 
-        input_topic_in_ns = rospy.get_namespace() + args.input
+        if len(args.input) > 0 and args.input[0] != '/':
+            input_topic_in_ns = rospy.get_namespace() + args.input
+        else:
+            input_topic_in_ns = args.input
+
         input_class, input_topic, self.input_fn = rostopic.get_topic_class(
             input_topic_in_ns, blocking=args.wait_for_start)
         if input_topic is None:
