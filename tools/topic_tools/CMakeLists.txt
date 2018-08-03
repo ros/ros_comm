@@ -82,7 +82,6 @@ catkin_install_python(PROGRAMS
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest)
   find_package(rosunit)
-
   catkin_add_gtest(${PROJECT_NAME}-utest test/utest.cpp)
   if(TARGET ${PROJECT_NAME}-utest)
     target_link_libraries(${PROJECT_NAME}-utest topic_tools)
