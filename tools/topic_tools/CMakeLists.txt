@@ -82,6 +82,7 @@ catkin_install_python(PROGRAMS
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest)
   find_package(rosunit)
+
   catkin_add_gtest(${PROJECT_NAME}-utest test/utest.cpp)
   if(TARGET ${PROJECT_NAME}-utest)
     target_link_libraries(${PROJECT_NAME}-utest topic_tools)
@@ -106,6 +107,7 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/lazy_transport.test)
   add_rostest(test/mux_initial_none.test)
   add_rostest(test/mux_initial_other.test)
+  add_rostest(test/transform.test)
   ## Latched test disabled until underlying issue in roscpp is resolved,
   ## #3385, #3434.
   #rosbuild_add_rostest(test/relay_latched.test)
