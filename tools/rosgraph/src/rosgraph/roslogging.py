@@ -59,12 +59,7 @@ class RospyLogger(logging.getLoggerClass()):
         f = inspect.currentframe()
         if f is not None:
             f = f.f_back
-        else:
-            return file_name, lineno, func_name
-
         while hasattr(f, "f_code"):
-            if f.f_back is None:
-                break
             # Search for the right frame using the data already found by parent class.
             co = f.f_code
             filename = os.path.normcase(co.co_filename)
