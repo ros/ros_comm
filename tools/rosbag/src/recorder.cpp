@@ -196,13 +196,11 @@ int Recorder::run() {
         check_master_timer = nh.createTimer(ros::Duration(1.0), boost::bind(&Recorder::doCheckMaster, this, _1, boost::ref(nh)));
     }
 
-    ros::MultiThreadedSpinner s(10);
-    ros::spin(s);
-
-    queue_condition_.notify_all();
+    ros::AsyncSpinner s(10);
+    s.start();
 
     record_thread.join();
-
+    queue_condition_.notify_all();
     delete queue_;
 
     return exit_code_;
@@ -473,7 +471,19 @@ void Recorder::doRecord() {
 
     // Schedule the disk space check
     warn_next_ = ros::WallTime();
-    checkDisk();
+
+    try
+    {
+        checkDisk();
+    }
+    catch (rosbag::BagException &ex)
+    {
+        ROS_ERROR_STREAM(ex.what());
+        exit_code_ = 1;
+        stopWriting();
+        return;
+    }
+
     check_disk_next_ = ros::WallTime::now() + ros::WallDuration().fromSec(20.0);
 
     // Technically the queue_mutex_ should be locked while checking empty.
@@ -519,8 +529,17 @@ void Recorder::doRecord() {
         if (checkDuration(out.time))
             break;
 
-        if (scheduledCheckDisk() && checkLogging())
-            bag_.write(out.topic, out.time, *out.msg, out.connection_header);
+        try
+        {
+            if (scheduledCheckDisk() && checkLogging())
+                bag_.write(out.topic, out.time, *out.msg, out.connection_header);
+        }
+        catch (rosbag::BagException &ex)
+        {
+            ROS_ERROR_STREAM(ex.what());
+            exit_code_ = 1;
+            break;
+        }
     }
 
     stopWriting();
@@ -674,9 +693,8 @@ bool Recorder::checkDisk() {
     }
     if ( info.available < options_.min_space)
     {
-        ROS_ERROR("Less than %s of space free on disk with %s.  Disabling recording.", options_.min_space_str.c_str(), bag_.getFileName().c_str());
         writing_enabled_ = false;
-        return false;
+        throw BagException("Less than " + options_.min_space_str + " of space free on disk with " + bag_.getFileName() + ". Disabling recording.");
     }
     else if (info.available < 5 * options_.min_space)
     {
