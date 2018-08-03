@@ -11,7 +11,7 @@
 
 #if defined(_WINDOWS)
 # include <winsock2.h>
-static inline int poll(struct pollfd *pfd, int nfds, int timeout)
+static inline int poll( struct pollfd *pfd, int nfds, int timeout)
 {
   return WSAPoll(pfd, nfds, timeout);
 }
