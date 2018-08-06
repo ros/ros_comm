@@ -2,6 +2,11 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* restore API compatibility (`#1473 <https://github.com/ros/ros_comm/issues/1473>`_) (regression from 1.14.0)
+* throw BagException when disk is full (`#1451 <https://github.com/ros/ros_comm/issues/1451>`_)
+
 1.14.2 (2018-06-06)
 -------------------
 
