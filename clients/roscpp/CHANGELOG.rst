@@ -2,8 +2,8 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.14.3 (2018-08-06)
+-------------------
 * add hasStarted() to Timer API (`#1464 <https://github.com/ros/ros_comm/issues/1464>`_)
 * fix compiler warnings about unused variables (`#1428 <https://github.com/ros/ros_comm/issues/1428>`_)
 

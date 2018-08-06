@@ -2,8 +2,8 @@
 Changelog for package message_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.14.3 (2018-08-06)
+-------------------
 * call Subscriber::unsubscribe() in destructor (`#1434 <https://github.com/ros/ros_comm/issues/1434>`_)
 * rename Python message_filters.Cache.getLastestTime to getLatestTime (`#1450 <https://github.com/ros/ros_comm/issues/1450>`_)
 
