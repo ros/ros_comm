@@ -84,7 +84,12 @@ public:
   void init()
   {
     const char* disable_file_logging = getenv("ROSOUT_DISABLE_FILE_LOGGING");
-    if (!disable_file_logging || !boost::iequals(disable_file_logging, "true"))
+    if (!disable_file_logging  // Not set.
+      || !disable_file_logging[0]  // Set to empty string.
+      || strcmp(disable_file_logging, "0") == 0
+      || boost::iequals(disable_file_logging, "false")
+      || boost::iequals(disable_file_logging, "off")
+      || boost::iequals(disable_file_logging, "no"))
     {
       handle_ = fopen(log_file_name_.c_str(), "w");
 
