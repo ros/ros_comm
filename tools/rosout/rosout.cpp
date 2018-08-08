@@ -82,10 +82,18 @@ public:
 
   void init()
   {
-    bool disable_file_logging = false;
-    node_.getParamCached("/rosout/disable_file_logging", disable_file_logging);
-
-    if (!disable_file_logging)
+    const char* disable_file_logging_env = getenv("ROSOUT_DISABLE_FILE_LOGGING");
+    std::string disable_file_logging(disable_file_logging_env ? disable_file_logging_env : "");
+    std::transform(
+      disable_file_logging.begin(),
+      disable_file_logging.end(),
+      disable_file_logging.begin(),
+      [](char c){ return std::tolower(c); });
+    if (disable_file_logging.empty() ||  // Not set or set to empty string.
+      disable_file_logging == "0" ||
+      disable_file_logging == "false" ||
+      disable_file_logging == "off" ||
+      disable_file_logging == "no")
     {
       handle_ = fopen(log_file_name_.c_str(), "w");
 
