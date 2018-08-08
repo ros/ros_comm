@@ -1,4 +1,4 @@
-<package format="2">
+<package>
   <name>rosout</name>
   <version>1.14.1</version>
   <description>
@@ -12,6 +12,9 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>roscpp</depend>
-  <depend>rosgraph_msgs</depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rosgraph_msgs</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>rosgraph_msgs</run_depend>
 </package>
