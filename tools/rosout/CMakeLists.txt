@@ -7,13 +7,9 @@ endif()
 
 find_package(catkin REQUIRED COMPONENTS roscpp rosgraph_msgs)
 
-find_package(Boost REQUIRED)
-
 catkin_package()
 
 include_directories(${catkin_INCLUDE_DIRS})
-
-include_directories(${Boost_INCLUDE_DIRS})
 
 add_executable(rosout rosout.cpp)
 target_link_libraries(rosout ${catkin_LIBRARIES})

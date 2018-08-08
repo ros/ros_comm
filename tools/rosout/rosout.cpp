@@ -26,8 +26,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
-#include <boost/algorithm/string.hpp>
 #include <cstring>
 #include <cstdlib>
 
@@ -83,13 +81,18 @@ public:
 
   void init()
   {
-    const char* disable_file_logging = getenv("ROSOUT_DISABLE_FILE_LOGGING");
-    if (!disable_file_logging  // Not set.
-      || !disable_file_logging[0]  // Set to empty string.
-      || strcmp(disable_file_logging, "0") == 0
-      || boost::iequals(disable_file_logging, "false")
-      || boost::iequals(disable_file_logging, "off")
-      || boost::iequals(disable_file_logging, "no"))
+    const char* disable_file_logging_env = getenv("ROSOUT_DISABLE_FILE_LOGGING");
+    std::string disable_file_logging(disable_file_logging_env ? disable_file_logging_env : "");
+    std::transform(
+      disable_file_logging.begin(),
+      disable_file_logging.end(),
+      disable_file_logging.begin(),
+      [](char c){ return std::tolower(c); });
+    if (disable_file_logging.empty()  // Not set or set to empty string.
+      || disable_file_logging == "0"
+      || disable_file_logging == "false"
+      || disable_file_logging == "off"
+      || disable_file_logging == "no")
     {
       handle_ = fopen(log_file_name_.c_str(), "w");
 
