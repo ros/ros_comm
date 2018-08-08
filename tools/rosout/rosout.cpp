@@ -89,11 +89,11 @@ public:
       disable_file_logging.end(),
       disable_file_logging.begin(),
       [](char c){ return std::tolower(c); });
-    if (disable_file_logging.empty()  // Not set or set to empty string.
-      || disable_file_logging == "0"
-      || disable_file_logging == "false"
-      || disable_file_logging == "off"
-      || disable_file_logging == "no")
+    if (disable_file_logging.empty() ||  // Not set or set to empty string.
+      disable_file_logging == "0" ||
+      disable_file_logging == "false" ||
+      disable_file_logging == "off" ||
+      disable_file_logging == "no")
     {
       handle_ = fopen(log_file_name_.c_str(), "w");
 
