@@ -34,11 +34,15 @@
 
 #include "ros/transport/transport.h"
 #include "ros/console.h"
+#if defined(WIN32)
+#include <winsock2.h>
+#else
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#endif
 
-#if !defined(__ANDROID__)
+#if !defined(__ANDROID__) && !defined(WIN32)
 #include <ifaddrs.h>
 #endif
 
@@ -71,7 +75,7 @@ Transport::Transport()
   gethostname(our_hostname, sizeof(our_hostname)-1);
   allowed_hosts_.push_back(std::string(our_hostname));
   allowed_hosts_.push_back("localhost");
-#if !defined(__ANDROID__)
+#if !defined(__ANDROID__) && !defined(WIN32)
   // for ipv4 loopback, we'll explicitly search for 127.* in isHostAllowed()
   // now we need to iterate all local interfaces and add their addresses
   // from the getifaddrs manpage:  (maybe something similar for windows ?) 

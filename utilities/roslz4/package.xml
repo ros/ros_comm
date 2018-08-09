@@ -15,6 +15,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>lz4</build_depend>
+  <build_depend>cpp_common</build_depend>
 
   <run_depend>lz4</run_depend>
 

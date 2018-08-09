@@ -65,7 +65,7 @@ class ChunkedFile;
 
 class FileAccessor;
 
-class ROSBAG_DECL Stream
+class ROSBAG_STORAGE_DECL Stream
 {
     friend class FileAccessor;
 public:
@@ -100,7 +100,7 @@ protected:
     ChunkedFile* file_;
 };
 
-class ROSBAG_DECL StreamFactory
+class ROSBAG_STORAGE_DECL StreamFactory
 {
 public:
     StreamFactory(ChunkedFile* file);
@@ -120,7 +120,7 @@ class FileAccessor {
     }
 };
 
-class ROSBAG_DECL UncompressedStream : public Stream
+class ROSBAG_STORAGE_DECL UncompressedStream : public Stream
 {
 public:
     UncompressedStream(ChunkedFile* file);
@@ -136,7 +136,7 @@ public:
 /*!
  * BZ2Stream uses libbzip2 (http://www.bzip.org) for reading/writing compressed data in the BZ2 format.
  */
-class ROSBAG_DECL BZ2Stream : public Stream
+class ROSBAG_STORAGE_DECL BZ2Stream : public Stream
 {
 public:
     BZ2Stream(ChunkedFile* file);
@@ -164,7 +164,7 @@ private:
 
 // LZ4Stream reads/writes compressed datat in the LZ4 format
 // https://code.google.com/p/lz4/
-class ROSBAG_DECL LZ4Stream : public Stream
+class ROSBAG_STORAGE_DECL LZ4Stream : public Stream
 {
 public:
     LZ4Stream(ChunkedFile* file);

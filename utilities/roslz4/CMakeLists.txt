@@ -6,7 +6,7 @@ if(NOT WIN32)
   set_directory_properties(PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra")
 endif()
 
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS cpp_common)
 
 find_path(lz4_INCLUDE_DIRS NAMES lz4.h)
 if (NOT lz4_INCLUDE_DIRS)
@@ -28,9 +28,11 @@ catkin_package(
 
 include_directories(include ${lz4_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 add_library(roslz4 src/lz4s.c src/xxhash.c)
-set_source_files_properties(
-  src/lz4s.c
-PROPERTIES COMPILE_FLAGS "-Wno-sign-compare")
+if (NOT WIN32)
+  set_source_files_properties(
+    src/lz4s.c
+    PROPERTIES COMPILE_FLAGS "-Wno-sign-compare")
+endif()
 set_source_files_properties(
   src/lz4s.c src/xxhash.c
 PROPERTIES COMPILE_DEFINITIONS "XXH_NAMESPACE=ROSLZ4_")
@@ -43,12 +45,18 @@ find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIR
 include_directories(${PYTHON_INCLUDE_PATH})
 
 add_library(roslz4_py src/_roslz4module.c)
-set_source_files_properties(
-  src/_roslz4module.c
-PROPERTIES COMPILE_FLAGS "-Wno-missing-field-initializers -Wno-unused-variable -Wno-strict-aliasing")
-set_target_properties(
-  roslz4_py PROPERTIES OUTPUT_NAME roslz4 PREFIX "_" SUFFIX ".so"
+if (NOT WIN32)
+  set_source_files_properties(
+    src/_roslz4module.c
+    PROPERTIES COMPILE_FLAGS "-Wno-missing-field-initializers -Wno-unused-variable -Wno-strict-aliasing")
+endif()
+set_target_properties(roslz4_py PROPERTIES
   LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${PYTHON_INSTALL_DIR}/roslz4)
+if (NOT WIN32)
+  set_target_properties(roslz4_py PROPERTIES OUTPUT_NAME roslz4 PREFIX "_" SUFFIX ".so")
+else()
+  set_target_properties(roslz4_py PROPERTIES OUTPUT_NAME _roslz4 SUFFIX ".pyd")
+endif()
 target_link_libraries(roslz4_py roslz4 ${catkin_LIBRARIES} ${PYTHON_LIBRARIES})
 endif()
 
@@ -60,7 +68,9 @@ install(TARGETS roslz4
 
 if(NOT ANDROID)
 install(TARGETS roslz4_py
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
 endif()
 
 install(DIRECTORY include/${PROJECT_NAME}

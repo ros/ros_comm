@@ -45,7 +45,7 @@
 
 namespace rosbag {
 
-class ROSBAG_DECL View
+class ROSBAG_STORAGE_DECL View
 {
     friend class Bag;
 
