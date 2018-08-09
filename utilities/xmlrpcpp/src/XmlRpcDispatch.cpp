@@ -105,7 +105,7 @@ XmlRpcDispatch::work(double timeout)
   while (_sources.size() > 0) {
 
     // Construct the sets of descriptors we are interested in
-    unsigned source_cnt = _sources.size();
+    const unsigned source_cnt = _sources.size();
     std::vector<pollfd> fds(source_cnt);
     std::vector<XmlRpcSource *> sources(source_cnt);
 
