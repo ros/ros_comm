@@ -6,7 +6,7 @@ from catkin_pkg.python_setup import generate_distutils_setup
 d = generate_distutils_setup(
     packages=['roswtf'],
     package_dir={'': 'src'},
-    scripts=['scripts/roswtf'],
+    scripts=['scripts/roswtf', 'scripts/rosfaq'],
     requires=['genmsg', 'genpy', 'roslib', 'rospkg']
 )
 
