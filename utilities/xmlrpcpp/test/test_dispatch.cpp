@@ -27,12 +27,18 @@
 #include "mock_socket.h"
 
 #include <fcntl.h>
-#include <netinet/in.h>
-#include <poll.h>
+#ifndef _WIN32
+# include <netinet/in.h>
+# include <poll.h>
+# include <sys/socket.h>
+# include <unistd.h>
+#else
+# include <winsock2.h> // For struct timeval
+# include <ws2tcpip.h> // Must be after winsock2.h because MS didn't put proper inclusion guards in their headers.
+typedef unsigned long int nfds_t;
+#endif
 #include <stdlib.h>
-#include <sys/socket.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <time.h>
 #include <errno.h>
 
@@ -89,7 +95,11 @@ int mock_poll(struct pollfd *fds, nfds_t nfds, int timeout) {
     // On failure it will update ts with the remaining time to sleep.
     int ret = 0;
     do {
+#ifndef _WIN32
       ret = nanosleep(&ts, &ts);
+#else
+      Sleep(timeout);
+#endif
     } while( ret != 0 && errno == EINTR);
   }
 
@@ -158,7 +168,14 @@ public:
 class MockSourceTest : public ::testing::Test {
   protected:
     MockSourceTest() : m(4) {
+#ifndef _WIN32
       pollfd f = { .fd = 4, .events = 0, .revents = 0 };
+#else
+      pollfd f {};
+      f.fd = 4;
+      f.events = 0;
+      f.revents = 0;
+#endif
       fds.push_back(f);
     }
 

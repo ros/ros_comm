@@ -21,9 +21,7 @@
  *
  */
 
-#define protected public
 #include "xmlrpcpp/XmlRpcClient.h"
-#undef protected
 #include "xmlrpcpp/XmlRpcValue.h"
 
 #include "mock_socket.h"
@@ -34,10 +32,30 @@
 using XmlRpc::XmlRpcClient;
 using XmlRpc::XmlRpcValue;
 
+// Helper class to change the accessibility of protected members of the class under test so we can test them
+class XmlRpcClientForTest : public XmlRpcClient
+{
+public:
+  XmlRpcClientForTest(const char* host, int port, const char* uri=0) : XmlRpcClient(host, port, uri)
+  {
+  }
+
+  using XmlRpcClient::doConnect;
+  using XmlRpcClient::setupConnection;
+  using XmlRpcClient::generateRequest;
+  using XmlRpcClient::generateHeader;
+  using XmlRpcClient::writeRequest;
+  using XmlRpcClient::readHeader;
+  using XmlRpcClient::readResponse;
+  using XmlRpcClient::parseResponse;
+
+  using XmlRpcClient::_connectionState;
+  using XmlRpcClient::connectionStateStr;
+};
 namespace XmlRpc {
 void PrintTo(const XmlRpcClient::ClientConnectionState& state,
              ::std::ostream* os) {
-  *os << XmlRpcClient::connectionStateStr(state);
+  *os << XmlRpcClientForTest::connectionStateStr(state);
 }
 }; // namespace XmlRpc
 
@@ -58,7 +76,7 @@ bool sourceInList(XmlRpc::XmlRpcSource* source,
 // Test connectionStateStr macro
 TEST(XmlRpcClient, connectionStateStr) {
 #define TEST_STATE(state)                                                      \
-  EXPECT_STREQ(#state, XmlRpcClient::connectionStateStr(XmlRpcClient::state))
+  EXPECT_STREQ(#state, XmlRpcClientForTest::connectionStateStr(XmlRpcClient::state))
   TEST_STATE(NO_CONNECTION);
   TEST_STATE(CONNECTING);
   TEST_STATE(WRITE_REQUEST);
@@ -69,10 +87,10 @@ TEST(XmlRpcClient, connectionStateStr) {
 
 // Test state of client once constructor is done, including optional URL arg.
 TEST_F(MockSocketTest, constructor) {
-  XmlRpcClient a("localhost", 42);
-  EXPECT_EQ("localhost", a._host);
-  EXPECT_EQ(42, a._port);
-  EXPECT_EQ("/RPC2", a._uri);
+  XmlRpcClientForTest a("localhost", 42);
+  EXPECT_EQ("localhost", a.getHost());
+  EXPECT_EQ(42, a.getPort());
+  EXPECT_EQ("/RPC2", a.getUri());
 
   EXPECT_EQ(XmlRpcClient::NO_CONNECTION, a._connectionState);
   EXPECT_EQ(false, a._executing);
@@ -85,17 +103,17 @@ TEST_F(MockSocketTest, constructor) {
   EXPECT_FALSE(a._isFault);
   EXPECT_FALSE(sourceInList(&a, a._disp._sources));
 
-  XmlRpcClient b("nowhere.com", 404, "/where");
-  EXPECT_EQ("nowhere.com", b._host);
-  EXPECT_EQ(404, b._port);
-  EXPECT_EQ("/where", b._uri);
+  XmlRpcClientForTest b("nowhere.com", 404, "/where");
+  EXPECT_EQ("nowhere.com", b.getHost());
+  EXPECT_EQ(404, b.getPort());
+  EXPECT_EQ("/where", b.getUri());
   // Don't really need to repeat the tests for the other variables.
 }
 
 // Test close() function:
 //  * Does not call close when socket is already closed.
 TEST_F(MockSocketTest, close_invalid_fd) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   ASSERT_EQ(-1, a.getfd());
 
@@ -107,7 +125,7 @@ TEST_F(MockSocketTest, close_invalid_fd) {
 // Test close() function:
 //  * Correctly calls close when socket is not closed.
 TEST_F(MockSocketTest, close_valid_fd) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Set file descriptor and then expect that close is called once.
   a.setfd(5);
@@ -126,7 +144,7 @@ TEST_F(MockSocketTest, close_valid_fd) {
 TEST_F(MockSocketTest, close_destructor) {
   // Test that the XmlRpcClient destructor closes the file descriptor.
   {
-    XmlRpcClient a("localhost", 42);
+    XmlRpcClientForTest a("localhost", 42);
 
     // Set file descriptor and then expect that close is called once.
     a.setfd(5);
@@ -152,7 +170,7 @@ TEST_F(MockSocketTest, close_destructor) {
 //  Correct handling of initial states.
 //  Correct handling of errors.
 TEST_F(MockSocketTest, setupConnection) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Default initial state; expect socket, setNonBlocking and connect.
   // NOTE(austin): This does not currently expect these calls in order; it just
@@ -178,7 +196,7 @@ TEST_F(MockSocketTest, setupConnection) {
 }
 
 TEST_F(MockSocketTest, setupConnection_eof) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Initial state: file descriptor set, but _eof. Expect close and socket,
   // setNonBlocking, connect.
@@ -207,7 +225,7 @@ TEST_F(MockSocketTest, setupConnection_eof) {
 }
 
 TEST_F(MockSocketTest, setupConnection_close) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Initial state: file descriptor set, but _eof
   // NOTE(austin): Having multiple variables that imply that the fd is valid
@@ -237,7 +255,7 @@ TEST_F(MockSocketTest, setupConnection_close) {
 }
 
 TEST_F(MockSocketTest, setupConnection_err) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Connect failure. Any failure that causes doConnect here will do; we choose
   // an arbitrary failure mode here and then separately test that doConnect
@@ -263,7 +281,7 @@ TEST_F(MockSocketTest, setupConnection_err) {
 // Check that _disp is left in the correct state after closing and then failing
 // to reopen the socket.
 TEST_F(MockSocketTest, setupConnection_eor_reopen) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Default initial state; expect socket, setNonBlocking and connect.
   // NOTE(austin): This does not currently expect these calls in order; it just
@@ -313,7 +331,7 @@ TEST_F(MockSocketTest, setupConnection_eor_reopen) {
 //  Correct sequence of calls to XmlRpcSocket
 //  Correct handling of socket errors.
 TEST_F(MockSocketTest, doConnect) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Expect that socket, setNonBlocking and connect are called.
   // NOTE(austin): this doesn't enforce ordering.
@@ -334,7 +352,7 @@ TEST_F(MockSocketTest, doConnect) {
 }
 
 TEST_F(MockSocketTest, doConnect_socketerr) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   Expect_socket(-1);
   Expect_getError(ENFILE);
@@ -346,7 +364,7 @@ TEST_F(MockSocketTest, doConnect_socketerr) {
 }
 
 TEST_F(MockSocketTest, doConnect_nonBlockErr) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Expect that setNonBlocking causes the socket to be closed and getError to
   // be called.
@@ -362,7 +380,7 @@ TEST_F(MockSocketTest, doConnect_nonBlockErr) {
 }
 
 TEST_F(MockSocketTest, doConnect_connectErr) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Expect that a connection failure causes the socket to be closed.
   Expect_socket(7);
@@ -381,7 +399,7 @@ TEST_F(MockSocketTest, doConnect_connectErr) {
 //  Correct XML is generated for a variety of request types.
 //  Correct XML is generated for empty request
 TEST(XmlRpcClient, generateRequest) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
   // generateRequest takes a method name and params and puts the result in the
   // _request member variable.
   std::string header = "POST /RPC2 HTTP/1.1\r\n"
@@ -471,7 +489,7 @@ TEST(XmlRpcClient, generateRequest) {
 // Test generateHeader()
 //  Correct header is generated for various sizes and content of request body.
 TEST(XmlRpcClient, generateHeader) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
   // generateRequest takes a method name and params and puts the result in the
   // _request member variable.
   std::string header = "POST /RPC2 HTTP/1.1\r\n"
@@ -493,7 +511,7 @@ TEST(XmlRpcClient, generateHeader) {
 //  Test that socket errors result in the correct state and that the socket
 //   is closed (or not) correctly.
 TEST_F(MockSocketTest, writeRequest) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Hack us into the correct initial state.
   a.setfd(7);
@@ -520,7 +538,7 @@ TEST_F(MockSocketTest, writeRequest) {
 }
 
 TEST_F(MockSocketTest, writeRequest_partial) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Hack us into the correct initial state.
   a.setfd(7);
@@ -553,7 +571,7 @@ TEST_F(MockSocketTest, writeRequest_partial) {
 }
 
 TEST_F(MockSocketTest, writeRequest_partial_error) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Hack us into the correct initial state.
   a.setfd(7);
@@ -587,7 +605,7 @@ TEST_F(MockSocketTest, writeRequest_partial_error) {
 }
 
 TEST_F(MockSocketTest, writeRequest_error) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Hack us into the correct initial state.
   a.setfd(7);
@@ -639,7 +657,7 @@ const std::string response = "<?xml version=\"1.0\"?>\r\n"
 //
 // Test that readHeader works correctly with the header from XmlRpcpp
 TEST_F(MockSocketTest, readHeader) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Hack us into the correct initial state.
   a.setfd(7);
@@ -668,7 +686,7 @@ TEST_F(MockSocketTest, readHeader) {
 
 // Test that readHeader works correctly with the header from roscore.
 TEST_F(MockSocketTest, readHeader2) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Hack us into the correct initial state.
   a.setfd(7);
@@ -698,7 +716,7 @@ TEST_F(MockSocketTest, readHeader2) {
 // doesn't pass the header parsing state until it gets the first byte of the
 // response body.
 TEST_F(MockSocketTest, readHeader_only) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Hack us into the correct initial state.
   a.setfd(7);
@@ -726,7 +744,7 @@ TEST_F(MockSocketTest, readHeader_only) {
 
 // Test that readHeader correctly resumes after getting a partial header read.
 TEST_F(MockSocketTest, readHeader_partial) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Hack us into the correct initial state.
   a.setfd(7);
@@ -764,7 +782,7 @@ TEST_F(MockSocketTest, readHeader_partial) {
 
 // Test that readHeader reports an error if the read fails.
 TEST_F(MockSocketTest, readHeader_err) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Hack us into the correct initial state.
   a.setfd(7);
@@ -810,7 +828,7 @@ TEST_F(MockSocketTest, readHeader_err) {
 // Test that readHeader reports an error if it gets EOF before it gets the
 // content length.
 TEST_F(MockSocketTest, readHeader_eof) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Hack us into the correct initial state.
   a.setfd(7);
@@ -856,7 +874,7 @@ TEST_F(MockSocketTest, readHeader_eof) {
 // Test that readHeader reports an error and closes the socket if the second
 // part of a partial read returns an error.
 TEST_F(MockSocketTest, readHeader_partial_err) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Hack us into the correct initial state.
   a.setfd(7);
@@ -904,7 +922,7 @@ TEST_F(MockSocketTest, readHeader_partial_err) {
 // Test that readResponse does nothing if _response is already populated by
 // readHeader.
 TEST_F(MockSocketTest, readResponse_noop) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Hack us into the correct initial state.
   a.setfd(7);
@@ -934,7 +952,7 @@ TEST_F(MockSocketTest, readResponse_noop) {
 
 // Test that readResponse works if the initial buffer is empty.
 TEST_F(MockSocketTest, readResponse) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Hack us into the correct initial state.
   a.setfd(7);
@@ -964,7 +982,7 @@ TEST_F(MockSocketTest, readResponse) {
 
 // Test that readResponse works if the initial buffer is empty.
 TEST_F(MockSocketTest, readResponse_partial) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Hack us into the correct initial state.
   a.setfd(7);
@@ -1011,7 +1029,7 @@ TEST_F(MockSocketTest, readResponse_partial) {
 // Test that readResponse closes the socket and returns an error if the read
 // fails.
 TEST_F(MockSocketTest, readResponse_err) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Hack us into the correct initial state.
   a.setfd(7);
@@ -1039,7 +1057,7 @@ TEST_F(MockSocketTest, readResponse_err) {
 
 // Test that readResponse works if the initial buffer is empty.
 TEST_F(MockSocketTest, readResponse_eof) {
-  XmlRpcClient a("localhost", 42);
+  XmlRpcClientForTest a("localhost", 42);
 
   // Hack us into the correct initial state.
   a.setfd(7);
