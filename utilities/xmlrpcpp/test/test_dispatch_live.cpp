@@ -28,6 +28,9 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#ifndef _WIN32
+# include <sys/socket.h>
+#endif
 
 #include <iostream>
 #include <functional>
