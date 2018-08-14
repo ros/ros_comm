@@ -32,6 +32,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+from __future__ import print_function
+
 import unittest
 import rospy
 import rostest
@@ -100,15 +102,23 @@ class RandomPlay(unittest.TestCase):
 
       last_input_count = 0
       while (len(self.input) < rmg.message_count()):
-#        print "\n%d/%d\n"%(len(self.input), rmg.message_count())
+        print("%d/%d"%(len(self.input), rmg.message_count()), file=sys.stderr)
         time.sleep(1.0)
         # abort loop if no input is coming in anymore and process has finished
         if len(self.input) == last_input_count:
           rc = f1.poll()
           if rc is not None:
+            print('RC =', rc, file=sys.stderr)
             self.assertEqual(rc, 0)
             break
+        print("%d -> %d"%(last_input_count, len(self.input)), file=sys.stderr)
         last_input_count = len(self.input)
+
+      if len(self.input) < rmg.message_count():
+        print('not enough msgs yet', file=sys.stderr)
+        print("%d/%d"%(len(self.input), rmg.message_count()), file=sys.stderr)
+        time.sleep(1.0)
+        print("%d/%d"%(len(self.input), rmg.message_count()), file=sys.stderr)
 
       self.assertEqual(len(self.input), rmg.message_count())
 
@@ -157,6 +167,11 @@ class RandomPlay(unittest.TestCase):
 
         if not msg_match:
           print("No match at time: %f" % expect_time)
+          print('<<<', genpy.message.strify_message(expect_msg), '>>>', file=sys.stderr)
+          for ind in range(0,100):
+            (input_topic, input_msg, input_time) = self.input[ind]
+            print('Input %d:' % ind, input_topic, input_msg, input_time, file=sys.stderr)
+            print('<<<', genpy.message.strify_message(input_msg), '>>>', file=sys.stderr)
 
         self.assertTrue(msg_match)
 
