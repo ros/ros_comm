@@ -2,8 +2,8 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.13.7 (2018-08-17)
+-------------------
 * check that output topic is valid in demux (`#1367 <https://github.com/ros/ros_comm/issues/1367>`_)
 
 1.13.6 (2018-02-05)

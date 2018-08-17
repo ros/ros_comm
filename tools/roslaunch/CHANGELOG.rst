@@ -2,8 +2,8 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.13.7 (2018-08-17)
+-------------------
 * fix "pass_all_args" for roslaunch-check, add nosetest (`#1368 <https://github.com/ros/ros_comm/issues/1368>`_)
 * add substitution when loading yaml files (`#1354 <https://github.com/ros/ros_comm/issues/1354>`_)
 

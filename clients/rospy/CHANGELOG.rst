@@ -2,8 +2,8 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.13.7 (2018-08-17)
+-------------------
 * fix some errors in some probably not frequented code paths (`#1415 <https://github.com/ros/ros_comm/issues/1415>`_)
 * fix thread problem with get_topics() (`#1416 <https://github.com/ros/ros_comm/issues/1416>`_)
 * add rosconsole echo (`#1324 <https://github.com/ros/ros_comm/issues/1324>`_)
