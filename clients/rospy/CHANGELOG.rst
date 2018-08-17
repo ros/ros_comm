@@ -2,6 +2,12 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix some errors in some probably not frequented code paths (`#1415 <https://github.com/ros/ros_comm/issues/1415>`_)
+* fix thread problem with get_topics() (`#1416 <https://github.com/ros/ros_comm/issues/1416>`_)
+* add rosconsole echo (`#1324 <https://github.com/ros/ros_comm/issues/1324>`_)
+
 1.13.6 (2018-02-05)
 -------------------
 * raise the correct exception from AnyMsg.serialize (`#1311 <https://github.com/ros/ros_comm/issues/1311>`_)

@@ -2,6 +2,10 @@
 Changelog for package message_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* rename Python message_filters.Cache.getLastestTime to getLatestTime (`#1450 <https://github.com/ros/ros_comm/issues/1450>`_)
+
 1.13.6 (2018-02-05)
 -------------------
 * use SteadyTimer in message_filters (`#1247 <https://github.com/ros/ros_comm/issues/1247>`_)
