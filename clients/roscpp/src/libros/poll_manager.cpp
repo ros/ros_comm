@@ -33,20 +33,10 @@
 namespace ros
 {
 
-PollManagerPtr g_poll_manager;
-boost::mutex g_poll_manager_mutex;
 const PollManagerPtr& PollManager::instance()
 {
-  if (!g_poll_manager)
-  {
-    boost::mutex::scoped_lock lock(g_poll_manager_mutex);
-    if (!g_poll_manager)
-    {
-      g_poll_manager.reset(new PollManager);
-    }
-  }
-
-  return g_poll_manager;
+  static PollManagerPtr poll_manager = boost::make_shared<PollManager>();
+  return poll_manager;
 }
 
 PollManager::PollManager()

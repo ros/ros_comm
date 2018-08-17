@@ -46,15 +46,13 @@
 // those symbols instead use __wrap_xxx
 extern "C" {
 // Mock for poll
-int __real_poll(struct pollfd *fds, nfds_t nfds, int timeout);
-
 int (*fake_poll)(struct pollfd *, nfds_t, int) = 0;
 
 int __wrap_poll(struct pollfd *fds, nfds_t nfds, int timeout) {
   if(fake_poll) {
     return fake_poll(fds, nfds, timeout);
   } else {
-    return __real_poll(fds, nfds, timeout);
+    return 0;
   }
 }
 
@@ -72,7 +70,7 @@ int mock_poll(struct pollfd *fds, nfds_t nfds, int timeout) {
   EXPECT_EQ(poll_fds.size(), nfds);
   EXPECT_EQ(poll_timeout, timeout);
 
-  for(nfds_t i=0; i<std::min(nfds, poll_fds.size()); i++) {
+  for(nfds_t i=0; i<nfds && i<poll_fds.size(); i++) {
     EXPECT_EQ(poll_fds[i].fd, fds[i].fd);
     EXPECT_EQ(poll_fds[i].events, fds[i].events);
     fds[i].revents = poll_fds[i].revents;

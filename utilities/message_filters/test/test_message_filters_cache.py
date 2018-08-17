@@ -103,9 +103,11 @@ class TestCache(unittest.TestCase):
         self.assertEqual(s, rospy.Time(3),
                          "invalid msg return by getElemBeforeTime")
 
-        s = cache.getLastestTime()
+        s = cache.getLatestTime()
         self.assertEqual(s, rospy.Time(4),
-                         "invalid stamp return by getLastestTime")
+                         "invalid stamp return by getLatestTime")
+        self.assertEqual(s, cache.getLastestTime(),
+                         "stamps returned by getLatestTime and getLastestTime don't match")
 
         s = cache.getOldestTime()
         self.assertEqual(s, rospy.Time(0),

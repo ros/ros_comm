@@ -139,6 +139,7 @@ bool PollSet::addEvents(int sock, int events)
 
   set_events_on_socket(epfd_, sock, it->second.events_);
 
+  sockets_changed_ = true;
   signal();
 
   return true;
@@ -161,6 +162,7 @@ bool PollSet::delEvents(int sock, int events)
 
   set_events_on_socket(epfd_, sock, it->second.events_);
 
+  sockets_changed_ = true;
   signal();
 
   return true;
