@@ -170,6 +170,12 @@ def _parse_launch(tags, launch_file, file_deps, verbose, context):
                 else:
                     launch_tag = dom[0]
                     sub_context = _parse_subcontext(tag.childNodes, context)
+                    try:
+                        if tag.attributes['pass_all_args']:
+                            sub_context["arg"] = context["arg"]
+                            sub_context["arg"].update(_parse_subcontext(tag.childNodes, context)["arg"])
+                    except KeyError as e:
+                        pass
                     _parse_launch(launch_tag.childNodes, sub_launch_file, file_deps, verbose, sub_context)
             except IOError as e:
                 raise RoslaunchDepsException("Cannot load roslaunch include '%s' in '%s'"%(sub_launch_file, launch_file))

@@ -93,6 +93,8 @@ def record_cmd(argv):
     parser.add_option(      "--node",          dest="node",          default=None,  type='string',action="store", help="record all topics subscribed to by a specific node")
     parser.add_option("-j", "--bz2",           dest="compression",   default=None,  action="store_const", const='bz2', help="use BZ2 compression")
     parser.add_option("--lz4",                 dest="compression",                  action="store_const", const='lz4', help="use LZ4 compression")
+    parser.add_option("--tcpnodelay",          dest="tcpnodelay",                   action="store_true",          help="Use the TCP_NODELAY transport hint when subscribing to topics.")
+    parser.add_option("--udp",                 dest="udp",                          action="store_true",          help="Use the UDP transport hint when subscribing to topics.")
 
     (options, args) = parser.parse_args(argv)
 
@@ -128,6 +130,8 @@ def record_cmd(argv):
     if options.size:        cmd.extend(["--size", str(options.size)])
     if options.node:
         cmd.extend(["--node", options.node])
+    if options.tcpnodelay:  cmd.extend(["--tcpnodelay"])
+    if options.udp:         cmd.extend(["--udp"])
 
     cmd.extend(args)
 
