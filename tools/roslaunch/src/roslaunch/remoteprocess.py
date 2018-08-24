@@ -126,18 +126,24 @@ class SSHChildROSLaunchProcess(roslaunch.server.ChildROSLaunchProcess):
     """
     Process wrapper for launching and monitoring a child roslaunch process over SSH
     """
-    def __init__(self, run_id, name, server_uri, machine, master_uri=None):
+    def __init__(self, run_id, name, server_uri, machine, master_uri=None, sigint_timeout=15, sigterm_timeout=2):
         """
         :param machine: Machine instance. Must be fully configured.
             machine.env_loader is required to be set.
+        :param sigint_timeout: The SIGINT timeout used when killing nodes (in seconds).
+        :type sigint_timeout: int
+        :param sigterm_timeout: The SIGTERM timeout used when killing nodes if SIGINT does not stop the node (in seconds).
+        :type sigterm_timeout: int
         """
         if not machine.env_loader:
             raise ValueError("machine.env_loader must have been assigned before creating ssh child instance")
-        args = [machine.env_loader, 'roslaunch', '-c', name, '-u', server_uri, '--run_id', run_id]
+        args = [machine.env_loader, 'roslaunch', '-c', name, '-u', server_uri, '--run_id', run_id, '--sigint-timeout', sigint_timeout, '--sigterm-timeout', sigterm_timeout]
         # env is always empty dict because we only use env_loader
         super(SSHChildROSLaunchProcess, self).__init__(name, args, {})
         self.machine = machine
         self.master_uri = master_uri
+        self.sigint_timeout = sigint_timeout
+        self.sigterm_timeout = sigterm_timeout
         self.ssh = self.sshin = self.sshout = self.ssherr = None
         self.started = False
         self.uri = None

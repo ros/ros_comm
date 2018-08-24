@@ -55,16 +55,13 @@ from rosmaster.master_api import NUM_WORKERS
 import logging
 _logger = logging.getLogger("roslaunch")
 
-_TIMEOUT_SIGINT  = 15.0 #seconds
-_TIMEOUT_SIGTERM = 2.0 #seconds
-
 _counter = 0
 def _next_counter():
     global _counter
     _counter += 1
     return _counter
 
-def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS, timeout=None, master_logger_level=False):
+def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS, timeout=None, master_logger_level=False, sigint_timeout=15, sigterm_timeout=2):
     """
     Launch a master
     @param type_: name of master executable (currently just Master.ZENMASTER)
@@ -77,10 +74,14 @@ def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS
     @type  num_workers: int
     @param timeout: socket timeout for connections.
     @type  timeout: float
-    @raise RLException: if type_ or port is invalid
     @param master_logger_level: rosmaster.master logger debug level
     @type  master_logger_level=: str or False
-    """    
+    @param sigint_timeout: The SIGINT timeout used when killing nodes (in seconds).
+    @type sigint_timeout: int
+    @param sigterm_timeout: The SIGTERM timeout used when killing nodes if SIGINT does not stop the node (in seconds).
+    @type sigterm_timeout: int
+    @raise RLException: if type_ or port is invalid
+    """
     if port < 1 or port > 65535:
         raise RLException("invalid port assignment: %s"%port)
 
@@ -100,9 +101,9 @@ def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS
 
     _logger.info("process[master]: launching with args [%s]"%args)
     log_output = False
-    return LocalProcess(run_id, package, 'master', args, os.environ, log_output, None, required=True)
+    return LocalProcess(run_id, package, 'master', args, os.environ, log_output, None, required=True, sigint_timeout=sigint_timeout, sigterm_timeout=sigterm_timeout)
 
-def create_node_process(run_id, node, master_uri):
+def create_node_process(run_id, node, master_uri, sigint_timeout=15, sigterm_timeout=2):
     """
     Factory for generating processes for launching local ROS
     nodes. Also registers the process with the L{ProcessMonitor} so that
@@ -114,6 +115,10 @@ def create_node_process(run_id, node, master_uri):
     @type  node: L{Node}
     @param master_uri: API URI for master node
     @type  master_uri: str
+    @param sigint_timeout: The SIGINT timeout used when killing nodes (in seconds).
+    @type sigint_timeout: int
+    @param sigterm_timeout: The SIGTERM timeout used when killing nodes if SIGINT does not stop the node (in seconds).
+    @type sigterm_timeout: int
     @return: local process instance
     @rtype: L{LocalProcess}
     @raise NodeParamsException: If the node's parameters are improperly specific
@@ -150,7 +155,8 @@ def create_node_process(run_id, node, master_uri):
     _logger.debug('process[%s]: returning LocalProcess wrapper')
     return LocalProcess(run_id, node.package, name, args, env, log_output, \
             respawn=node.respawn, respawn_delay=node.respawn_delay, \
-            required=node.required, cwd=node.cwd)
+            required=node.required, cwd=node.cwd, \
+            sigint_timeout=sigint_timeout, sigterm_timeout=sigterm_timeout)
 
 
 class LocalProcess(Process):
@@ -160,7 +166,7 @@ class LocalProcess(Process):
     
     def __init__(self, run_id, package, name, args, env, log_output,
             respawn=False, respawn_delay=0.0, required=False, cwd=None,
-            is_node=True):
+            is_node=True, sigint_timeout=15, sigterm_timeout=2):
         """
         @param run_id: unique run ID for this roslaunch. Used to
           generate log directory location. run_id may be None if this
@@ -184,6 +190,10 @@ class LocalProcess(Process):
         @type  cwd: str
         @param is_node: (optional) if True, process is ROS node and accepts ROS node command-line arguments. Default: True
         @type  is_node: False
+        @param sigint_timeout: The SIGINT timeout used when killing nodes (in seconds).
+        @type sigint_timeout: int
+        @param sigterm_timeout: The SIGTERM timeout used when killing nodes if SIGINT does not stop the node (in seconds).
+        @type sigterm_timeout: int
         """    
         super(LocalProcess, self).__init__(package, name, args, env,
                 respawn, respawn_delay, required)
@@ -196,6 +206,9 @@ class LocalProcess(Process):
         self.log_dir = None
         self.pid = -1
         self.is_node = is_node
+        self.sigint_timeout = sigint_timeout
+        self.sigterm_timeout = sigterm_timeout
+
 
     # NOTE: in the future, info() is going to have to be sufficient for relaunching a process
     def get_info(self):
@@ -406,7 +419,7 @@ executable permission. This is often caused by a bad launch-prefix."""%(e.strerr
             _logger.info("[%s] sending SIGINT to pgid [%s]", self.name, pgid)                                    
             os.killpg(pgid, signal.SIGINT)
             _logger.info("[%s] sent SIGINT to pgid [%s]", self.name, pgid)
-            timeout_t = time.time() + _TIMEOUT_SIGINT
+            timeout_t = time.time() + self.sigint_timeout
             retcode = self.popen.poll()                
             while time.time() < timeout_t and retcode is None:
                 time.sleep(0.1)
@@ -414,7 +427,7 @@ executable permission. This is often caused by a bad launch-prefix."""%(e.strerr
             # Escalate non-responsive process
             if retcode is None:
                 printerrlog("[%s] escalating to SIGTERM"%self.name)
-                timeout_t = time.time() + _TIMEOUT_SIGTERM
+                timeout_t = time.time() + self.sigterm_timeout
                 os.killpg(pgid, signal.SIGTERM)                
                 _logger.info("[%s] sent SIGTERM to pgid [%s]"%(self.name, pgid))
                 retcode = self.popen.poll()
@@ -474,7 +487,7 @@ executable permission. This is often caused by a bad launch-prefix."""%(e.strerr
             _logger.info("[%s] running taskkill pid tree [%s]", self.name, pid)
             subprocess.call(['taskkill', '/F', '/T', '/PID', str(pid)])
             _logger.info("[%s] run taskkill pid tree [%s]", self.name, pid)
-            timeout_t = time.time() + _TIMEOUT_SIGINT
+            timeout_t = time.time() + self.sigint_timeout
             retcode = self.popen.poll()
             while time.time() < timeout_t and retcode is None:
                 time.sleep(0.1)

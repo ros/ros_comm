@@ -235,7 +235,8 @@ class ROSLaunchRunner(object):
     monitored.
     """
     
-    def __init__(self, run_id, config, server_uri=None, pmon=None, is_core=False, remote_runner=None, is_child=False, is_rostest=False, num_workers=NUM_WORKERS, timeout=None, master_logger_level=False):
+    def __init__(self, run_id, config, server_uri=None, pmon=None, is_core=False, remote_runner=None, is_child=False, is_rostest=False, num_workers=NUM_WORKERS, timeout=None,
+                 master_logger_level=False, sigint_timeout=15, sigterm_timeout=2):
         """
         @param run_id: /run_id for this launch. If the core is not
             running, this value will be used to initialize /run_id. If
@@ -266,6 +267,10 @@ class ROSLaunchRunner(object):
         @type timeout: Float or None
         @param master_logger_level: Specify roscore's rosmaster.master logger level, use default if it is False.
         @type master_logger_level: str or False
+        @param sigint_timeout: The SIGINT timeout used when killing nodes (in seconds).
+        @type sigint_timeout: int
+        @param sigterm_timeout: The SIGTERM timeout used when killing nodes if SIGINT does not stop the node (in seconds).
+        @type sigterm_timeout: int
         """
         if run_id is None:
             raise RLException("run_id is None")
@@ -286,6 +291,8 @@ class ROSLaunchRunner(object):
         self.master_logger_level = master_logger_level
         self.logger = logging.getLogger('roslaunch')
         self.pm = pmon or start_process_monitor()
+        self.sigint_timeout = sigint_timeout
+        self.sigterm_timeout = sigterm_timeout
 
         # wire in ProcessMonitor events to our listeners
         # aggregator. We similarly wire in the remote events when we
@@ -402,7 +409,8 @@ class ROSLaunchRunner(object):
             printlog("auto-starting new master")
             p = create_master_process(
                 self.run_id, m.type, get_ros_root(), m.get_port(), self.num_workers,
-                self.timeout, master_logger_level=self.master_logger_level)
+                self.timeout, master_logger_level=self.master_logger_level,
+                sigint_timeout=self.sigint_timeout, sigterm_timeout=self.sigterm_timeout)
             self.pm.register_core_proc(p)
             success = p.start()
             if not success:
@@ -541,7 +549,7 @@ class ROSLaunchRunner(object):
         master = self.config.master
         import roslaunch.node_args
         try:
-            process = create_node_process(self.run_id, node, master.uri)
+            process = create_node_process(self.run_id, node, master.uri, sigint_timeout=self.sigint_timeout, sigterm_timeout=self.sigterm_timeout)
         except roslaunch.node_args.NodeParamsException as e:
             self.logger.error(e)
             printerrlog("ERROR: cannot launch node of type [%s/%s]: %s"%(node.package, node.type, str(e)))
