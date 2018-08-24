@@ -56,17 +56,23 @@ class ROSRemoteRunner(roslaunch.launch.ROSRemoteRunnerIF):
     Manages the running of remote roslaunch children
     """
     
-    def __init__(self, run_id, rosconfig, pm, server):
+    def __init__(self, run_id, rosconfig, pm, server, sigint_timeout=15, sigterm_timeout=2):
         """
         :param run_id: roslaunch run_id of this runner, ``str``
         :param config: launch configuration, ``ROSConfig``
         :param pm process monitor, ``ProcessMonitor``
         :param server: roslaunch parent server, ``ROSLaunchParentNode``
+        :param sigint_timeout: The SIGINT timeout used when killing nodes (in seconds).
+        :type sigint_timeout: int
+        :param sigterm_timeout: The SIGTERM timeout used when killing nodes if SIGINT does not stop the node (in seconds).
+        :type sigterm_timeout: int
         """
         self.run_id = run_id
         self.rosconfig = rosconfig
         self.server = server
         self.pm = pm
+        self.sigint_timeout = sigint_timeout
+        self.sigterm_timeout = sigterm_timeout
         self.logger = logging.getLogger('roslaunch.remote')
         self.listeners = []
         
