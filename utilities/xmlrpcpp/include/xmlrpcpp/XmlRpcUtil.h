@@ -42,7 +42,7 @@ namespace XmlRpc {
     virtual void error(const char* msg) = 0;
 
   protected:
-    static XmlRpcErrorHandler* _errorHandler;
+    static XMLRPCPP_DECL XmlRpcErrorHandler* _errorHandler;
   };
 
   //! An interface allowing custom handling of informational message reporting.
@@ -70,8 +70,8 @@ namespace XmlRpc {
     virtual void log(int level, const char* msg) = 0;
 
   protected:
-    static XmlRpcLogHandler* _logHandler;
-    static int _verbosity;
+    static XMLRPCPP_DECL XmlRpcLogHandler* _logHandler;
+    static XMLRPCPP_DECL int _verbosity;
   };
 
   //! Returns log message verbosity. This is short for XmlRpcLogHandler::getVerbosity()
