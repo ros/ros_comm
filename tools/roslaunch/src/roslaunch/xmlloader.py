@@ -303,7 +303,8 @@ class XmlLoader(loader.Loader):
             raise XmlParseException(
                 "arg '%s' is not defined. \n\nArg xml is %s"%(e, tag.toxml()))
         except ResourceNotFound as e:
-            raise type(e)("Tag the exception occurred at {}\nPackage not found in ROS_PACKAGE_PATH: {}\nMake sure the package is found in ROS_PACKAGE_PATH.".format(tag.toxml(), e))
+            raise ResourceNotFound(
+                "The following package was not found in {}: {}".format(tag.toxml(), e))
         except Exception as e:
             raise XmlParseException(
                 "Invalid <arg> tag: %s. \n\nArg xml is %s"%(e, tag.toxml()))
