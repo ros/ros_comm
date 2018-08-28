@@ -47,6 +47,7 @@ from xml.dom.minidom import parse, parseString
 from xml.dom import Node as DomNode #avoid aliasing
 
 from rosgraph.names import make_global_ns, ns_join, is_private, is_legal_name, get_ros_namespace
+from rospkg import ResourceNotFound
 
 from .core import Param, Node, Test, Machine, RLException
 from . import loader
@@ -301,6 +302,9 @@ class XmlLoader(loader.Loader):
         except substitution_args.ArgException as e:
             raise XmlParseException(
                 "arg '%s' is not defined. \n\nArg xml is %s"%(e, tag.toxml()))
+        except ResourceNotFound as e:
+            raise ResourceNotFound(
+                "The following package was not found in {}: {}".format(tag.toxml(), e))
         except Exception as e:
             raise XmlParseException(
                 "Invalid <arg> tag: %s. \n\nArg xml is %s"%(e, tag.toxml()))
