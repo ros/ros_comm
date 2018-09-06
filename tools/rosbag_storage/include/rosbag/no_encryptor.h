@@ -32,28 +32,28 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
+#ifndef ROSBAG_NO_ENCRYPTION_H
+#define ROSBAG_NO_ENCRYPTION_H
+
 #include "rosbag/encryptor.h"
 
-#include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(rosbag::NoEncryptor, rosbag::EncryptorBase)
+namespace rosbag {
 
-namespace rosbag
+class NoEncryptor : public EncryptorBase
 {
+public:
+    NoEncryptor() { }
+    ~NoEncryptor() { }
 
-uint32_t NoEncryptor::encryptChunk(const uint32_t chunk_size, const uint64_t, ChunkedFile&) { return chunk_size; }
-
-void NoEncryptor::decryptChunk(ChunkHeader const& chunk_header, Buffer& decrypted_chunk, ChunkedFile& file) const {
-    decrypted_chunk.setSize(chunk_header.compressed_size);
-    file.read((char*) decrypted_chunk.getData(), chunk_header.compressed_size);
+    void initialize(Bag const&, std::string const&) { }
+    uint32_t encryptChunk(const uint32_t, const uint64_t, ChunkedFile&);
+    void decryptChunk(ChunkHeader const&, Buffer&, ChunkedFile&) const;
+    void addFieldsToFileHeader(ros::M_string&) const { }
+    void readFieldsFromFileHeader(ros::M_string const&) { }
+    void writeEncryptedHeader(boost::function<void(ros::M_string const&)>, ros::M_string const&, ChunkedFile&);
+    bool readEncryptedHeader(boost::function<bool(ros::Header&)>, ros::Header&, Buffer&, ChunkedFile&);
+};
 }
 
-void NoEncryptor::writeEncryptedHeader(boost::function<void(ros::M_string const&)> write_header, ros::M_string const& header_fields, ChunkedFile&) {
-    write_header(header_fields);
-}
-
-bool NoEncryptor::readEncryptedHeader(boost::function<bool(ros::Header&)> read_header, ros::Header& header, Buffer&, ChunkedFile&) {
-    return read_header(header);
-}
-
-}  // namespace rosbag
+#endif

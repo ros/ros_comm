@@ -33,14 +33,12 @@ if(NOT WIN32)
 endif()
 
 add_library(rosbag_storage
-  ${AES_ENCRYPT_SOURCE}
   src/bag.cpp
   src/bag_player.cpp
   src/buffer.cpp
   src/bz2_stream.cpp
   src/lz4_stream.cpp
   src/chunked_file.cpp
-  src/encryptor.cpp
   src/message_instance.cpp
   src/query.cpp
   src/stream.cpp
@@ -50,6 +48,19 @@ add_library(rosbag_storage
 target_link_libraries(rosbag_storage ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${BZIP2_LIBRARIES} ${console_bridge_LIBRARIES} ${AES_ENCRYPT_LIBRARIES})
 
 install(TARGETS rosbag_storage
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+add_library(rosbag_default_encryption_plugins
+  ${AES_ENCRYPT_SOURCE}
+  src/no_encryptor.cpp
+)
+
+target_link_libraries(rosbag_default_encryption_plugins ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${AES_ENCRYPT_LIBRARIES})
+
+install(TARGETS rosbag_default_encryption_plugins
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

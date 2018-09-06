@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include "rosbag/bag.h"
-#include "rosbag/encryptor.h"
+#include "rosbag/aes_encryptor.h"
 
 #include <openssl/rand.h>
 
