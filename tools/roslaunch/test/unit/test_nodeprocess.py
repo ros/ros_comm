@@ -34,7 +34,7 @@
 import os
 import sys
 import unittest
-    
+
 import rospkg
 import roslib.packages
 import logging
@@ -77,6 +77,14 @@ class TestNodeprocess(unittest.TestCase):
 
         self.assertEquals(p.package, 'rosmaster')
         p = create_master_process(run_id, type, ros_root, port)
+        
+        self.assertEquals(create_master_process(run_id, type, ros_root, port, sigint_timeout=3).sigint_timeout, 3)
+        self.assertEquals(create_master_process(run_id, type, ros_root, port, sigint_timeout=1).sigint_timeout, 1)
+        self.assertRaises(RLException, create_master_process, run_id, type, ros_root, port, sigint_timeout=0)
+
+        self.assertEquals(create_master_process(run_id, type, ros_root, port, sigterm_timeout=3).sigterm_timeout, 3)
+        self.assertEquals(create_master_process(run_id, type, ros_root, port, sigterm_timeout=1).sigterm_timeout, 1)
+        self.assertRaises(RLException, create_master_process, run_id, type, ros_root, port, sigterm_timeout=0)
         
         # TODO: have to think more as to the correct environment for the master process
         
@@ -164,6 +172,16 @@ class TestNodeprocess(unittest.TestCase):
         n.cwd = 'node'                
         self.assertEquals(create_node_process(run_id, n, master_uri).cwd, 'node')
 
+        # sigint timeout
+        self.assertEquals(create_node_process(run_id, n, master_uri).sigint_timeout, 15)
+        self.assertEquals(create_node_process(run_id, n, master_uri, sigint_timeout=1).sigint_timeout, 1)
+        self.assertRaises(RLException, create_node_process, run_id, n, master_uri, sigint_timeout=0)
+
+        # sigterm timeout
+        self.assertEquals(create_node_process(run_id, n, master_uri).sigterm_timeout, 2)
+        self.assertEquals(create_node_process(run_id, n, master_uri, sigterm_timeout=1).sigterm_timeout, 1)
+        self.assertRaises(RLException, create_node_process, run_id, n, master_uri, sigterm_timeout=0)
+
         # test args
 
         # - simplest test (no args)
@@ -201,7 +219,65 @@ class TestNodeprocess(unittest.TestCase):
         self.failIf('SUB_TEST' in p.args)
         self.assert_('foo' in p.args)
         self.assert_('subtest' in p.args)
-        self.assert_('subtest2' in p.args)        
+        self.assert_('subtest2' in p.args)
+
+    def test_local_process_stop_timeouts(self):
+        from roslaunch.core import Node, Machine
+
+        # have to use real ROS configuration for these tests
+        ros_root = os.environ['ROS_ROOT']
+        rpp = os.environ.get('ROS_PACKAGE_PATH', None)
+        master_uri = 'http://masteruri:1234'
+        m = Machine('name1', ros_root, rpp, '1.2.3.4')
+
+        run_id = 'id'
+
+        n = Node('roslaunch', 'signal_logger.py')
+        n.name = 'logger'
+        n.machine = m
+        self.check_stop_timeouts(master_uri, n, run_id, 1.0, 1.0)
+        self.check_stop_timeouts(master_uri, n, run_id, 0.00001, 1.0)
+        # shorter sigterm times are risky in the test - the signal file might not get written; but in the wild, it's ok
+        self.check_stop_timeouts(master_uri, n, run_id, 1.0, 0.001)
+        self.check_stop_timeouts(master_uri, n, run_id, 2.0, 3.0)
+
+    def check_stop_timeouts(self, master_uri, n, run_id, sigint_timeout, sigterm_timeout):
+        from roslaunch.nodeprocess import create_node_process, LocalProcess
+
+        import time
+        import tempfile
+        import signal
+
+        signal_log_file = os.path.join(tempfile.gettempdir(), "signal.log")
+
+        try:
+            os.remove(signal_log_file)
+        except OSError:
+            pass
+
+        p = create_node_process(run_id, n, master_uri, sigint_timeout=sigint_timeout, sigterm_timeout=sigterm_timeout)
+        self.assert_(isinstance(p, LocalProcess))
+
+        p.start()
+        time.sleep(1)  # give it time to start
+
+        before_stop_call_time = time.time()
+        p.stop()
+        after_stop_call_time = time.time()
+
+        signals = dict()
+        with open(signal_log_file, 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                sig, timestamp = line.split(" ")
+                sig = int(sig)
+                timestamp = float(timestamp)
+                signals[sig] = timestamp
+
+        self.assertSetEqual({signal.SIGINT, signal.SIGTERM}, set(signals.keys()))
+        self.assertAlmostEqual(before_stop_call_time, signals[signal.SIGINT], places=0)
+        self.assertAlmostEqual(before_stop_call_time, signals[signal.SIGTERM] - sigint_timeout, places=0)
+        self.assertAlmostEqual(before_stop_call_time, after_stop_call_time - sigint_timeout - sigterm_timeout, places=0)
 
     def test__cleanup_args(self):
         # #1595

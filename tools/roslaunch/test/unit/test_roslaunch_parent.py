@@ -236,6 +236,86 @@ class TestRoslaunchParent(unittest.TestCase):
         p.shutdown()
         self.assert_(pmon.is_shutdown)        
 
+
+## Test sigint_timeout and sigterm_timeout
+# We need real ProcessMonitor here, and we need to spawn real threads
+class TestRoslaunchTimeouts(unittest.TestCase):
+    def setUp(self):
+        from roslaunch.pmon import ProcessMonitor
+        self.pmon = ProcessMonitor()
+
+    def test_roslaunchTimeouts(self):
+        try:
+            self._subtestTimeouts()
+        finally:
+            self.pmon.shutdown()
+
+    def _subtestTimeouts(self):
+        from roslaunch.parent import ROSLaunchParent
+        from roslaunch.server import ROSLaunchParentNode
+        import signal
+        import tempfile
+        from threading import Thread
+
+        pmon = self.pmon
+        pmon.start()
+        try:
+            # if there is a core up, we have to use its run id
+            run_id = get_param('/run_id')
+        except:
+            run_id = 'test-rl-parent-timeout-%s' % time.time()
+
+        rl_dir = rospkg.RosPack().get_path('roslaunch')
+        rl_file = os.path.join(rl_dir, 'resources', 'timeouts.launch')
+
+        sigint_timeout = 2
+        sigterm_timeout = 3
+
+        p = ROSLaunchParent(run_id, [rl_file], is_core=False, port=11312, local_only=True,
+                            sigint_timeout=sigint_timeout, sigterm_timeout=sigterm_timeout)
+        p._load_config()
+        p.pm = pmon
+        p.server = ROSLaunchParentNode(p.config, pmon)
+
+        signal_log_file = os.path.join(tempfile.gettempdir(), "signal.log")
+        try:
+            os.remove(signal_log_file)
+        except OSError:
+            pass
+
+        def kill_launch(times):
+            time.sleep(1)  # give it time to start
+
+            times.append(time.time())
+            p.shutdown()
+            times.append(time.time())
+
+        p.start()
+
+        times = []
+        t = Thread(target=kill_launch, args=(times,))
+        t.start()
+
+        p.spin()
+        t.join()
+
+        before_stop_call_time, after_stop_call_time = times
+
+        signals = dict()
+        with open(signal_log_file, 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                sig, timestamp = line.split(" ")
+                sig = int(sig)
+                timestamp = float(timestamp)
+                signals[sig] = timestamp
+
+        self.assertSetEqual({signal.SIGINT, signal.SIGTERM}, set(signals.keys()))
+        self.assertAlmostEqual(before_stop_call_time, signals[signal.SIGINT], places=0)
+        self.assertAlmostEqual(before_stop_call_time, signals[signal.SIGTERM] - sigint_timeout, places=0)
+        self.assertAlmostEqual(before_stop_call_time, after_stop_call_time - sigint_timeout - sigterm_timeout, places=0)
+
+
 def kill_parent(p, delay=1.0):
     # delay execution so that whatever pmon method we're calling has time to enter
     time.sleep(delay)
