@@ -137,7 +137,8 @@ class SSHChildROSLaunchProcess(roslaunch.server.ChildROSLaunchProcess):
         """
         if not machine.env_loader:
             raise ValueError("machine.env_loader must have been assigned before creating ssh child instance")
-        args = [machine.env_loader, 'roslaunch', '-c', name, '-u', server_uri, '--run_id', run_id, '--sigint-timeout', sigint_timeout, '--sigterm-timeout', sigterm_timeout]
+        args = [machine.env_loader, 'roslaunch', '-c', name, '-u', server_uri, '--run_id', run_id,
+                '--sigint-timeout', str(sigint_timeout), '--sigterm-timeout', str(sigterm_timeout)]
         # env is always empty dict because we only use env_loader
         super(SSHChildROSLaunchProcess, self).__init__(name, args, {})
         self.machine = machine

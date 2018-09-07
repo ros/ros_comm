@@ -197,6 +197,13 @@ class LocalProcess(Process):
         """    
         super(LocalProcess, self).__init__(package, name, args, env,
                 respawn, respawn_delay, required)
+
+        if sigint_timeout <= 0:
+            raise RLException("sigint_timeout must be a positive number, received %f" % sigint_timeout)
+
+        if sigterm_timeout <= 0:
+            raise RLException("sigterm_timeout must be a positive number, received %f" % sigterm_timeout)
+
         self.run_id = run_id
         self.popen = None
         self.log_output = log_output
