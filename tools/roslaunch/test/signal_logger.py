@@ -22,4 +22,4 @@ signal.signal(signal.SIGINT, handler)
 signal.signal(signal.SIGTERM, handler)
 
 while True:
-    pass
+    time.sleep(10)
