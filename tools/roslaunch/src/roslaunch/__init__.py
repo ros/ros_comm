@@ -300,7 +300,9 @@ def main(argv=sys.argv):
             # client spins up an XML-RPC server that waits for
             # commands and configuration from the server.
             from . import child as roslaunch_child
-            c = roslaunch_child.ROSLaunchChild(uuid, options.child_name, options.server_uri)
+            c = roslaunch_child.ROSLaunchChild(uuid, options.child_name, options.server_uri,
+                                               sigint_timeout=options.sigint_timeout,
+                                               sigterm_timeout=options.sigterm_timeout)
             c.run()
         else:
             logger.info('starting in server mode')

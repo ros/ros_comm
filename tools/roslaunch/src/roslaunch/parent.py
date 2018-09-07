@@ -211,7 +211,9 @@ class ROSLaunchParent(object):
         if not self.local_only and self.config.has_remote_nodes():
             # keep the remote package lazy-imported
             import roslaunch.remote
-            self.remote_runner = roslaunch.remote.ROSRemoteRunner(self.run_id, self.config, self.pm, self.server)
+            self.remote_runner = roslaunch.remote.ROSRemoteRunner(self.run_id, self.config, self.pm, self.server,
+                                                                  sigint_timeout=self.sigint_timeout,
+                                                                  sigterm_timeout=self.sigterm_timeout)
         elif self.local_only:
             printlog_bold("LOCAL\nlocal only launch specified, will not launch remote nodes\nLOCAL\n")
 
