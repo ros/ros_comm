@@ -21,7 +21,10 @@
  *
  */
 
-#include "xmlrpcpp/XmlRpcSocket.h"
+#define xmlrpcpp_EXPORTS  // we are mocking XmlRpcSocket, define the symbol in order to export XmlRpcSocket class
+# include "xmlrpcpp/XmlRpcSocket.h"
+#undef xmlrpcpp_EXPORTS
+
 #include "xmlrpcpp/XmlRpcUtil.h"
 #include "mock_socket.h"
 

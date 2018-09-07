@@ -23,12 +23,15 @@
 
 #include "test_fixtures.h"
 
-#include <sys/resource.h>
+#ifndef _WIN32
+# include <sys/resource.h>
+#endif
 
 using namespace XmlRpc;
 
 TEST_F(XmlRpcTest, Ulimit)
 {
+#ifndef _WIN32
   XmlRpcClient c("localhost", port);
   XmlRpcValue noArgs, result;
 
@@ -69,6 +72,7 @@ TEST_F(XmlRpcTest, Ulimit)
   c2.close();
   EXPECT_TRUE(c2.execute("Hello", noArgs, result));
   EXPECT_EQ(result, hello);
+#endif
 }
 
 int main(int argc, char **argv)

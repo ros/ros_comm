@@ -41,6 +41,8 @@ UDPROS connection protocol.
 #  http://ros.org/wiki/ROS/UDPROS
 # 
 
+import socket
+import threading
 import rosgraph.network
 
 import rospy.impl.registration

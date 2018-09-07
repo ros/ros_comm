@@ -24,13 +24,13 @@
 
 #include "xmlrpcpp/XmlRpc.h"
 
-#include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+#ifndef _WIN32
+# include <sys/socket.h>
+#endif
 
 #include <iostream>
 #include <functional>
@@ -172,7 +172,11 @@ TEST_F(XmlRpcTest, ServerDisconnect2)
   server_done = true;
   server_thread.join();
   // Close the server socket to reads (ie incoming connections)
+  #ifndef _WIN32
   shutdown(s.getfd(), SHUT_RD);
+  #else
+  shutdown(s.getfd(), SD_RECEIVE);
+  #endif
 
   // Call the Hello method. Expect failure since the server socket is not
   // accepting new connections.
