@@ -110,6 +110,7 @@ struct ROSBAG_DECL RecorderOptions
     std::string     node;
     unsigned long long min_space;
     std::string min_space_str;
+    ros::TransportHints transport_hints;
 
     std::vector<std::string> topics;
 };

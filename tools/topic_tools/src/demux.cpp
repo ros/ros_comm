@@ -152,6 +152,9 @@ void in_cb(const boost::shared_ptr<ShapeShifter const>& msg)
     ros::Duration(0.5).sleep();
   }
 
+  // check that we have a valid topic
+  if (!g_selected->pub) return;
+
   // finally: send out the message over the active publisher
   g_selected->pub->publish(msg);
   ROS_DEBUG("... and sent it out again!");
@@ -307,4 +310,3 @@ int main(int argc, char **argv)
   g_pubs.clear();
   return 0;
 }
-
