@@ -156,11 +156,15 @@ class Cache(SimpleFilter):
             return None
         return older[-1]
 
-    def getLastestTime(self):
+    def getLatestTime(self):
         """Return the newest recorded timestamp."""
         if not self.cache_times:
             return None
         return self.cache_times[-1]
+
+    def getLastestTime(self):
+        """Return the newest recorded timestamp (equivalent to `getLatestTime()`, but included for backwards compatibility)."""
+        return self.getLatestTime()
 
     def getOldestTime(self):
         """Return the oldest recorded timestamp."""

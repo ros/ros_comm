@@ -627,10 +627,10 @@ namespace XmlRpc {
 
 
 // ostream
-std::ostream& operator<<(std::ostream& os, XmlRpc::XmlRpcValue& v) 
-{ 
+std::ostream& operator<<(std::ostream& os, const XmlRpc::XmlRpcValue& v)
+{
   // If you want to output in xml format:
-  //return os << v.toXml(); 
+  //return os << v.toXml();
   return v.write(os);
 }
 

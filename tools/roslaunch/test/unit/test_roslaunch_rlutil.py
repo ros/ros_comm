@@ -84,4 +84,8 @@ class TestRoslaunchRlutil(unittest.TestCase):
                 self.fail("should have failed")
             except roslaunch.RLException:
                 pass
-            
+
+    def test_roslaunch_check_pass_all_args(self):
+        filename = os.path.join(get_example_path(), 'example-pass_all_args.launch')
+        error_msg = roslaunch.rlutil.check_roslaunch(filename)
+        assert error_msg is None

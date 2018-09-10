@@ -1,6 +1,6 @@
 catkin_add_gtest(${PROJECT_NAME}-test_version test_version.cpp)
 if(TARGET ${PROJECT_NAME}-test_version)
-  target_link_libraries(${PROJECT_NAME}-test_version)
+  target_link_libraries(${PROJECT_NAME}-test_version ${catkin_LIBRARIES})
 endif()
 
 catkin_add_gtest(${PROJECT_NAME}-test_header test_header.cpp)

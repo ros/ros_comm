@@ -2,6 +2,11 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.12.14 (2018-08-23)
+--------------------
+* fix "pass_all_args" for roslaunch-check, add nosetest (`#1368 <https://github.com/ros/ros_comm/issues/1368>`_)
+* add substitution when loading yaml files (`#1354 <https://github.com/ros/ros_comm/issues/1354>`_)
+
 1.12.13 (2018-02-21)
 --------------------
 * add process listeners to XML RPC server (`#1319 <https://github.com/ros/ros_comm/issues/1319>`_)
