@@ -2,6 +2,9 @@
 Changelog for package rosnode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.12.14 (2018-08-23)
+--------------------
+
 1.12.13 (2018-02-21)
 --------------------
 * fix docstrings (`#1278 <https://github.com/ros/ros_comm/issues/1278>`_)
