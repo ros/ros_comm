@@ -28,7 +28,7 @@ add_definitions(${BZIP2_DEFINITIONS})
 set(AES_ENCRYPT_SOURCE "")
 set(AES_ENCRYPT_LIBRARIES "")
 if(NOT WIN32)
-  set(AES_ENCRYPT_SOURCE "src/aes_encryptor.cpp")
+  set(AES_ENCRYPT_SOURCE "src/aes_encryptor.cpp" "src/gpgme_utils.cpp")
   set(AES_ENCRYPT_LIBRARIES "crypto" "gpgme")
 endif()
 
@@ -79,10 +79,10 @@ if(NOT WIN32)
   if(CATKIN_ENABLE_TESTING)
     find_package(rostest)
 
-    catkin_add_gtest(test_aes_encryptor test/test_aes_encryptor.cpp
+    catkin_add_gtest(test_aes_encryptor test/test_aes_encryptor.cpp src/gpgme_utils.cpp
       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test)
     if(TARGET test_aes_encryptor)
-      target_link_libraries(test_aes_encryptor rosbag_storage ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+      target_link_libraries(test_aes_encryptor rosbag_storage ${BZIP2_LIBRARIES}  ${AES_ENCRYPT_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
     endif()
   endif()
 endif()

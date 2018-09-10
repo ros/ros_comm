@@ -34,6 +34,7 @@
 
 #include "rosbag/bag.h"
 #include "rosbag/aes_encryptor.h"
+#include "rosbag/gpgme_utils.h"
 
 #include <openssl/rand.h>
 
@@ -46,53 +47,6 @@ namespace rosbag
 
 const std::string AesCbcEncryptor::GPG_USER_FIELD_NAME = "gpg_user";
 const std::string AesCbcEncryptor::ENCRYPTED_KEY_FIELD_NAME = "encrypted_key";
-
-void initGpgme() {
-    // Check version method must be called before en/decryption
-    gpgme_check_version(0);
-    // Set locale
-    setlocale(LC_ALL, "");
-    gpgme_set_locale(NULL, LC_CTYPE, setlocale(LC_CTYPE, NULL));
-#ifdef LC_MESSAGES
-    gpgme_set_locale(NULL, LC_MESSAGES, setlocale(LC_MESSAGES, NULL));
-#endif
-}
-
-void getGpgKey(gpgme_ctx_t& ctx, std::string const& user, gpgme_key_t& key) {
-    gpgme_error_t err;
-    // Asterisk means an arbitrary user.
-    if (user == std::string("*")) {
-        err = gpgme_op_keylist_start(ctx, 0, 0);
-    } else {
-        err = gpgme_op_keylist_start(ctx, user.c_str(), 0);
-    }
-    if (err) {
-        throw BagException((boost::format("gpgme_op_keylist_start returned %1%") % gpgme_strerror(err)).str());
-    }
-    while (true) {
-        err = gpgme_op_keylist_next(ctx, &key);
-        if (!err) {
-            if (user == std::string("*") || strcmp(key->uids->name, user.c_str()) == 0) {
-                break;
-            }
-            gpgme_key_release(key);
-        } else if (gpg_err_code(err) == GPG_ERR_EOF) {
-            if (user == std::string("*")) {
-                // A method throws an exception (instead of returning a specific value) if the key is not found
-                // This allows rosbag client applications to work without modifying their source code
-                throw BagException("GPG key not found");
-            } else {
-                throw BagException((boost::format("GPG key not found for a user %1%") % user.c_str()).str());
-            }
-        } else {
-            throw BagException((boost::format("gpgme_op_keylist_next returned %1%") % err).str());
-        }
-    }
-    err = gpgme_op_keylist_end(ctx);
-    if (err) {
-        throw BagException((boost::format("gpgme_op_keylist_end returned %1%") % gpgme_strerror(err)).str());
-    }
-}
 
 //! Encrypt string using GPGME
 /*!

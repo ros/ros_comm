@@ -32,48 +32,33 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-#ifndef ROSBAG_AES_ENCRYPTION_H
-#define ROSBAG_AES_ENCRYPTION_H
+#ifndef ROSBAG_GPGME_UTILS_H
+#define ROSBAG_GPGME_UTILS_H
 
 #include "rosbag/encryptor.h"
 
 #ifndef _WIN32
-  #include <openssl/aes.h>
+  #include <gpgme.h>
 
 namespace rosbag {
 
-class AesCbcEncryptor : public EncryptorBase
-{
-public:
-    static const std::string GPG_USER_FIELD_NAME;
-    static const std::string ENCRYPTED_KEY_FIELD_NAME;
+//! Initialize GPGME library
+/*!
+ * This method initializes GPGME library, and set locale.
+ */
+void initGpgme();
 
-public:
-    AesCbcEncryptor() { }
-    ~AesCbcEncryptor() { }
+//! Get GPG key
+/*!
+ * \param ctx GPGME context
+ * \param user User name of the GPG key
+ * \param key GPG key found
+ *
+ * This method outputs a GPG key in the system keyring corresponding to the given user name.
+ * This method throws BagException if the key is not found or error occurred.
+ */
+void getGpgKey(gpgme_ctx_t& ctx, std::string const& user, gpgme_key_t& key);
 
-    void initialize(Bag const& bag, std::string const& gpg_key_user);
-    uint32_t encryptChunk(const uint32_t chunk_size, const uint64_t chunk_data_pos, ChunkedFile& file);
-    void decryptChunk(ChunkHeader const& chunk_header, Buffer& decrypted_chunk, ChunkedFile& file) const;
-    void addFieldsToFileHeader(ros::M_string& header_fields) const;
-    void readFieldsFromFileHeader(ros::M_string const& header_fields);
-    void writeEncryptedHeader(boost::function<void(ros::M_string const&)>, ros::M_string const& header_fields, ChunkedFile&);
-    bool readEncryptedHeader(boost::function<bool(ros::Header&)>, ros::Header& header, Buffer& header_buffer, ChunkedFile&);
-
-private:
-    void buildSymmetricKey();
-
-private:
-    // User name of GPG key used for symmetric key encryption
-    std::string gpg_key_user_;
-    // Symmetric key for encryption/decryption
-    std::basic_string<unsigned char> symmetric_key_;
-    // Encrypted symmetric key
-    std::string encrypted_symmetric_key_;
-    // AES keys for encryption/decryption
-    AES_KEY aes_encrypt_key_;
-    AES_KEY aes_decrypt_key_;
-};
 }
 #endif
 
