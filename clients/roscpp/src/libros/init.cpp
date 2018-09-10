@@ -596,8 +596,8 @@ void shutdown()
     g_internal_queue_thread.join();
   }
 
+  delete g_rosout_appender;
   g_rosout_appender = 0;
-
   if (g_started)
   {
     TopicManager::instance()->shutdown();
