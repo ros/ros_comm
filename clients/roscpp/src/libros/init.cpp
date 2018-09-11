@@ -598,6 +598,7 @@ void shutdown()
   ros::console::deregister_appender();  
   delete g_rosout_appender;
   g_rosout_appender = 0;
+
   if (g_started)
   {
     TopicManager::instance()->shutdown();
