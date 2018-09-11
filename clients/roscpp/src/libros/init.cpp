@@ -595,7 +595,10 @@ void shutdown()
   {
     g_internal_queue_thread.join();
   }
-  ros::console::deregister_appender();  
+  ros::console::deregister_appender(g_rosout_appender);
+  //log4cxx does not delete the context pointed by g_rosout_appender,
+  //rather it deletes its own local appender object with a default destructor.
+  //therefore below operation does not result in a double free error.
   delete g_rosout_appender;
   g_rosout_appender = 0;
 
