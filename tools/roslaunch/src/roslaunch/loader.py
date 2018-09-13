@@ -41,7 +41,7 @@ import os
 from copy import deepcopy
 
 import yaml
-
+import resource_retriever
 from roslaunch.core import Param, RosbinExecutable, RLException, PHASE_SETUP
 
 from rosgraph.names import make_global_ns, ns_join, PRIV_NAME, load_mappings, is_legal_name, canonicalize_name
@@ -381,6 +381,9 @@ class Loader(object):
         @type  text: str
         @raise ValueError: if parameters cannot be processed into valid rosparam setting
         """
+        if file_ is not None:
+            file_ = resource_retriever.get_filename(file_, False)
+
         if not cmd in ('load', 'dump', 'delete'):
             raise ValueError("command must be 'load', 'dump', or 'delete'")
         if file_ is not None:
