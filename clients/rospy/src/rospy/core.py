@@ -159,10 +159,9 @@ def _base_logger(msg, args, kwargs, throttle=None,
                  throttle_identical=False, level=None, once=False):
 
     rospy_logger = logging.getLogger('rosout')
-    name = kwargs.get('logger_name')
+    name = kwargs.pop('logger_name', None)
     if name:
         rospy_logger = rospy_logger.getChild(name)
-        del kwargs['logger_name']
     logfunc = getattr(rospy_logger, level)
 
     if once:
