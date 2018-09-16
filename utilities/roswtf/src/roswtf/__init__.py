@@ -162,7 +162,7 @@ def _roswtf_main():
             print("Stack:", curr_stack)
             ctx = WtfContext.from_stack(curr_stack)
         else:
-            print("No package or stack in context")
+            print("No package or stack in the current directory")
             ctx = WtfContext.from_env()
         if options.all_packages:
             print("roswtf will run against all packages")
