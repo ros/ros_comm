@@ -491,7 +491,8 @@ class Loader(object):
                 print("... executing command param [%s]" % command)
             import subprocess, shlex #shlex rocks
             try:
-                p = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
+                os_posix = os.name == "posix"
+                p = subprocess.Popen(shlex.split(command, posix=os_posix), stdout=subprocess.PIPE)
                 c_value = p.communicate()[0]
                 if not isinstance(c_value, str):
                     c_value = c_value.decode('utf-8')
