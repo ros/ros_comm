@@ -319,6 +319,19 @@ void start()
     }
   }
 
+  char* env_poll_timeout = NULL;
+  env_poll_timeout = getenv("ROS_POLLMGR_POLL_TIMEOUT");
+  if (env_poll_timeout != NULL) {
+    PollManager::poll_timeout_ = atoi(env_poll_timeout);
+    ROSCPP_LOG_DEBUG("ROS_POLLMGR_POLL_TIMEOUT is %d", PollManager::poll_timeout_);
+  }
+
+  env_poll_timeout = getenv("ROS_XMLRPCMGR_POLL_TIMEOUT");
+  if (env_poll_timeout != NULL) {
+    XMLRPCManager::poll_timeout_ = atof(env_poll_timeout);
+    ROSCPP_LOG_DEBUG("ROS_XMLRPCMGR_POLL_TIMEOUT is %f", XMLRPCManager::poll_timeout_);
+  }
+
 #ifndef ROS_UDS_EXT_DISABLE
   char* env_uds = NULL;
   env_uds = getenv("ROS_UDS_EXT_ENABLE");
@@ -327,6 +340,13 @@ void start()
   TransportUDS::s_use_uds_ = use_uds;
   ROSCPP_LOG_DEBUG("ROS_UDS_EXT_ENABLE is %s", use_uds?"on":"off");
 
+  char* env_feature = NULL;
+  env_feature = getenv("ROS_UDS_EXT_FEATURE");
+
+  if (env_feature) {
+    TransportUDS::s_uds_feature_ = (uint32_t) strtol(env_feature, NULL, 16);
+  }
+  ROSCPP_LOG_DEBUG("ROS_UDS_EXT_FEATURE is 0x%x", TransportUDS::s_uds_feature_);
   /*
    * if the Unix Domain Socket extension is not used,
    * fallback to the official check for IPv6, otherwise
@@ -377,8 +397,11 @@ void start()
 
   if (!(g_init_options & init_options::NoRosout))
   {
-    g_rosout_appender = new ROSOutAppender;
-    ros::console::register_appender(g_rosout_appender);
+    if ( !getenv("ROS_NO_ROSOUT") )
+    {
+      g_rosout_appender = new ROSOutAppender;
+      ros::console::register_appender(g_rosout_appender);
+    }
   }
 
   if (g_shutting_down) goto end;

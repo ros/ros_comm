@@ -23,11 +23,28 @@
 #include "ros/transport/transport_uds.h"
 #include <sstream>
 #include <boost/filesystem.hpp>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
+#include "ros/file_log.h"
 
 namespace ros
 {
 
 bool TransportUDS::s_use_uds_ = false;
+uint32_t TransportUDS::s_uds_feature_ = 0;
+
+const std::string TransportUDS::generateServerUDSPath()
+{
+  std::string uuid_str;
+
+  boost::uuids::uuid uuid = boost::uuids::random_generator()();
+  uuid_str = boost::lexical_cast<std::string>(uuid);
+  ROSCPP_LOG_DEBUG("Abstract Socket Name is %s", uuid_str.c_str());
+  return uuid_str.c_str();
+}
 
 const std::string TransportUDS::generateServerUDSPath(uint32_t counter)
 {

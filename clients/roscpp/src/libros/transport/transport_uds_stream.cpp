@@ -52,12 +52,14 @@ TransportUDSStream::TransportUDSStream(PollSet* poll_set, int flags)
 
 TransportUDSStream::~TransportUDSStream()
 {
-  if (!server_uds_path_.empty())
-  {
-    int err = unlink(server_uds_path_.c_str());
-    if(err != 0)
+  if (!ROS_UDS_EXT_IS_ENABLE(ROS_UDS_EXT_ABSTRACT_SOCK_NAME)) {
+    if (!server_uds_path_.empty())
     {
+      int err = unlink(server_uds_path_.c_str());
+      if(err != 0)
+      {
         ROS_ERROR("Unable to remove %s: %s", server_uds_path_.c_str(), strerror(errno));
+      }
     }
   }
 
@@ -162,8 +164,15 @@ bool TransportUDSStream::connect(const std::string& uds_path)
   memset(&sock_addr, 0, sizeof (sock_addr));
   // configure the addr
   sock_addr.sun_family = AF_UNIX;
-  strncpy(sock_addr.sun_path, uds_path.c_str(), uds_path.length());
-  int sock_length = offsetof(struct sockaddr_un, sun_path) + uds_path.length();
+
+  int sock_length;
+  if (ROS_UDS_EXT_IS_ENABLE(ROS_UDS_EXT_ABSTRACT_SOCK_NAME)) {
+    strncpy(&sock_addr.sun_path[1], uds_path.c_str(), uds_path.length());
+    sock_length = offsetof(struct sockaddr_un, sun_path) + uds_path.length() + 1;
+  } else {
+    strncpy(sock_addr.sun_path, uds_path.c_str(), uds_path.length());
+    sock_length = offsetof(struct sockaddr_un, sun_path) + uds_path.length();
+  }
 
   int ret = ::connect(sock_, (sockaddr*) &sock_addr, sock_length);
   if (ret != 0)
@@ -205,10 +214,17 @@ bool TransportUDSStream::listen(int backlog, const AcceptCallback& accept_cb)
   memset(&sock_addr, 0, sizeof(sock_addr));
   sock_addr.sun_family = AF_UNIX;
 
-  static boost::atomic_uint32_t uds_counter(0);
-  server_uds_path_ = generateServerUDSPath(uds_counter++);
-  strncpy(sock_addr.sun_path, server_uds_path_.c_str(), server_uds_path_.length());
-  int sock_length = offsetof(struct sockaddr_un, sun_path) + server_uds_path_.length();
+  int sock_length;
+  if (ROS_UDS_EXT_IS_ENABLE(ROS_UDS_EXT_ABSTRACT_SOCK_NAME)) {
+    server_uds_path_ = generateServerUDSPath();
+    strncpy(&sock_addr.sun_path[1], server_uds_path_.c_str(), server_uds_path_.length());
+    sock_length = offsetof(struct sockaddr_un, sun_path) + server_uds_path_.length() + 1;
+  } else {
+    static boost::atomic_uint32_t uds_counter(0);
+    server_uds_path_ = generateServerUDSPath(uds_counter++);
+    strncpy(sock_addr.sun_path, server_uds_path_.c_str(), server_uds_path_.length());
+    sock_length = offsetof(struct sockaddr_un, sun_path) + server_uds_path_.length();
+  }
 
   if (sock_ <= 0)
   {

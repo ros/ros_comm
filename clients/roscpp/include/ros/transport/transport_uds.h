@@ -25,6 +25,15 @@
 
 #include <ros/transport/transport.h>
 
+/*! @name UDS Feature Bit Field
+    Unix Domain Socket Feature Bit Field controlled by environmental value from user.
+*/
+/* @{ */
+#define ROS_UDS_EXT_ABSTRACT_SOCK_NAME   0x00000001    /*!< enable abstract named socket */
+/* @} */
+
+#define ROS_UDS_EXT_IS_ENABLE(feature)   (TransportUDS::s_uds_feature_ & feature)
+
 namespace ros
 {
 
@@ -35,6 +44,7 @@ class TransportUDS : public Transport
 {
 public:
   static bool s_use_uds_;
+  static uint32_t s_uds_feature_;
 
   /**
    * \brief Returns the server UDS path this transport is using with
@@ -42,6 +52,10 @@ public:
   const std::string getServerUDSPath() { return server_uds_path_; }
 
 protected:
+  /**
+   * \brief Generate abstrace named socket".
+   */
+  const std::string generateServerUDSPath();
   /**
    * \brief Generate a string of UDS path like "${TMP}/ros-uds-[stream|datagram]-${PID}-${COUNTER}", the default value of ${TMP} is "/tmp".
    */
