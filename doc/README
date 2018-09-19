@@ -6,13 +6,6 @@ Index
    b) Additional Sub Features
    b) Limitations.
    c) Devel environment.
-3. Other Features
-   a) No rosout via roscore.
-4. Debian
-   a) CHANGELOG.rst
-   b) Debian metadata
-   c) Copylight
-
 
 1. Background/Overview
 ---------------------
@@ -54,44 +47,14 @@ Index
 
   c) Limitations.
      - the hybrid system is not supported if rosmaster is constructed via
-       ros_comm original.
+       ros_comm original(means it does not know Unix Domain Socket).
 
   d) Devel environment.
      - you can use this repository in your catkin environment, all you need to
        do is the following.
        # cd <CATKIN_WORkSPACE>/src
-       # git clone ros_comm-kinetic-devel
+       # git clone <repository>
        # cd <CATKIN_WORkSPACE>
        # catkin_make
        # source devel/setup.bash
-
-
-3. Other Features
------------------
-  a) No rosout via roscore.
-     if the environmental value "ROS_NO_ROSOUT" is exported, roscore does not
-     create rosout process. so after all logs via rosout will be vanished.
-
-
-4. Debian
----------
-  this description is most likely for developpers.
-
-  a) CHANGELOG.rst
-     we do not maintenance CHANGELOG.rst, just use the original files which
-     are provided ROS mainline repository.
-     (*) only exception, at the rebase from the mainline release, we will change
-         the date of the CHANGELOG.rst which belongs to our targeted packages.
-         so then the version number attached with debian package is newer than
-         original, and apt-get can automatically install our modified packages.
-  b) Debian metadata
-     - use the following command to make debian metadata on each package we modify.
-       # bloom-generate rosdebian --os-name ubuntu --os-version xenial --ros-distro kinetic
-     - the debian metadata should be created only for the packages we release.
-     - for test purpose, you can build the debian packages with the following command.
-       # fakeroot debian/rules binary
-  c) Copylight
-     - currently debian copylight is not our scope, since there are no sony specific pacakges.
-     - when the time comes, we will follow the basics below.
-       https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 
