@@ -53,7 +53,7 @@ get_uds_datagram_connected_out_count() {
 export -f get_uds_datagram_server_count
 export -f get_uds_datagram_connected_out_count
 
-sleep_time=2
+sleep_time=3
 if [ -f /etc/lsb-integrator ]; then
     ROSUDS_TEST_PLATFORM=`grep 'DISTRIB_CODENAME' /etc/lsb-integrator | awk -F'=' '{print $2}'`
     if [ "$ROSUDS_TEST_PLATFORM" = "BDK16-arm64" ]; then

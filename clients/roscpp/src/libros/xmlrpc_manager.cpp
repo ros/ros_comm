@@ -95,6 +95,8 @@ void getPid(const XmlRpcValue& params, XmlRpcValue& result)
 
 const ros::WallDuration CachedXmlRpcClient::s_zombie_time_(30.0); // reap after 30 seconds
 
+double XMLRPCManager::poll_timeout_ = 100.0; /* default 100msec */
+
 const XMLRPCManagerPtr& XMLRPCManager::instance()
 {
   static XMLRPCManagerPtr xmlrpc_manager = boost::make_shared<XMLRPCManager>();
@@ -266,7 +268,7 @@ void XMLRPCManager::serverThreadFunc()
     // Update the XMLRPC server, blocking for at most 100ms in select()
     {
       boost::mutex::scoped_lock lock(functions_mutex_);
-      server_.work(0.1);
+      server_.work(poll_timeout_/1000.0);
     }
 
     while (unbind_requested_)
