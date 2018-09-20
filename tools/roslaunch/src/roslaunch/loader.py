@@ -492,7 +492,7 @@ class Loader(object):
             import subprocess, shlex #shlex rocks
             try:
                 os_posix = os.name == "posix"
-                p = subprocess.Popen(shlex.split(command, posix=os_posix), stdout=subprocess.PIPE)
+                p = subprocess.Popen(shlex.split(command, posix=os_posix), stdout=subprocess.PIPE, shell=not os_posix)
                 c_value = p.communicate()[0]
                 if not isinstance(c_value, str):
                     c_value = c_value.decode('utf-8')
