@@ -26,12 +26,12 @@
  */
 
 #include "ros/ros.h"
-#include "roscpp_tutorials/TwoInts.h"
+#include "test_rosuds/TwoInts.h"
 
 static double s_sleep_sec=.0;
 
-bool add(roscpp_tutorials::TwoInts::Request  &req,
-         roscpp_tutorials::TwoInts::Response &res )
+bool add(test_rosuds::TwoInts::Request  &req,
+         test_rosuds::TwoInts::Response &res )
 {
   ros::WallDuration(s_sleep_sec).sleep();
   res.sum = req.a + req.b;

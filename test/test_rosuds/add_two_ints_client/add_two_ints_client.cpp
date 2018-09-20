@@ -26,7 +26,7 @@
  */
 
 #include "ros/ros.h"
-#include "roscpp_tutorials/TwoInts.h"
+#include "test_rosuds/TwoInts.h"
 #include <cstdlib>
 
 
@@ -45,8 +45,8 @@ int main(int argc, char **argv)
   }
 
   ros::NodeHandle n;
-  ros::ServiceClient client = n.serviceClient<roscpp_tutorials::TwoInts>("add_two_ints_uds");
-  roscpp_tutorials::TwoInts srv;
+  ros::ServiceClient client = n.serviceClient<test_rosuds::TwoInts>("add_two_ints_uds");
+  test_rosuds::TwoInts srv;
   srv.request.a = atoi(argv[1]);
   srv.request.b = atoi(argv[2]);
   bool ret = client.call(srv);

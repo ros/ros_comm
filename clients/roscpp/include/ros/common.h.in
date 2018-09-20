@@ -33,9 +33,6 @@
 #include <stddef.h>
 #include <string>
 
-// Define to 1 if you want to disable epoll feature.
-#cmakedefine ROS_EPOLL_EXT_DISABLE 1
-
 #include "ros/assert.h"
 #include "ros/forwards.h"
 #include "ros/serialized_message.h"
