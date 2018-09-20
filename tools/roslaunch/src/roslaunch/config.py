@@ -45,7 +45,11 @@ import rospkg
 import rospkg.distro
 import rosgraph.names
 import rosgraph.network
-import resource_retriever
+resource_retriever = None
+try:
+    import resource_retriever
+except ImportError:
+    pass
 
 from .core import Master, local_machine, is_machine_local, RLException
 import roslaunch.loader
@@ -449,7 +453,8 @@ def load_config_default(roslaunch_files, port, roslaunch_strs=None, loader=None,
 
     # load the roslaunch_files into the config
     for f in roslaunch_files:
-        f = resource_retriever.get_filename(f, False)
+        if resource_retriever:
+            f = resource_retriever.get_filename(f, False)
         if isinstance(f, tuple):
             f, args = f
         else:

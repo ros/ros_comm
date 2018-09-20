@@ -42,7 +42,11 @@ import itertools
 import sys
 import traceback
 import logging
-import resource_retriever
+resource_retriever = None
+try:
+    import resource_retriever
+except ImportError:
+    pass
 
 from xml.dom.minidom import parse, parseString
 from xml.dom import Node as DomNode #avoid aliasing
@@ -725,7 +729,8 @@ class XmlLoader(loader.Loader):
         
     def _parse_launch(self, filename, verbose):
         try:
-            filename = resource_retriever.get_filename(filename, False)
+            if resource_retriever:
+                filename = resource_retriever.get_filename(filename, False)
             if verbose:            
                 print("... loading XML file [%s]"%filename)
             root = parse(filename).getElementsByTagName('launch')
