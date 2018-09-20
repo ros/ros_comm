@@ -229,10 +229,11 @@ public:
 
           XmlRpc::XmlRpcValue proto;
           // validate the requestTopicUds response data
-          if (result.size() == 3
-                  && XMLRPCManager::instance()->validateXmlrpcResponse("requestTopicUds", result, proto)) {
-            // if requestTopicUDS has a response data, protocol data contains (TCPROS, uds_path);
-            if (proto.size() == 2) {
+          if (XMLRPCManager::instance()->validateXmlrpcResponse("requestTopicUds", result, proto)) {
+            // protocol data contains (TCPROS, uds_path) or (UDPROS, uds_path, ...)
+            std::string proto_name = proto[0];
+            if (proto_name == std::string("TCPROS") ||
+                proto_name == std::string("UDPROS")) {
               std::string uds_path = std::string(proto[1]);
               pending_connection_->setUDSPath(uds_path);
             }
