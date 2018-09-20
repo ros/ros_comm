@@ -37,8 +37,8 @@
 
 NAME = 'add_two_ints_server'
 
-# import the AddTwoInts service
-from rospy_tutorials.srv import *
+# import the TwoInts service
+from test_rosuds.srv import *
 import rospy
 import logging
 import time
@@ -57,7 +57,7 @@ def set_log(name):
 def add_two_ints(req):
     time.sleep(sleep_time)
     print("Returning [%s + %s = %s]" % (req.a, req.b, (req.a + req.b)))
-    return AddTwoIntsResponse(req.a + req.b)
+    return TwoIntsResponse(req.a + req.b)
 
 def add_two_ints_server():
     # log setting for debug
@@ -69,7 +69,7 @@ def add_two_ints_server():
     # set_log('rospy.service')
 
     rospy.init_node(NAME)
-    s = rospy.Service('add_two_ints_uds', AddTwoInts, add_two_ints)
+    s = rospy.Service('add_two_ints_uds', TwoInts, add_two_ints)
 
     # spin() keeps Python from exiting until node is shutdown
     rospy.spin()

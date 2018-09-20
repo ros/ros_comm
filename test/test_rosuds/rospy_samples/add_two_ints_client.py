@@ -41,8 +41,8 @@ import os
 
 import rospy
 
-# imports the AddTwoInts service
-from rospy_tutorials.srv import *
+# imports the TwoInts service
+from test_rosuds.srv import *
 import logging
 
 ## add two numbers using the add_two_ints service
@@ -77,14 +77,14 @@ def add_two_ints_client(x, y):
 
     try:
         # create a handle to the add_two_ints service
-        add_two_ints = rospy.ServiceProxy('add_two_ints_uds', AddTwoInts)
+        add_two_ints = rospy.ServiceProxy('add_two_ints_uds', TwoInts)
         print "Requesting %s+%s"%(x, y)
 
         # simplified style
         resp1 = add_two_ints(x, y)
 
         # formal style
-        resp2 = add_two_ints.call(AddTwoIntsRequest(x, y))
+        resp2 = add_two_ints.call(TwoIntsRequest(x, y))
 
         if not resp1.sum == (x + y):
             raise Exception("test failure, returned sum was %s"%resp1.sum)
