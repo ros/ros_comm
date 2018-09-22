@@ -133,7 +133,7 @@ public:
     virtual bool readEncryptedHeader(boost::function<bool(ros::Header&)> read_header, ros::Header& header, Buffer& header_buffer, ChunkedFile& file) = 0;
 };
 
-class NoEncryptor : public EncryptorBase
+class ROSBAG_STORAGE_DECL NoEncryptor : public EncryptorBase
 {
 public:
     NoEncryptor() { }
