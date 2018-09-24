@@ -35,6 +35,7 @@
 
 import threading
 from rosgraph.names import GLOBALNS, SEP
+from rospy.names import resolve_name
 
 class ParamServerCache(object):
     """
@@ -44,22 +45,24 @@ class ParamServerCache(object):
     
     def __init__(self):
         self.lock = threading.Lock()
-        self.d = {}
+        self.d = None
         self.notifier = None
         
     ## Delete parameter from cache
     def delete(self, key):
         with self.lock:
-            # borrowed from rosmaster/paramserver.py
+            # partially borrowed from rosmaster/paramserver.py
             if key == GLOBALNS:
                 raise KeyError("cannot delete root of parameter tree")
+            elif self.d is None:
+                raise KeyError(key)
             else:
                 # key is global, so first split is empty
                 namespaces = [x for x in key.split(SEP) if x]
                 # - last namespace is the actual key we're deleting
                 value_key = namespaces[-1]
                 namespaces = namespaces[:-1]
-                d = self.parameters
+                d = self.d
                 # - descend tree to the node we're setting
                 for ns in namespaces:
                     if type(d) != dict or ns not in d:
@@ -91,32 +94,25 @@ class ParamServerCache(object):
         @raise: KeyError if key is not already in the cache.
         """
         with self.lock:
-            # borrowed from rosmaster/paramserver.py
-            if key == GLOBALNS:
-                if type(value) != dict:
-                    raise TypeError("cannot set root of parameter tree to "
-                                    "non-dictionary")
-                self.d = value
-            else:
+            # partially borrowed from rosmaster/paramserver.py
+            namespaces = [x for x in key.split(SEP) if x]
+            # - last namespace is the actual key we're storing in
+            value_key = namespaces[-1]
+            namespaces = namespaces[:-1]
+            d = self.d
+            if d is None:
+                raise KeyError(key)
+            # - descend tree to the node we're setting
+            for ns in namespaces:
+                if ns not in d:
+                    raise KeyError(key)
+                else:
+                    d = d[ns]
 
-                namespaces = [x for x in key.split(SEP) if x]
-                # - last namespace is the actual key we're storing in
-                value_key = namespaces[-1]
-                namespaces = namespaces[:-1]
-                d = self.d
-                # - descend tree to the node we're setting
-                for ns in namespaces:
-                    if ns not in d:
-                        new_d = {}
-                        d[ns] = new_d
-                        d = new_d
-                    else:
-                        val = d[ns]
-                        # implicit type conversion of value to namespace
-                        if type(val) != dict:
-                            d[ns] = val = {}
-                        d = val
-                d[value_key] = value
+            if value_key not in d:
+                raise KeyError(key)
+
+            d[value_key] = value
             if self.notifier is not None:
                 self.notifier(key, value)
                 
@@ -130,18 +126,18 @@ class ParamServerCache(object):
         @type  value: str
         """
         with self.lock:
-            # borrowed from rosmaster/paramserver.py
+            # partially borrowed from rosmaster/paramserver.py
             if key == GLOBALNS:
                 if type(value) != dict:
                     raise TypeError("cannot set root of parameter tree to "
                                     "non-dictionary")
-                self.parameters = value
+                self.d = value
             else:
                 namespaces = [x for x in key.split(SEP) if x]
                 # - last namespace is the actual key we're storing in
                 value_key = namespaces[-1]
                 namespaces = namespaces[:-1]
-                d = self.d
+                d = self.d or {}
                 # - descend tree to the node we're setting
                 for ns in namespaces:
                     if ns not in d:
@@ -166,10 +162,13 @@ class ParamServerCache(object):
         """
         with self.lock:
             # borrowed from rosmaster/paramserver.py
+            resolved_key = resolve_name(key)
+            if self.d is None:
+                raise KeyError(key)
             val = self.d
-            if key != GLOBALNS:
+            if resolved_key != GLOBALNS:
                 # split by the namespace separator, ignoring empty splits
-                namespaces = [x for x in key.split(SEP)[1:] if x]
+                namespaces = [x for x in resolved_key.split(SEP) if x]
                 for ns in namespaces:
                     if not type(val) == dict:
                         raise KeyError(val)
