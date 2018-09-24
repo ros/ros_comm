@@ -36,7 +36,6 @@
 import threading
 from rosgraph.names import GLOBALNS, SEP
 
-
 class ParamServerCache(object):
     """
     Cache of values on the parameter server. Implementation
@@ -120,7 +119,7 @@ class ParamServerCache(object):
                 d[value_key] = value
             if self.notifier is not None:
                 self.notifier(key, value)
-
+                
     def set(self, key, value):
         """
         Set the value of the parameter in the cache. This is a
