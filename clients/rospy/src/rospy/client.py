@@ -469,6 +469,29 @@ def get_param(param_name, default=_unspecified):
         else:
             raise
 
+
+def get_param_cached(param_name, default=_unspecified):
+    """
+    Retrieve a parameter from the param server with local caching
+
+    NOTE: this method is thread-safe.
+
+    @param default: (optional) default value to return if key is not set
+    @type  default: any
+    @return: parameter value
+    @rtype: XmlRpcLegalValue
+    @raise ROSException: if parameter server reports an error
+    @raise KeyError: if value not set and default is not given
+    """
+    try:
+        _init_param_server()
+        return _param_server.get_param_cached(param_name)
+    except KeyError:
+        if default != _unspecified:
+            return default
+        else:
+            raise
+
 def get_param_names():
     """
     Retrieve list of parameter names.
