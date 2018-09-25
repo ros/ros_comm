@@ -48,7 +48,7 @@ def ip_check(ctx):
     # best we can do is compare roslib's routine against socket resolution and make sure they agree
     local_addrs = rosgraph.network.get_local_addresses()
 
-    if use_ipv6():
+    if rosgraph.network.use_ipv6():
         resolved_ips = [host[4][0] for host in socket.getaddrinfo(socket.gethostname(), 0, 0, 0, socket.SOL_TCP)]
     else:
         resolved_ips = [host[4][0] for host in socket.getaddrinfo(socket.gethostname(), 0, socket.AF_INET, 0, socket.SOL_TCP)]
