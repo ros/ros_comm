@@ -291,7 +291,7 @@ class ROSLaunchConfig(object):
         """
         self.clear_params.append(param)
 
-    def add_param(self, p, filename=None, verbose=True):
+    def add_param(self, p, filename=None, verbose=True, override_params=True):
         """
         Declare a parameter to be set on the param server before launching nodes
         @param p: parameter instance
@@ -305,6 +305,8 @@ class ROSLaunchConfig(object):
                 self.logger.debug("[%s] overriding parameter [%s]"%(filename, p.key))
             else:
                 self.logger.debug("overriding parameter [%s]"%p.key)
+            if not override_params:
+                return
         # check for parent conflicts
         for parent_key in [pk for pk in namespaces_of(key) if pk in self.params]:
             self.add_config_error("parameter [%s] conflicts with parent parameter [%s]"%(key, parent_key))

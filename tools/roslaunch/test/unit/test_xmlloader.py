@@ -78,7 +78,7 @@ class RosLaunchMock(object):
     def add_executable(self, t):
         self.executables.append(t)        
 
-    def add_param(self, p, filename=None, verbose=True):
+    def add_param(self, p, filename=None, verbose=True, override_params=True):
         matches = [x for x in self.params if x.key == p.key]
         for m in matches:
             self.params.remove(m)
