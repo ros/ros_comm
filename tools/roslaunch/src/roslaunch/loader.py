@@ -175,7 +175,7 @@ class LoaderContext(object):
         # when this context was created via include, was pass_all_args set?
         self.pass_all_args = False
 
-    def add_param(self, p):
+    def add_param(self, p, override_params=True):
         """
         Add a ~param to the context. ~params are evaluated by any node
         declarations that occur later in the same context.
