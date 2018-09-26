@@ -327,7 +327,7 @@ class Loader(object):
     validation of the property values.
     """
 
-    def add_param(self, ros_config, param_name, param_value, verbose=True):
+    def add_param(self, ros_config, param_name, param_value, verbose=True, override_params=True):
         """
         Add L{Param} instances to launch config. Dictionary values are
         unrolled into individual parameters.
@@ -354,9 +354,9 @@ class Loader(object):
         if type(param_value) == dict:
             # unroll params
             for k, v in param_value.items():
-                self.add_param(ros_config, ns_join(param_name, k), v, verbose=verbose)
+                self.add_param(ros_config, ns_join(param_name, k), v, verbose=verbose, override_params=override_params)
         else:
-            ros_config.add_param(Param(param_name, param_value), verbose=verbose)
+            ros_config.add_param(Param(param_name, param_value), verbose=verbose, override_params=override_params)
         
     def load_rosparam(self, context, ros_config, cmd, param, file_, text, verbose=True, subst_function=None):
         """
@@ -374,8 +374,8 @@ class Loader(object):
         @type  text: str
         @raise ValueError: if parameters cannot be processed into valid rosparam setting
         """
-        if not cmd in ('load', 'dump', 'delete'):
-            raise ValueError("command must be 'load', 'dump', or 'delete'")
+        if not cmd in ('load', 'load_no_override', 'dump', 'delete'):
+            raise ValueError("command must be 'load', 'load_no_override', 'dump', or 'delete'")
         if file_ is not None:
             if cmd == 'load' and not os.path.isfile(file_):
                 raise ValueError("file does not exist [%s]"%file_)
@@ -388,7 +388,7 @@ class Loader(object):
             ros_config.add_executable(RosbinExecutable('rosparam', (cmd, file_, full_param), PHASE_SETUP))
         elif cmd == 'delete':
             ros_config.add_executable(RosbinExecutable('rosparam', (cmd, full_param), PHASE_SETUP))
-        elif cmd == 'load':
+        elif cmd == 'load' or cmd == 'load_no_override':
             # load YAML text
             if file_:
                 with open(file_, 'r') as f:
@@ -427,7 +427,10 @@ class Loader(object):
             if not param and type(data) != dict:
                 raise ValueError("'param' attribute must be set for non-dictionary values")
 
-            self.add_param(ros_config, full_param, data, verbose=verbose)
+            override_params = True
+            if cmd == 'load_no_override':
+                override_params = False
+            self.add_param(ros_config, full_param, data, verbose=verbose, override_params=override_params)
 
         else:
             raise ValueError("unknown command %s"%cmd)
