@@ -15,6 +15,7 @@ catkin_package(CATKIN_DEPENDS message_runtime std_msgs)
 macro(test_rosuds_build T)
   add_executable(${T}_uds ${T}/${T}.cpp)
   target_link_libraries(${T}_uds ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+  add_dependencies(${T}_uds test_rosuds_gencpp)
 endmacro()
 
 foreach(dir
