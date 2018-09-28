@@ -209,7 +209,7 @@ def setup_env(node, machine, master_uri, env=None):
         if ns[-1] == '/':
             ns = ns[:-1]
         if ns:
-            d[rosgraph.ROS_NAMESPACE] = ns 
+            d[rosgraph.ROS_NAMESPACE] = str(ns)
         for name, value in node.env_args:
             d[str(name)] = str(value)
 
