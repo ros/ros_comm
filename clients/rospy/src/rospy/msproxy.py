@@ -117,6 +117,10 @@ class MasterProxy(object):
         #NOTE: remapping occurs here!
         resolved_key = rospy.names.resolve_name(key)
         with self._lock:
+            try:
+                return rospy.impl.paramserver.get_param_server_cache().get(resolved_key)
+            except KeyError:
+                pass
             code, msg, value = self.target.getParam(rospy.names.get_caller_id(), resolved_key)
         if code != 1: #unwrap value with Python semantics
             raise KeyError(key)
