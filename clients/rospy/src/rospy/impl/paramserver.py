@@ -35,7 +35,6 @@
 
 import threading
 from rosgraph.names import GLOBALNS, SEP
-from rospy.names import resolve_name
 
 class ParamServerCache(object):
     """
@@ -137,7 +136,9 @@ class ParamServerCache(object):
                 # - last namespace is the actual key we're storing in
                 value_key = namespaces[-1]
                 namespaces = namespaces[:-1]
-                d = self.d or {}
+                if self.d is None:
+                    self.d = {}
+                d = self.d
                 # - descend tree to the node we're setting
                 for ns in namespaces:
                     if ns not in d:
@@ -162,13 +163,12 @@ class ParamServerCache(object):
         """
         with self.lock:
             # borrowed from rosmaster/paramserver.py
-            resolved_key = resolve_name(key)
             if self.d is None:
                 raise KeyError(key)
             val = self.d
-            if resolved_key != GLOBALNS:
+            if key != GLOBALNS:
                 # split by the namespace separator, ignoring empty splits
-                namespaces = [x for x in resolved_key.split(SEP) if x]
+                namespaces = [x for x in key.split(SEP) if x]
                 for ns in namespaces:
                     if not type(val) == dict:
                         raise KeyError(val)
