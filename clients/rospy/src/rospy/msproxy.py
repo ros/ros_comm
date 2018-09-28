@@ -165,6 +165,8 @@ class MasterProxy(object):
                 raise KeyError(key)
             # set the value in the cache so that it's marked as subscribed
             rospy.impl.paramserver.get_param_server_cache().set(resolved_key, value)
+            if isinstance(value, dict) and not value:
+                raise KeyError(key)
             return value
         
     def __delitem__(self, key):

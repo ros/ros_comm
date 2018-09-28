@@ -173,6 +173,8 @@ class ParamServerCache(object):
                     if not type(val) == dict:
                         raise KeyError(val)
                     val = val[ns]
+            if isinstance(val, dict) and not val:
+                raise KeyError(key)
             return val
 
 _param_server_cache = None
