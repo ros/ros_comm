@@ -336,6 +336,9 @@ def rosnode_ping(node_name, max_count=None, verbose=False):
                 if verbose:
                     print("xmlrpc reply from %s\ttime=%fms"%(node_api, dur))
                 # 1s between pings
+            except socket.timeout:
+                print("connection to [%s] timed out"%node_name, file=sys.stderr)
+                return False
             except socket.error as e:
                 # 3786: catch ValueError on unpack as socket.error is not always a tuple
                 try:
