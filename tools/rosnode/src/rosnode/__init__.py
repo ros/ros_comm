@@ -361,7 +361,7 @@ def rosnode_ping(node_name, max_count=None, verbose=False):
                             continue
                         print("ERROR: connection refused to [%s]"%(node_api), file=sys.stderr)
                     else:
-                        print("connection to [%s] timed out"%node_name, file=sys.stderr)
+                        print("connection to [%s] failed"%node_name, file=sys.stderr)
                     return False
                 except ValueError:
                     print("unknown network error contacting node: %s"%(str(e)))
