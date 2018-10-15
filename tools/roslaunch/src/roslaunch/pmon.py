@@ -246,7 +246,9 @@ class Process(object):
         if self.time_of_death is None:
             if self.is_alive():
                 return False
-        return (self.time_of_death + self.respawn_delay) - time.time()
+        due_interval = (self.time_of_death + self.respawn_delay) - time.time()
+        #if due at this moment, treat it as over-due, return a negative value
+        return -0.001 if due_interval == 0.0 else due_interval
 
     def stop(self, errors=None):
         """
