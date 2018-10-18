@@ -1346,7 +1346,8 @@ class TCPROSUDSTransport(Transport):
                         if not self.done and not is_shutdown():
                             msgs_callback(msgs, self)
                     else:
-                        self._reconnect()
+                        # UDS does not need to reconnect here, it can be closed if the socket is disconnect.
+                        self.close()
 
                 except TransportException as e:
                     # set socket to None so we reconnect
