@@ -92,6 +92,9 @@ try:
         base, ext = os.path.splitext(this_file)
         if ext == '.pyc':
             this_file = base + '.py'
+        
+        if sys.platform in ['win32']:
+            this_file = this_file.replace('\\', r'\\')
 
         for i, loc in enumerate(['module', 'function', 'method']):
             if loc == 'module':
