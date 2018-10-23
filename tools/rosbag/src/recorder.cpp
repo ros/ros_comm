@@ -405,7 +405,7 @@ void Recorder::startWriting() {
     {
         std_msgs::String msg;
         msg.data = target_filename_.c_str();
-        pub.publish(msg);
+        pub_begin_write.publish(msg);
     }
 }
 
