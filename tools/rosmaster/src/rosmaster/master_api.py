@@ -84,6 +84,8 @@ _logger = logging.getLogger("rosmaster.master")
 
 LOG_API = False
 
+_lock = threading.Lock()
+
 def mloginfo(msg, *args):
     """
     Info-level master log statements. These statements may be printed
@@ -207,7 +209,9 @@ def publisher_update_task(api, topic, pub_uris):
     start_sec = time.time()
     try:
         #TODO: check return value for errors so we can unsubscribe if stale
+        _lock.acquire()
         ret = xmlrpcapi(api).publisherUpdate('/master', topic, pub_uris)
+        _lock.release()
         msg_suffix = "result=%s" % ret
     except Exception as ex:
         msg_suffix = "exception=%s" % ex
@@ -228,7 +232,9 @@ def service_update_task(api, service, uri):
     @type  uri: str
     """
     mloginfo("serviceUpdate[%s, %s] -> %s",service, uri, api)
+    _lock.acquire()
     xmlrpcapi(api).serviceUpdate('/master', service, uri)
+    _lock.release()
 
 ###################################################
 # Master Implementation
@@ -575,7 +581,9 @@ class ROSMasterHandler(object):
         @type  param_value: str
         """
         mloginfo("paramUpdate[%s]", param_key)
+        _lock.acquire()
         code, _, _ = xmlrpcapi(caller_api).paramUpdate('/master', param_key, param_value)
+        _lock.release()
         if code == -1:
             try:
                 # ps_lock is required due to potential self.reg_manager modification
