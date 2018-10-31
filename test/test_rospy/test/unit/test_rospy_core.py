@@ -116,6 +116,8 @@ class TestRospyCore(unittest.TestCase):
             base, ext = os.path.splitext(this_file)
             if ext == '.pyc':
                 this_file = base + '.py'
+            if os.sep == '\\':
+                this_file = this_file.replace(os.sep, r'\\')
 
             try:
                 # hack to replace the stream handler with a debug version
