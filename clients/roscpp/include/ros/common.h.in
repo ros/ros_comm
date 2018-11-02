@@ -38,6 +38,7 @@
 #include "ros/serialized_message.h"
 
 #include <boost/shared_array.hpp>
+#include <boost/version.hpp>
 
 #define ROS_VERSION_MAJOR @roscpp_VERSION_MAJOR@
 #define ROS_VERSION_MINOR @roscpp_VERSION_MINOR@
@@ -47,6 +48,18 @@
 
 #define ROS_VERSION_GE(major1, minor1, patch1, major2, minor2, patch2) (ROS_VERSION_COMBINED(major1, minor1, patch1) >= ROS_VERSION_COMBINED(major2, minor2, patch2))
 #define ROS_VERSION_MINIMUM(major, minor, patch) ROS_VERSION_GE(ROS_VERSION_MAJOR, ROS_VERSION_MINOR, ROS_VERSION_PATCH, major, minor, patch)
+
+// check if we might need to include our own backported version boost::condition_variable
+// in order to use CLOCK_MONOTONIC for the condition variable and for the SteadyTimer
+#cmakedefine ROSCPP_USE_BACKPORTED_BOOST_CONDITION_VARIABLE_IMPLEMENTATION
+#ifdef ROSCPP_USE_BACKPORTED_BOOST_CONDITION_VARIABLE_IMPLEMENTATION
+  // use backported version of boost condition variable, see https://svn.boost.org/trac/boost/ticket/6377
+  #define ROSCPP_BOOST_CONDITION_VARIABLE_HEADER "boost_161_condition_variable.h"
+  #define ROSCPP_BOOST_CONDITION_VARIABLE boost_161::condition_variable
+#else
+  #define ROSCPP_BOOST_CONDITION_VARIABLE_HEADER <boost/thread/condition_variable.hpp>
+  #define ROSCPP_BOOST_CONDITION_VARIABLE boost::condition_variable
+#endif
 
 #include <ros/macros.h>
 

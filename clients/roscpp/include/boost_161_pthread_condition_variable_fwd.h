@@ -1,38 +1,22 @@
-#ifndef BOOST_THREAD_PTHREAD_CONDITION_VARIABLE_FWD_HPP
-#define BOOST_THREAD_PTHREAD_CONDITION_VARIABLE_FWD_HPP
+#ifndef BOOST_161_THREAD_PTHREAD_CONDITION_VARIABLE_FWD_HPP
+#define BOOST_161_THREAD_PTHREAD_CONDITION_VARIABLE_FWD_HPP
 // Distributed under the Boost Software License, Version 1.0. (See
 // accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 // (C) Copyright 2007-8 Anthony Williams
 // (C) Copyright 2011-2012 Vicente J. Botet Escriba
 
-// define to check if this backported version was included
-#define USING_BACKPORTED_BOOST_CONDITION_VARIABLE 1
-
-#include <boost/assert.hpp>
-#include <boost/throw_exception.hpp>
-#include <pthread.h>
-#include <boost/thread/cv_status.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/lock_types.hpp>
-#include <boost/thread/thread_time.hpp>
-#include <boost/thread/pthread/timespec.hpp>
-#if defined BOOST_THREAD_USES_DATETIME
-#include <boost/thread/xtime.hpp>
-#endif
-
-#ifdef BOOST_THREAD_USES_CHRONO
-#include <boost/chrono/system_clocks.hpp>
-#include <boost/chrono/ceil.hpp>
-#endif
-#include <boost/thread/detail/delete.hpp>
-#include <boost/date_time/posix_time/posix_time_duration.hpp>
+// include upstream
+#include <boost/thread/pthread/condition_variable_fwd.hpp>
 
 #include <boost/config/abi_prefix.hpp>
 
-namespace boost
+namespace boost_161
 {
-  namespace detail {
+  using namespace boost;
+  namespace detail = boost::detail;
+
+  namespace detail_161 {
     inline int monotonic_pthread_cond_init(pthread_cond_t& cond) {
 
 #ifdef BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
@@ -100,7 +84,7 @@ namespace boost
                 boost::throw_exception(thread_resource_error(res, "boost::condition_variable::condition_variable() constructor failed in pthread_mutex_init"));
             }
 #endif
-            res = detail::monotonic_pthread_cond_init(cond);
+            res = detail_161::monotonic_pthread_cond_init(cond);
             if (res)
             {
 #if defined BOOST_THREAD_PROVIDES_INTERRUPTIONS
