@@ -1,5 +1,5 @@
-#ifndef BOOST_THREAD_CONDITION_VARIABLE_PTHREAD_HPP
-#define BOOST_THREAD_CONDITION_VARIABLE_PTHREAD_HPP
+#ifndef BOOST_161_THREAD_CONDITION_VARIABLE_PTHREAD_HPP
+#define BOOST_161_THREAD_CONDITION_VARIABLE_PTHREAD_HPP
 // Distributed under the Boost Software License, Version 1.0. (See
 // accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -7,57 +7,15 @@
 // (C) Copyright 2011-2012 Vicente J. Botet Escriba
 
 // make sure we include our backported version first!!
-// (before the system version might be included via some of the other header files)
 #include "boost_161_pthread_condition_variable_fwd.h"
 
-#include <boost/thread/pthread/timespec.hpp>
-#include <boost/thread/pthread/pthread_mutex_scoped_lock.hpp>
-#if defined BOOST_THREAD_PROVIDES_INTERRUPTIONS
-#include <boost/thread/pthread/thread_data.hpp>
-#endif
-//#include <boost/thread/pthread/condition_variable_fwd.hpp>
-#ifdef BOOST_THREAD_USES_CHRONO
-#include <boost/chrono/system_clocks.hpp>
-#include <boost/chrono/ceil.hpp>
-#endif
-#include <boost/thread/detail/delete.hpp>
+// include upstream
+#include <boost/thread/pthread/condition_variable.hpp>
 
 #include <boost/config/abi_prefix.hpp>
 
-namespace boost
+namespace boost_161
 {
-#if defined BOOST_THREAD_PROVIDES_INTERRUPTIONS
-    namespace this_thread
-    {
-        void BOOST_THREAD_DECL interruption_point();
-    }
-#endif
-
-    namespace thread_cv_detail
-    {
-        template<typename MutexType>
-        struct lock_on_exit
-        {
-            MutexType* m;
-
-            lock_on_exit():
-                m(0)
-            {}
-
-            void activate(MutexType& m_)
-            {
-                m_.unlock();
-                m=&m_;
-            }
-            ~lock_on_exit()
-            {
-                if(m)
-                {
-                    m->lock();
-                }
-           }
-        };
-    }
 
     inline void condition_variable::wait(unique_lock<mutex>& m)
     {
@@ -154,7 +112,7 @@ namespace boost
             {
                 boost::throw_exception(thread_resource_error(res, "boost::condition_variable_any::condition_variable_any() failed in pthread_mutex_init"));
             }
-            int const res2 = detail::monotonic_pthread_cond_init(cond);
+            int const res2 = detail_161::monotonic_pthread_cond_init(cond);
             if(res2)
             {
                 BOOST_VERIFY(!pthread_mutex_destroy(&internal_mutex));
