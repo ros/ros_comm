@@ -317,19 +317,6 @@ void start()
     }
   }
 
-  char* env_poll_timeout = NULL;
-  env_poll_timeout = getenv("ROS_POLLMGR_POLL_TIMEOUT");
-  if (env_poll_timeout != NULL) {
-    PollManager::poll_timeout_ = atoi(env_poll_timeout);
-    ROSCPP_LOG_DEBUG("ROS_POLLMGR_POLL_TIMEOUT is %d", PollManager::poll_timeout_);
-  }
-
-  env_poll_timeout = getenv("ROS_XMLRPCMGR_POLL_TIMEOUT");
-  if (env_poll_timeout != NULL) {
-    XMLRPCManager::poll_timeout_ = atof(env_poll_timeout);
-    ROSCPP_LOG_DEBUG("ROS_XMLRPCMGR_POLL_TIMEOUT is %f", XMLRPCManager::poll_timeout_);
-  }
-
   char* env_feature = NULL;
   env_feature = getenv("ROS_UDS_EXT_FEATURE");
 

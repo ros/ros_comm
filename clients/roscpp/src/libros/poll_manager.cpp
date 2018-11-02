@@ -33,8 +33,6 @@
 namespace ros
 {
 
-int PollManager::poll_timeout_ = 100; /* default 100msec */
-
 const PollManagerPtr& PollManager::instance()
 {
   static PollManagerPtr poll_manager = boost::make_shared<PollManager>();
@@ -87,7 +85,7 @@ void PollManager::threadFunc()
       return;
     }
 
-    poll_set_.update(poll_timeout_);
+    poll_set_.update(100);
   }
 }
 

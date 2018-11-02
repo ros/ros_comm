@@ -48,7 +48,6 @@ typedef boost::function<void(void)> VoidFunc;
 class ROSCPP_DECL PollManager
 {
 public:
-  static int poll_timeout_;
   static const PollManagerPtr& instance();
 
   PollManager();

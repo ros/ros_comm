@@ -94,7 +94,6 @@ typedef boost::function<void(XmlRpc::XmlRpcValue&, XmlRpc::XmlRpcValue&)> XMLRPC
 class ROSCPP_DECL XMLRPCManager
 {
 public:
-  static double poll_timeout_;
   static const XMLRPCManagerPtr& instance();
 
   XMLRPCManager();
