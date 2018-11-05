@@ -79,6 +79,7 @@ def record_cmd(argv):
 
     parser.add_option("-a", "--all",           dest="all",           default=False, action="store_true",          help="record all topics")
     parser.add_option("-e", "--regex",         dest="regex",         default=False, action="store_true",          help="match topics using regular expressions")
+    parser.add_option("-p", "--publish",       dest="publish",       default=False, action="store_true",          help="publish a msg when the record begin")
     parser.add_option("-x", "--exclude",       dest="exclude_regex", default="",    action="store",               help="exclude topics matching the follow regular expression (subtracts from -a or regex)")
     parser.add_option("-q", "--quiet",         dest="quiet",         default=False, action="store_true",          help="suppress console output")
     parser.add_option("-o", "--output-prefix", dest="prefix",        default=None,  action="store",               help="prepend PREFIX to beginning of bag name (name will always end with date stamp)")
@@ -119,6 +120,7 @@ def record_cmd(argv):
     if options.exclude_regex: cmd.extend(["--exclude", options.exclude_regex])
     if options.all:           cmd.extend(["--all"])
     if options.regex:         cmd.extend(["--regex"])
+    if options.publish:       cmd.extend(["--publish"])
     if options.compression:   cmd.extend(["--%s" % options.compression])
     if options.split:
         if not options.duration and not options.size:
