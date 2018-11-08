@@ -163,6 +163,7 @@ void TransportUDSStream::setKeepAlive(bool use)
 bool TransportUDSStream::connect(const std::string& uds_path)
 {
   sock_ = socket(AF_UNIX, SOCK_STREAM, 0);
+  connected_uds_path_ = uds_path;
 
   if (sock_ == ROS_INVALID_SOCKET)
   {

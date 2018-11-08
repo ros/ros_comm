@@ -45,6 +45,7 @@
 #include "ros/poll_manager.h"
 #include "ros/transport/transport_tcp.h"
 #include "ros/transport/transport_uds.h"
+#include "ros/transport/transport_uds_stream.h"
 #include "ros/timer_manager.h"
 #include "ros/callback_queue.h"
 #include "ros/internal_timer_manager.h"
@@ -219,25 +220,49 @@ void TransportPublisherLink::onRetryTimer(const ros::SteadyTimerEvent&)
     {
       std::string topic = parent ? parent->getName() : "unknown";
 
-      TransportTCPPtr old_transport = boost::dynamic_pointer_cast<TransportTCP>(connection_->getTransport());
-      ROS_ASSERT(old_transport);
-      const std::string& host = old_transport->getConnectedHost();
-      int port = old_transport->getConnectedPort();
-
-      ROSCPP_CONN_LOG_DEBUG("Retrying connection to [%s:%d] for topic [%s]", host.c_str(), port, topic.c_str());
-
-      TransportTCPPtr transport(boost::make_shared<TransportTCP>(&PollManager::instance()->getPollSet()));
-      if (transport->connect(host, port))
+      if (getTransportInfo().find("UDS") != std::string::npos)
       {
-        ConnectionPtr connection(boost::make_shared<Connection>());
-        connection->initialize(transport, false, HeaderReceivedFunc());
-        initialize(connection);
+        // for UDS Transport
+        TransportUDSStreamPtr old_transport = boost::dynamic_pointer_cast<TransportUDSStream>(connection_->getTransport());
+        ROS_ASSERT(old_transport);
+        const std::string& uds_path = old_transport->getConnectedUDSPath();
 
-        ConnectionManager::instance()->addConnection(connection);
-      }
-      else
-      {
-        ROSCPP_CONN_LOG_DEBUG("connect() failed when retrying connection to [%s:%d] for topic [%s]", host.c_str(), port, topic.c_str());
+        ROSCPP_CONN_LOG_DEBUG("Retrying connection to [%s] for topic [%s]", uds_path.c_str(), topic.c_str());
+
+        TransportUDSStreamPtr transport(boost::make_shared<TransportUDSStream>(&PollManager::instance()->getPollSet()));
+        if (transport->connect(uds_path))
+        {
+          ConnectionPtr connection(boost::make_shared<Connection>());
+          connection->initialize(transport, false, HeaderReceivedFunc());
+          initialize(connection);
+
+          ConnectionManager::instance()->addConnection(connection);
+        }
+        else
+        {
+          ROSCPP_CONN_LOG_DEBUG("connect() failed when retrying connection to [%s] for topic [%s]", uds_path.c_str(), topic.c_str());
+        }
+      } else {
+        TransportTCPPtr old_transport = boost::dynamic_pointer_cast<TransportTCP>(connection_->getTransport());
+        ROS_ASSERT(old_transport);
+        const std::string& host = old_transport->getConnectedHost();
+        int port = old_transport->getConnectedPort();
+
+        ROSCPP_CONN_LOG_DEBUG("Retrying connection to [%s:%d] for topic [%s]", host.c_str(), port, topic.c_str());
+
+        TransportTCPPtr transport(boost::make_shared<TransportTCP>(&PollManager::instance()->getPollSet()));
+        if (transport->connect(host, port))
+        {
+          ConnectionPtr connection(boost::make_shared<Connection>());
+          connection->initialize(transport, false, HeaderReceivedFunc());
+          initialize(connection);
+
+          ConnectionManager::instance()->addConnection(connection);
+        }
+        else
+        {
+          ROSCPP_CONN_LOG_DEBUG("connect() failed when retrying connection to [%s:%d] for topic [%s]", host.c_str(), port, topic.c_str());
+        }
       }
     }
     else if (parent)
@@ -254,13 +279,6 @@ void TransportPublisherLink::onConnectionDropped(const ConnectionPtr& conn, Conn
   (void)conn;
   if (dropping_)
   {
-    return;
-  }
-
-  if (getTransportInfo().find("UDS") != std::string::npos)
-  {
-    // only for UDS Transport
-    drop();
     return;
   }
 

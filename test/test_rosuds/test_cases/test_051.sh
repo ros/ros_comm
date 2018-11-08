@@ -36,6 +36,9 @@ fi
 kill -INT ${TALKERPID1}
 wait ${TALKERPID1}
 
+# pub exit, but sub will try to reconnect after a while.
+# so need to sleep a while to get the new connected out count
+sleep $((SLEEP_TIME*2))
 EXPECTED_SERVER_COUNT=$((OLD_SERVER_COUNT))
 EXPECTED_CONNECTED_OUT_COUNT=$((OLD_CONNECTED_OUT_COUNT))
 

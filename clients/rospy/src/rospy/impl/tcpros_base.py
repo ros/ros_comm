@@ -289,7 +289,11 @@ class TCPUDSServer(TCPServer):
         logdebug('binding to ' + str(self.uds_path))
         server_sock.bind(uds_path)
         logdebug('bound to ' + str(self.uds_path))
-        server_sock.listen(5)
+        # Fix bug that rostest-test_random_record can't get enough records
+        # with UDS while there are 10 connections(subscribers) at the same time.
+        # And then the error bag result file lead rostest-test_random_play error.
+        # Keep the backlog number with roscpp's MAX_TCPROS_CONN_QUEUE(100)
+        server_sock.listen(100)
         return server_sock
 
     def shutdown(self):
@@ -1042,6 +1046,7 @@ class TCPROSUDSTransport(Transport):
         self.socket = None
         self.endpoint_id = 'unknown'
         self.callerid_pub = 'unknown'
+        self.uds_path = None  # for reconnection
 
         if python3 == 0:  # Python 2.x
             self.read_buff = StringIO()
@@ -1124,6 +1129,7 @@ class TCPROSUDSTransport(Transport):
         # now we can proceed with trying to connect.
         try:
             self.endpoint_id = endpoint_id
+            self.uds_path = dest_uds_path
             s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             if _is_use_tcp_keepalive():
                 # turn on KEEPALIVE
@@ -1327,8 +1333,25 @@ class TCPROSUDSTransport(Transport):
     def _reconnect(self):
         # This reconnection logic is very hacky right now.  I need to
         # rewrite the I/O core so that this is handled more centrally.
-        # It is not necessary for UDS.
-        pass
+        if self.uds_path is None:
+            raise ROSInitException("internal error with reconnection state: address not stored")
+
+        interval = 0.5  # seconds
+        while self.socket is None and not self.done and not rospy.is_shutdown():
+            try:
+                # set a timeout so that we can continue polling for
+                # exit.  30. is a bit high, but I'm concerned about
+                # embedded platforms.  To do this properly, we'd have
+                # to move to non-blocking routines.
+                self.connect(self.uds_path, self.endpoint_id, timeout=30.)
+            except TransportInitError:
+                self.socket = None
+
+            if self.socket is None and interval < 30.:
+                # exponential backoff (maximum 32 seconds)
+                interval = interval * 2
+
+            time.sleep(interval)
 
     def receive_loop(self, msgs_callback):
         """
@@ -1346,8 +1369,7 @@ class TCPROSUDSTransport(Transport):
                         if not self.done and not is_shutdown():
                             msgs_callback(msgs, self)
                     else:
-                        # UDS does not need to reconnect here, it can be closed if the socket is disconnect.
-                        self.close()
+                        self._reconnect()
 
                 except TransportException as e:
                     # set socket to None so we reconnect

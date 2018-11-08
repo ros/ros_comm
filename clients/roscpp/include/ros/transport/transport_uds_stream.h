@@ -93,6 +93,8 @@ public:
 
   void setKeepAlive(bool use);
 
+  const std::string& getConnectedUDSPath() { return connected_uds_path_; }
+
   // overrides from Transport
   virtual int32_t read(uint8_t* buffer, uint32_t size);
   virtual int32_t write(uint8_t* buffer, uint32_t size);
@@ -140,6 +142,8 @@ private:
 
   PollSet* poll_set_;
   int flags_;
+
+  std::string connected_uds_path_;
 };
 
 }

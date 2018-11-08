@@ -252,9 +252,15 @@ class RegManager(RegistrationListener):
                             signal_shutdown("master/node incompatibility with register subscriber")                        
                         else:
                             self.publisher_update(resolved_name, val)
-                    for resolved_name, service_uri in srv:
-                        self.logger.info("registering service [%s] uri [%s] with master", resolved_name, service_uri)
-                        code, msg, val = master.registerService(caller_id, resolved_name, service_uri, uri)
+                    for resolved_name, service_uri, service_uds_uri in srv:
+                        try:
+                            self.logger.info("registering service [%s] uri [%s] uds_uri [%s] with master",
+                                             resolved_name, service_uri, service_uds_uri)
+                            code, msg, val = master.registerServiceExt(caller_id, resolved_name, service_uri, service_uds_uri,  uri)
+                        except Exception:
+                            self.logger.info("registering service [%s] uri [%s] with master", resolved_name,
+                                             service_uri)
+                            code, msg, val = master.registerService(caller_id, resolved_name, service_uri, uri)
                         if code != 1:
                             logfatal("cannot register service [%s] with master: %s"%(resolved_name, msg))
                             signal_shutdown("master/node incompatibility with register service")                        
