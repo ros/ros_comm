@@ -57,7 +57,7 @@ class SimpleFilter(object):
             cb(*(msg + args))
 
 class Subscriber(SimpleFilter):
-
+    
     """
     ROS subscription filter.  Identical arguments as :class:`rospy.Subscriber`.
 
@@ -167,7 +167,7 @@ class Cache(SimpleFilter):
         if not self.cache_times:
             return None
         return self.cache_times[0]
-
+        
     def getLast(self):
         if self.getLastestTime() is None:
             return None
@@ -258,7 +258,7 @@ class ApproximateTimeSynchronizer(TimeSynchronizer):
         # clear all buffers if jump backwards in time is detected
         now = rospy.Time.now()
         if now < self.last_added:
-            rospy.loginfo("ApproximateTimeSynchronizer: Detected jump back in time. Clearing  buffer.")
+            rospy.loginfo("ApproximateTimeSynchronizer: Detected jump back in time. Clearing buffer.")
             for q in self.queues:
                 q.clear()
         self.last_added = now
