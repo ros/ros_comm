@@ -52,7 +52,7 @@ void StatisticsLogger::init(const SubscriptionCallbackHelperPtr& helper) {
 
 void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_header,
                                 const std::string& topic, const std::string& callerid, const SerializedMessage& m, const uint64_t& bytes_sent,
-                                const ros::Time& received_time, bool dropped)
+                                const ros::Time& received_time, bool dropped, int connection_id)
 {
   (void)connection_header;
   struct StatData stats;
@@ -70,7 +70,7 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
 
   // callerid identifies the connection
   std::map<std::string, struct StatData>::iterator stats_it = map_.find(callerid);
-  if (stats_it == map_.end())
+  if (stats_it == map_.end() || previous_connection_id != connection_id)
   {
     // this is the first time, we received something on this connection
     stats.stat_bytes_last = 0;
@@ -83,6 +83,7 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
   {
     stats = map_[callerid];
   }
+  previous_connection_id = connection_id;
 
   stats.arrival_time_list.push_back(received_time);
 

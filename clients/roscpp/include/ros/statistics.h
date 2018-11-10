@@ -63,13 +63,14 @@ public:
   /**
    * Callback function. Must be called for every message received.
    */
-  void callback(const boost::shared_ptr<M_string>& connection_header, const std::string& topic, const std::string& callerid, const SerializedMessage& m, const uint64_t& bytes_sent, const ros::Time& received_time, bool dropped);
+  void callback(const boost::shared_ptr<M_string>& connection_header, const std::string& topic, const std::string& callerid, const SerializedMessage& m, const uint64_t& bytes_sent, const ros::Time& received_time, bool dropped, int connection_id);
 
 private:
 
   // these are hard constrains
   int max_window;
   int min_window;
+  int previous_connection_id;
 
   // these are soft constrains
   int max_elements;
