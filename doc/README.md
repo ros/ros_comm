@@ -27,8 +27,8 @@
   UDS feature will be used automaticlly, you can just use ROS as usual.
 ```console
     e.g) # roscore
-         # rosrun test_rosuds talker_uds
-         # rosrun test_rosuds listener_uds
+         # rosrun roscpp_tutorials talker
+         # rosrun roscpp_tutorials listener
 ```
 
 ### b. Additional Sub Features

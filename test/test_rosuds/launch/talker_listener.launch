@@ -1,4 +1,0 @@
-<launch>
-  <node name="listener" pkg="test_rosuds" type="listener_uds" output="screen"/>
-  <node name="talker" pkg="test_rosuds" type="talker_uds" output="screen"/>
-</launch>
