@@ -99,6 +99,7 @@ RecorderOptions::RecorderOptions() :
     append_date(true),
     snapshot(false),
     verbose(false),
+    publish(false),
     compression(compression::Uncompressed),
     prefix(""),
     name(""),
@@ -151,6 +152,11 @@ int Recorder::run() {
     ros::NodeHandle nh;
     if (!nh.ok())
         return 0;
+
+    if (options_.publish)
+    {
+        pub_begin_write = nh.advertise<std_msgs::String>("begin_write", 1, true);
+    }
 
     last_buffer_warn_ = Time();
     queue_ = new std::queue<OutgoingMessage>;
@@ -392,6 +398,13 @@ void Recorder::startWriting() {
         ros::shutdown();
     }
     ROS_INFO("Recording to %s.", target_filename_.c_str());
+
+    if (options_.publish)
+    {
+        std_msgs::String msg;
+        msg.data = target_filename_.c_str();
+        pub_begin_write.publish(msg);
+    }
 }
 
 void Recorder::stopWriting() {
