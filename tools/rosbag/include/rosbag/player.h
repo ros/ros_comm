@@ -58,6 +58,8 @@
 #include "rosbag/time_translator.h"
 #include "rosbag/macros.h"
 
+#include <rosbag/SetRate.h>
+
 namespace rosbag {
 
 //! Helper function to create AdvertiseOptions from a MessageInstance
@@ -128,6 +130,9 @@ public:
     /*! Get the current time */
     ros::Time const& getTime() const;
 
+    /*! Get the horizon */
+    ros::Time const& getHorizon() const;
+
     /*! Run the clock for AT MOST duration
      *
      * If horizon has been reached this function returns immediately
@@ -191,7 +196,11 @@ private:
 
     bool pauseCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
 
+    bool setRateCallback(rosbag::SetRate::Request& req, rosbag::SetRate::Response& res);
+
     void processPause(const bool paused, ros::WallTime &horizon);
+
+    void updateRate(const double rate);
 
     void waitForSubscribers() const;
 
@@ -203,6 +212,7 @@ private:
     ros::NodeHandle node_handle_;
 
     ros::ServiceServer pause_service_;
+    ros::ServiceServer set_rate_service_;
 
     bool paused_;
     bool delayed_;

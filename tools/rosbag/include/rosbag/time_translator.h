@@ -63,6 +63,11 @@ public:
     void      shift(ros::Duration const& d);               //!< Increments the translated start time by shift.  Useful for pausing.
     ros::Time translate(ros::Time const& t);
 
+    const double& getTimeScale() const
+    {
+        return time_scale_;
+    }
+
 private:
     double    time_scale_;
     ros::Time real_start_;

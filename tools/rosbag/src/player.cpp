@@ -122,6 +122,7 @@ Player::Player(PlayerOptions const& options) :
 {
   ros::NodeHandle private_node_handle("~");
   pause_service_ = private_node_handle.advertiseService("pause_playback", &Player::pauseCallback, this);
+  set_rate_service_ = private_node_handle.advertiseService("set_rate", &Player::setRateCallback, this);
 }
 
 Player::~Player() {
@@ -422,6 +423,26 @@ bool Player::pauseCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::R
   return true;
 }
 
+bool Player::setRateCallback(rosbag::SetRate::Request& req, rosbag::SetRate::Response& res)
+{
+  // Check the request rate is valid, i.e. > 0.0:
+  const auto& rate = req.rate;
+  if (rate <= 0.0)
+  {
+    res.success = false;
+    res.message = "Requested rate " + std::to_string(rate) + " must be > 0.0.";
+
+    return true;
+  }
+
+  updateRate(rate);
+
+  res.success = true;
+  res.message = "Rate set to " + std::to_string(rate);
+
+  return true;
+}
+
 void Player::processPause(const bool paused, ros::WallTime &horizon)
 {
   paused_ = paused;
@@ -441,6 +462,25 @@ void Player::processPause(const bool paused, ros::WallTime &horizon)
     horizon += shift;
     time_publisher_.setWCHorizon(horizon);
   }
+}
+
+void Player::updateRate(const double rate)
+{
+  // Reset the real and translated start time to the current time from the time publisher:
+  const auto& time = time_publisher_.getTime();
+  const auto translated_time = time_translator_.translate(time);
+
+  time_translator_.setRealStartTime(time);
+  time_translator_.setTranslatedStartTime(ros::Time(translated_time.sec, translated_time.nsec));
+
+  // Update the rate (time scale):
+  time_translator_.setTimeScale(rate);
+  time_publisher_.setTimeScale(rate);
+
+  // Update the Wall Clock (WC) horizon time with the new rate:
+  const auto translated_horizon = time_translator_.translate(time_publisher_.getHorizon());
+
+  time_publisher_.setWCHorizon(ros::WallTime(translated_horizon.sec, translated_horizon.nsec));
 }
 
 void Player::waitForSubscribers() const
@@ -576,6 +616,12 @@ void Player::doPublish(MessageInstance const& m) {
                 break;
             case 't':
                 pause_for_topics_ = !pause_for_topics_;
+                break;
+            case '+':
+                updateRate(2.0 * time_translator_.getTimeScale());
+                break;
+            case '-':
+                updateRate(0.5 * time_translator_.getTimeScale());
                 break;
             case EOF:
                 if (paused_)
@@ -807,6 +853,11 @@ void TimePublisher::setTime(const ros::Time& time)
 ros::Time const& TimePublisher::getTime() const
 {
     return current_;
+}
+
+ros::Time const& TimePublisher::getHorizon() const
+{
+    return horizon_;
 }
 
 void TimePublisher::runClock(const ros::WallDuration& duration)

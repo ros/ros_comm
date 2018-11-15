@@ -5,11 +5,15 @@ if(NOT WIN32)
   set_directory_properties(PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra")
 endif()
 
-find_package(catkin REQUIRED COMPONENTS rosbag_storage rosconsole roscpp std_srvs topic_tools xmlrpcpp)
+find_package(catkin REQUIRED COMPONENTS message_generation rosbag_storage rosconsole roscpp std_srvs topic_tools xmlrpcpp)
 find_package(Boost REQUIRED COMPONENTS date_time regex program_options filesystem)
 find_package(BZip2 REQUIRED)
 
 catkin_python_setup()
+
+add_service_files(DIRECTORY srv FILES SetRate.srv)
+
+generate_messages()
 
 # Support large bags (>2GB) on 32-bit systems
 add_definitions(-D_FILE_OFFSET_BITS=64)
@@ -21,13 +25,13 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}
 catkin_package(
   LIBRARIES rosbag
   INCLUDE_DIRS include
-  CATKIN_DEPENDS rosbag_storage rosconsole roscpp std_srvs topic_tools xmlrpcpp)
+  CATKIN_DEPENDS message_runtime rosbag_storage rosconsole roscpp std_srvs topic_tools xmlrpcpp)
 
 add_library(rosbag
   src/player.cpp
   src/recorder.cpp
   src/time_translator.cpp)
-
+add_dependencies(rosbag ${${PROJECT_NAME}_EXPORTED_TARGETS})
 target_link_libraries(rosbag ${catkin_LIBRARIES} ${Boost_LIBRARIES}
   ${BZIP2_LIBRARIES}
 )
