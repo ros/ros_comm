@@ -1,0 +1,4 @@
+<launch>
+  <test test-name="multiple_latched_publishers" pkg="test_roscpp" type="test_roscpp-multiple_latched_publishers"/>
+</launch>
+
