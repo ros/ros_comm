@@ -15,6 +15,10 @@ if(CATKIN_ENABLE_TESTING)
 
   include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
+  if(WIN32)
+    add_definitions(-DNOGDI)
+  endif()
+
   # Testing message and service files.  See comment below about subdirectory support.
   add_message_files(
     NOINSTALL

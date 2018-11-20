@@ -5,6 +5,10 @@
 #include "ros/ros.h"
 #include "std_srvs/Empty.h"
 #include <log4cxx/appenderskeleton.h>
+#ifdef _MSC_VER
+  // Have to be able to encode wchar LogStrings on windows.
+# include <log4cxx/helpers/transcoder.h>
+#endif
 #include <ros/console.h>
 #include <ros/poll_manager.h>
 
@@ -72,7 +76,12 @@ TEST(roscpp, ServiceThrowingException)
   const std::list<log4cxx::spi::LoggingEventPtr>& list = appender->getList();
   for (std::list<log4cxx::spi::LoggingEventPtr>::const_iterator it = list.begin(); it != list.end(); it++)
   {
+#ifdef _MSC_VER
+    LOG4CXX_ENCODE_CHAR(tmpstr, (*it)->getMessage());  // has to handle LogString with wchar types.
+    const std::string& msg = tmpstr;  // tmpstr gets instantiated inside the LOG4CXX_ENCODE_CHAR macro
+#else
     const log4cxx::LogString& msg = (*it)->getMessage();
+#endif
     size_t pos_error = msg.find("Service call failed:");
     size_t pos_exception = msg.find(EXCEPTION);
     if (pos_error != std::string::npos && pos_exception != std::string::npos)
