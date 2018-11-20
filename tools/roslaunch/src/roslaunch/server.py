@@ -402,7 +402,7 @@ for errors by running:
 
 For more tips, please see
 
-\thttp://www.ros.org/wiki/ROS/NetworkSetup
+\thttp://wiki.ros.org/ROS/NetworkSetup
 """%(self.uri, p.hostname))
         printlog_bold("started roslaunch server %s"%(self.uri))
 

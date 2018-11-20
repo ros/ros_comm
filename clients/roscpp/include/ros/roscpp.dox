@@ -15,6 +15,6 @@
 
 @par Examples
 
-Many examples of using ROS can be found <a href="http://www.ros.org/wiki/ROS/Tutorials">on the wiki</a> and in the <a href="http://www.ros.org/wiki/roscpp_tutorials">roscpp_tutorials</a> package.
+Many examples of using ROS can be found <a href="http://wiki.ros.org/ROS/Tutorials">on the wiki</a> and in the <a href="http://wiki.ros.org/roscpp_tutorials">roscpp_tutorials</a> package.
 
 */
