@@ -623,7 +623,7 @@ class ROSMasterHandler(object):
             self.ps_lock.release()
         return 1, "Registered [%s] as provider of [%s]"%(caller_id, service), 1
 
-    @apivalidate(0, (is_service('service'),))
+    @apivalidate('', (is_service('service'),))
     def lookupService(self, caller_id, service):
         """
         Lookup all provider of a particular service.
@@ -672,7 +672,7 @@ class ROSMasterHandler(object):
     ##################################################################################
     # PUBLISH/SUBSCRIBE
 
-    @apivalidate(0, ( is_topic('topic'), valid_type_name('topic_type'), is_api('caller_api')))
+    @apivalidate([], ( is_topic('topic'), valid_type_name('topic_type'), is_api('caller_api')))
     def registerSubscriber(self, caller_id, topic, topic_type, caller_api):
         """
         Subscribe the caller to the specified topic. In addition to receiving
@@ -729,7 +729,7 @@ class ROSMasterHandler(object):
         finally:
             self.ps_lock.release()
 
-    @apivalidate(0, ( is_topic('topic'), valid_type_name('topic_type'), is_api('caller_api')))
+    @apivalidate([], ( is_topic('topic'), valid_type_name('topic_type'), is_api('caller_api')))
     def registerPublisher(self, caller_id, topic, topic_type, caller_api):
         """
         Register the caller as a publisher the topic.
