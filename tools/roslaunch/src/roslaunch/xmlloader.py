@@ -635,8 +635,9 @@ class XmlLoader(loader.Loader):
                 self._recurse_load(ros_config, launch.childNodes, child_ns, \
                                        default_machine, is_core, verbose)
 
-            # check for unused args
-            loader.post_process_include_args(child_ns)
+            if not pass_all_args:
+                # check for unused args
+                loader.post_process_include_args(child_ns)
 
         except ArgException as e:
             raise XmlParseException("included file [%s] requires the '%s' arg to be set"%(inc_filename, str(e)))
