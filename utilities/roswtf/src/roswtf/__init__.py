@@ -200,7 +200,7 @@ def _roswtf_main():
             online_checks = True
         if online_checks:
             online_checks = True
-            print("Beginning tests of your ROS graph. These may take awhile...")
+            print("Beginning tests of your ROS graph. These may take a while...")
             
             # online checks
             wtf_check_graph(ctx, names=names)

@@ -524,7 +524,7 @@ class Graph(object):
             
     def update(self):
         """
-        Update all the stats. This method may take awhile to complete as it will
+        Update all the stats. This method may take a while to complete as it will
         communicate with all nodes + master.
         """
         
