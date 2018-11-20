@@ -4,12 +4,12 @@
   <description>
     rosparam contains the rosparam command-line tool for getting and
     setting ROS Parameters on the <a
-    href="http://www.ros.org/wiki/Parameter%20Server">Parameter
+    href="http://wiki.ros.org/Parameter%20Server">Parameter
     Server</a> using YAML-encoded files. It also contains an
     experimental library for using YAML with the Parameter
     Server. This library is intended for internal use only.
 
-    rosparam can be invoked within a <a href="http://www.ros.org/wiki/roslaunch">roslaunch</a> file.
+    rosparam can be invoked within a <a href="http://wiki.ros.org/roslaunch">roslaunch</a> file.
   </description>
   <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>

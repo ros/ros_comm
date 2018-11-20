@@ -42,7 +42,7 @@ def _get_optparse():
     parser = OptionParser(usage="usage: %prog [options]",
                           prog=NAME,
                           description="roscore will start up a ROS Master, a ROS Parameter Server and a rosout logging node",
-                          epilog="See http://www.ros.org/wiki/roscore"
+                          epilog="See http://wiki.ros.org/roscore"
                           )
     parser.add_option("-p", "--port",
                       dest="port", default=None,

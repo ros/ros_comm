@@ -206,7 +206,7 @@ class TestSlaveApi(unittest.TestCase):
         """
         test that node obeys simtime (/Clock) contract
 
-        http://www.ros.org/wiki/Clock
+        http://wiki.ros.org/Clock
         """
         try:
             use_sim_time = self.master.getParam('/use_sim_time')

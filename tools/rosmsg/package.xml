@@ -5,9 +5,9 @@
     rosmsg contains two command-line tools: <tt>rosmsg</tt> and
     <tt>rossrv</tt>. <tt>rosmsg</tt> is a command-line tool for
     displaying information about <a
-    href="http://www.ros.org/wiki/msg">ROS Message
+    href="http://wiki.ros.org/msg">ROS Message
     types</a>. <tt>rossrv</tt> is a command-line tool for displaying
-    information about <a href="http://www.ros.org/wiki/srv">ROS
+    information about <a href="http://wiki.ros.org/srv">ROS
     Service types</a>.
   </description>
   <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
