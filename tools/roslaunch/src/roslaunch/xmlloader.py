@@ -659,7 +659,7 @@ class XmlLoader(loader.Loader):
                 self._arg_tag(tag, context, ros_config, verbose=verbose)
             elif self.args_only:
                 # do not load other tags
-                pass
+                continue
             elif name == 'group':
                 if ifunless_test(self, tag, context):
                     self._check_attrs(tag, context, ros_config, XmlLoader.GROUP_ATTRS)
