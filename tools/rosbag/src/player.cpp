@@ -405,7 +405,7 @@ void Player::waitForSubscribers() const
         foreach(const PublisherMap::value_type& pub, publishers_) {
             all_topics_subscribed &= pub.second.getNumSubscribers() > 0;
         }
-        ros::Duration(0.1).sleep();
+        ros::WallTime::sleepUntil(ros::WallTime::now() +  ros::WallDuration(0.1));
     }
     std::cout << "Finished waiting for subscribers." << std::endl;
 }
