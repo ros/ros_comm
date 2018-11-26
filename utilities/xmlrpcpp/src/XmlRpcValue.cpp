@@ -497,8 +497,11 @@ namespace XmlRpc {
     xml.resize(xml.size() + base64EncodedSize(_value.asBinary->size()));
 
     base64::encoder encoder;
-    offset += encoder.encode(&(*_value.asBinary)[0], _value.asBinary->size(), &xml[offset]);
-    offset += encoder.encode_end(&xml[offset]);
+    if (_value.asBinary->size() > 0)
+    {
+      offset += encoder.encode(&(*_value.asBinary)[0], _value.asBinary->size(), &xml[offset]);
+      offset += encoder.encode_end(&xml[offset]);
+    }
     xml.resize(offset);
 
     xml += BASE64_ETAG;
@@ -613,7 +616,8 @@ namespace XmlRpc {
       case TypeBase64:
         {
           std::stringstream buffer;
-          buffer.write(&(*_value.asBinary)[0], _value.asBinary->size());
+          if (_value.asBinary->size() > 0)
+            buffer.write(&(*_value.asBinary)[0], _value.asBinary->size());
           base64::encoder encoder;
           encoder.encode(buffer, os);
           break;
