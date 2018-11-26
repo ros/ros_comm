@@ -721,7 +721,8 @@ int test_getsockname(int sockfd, struct sockaddr* addr, socklen_t* addrlen) {
   EXPECT_LE(getsockname_len, *addrlen);
   if (NULL != addr) {
     socklen_t len = std::min(*addrlen, getsockname_len);
-    memcpy(addr, getsockname_addr, len);
+    if (len > 0)
+      memcpy(addr, getsockname_addr, len);
   }
   EXPECT_TRUE(NULL != addrlen);
   if (NULL != addrlen) {
