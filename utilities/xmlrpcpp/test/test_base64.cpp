@@ -61,7 +61,9 @@ TEST_P(Base64Test, Decode) {
   out.resize(encoded_size);
 
   base64::decoder decoder;
-  const int size = decoder.decode(in.c_str(), encoded_size, &out[0]);
+  int size = 0;
+  if (encoded_size > 0)
+    size = decoder.decode(in.c_str(), encoded_size, &out[0]);
   ASSERT_LE(0, size);
   out.resize(size);
 
@@ -127,7 +129,9 @@ TEST_P(Base64ErrorTest, DecodeErrors) {
   out.resize(encoded_size);
 
   base64::decoder decoder;
-  const int size = decoder.decode(in.c_str(), encoded_size, &out[0]);
+  int size = 0;
+  if (encoded_size > 0)
+    size = decoder.decode(in.c_str(), encoded_size, &out[0]);
   // Assert that size is greater or equal to 0, to make sure that the follow-up
   // resize will always succeed.
   ASSERT_LE(0, size);
