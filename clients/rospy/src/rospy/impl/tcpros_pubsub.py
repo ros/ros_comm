@@ -43,14 +43,18 @@ try:
 except ImportError:
     from xmlrpclib import ServerProxy  # Python 2.x
 
-from rospy.core import logwarn, logerr, logdebug, rospyerr
+from rospy.core import logwarn, logerr, logdebug, rospyerr, rospydebug
 import rospy.exceptions
 import rospy.names
+
+import rosgraph
+import rosgraph.rosenv
+import rosgraph.network
 
 import rospy.impl.registration
 import rospy.impl.transport
 
-from rospy.impl.tcpros_base import TCPROSTransport, TCPROSTransportProtocol, \
+from rospy.impl.tcpros_base import TCPROSTransport, TCPROSUDSTransport, TCPROSTransportProtocol, \
     get_tcpros_server_address, start_tcpros_server,\
     DEFAULT_BUFF_SIZE, TCPROS
 
@@ -182,7 +186,38 @@ def robust_connect_subscriber(conn, dest_addr, dest_port, pub_uri, receive_cb, r
             conn.done = not check_if_still_publisher(resolved_topic_name, pub_uri)
 	
     if not conn.done:
-        conn.receive_loop(receive_cb)	    
+        conn.receive_loop(receive_cb)
+
+def robust_uds_connect_subscriber(conn, dest_uds_path, pub_uri, receive_cb, resolved_topic_name):
+    """
+    Keeps trying to create connection for subscriber.  Then passes off to receive_loop once connected.
+    Reference by robust_connect_subscriber
+    """
+    # kwc: this logic is not very elegant.  I am waiting to rewrite
+    # the I/O loop with async i/o to clean this up.
+
+    # timeout is really generous. for now just choosing one that is large but not infinite
+    interval = 0.5
+    while conn.socket is None and not conn.done and not rospy.is_shutdown():
+        try:
+            conn.connect(dest_uds_path, pub_uri, timeout=60.)
+        except rospy.exceptions.TransportInitError as e:
+            # if the connection was closed intentionally
+            # because of an unknown error, stop trying
+            if conn.protocol is None:
+                conn.done = True
+                break
+            rospyerr("unable to create subscriber transport: %s.  Will try again in %ss", e, interval)
+            if interval < 30.0:
+                # exponential backoff (maximum 32 seconds)
+                interval = interval * 2
+            time.sleep(interval)
+
+            # check to see if publisher state has changed
+            conn.done = not check_if_still_publisher(resolved_topic_name, pub_uri)
+
+    if not conn.done:
+        conn.receive_loop(receive_cb)
 
 def check_if_still_publisher(resolved_topic_name, pub_uri):
     try:
@@ -237,24 +272,38 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
         @return: code, message, debug
         @rtype: (int, str, int)
         """
-        
-        #Validate protocol params = [TCPROS, address, port]
-        if type(protocol_params) != list or len(protocol_params) != 3:
-            return 0, "ERROR: invalid TCPROS parameters", 0
+        use_uds = (type(protocol_params) == list and len(protocol_params) == 4)
+        if use_uds:
+            if type(protocol_params) != list or len(protocol_params) != 4:
+                return 0, "ERROR: invalid TCPROS parameters", 0
+        else:
+            if type(protocol_params) != list or len(protocol_params) != 3:
+                return 0, "ERROR: invalid TCPROS parameters", 0
         if protocol_params[0] != TCPROS:
             return 0, "INTERNAL ERROR: protocol id is not TCPROS: %s"%protocol_params[0], 0
-        id, dest_addr, dest_port = protocol_params
+
+        if use_uds:
+            id, dest_addr, dest_port, dest_uds_path = protocol_params
+            is_internal = rosgraph.network.is_internal(dest_uds_path, dest_addr)
+        else:
+            id, dest_addr, dest_port = protocol_params
 
         sub = rospy.impl.registration.get_topic_manager().get_subscriber_impl(resolved_name)
 
-        #Create connection 
+        #Create connection
         protocol = TCPROSSub(resolved_name, sub.data_class, \
                              queue_size=sub.queue_size, buff_size=sub.buff_size,
                              tcp_nodelay=sub.tcp_nodelay)
-        conn = TCPROSTransport(protocol, resolved_name)
-        conn.set_endpoint_id(pub_uri);
 
-        t = threading.Thread(name=resolved_name, target=robust_connect_subscriber, args=(conn, dest_addr, dest_port, pub_uri, sub.receive_callback,resolved_name))
+        if use_uds and is_internal:
+            conn = TCPROSUDSTransport(protocol, resolved_name)
+        else:
+            conn = TCPROSTransport(protocol, resolved_name)
+        conn.set_endpoint_id(pub_uri);
+        if use_uds and is_internal:
+            t = threading.Thread(name=resolved_name, target=robust_uds_connect_subscriber, args=(conn, dest_uds_path, pub_uri, sub.receive_callback,resolved_name))
+        else:
+            t = threading.Thread(name=resolved_name, target=robust_connect_subscriber, args=(conn, dest_addr, dest_port, pub_uri, sub.receive_callback, resolved_name))
         # don't enable this just yet, need to work on this logic
         #rospy.core._add_shutdown_thread(t)
 
@@ -302,10 +351,30 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
         if protocol[0] != TCPROS:
             return 0, "Internal error: protocol does not match TCPROS: %s"%protocol, []
         start_tcpros_server()
-        addr, port = get_tcpros_server_address()
+        addr, port, _ = get_tcpros_server_address()
         return 1, "ready on %s:%s"%(addr, port), [TCPROS, addr, port]
 
-    def topic_connection_handler(self, sock, client_addr, header):
+    def init_publisher_ext(self, resolved_name, protocol):
+        """
+        Initialize this node to receive an inbound TCP connection,
+        i.e. startup a TCP server if one is not already running.
+
+        @param resolved_name: topic name
+        @type  resolved__name: str
+
+        @param protocol: negotiated protocol
+          parameters. protocol[0] must be the string 'TCPROS'
+        @type  protocol: [str, value*]
+        @return: (code, msg, [TCPROS, addr, port])
+        @rtype: (int, str, list)
+        """
+        if protocol[0] != TCPROS:
+            return 0, "Internal error: protocol does not match TCPROS: %s" % protocol, []
+        start_tcpros_server()
+        _, _, uds_path = get_tcpros_server_address()
+        return 1, "ready on uds[%s]" % (uds_path), [TCPROS, uds_path]
+
+    def topic_connection_handler(self, sock, client_addr, header, use_uds=False):
         """
         Process incoming topic connection. Reads in topic name from
         handshake and creates the appropriate L{TCPROSPub} handler for the
@@ -316,6 +385,8 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
         @type client_addr: (str, int)
         @param header: key/value pairs from handshake header
         @type header: dict
+        @param use_uds: use uds flag
+        @type use_uds: bool
         @return: error string or None 
         @rtype: str
         """
@@ -325,6 +396,11 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
             if not required in header:
                 return "Missing required '%s' field"%required
         else:
+            if use_uds:
+                rospydebug("connection from Unix Domain Socket")
+            else:
+                rospydebug("connection from %s:%s", client_addr[0], client_addr[1])
+
             resolved_topic_name = header['topic']
             md5sum = header['md5sum']
             tm = rospy.impl.registration.get_topic_manager()
@@ -358,14 +434,18 @@ class TCPROSHandler(rospy.impl.transport.ProtocolHandler):
                 else:
                     tcp_nodelay = self.tcp_nodelay_map.get(resolved_topic_name, False)
 
-                _configure_pub_socket(sock, tcp_nodelay)
+                if not use_uds:
+                    _configure_pub_socket(sock, tcp_nodelay)
                 protocol = TCPROSPub(resolved_topic_name, topic.data_class, is_latch=topic.is_latch, headers=topic.headers)
-                transport = TCPROSTransport(protocol, resolved_topic_name)
+                if use_uds:
+                    transport = TCPROSUDSTransport(protocol, resolved_topic_name)
+                else:
+                    transport = TCPROSTransport(protocol, resolved_topic_name)
                 transport.set_socket(sock, header['callerid'])
                 transport.remote_endpoint = client_addr
                 transport.write_header()
                 topic.add_connection(transport)
-            
+
 
 class QueuedConnection(object):
     """

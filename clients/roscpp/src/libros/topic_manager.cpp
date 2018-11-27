@@ -36,6 +36,8 @@
 #include "ros/master.h"
 #include "ros/transport/transport_tcp.h"
 #include "ros/transport/transport_udp.h"
+#include "ros/transport/transport_uds_stream.h"
+#include "ros/transport/transport_uds_datagram.h"
 #include "ros/rosout_appender.h"
 #include "ros/init.h"
 #include "ros/file_log.h"
@@ -80,6 +82,7 @@ void TopicManager::start()
 
   xmlrpc_manager_->bind("publisherUpdate", boost::bind(&TopicManager::pubUpdateCallback, this, _1, _2));
   xmlrpc_manager_->bind("requestTopic", boost::bind(&TopicManager::requestTopicCallback, this, _1, _2));
+  xmlrpc_manager_->bind("requestTopicUds", boost::bind(&TopicManager::requestTopicUdsCallback, this, _1, _2));
   xmlrpc_manager_->bind("getBusStats", boost::bind(&TopicManager::getBusStatsCallback, this, _1, _2));
   xmlrpc_manager_->bind("getBusInfo", boost::bind(&TopicManager::getBusInfoCallback, this, _1, _2));
   xmlrpc_manager_->bind("getSubscriptions", boost::bind(&TopicManager::getSubscriptionsCallback, this, _1, _2));
@@ -107,6 +110,7 @@ void TopicManager::shutdown()
 
   xmlrpc_manager_->unbind("publisherUpdate");
   xmlrpc_manager_->unbind("requestTopic");
+  xmlrpc_manager_->unbind("requestTopicExt");
   xmlrpc_manager_->unbind("getBusStats");
   xmlrpc_manager_->unbind("getBusInfo");
   xmlrpc_manager_->unbind("getSubscriptions");
@@ -586,7 +590,9 @@ bool TopicManager::pubUpdate(const string &topic, const vector<string> &pubs)
 
 bool TopicManager::requestTopic(const string &topic,
                          XmlRpcValue &protos,
-                         XmlRpcValue &ret)
+                         XmlRpcValue &ret
+                         , bool uds_flag
+                         )
 {
   for (int proto_idx = 0; proto_idx < protos.size(); proto_idx++)
   {
@@ -605,12 +611,20 @@ bool TopicManager::requestTopic(const string &topic,
     }
 
     string proto_name = proto[0];
+    int index = 0;
     if (proto_name == string("TCPROS"))
     {
       XmlRpcValue tcpros_params;
-      tcpros_params[0] = string("TCPROS");
-      tcpros_params[1] = network::getHost();
-      tcpros_params[2] = int(connection_manager_->getTCPPort());
+      tcpros_params[index++] = string("TCPROS");
+      if (uds_flag)
+      {
+        tcpros_params[index++] = connection_manager_->getUDSStreamPath();
+      }
+      else
+      {
+        tcpros_params[index++] = network::getHost();
+        tcpros_params[index++] = int(connection_manager_->getTCPPort());
+      }
       ret[0] = int(1);
       ret[1] = string();
       ret[2] = tcpros_params;
@@ -618,14 +632,30 @@ bool TopicManager::requestTopic(const string &topic,
     }
     else if (proto_name == string("UDPROS"))
     {
-      if (proto.size() != 5 ||
-          proto[1].getType() != XmlRpcValue::TypeBase64 ||
-          proto[2].getType() != XmlRpcValue::TypeString ||
-          proto[3].getType() != XmlRpcValue::TypeInt ||
-          proto[4].getType() != XmlRpcValue::TypeInt)
+      if (uds_flag)
       {
-      	ROSCPP_LOG_DEBUG("Invalid protocol parameters for UDPROS");
-        return false;
+        if (proto.size() != 6 ||
+            proto[1].getType() != XmlRpcValue::TypeBase64 ||
+            proto[2].getType() != XmlRpcValue::TypeString ||       // ip
+            proto[3].getType() != XmlRpcValue::TypeInt ||          // port
+            proto[4].getType() != XmlRpcValue::TypeString ||       // uds
+            proto[5].getType() != XmlRpcValue::TypeInt)
+        {
+          ROSCPP_LOG_DEBUG("Invalid protocol parameters for UDPROS");
+          return false;
+        }
+      }
+      else
+      {
+        if (proto.size() != 5 ||
+            proto[1].getType() != XmlRpcValue::TypeBase64 ||
+            proto[2].getType() != XmlRpcValue::TypeString ||       // ip
+            proto[3].getType() != XmlRpcValue::TypeInt ||          // port
+            proto[4].getType() != XmlRpcValue::TypeInt)
+        {
+          ROSCPP_LOG_DEBUG("Invalid protocol parameters for UDPROS");
+          return false;
+        }
       }
       std::vector<char> header_bytes = proto[1];
       boost::shared_array<uint8_t> buffer(new uint8_t[header_bytes.size()]);
@@ -645,33 +675,91 @@ bool TopicManager::requestTopic(const string &topic,
         return false;
       }
 
-      std::string host = proto[2];
-      int port = proto[3];
+      std::string host;
+      int port;
+      std::string uds_path;
+      host = std::string(proto[2]);
+      port = int(proto[3]);
+
+      bool is_internal;
+      if (uds_flag)
+      {
+        uds_path = std::string(proto[4]);
+        is_internal = network::isInternal(uds_path, host);
+      }
 
       M_string m;
       std::string error_msg;
       if (!pub_ptr->validateHeader(h, error_msg))
       {
-        ROSCPP_LOG_DEBUG("Error validating header from [%s:%d] for topic [%s]: %s", host.c_str(), port, topic.c_str(), error_msg.c_str());
+        if (uds_flag && is_internal)
+        {
+          ROSCPP_LOG_DEBUG("Error validating header from [%s] for topic [%s]: %s", uds_path.c_str(), topic.c_str(), error_msg.c_str());
+        }
+        else
+        {
+          ROSCPP_LOG_DEBUG("Error validating header from [%s:%d] for topic [%s]: %s", host.c_str(), port, topic.c_str(), error_msg.c_str());
+        }
         return false;
       }
 
-      int max_datagram_size = proto[4];
-      int conn_id = connection_manager_->getNewConnectionID();
-      TransportUDPPtr transport = connection_manager_->getUDPServerTransport()->createOutgoing(host, port, conn_id, max_datagram_size);
-      if (!transport)
+      int max_datagram_size;
+      if (uds_flag)
       {
-        ROSCPP_LOG_DEBUG("Error creating outgoing transport for [%s:%d]", host.c_str(), port);
-        return false;
+        max_datagram_size = proto[5];
       }
-      connection_manager_->udprosIncomingConnection(transport, h);
+      else
+      {
+        max_datagram_size = proto[4];
+      }
+
+      int conn_id = connection_manager_->getNewConnectionID();
+      if (uds_flag)
+      {
+        if (is_internal)
+        {
+          TransportUDSDatagramPtr transport = connection_manager_->getUDSDatagramServerTransport()->createOutgoing(uds_path, conn_id, max_datagram_size);
+          if (!transport)
+          {
+            ROSCPP_LOG_DEBUG("Error creating outgoing transport for [%s]", uds_path.c_str());
+            return false;
+          }
+          connection_manager_->udprosIncomingConnection(transport, h);
+        }
+      }
+      else
+      {
+        TransportUDPPtr transport = connection_manager_->getUDPServerTransport()->createOutgoing(host, port, conn_id, max_datagram_size);
+        if (!transport)
+        {
+          ROSCPP_LOG_DEBUG("Error creating outgoing transport for [%s:%d]", host.c_str(), port);
+          return false;
+        }
+        connection_manager_->udprosIncomingConnection(transport, h);
+      }
 
       XmlRpcValue udpros_params;
-      udpros_params[0] = string("UDPROS");
-      udpros_params[1] = network::getHost();
-      udpros_params[2] = connection_manager_->getUDPServerTransport()->getServerPort();
-      udpros_params[3] = conn_id;
-      udpros_params[4] = max_datagram_size;
+      udpros_params[index++] = string("UDPROS");
+
+      if (uds_flag)
+      {
+        if (is_internal)
+        {
+          udpros_params[index++] = connection_manager_->getUDSDatagramServerTransport()->getServerUDSPath();
+        }
+        else
+        {
+          udpros_params[index++] = "";
+        }
+      }
+      else
+      {
+        udpros_params[index++] = network::getHost();
+        udpros_params[index++] = connection_manager_->getUDPServerTransport()->getServerPort();
+      }
+
+      udpros_params[index++] = conn_id;
+      udpros_params[index++] = max_datagram_size;
       m["topic"] = topic;
       m["md5sum"] = pub_ptr->getMD5Sum();
       m["type"] = pub_ptr->getDataType();
@@ -681,7 +769,7 @@ bool TopicManager::requestTopic(const string &topic,
       uint32_t len;
       Header::write(m, msg_def_buffer, len);
       XmlRpcValue v(msg_def_buffer.get(), len);
-      udpros_params[5] = v;
+      udpros_params[index++] = v;
       ret[0] = int(1);
       ret[1] = string();
       ret[2] = udpros_params;
@@ -1020,6 +1108,14 @@ void TopicManager::pubUpdateCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpc
 void TopicManager::requestTopicCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
 {
   if (!requestTopic(params[1], params[2], result))
+  {
+    result = xmlrpc::responseInt(0, console::g_last_error_message, 0);
+  }
+}
+
+void TopicManager::requestTopicUdsCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
+{
+  if (!requestTopic(params[1], params[2], result, true))
   {
     result = xmlrpc::responseInt(0, console::g_last_error_message, 0);
   }

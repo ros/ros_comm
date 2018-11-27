@@ -209,3 +209,6 @@ class ProtocolHandler(object): #interface
     def init_publisher(self, topic, protocol): 
         raise Exception("interface impl")
     
+    def init_publisher_ext(self, topic, protocol):
+        raise Exception("interface impl")
+

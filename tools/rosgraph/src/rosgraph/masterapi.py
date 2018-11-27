@@ -42,6 +42,8 @@ try:
 except ImportError:
     from xmlrpclib import ServerProxy  # Python 2.x
 
+import rosgraph.rosenv
+
 from . names import make_caller_id
 from . rosenv import get_master_uri
 from . network import parse_http_host_and_port
@@ -326,6 +328,18 @@ class Master(object):
         """
         return self._succeed(self.handle.lookupService(self.caller_id, service))
     
+    def lookupServiceExt(self, service):
+        """
+        Lookup all provider of a particular service.
+        @param service: fully-qualified name of service to lookup.
+        @type: service: str
+        @return (int, str, str, str): (code, message, serviceUrl, serviceUDSUrl). service URL is provides
+           and address and port of the service. service UDS URL is provides uds path of the service.
+           Fails if there is no provider.
+        @raise rosgraph.masterapi.Error: if Master returns ERROR.
+        @raise rosgraph.masterapi.Failure: if Master returns FAILURE.
+        """
+        return self._succeed(self.handle.lookupServiceExt(self.caller_id, service))
 
     def unregisterService(self, service, service_api):
         """
@@ -344,6 +358,25 @@ class Master(object):
         """
         return self._succeed(self.handle.unregisterService(self.caller_id, service, service_api))
     
+    def unregisterServiceExt(self, service, service_api, uds_service_api):
+        """
+        Unregister the caller as a provider of the specified service.
+        @param service: Fully-qualified name of service
+        @type  service: str
+        @param service_api: API URI of service to unregister. Unregistration will only occur if current
+           registration matches.
+        @type  service_api: str
+        @param uds_service_api: API URI of UDS service to unregister. Unregistration will only occur if current
+           registration matches.
+        @type  uds_service_api: str
+        @return: (code, message, numUnregistered). Number of unregistrations (either 0 or 1).
+           If this is zero it means that the caller was not registered as a service provider.
+           The call still succeeds as the intended final state is reached.
+        @rtype: (int, str, int)
+        @raise rosgraph.masterapi.Error: if Master returns ERROR.
+        @raise rosgraph.masterapi.Failure: if Master returns FAILURE.
+        """
+        return self._succeed(self.handle.unregisterService(self.caller_id, service, service_api, uds_service_api))
 
     def registerSubscriber(self, topic, topic_type, caller_api):
         """

@@ -189,7 +189,7 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.assertEquals(['http://node1:5678'], r.get_apis('topic1'))
         self.assertEquals([('node1', 'http://node1:5678')], r['topic1'])
         self.failIf(not r) #test nonzero
-        self.assertEquals(None, r.get_service_api('topic1')) #make sure no contamination
+        self.assertEquals((None, None), r.get_service_api('topic1')) #make sure no contamination
         self.assertEquals([['topic1', ['node1']]], r.get_state())
 
         r.register('topic1', 'node2', 'http://node2:5678')
@@ -281,7 +281,7 @@ class TestRosmasterRegistrations(unittest.TestCase):
             self.failIf('topic1' in r) #test contains            
             self.failIf(r.has_key('topic1')) #test has_key
             self.failIf([k for k in r.iterkeys()]) #no keys
-            self.assertEquals(None, r.get_service_api('non-existent'))
+            self.assertEquals((None, None), r.get_service_api('non-existent'))
 
         # Test topic subs
         r = Registrations(Registrations.TOPIC_SUBSCRIPTIONS)
@@ -305,23 +305,23 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.assertEquals(1, code)
         self.assertEquals(0, val)        
         
-        rm.register_service('s1', 'caller1', 'http://one:1234', 'rosrpc://one:1234')
+        rm.register_service('s1', 'caller1', 'http://one:1234', 'rosrpc://one:1234', 'rosrpc:///tmp/service-uds')
         self.assert_(rm.services.has_key('s1'))
-        self.assertEquals('rosrpc://one:1234', rm.services.get_service_api('s1')) 
+        self.assertEquals(('rosrpc://one:1234', 'rosrpc:///tmp/service-uds'), rm.services.get_service_api('s1'))
         self.assertEquals('http://one:1234', rm.get_node('caller1').api)
         self.assertEquals([['s1', ['caller1']]], rm.services.get_state())
         
         # - verify that changed caller_api updates ref
         rm.register_service('s1', 'caller1', 'http://oneB:1234', 'rosrpc://one:1234')
         self.assert_(rm.services.has_key('s1'))
-        self.assertEquals('rosrpc://one:1234', rm.services.get_service_api('s1'))        
+        self.assertEquals(('rosrpc://one:1234', None), rm.services.get_service_api('s1'))
         self.assertEquals('http://oneB:1234', rm.get_node('caller1').api)
         self.assertEquals([['s1', ['caller1']]], rm.services.get_state())
         
         # - verify that changed service_api updates ref
         rm.register_service('s1', 'caller1', 'http://oneB:1234', 'rosrpc://oneB:1234')
         self.assert_(rm.services.has_key('s1'))
-        self.assertEquals('rosrpc://oneB:1234', rm.services.get_service_api('s1'))        
+        self.assertEquals(('rosrpc://oneB:1234', None), rm.services.get_service_api('s1'))
         self.assertEquals('http://oneB:1234', rm.get_node('caller1').api)
         self.assertEquals([['s1', ['caller1']]], rm.services.get_state())
         
@@ -334,7 +334,7 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.assertEquals(0, val)        
         self.assert_(rm.services.has_key('s2'))
         self.assertEquals('http://two:1234', rm.get_node('caller2').api)        
-        self.assertEquals('rosrpc://two:1234', rm.services.get_service_api('s2'))
+        self.assertEquals(('rosrpc://two:1234', None), rm.services.get_service_api('s2'))
         
         # - unregister should be noop if service is unknown
         code, msg, val = rm.unregister_service('unknown', 'caller2', 'rosrpc://two:1234')
@@ -342,7 +342,7 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.assertEquals(0, val)        
         self.assert_(rm.services.has_key('s2'))
         self.assertEquals('http://two:1234', rm.get_node('caller2').api)        
-        self.assertEquals('rosrpc://two:1234', rm.services.get_service_api('s2'))
+        self.assertEquals(('rosrpc://two:1234', None), rm.services.get_service_api('s2'))
 
         # - unregister should clear all knowledge of caller2
         code,msg, val = rm.unregister_service('s2', 'caller2', 'rosrpc://two:1234')
@@ -571,15 +571,15 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.failIf(not r)
         for k in ['service1', 'service1b', 'service1c', 'service1d']:
             self.failIf(r.has_key(k))
-            self.assertEquals(None, r.get_service_api(k))
+            self.assertEquals((None, None), r.get_service_api(k))
         self.assertEquals(['service2'], [k for k in r.iterkeys()])
-        self.assertEquals('rosrpc://node2:1234', r.get_service_api('service2'))
+        self.assertEquals(('rosrpc://node2:1234', None), r.get_service_api('service2'))
 
     def _subtest_Registrations_services(self, r):
         import rosmaster.exceptions
 
         # call methods that use service_api_map, make sure they are guarded against lazy-init
-        self.assertEquals(None, r.get_service_api('s1'))
+        self.assertEquals((None, None), r.get_service_api('s1'))
         r.unregister_all('node1')
 
         # do an unregister first, before service_api is initialized
@@ -592,27 +592,27 @@ class TestRosmasterRegistrations(unittest.TestCase):
             self.fail("should require service_api")
         except rosmaster.exceptions.InternalException: pass
         
-        r.register('service1', 'node1', 'http://node1:5678', 'rosrpc://node1:1234')
+        r.register('service1', 'node1', 'http://node1:5678', 'rosrpc://node1:1234', 'rosrpc:///tmp/service-uds')
         
         self.assert_('service1' in r) # test contains
         self.assert_(r.has_key('service1')) # test contains
         self.assertEquals(['service1'], [k for k in r.iterkeys()])
         self.assertEquals(['http://node1:5678'], r.get_apis('service1'))
-        self.assertEquals('rosrpc://node1:1234', r.get_service_api('service1'))
+        self.assertEquals(('rosrpc://node1:1234', 'rosrpc:///tmp/service-uds'), r.get_service_api('service1'))
         self.assertEquals([('node1', 'http://node1:5678')], r['service1'])
         self.failIf(not r) #test nonzero
         self.assertEquals([['service1', ['node1']]], r.get_state())
 
         r.register('service1', 'node2', 'http://node2:5678', 'rosrpc://node2:1234')
         self.assertEquals(['service1'], [k for k in r.iterkeys()])
-        self.assertEquals('rosrpc://node2:1234', r.get_service_api('service1'))
+        self.assertEquals(('rosrpc://node2:1234', None), r.get_service_api('service1'))
         self.assertEquals(['http://node2:5678'], r.get_apis('service1'))
         self.assertEquals([('node2', 'http://node2:5678')], r['service1'])
         self.assertEquals([['service1', ['node2']]], r.get_state())
 
         # register a second service
         r.register('service2', 'node3', 'http://node3:5678', 'rosrpc://node3:1234')
-        self.assertEquals('rosrpc://node3:1234', r.get_service_api('service2'))
+        self.assertEquals(('rosrpc://node3:1234', None), r.get_service_api('service2'))
         self.assertEquals(2, len(r.get_state()))
         self.assert_(['service2', ['node3']] in r.get_state(), r.get_state())
         self.assert_(['service1', ['node2']] in r.get_state())

@@ -30,12 +30,14 @@
 #include "ros/file_log.h"
 #include "ros/exceptions.h"
 #include "ros/io.h"     // cross-platform headers needed
+#include "ros/transport/transport_tcp.h" // for TransportTCP::s_use_ipv6_
 #include <ros/console.h>
 #include <ros/assert.h>
 #ifdef HAVE_IFADDRS_H
   #include <ifaddrs.h>
 #endif
 
+#include <boost/filesystem.hpp> // for boost::filesystem::exists
 #include <boost/lexical_cast.hpp>
 
 namespace ros
@@ -60,7 +62,8 @@ bool splitURI(const std::string& uri, std::string& host, uint32_t& port)
   else if (uri.substr(0, 9) == std::string("rosrpc://"))
     host = uri.substr(9);
   // split out the port
-  std::string::size_type colon_pos = host.find_first_of(":");
+  // Fix bug: parse error while use ROS_IP with ROS_IPV6
+  std::string::size_type colon_pos = host.find_last_of(":");
   if (colon_pos == std::string::npos)
     return false;
   std::string port_str = host.substr(colon_pos+1);
@@ -70,6 +73,148 @@ bool splitURI(const std::string& uri, std::string& host, uint32_t& port)
   port = atoi(port_str.c_str());
   host = host.erase(colon_pos);
   return true;
+}
+
+bool splitURI(const std::string& uri, std::string& uds_path)
+{
+  // skip over the protocol if it's there
+  if (uri.substr(0, 7) == std::string("http://"))
+    uds_path = uri.substr(7);
+  else if (uri.substr(0, 9) == std::string("rosrpc://"))
+    uds_path = uri.substr(9);
+  else
+    return false;
+  return true;
+}
+
+static std::vector<std::string> getReverseIPList(const std::string& hostname)
+{
+  std::vector<std::string> reverse_ips;
+
+  struct addrinfo hints;
+  struct addrinfo *result, *rp;
+  int ret;
+
+  memset(&hints, 0, sizeof(struct addrinfo));
+  if (TransportTCP::s_use_ipv6_)
+  {
+    hints.ai_family = AF_UNSPEC;
+  }
+  else
+  {
+    hints.ai_family = AF_INET;
+  }
+
+  hints.ai_protocol = SOL_TCP;
+
+  ret = getaddrinfo(hostname.c_str(), 0, &hints, &result);
+  if (ret != 0)
+  {
+    ROS_ERROR("getaddrinfo for %s: %s", hostname.c_str(), gai_strerror(ret));
+    goto end;
+  }
+
+  for (rp = result; rp != NULL; rp = rp->ai_next)
+  {
+    if (rp->ai_family == AF_INET)
+    {
+      reverse_ips.push_back(inet_ntoa(((struct sockaddr_in *)(rp->ai_addr))->sin_addr));
+    }
+    else if (TransportTCP::s_use_ipv6_ && rp->ai_family == AF_INET6)
+    {
+      char buf[128];
+      reverse_ips.push_back(
+        inet_ntop(AF_INET6,
+          (void*)&(((struct sockaddr_in6 *)(rp->ai_addr))->sin6_addr), buf, sizeof(buf)));
+    }
+  }
+
+  freeaddrinfo(result);
+
+end:
+  return reverse_ips;
+}
+
+static std::vector<std::string> getLocalAddresses()
+{
+  std::vector<std::string> local_addresses;
+
+  struct ifaddrs *ifaddr, *ifa;
+  int family, ret;
+  char host[NI_MAXHOST];
+
+  if (getifaddrs(&ifaddr) == -1)
+  {
+    ROS_ERROR("error in getifaddrs: [%s]", strerror(errno));
+    goto end;
+  }
+
+  for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next)
+  {
+      if (ifa->ifa_addr == NULL)
+      {
+        continue;
+      }
+
+      family = ifa->ifa_addr->sa_family;
+
+      if (family == AF_INET || (TransportTCP::s_use_ipv6_ && family == AF_INET6))
+      {
+          ret = getnameinfo(ifa->ifa_addr,
+                  (family == AF_INET) ? sizeof(struct sockaddr_in) :
+                                        sizeof(struct sockaddr_in6),
+                  host, NI_MAXHOST,
+                  NULL, 0, NI_NUMERICHOST);
+          if (ret != 0)
+          {
+              ROS_ERROR("getnameinfo() failed: %s", gai_strerror(ret));
+              continue;
+          }
+
+          local_addresses.push_back(host);
+      }
+  }
+
+  freeifaddrs(ifaddr);
+
+end:
+  return local_addresses;
+}
+
+static bool isLocalAddress(const std::string& hostname)
+{
+  bool ret = false;
+  std::vector<std::string> reverse_ips = getReverseIPList(hostname);
+  std::vector<std::string> local_addresses = getLocalAddresses();
+  local_addresses.push_back("localhost");
+
+  for (const auto& ip: reverse_ips)
+  {
+    if(ip.find("127.") != std::string::npos || ip.find("::1") != std::string::npos)
+    {
+      ret = true;
+      goto end;
+    }
+  }
+
+  for (const auto& addr: local_addresses)
+  {
+    if (std::find(reverse_ips.begin(), reverse_ips.end(), addr) != reverse_ips.end())
+    {
+      ret = true;
+      goto end;
+    }
+  }
+
+end:
+  return ret;
+}
+
+bool isInternal(const std::string& uds_path, const std::string& hostname)
+{
+  // For container case: if UDS file exist at container machine by sharing, it will be recognized as 'internal'
+  return !uds_path.empty() &&
+    (isLocalAddress(hostname) || boost::filesystem::exists(uds_path));
 }
 
 uint16_t getTCPROSPort()

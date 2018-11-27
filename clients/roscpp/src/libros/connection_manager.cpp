@@ -32,6 +32,8 @@
 #include "ros/service_client_link.h"
 #include "ros/transport/transport_tcp.h"
 #include "ros/transport/transport_udp.h"
+#include "ros/transport/transport_uds_stream.h"
+#include "ros/transport/transport_uds_datagram.h"
 #include "ros/file_log.h"
 #include "ros/network.h"
 
@@ -62,11 +64,30 @@ void ConnectionManager::start()
   poll_conn_ = poll_manager_->addPollThreadListener(boost::bind(&ConnectionManager::removeDroppedConnections, 
 								this));
 
+  // Bring up the TCP listener socket for UDS
+  uds_stream_server_transport_ = boost::make_shared<TransportUDSStream>(&poll_manager_->getPollSet());
+  if (!uds_stream_server_transport_->listen(MAX_TCPROS_CONN_QUEUE,
+            boost::bind(static_cast<void (ConnectionManager::*)( const TransportUDSStreamPtr& )>
+                        (&ConnectionManager::tcprosAcceptConnection), this, _1)))
+  {
+    ROS_FATAL("Listen on Unix Domain Socket path [%s] failed", getUDSStreamPath().c_str());
+    ROS_BREAK();
+  }
+
+  // Bring up the UDP listener socket
+  uds_datagram_server_transport_ = boost::make_shared<TransportUDSDatagram>(&poll_manager_->getPollSet());
+  if (!uds_datagram_server_transport_->createIncoming(true))
+  {
+    ROS_FATAL("Listen failed");
+    ROS_BREAK();
+  }
+
   // Bring up the TCP listener socket
   tcpserver_transport_ = boost::make_shared<TransportTCP>(&poll_manager_->getPollSet());
-  if (!tcpserver_transport_->listen(network::getTCPROSPort(), 
-				    MAX_TCPROS_CONN_QUEUE, 
-				    boost::bind(&ConnectionManager::tcprosAcceptConnection, this, _1)))
+  if (!tcpserver_transport_->listen(network::getTCPROSPort(),
+            MAX_TCPROS_CONN_QUEUE,
+            boost::bind(static_cast<void (ConnectionManager::*)( const TransportTCPPtr& )>
+                        (&ConnectionManager::tcprosAcceptConnection), this, _1)))
   {
     ROS_FATAL("Listen on port [%d] failed", network::getTCPROSPort());
     ROS_BREAK();
@@ -83,6 +104,18 @@ void ConnectionManager::start()
 
 void ConnectionManager::shutdown()
 {
+  if (uds_datagram_server_transport_)
+  {
+    uds_datagram_server_transport_->close();
+    uds_datagram_server_transport_.reset();
+  }
+
+  if (uds_stream_server_transport_)
+  {
+    uds_stream_server_transport_->close();
+    uds_stream_server_transport_.reset();
+  }
+
   if (udpserver_transport_)
   {
     udpserver_transport_->close();
@@ -128,6 +161,16 @@ uint32_t ConnectionManager::getTCPPort()
 uint32_t ConnectionManager::getUDPPort()
 {
   return udpserver_transport_->getServerPort();
+}
+
+const std::string ConnectionManager::getUDSStreamPath()
+{
+  return uds_stream_server_transport_->getServerUDSPath();
+}
+
+const std::string ConnectionManager::getUDSDatagramPath()
+{
+  return uds_datagram_server_transport_->getServerUDSPath();
 }
 
 uint32_t ConnectionManager::getNewConnectionID()
@@ -182,7 +225,30 @@ void ConnectionManager::udprosIncomingConnection(const TransportUDPPtr& transpor
   onConnectionHeaderReceived(conn, header);
 }
 
+void ConnectionManager::udprosIncomingConnection(const TransportUDSDatagramPtr& transport, Header& header)
+{
+  std::string client_uri = ""; // TODO: transport->getClientURI();
+  ROSCPP_LOG_DEBUG("UDPROS received a connection from [%s]", client_uri.c_str());
+
+  ConnectionPtr conn(boost::make_shared<Connection>());
+  addConnection(conn);
+
+  conn->initialize(transport, true, NULL);
+  onConnectionHeaderReceived(conn, header);
+}
+
 void ConnectionManager::tcprosAcceptConnection(const TransportTCPPtr& transport)
+{
+  std::string client_uri = transport->getClientURI();
+  ROSCPP_LOG_DEBUG("TCPROS received a connection from [%s]", client_uri.c_str());
+
+  ConnectionPtr conn(boost::make_shared<Connection>());
+  addConnection(conn);
+
+  conn->initialize(transport, true, boost::bind(&ConnectionManager::onConnectionHeaderReceived, this, _1, _2));
+}
+
+void ConnectionManager::tcprosAcceptConnection(const TransportUDSStreamPtr& transport)
 {
   std::string client_uri = transport->getClientURI();
   ROSCPP_LOG_DEBUG("TCPROS received a connection from [%s]", client_uri.c_str());

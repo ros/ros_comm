@@ -38,6 +38,7 @@
 #include "ros/master.h"
 #include "ros/transport/transport_tcp.h"
 #include "ros/transport/transport_udp.h"
+#include "ros/transport/transport_uds_stream.h"
 #include "ros/init.h"
 #include "ros/connection.h"
 #include "ros/file_log.h"
@@ -143,14 +144,25 @@ bool ServiceManager::advertiseService(const AdvertiseServiceOptions& ops)
   }
 
   XmlRpcValue args, result, payload;
+  XmlRpcValue uds_args;
   args[0] = this_node::getName();
   args[1] = ops.service;
   char uri_buf[1024];
   snprintf(uri_buf, sizeof(uri_buf), "rosrpc://%s:%d",
            network::getHost().c_str(), connection_manager_->getTCPPort());
   args[2] = string(uri_buf);
+
+  uds_args = args;
+  snprintf(uri_buf, sizeof(uri_buf), "rosrpc://%s",
+           connection_manager_->getUDSStreamPath().c_str());
+  uds_args[3] = string(uri_buf);
+
   args[3] = xmlrpc_manager_->getServerURI();
-  master::execute("registerService", args, result, payload, true);
+  uds_args[4] = xmlrpc_manager_->getServerURI();
+  if (!master::execute("registerServiceExt", uds_args, result, payload, true))
+  {
+    master::execute("registerService", args, result, payload, true);
+  }
 
   return true;
 }
@@ -193,6 +205,7 @@ bool ServiceManager::unadvertiseService(const string &serv_name)
 bool ServiceManager::unregisterService(const std::string& service)
 {
   XmlRpcValue args, result, payload;
+  XmlRpcValue uds_args;
   args[0] = this_node::getName();
   args[1] = service;
   char uri_buf[1024];
@@ -200,7 +213,15 @@ bool ServiceManager::unregisterService(const std::string& service)
            network::getHost().c_str(), connection_manager_->getTCPPort());
   args[2] = string(uri_buf);
 
-  master::execute("unregisterService", args, result, payload, false);
+  uds_args = args;
+  snprintf(uri_buf, sizeof(uri_buf), "rosrpc://%s",
+           connection_manager_->getUDSStreamPath().c_str());
+  uds_args[3] = string(uri_buf);
+
+  if (!master::execute("unregisterServiceExt", uds_args, result, payload, false))
+  {
+    master::execute("unregisterService", args, result, payload, false);
+  }
 
   return true;
 }
@@ -247,20 +268,48 @@ ServiceServerLinkPtr ServiceManager::createServiceServerLink(const std::string& 
 
   uint32_t serv_port;
   std::string serv_host;
-  if (!lookupService(service, serv_host, serv_port))
+  std::string serv_uds_path;
+  ConnectionPtr connection;
+  bool connect_ret = false;
+
+  if (!lookupServiceExt(service, serv_host, serv_port, serv_uds_path))
   {
     return ServiceServerLinkPtr();
   }
 
-  TransportTCPPtr transport(boost::make_shared<TransportTCP>(&poll_manager_->getPollSet()));
+  bool is_internal = network::isInternal(serv_uds_path, serv_host);
+  if (is_internal)
+  {
+    TransportUDSStreamPtr transport(boost::make_shared<TransportUDSStream>(&poll_manager_->getPollSet()));
 
-  // Make sure to initialize the connection *before* transport->connect()
-  // is called, otherwise we might miss a connect error (see #434).
-  ConnectionPtr connection(boost::make_shared<Connection>());
-  connection_manager_->addConnection(connection);
-  connection->initialize(transport, false, HeaderReceivedFunc());
+    // Make sure to initialize the connection *before* transport->connect()
+    // is called, otherwise we might miss a connect error (see #434).
+    connection = boost::make_shared<Connection>();
+    connection_manager_->addConnection(connection);
+    connection->initialize(transport, false, HeaderReceivedFunc());
 
-  if (transport->connect(serv_host, serv_port))
+    if (transport->connect(serv_uds_path))
+    {
+      connect_ret = true;
+    }
+  }
+  else
+  {
+    TransportTCPPtr transport(boost::make_shared<TransportTCP>(&poll_manager_->getPollSet()));
+
+    // Make sure to initialize the connection *before* transport->connect()
+    // is called, otherwise we might miss a connect error (see #434).
+    connection = boost::make_shared<Connection>();
+    connection_manager_->addConnection(connection);
+    connection->initialize(transport, false, HeaderReceivedFunc());
+
+    if (transport->connect(serv_host, serv_port))
+    {
+      connect_ret = true;
+    }
+  }
+
+  if (connect_ret)
   {
     ServiceServerLinkPtr client(boost::make_shared<ServiceServerLink>(service, persistent, request_md5sum, response_md5sum, header_values));
 
@@ -274,7 +323,14 @@ ServiceServerLinkPtr ServiceManager::createServiceServerLink(const std::string& 
     return client;
   }
 
-  ROSCPP_LOG_DEBUG("Failed to connect to service [%s] (mapped=[%s]) at [%s:%d]", service.c_str(), service.c_str(), serv_host.c_str(), serv_port);
+  if (is_internal)
+  {
+    ROSCPP_LOG_DEBUG("Failed to connect to service [%s] (mapped=[%s]) at [%s]", service.c_str(), service.c_str(), serv_uds_path.c_str());
+  }
+  else
+  {
+    ROSCPP_LOG_DEBUG("Failed to connect to service [%s] (mapped=[%s]) at [%s:%d]", service.c_str(), service.c_str(), serv_host.c_str(), serv_port);
+  }
 
   return ServiceServerLinkPtr();
 }
@@ -322,6 +378,56 @@ bool ServiceManager::lookupService(const string &name, string &serv_host, uint32
   if (!network::splitURI(serv_uri, serv_host, serv_port))
   {
     ROS_ERROR("lookupService: Bad service uri [%s]", serv_uri.c_str());
+
+    return false;
+  }
+
+  return true;
+}
+
+bool ServiceManager::lookupServiceExt(const string &name, string &serv_host, uint32_t &serv_port, std::string& serv_uds_path)
+{
+  XmlRpcValue args, result, payload, uds_payload;
+  args[0] = this_node::getName();
+  args[1] = name;
+  if (!master::execute("lookupServiceExt", args, result, uds_payload, false))
+  {
+    if (!master::execute("lookupService", args, result, payload, false))
+    {
+      return false;
+    }
+  }
+
+  string serv_uri;
+  string serv_uds_uri;
+
+  if (uds_payload.valid() && uds_payload.size() != 0)
+  {
+    serv_uri = std::string(uds_payload[0]);
+    serv_uds_uri = std::string(uds_payload[1]);
+  }
+  else
+  {
+    serv_uri = std::string(payload);
+  }
+
+  if (!serv_uri.length()) // shouldn't happen. but let's be sure.
+  {
+    ROS_ERROR("lookupService: Empty server URI returned from master");
+
+    return false;
+  }
+
+  if (!network::splitURI(serv_uri, serv_host, serv_port))
+  {
+    ROS_ERROR("lookupService: Bad service uri [%s]", serv_uri.c_str());
+
+    return false;
+  }
+
+  if (serv_uds_uri.length() && !network::splitURI(serv_uds_uri, serv_uds_path))
+  {
+    ROS_ERROR("lookupService: Bad service uri [%s]", serv_uds_uri.c_str());
 
     return false;
   }

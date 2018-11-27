@@ -41,6 +41,8 @@ namespace network
 {
 
 ROSCPP_DECL bool splitURI(const std::string& uri, std::string& host, uint32_t& port);
+ROSCPP_DECL bool splitURI(const std::string& uri, std::string& uds_path);
+ROSCPP_DECL bool isInternal(const std::string& uds_path, const std::string& hostname);
 ROSCPP_DECL const std::string& getHost();
 ROSCPP_DECL uint16_t getTCPROSPort();
 

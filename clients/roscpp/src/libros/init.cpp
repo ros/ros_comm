@@ -47,6 +47,7 @@
 #include "ros/rosout_appender.h"
 #include "ros/subscribe_options.h"
 #include "ros/transport/transport_tcp.h"
+#include "ros/transport/transport_uds.h"
 #include "ros/internal_timer_manager.h"
 #include "xmlrpcpp/XmlRpcSocket.h"
 
@@ -316,6 +317,33 @@ void start()
     }
   }
 
+  char* env_feature = NULL;
+  env_feature = getenv("ROS_UDS_EXT_FEATURE");
+
+  if (env_feature) {
+    TransportUDS::s_uds_feature_ = (uint32_t) strtol(env_feature, NULL, 16);
+  }
+  ROSCPP_LOG_DEBUG("ROS_UDS_EXT_FEATURE is 0x%x", TransportUDS::s_uds_feature_);
+
+  // IPV6 can work together with UDS.
+  char* env_ipv6 = NULL;
+#ifdef _MSC_VER
+  _dupenv_s(&env_ipv6, NULL, "ROS_IPV6");
+#else
+  env_ipv6 = getenv("ROS_IPV6");
+#endif
+
+  bool use_ipv6 = (env_ipv6 && strcmp(env_ipv6,"on") == 0);
+  TransportTCP::s_use_ipv6_ = use_ipv6;
+  XmlRpc::XmlRpcSocket::s_use_ipv6_ = use_ipv6;
+
+#ifdef _MSC_VER
+  if (env_ipv6)
+  {
+    free(env_ipv6);
+  }
+#endif
+
   param::param("/tcp_keepalive", TransportTCP::s_use_keepalive_, TransportTCP::s_use_keepalive_);
 
   PollManager::instance()->addPollThreadListener(checkForShutdown);
@@ -338,8 +366,11 @@ void start()
 
   if (!(g_init_options & init_options::NoRosout))
   {
-    g_rosout_appender = new ROSOutAppender;
-    ros::console::register_appender(g_rosout_appender);
+    if ( !getenv("ROS_NO_ROSOUT") )
+    {
+      g_rosout_appender = new ROSOutAppender;
+      ros::console::register_appender(g_rosout_appender);
+    }
   }
 
   if (g_shutting_down) goto end;
@@ -397,10 +428,13 @@ void start()
   g_internal_queue_thread = boost::thread(internalCallbackQueueThreadFunc);
   getGlobalCallbackQueue()->enable();
 
-  ROSCPP_LOG_DEBUG("Started node [%s], pid [%d], bound on [%s], xmlrpc port [%d], tcpros port [%d], using [%s] time", 
-		   this_node::getName().c_str(), getpid(), network::getHost().c_str(), 
-		   XMLRPCManager::instance()->getServerPort(), ConnectionManager::instance()->getTCPPort(), 
-		   Time::useSystemTime() ? "real" : "sim");
+  ROSCPP_LOG_DEBUG("Started node [%s], pid [%d], bound on [%s], xmlrpc port [%d], tcpros port [%d], "
+       "tcpros uds_path [%s], "
+       "using [%s] time",
+       this_node::getName().c_str(), getpid(), network::getHost().c_str(),
+       XMLRPCManager::instance()->getServerPort(), ConnectionManager::instance()->getTCPPort(),
+       ConnectionManager::instance()->getUDSStreamPath().c_str(),
+       Time::useSystemTime() ? "real" : "sim");
 
   // Label used to abort if we've started shutting down in the middle of start(), which can happen in
   // threaded code or if Ctrl-C is pressed while we're initializing

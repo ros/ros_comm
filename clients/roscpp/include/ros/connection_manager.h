@@ -64,10 +64,17 @@ public:
   uint32_t getTCPPort();
   uint32_t getUDPPort();
 
+  const std::string getUDSStreamPath();
+  const std::string getUDSDatagramPath();
+
   const TransportTCPPtr& getTCPServerTransport() { return tcpserver_transport_; }
   const TransportUDPPtr& getUDPServerTransport() { return udpserver_transport_; }
 
+  const TransportUDSStreamPtr& getUDSStreamServerTransport() { return uds_stream_server_transport_; }
+  const TransportUDSDatagramPtr& getUDSDatagramServerTransport() { return uds_datagram_server_transport_; }
+
   void udprosIncomingConnection(const TransportUDPPtr& transport, Header& header);
+  void udprosIncomingConnection(const TransportUDSDatagramPtr& transport, Header& header);
 
   void start();
   void shutdown();
@@ -81,6 +88,7 @@ private:
 
   bool onConnectionHeaderReceived(const ConnectionPtr& conn, const Header& header);
   void tcprosAcceptConnection(const TransportTCPPtr& transport);
+  void tcprosAcceptConnection(const TransportUDSStreamPtr& transport);
 
   PollManagerPtr poll_manager_;
 
@@ -98,6 +106,10 @@ private:
 
   TransportTCPPtr tcpserver_transport_;
   TransportUDPPtr udpserver_transport_;
+
+  // Unix Domain Socket (stream, datagram)
+  TransportUDSStreamPtr uds_stream_server_transport_;
+  TransportUDSDatagramPtr uds_datagram_server_transport_;
 
   const static int MAX_TCPROS_CONN_QUEUE = 100; // magic
 };

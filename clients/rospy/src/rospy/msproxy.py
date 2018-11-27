@@ -59,6 +59,9 @@ _master_arg_remap = {
     'registerService': [0], # remap service
     'lookupService': [0], # remap service
     'unregisterService': [0], # remap service
+    'registerServiceExt': [0], # remap service
+    'lookupServiceExt': [0], # remap service
+    'unregisterServiceExt': [0], # remap service
     'registerSubscriber': [0], # remap topic
     'unregisterSubscriber': [0], # remap topic    
     'registerPublisher': [0], # remap topic   

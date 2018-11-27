@@ -91,7 +91,7 @@ def _succeed(args):
         raise ROSServiceException("remote call failed: %s"%msg)
     return val
 
-def get_service_headers(service_name, service_uri):
+def get_service_headers(service_name, service_uri, service_uri_uds=None):
     """
     Utility for connecting to a service and retrieving the TCPROS
     headers. Services currently do not declare their type with the
@@ -100,6 +100,8 @@ def get_service_headers(service_name, service_uri):
     @type  service_name: str
     @param service_uri: ROSRPC URI of service
     @type  service_uri: str
+    @param service_uri_uds: ROSRPC URI of UDS service
+    @type  service_uri_uds: str
     @return: map of header fields
     @rtype: dict
     @raise ROSServiceException: if service has invalid information
@@ -107,17 +109,30 @@ def get_service_headers(service_name, service_uri):
     """
     try:
         dest_addr, dest_port = rospy.parse_rosrpc_uri(service_uri)
+        is_internal = False
+        if service_uri_uds is not None:
+            dest_uds_path = rospy.parse_rosrpc_uri(service_uri_uds)
+            is_internal = rosgraph.network.is_internal(dest_uds_path, dest_addr)
     except:
         raise ROSServiceException("service [%s] has an invalid RPC URI [%s]"%(service_name, service_uri))
-    if rosgraph.network.use_ipv6():
-        s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+    if is_internal:
+        s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     else:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        if rosgraph.network.use_ipv6():
+            s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        else:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         try:
             # connect to service and probe it to get the headers
             s.settimeout(5.0)
-            s.connect((dest_addr, dest_port))
+            if is_internal:
+                if rosgraph.rosenv.ros_uds_ext_is_enable(rosgraph.rosenv.ROS_UDS_EXT_ABSTRACT_SOCK_NAME):
+                    s.connect('\0' + dest_uds_path)
+                else:
+                    s.connect(dest_uds_path)
+            else:
+                s.connect((dest_addr, dest_port))
             header = { 'probe':'1', 'md5sum':'*',
                        'callerid':'/rosservice', 'service':service_name}
             rosgraph.network.write_ros_handshake_header(s, header)
@@ -137,14 +152,18 @@ def get_service_type(service_name):
     :raises: :exc:`ROSServiceIOException` If unable to communicate with service
     """
     master = _get_master()
+    service_uri_uds = None
     try:
-        service_uri = master.lookupService(service_name)
+        try:
+            service_uri, service_uri_uds = master.lookupServiceExt(service_name)
+        except Exception as e:
+            service_uri = master.lookupService(service_name)
     except socket.error:
         raise ROSServiceIOException("Unable to communicate with master!")
     except rosgraph.MasterError:
         return None
     try:
-        return get_service_headers(service_name, service_uri).get('type', None)
+        return get_service_headers(service_name, service_uri, service_uri_uds).get('type', None)
     except socket.error:
         raise ROSServiceIOException("Unable to communicate with service [%s]! Service address is [%s]"%(service_name, service_uri))
 
@@ -172,7 +191,12 @@ def get_service_uri(service_name):
     try:
         master = _get_master()
         try:
-            return master.lookupService(service_name)
+            uri_uds = None
+            try:
+                uri, uri_uds = master.lookupServiceExt(service_name)
+            except Exception as e:
+                uri = master.lookupService(service_name)
+            return uri, uri_uds
         except rosgraph.MasterException:
             return None
     except socket.error:
@@ -186,9 +210,12 @@ def _rosservice_uri(service_name):
     :param service_name: name of service to lookup, ``str``
     :raises: :exc:`ROSServiceIOException` If the I/O issues prevent retrieving service information
     """
-    uri = get_service_uri(service_name)
+    uri, uri_uds = get_service_uri(service_name)
     if uri:
-        print(uri)
+        if uri_uds is not None:
+            print(uri, uri_uds)
+        else:
+            print(uri)
     else:
         print("Unknown service: %s"%service_name, file=sys.stderr)
         sys.exit(1)
@@ -293,11 +320,14 @@ def _rosservice_info(service_name):
         print("ERROR: unknown service", file=sys.stderr)
         sys.exit(1)
     print("Node: %s"%n)
-    uri = get_service_uri(service_name)
+    uri, uri_uds = get_service_uri(service_name)
     if not uri:
         print("ERROR: service is no longer available", file=sys.stderr)
         return
-    print("URI: %s"%uri)
+    if uri_uds is not None:
+        print("URI: %s, %s"%(uri, uri_uds))
+    else:
+        print("URI: %s"%uri)
     t = get_service_type(service_name)
     if not t:
         print("ERROR: service is no longer available", file=sys.stderr)
