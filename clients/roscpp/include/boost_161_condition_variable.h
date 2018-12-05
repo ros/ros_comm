@@ -16,7 +16,6 @@ namespace boost_161 {
   using condition_variable = boost::condition_variable;
 }
 #elif defined(BOOST_THREAD_PLATFORM_PTHREAD)
-//#include <boost/thread/pthread/condition_variable.hpp>
 #include "boost_161_pthread_condition_variable.h"
 #else
 #error "Boost threads unavailable on this platform"
