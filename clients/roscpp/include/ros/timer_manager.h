@@ -566,14 +566,14 @@ void TimerManager<T, D, E>::threadFunc()
       // since simulation time may be running faster than real time.
       if (!T::isSystemTime())
       {
-        timers_cond_.timed_wait(lock, boost::posix_time::milliseconds(1));
+        timers_cond_.wait_for(lock, boost::chrono::milliseconds(1));
       }
       else
       {
         // On system time we can simply sleep for the rest of the wait time, since anything else requiring processing will
         // signal the condition variable
         int64_t remaining_time = std::max<int64_t>((sleep_end - current).toSec() * 1000.0f, 1);
-        timers_cond_.timed_wait(lock, boost::posix_time::milliseconds(remaining_time));
+        timers_cond_.wait_for(lock, boost::chrono::milliseconds(remaining_time));
       }
     }
 
