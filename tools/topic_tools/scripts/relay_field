@@ -32,6 +32,27 @@ import std_msgs
 __author__ = 'www.kentaro.wada@gmail.com (Kentaro Wada)'
 
 
+def _eval_in_str_impl(str_, globals_, locals_):
+    type_ = type(str_)
+    if (type_ is str or type_ is unicode) and 'm.' in str_:
+        try:
+            evaluated = eval(str_, globals_, locals_)
+        except NameError or SyntaxError as e:
+            rospy.logerr(e)
+            return str_
+
+        if isinstance(evaluated, genpy.Time):
+            res = {
+                'secs': evaluated.secs,
+                'nsecs': evaluated.nsecs,
+            }
+        else:
+            res = yaml.load(str(evaluated))
+        return res
+    else:
+        return str_
+
+
 def _eval_in_dict_impl(dict_, globals_, locals_):
     res = copy.deepcopy(dict_)
     for k, v in res.items():
@@ -39,12 +60,9 @@ def _eval_in_dict_impl(dict_, globals_, locals_):
         if type_ is dict:
             res[k] = _eval_in_dict_impl(v, globals_, locals_)
         elif (type_ is str) or (type_ is unicode):
-            try:
-                res[k] = eval(v, globals_, locals_)
-            except NameError:
-                pass
-            except SyntaxError:
-                pass
+            res[k] = _eval_in_str_impl(v, globals_, locals_)
+        else:
+            res[k] = v
     return res
 
 
