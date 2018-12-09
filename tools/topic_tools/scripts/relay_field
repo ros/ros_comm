@@ -117,7 +117,10 @@ class RelayField(object):
             m = self.input_fn(m)
 
         msg_generation = yaml.load(self.expression)
-        pub_args = _eval_in_dict_impl(msg_generation, None, {'m': m})
+        if type(msg_generation) is dict:
+            pub_args = _eval_in_dict_impl(msg_generation, None, {'m': m})
+        else:
+            pub_args = _eval_in_str_impl(msg_generation, None, {'m': m})
 
         now = rospy.get_rostime()
         keys = {'now': now, 'auto': std_msgs.msg.Header(stamp=now)}
