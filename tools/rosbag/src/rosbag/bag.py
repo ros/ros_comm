@@ -707,6 +707,7 @@ class Bag(object):
         """
         if self._file:
             if self._mode in 'wa':
+                self._file.seek(0, os.SEEK_CUR)
                 self._stop_writing()
             
             self._close_file()
