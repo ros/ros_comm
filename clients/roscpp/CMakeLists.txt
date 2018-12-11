@@ -21,7 +21,7 @@ list(GET roscpp_VERSION_LIST 1 roscpp_VERSION_MINOR)
 list(GET roscpp_VERSION_LIST 2 roscpp_VERSION_PATCH)
 
 # Make sure we use CLOCK_MONOTONIC for the condition variable wait_for if not Apple.
-if(NOT APPLE)
+if(NOT APPLE AND NOT WIN32)
   if(Boost_VERSION LESS 106100)
     set(ROSCPP_USE_BACKPORTED_BOOST_CONDITION_VARIABLE_IMPLEMENTATION ON)
   endif()
