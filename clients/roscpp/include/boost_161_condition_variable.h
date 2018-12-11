@@ -12,9 +12,6 @@
 #include <boost/thread/detail/platform.hpp>
 #if defined(BOOST_THREAD_PLATFORM_WIN32)
 #include <boost/thread/win32/condition_variable.hpp>
-namespace boost_161 {
-  using condition_variable = boost::condition_variable;
-}
 #elif defined(BOOST_THREAD_PLATFORM_PTHREAD)
 #include "boost_161_pthread_condition_variable.h"
 #else

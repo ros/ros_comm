@@ -22,8 +22,8 @@ list(GET roscpp_VERSION_LIST 2 roscpp_VERSION_PATCH)
 
 find_package(Boost REQUIRED COMPONENTS chrono filesystem signals system)
 
-# Make sure we use CLOCK_MONOTONIC for the condition variable wait_for if not Apple.
-if(NOT APPLE)
+# Make sure we use CLOCK_MONOTONIC for the condition variable wait_for if not Apple or Windows.
+if(NOT APPLE AND NOT WIN32)
   if(Boost_VERSION LESS 106100)
     set(ROSCPP_USE_BACKPORTED_BOOST_CONDITION_VARIABLE_IMPLEMENTATION ON)
   endif()
