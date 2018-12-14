@@ -50,6 +50,22 @@
 namespace ros
 {
 
+namespace {
+  template<class T>
+  class TimerManagerTraits
+  {
+  public:
+    typedef boost::chrono::system_clock::time_point time_point;
+  };
+
+  template<>
+  class TimerManagerTraits<SteadyTime>
+  {
+  public:
+    typedef boost::chrono::steady_clock::time_point time_point;
+  };
+}
+
 template<class T, class D, class E>
 class TimerManager
 {
@@ -572,8 +588,8 @@ void TimerManager<T, D, E>::threadFunc()
       {
         // On system time we can simply sleep for the rest of the wait time, since anything else requiring processing will
         // signal the condition variable
-        int64_t remaining_time = std::max<int64_t>((sleep_end - current).toSec() * 1000.0f, 1);
-        timers_cond_.wait_for(lock, boost::chrono::milliseconds(remaining_time));
+        typename TimerManagerTraits<T>::time_point end_tp(boost::chrono::nanoseconds(sleep_end.toNSec()));
+        timers_cond_.wait_until(lock, end_tp);
       }
     }
 
