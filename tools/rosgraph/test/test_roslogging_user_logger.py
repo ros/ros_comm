@@ -86,6 +86,7 @@ def test_roslogging_user_logger():
         '${severity}',
         '${message}',
         '${walltime}',
+        '${walltime:%Y-%m-%d %H:%M:%S}',
         '${thread}',
         '${logger}',
         '${file}',
@@ -93,6 +94,7 @@ def test_roslogging_user_logger():
         '${function}',
         '${node}',
         '${time}',
+        '${time:%Y-%m-%d %H:%M:%S}',
     ])
     rosgraph.roslogging.configure_logging('test_rosgraph', logging.INFO)
     loginfo = logging.getLogger('rosout.custom_logger_test').info
@@ -128,6 +130,7 @@ def test_roslogging_user_logger():
             os.environ['ROS_IP'],
             msg,
             r'[0-9]*\.[0-9]*',
+            r'[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}',
             '[0-9]*',
             'rosout.custom_logger_test',
             '<filename>',
@@ -136,6 +139,7 @@ def test_roslogging_user_logger():
             # depending if rospy.get_name() is available
             '(/unnamed|<unknown_node_name>)',
             r'[0-9]*\.[0-9]*',
+            r'[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}',
         ])
         assert_regexp_matches(lout.getvalue().strip(), log_expected)
 

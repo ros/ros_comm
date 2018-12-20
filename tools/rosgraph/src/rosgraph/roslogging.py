@@ -40,6 +40,7 @@ import time
 import logging
 import logging.config
 import inspect
+import datetime
 
 import yaml
 
@@ -247,7 +248,16 @@ class RosStreamHandler(logging.Handler):
             'ROSCONSOLE_FORMAT', '[${severity}] [${time}]: ${message}')
         msg = msg.replace('${severity}', level)
         msg = msg.replace('${message}', str(record_message))
-        msg = msg.replace('${walltime}', '%f' % time.time())
+
+        # walltime tag
+        msg = msg.replace('${walltime}', '%f' % time.time())  # for performance reasons
+
+        while '${walltime:' in msg:
+            tag_end_index = msg.index('${walltime:') + len('${walltime:')
+            time_format = msg[tag_end_index: msg.index('}', tag_end_index)]
+            time_str = time.strftime(time_format)
+            msg = msg.replace('${walltime:' + time_format + '}', time_str)
+
         msg = msg.replace('${thread}', str(record.thread))
         msg = msg.replace('${logger}', str(record.name))
         msg = msg.replace('${file}', str(record.pathname))
@@ -259,10 +269,23 @@ class RosStreamHandler(logging.Handler):
         except ImportError:
             node_name = '<unknown_node_name>'
         msg = msg.replace('${node}', node_name)
+
+        # time tag
         time_str = '%f' % time.time()
         if self._get_time is not None and not self._is_wallclock():
             time_str += ', %f' % self._get_time()
-        msg = msg.replace('${time}', time_str)
+        msg = msg.replace('${time}', time_str)   # for performance reasons
+
+        while '${time:' in msg:
+            tag_end_index = msg.index('${time:') + len('${time:')
+            time_format = msg[tag_end_index: msg.index('}', tag_end_index)]
+            time_str = time.strftime(time_format)
+
+            if self._get_time is not None and not self._is_wallclock():
+                time_str += ', %f' % self._get_time()
+
+            msg = msg.replace('${time:' + time_format + '}', time_str)
+
         msg += '\n'
         if record.levelno < logging.WARNING:
             self._write(self._stdout, msg, color)
