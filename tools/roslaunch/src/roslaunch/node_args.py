@@ -253,7 +253,7 @@ def create_local_process_args(node, machine, env=None):
         # multiple nodes, invalid package
         raise NodeParamsException(str(e))
     if not matches:
-        raise NodeParamsException("can't locate node [%s] in package [%s]"%(node.type, node.package))
+        raise NodeParamsException("Cannot locate node of type [%s] in package [%s]. Make sure file exists in package path and permission is set to executable (chmod +x)"%(node.type, node.package))
     else:
         # old behavior was to take first, do we want to change this in Fuerte-style?
         cmd = matches[0]
