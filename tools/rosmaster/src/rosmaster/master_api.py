@@ -708,7 +708,7 @@ class ROSMasterHandler(object):
     @apivalidate(0, (is_topic('topic'), is_api('caller_api')))
     def unregisterSubscriber(self, caller_id, topic, caller_api):
         """
-        Unregister the caller as a publisher of the topic.
+        Unregister the caller as a subscriber of the topic.
         @param caller_id: ROS caller id
         @type  caller_id: str
         @param topic: Fully-qualified name of topic to unregister.
