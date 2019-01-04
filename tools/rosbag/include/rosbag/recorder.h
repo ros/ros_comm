@@ -104,6 +104,7 @@ struct ROSBAG_DECL RecorderOptions
     uint32_t        chunk_size;
     uint32_t        limit;
     bool            split;
+    bool            exclude_latched_in_splits;
     uint64_t        max_size;
     uint32_t        max_splits;
     ros::Duration   max_duration;

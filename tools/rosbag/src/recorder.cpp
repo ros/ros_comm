@@ -107,6 +107,7 @@ RecorderOptions::RecorderOptions() :
     chunk_size(1024 * 768),
     limit(0),
     split(false),
+    exclude_latched_in_splits(false),
     max_size(0),
     max_splits(0),
     max_duration(-1.0),
@@ -314,10 +315,12 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
             }
         }
 
-        const std::map<std::string,std::string>::const_iterator it = out.connection_header->find("latching");
-        if ((it != out.connection_header->end()) && (it->second == "1" ))
-        {
-            doRecordLatchedTopic(out);
+        if (!options_.exclude_latched_in_splits) {
+            const std::map<std::string,std::string>::const_iterator it = out.connection_header->find("latching");
+            if ((it != out.connection_header->end()) && (it->second == "1" ))
+            {
+                doRecordLatchedTopic(out);
+            }
         }
     }
   
@@ -407,9 +410,11 @@ void Recorder::startWriting() {
     updateFilenames();
     try {
         bag_.open(write_filename_, bagmode::Write);
-        for (std::list<OutgoingMessage>::iterator it = latched_topics_.begin(); it != latched_topics_.end(); ++it)
-        {
-            bag_.write(it->topic, ros::Time::now(), *it->msg, it->connection_header);
+        if (!options_.exclude_latched_in_splits) {
+            for (std::list<OutgoingMessage>::iterator it = latched_topics_.begin(); it != latched_topics_.end(); ++it)
+            {
+                bag_.write(it->topic, ros::Time::now(), *it->msg, it->connection_header);
+            }
         }
     }
     catch (rosbag::BagException e) {
