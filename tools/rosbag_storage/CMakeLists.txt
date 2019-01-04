@@ -16,7 +16,7 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES rosbag_storage
   CATKIN_DEPENDS pluginlib roslz4
-  DEPENDS console_bridge Boost
+  DEPENDS console_bridge Boost BZIP2
 )
 
 # Support large bags (>2GB) on 32-bit systems
