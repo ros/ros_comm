@@ -71,7 +71,7 @@ public:
    */
   void setPeriod(const WallDuration& period, bool reset=true);
 
-  bool hasStarted() const { return impl_->hasStarted(); }
+  bool hasStarted() const { return impl_ && impl_->hasStarted(); }
   bool isValid() { return impl_ && impl_->isValid(); }
   operator void*() { return isValid() ? (void *) 1 : (void *) 0; }
 
