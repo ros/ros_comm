@@ -42,6 +42,8 @@ import signal
 import subprocess 
 import time
 import traceback
+import threading
+import sys
 
 import rospkg
 
@@ -152,6 +154,19 @@ def create_node_process(run_id, node, master_uri):
             respawn=node.respawn, respawn_delay=node.respawn_delay, \
             required=node.required, cwd=node.cwd)
 
+def stderr_watcher(popen, logfile):
+     """
+     Watcher for stderr of child process so we can print to screen while simultaneously log to file
+     """
+     while True:
+        buf = popen.stderr.readline()
+        sys.stderr.write(buf)
+        logfile.write(buf)
+
+        if not buf:
+            ret = popen.poll()
+            if ret is not None:
+                break
 
 class LocalProcess(Process):
     """
@@ -234,8 +249,6 @@ class LocalProcess(Process):
 
         # send stdout/stderr to file. in the case of respawning, we have to
         # open in append mode
-        # note: logfileerr: disabling in favor of stderr appearing in the console.
-        # will likely reinstate once roserr/rosout is more properly used.
         logfileout = logfileerr = None
         logfname = self._log_name()
         
@@ -245,9 +258,9 @@ class LocalProcess(Process):
                 mode = 'a'
             else:
                 mode = 'w'
+
             logfileout = open(outf, mode)
-            if is_child_mode():
-                logfileerr = open(errf, mode)
+            logfileerr = open(errf, mode)
 
         # #986: pass in logfile name to node
         node_log_file = log_dir
@@ -312,8 +325,15 @@ class LocalProcess(Process):
                 preexec_function = None
                 close_file_descriptor = False
 
+            stderr_pipe = None
+            if self.log_output:
+                if is_child_mode():
+                    stderr_pipe = logfileerr
+                else:
+                    stderr_pipe = subprocess.PIPE
+
             try:
-                self.popen = subprocess.Popen(self.args, cwd=cwd, stdout=logfileout, stderr=logfileerr, env=full_env, close_fds=close_file_descriptor, preexec_fn=preexec_function)
+                self.popen = subprocess.Popen(self.args, cwd=cwd, stdout=logfileout, stderr=stderr_pipe, env=full_env, close_fds=close_file_descriptor, preexec_fn=preexec_function)
             except OSError as e:
                 self.started = True # must set so is_alive state is correct
                 _logger.error("OSError(%d, %s)", e.errno, e.strerror)
@@ -337,6 +357,13 @@ executable permission. This is often caused by a bad launch-prefix."""%(e.strerr
             if poll_result is None or poll_result == 0:
                 self.pid = self.popen.pid
                 printlog_bold("process[%s]: started with pid [%s]"%(self.name, self.pid))
+
+                # Create seperate thread to both print & log child process stderr, if piped...
+                if stderr_pipe and stderr_pipe == subprocess.PIPE:
+                    stderr_watcher_thread = threading.Thread(target=stderr_watcher, args=(self.popen, logfileerr))
+                    stderr_watcher_thread.daemon = True 
+                    stderr_watcher_thread.start()
+
                 return True
             else:
                 printerrlog("failed to start local process: %s"%(' '.join(self.args)))
