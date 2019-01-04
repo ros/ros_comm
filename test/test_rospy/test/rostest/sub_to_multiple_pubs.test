@@ -1,4 +1,5 @@
 <launch>
+  <node name="listener" pkg="test_rospy" type="listener.py" />
   <node name="talker1" pkg="test_rospy" type="talker.py" />
   <node name="talker2" pkg="test_rospy" type="talker.py" />
   <node name="talker3" pkg="test_rospy" type="talker.py" />
@@ -98,6 +99,5 @@
   <node name="talker97" pkg="test_rospy" type="talker.py" />
   <node name="talker98" pkg="test_rospy" type="talker.py" />
   <node name="talker99" pkg="test_rospy" type="talker.py" />
-  <node name="listener" pkg="test_rospy" type="listener.py" />
   <test test-name="sub_to_multiple_pubs" pkg="test_rospy" type="test_sub_to_multiple_pubs.py" />
 </launch>
