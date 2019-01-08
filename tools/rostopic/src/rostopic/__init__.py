@@ -1686,13 +1686,6 @@ def publish_message(pub, msg_class, pub_args, rate=None, once=False, verbose=Fal
     try:
         
         if rate is None:
-            s = "publishing and latching [%s]"%(msg) if verbose else "publishing and latching message"
-            if once:
-                s = s + " for %s seconds"%_ONCE_DELAY
-            else:
-                s = s + ". Press ctrl-C to terminate"
-            print(s)
-
             _publish_latched(pub, msg, once, verbose)
         else:
             _publish_at_rate(pub, msg, rate, verbose=verbose, substitute_keywords=substitute_keywords, pub_args=pub_args)
@@ -1734,7 +1727,7 @@ def _rostopic_cmd_pub(argv):
     args = argv[2:]
     from optparse import OptionParser
     parser = OptionParser(usage="usage: %prog pub /topic type [args...]", prog=NAME)
-    parser.add_option("-v", dest="verbose", default=False,
+    parser.add_option("-v", "--verbose", dest="verbose", default=False,
                       action="store_true",
                       help="print verbose output")
     parser.add_option("-r", "--rate", dest="rate", default=None,
@@ -1763,7 +1756,6 @@ def _rostopic_cmd_pub(argv):
         if rate <= 0:
             parser.error("rate must be greater than zero")
     else:
-        # we will default this to 10 for file/stdin later
         rate = None
         
     # validate args len
@@ -1804,9 +1796,6 @@ def _rostopic_cmd_pub(argv):
     elif not pub_args and len(msg_class.__slots__):
         if not options.file and sys.stdin.isatty():
             parser.error("Please specify message values")
-        # stdin/file input has a rate by default
-        if rate is None and not options.latch and not options.once:
-            rate = 10.
         stdin_publish(pub, msg_class, rate, options.once, options.file, options.verbose)
     else:
         argv_publish(pub, msg_class, pub_args, rate, options.once, options.verbose, substitute_keywords=options.substitute_keywords)
@@ -1837,6 +1826,8 @@ def argv_publish(pub, msg_class, pub_args, rate, once, verbose, substitute_keywo
 
     if once:
         # stick around long enough for others to grab
+        s = "publishing and latching [%s]"%(pub_args) if verbose else "publishing and latching message for %s seconds"%_ONCE_DELAY
+        print(s)
         timeout_t = time.time() + _ONCE_DELAY
         while not rospy.is_shutdown() and time.time() < timeout_t:
             rospy.sleep(0.2)
@@ -1915,6 +1906,8 @@ def param_publish(pub, msg_class, param_name, rate, verbose):
         try:
             if publish:
                 publish_message(pub, msg_class, pub_args, None, True, verbose=verbose)
+                s = "publishing and latching [%s]"%(msg_class) if verbose else "publishing and latching message for %s seconds"%_ONCE_DELAY
+                print(s)
         except ValueError as e:
             sys.stderr.write("%s\n"%str(e))
             break
@@ -1943,53 +1936,39 @@ def stdin_publish(pub, msg_class, rate, once, filename, verbose):
     """
     :param filename: name of file to read from instead of stdin, or ``None``, ``str``
     """
-    exactly_one_message = False
 
-    if filename:
-        iterator = file_yaml_arg(filename)
-
-        for _ in iterator():
-            if exactly_one_message:
-                exactly_one_message = False
-                break
-            exactly_one_message = True
-    else:
-        iterator = stdin_yaml_arg
-
-    r = rospy.Rate(rate) if rate is not None else None
+    # stdin/file input has a rate by default
+    r = rospy.Rate(rate) if rate is not None else rospy.Rate(10)
 
     # stdin publishing can happen really fast, especially if no rate
     # is set, so try to make sure someone is listening before we
     # publish, though we don't wait too long.
-    wait_for_subscriber(pub, SUBSCRIBER_TIMEOUT)
+    #wait_for_subscriber(pub, SUBSCRIBER_TIMEOUT)
 
-    for pub_args in iterator():
-        if rospy.is_shutdown():
-            break
-        if pub_args:
-            if type(pub_args) != list:
-                pub_args = [pub_args]
-            try:
-                # if exactly one message is provided and rate is not
-                # None, repeatedly publish it
-                if exactly_one_message and rate is not None:
-                    print("Got one message and a rate, publishing repeatedly")
-                    publish_message(pub, msg_class, pub_args, rate=rate, once=once, verbose=verbose)
-                # we use 'bool(r) or once' for the once value, which
-                # controls whether or not publish_message blocks and
-                # latches until exit.  We want to block if the user
-                # has enabled latching (i.e. rate is none). It would
-                # be good to reorganize this code more conceptually
-                # but, for now, this is the best re-use of the
-                # underlying methods.
-                else:
-                    publish_message(pub, msg_class, pub_args, None, bool(r) or once, verbose=verbose)
-            except ValueError as e:
-                sys.stderr.write("%s\n"%str(e))
+    while not rospy.is_shutdown():
+        if filename:
+            iterator = file_yaml_arg(filename)
+        else:
+            iterator = stdin_yaml_arg
+        count = 0
+
+        for pub_args in iterator():
+            if rospy.is_shutdown():
                 break
-        if r is not None:
-            r.sleep()
-        if rospy.is_shutdown() or once:
+            if pub_args:
+                if type(pub_args) != list:
+                    pub_args = [pub_args]
+                try:
+                    publish_message(pub, msg_class, pub_args, None, True, verbose=verbose)
+                    s = "publishing [%s]"%(pub_args) if verbose else "publishing message #%i"%count
+                    print(s)
+                except ValueError as e:
+                    sys.stderr.write("%s\n"%str(e))
+                    break
+            if r is not None:
+                r.sleep()
+            count = count + 1
+        if once:
             break
 
 def stdin_yaml_arg():
