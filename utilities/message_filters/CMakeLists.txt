@@ -13,7 +13,7 @@ catkin_package(
 )
 catkin_python_setup()
 
-find_package(Boost REQUIRED COMPONENTS signals thread)
+find_package(Boost REQUIRED COMPONENTS thread)
 
 include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 link_directories(${catkin_LIBRARY_DIRS})
