@@ -29,6 +29,7 @@
 
 #include <cstring>
 #include <cstdlib>
+#include <cctype>
 
 #include "ros/ros.h"
 #include "ros/file_log.h"
