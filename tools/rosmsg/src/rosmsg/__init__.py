@@ -549,10 +549,14 @@ _catkin_source_path_to_packages = {}
 def _get_package_paths(pkgname, rospack):
     paths = []
     path = rospack.get_path(pkgname)
+    path = os.path.normcase(os.path.normpath(path))
     paths.append(path)
     results = find_in_workspaces(search_dirs=['share'], project=pkgname, first_match_only=True, workspace_to_source_spaces=_catkin_workspace_to_source_spaces, source_path_to_packages=_catkin_source_path_to_packages)
-    if results and results[0] != path:
-        paths.append(results[0])
+    if results:
+        path_in_workspaces = results[0]
+        path_in_workspaces = os.path.normcase(os.path.normpath(path_in_workspaces))
+        if path_in_workspaces != path:
+            paths.append(results[0])
     return paths
     
 def rosmsg_search(rospack, mode, base_type):
