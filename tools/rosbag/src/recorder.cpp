@@ -130,6 +130,8 @@ Recorder::Recorder(RecorderOptions const& options) :
 }
 
 int Recorder::run() {
+    ROS_INFO("Running bag recorder");
+
     if (options_.trigger) {
         doTrigger();
         return 0;
@@ -156,11 +158,13 @@ int Recorder::run() {
     last_buffer_warn_ = Time();
     queue_ = new std::queue<OutgoingMessage>;
 
+    ROS_INFO("Subscribing to topics.");
     // Subscribe to each topic
     if (!options_.regex) {
     	foreach(string const& topic, options_.topics)
 			subscribe(topic);
     }
+    ROS_INFO("All subscribers set up");
 
     if (!ros::Time::waitForValid(ros::WallDuration(2.0)))
       ROS_WARN("/use_sim_time set to true and no clock published.  Still waiting for valid time...");
@@ -176,6 +180,7 @@ int Recorder::run() {
     ros::Subscriber trigger_sub;
 
     // Spin up a thread for writing to the file
+    ROS_INFO("Creating write thread");
     boost::thread record_thread;
     if (options_.snapshot)
     {
@@ -187,7 +192,7 @@ int Recorder::run() {
     else
         record_thread = boost::thread(boost::bind(&Recorder::doRecord, this));
 
-
+    ROS_INFO("Write thread created");
 
     ros::Timer check_master_timer;
     if (options_.record_all || options_.regex || (options_.node != std::string("")))
@@ -196,6 +201,7 @@ int Recorder::run() {
         doCheckMaster(ros::TimerEvent(), nh);
         check_master_timer = nh.createTimer(ros::Duration(1.0), boost::bind(&Recorder::doCheckMaster, this, _1, boost::ref(nh)));
     }
+    ROS_INFO("Starting ros spinner");
 
     ros::MultiThreadedSpinner s(10);
     ros::spin(s);
@@ -404,17 +410,22 @@ void Recorder::snapshotTrigger(std_msgs::Empty::ConstPtr trigger) {
 }
 
 void Recorder::startWriting() {
+    ROS_INFO("Opening bag for writing");
     bag_.setCompression(options_.compression);
     bag_.setChunkThreshold(options_.chunk_size);
 
     updateFilenames();
+    ROS_INFO("Filenames updated");
     try {
+        ROS_INFO("Opening bag");
         bag_.open(write_filename_, bagmode::Write);
+        ROS_INFO("Bag opened");
         if (!options_.exclude_latched_in_splits) {
             for (std::list<OutgoingMessage>::iterator it = latched_topics_.begin(); it != latched_topics_.end(); ++it)
             {
                 bag_.write(it->topic, ros::Time::now(), *it->msg, it->connection_header);
             }
+            ROS_INFO("Finished writing latched topics");
         }
     }
     catch (rosbag::BagException e) {
