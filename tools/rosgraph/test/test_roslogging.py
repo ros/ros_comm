@@ -93,8 +93,8 @@ try:
         if ext == '.pyc':
             this_file = base + '.py'
         
-        if os.sep == '\\':
-            this_file = this_file.replace(os.sep, r'\\')
+        if os.path.sep == '\\':
+            this_file = this_file.replace(os.path.sep, r'\\')
 
         for i, loc in enumerate(['module', 'function', 'method']):
             if loc == 'module':
