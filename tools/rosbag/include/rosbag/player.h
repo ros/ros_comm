@@ -39,6 +39,8 @@
 #if !defined(_MSC_VER)
   #include <termios.h>
   #include <unistd.h>
+#else
+  #include <windows.h>
 #endif
 #include <time.h>
 
