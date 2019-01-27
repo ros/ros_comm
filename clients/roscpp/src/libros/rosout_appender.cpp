@@ -47,6 +47,7 @@ namespace ros
 
 ROSOutAppender::ROSOutAppender()
 : shutting_down_(false)
+, disable_topics_(false)
 , publish_thread_(boost::bind(&ROSOutAppender::logThread, this))
 {
   AdvertiseOptions ops;
@@ -54,6 +55,10 @@ ROSOutAppender::ROSOutAppender()
   ops.latch = true;
   SubscriberCallbacksPtr cbs(boost::make_shared<SubscriberCallbacks>());
   TopicManager::instance()->advertise(ops, cbs);
+
+  // check parameter server/cache for omit_topics flag
+  // the same parameter is checked in rosout.py for the same purpose
+  ros::param::getCached("/rosout_disable_topics_generation", disable_topics_);
 }
 
 ROSOutAppender::~ROSOutAppender()
@@ -104,10 +109,6 @@ void ROSOutAppender::log(::ros::console::Level level, const char* str, const cha
   msg->function = function;
   msg->line = line;
   
-  // check parameter server/cache for omit_topics flag
-  // the same parameter is checked in rosout.py for the same purpose
-  ros::param::getCached("/rosout_disable_topics_generation", disable_topics_);
-
   if (!disable_topics_){
     this_node::getAdvertisedTopics(msg->topics);
   }
