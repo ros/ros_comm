@@ -225,6 +225,8 @@ CallbackQueue::CallOneResult CallbackQueue::callOne(ros::WallDuration timeout)
       return Disabled;
     }
 
+    ros::WallTime start_time(ros::WallTime::now());
+
     if (callbacks_.empty())
     {
       if (!timeout.isZero())
@@ -266,6 +268,15 @@ CallbackQueue::CallOneResult CallbackQueue::callOne(ros::WallDuration timeout)
 
     if (!cb_info.callback)
     {
+      // do not spend more than `timeout` seconds in the callback; we already waited for some time when waiting for
+      // nonempty queue
+      ros::WallTime now(ros::WallTime::now());
+      ros::WallDuration time_spent = now - start_time;
+      ros::WallDuration time_to_wait = timeout - time_spent;
+
+      if (time_to_wait.toSec() > 0)
+        condition_.timed_wait(lock, boost::posix_time::microseconds(time_to_wait.toSec() * 1000000.0f));
+
       return TryAgain;
     }
 
@@ -284,6 +295,7 @@ CallbackQueue::CallOneResult CallbackQueue::callOne(ros::WallDuration timeout)
   {
     boost::mutex::scoped_lock lock(mutex_);
     --calling_;
+    condition_.notify_one();
   }
   return res;
 }

@@ -44,58 +44,9 @@
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
 
+#include "fake_message.cpp"
+
 using namespace ros;
-
-class FakeMessage
-{
-public:
-  virtual const std::string __getDataType() const { return ""; }
-  virtual const std::string __getMD5Sum() const { return ""; }
-  virtual const std::string __getMessageDefinition() const { return ""; }
-  virtual uint32_t serializationLength() const { return 0; }
-  virtual uint8_t *serialize(uint8_t *write_ptr, uint32_t seq) const { (void)seq; return write_ptr; }
-  virtual uint8_t *deserialize(uint8_t *read_ptr) { return read_ptr; }
-};
-
-class FakeSubHelper : public SubscriptionCallbackHelper
-{
-public:
-  FakeSubHelper()
-  : calls_(0)
-  {}
-
-  virtual VoidConstPtr deserialize(const SubscriptionCallbackHelperDeserializeParams&)
-  {
-    return boost::make_shared<FakeMessage>();
-  }
-
-  virtual std::string getMD5Sum() { return ""; }
-  virtual std::string getDataType() { return ""; }
-
-  virtual void call(SubscriptionCallbackHelperCallParams& params)
-  {
-    (void)params;
-    {
-      boost::mutex::scoped_lock lock(mutex_);
-      ++calls_;
-    }
-
-    if (cb_)
-    {
-      cb_();
-    }
-  }
-
-  virtual const std::type_info& getTypeInfo() { return typeid(FakeMessage); }
-  virtual bool isConst() { return true; }
-  virtual bool hasHeader() { return false; }
-
-  boost::mutex mutex_;
-  int32_t calls_;
-
-  boost::function<void(void)> cb_;
-};
-typedef boost::shared_ptr<FakeSubHelper> FakeSubHelperPtr;
 
 TEST(SubscriptionQueue, queueSize)
 {
