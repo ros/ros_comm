@@ -74,6 +74,8 @@ public:
 
   virtual CallbackInterface::CallResult call();
   virtual bool ready();
+  virtual void setNotifyWhenReady(boost::condition_variable* condition);
+
   bool full();
 
 private:
@@ -86,6 +88,8 @@ private:
   D_Item queue_;
   uint32_t queue_size_;
   bool allow_concurrent_callbacks_;
+
+  boost::condition_variable* notify_when_ready_condition_;
 
   boost::recursive_mutex callback_mutex_;
 };
