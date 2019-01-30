@@ -36,6 +36,7 @@
 #define ROSCPP_CALLBACK_QUEUE_INTERFACE_H
 
 #include <boost/shared_ptr.hpp>
+#include <boost/thread/condition_variable.hpp>
 #include "common.h"
 #include "ros/types.h"
 
@@ -70,6 +71,8 @@ public:
    * before call() actually takes place.
    */
   virtual bool ready() { return true; }
+
+  virtual void setNotifyWhenReady(boost::condition_variable *condition) {};
 };
 typedef boost::shared_ptr<CallbackInterface> CallbackInterfacePtr;
 
