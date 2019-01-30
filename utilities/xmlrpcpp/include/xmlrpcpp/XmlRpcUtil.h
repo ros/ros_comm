@@ -75,12 +75,12 @@ namespace XmlRpc {
   };
 
   //! Returns log message verbosity. This is short for XmlRpcLogHandler::getVerbosity()
-  int getVerbosity();
+  XMLRPCPP_DECL int getVerbosity();
   //! Sets log message verbosity. This is short for XmlRpcLogHandler::setVerbosity(level)
-  void setVerbosity(int level);
+  XMLRPCPP_DECL void setVerbosity(int level);
 
   //! Version identifier
-  extern const char XMLRPC_VERSION[];
+  extern XMLRPCPP_DECL const char XMLRPC_VERSION[];
 
   //! Utilities for XML parsing, encoding, and decoding and message handlers.
   class XMLRPCPP_DECL XmlRpcUtil {

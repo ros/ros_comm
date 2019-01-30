@@ -57,7 +57,7 @@ public:
      * MessageInstance is destroyed.  You should never store the
      * pointer to this reference.
      */
-    class iterator : public boost::iterator_facade<iterator,
+    class ROSBAG_STORAGE_DECL iterator : public boost::iterator_facade<iterator,
                                                    MessageInstance,
                                                    boost::forward_traversal_tag>
     {
