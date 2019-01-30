@@ -13,6 +13,8 @@
 #include <string.h>
 #if !defined(_WINDOWS)
 # include <sys/resource.h>
+#else
+# include <winsock2.h>
 #endif
 
 using namespace XmlRpc;
