@@ -167,7 +167,7 @@ void in_cb(const boost::shared_ptr<ShapeShifter const>& msg,
     }
   }
   
-  if (s != g_selected->msg)
+  if (g_selected == g_subs.end() || s != g_selected->msg)
     return;
   
   // If we're in lazy subscribe mode, and nobody's listening, then unsubscribe
