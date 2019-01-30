@@ -124,7 +124,10 @@ void CallbackQueue::addCallback(const CallbackInterfacePtr& callback, uint64_t r
     }
   }
 
-  condition_.notify_one();
+  if (callback->ready())
+    condition_.notify_one();
+  else
+    callback->setNotifyWhenReady(&condition_);
 }
 
 CallbackQueue::IDInfoPtr CallbackQueue::getIDInfo(uint64_t id)
@@ -231,7 +234,7 @@ CallbackQueue::CallOneResult CallbackQueue::callOne(ros::WallDuration timeout)
     {
       if (!timeout.isZero())
       {
-        condition_.timed_wait(lock, boost::posix_time::microseconds(timeout.toSec() * 1000000.0f));
+        condition_.timed_wait(lock, timeout.toBoost());
       }
 
       if (callbacks_.empty())
@@ -274,8 +277,9 @@ CallbackQueue::CallOneResult CallbackQueue::callOne(ros::WallDuration timeout)
       ros::WallDuration time_spent = now - start_time;
       ros::WallDuration time_to_wait = timeout - time_spent;
 
-      if (time_to_wait.toSec() > 0)
-        condition_.timed_wait(lock, boost::posix_time::microseconds(time_to_wait.toSec() * 1000000.0f));
+      if (time_to_wait.toNSec() > 0) {
+        condition_.timed_wait(lock, time_to_wait.toBoost());
+      }
 
       return TryAgain;
     }
@@ -295,7 +299,6 @@ CallbackQueue::CallOneResult CallbackQueue::callOne(ros::WallDuration timeout)
   {
     boost::mutex::scoped_lock lock(mutex_);
     --calling_;
-    condition_.notify_one();
   }
   return res;
 }
@@ -317,7 +320,7 @@ void CallbackQueue::callAvailable(ros::WallDuration timeout)
     {
       if (!timeout.isZero())
       {
-        condition_.timed_wait(lock, boost::posix_time::microseconds(timeout.toSec() * 1000000.0f));
+        condition_.timed_wait(lock, timeout.toBoost());
       }
 
       if (callbacks_.empty() || !enabled_)
