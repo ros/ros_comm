@@ -263,12 +263,13 @@ TEST(CallbackQueue, recursive4)
   EXPECT_EQ(cb->count, 3U);
 }
 
-void callAvailableThread(CallbackQueue* queue, bool& done, boost::atomic<size_t>* num_calls)
+void callAvailableThread(CallbackQueue* queue, bool& done, boost::atomic<size_t>* num_calls,
+                         ros::WallDuration call_timeout = ros::WallDuration(0.1))
 {
   size_t i = 0;
   while (!done)
   {
-    queue->callAvailable(ros::WallDuration(0.1));
+    queue->callAvailable(call_timeout);
     ++i;
   }
 
@@ -276,24 +277,31 @@ void callAvailableThread(CallbackQueue* queue, bool& done, boost::atomic<size_t>
     num_calls->fetch_add(i);
 }
 
-size_t runThreadedTest(const CallbackInterfacePtr& cb, const boost::function<void(CallbackQueue*, bool&, boost::atomic<size_t>*)>& threadFunc, size_t* num_calls = NULL)
+size_t runThreadedTest(const CallbackInterfacePtr& cb,
+    const boost::function<void(CallbackQueue*, bool&, boost::atomic<size_t>*, ros::WallDuration)>& threadFunc,
+    size_t* num_calls = NULL, size_t num_threads = 10,
+    ros::WallDuration duration = ros::WallDuration(5),
+    ros::WallDuration pause_between_callbacks = ros::WallDuration(0),
+    ros::WallDuration call_one_timeout = ros::WallDuration(0.1))
 {
   CallbackQueue queue;
   boost::thread_group tg;
   bool done = false;
   boost::atomic<size_t> calls(0);
 
-  for (uint32_t i = 0; i < 10; ++i)
+  for (uint32_t i = 0; i < num_threads; ++i)
   {
-    tg.create_thread(boost::bind(threadFunc, &queue, boost::ref(done), &calls));
+    tg.create_thread(boost::bind(threadFunc, &queue, boost::ref(done), &calls, call_one_timeout));
   }
 
   ros::WallTime start = ros::WallTime::now();
   size_t i = 0;
-  while (ros::WallTime::now() - start < ros::WallDuration(5))
+  while (ros::WallTime::now() - start < duration)
   {
     queue.addCallback(cb);
     ++i;
+    if (!pause_between_callbacks.isZero())
+      pause_between_callbacks.sleep();
   }
 
   while (!queue.isEmpty())
@@ -318,12 +326,13 @@ TEST(CallbackQueue, threadedCallAvailable)
   EXPECT_EQ(cb->count, i);
 }
 
-void callOneThread(CallbackQueue* queue, bool& done, boost::atomic<size_t>* num_calls)
+void callOneThread(CallbackQueue* queue, bool& done, boost::atomic<size_t>* num_calls,
+    ros::WallDuration timeout = ros::WallDuration(0.1))
 {
   size_t i = 0;
   while (!done)
   {
-    queue->callOne(ros::WallDuration(0.1));
+    queue->callOne(timeout);
     ++i;
   }
 
@@ -349,41 +358,60 @@ public:
     {}
 
     virtual bool ready() {
-      boost::mutex::scoped_lock lock(ready_mutex);
-      ++ready_count;
+      ready_count.fetch_add(1);
       return SubscriptionQueue::ready();
     }
 
-    boost::mutex ready_mutex;
-    size_t ready_count;
+    boost::atomic<size_t> ready_count;
 };
 typedef boost::shared_ptr<CountingSubscriptionQueue> CountingSubscriptionQueuePtr;
 
-TEST(CallbackQueue, threadedCallOneSlow)
+struct ThreadedCallOneSlowParams {
+    ros::WallDuration callback_duration; // long-lasting callback
+    size_t num_threads;
+    ros::WallDuration call_one_timeout;
+    ros::WallDuration test_duration;
+    ros::WallDuration pause_between_callbacks;
+};
+
+class CallbackQueueParamTest : public ::testing::TestWithParam<ThreadedCallOneSlowParams>
+{};
+
+TEST_P(CallbackQueueParamTest, threadedCallOneSlow)
 {
   // test for https://github.com/ros/ros_comm/issues/1545
   // "roscpp multithreaded spinners eat up CPU when callbacks take too long"
 
-  // create a subscription queue counting the number of ready() calls and with limited
-  // queue_size so that most of the messages should be thrown away
-  const int32_t queue_size = 3;
+  const ThreadedCallOneSlowParams param = GetParam();
+  const WallDuration& callback_duration = param.callback_duration; // long-lasting callback
+  const size_t num_threads = param.num_threads;
+  const ros::WallDuration call_one_timeout = param.call_one_timeout;
+  const ros::WallDuration test_duration = param.test_duration;
+  const ros::WallDuration pause_between_callbacks = param.pause_between_callbacks;
+  // queue_size is chosen such that it is larger than the max number of callbacks we
+  // are really able to process in 5 secs (since allow_concurrent_callbacks is false,
+  // it is equal to the number of seconds the queue is running)
+  const size_t queue_size = static_cast<size_t>(test_duration.toSec()) + 1;
+
+  // create a subscription queue counting the number of ready() calls
   const CountingSubscriptionQueuePtr cb(
       boost::make_shared<CountingSubscriptionQueue>("test", queue_size, false));
 
   // create a slow subscription callback (takes 1 second to complete)
   const FakeSubHelperPtr helper(boost::make_shared<FakeSubHelper>());
-  helper->cb_ = boost::bind(&ros::WallDuration::sleep, ros::WallDuration(1.0));
+  helper->cb_ = boost::bind(&ros::WallDuration::sleep, callback_duration);
   const MessageDeserializerPtr des(boost::make_shared<MessageDeserializer>(
       helper, SerializedMessage(), boost::shared_ptr<M_string>()));
 
-  // put 10 callbacks on the subscription queue (more than we can process in 5 secs)
-  for (size_t i = 0; i < 10; ++i)
+  // fill the subscription queue to get max performance
+  for (size_t i = 0; i < queue_size; ++i)
     cb->push(helper, des, false, VoidConstWPtr(), true);
 
   // keep filling the callback queue at maximum speed for 5 seconds and
   // spin up 10 processing threads until the queue is empty
   size_t num_call_one_calls = 0;
-  const size_t num_callbacks_to_call = runThreadedTest(cb, callOneThread, &num_call_one_calls);
+  const size_t num_callbacks_to_call = runThreadedTest(cb, callOneThread, &num_call_one_calls,
+      num_threads, test_duration, pause_between_callbacks, call_one_timeout);
 
   const int32_t num_callbacks_called = helper->calls_;
   const size_t num_ready_called = cb->ready_count;
@@ -401,15 +429,25 @@ TEST(CallbackQueue, threadedCallOneSlow)
   // higher than number of callbacks (~ 80k), since each newly added callback should
   // wake one idle thread and let it ask for work
 
-  ROS_INFO_STREAM("Callback queue called " <<
-                  num_callbacks_called << " / " <<
-                  num_callbacks_to_call <<  " / " << num_call_one_calls << " callbacks. Ready called " <<
-                  num_ready_called << " times.");
+  ROS_INFO_STREAM("Callback queue processed " <<
+                  num_callbacks_called << " callbacks out of " << num_callbacks_to_call);
+  ROS_INFO_STREAM("callOne() was called " << num_call_one_calls << " times.");
+  ROS_INFO_STREAM("ready() was called " << num_ready_called << " times.");
 
-  EXPECT_GE(num_callbacks_called, 3);
-  EXPECT_LE(num_callbacks_called, 5);
-  EXPECT_LE(num_call_one_calls, 3 * num_callbacks_to_call);
+  EXPECT_EQ(num_callbacks_called, queue_size);
+  EXPECT_LE(num_call_one_calls, 2 * num_callbacks_to_call + num_threads * (1/call_one_timeout.toSec()) * queue_size);
 }
+
+INSTANTIATE_TEST_CASE_P(slow, CallbackQueueParamTest, ::testing::Values(
+  //ThreadedCallOneSlowParams{callback_duration,        num_threads, call_one_timeout,       test_duration,        pause_between_callbacks}
+    ThreadedCallOneSlowParams{ros::WallDuration(1.0),   10,          ros::WallDuration(0.1), ros::WallDuration(2), ros::WallDuration(0)},
+    ThreadedCallOneSlowParams{ros::WallDuration(1.0),   10,          ros::WallDuration(0.1), ros::WallDuration(2), ros::WallDuration(0.1)},
+    ThreadedCallOneSlowParams{ros::WallDuration(1.0),   10,          ros::WallDuration(0.1), ros::WallDuration(2), ros::WallDuration(0.001)},
+    ThreadedCallOneSlowParams{ros::WallDuration(0.1),   10,          ros::WallDuration(0.1), ros::WallDuration(2), ros::WallDuration(0)},
+    ThreadedCallOneSlowParams{ros::WallDuration(0.001), 10,          ros::WallDuration(0.1), ros::WallDuration(2), ros::WallDuration(0)},
+    ThreadedCallOneSlowParams{ros::WallDuration(1.0),    1,          ros::WallDuration(0.1), ros::WallDuration(2), ros::WallDuration(0)},
+    ThreadedCallOneSlowParams{ros::WallDuration(1.0),    2,          ros::WallDuration(0.1), ros::WallDuration(2), ros::WallDuration(0)}
+    ));
 
 // this class is just an ugly hack
 // to access the constructor Timer(TimerOptions)
@@ -479,7 +517,7 @@ TEST(CallbackQueue, recursiveTimer)
 
   for (uint32_t i = 0; i < 2; ++i)
   {
-    tg.create_thread(boost::bind(callOneThread, &queue, boost::ref(done), &calls));
+    tg.create_thread(boost::bind(callOneThread, &queue, boost::ref(done), &calls, ros::WallDuration(0.1)));
   }
 
   while (!queue.isEmpty())
