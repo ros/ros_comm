@@ -50,8 +50,14 @@ import threading
 import time
 import yaml
 
-from Crypto import Random
-from Crypto.Cipher import AES
+try:
+    # safer version: favors cryptodome over crypto
+    from Cryptodome import Random
+    from Cryptodome.Cipher import AES
+except ImportError:
+    from Crypto import Random
+    from Crypto.Cipher import AES
+
 import gnupg
 
 try:
