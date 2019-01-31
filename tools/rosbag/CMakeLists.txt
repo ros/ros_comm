@@ -28,18 +28,26 @@ add_library(rosbag
   src/recorder.cpp
   src/time_translator.cpp)
 
+target_compile_features(rosbag PUBLIC cxx_std_11)
+
 target_link_libraries(rosbag ${catkin_LIBRARIES} ${Boost_LIBRARIES}
   ${BZIP2_LIBRARIES}
 )
 
 add_executable(record src/record.cpp)
+target_compile_features(record PUBLIC cxx_std_11)
+
 target_link_libraries(record rosbag)
 
 add_executable(play src/play.cpp)
+target_compile_features(play PUBLIC cxx_std_11)
+
 target_link_libraries(play rosbag)
 
 if(NOT WIN32)
   add_executable(encrypt src/encrypt.cpp)
+  target_compile_features(encrypt PUBLIC cxx_std_11)
+
   target_link_libraries(encrypt ${catkin_LIBRARIES})
 endif()
 

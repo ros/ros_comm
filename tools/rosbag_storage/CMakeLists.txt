@@ -47,6 +47,7 @@ add_library(rosbag_storage
   src/view.cpp
   src/uncompressed_stream.cpp
 )
+target_compile_features(rosbag_storage PUBLIC cxx_std_11)
 target_link_libraries(rosbag_storage ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${BZIP2_LIBRARIES} ${console_bridge_LIBRARIES} ${AES_ENCRYPT_LIBRARIES})
 
 install(TARGETS rosbag_storage
