@@ -324,10 +324,10 @@ def rosservice_find(service_type):
         for s, l in services:
             try:
                 t = get_service_type(s)
-                if t == service_type:
-                    matches.append(s)
             except ROSServiceIOException:
-                pass
+                continue
+            if t == service_type:
+                matches.append(s)
     except socket.error:
         raise ROSServiceIOException("Unable to communicate with master!")
     return matches
