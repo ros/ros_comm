@@ -115,17 +115,6 @@ void CallbackQueue::addCallback(const CallbackInterfacePtr& callback, uint64_t r
   info.removal_id = removal_id;
 
   {
-    boost::mutex::scoped_lock lock(mutex_);
-
-    if (!enabled_)
-    {
-      return;
-    }
-
-    callbacks_.push_back(info);
-  }
-
-  {
     boost::mutex::scoped_lock lock(id_info_mutex_);
 
     M_IDInfo::iterator it = id_info_.find(removal_id);
@@ -258,7 +247,7 @@ CallbackQueue::CallOneResult CallbackQueue::callOne(ros::WallDuration timeout)
     {
       if (!timeout.isZero())
       {
-        condition_.timed_wait(lock, timeout.toBoost());
+        condition_.wait_for(lock, boost::chrono::nanoseconds(timeout.toNSec()));
       }
 
       if (callbacks_.empty())
@@ -302,7 +291,7 @@ CallbackQueue::CallOneResult CallbackQueue::callOne(ros::WallDuration timeout)
       ros::WallDuration time_to_wait = timeout - time_spent;
 
       if (time_to_wait.toNSec() > 0) {
-        condition_.timed_wait(lock, time_to_wait.toBoost());
+        condition_.wait_for(lock, boost::chrono::nanoseconds(time_to_wait.toNSec()));
       }
 
       return TryAgain;
@@ -344,7 +333,7 @@ void CallbackQueue::callAvailable(ros::WallDuration timeout)
     {
       if (!timeout.isZero())
       {
-        condition_.timed_wait(lock, timeout.toBoost());
+        condition_.wait_for(lock, boost::chrono::nanoseconds(timeout.toNSec()));
       }
 
       if (callbacks_.empty() || !enabled_)
