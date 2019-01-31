@@ -1,17 +1,17 @@
 <launch>
 
   <node name="talker_0"
-        pkg="rospy" type="talker.py">
+        pkg="test_rostest" type="talker.py">
     <remap from="chatter" to="~output" />
   </node>
 
   <node name="talker_1"
-        pkg="rospy" type="talker.py">
+        pkg="test_rostest" type="talker.py">
     <remap from="chatter" to="~output" />
   </node>
 
   <node name="talker_2"
-        pkg="rostest" type="just_advertise">
+        pkg="test_rostest" type="just_advertise">
     <rosparam>
       msg_name: std_msgs/String
     </rosparam>

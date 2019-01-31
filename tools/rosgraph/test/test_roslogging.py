@@ -112,7 +112,8 @@ try:
                 this_file,
                 '[0-9]*',
                 function,
-                '/unnamed',
+                # depending if rospy.get_name() is available
+                '(/unnamed|<unknown_node_name>)',
                 '[0-9]*\.[0-9]*',
             ])
             assert_regexp_matches(lout.getvalue().splitlines()[i], log_out)

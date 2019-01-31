@@ -29,7 +29,6 @@ if(CATKIN_ENABLE_TESTING)
 
   add_rostest(test/hztest0.test)
   add_rostest(test/hztest.test)
-  add_rostest(test/publishtest.test)
   add_rostest(test/clean_master.test)
   add_rostest(test/distro_version.test)
   add_rostest(test/param.test)
