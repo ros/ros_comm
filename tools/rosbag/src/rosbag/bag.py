@@ -50,8 +50,15 @@ import threading
 import time
 import yaml
 
-from Crypto import Random
-from Crypto.Cipher import AES
+try:
+    # this should resolve to the old pycrypto, 
+    # or cryptodome installed in compatibility mode
+    from Crypto import Random
+    from Crypto.Cipher import AES
+except ImportError:
+    from Cryptodome import Random
+    from Cryptodome.Cipher import AES
+
 import gnupg
 
 try:
