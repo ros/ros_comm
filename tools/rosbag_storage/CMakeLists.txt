@@ -9,7 +9,7 @@ endif()
 find_package(console_bridge REQUIRED)
 find_package(catkin REQUIRED COMPONENTS cpp_common pluginlib roscpp_serialization roscpp_traits rostime roslz4)
 find_package(Boost REQUIRED COMPONENTS date_time filesystem program_options regex)
-find_package(BZip2 REQUIRED)
+find_package(BZIP2 REQUIRED)
 
 catkin_package(
   CFG_EXTRAS rosbag_storage-extras.cmake
