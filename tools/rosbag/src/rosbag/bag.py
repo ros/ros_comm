@@ -50,8 +50,14 @@ import threading
 import time
 import yaml
 
-from Crypto import Random
-from Crypto.Cipher import AES
+#from Crypto import Random
+# from Crypto.Cipher import AES
+# taken from Crypto.Cipher.AES.block_size
+AES_BLOCK_SIZE = 16
+
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
+
 import gnupg
 
 try:
@@ -221,15 +227,21 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
         f.seek(chunk_data_pos)
         chunk = _read(f, chunk_size)
         # Encrypt chunk
-        iv = Random.new().read(AES.block_size)
+        # iv = Random.new().read(AES.block_size)
+        backend = default_backend()
+        iv = os.urandom(AES_BLOCK_SIZE)
         f.seek(chunk_data_pos)
         f.write(iv)
-        cipher = AES.new(self._symmetric_key, AES.MODE_CBC, iv)
-        encrypted_chunk = cipher.encrypt(_add_padding(chunk))
+        # cipher = AES.new(self._symmetric_key, AES.MODE_CBC, iv)
+        cipher = Cipher(algorithms.AES(self._symmetric_key), modes.CBC(iv), backend=backend)
+        encryptor = cipher.encryptor()
+        # encrypted_chunk = cipher.encrypt(_add_padding(chunk))
+        encrypted_chunk = encryptor.update(_add_padding(chunk)) + encryptor.finalize()
         # Write encrypted chunk
         f.write(encrypted_chunk)
         f.truncate(f.tell())
-        return AES.block_size + len(encrypted_chunk)
+        # return AES.block_size + len(encrypted_chunk)
+        return AES_BLOCK_SIZE + len(encrypted_chunk)
 
     def decrypt_chunk(self, encrypted_chunk):
         """
@@ -240,14 +252,21 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
         @rtype:  str
         @raise ROSBagFormatException: if size of input chunk is not multiple of AES block size
         """
-        if len(encrypted_chunk) % AES.block_size != 0:
+        #        if len(encrypted_chunk) % AES.block_size != 0:
+        if len(encrypted_chunk) % AES_BLOCK_SIZE != 0:
             raise ROSBagFormatException('Error in encrypted chunk size: {}'.format(len(encrypted_chunk)))
-        if len(encrypted_chunk) < AES.block_size:
+        # if len(encrypted_chunk) < AES.block_size:
+        if len(encrypted_chunk) < AES.BLOCK_SIZE:
             raise ROSBagFormatException('No initialization vector in encrypted chunk: {}'.format(len(encrypted_chunk)))
 
-        iv = encrypted_chunk[:AES.block_size]
-        cipher = AES.new(self._symmetric_key, AES.MODE_CBC, iv)
-        decrypted_chunk = cipher.decrypt(encrypted_chunk[AES.block_size:])
+        backend = default_backend()
+        # iv = encrypted_chunk[:AES.block_size]
+        iv = encrypted_chunk[:AES_BLOCK_SIZE]
+        # cipher = AES.new(self._symmetric_key, AES.MODE_CBC, iv)
+        cipher = Cipher(algorithms.AES(self._symmetric_key), modes.CBC(iv), backend=backend)
+        # decrypted_chunk = cipher.decrypt(encrypted_chunk[AES.block_size:])
+        decryptor = cipher.decryptor()
+        decrypted_chunk = decryptor.update(encrypted_chunk[AES_BLOCK_SIZE:]) + decryptor.finalize()
         return _remove_padding(decrypted_chunk)
 
     def add_fields_to_file_header(self, header):
@@ -299,10 +318,14 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
                 v = v.encode()
             header_str += _pack_uint32(len(k) + 1 + len(v)) + k + equal + v
 
-        iv = Random.new().read(AES.block_size)
+        backend = default_backend()
+        # iv = Random.new().read(AES.block_size)
+        iv = os.urandom(AES_BLOCK_SIZE)
         enc_str = iv
-        cipher = AES.new(self._symmetric_key, AES.MODE_CBC, iv)
-        enc_str += cipher.encrypt(_add_padding(header_str))
+        # cipher = AES.new(self._symmetric_key, AES.MODE_CBC, iv)
+        cipher = Cipher(algorithms.AES(self._symmetric_key), modes.CBC(iv), backend=backend)
+        encryptor = cipher.encryptor()
+        enc_str += (encryptor.update(_add_padding(header_str)) + encryptor_finalize())
         _write_sized(f, enc_str)
         return enc_str
 
@@ -345,7 +368,8 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
     def _build_symmetric_key(self):
         if not self._gpg_key_user:
             return
-        self._symmetric_key = Random.new().read(AES.block_size)
+        # self._symmetric_key = Random.new().read(AES.block_size)
+        self._symmetric_key = os.urandom(AES.block_size)
         self._encrypted_symmetric_key = _encrypt_string_gpg(self._gpg_key_user, self._symmetric_key)
 
     def _decrypt_encrypted_header(self, f):
@@ -354,21 +378,30 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
         except struct.error as ex:
             raise ROSBagFormatException('error unpacking uint32: %s' % str(ex))
 
-        if size % AES.block_size != 0:
+        # if size % AES.block_size != 0:
+        if size % AES_BLOCK_SIZE != 0:
             raise ROSBagFormatException('Error in encrypted header size: {}'.format(size))
-        if size < AES.block_size:
+        # if size < AES.block_size:
+        if size < AES_BLOCK_SIZE:
             raise ROSBagFormatException('No initialization vector in encrypted header: {}'.format(size))
 
-        iv = _read(f, AES.block_size)
-        size -= AES.block_size
+        backend = default_backend()        
+        # iv = _read(f, AES.block_size)
+        iv = _read(f, AES_BLOCK_SIZE)
+        # size -= AES.block_size
+        size -= AES_BLOCK_SIZE
         encrypted_header = _read(f, size)
-        cipher = AES.new(self._symmetric_key, AES.MODE_CBC, iv)
-        header = cipher.decrypt(encrypted_header)
+        # cipher = AES.new(self._symmetric_key, AES.MODE_CBC, iv)
+        cipher = Cipher(algorithms.AES(self._symmetric_key), modes.CBC(iv), backend=backend)
+        decryptor = cipher.decryptor()
+        # header = cipher.decrypt(encrypted_header)
+        header = decryptor_update(encrypted_header) + decryptor_finalize()
         return _remove_padding(header)
 
 def _add_padding(input_str):
     # Add PKCS#7 padding to input string
-    return input_str + (AES.block_size - len(input_str) % AES.block_size) * chr(AES.block_size - len(input_str) % AES.block_size)
+    #    return input_str + (AES.block_size - len(input_str) % AES.block_size) * chr(AES.block_size - len(input_str) % AES.block_size)
+    return input_str + (AES_BLOCK_SIZE - len(input_str) % AES_BLOCK_SIZE) * chr(AES_BLOCK_SIZE - len(input_str) % AES_BLOCK_SIZE)
 
 def _remove_padding(input_str):
     # Remove PKCS#7 padding from input string
