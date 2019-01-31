@@ -50,8 +50,14 @@ import threading
 import time
 import yaml
 
-from Crypto import Random
-from Crypto.Cipher import AES
+try:
+    # safer version: favors cryptodome over crypto
+    from Cryptodome import Random
+    from Cryptodome.Cipher import AES
+except ImportError:
+    from Crypto import Random
+    from Crypto.Cipher import AES
+
 import gnupg
 
 try:
@@ -221,7 +227,8 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
         f.seek(chunk_data_pos)
         chunk = _read(f, chunk_size)
         # Encrypt chunk
-        iv = Random.new().read(AES.block_size)
+        # safest: ensure calling os.urandom
+        iv = os.urandom(AES.block_size)
         f.seek(chunk_data_pos)
         f.write(iv)
         cipher = AES.new(self._symmetric_key, AES.MODE_CBC, iv)
@@ -299,7 +306,8 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
                 v = v.encode()
             header_str += _pack_uint32(len(k) + 1 + len(v)) + k + equal + v
 
-        iv = Random.new().read(AES.block_size)
+        # safest: ensure calling os.urandom
+        iv = os.urandom(AES.block_size)
         enc_str = iv
         cipher = AES.new(self._symmetric_key, AES.MODE_CBC, iv)
         enc_str += cipher.encrypt(_add_padding(header_str))
@@ -345,7 +353,8 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
     def _build_symmetric_key(self):
         if not self._gpg_key_user:
             return
-        self._symmetric_key = Random.new().read(AES.block_size)
+        # safest: ensure calling os.urandom
+        self._symmetric_key = os.urandom(AES.block_size)
         self._encrypted_symmetric_key = _encrypt_string_gpg(self._gpg_key_user, self._symmetric_key)
 
     def _decrypt_encrypted_header(self, f):
