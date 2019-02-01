@@ -376,6 +376,7 @@ TEST(rosbag, bad_topic_query_works) {
 
     rosbag::View view(bag, rosbag::TopicQuery(t));
     foreach(rosbag::MessageInstance const m, view) {
+      (void)m;
       FAIL();
     }
 
