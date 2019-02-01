@@ -179,6 +179,8 @@ private:
 
     void updateRateTopicTime(const ros::MessageEvent<topic_tools::ShapeShifter const>& msg_event);
 
+    void advertise(const ConnectionInfo* c);
+
     void doPublish(rosbag::MessageInstance const& m);
 
     void doKeepAlive();

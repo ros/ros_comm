@@ -45,6 +45,8 @@
 
 #include "rosgraph_msgs/Clock.h"
 
+#include <set>
+
 #define foreach BOOST_FOREACH
 
 using std::map;
@@ -56,10 +58,15 @@ using ros::Exception;
 
 namespace rosbag {
 
+bool isLatching(const ConnectionInfo* c)
+{
+    ros::M_string::const_iterator header_iter = c->header->find("latching");
+    return (header_iter != c->header->end() && header_iter->second == "1");
+}
+
 ros::AdvertiseOptions createAdvertiseOptions(const ConnectionInfo* c, uint32_t queue_size, const std::string& prefix) {
     ros::AdvertiseOptions opts(prefix + c->topic, queue_size, c->md5sum, c->datatype, c->msg_def);
-    ros::M_string::const_iterator header_iter = c->header->find("latching");
-    opts.latch = (header_iter != c->header->end() && header_iter->second == "1");
+    opts.latch = isLatching(c);
     return opts;
 }
 
@@ -161,9 +168,9 @@ void Player::publish() {
     foreach(shared_ptr<Bag> bag, bags_)
         full_view.addQuery(*bag);
 
-    ros::Time initial_time = full_view.getBeginTime();
+    const auto full_initial_time = full_view.getBeginTime();
 
-    initial_time += ros::Duration(options_.time);
+    const auto initial_time = full_initial_time + ros::Duration(options_.time);
 
     ros::Time finish_time = ros::TIME_MAX;
     if (options_.has_duration)
@@ -193,21 +200,7 @@ void Player::publish() {
     // Advertise all of our messages
     foreach(const ConnectionInfo* c, view.getConnections())
     {
-        ros::M_string::const_iterator header_iter = c->header->find("callerid");
-        std::string callerid = (header_iter != c->header->end() ? header_iter->second : string(""));
-
-        string callerid_topic = callerid + c->topic;
-
-        map<string, ros::Publisher>::iterator pub_iter = publishers_.find(callerid_topic);
-        if (pub_iter == publishers_.end()) {
-
-            ros::AdvertiseOptions opts = createAdvertiseOptions(c, options_.queue_size, options_.prefix);
-
-            ros::Publisher pub = node_handle_.advertise(opts);
-            publishers_.insert(publishers_.begin(), pair<string, ros::Publisher>(callerid_topic, pub));
-
-            pub_iter = publishers_.find(callerid_topic);
-        }
+        advertise(c);
     }
 
     if (options_.rate_control_topic != "")
@@ -238,8 +231,62 @@ void Player::publish() {
 
     paused_ = options_.start_paused;
 
-    if (options_.wait_for_subscribers)
-    {
+    // Publish last message from latch topics if the options_.time > 0.0:
+    if (options_.time > 0.0) {
+        // Retrieve all the latch topics before the initial time and create publishers if needed:
+        View full_latch_view;
+
+        if (options_.topics.empty()) {
+            for (const auto& bag : bags_) {
+                full_latch_view.addQuery(*bag, full_initial_time, initial_time);
+            }
+        } else {
+            for (const auto& bag : bags_) {
+                full_latch_view.addQuery(*bag, topics, full_initial_time, initial_time);
+            }
+        }
+
+        std::set<std::pair<std::string, std::string>> latch_topics;
+        for (const auto& c : full_latch_view.getConnections()) {
+            if (isLatching(c)) {
+                const auto header_iter = c->header->find("callerid");
+                const auto callerid = (header_iter != c->header->end() ? header_iter->second : string(""));
+
+                latch_topics.emplace(callerid, c->topic);
+
+                advertise(c);
+            }
+        }
+
+        if (options_.wait_for_subscribers){
+            waitForSubscribers();
+        }
+
+        // Publish the last message of each latch topic per callerid:
+        for (const auto& item : latch_topics) {
+            const auto& callerid = item.first;
+            const auto& topic = item.second;
+
+            View latch_view;
+            for (const auto& bag : bags_) {
+                latch_view.addQuery(*bag, TopicQuery(topic), full_initial_time, initial_time);
+            }
+
+            auto last_message = latch_view.end();
+            for (auto iter = latch_view.begin(); iter != latch_view.end(); ++iter) {
+                if (iter->getCallerId() == callerid) {
+                    last_message = iter;
+                }
+            }
+
+            if (last_message != latch_view.end()) {
+                const auto publisher = publishers_.find(callerid + topic);
+                ROS_ASSERT(publisher != publishers_.end());
+
+                publisher->second.publish(*last_message);
+            }
+        }
+    } else if (options_.wait_for_subscribers) {
         waitForSubscribers();
     }
 
@@ -408,6 +455,24 @@ void Player::waitForSubscribers() const
         ros::Duration(0.1).sleep();
     }
     std::cout << "Finished waiting for subscribers." << std::endl;
+}
+
+void Player::advertise(const ConnectionInfo* c)
+{
+    ros::M_string::const_iterator header_iter = c->header->find("callerid");
+    std::string callerid = (header_iter != c->header->end() ? header_iter->second : string(""));
+
+    string callerid_topic = callerid + c->topic;
+
+    map<string, ros::Publisher>::iterator pub_iter = publishers_.find(callerid_topic);
+    if (pub_iter == publishers_.end()) {
+        ros::AdvertiseOptions opts = createAdvertiseOptions(c, options_.queue_size, options_.prefix);
+
+        ros::Publisher pub = node_handle_.advertise(opts);
+        publishers_.insert(publishers_.begin(), pair<string, ros::Publisher>(callerid_topic, pub));
+
+        pub_iter = publishers_.find(callerid_topic);
+    }
 }
 
 void Player::doPublish(MessageInstance const& m) {
