@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
-# Copyright (c) 2009, Willow Garage, Inc.
+# Copyright (c) 2008, Willow Garage, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,39 +30,31 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#
-# Revision $Id: test_roslaunch_command_line_online.py 6411 2009-10-02 21:32:01Z kwc $
 
-PKG = 'roslaunch'
-NAME = 'test_roslaunch_command_line_online'
+## Simple talker demo that listens to std_msgs/Strings published 
+## to the 'chatter' topic
 
-import os
-import sys 
-import time
-import unittest
-import yaml
+PKG = 'rosmaster' # this package name
 
-import rostest
+import rospy
+from std_msgs.msg import String
 
-from subprocess import Popen, PIPE, check_call, call
+def callback(data):
+    rospy.loginfo(rospy.get_caller_id()+"I heard %s",data.data)
+    
+def listener():
 
-class TestRoslaunchOnline(unittest.TestCase):
+    # in ROS, nodes are unique named. If two nodes with the same
+    # node are launched, the previous one is kicked off. The 
+    # anonymous=True flag means that rospy will choose a unique
+    # name for our 'talker' node so that multiple talkers can
+    # run simultaenously.
+    rospy.init_node('listener', anonymous=True)
 
-    def setUp(self):
-        self.vals = set()
-        self.msgs = {}
+    rospy.Subscriber("chatter", String, callback)
 
-    def test_roslaunch(self):
-        # network is initialized
-        cmd = 'roslaunch'
-
-        # regression test for #1994
-        # --wait
-        # master is already running, noop only sets params, so this should return
-        check_call([cmd, '--wait', 'test_roslaunch', 'noop.launch'])
-
-        # tripwire test for #2370, not really possible to validate output on this
-        check_call([cmd, '--screen', 'test_roslaunch', 'noop.launch'])
-
+    # spin() simply keeps python from exiting until this node is stopped
+    rospy.spin()
+        
 if __name__ == '__main__':
-    rostest.run(PKG, NAME, TestRoslaunchOnline, sys.argv)
+    listener()

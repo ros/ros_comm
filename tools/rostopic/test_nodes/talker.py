@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
-# Copyright (c) 2009, Willow Garage, Inc.
+# Copyright (c) 2008, Willow Garage, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,39 +30,24 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#
-# Revision $Id: test_roslaunch_command_line_online.py 6411 2009-10-02 21:32:01Z kwc $
 
-PKG = 'roslaunch'
-NAME = 'test_roslaunch_command_line_online'
+## Simple talker demo that published std_msgs/Strings messages
+## to the 'chatter' topic
 
-import os
-import sys 
-import time
-import unittest
-import yaml
+import rospy
+from std_msgs.msg import String
 
-import rostest
-
-from subprocess import Popen, PIPE, check_call, call
-
-class TestRoslaunchOnline(unittest.TestCase):
-
-    def setUp(self):
-        self.vals = set()
-        self.msgs = {}
-
-    def test_roslaunch(self):
-        # network is initialized
-        cmd = 'roslaunch'
-
-        # regression test for #1994
-        # --wait
-        # master is already running, noop only sets params, so this should return
-        check_call([cmd, '--wait', 'test_roslaunch', 'noop.launch'])
-
-        # tripwire test for #2370, not really possible to validate output on this
-        check_call([cmd, '--screen', 'test_roslaunch', 'noop.launch'])
-
+def talker():
+    rospy.init_node('talker', anonymous=True)
+    pub = rospy.Publisher('chatter', String, queue_size=10)
+    r = rospy.Rate(10) # 10hz
+    while not rospy.is_shutdown():
+        str = "hello world %s"%rospy.get_time()
+        rospy.loginfo(str)
+        pub.publish(str)
+        r.sleep()
+        
 if __name__ == '__main__':
-    rostest.run(PKG, NAME, TestRoslaunchOnline, sys.argv)
+    try:
+        talker()
+    except rospy.ROSInterruptException: pass

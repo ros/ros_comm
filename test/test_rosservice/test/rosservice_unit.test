@@ -1,11 +1,11 @@
 <launch>
-  <node name="a2iserver" pkg="test_rosmaster" type="add_two_ints_server" />
+  <node name="a2iserver" pkg="test_rosservice" type="add_two_ints_server" />
   <node name="headerserver" pkg="test_rosservice" type="header_echo_server.py" />
   <group ns="foo">
-    <node name="a2iserver" pkg="test_rosmaster" type="add_two_ints_server" />
+    <node name="a2iserver" pkg="test_rosservice" type="add_two_ints_server" />
   </group>
   <group ns="bar">
-    <node name="a2iserver" pkg="test_rosmaster" type="add_two_ints_server" />
+    <node name="a2iserver" pkg="test_rosservice" type="add_two_ints_server" />
   </group>
   <test test-name="rosservice_unit" pkg="test_rosservice" type="check_rosservice.py" />
 </launch>

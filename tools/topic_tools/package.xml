@@ -33,4 +33,10 @@
   <run_depend>rostime</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>xmlrpcpp</run_depend>
+
+  <test_depend>rosbash</test_depend>
+  <!--
+  tests need this dependency but rostopic dep. on rosbag deps. on topic_tools
+  <test_depend>rostopic</test_depend>
+  -->
 </package>

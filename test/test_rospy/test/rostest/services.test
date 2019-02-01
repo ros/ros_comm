@@ -8,7 +8,7 @@
   <test test-name="rospy_basic_services" pkg="test_rospy" type="test_basic_services.py" />  
   <test test-name="rospy_service_decl_order" pkg="test_rospy" type="test_service_order.py" />
 
-  <node name="fail_two_ints" pkg="test_rosmaster" type="fail_two_ints_server">
+  <node name="fail_two_ints" pkg="test_rospy" type="fail_two_ints_server">
     <remap from="add_two_ints" to="fail_two_ints" />
   </node>
   

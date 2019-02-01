@@ -1,10 +1,10 @@
 <launch>
-  <node name="talker" pkg="rospy" type="talker.py" />
+  <node name="talker" pkg="rostopic" type="talker.py" />
   <group ns="foo">
-    <node name="talker" pkg="rospy" type="talker.py" />
+    <node name="talker" pkg="rostopic" type="talker.py" />
   </group>
   <group ns="bar">
-    <node name="talker" pkg="rospy" type="talker.py" />
+    <node name="talker" pkg="rostopic" type="talker.py" />
   </group>
   <test test-name="rostopic_command_line_online" pkg="rostopic" type="check_rostopic_command_line_online.py" />
 </launch>

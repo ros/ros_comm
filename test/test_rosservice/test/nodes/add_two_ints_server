@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
-# Copyright (c) 2009, Willow Garage, Inc.
+# Copyright (c) 2008, Willow Garage, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,38 +31,27 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
-# Revision $Id: test_roslaunch_command_line_online.py 6411 2009-10-02 21:32:01Z kwc $
+# Revision $Id: add_two_ints_server 3804 2009-02-11 02:16:00Z rob_wheeler $
 
-PKG = 'roslaunch'
-NAME = 'test_roslaunch_command_line_online'
+## Simple demo of a rospy service that add two integers
 
-import os
-import sys 
-import time
-import unittest
-import yaml
+PKG = 'test_rosservice' # this package name
+NAME = 'add_two_ints_server'
 
-import rostest
+# import the AddTwoInts service
+from test_rosmaster.srv import *
+import rospy 
 
-from subprocess import Popen, PIPE, check_call, call
+def add_two_ints(req):
+    print("Returning [%s + %s = %s]" % (req.a, req.b, (req.a + req.b)))
+    return AddTwoIntsResponse(req.a + req.b)
 
-class TestRoslaunchOnline(unittest.TestCase):
+def add_two_ints_server():
+    rospy.init_node(NAME)
+    s = rospy.Service('add_two_ints', AddTwoInts, add_two_ints)
 
-    def setUp(self):
-        self.vals = set()
-        self.msgs = {}
+    # spin() keeps Python from exiting until node is shutdown
+    rospy.spin()
 
-    def test_roslaunch(self):
-        # network is initialized
-        cmd = 'roslaunch'
-
-        # regression test for #1994
-        # --wait
-        # master is already running, noop only sets params, so this should return
-        check_call([cmd, '--wait', 'test_roslaunch', 'noop.launch'])
-
-        # tripwire test for #2370, not really possible to validate output on this
-        check_call([cmd, '--screen', 'test_roslaunch', 'noop.launch'])
-
-if __name__ == '__main__':
-    rostest.run(PKG, NAME, TestRoslaunchOnline, sys.argv)
+if __name__ == "__main__":
+    add_two_ints_server()
