@@ -1,4 +1,4 @@
-<package>
+<package format="2">
   <name>test_rosbag</name>
   <version>1.14.3</version>
   <description>
@@ -33,8 +33,11 @@
   <test_depend>genpy</test_depend>
   <test_depend>message_runtime</test_depend>
   <test_depend>python-rospkg</test_depend>
+  <test_depend>rosbag</test_depend>
   <test_depend>roslib</test_depend>
   <test_depend>rospy</test_depend>
+  <test_depend>rostest</test_depend>
+  <test_depend>rostopic</test_depend>
 
   <export>
     <rosdoc config="${prefix}/rosdoc.yaml"/>

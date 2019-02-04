@@ -18,5 +18,7 @@
   <build_depend>std_msgs</build_depend>
 
   <test_depend>genpy</test_depend>
+  <test_depend>rosbuild</test_depend>
   <test_depend>roslib</test_depend>
+  <test_depend>std_srvs</test_depend>
 </package>
