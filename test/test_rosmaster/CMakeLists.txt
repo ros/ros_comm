@@ -5,7 +5,26 @@ project(test_rosmaster)
 find_package(catkin REQUIRED COMPONENTS genmsg rostest std_msgs)
 
 if(CATKIN_ENABLE_TESTING)
-  add_message_files(DIRECTORY msg)
+  add_message_files(DIRECTORY msg
+    FILES
+    Arrays.msg
+    Composite.msg
+    CompositeA.msg
+    CompositeB.msg
+    Embed.msg
+    Empty.msg
+    Floats.msg
+    RosmsgA.msg
+    RosmsgB.msg
+    RosmsgC.msg
+    Simple.msg
+    String.msg
+    TestArrays.msg
+    TestHeader.msg
+    TestPrimitives.msg
+    TestString.msg
+    TVals.msg
+  )
   add_service_files(DIRECTORY srv
     FILES
     AddTwoInts.srv
