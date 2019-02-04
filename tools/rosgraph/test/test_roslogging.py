@@ -93,7 +93,6 @@ try:
         base, ext = os.path.splitext(this_file)
         if ext == '.pyc':
             this_file = base + '.py'
-        this_file = re.escape(this_file)
 
         for i, loc in enumerate(['module', 'function', 'method']):
             if loc == 'module':
@@ -111,7 +110,7 @@ try:
                 '[0-9]*\.[0-9]*',
                 '[0-9]*',
                 'rosout',
-                this_file,
+                re.escape(this_file),
                 '[0-9]*',
                 function,
                 '/unnamed',

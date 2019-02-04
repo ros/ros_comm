@@ -116,7 +116,6 @@ class TestRospyCore(unittest.TestCase):
             base, ext = os.path.splitext(this_file)
             if ext == '.pyc':
                 this_file = base + '.py'
-            this_file = re.escape(this_file)
 
             try:
                 # hack to replace the stream handler with a debug version
@@ -179,7 +178,7 @@ class TestRospyCore(unittest.TestCase):
                         '[0-9]*\.[0-9]*',
                         '[0-9]*',
                         'rosout',
-                        this_file,
+                        re.escape(this_file),
                         '[0-9]*',
                         'TestRospyCore.test_loggers',
                         '/unnamed',
