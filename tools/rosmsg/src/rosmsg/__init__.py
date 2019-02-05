@@ -551,7 +551,7 @@ def _get_package_paths(pkgname, rospack):
     path = rospack.get_path(pkgname)
     paths.append(path)
     results = find_in_workspaces(search_dirs=['share'], project=pkgname, first_match_only=True, workspace_to_source_spaces=_catkin_workspace_to_source_spaces, source_path_to_packages=_catkin_source_path_to_packages)
-    if results and path.replace(os.path.sep, '/') != results[0].replace(os.path.sep, '/'):
+    if results and results[0].replace(os.path.sep, '/') != path.replace(os.path.sep, '/'):
         paths.append(results[0])
     return paths
     
