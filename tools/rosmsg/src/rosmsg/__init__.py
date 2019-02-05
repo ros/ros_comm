@@ -554,7 +554,7 @@ def _get_package_paths(pkgname, rospack):
     if results and path.replace(os.path.sep, '/') != results[0].replace(os.path.sep, '/'):
         paths.append(results[0])
     return paths
-
+    
 def rosmsg_search(rospack, mode, base_type):
     """
     Iterator for all packages that contain a message matching base_type
