@@ -551,15 +551,10 @@ def _get_package_paths(pkgname, rospack):
     path = rospack.get_path(pkgname)
     paths.append(path)
     results = find_in_workspaces(search_dirs=['share'], project=pkgname, first_match_only=True, workspace_to_source_spaces=_catkin_workspace_to_source_spaces, source_path_to_packages=_catkin_source_path_to_packages)
-    if results:
-        if os.path.sep != '/':
-            if path.replace(os.path.sep, '/') != results[0].replace(os.path.sep, '/'):
-                paths.append(results[0])
-        else:
-            if path_in_workspaces != path:
-                paths.append(results[0])
+    if results and path.replace(os.path.sep, '/') != results[0].replace(os.path.sep, '/'):
+        paths.append(results[0])
     return paths
-    
+
 def rosmsg_search(rospack, mode, base_type):
     """
     Iterator for all packages that contain a message matching base_type
