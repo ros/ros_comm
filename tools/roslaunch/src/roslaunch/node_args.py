@@ -261,10 +261,8 @@ def create_local_process_args(node, machine, env=None):
         raise NodeParamsException("Cannot locate node of type [%s] in package [%s]"%(node.type, node.package))
     cmd = [cmd]
 
-    # add python prefix for python script in Windows environment
-    if os.name == 'nt':
-        _, ext = os.path.splitext(cmd[0])
-        # ROS nodes as python scripts tend to omit .py extension, still try launching with python
-        if ext.lower() in ['.py', '']:
-            cmd = ['python'] + cmd
+    # ROS nodes as python scripts without .py extension could run on Linux thanks to the shebang line
+    # add python prefix to execute such kind of scrips on Windows
+    if os.name == 'nt' and os.path.splitext(cmd[0])[1].lower() in ['.py', '']:
+        cmd = ['python'] + cmd
     return _launch_prefix_args(node) + cmd + args
