@@ -246,9 +246,7 @@ class Process(object):
         if self.time_of_death is None:
             if self.is_alive():
                 return False
-        due_interval = (self.time_of_death + self.respawn_delay) - time.time()
-        #if due at this moment, treat it as over-due, return a negative value
-        return -0.001 if due_interval == 0.0 else due_interval
+        return (self.time_of_death + self.respawn_delay) - time.time()
 
     def stop(self, errors=None):
         """
@@ -588,7 +586,9 @@ class ProcessMonitor(Thread):
                     break #stop polling
             for d in dead:
                 try:
-                    if d.should_respawn():
+                    # when should_respawn() returns 0.0, bool(0.0) evaluates to False
+                    # work around this by checking if the return value is False
+                    if d.should_respawn() is not False:
                         respawn.append(d)
                     else:
                         self.unregister(d)
