@@ -55,6 +55,7 @@ class RospyLogger(logging.getLoggerClass()):
         file name, line number, and function name with class name if possible.
         """
         file_name, lineno, func_name = super(RospyLogger, self).findCaller()[:3]
+        file_name = os.path.normcase(file_name)
 
         f = inspect.currentframe()
         if f is not None:

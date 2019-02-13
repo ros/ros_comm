@@ -11,7 +11,11 @@
 
 #include <errno.h>
 #include <string.h>
-#include <sys/resource.h>
+#if !defined(_WINDOWS)
+# include <sys/resource.h>
+#else
+# include <winsock2.h>
+#endif
 
 using namespace XmlRpc;
 
@@ -26,6 +30,7 @@ XmlRpcServer::XmlRpcServer()
     _accept_error(false),
     _accept_retry_time_sec(0.0)
 {
+#if !defined(_WINDOWS)
   struct rlimit limit = { .rlim_cur = 0, .rlim_max = 0 };
   unsigned int max_files = 1024;
 
@@ -43,6 +48,7 @@ XmlRpcServer::XmlRpcServer()
     pollfds[i].fd = i;
     pollfds[i].events = POLLIN | POLLPRI | POLLOUT;
   }
+#endif
 
   // Ask dispatch not to close this socket if it becomes unreadable.
   setKeepOpen(true);
@@ -215,6 +221,8 @@ int XmlRpcServer::countFreeFDs() {
   //
   // If the underlying system calls here fail, this will print an error and
   // return 0
+
+#if !defined(_WINDOWS)
   int free_fds = 0;
 
   struct rlimit limit = { .rlim_cur = 0, .rlim_max = 0 };
@@ -253,6 +261,9 @@ int XmlRpcServer::countFreeFDs() {
   }
 
   return free_fds;
+#else
+  return FREE_FD_BUFFER;
+#endif
 }
 
 

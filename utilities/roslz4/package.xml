@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>roslz4</name>
-  <version>1.14.2</version>
+  <version>1.14.3</version>
   <description>
     A Python and C++ implementation of the LZ4 streaming format.  Large data
     streams are split into blocks which are compressed using the very fast LZ4
@@ -15,6 +15,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>lz4</build_depend>
+  <build_depend>cpp_common</build_depend>
 
   <run_depend>lz4</run_depend>
 

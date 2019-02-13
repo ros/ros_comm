@@ -56,7 +56,7 @@ class Bag;
  *  It adheres to the necessary ros::message_traits to be directly
  *  serializable.
  */
-class ROSBAG_DECL MessageInstance
+class ROSBAG_STORAGE_DECL MessageInstance
 {
     friend class View;
   

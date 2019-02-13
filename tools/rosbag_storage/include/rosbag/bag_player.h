@@ -91,7 +91,7 @@ private:
 
 /* A class for playing back bag files at an API level. It supports
    relatime, as well as accelerated and slowed playback. */
-class BagPlayer
+class ROSBAG_STORAGE_DECL BagPlayer
 {
 public:
   /* Constructor expecting the filename of a bag */

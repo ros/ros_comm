@@ -1,6 +1,6 @@
 <package>
   <name>test_rospy</name>
-  <version>1.14.2</version>
+  <version>1.14.3</version>
   <description>
     rospy unit and integration test framework.
   </description>
@@ -22,4 +22,5 @@
   <test_depend>rosbuild</test_depend>
   <test_depend>rosgraph</test_depend>
   <test_depend>rospy</test_depend>
+  <test_depend>rostopic</test_depend>
 </package>

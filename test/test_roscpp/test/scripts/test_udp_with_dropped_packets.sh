@@ -1,5 +1,16 @@
 #!/bin/bash
 
+for dep in sudo ifconfig iptables; do
+    if ! [ -x "$(command -v $dep)" ]; then
+        echo "Missing dependency $dep! please install and try again...";
+        exit 1;
+    fi
+done
+
+if [ -f /.dockerenv ]; then
+    echo "This file runs in a Docker container! make sure container was executed with --privileged flag";
+fi
+
 DROP_PROBABILITY=0.01
 IP=192.168.99.99
 

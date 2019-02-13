@@ -253,14 +253,17 @@ def create_local_process_args(node, machine, env=None):
         # multiple nodes, invalid package
         raise NodeParamsException(str(e))
     if not matches:
-        raise NodeParamsException("can't locate node [%s] in package [%s]"%(node.type, node.package))
+        raise NodeParamsException("Cannot locate node of type [%s] in package [%s]. Make sure file exists in package path and permission is set to executable (chmod +x)"%(node.type, node.package))
     else:
         # old behavior was to take first, do we want to change this in Fuerte-style?
         cmd = matches[0]
     if not cmd:
         raise NodeParamsException("Cannot locate node of type [%s] in package [%s]"%(node.type, node.package))
     cmd = [cmd]
-    if sys.platform in ['win32']:
-        if os.path.splitext(cmd[0])[1] == '.py':
-            cmd = ['python'] + cmd
+
+    # Python scripts in ROS tend to omit .py extension since they could become executable
+    # by adding a shebang line (#!/usr/bin/env python) in Linux environments
+    # special handle this case by executing the script with the Python executable in Windows environment
+    if sys.platform in ['win32'] and os.path.splitext(cmd[0])[1].lower() in ['.py', '']:
+        cmd = ['python'] + cmd
     return _launch_prefix_args(node) + cmd + args

@@ -47,6 +47,7 @@ from xml.dom.minidom import parse, parseString
 from xml.dom import Node as DomNode #avoid aliasing
 
 from rosgraph.names import make_global_ns, ns_join, is_private, is_legal_name, get_ros_namespace
+from rospkg import ResourceNotFound
 
 from .core import Param, Node, Test, Machine, RLException
 from . import loader
@@ -164,15 +165,18 @@ class XmlLoader(loader.Loader):
     Parser for roslaunch XML format. Loads parsed representation into ROSConfig model.
     """
 
-    def __init__(self, resolve_anon=True):
+    def __init__(self, resolve_anon=True, args_only=False):
         """
         @param resolve_anon: If True (default), will resolve $(anon foo). If
         false, will leave these args as-is.
         @type  resolve_anon: bool
+        @param args_only: if True, will only load arg tags (e.g. autocompletion purposes)
+        @type  args_only: bool
         """        
         # store the root XmlContext so that outside code can access it
         self.root_context = None
         self.resolve_anon = resolve_anon
+        self.args_only = args_only
 
     def resolve_args(self, args, context):
         """
@@ -301,6 +305,9 @@ class XmlLoader(loader.Loader):
         except substitution_args.ArgException as e:
             raise XmlParseException(
                 "arg '%s' is not defined. \n\nArg xml is %s"%(e, tag.toxml()))
+        except ResourceNotFound as e:
+            raise ResourceNotFound(
+                "The following package was not found in {}: {}".format(tag.toxml(), e))
         except Exception as e:
             raise XmlParseException(
                 "Invalid <arg> tag: %s. \n\nArg xml is %s"%(e, tag.toxml()))
@@ -628,8 +635,9 @@ class XmlLoader(loader.Loader):
                 self._recurse_load(ros_config, launch.childNodes, child_ns, \
                                        default_machine, is_core, verbose)
 
-            # check for unused args
-            loader.post_process_include_args(child_ns)
+            if not pass_all_args:
+                # check for unused args
+                loader.post_process_include_args(child_ns)
 
         except ArgException as e:
             raise XmlParseException("included file [%s] requires the '%s' arg to be set"%(inc_filename, str(e)))
@@ -647,7 +655,12 @@ class XmlLoader(loader.Loader):
         """
         for tag in [t for t in tags if t.nodeType == DomNode.ELEMENT_NODE]:
             name = tag.tagName
-            if name == 'group':
+            if name == 'arg':
+                self._arg_tag(tag, context, ros_config, verbose=verbose)
+            elif self.args_only:
+                # do not load other tags
+                continue
+            elif name == 'group':
                 if ifunless_test(self, tag, context):
                     self._check_attrs(tag, context, ros_config, XmlLoader.GROUP_ATTRS)
                     child_ns = self._ns_clear_params_attr(name, tag, context, ros_config)
@@ -689,8 +702,6 @@ class XmlLoader(loader.Loader):
                     default_machine = val
             elif name == 'env':
                 self._env_tag(tag, context, ros_config)
-            elif name == 'arg':
-                self._arg_tag(tag, context, ros_config, verbose=verbose)
             else:
                 ros_config.add_config_error("unrecognized tag "+tag.tagName)
         return default_machine

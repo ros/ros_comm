@@ -107,7 +107,7 @@ std::string clean(const std::string& name)
     pos = clean.find("//", pos);
   }
 
-  if (*clean.rbegin() == '/')
+  if (!name.empty() && *clean.rbegin() == '/')
   {
     clean.erase(clean.size() - 1, 1);
   }

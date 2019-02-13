@@ -47,7 +47,7 @@ ROSCPP_DECL std::string clean(const std::string& name);
 /**
  * \brief Resolve a graph resource name into a fully qualified graph resource name
  *
- * See http://www.ros.org/wiki/Names for more details
+ * See http://wiki.ros.org/Names for more details
  *
  * \param name Name to resolve
  * \param remap Whether or not to apply remappings to the name
@@ -57,7 +57,7 @@ ROSCPP_DECL std::string resolve(const std::string& name, bool remap = true);
 /**
  * \brief Resolve a graph resource name into a fully qualified graph resource name
  *
- * See http://www.ros.org/wiki/Names for more details
+ * See http://wiki.ros.org/Names for more details
  *
  * \param ns Namespace to use in resolution
  * \param name Name to resolve

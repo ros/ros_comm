@@ -324,6 +324,8 @@ void Publication::dropAllConnections()
 
 void Publication::peerConnect(const SubscriberLinkPtr& sub_link)
 {
+  boost::mutex::scoped_lock lock(callbacks_mutex_);
+
   V_Callback::iterator it = callbacks_.begin();
   V_Callback::iterator end = callbacks_.end();
   for (; it != end; ++it)
@@ -339,6 +341,8 @@ void Publication::peerConnect(const SubscriberLinkPtr& sub_link)
 
 void Publication::peerDisconnect(const SubscriberLinkPtr& sub_link)
 {
+  boost::mutex::scoped_lock lock(callbacks_mutex_);
+
   V_Callback::iterator it = callbacks_.begin();
   V_Callback::iterator end = callbacks_.end();
   for (; it != end; ++it)

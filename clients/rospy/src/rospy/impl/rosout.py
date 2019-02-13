@@ -121,7 +121,7 @@ _logging_to_rospy_levels = {
 
 class RosOutHandler(logging.Handler):
    def emit(self, record):
-      _rosout(_logging_to_rospy_levels[record.levelno], record.getMessage(),
+      _rosout(_logging_to_rospy_levels[record.levelno], self.format(record),
             record.filename, record.lineno, record.funcName)
 
 ## Load loggers for publishing to /rosout

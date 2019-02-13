@@ -50,6 +50,7 @@ const static string g_none_topic = "__none";
 
 static ros::NodeHandle *g_node = NULL;
 static bool g_lazy = false;
+static bool g_latch = false;
 static bool g_advertised = false;
 static string g_output_topic;
 static ros::Publisher g_pub;
@@ -150,7 +151,7 @@ void in_cb(const boost::shared_ptr<ShapeShifter const>& msg,
   if (!g_advertised)
   {
     ROS_INFO("advertising");
-    g_pub = msg->advertise(*g_node, g_output_topic, 10, false, conn_cb);
+    g_pub = msg->advertise(*g_node, g_output_topic, 10, g_latch, conn_cb);
     g_advertised = true;
     
     // If lazy, unregister from all but the selected topic
@@ -167,7 +168,7 @@ void in_cb(const boost::shared_ptr<ShapeShifter const>& msg,
     }
   }
   
-  if (s != g_selected->msg)
+  if (g_selected == g_subs.end() || s != g_selected->msg)
     return;
   
   // If we're in lazy subscribe mode, and nobody's listening, then unsubscribe
@@ -304,6 +305,7 @@ int main(int argc, char **argv)
   // Put our API into the "mux" namespace, which the user should usually remap
   ros::NodeHandle mux_nh("mux"), pnh("~");
   pnh.getParam("lazy", g_lazy);
+  pnh.getParam("latch", g_latch);
 
   // Latched publisher for selected input topic name
   g_pub_selected = mux_nh.advertise<std_msgs::String>(string("selected"), 1, true);

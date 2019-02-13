@@ -96,7 +96,7 @@ class MessageInstance;
 class View;
 class Query;
 
-class ROSBAG_DECL Bag
+class ROSBAG_STORAGE_DECL Bag
 {
     friend class MessageInstance;
     friend class View;

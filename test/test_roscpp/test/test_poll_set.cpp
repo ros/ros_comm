@@ -35,7 +35,9 @@
 
 #include <gtest/gtest.h>
 #include "ros/poll_set.h"
-#include <sys/socket.h>
+#ifndef _WIN32
+# include <sys/socket.h>
+#endif
 
 #include <fcntl.h>
 
@@ -44,22 +46,145 @@
 
 using namespace ros;
 
+int set_nonblocking(int &socket)
+{
+#ifndef _WIN32
+  if (fcntl(socket, F_SETFL, O_NONBLOCK) == -1)
+  {
+    return errno;
+  }
+#else
+  u_long non_blocking = 1;
+  if (ioctlsocket(socket, FIONBIO, &non_blocking) != 0)
+  {
+    return WSAGetLastError();
+  }
+#endif
+  return 0;
+}
+
+int create_socket_pair(int socket_pair[2])
+{
+#ifndef _WIN32
+  return socketpair(AF_UNIX, SOCK_STREAM, 0, socket_pair);
+#else
+  socket_pair[0] = INVALID_SOCKET;
+  socket_pair[1] = INVALID_SOCKET;
+
+  /*********************
+  ** Listen Socket
+  **********************/
+  socket_fd_t listen_socket = INVALID_SOCKET;
+  listen_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+  if (listen_socket == INVALID_SOCKET)
+  {
+    return WSAGetLastError();
+  }
+
+  // allow it to be bound to an address already in use - do we actually need this?
+  int reuse = 1;
+  if (setsockopt(listen_socket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&reuse), static_cast<socklen_t>(sizeof(reuse))) == SOCKET_ERROR)
+  {
+    ::closesocket(listen_socket);
+    return WSAGetLastError();
+  }
+
+  union
+  {
+    struct sockaddr_in inaddr;
+    struct sockaddr addr;
+  } a;
+
+  memset(&a, 0, sizeof(a));
+  a.inaddr.sin_family = AF_INET;
+  a.inaddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+  // For TCP/IP, if the port is specified as zero, the service provider assigns
+  // a unique port to the application from the dynamic client port range.
+  a.inaddr.sin_port = 0;
+
+  if (bind(listen_socket, &a.addr, sizeof(a.inaddr)) == SOCKET_ERROR)
+  {
+    ::closesocket(listen_socket);
+    return WSAGetLastError();
+  }
+
+  // we need this below because the system auto filled in some entries, e.g. port #
+  socklen_t addrlen = static_cast<socklen_t>(sizeof(a.inaddr));
+  if (getsockname(listen_socket, &a.addr, &addrlen) == SOCKET_ERROR)
+  {
+    ::closesocket(listen_socket);
+    return WSAGetLastError();
+  }
+  // max 1 connection permitted
+  if (listen(listen_socket, 1) == SOCKET_ERROR)
+  {
+    ::closesocket(listen_socket);
+    return WSAGetLastError();
+  }
+
+  /*********************
+  ** Connection
+  **********************/
+  DWORD overlapped_flag = 0;
+  socket_pair[0] = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, overlapped_flag);
+  if (socket_pair[0] == INVALID_SOCKET)
+  {
+    ::closesocket(listen_socket);
+    ::closesocket(socket_pair[0]);
+    return WSAGetLastError();
+  }
+
+  // reusing the information from above to connect to the listener
+  if (connect(socket_pair[0], &a.addr, sizeof(a.inaddr)) == SOCKET_ERROR)
+  {
+    ::closesocket(listen_socket);
+    ::closesocket(socket_pair[0]);
+    return WSAGetLastError();
+  }
+
+  /*********************
+  ** Accept
+  **********************/
+  socket_pair[1] = accept(listen_socket, NULL, NULL);
+  if (socket_pair[1] == INVALID_SOCKET)
+  {
+    ::closesocket(listen_socket);
+    ::closesocket(socket_pair[0]);
+    return WSAGetLastError();
+  }
+
+  /*********************
+  ** Cleanup
+  **********************/
+  ::closesocket(listen_socket);  // the listener has done its job.
+  return 0;
+#endif
+}
+
 class Poller : public testing::Test
 {
 public:
   Poller()
   {
+#ifdef _WIN32
+    WSADATA wsaData;
+    WSAStartup(MAKEWORD(2, 0), &wsaData);
+#endif    
   }
 
   ~Poller()
   {
     ::close(sockets_[0]);
     ::close(sockets_[1]);
+
+#ifdef _WIN32
+    WSACleanup();
+#endif    
   }
 
   void waitThenSignal()
   {
-    usleep(100000);
+    boost::this_thread::sleep(boost::posix_time::microseconds(100000));
 
     poll_set_.signal();
   }
@@ -68,15 +193,15 @@ protected:
 
   virtual void SetUp()
   {
-    if(socketpair(AF_UNIX, SOCK_STREAM, 0, sockets_) != 0)
+    if (create_socket_pair(sockets_) != 0)
     {
       FAIL();
     }
-    if(fcntl(sockets_[0], F_SETFL, O_NONBLOCK) == -1)
+    if(set_nonblocking(sockets_[0]) != 0)
     {
       FAIL();
     }
-    if(fcntl(sockets_[1], F_SETFL, O_NONBLOCK) == -1)
+    if(set_nonblocking(sockets_[1]) != 0)
     {
       FAIL();
     }
@@ -390,7 +515,7 @@ TEST_F(Poller, signal)
   poll_set_.update(-1);
 
   // wait for poll_set_.signal_mutex_ to be unlocked after invoking signal()
-  usleep(50000);
+  boost::this_thread::sleep(boost::posix_time::microseconds(50000));
 }
 
 
@@ -398,7 +523,9 @@ int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
 
+#ifndef _WIN32
   signal(SIGPIPE, SIG_IGN);
+#endif
 
   return RUN_ALL_TESTS();
 }

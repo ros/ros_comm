@@ -473,6 +473,7 @@ class TCPROSTransport(Transport):
         Similar to getTransportInfo() in 'libros/transport/transport_tcp.cpp'
         e.g. TCPROS connection on port 41374 to [127.0.0.1:40623 on socket 6]
         """
+        # Pattern matching this output in tools/rosnode/src/rosnode/__init__.py CONNECTION_PATTERN
         return "%s connection on port %s to [%s:%s on socket %s]" % (self.transport_type, self.local_endpoint[1], self.remote_endpoint[0], self.remote_endpoint[1], self._fileno)
 
     def fileno(self):

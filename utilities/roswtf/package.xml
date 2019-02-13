@@ -1,6 +1,6 @@
 <package>
   <name>roswtf</name>
-  <version>1.14.2</version>
+  <version>1.14.3</version>
   <description>
      roswtf is a tool for diagnosing issues with a running ROS system. Think of it as a FAQ implemented in code.
   </description>
@@ -25,6 +25,7 @@
 
   <test_depend>cmake_modules</test_depend>  <!-- since the other packages recursively depend on it roswtf needs to find it during its own tests -->
   <test_depend>rosbag</test_depend>
+  <test_depend>roslang</test_depend>
   <test_depend>std_srvs</test_depend>
 
   <export>

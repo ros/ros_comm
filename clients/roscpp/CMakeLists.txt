@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(roscpp)
 
 if(NOT WIN32)
-  set_directory_properties(PROPERTIES COMPILE_OPTIONS "-std=c++11;-Wall;-Wextra")
+  set_directory_properties(PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra")
 endif()
 
 find_package(catkin REQUIRED COMPONENTS
@@ -22,7 +22,7 @@ list(GET roscpp_VERSION_LIST 2 roscpp_VERSION_PATCH)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ros/common.h.in ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/ros/common.h)
 
-find_package(Boost REQUIRED COMPONENTS chrono filesystem signals system)
+find_package(Boost REQUIRED COMPONENTS chrono filesystem system)
 
 include_directories(include ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/ros ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
@@ -124,12 +124,20 @@ add_library(roscpp
   src/libros/steady_timer.cpp
   )
 
+if(WIN32)
+  add_definitions(-DNOGDI)
+endif()
+
 add_dependencies(roscpp ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(roscpp
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
   )
+
+if(WIN32)
+  target_link_libraries(roscpp ws2_32)
+endif()
 
 #explicitly install library and includes
 install(TARGETS roscpp

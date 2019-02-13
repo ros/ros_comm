@@ -1,10 +1,10 @@
 <package>
   <name>rosservice</name>
-  <version>1.14.2</version>
+  <version>1.14.3</version>
   <description>
     rosservice contains the rosservice command-line tool for listing
     and querying ROS <a
-    href="http://www.ros.org/wiki/Services">Services</a>. It also
+    href="http://wiki.ros.org/Services">Services</a>. It also
     contains a Python library for retrieving information about
     Services and dynamically invoking them. The Python library is
     experimental and is for internal-use only.

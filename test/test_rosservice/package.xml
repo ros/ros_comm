@@ -1,6 +1,6 @@
 <package>
   <name>test_rosservice</name>
-  <version>1.14.2</version>
+  <version>1.14.3</version>
   <description>
     Tests for the rosservice tool.
   </description>
@@ -17,6 +17,7 @@
   <build_depend>std_msgs</build_depend>
 
   <test_depend>rospy</test_depend>
+  <test_depend>rosservice</test_depend>
   <test_depend>rosunit</test_depend>
   <test_depend>test_rosmaster</test_depend>
 </package>

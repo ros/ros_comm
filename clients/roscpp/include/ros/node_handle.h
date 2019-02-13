@@ -2150,7 +2150,7 @@ if (service)  // Enter if advertised service is valid
    * or is an otherwise invalid graph resource name.
    */
   template<typename T>
-  T param(const std::string& param_name, const T& default_val)
+  T param(const std::string& param_name, const T& default_val) const
   {
       T param_val;
       param(param_name, param_val, default_val);

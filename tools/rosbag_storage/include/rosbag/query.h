@@ -49,7 +49,7 @@ namespace rosbag {
 
 class Bag;
 
-class ROSBAG_DECL Query
+class ROSBAG_STORAGE_DECL Query
 {
 public:
     //! The base query takes an optional time-range
@@ -72,7 +72,7 @@ private:
     ros::Time end_time_;
 };
 
-class ROSBAG_DECL TopicQuery
+class ROSBAG_STORAGE_DECL TopicQuery
 {
 public:
     TopicQuery(std::string const& topic);
@@ -84,7 +84,7 @@ private:
     std::vector<std::string> topics_;
 };
 
-class ROSBAG_DECL TypeQuery
+class ROSBAG_STORAGE_DECL TypeQuery
 {
 public:
     TypeQuery(std::string const& type);
@@ -97,7 +97,7 @@ private:
 };
 
 //! Pairs of queries and the bags they come from (used internally by View)
-struct ROSBAG_DECL BagQuery
+struct ROSBAG_STORAGE_DECL BagQuery
 {
     BagQuery(Bag const* _bag, Query const& _query, uint32_t _bag_revision);
 
@@ -106,7 +106,7 @@ struct ROSBAG_DECL BagQuery
     uint32_t   bag_revision;
 };
 
-struct ROSBAG_DECL MessageRange
+struct ROSBAG_STORAGE_DECL MessageRange
 {
     MessageRange(std::multiset<IndexEntry>::const_iterator const& _begin,
                  std::multiset<IndexEntry>::const_iterator const& _end,
@@ -120,7 +120,7 @@ struct ROSBAG_DECL MessageRange
 };
 
 //! The actual iterator data structure
-struct ROSBAG_DECL ViewIterHelper
+struct ROSBAG_STORAGE_DECL ViewIterHelper
 {
     ViewIterHelper(std::multiset<IndexEntry>::const_iterator _iter, MessageRange const* _range);
 
@@ -128,7 +128,7 @@ struct ROSBAG_DECL ViewIterHelper
     MessageRange const* range;  //!< pointer to vector of ranges in View
 };
 
-struct ROSBAG_DECL ViewIterHelperCompare
+struct ROSBAG_STORAGE_DECL ViewIterHelperCompare
 {
     bool operator()(ViewIterHelper const& a, ViewIterHelper const& b);
 };

@@ -12,6 +12,7 @@
 
 #ifndef MAKEDEPEND
 # include <list>
+# include <vector>
 #endif
 
 namespace XmlRpc {

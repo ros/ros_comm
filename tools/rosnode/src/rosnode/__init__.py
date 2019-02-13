@@ -45,6 +45,7 @@ import errno
 import sys
 import socket
 import time
+import re
 try:
     from xmlrpc.client import ServerProxy
 except ImportError:
@@ -62,6 +63,8 @@ import rostopic
 
 NAME='rosnode'
 ID = '/rosnode'
+# The string is defined in clients/rospy/src/rospy/impl/tcpros_base.py TCPROSTransport.get_transport_info
+CONNECTION_PATTERN = re.compile(r'\w+ connection on port (\d+) to \[(.*) on socket (\d+)\]')
 
 class ROSNodeException(Exception):
     """
@@ -333,6 +336,9 @@ def rosnode_ping(node_name, max_count=None, verbose=False):
                 if verbose:
                     print("xmlrpc reply from %s\ttime=%fms"%(node_api, dur))
                 # 1s between pings
+            except socket.timeout:
+                print("connection to [%s] timed out"%node_name, file=sys.stderr)
+                return False
             except socket.error as e:
                 # 3786: catch ValueError on unpack as socket.error is not always a tuple
                 try:
@@ -355,7 +361,7 @@ def rosnode_ping(node_name, max_count=None, verbose=False):
                             continue
                         print("ERROR: connection refused to [%s]"%(node_api), file=sys.stderr)
                     else:
-                        print("connection to [%s] timed out"%node_name, file=sys.stderr)
+                        print("connection to [%s] failed"%node_name, file=sys.stderr)
                     return False
                 except ValueError:
                     print("unknown network error contacting node: %s"%(str(e)))
@@ -543,11 +549,16 @@ def get_node_connection_info_description(node_api, master):
                     # older ros publisher implementations don't report a URI
                     buff += "    * to: %s\n"%lookup_uri(master, system_state, topic, dest_id)
                     if direction == 'i':
-                        buff += "    * direction: inbound\n"
+                        buff += "    * direction: inbound"
                     elif direction == 'o':
-                        buff += "    * direction: outbound\n"
+                        buff += "    * direction: outbound"
                     else:
-                        buff += "    * direction: unknown\n"
+                        buff += "    * direction: unknown"
+                    if len(info) > 6:
+                        match = CONNECTION_PATTERN.match(info[6])
+                        if match is not None:
+                            buff += " (%s - %s) [%s]" % match.groups()
+                    buff += "\n"
                     buff += "    * transport: %s\n"%transport
     except socket.error:
         raise ROSNodeIOException("Communication with node[%s] failed!"%(node_api))

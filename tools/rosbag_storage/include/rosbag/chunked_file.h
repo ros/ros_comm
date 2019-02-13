@@ -48,7 +48,7 @@
 namespace rosbag {
 
 //! ChunkedFile reads and writes files which contain interleaved chunks of compressed and uncompressed data.
-class ROSBAG_DECL ChunkedFile
+class ROSBAG_STORAGE_DECL ChunkedFile
 {
     friend class Stream;
 

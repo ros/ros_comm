@@ -35,7 +35,7 @@
 """
 Support for ROS Names
 
-See: U{http://www.ros.org/wiki/Names}
+See: U{http://wiki.ros.org/Names}
 """
 
 import sys

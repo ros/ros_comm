@@ -44,7 +44,7 @@
 
 namespace rosbag {
 
-struct ROSBAG_DECL ConnectionInfo
+struct ROSBAG_STORAGE_DECL ConnectionInfo
 {
     ConnectionInfo() : id(-1) { }
 
@@ -66,14 +66,14 @@ struct ChunkInfo
     std::map<uint32_t, uint32_t> connection_counts;   //! number of messages in each connection stored in the chunk
 };
 
-struct ROSBAG_DECL ChunkHeader
+struct ROSBAG_STORAGE_DECL ChunkHeader
 {
     std::string compression;          //! chunk compression type, e.g. "none" or "bz2" (see constants.h)
     uint32_t    compressed_size;      //! compressed size of the chunk in bytes
     uint32_t    uncompressed_size;    //! uncompressed size of the chunk in bytes
 };
 
-struct ROSBAG_DECL IndexEntry
+struct ROSBAG_STORAGE_DECL IndexEntry
 {
     ros::Time time;            //! timestamp of the message
     uint64_t  chunk_pos;       //! absolute byte offset of the chunk record containing the message
@@ -82,7 +82,7 @@ struct ROSBAG_DECL IndexEntry
     bool operator<(IndexEntry const& b) const { return time < b.time; }
 };
 
-struct ROSBAG_DECL IndexEntryCompare
+struct ROSBAG_STORAGE_DECL IndexEntryCompare
 {
     bool operator()(ros::Time const& a, IndexEntry const& b) const { return a < b.time; }
     bool operator()(IndexEntry const& a, ros::Time const& b) const { return a.time < b; }

@@ -162,7 +162,7 @@ def _roswtf_main():
             print("Stack:", curr_stack)
             ctx = WtfContext.from_stack(curr_stack)
         else:
-            print("No package or stack in context")
+            print("No package or stack in the current directory")
             ctx = WtfContext.from_env()
         if options.all_packages:
             print("roswtf will run against all packages")
@@ -200,7 +200,7 @@ def _roswtf_main():
             online_checks = True
         if online_checks:
             online_checks = True
-            print("Beginning tests of your ROS graph. These may take awhile...")
+            print("Beginning tests of your ROS graph. These may take a while...")
             
             # online checks
             wtf_check_graph(ctx, names=names)

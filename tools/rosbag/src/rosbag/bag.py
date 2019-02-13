@@ -1291,12 +1291,12 @@ class Bag(object):
 
         return sum((h.uncompressed_size for h in self._chunk_headers.values()))
 
-    def _read_message(self, position, raw=False):
+    def _read_message(self, position, raw=False, return_connection_header=False):
         """
         Read the message from the given position in the file.
         """
         self.flush()
-        return self._reader.seek_and_read_message_data_record(position, raw)
+        return self._reader.seek_and_read_message_data_record(position, raw, return_connection_header)
 
     # Index accessing
 
@@ -2052,7 +2052,7 @@ class _BagReader(object):
     def start_reading(self):
         raise NotImplementedError()
 
-    def read_messages(self, topics, start_time, end_time, connection_filter, raw, return_connection_header):
+    def read_messages(self, topics, start_time, end_time, connection_filter, raw, return_connection_header=False):
         raise NotImplementedError()
 
     def reindex(self):
@@ -2117,7 +2117,7 @@ class _BagReader102_Unindexed(_BagReader):
             
             offset = f.tell()
 
-    def read_messages(self, topics, start_time, end_time, topic_filter, raw, return_connection_header):
+    def read_messages(self, topics, start_time, end_time, topic_filter, raw, return_connection_header=False):
         f = self.bag._file
 
         f.seek(self.bag._file_header_pos)
@@ -2355,7 +2355,7 @@ class _BagReader102_Indexed(_BagReader102_Unindexed):
             
         return (topic, topic_index)
 
-    def seek_and_read_message_data_record(self, position, raw):
+    def seek_and_read_message_data_record(self, position, raw, return_connection_header=False):
         f = self.bag._file
 
         # Seek to the message position
@@ -2399,7 +2399,10 @@ class _BagReader102_Indexed(_BagReader102_Unindexed):
             msg = msg_type()
             msg.deserialize(data)
         
-        return BagMessage(topic, msg, t)
+        if return_connection_header:
+            return BagMessageWithConnectionHeader(topic, msg, t, header)
+        else:
+            return BagMessage(topic, msg, t)
 
 class _BagReader200(_BagReader):
     """
@@ -2670,7 +2673,7 @@ class _BagReader200(_BagReader):
 
         self.bag._connection_indexes_read = True
 
-    def read_messages(self, topics, start_time, end_time, connection_filter, raw, return_connection_header):
+    def read_messages(self, topics, start_time, end_time, connection_filter, raw, return_connection_header=False):
         connections = self.bag._get_connections(topics, connection_filter)
         for entry in self.bag._get_entries(connections, start_time, end_time):
             yield self.seek_and_read_message_data_record((entry.chunk_pos, entry.offset), raw, return_connection_header)
@@ -2774,7 +2777,7 @@ class _BagReader200(_BagReader):
 
         return (connection_id, index)
 
-    def seek_and_read_message_data_record(self, position, raw, return_connection_header):
+    def seek_and_read_message_data_record(self, position, raw, return_connection_header=False):
         chunk_pos, offset = position
 
         chunk_header = self.bag._chunk_headers.get(chunk_pos)

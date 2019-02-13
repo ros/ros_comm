@@ -80,9 +80,11 @@ void writeUInt32(unsigned char *buffer, uint32_t val) {
   buffer[3] = (val >> 24) & 0xFF;
 }
 
+#ifndef _MSC_VER
 int min(int a, int b) {
   return a < b ? a : b;
 }
+#endif
 
 /*========================== Low level compression ==========================*/
 

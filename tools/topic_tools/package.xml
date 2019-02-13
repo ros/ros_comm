@@ -1,6 +1,6 @@
 <package>
   <name>topic_tools</name>
-  <version>1.14.2</version>
+  <version>1.14.3</version>
   <description>
     Tools for directing, throttling, selecting, and otherwise messing with
     ROS topics at a meta level. None of the programs in this package actually
@@ -33,4 +33,10 @@
   <run_depend>rostime</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>xmlrpcpp</run_depend>
+
+  <test_depend>rosbash</test_depend>
+  <!--
+  tests need this dependency but rostopic dep. on rosbag deps. on topic_tools
+  <test_depend>rostopic</test_depend>
+  -->
 </package>

@@ -49,9 +49,9 @@ namespace ros
  */
 namespace xmlrpc
 {
-XmlRpc::XmlRpcValue responseStr(int code, const std::string& msg, const std::string& response);
-XmlRpc::XmlRpcValue responseInt(int code, const std::string& msg, int response);
-XmlRpc::XmlRpcValue responseBool(int code, const std::string& msg, bool response);
+ROSCPP_DECL XmlRpc::XmlRpcValue responseStr(int code, const std::string& msg, const std::string& response);
+ROSCPP_DECL XmlRpc::XmlRpcValue responseInt(int code, const std::string& msg, int response);
+ROSCPP_DECL XmlRpc::XmlRpcValue responseBool(int code, const std::string& msg, bool response);
 }
 
 class XMLRPCCallWrapper;

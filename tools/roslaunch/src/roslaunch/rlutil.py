@@ -59,7 +59,7 @@ def check_log_disk_usage():
     """
     try:
         d = rospkg.get_log_dir()
-        roslaunch.core.printlog("Checking log directory for disk usage. This may take awhile.\nPress Ctrl-C to interrupt") 
+        roslaunch.core.printlog("Checking log directory for disk usage. This may take a while.\nPress Ctrl-C to interrupt") 
         disk_usage = rosclean.get_disk_usage(d)
         # warn if over a gig
         if disk_usage > 1073741824:

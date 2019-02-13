@@ -40,7 +40,7 @@
 
 namespace rosbag {
 
-class ROSBAG_DECL Buffer
+class ROSBAG_STORAGE_DECL Buffer
 {
 public:
     Buffer();
