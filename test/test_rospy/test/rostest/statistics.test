@@ -1,0 +1,42 @@
+<!-- basic smoke test for TopicStatistics -->
+<launch>
+  <param name="/enable_statistics" value="true" />
+  <!-- default 10 would take 5s to warm up for very slow talker -->
+  <param name="/statistics_window_min_elements" value="5" />
+
+  <!-- under 1Hz important, since checking window starts there -->
+  <node name="very_slow_talker" pkg="test_rospy" type="freq_talker" required="true">
+    <param name="frequency" value="0.5" />
+    <remap from="chatter" to="very_slow_chatter" />
+  </node>
+  <node name="very_slow_listener" pkg="test_rospy" type="listener.py" required="true">
+    <remap from="chatter" to="very_slow_chatter" />
+  </node>
+  <!-- publishing within fairly normal range of frequencies -->
+  <node name="slow_talker" pkg="test_rospy" type="freq_talker" required="true">
+    <param name="frequency" value="8" />
+    <remap from="chatter" to="slow_chatter" />
+  </node>
+  <node name="slow_listener" pkg="test_rospy" type="listener.py" required="true">
+    <remap from="chatter" to="slow_chatter" />
+  </node>
+
+  <node name="fast_talker" pkg="test_rospy" type="freq_talker" required="true">
+    <param name="frequency" value="53" />
+    <remap from="chatter" to="fast_chatter" />
+  </node>
+  <node name="fast_listener" pkg="test_rospy" type="listener.py" required="true">
+    <remap from="chatter" to="fast_chatter" />
+  </node>
+
+  <!-- fast outlier (for most ros systems) -->
+  <node name="very_fast_talker" pkg="test_rospy" type="freq_talker" required="true">
+    <param name="frequency" value="150" />
+    <remap from="chatter" to="very_fast_chatter" />
+  </node>
+  <node name="very_fast_listener" pkg="test_rospy" type="listener.py" required="true">
+    <remap from="chatter" to="very_fast_chatter" />
+  </node>
+
+  <test test-name="rospy_topic_statistics" pkg="test_rospy" type="test_topic_statistics.py" />
+</launch>
