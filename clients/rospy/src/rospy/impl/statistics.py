@@ -68,15 +68,15 @@ class SubscriberStatisticsLogger():
         Fetch window parameters from parameter server
         """
 
-        # Range of window length, in seconds
-        self.min_elements = rospy.get_param("/statistics_window_min_elements", 10)
-        self.max_elements = rospy.get_param("/statistics_window_max_elements", 100)
-
         # Range of acceptable messages in window.
         # Window size will be adjusted if number of observed is
         # outside this range.
-        self.max_window = rospy.get_param("/statistics_window_max_size", 64)
+        self.min_elements = rospy.get_param("/statistics_window_min_elements", 10)
+        self.max_elements = rospy.get_param("/statistics_window_max_elements", 100)
+
+        # Range of window length, in seconds
         self.min_window = rospy.get_param("/statistics_window_min_size", 4)
+        self.max_window = rospy.get_param("/statistics_window_max_size", 64)
 
     def callback(self, msg, publisher, stat_bytes):
         """
@@ -208,9 +208,10 @@ class ConnectionStatisticsLogger():
         self.pub.publish(msg)
 
         # adjust window, if message count is not appropriate.
-        if len(self.arrival_time_list_) > subscriber_statistics_logger.max_elements and self.pub_frequency.to_sec() * 2 <= subscriber_statistics_logger.max_window:
+        pub_period = 1.0 / self.pub_frequency.to_sec()
+        if len(self.arrival_time_list_) > subscriber_statistics_logger.max_elements and pub_period / 2 >= subscriber_statistics_logger.min_window:
             self.pub_frequency *= 2
-        if len(self.arrival_time_list_) < subscriber_statistics_logger.min_elements and self.pub_frequency.to_sec() / 2 >= subscriber_statistics_logger.min_window:
+        if len(self.arrival_time_list_) < subscriber_statistics_logger.min_elements and pub_period * 2 <= subscriber_statistics_logger.max_window:
             self.pub_frequency /= 2
 
         # clear collected stats, start new window.
@@ -257,7 +258,7 @@ class ConnectionStatisticsLogger():
             self.last_seq_ = msg.header.seq
 
         # send out statistics with a certain frequency
-        if self.last_pub_time + self.pub_frequency < arrival_time:
+        if self.last_pub_time + rospy.Duration(1.0 / self.pub_frequency.to_sec()) < arrival_time:
             self.last_pub_time = arrival_time
             self.sendStatistics(subscriber_statistics_logger)
 
