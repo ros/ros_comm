@@ -149,6 +149,7 @@ add_rostest(launch/ns_node_remapping.xml)
 add_rostest(launch/search_param.xml)
 
 add_rostest(launch/stamped_topic_statistics_with_empty_timestamp.xml)
+add_rostest(launch/topic_statistic_frequency.xml DEPENDENCIES ${PROJECT_NAME}-publisher_rate ${PROJECT_NAME}-subscriber ${PROJECT_NAME}-topic_statistic_frequency)
 
 # Test spinners
 add_rostest(launch/spinners.xml)
