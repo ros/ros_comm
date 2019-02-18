@@ -60,29 +60,51 @@ endfunction()
 # This is an internal function, use add_rostest_gtest or
 # add_rostest_gmock instead
 #
-# :param type: "gtest" or "gmock"
-# The remaining arguments are the same as for add_rostest_gtest
+# The function arguments are the same as for add_rostest_gtest
 # and add_rostest_gmock
 #
-function(_add_rostest_google_test type target launch_file)
-  if (NOT "${type}" STREQUAL "gtest" AND NOT "${type}" STREQUAL "gmock")
+function(_add_rostest_google_test target)
+  set(multiValueArgs LAUNCH_FILES SOURCES LIBRARIES DEPENDENCIES)
+  cmake_parse_arguments(_rostest_google_test "DEPRECATED" "TYPE" "${multiValueArgs}" ${ARGN})
+
+  if(NOT "${_rostest_google_test_TYPE}" STREQUAL "gtest" AND NOT "${_rostest_google_test_TYPE}" STREQUAL "gmock")
     message(FATAL_ERROR
-      "Invalid use of _add_rostest_google_test function, "
-      "first argument must be 'gtest' or 'gmock'")
+      "Invalid use of _rostest_google_test function, "
+      "TYPE argument must be 'gtest' or 'gmock'")
     return()
   endif()
-  string(TOUPPER "${type}" type_upper)
-  if("${ARGN}" STREQUAL "")
-    message(FATAL_ERROR "add_rostest_${type}() needs at least one file argument to compile a ${type_upper} executable")
+
+  if(_rostest_google_test_DEPRECATED)
+    message(STATUS "Syntax add_rostest_${_rostest_google_test_TYPE}(<target> <launch_file> <source>...) is deprecated.")
+    message(STATUS "Use syntax add_rostest_${_rostest_google_test_TYPE}(<target> LAUNCH_FILES <launch_file>... SOURCES <source>...) instead.")
+    set(_rostest_google_test_SOURCES ${_rostest_google_test_UNPARSED_ARGUMENTS})
+    list(GET         _rostest_google_test_SOURCES 0 _rostest_google_test_LAUNCH_FILES)
+    list(REMOVE_AT   _rostest_google_test_SOURCES 0)
   endif()
+
+  string(TOUPPER "${_rostest_google_test_TYPE}" type_upper)
+  if("${_rostest_google_test_LAUNCH_FILES}" STREQUAL "")
+    message(FATAL_ERROR "add_rostest_${_rostest_google_test_TYPE}() needs at least one launch file to execute test ${type_upper}")
+  endif()
+  if("${_rostest_google_test_SOURCES}" STREQUAL "")
+    message(FATAL_ERROR "add_rostest_${_rostest_google_test_TYPE}() needs at least one file argument to compile a ${type_upper} executable")
+  endif()
+
   if(${type_upper}_FOUND)
     include_directories(${${type_upper}_INCLUDE_DIRS})
-    add_executable(${target} EXCLUDE_FROM_ALL ${ARGN})
-    target_link_libraries(${target} ${${type_upper}_LIBRARIES})
+    add_executable(${target} EXCLUDE_FROM_ALL ${_rostest_google_test_SOURCES})
+    target_link_libraries(${target} ${${type_upper}_LIBRARIES} ${_rostest_google_test_LIBRARIES})
+    if(_rostest_google_test_DEPENDENCIES)
+      add_dependencies(${target} ${_rostest_google_test_DEPENDENCIES})
+    endif()
     if(TARGET tests)
       add_dependencies(tests ${target})
     endif()
-    add_rostest(${launch_file} DEPENDENCIES ${target})
+    foreach(launch_file ${_rostest_google_test_LAUNCH_FILES})
+      add_rostest(${launch_file} DEPENDENCIES ${target})
+    endforeach()
+  else()
+    message(STATUS "Skipped add_rostest_${_rostest_google_test_TYPE}(${target}) due to '${_rostest_google_test_TYPE}' is not found")
   endif()
 endfunction()
 
@@ -94,15 +116,36 @@ endfunction()
 #   target is only compiled when tests are built and linked against
 #   the GTest libraries.
 #
+# ::
+#   add_rostest_gtest(<target>
+#     LAUNCH_FILES <launch_file1> [<launch_file2> ...]
+#     SOURCES <source1> [<source2> ...]
+#     [LIBRARIES <library1> [<library2> ...]]
+#     [DEPENDENCIES <dependency1> [<dependency2> ...]])
+#
 # :param target: target name of the GTest executable
 # :type target: string
-# :param launch_file: the relative path to the roslaunch file
-# :type launch_file: string
-# :param ARGN: the files to compile into a GTest executable
-# :type ARGN: list of files
 #
-function(add_rostest_gtest target launch_file)
-  _add_rostest_google_test("gtest" ${target} ${launch_file} ${ARGN})
+# The function arguments are:
+#
+# ``LAUNCH_FILES``
+#   a list of relative paths to the roslaunch files which will be applied in `add_rostest` for <target>
+# ``SOURCES``
+#   a list of source files to compile into GTest executable <target>
+# ``LIBRARIES``
+#   a list of libraries to link with GTest executable <target>
+# ``DEPENDENCIES``
+#   a list of dependencies of GTest executable <target>
+#
+function(add_rostest_gtest target)
+  set(_type "gtest")
+  set(multiValueArgs LAUNCH_FILES SOURCES)
+  cmake_parse_arguments(_rostest_${_type} "" "" "${multiValueArgs}" ${ARGN})
+  if (NOT _rostest${_type}_LAUNCH_FILES AND NOT _rostest${_type}_SOURCES)
+    _add_rostest_google_test(${target} TYPE ${_type} DEPRECATED ${ARGN})
+  else()
+    _add_rostest_google_test(${target} TYPE ${_type} ${ARGN})
+  endif()
 endfunction()
 
 #
@@ -113,15 +156,36 @@ endfunction()
 #   target is only compiled when tests are built and linked against
 #   the GMock libraries.
 #
-# :param target: target name of the GMock executable
-# :type target: string
-# :param launch_file: the relative path to the roslaunch file
-# :type launch_file: string
-# :param ARGN: the files to compile into a GMock executable
-# :type ARGN: list of files
+# ::
+#   add_rostest_gmock(<target>
+#     LAUNCH_FILES <launch_file1> [<launch_file2> ...]
+#     SOURCES <source1> [<source2> ...]
+#     [LIBRARIES <library1> [<library2> ...]]
+#     [DEPENDENCIES <dependency1> [<dependency2> ...]])
 #
-function(add_rostest_gmock target launch_file)
-  _add_rostest_google_test("gmock" ${target} ${launch_file} ${ARGN})
+# :param target: target name of the GTest executable
+# :type target: string
+#
+# The function arguments are:
+#
+# ``LAUNCH_FILES``
+#   a list of relative paths to the roslaunch files which will be applied in `add_rostest` with <target>
+# ``SOURCES``
+#   a list of source files to compile into GMock executable <target>
+# ``LIBRARIES``
+#   a list of libraries to link with GMock executable <target>
+# ``DEPENDENCIES``
+#   a list of dependencies of GMock executable <target>
+#
+function(add_rostest_gmock target)
+  set(_type "gmock")
+  set(multiValueArgs LAUNCH_FILES SOURCES)
+  cmake_parse_arguments(_rostest_${_type} "" "" "${multiValueArgs}" ${ARGN})
+  if (NOT _rostest${_type}_LAUNCH_FILES AND NOT _rostest${_type}_SOURCES)
+    _add_rostest_google_test(${target} TYPE ${_type} DEPRECATED ${ARGN})
+  else()
+    _add_rostest_google_test(${target} TYPE ${_type} ${ARGN})
+  endif()
 endfunction()
 
 macro(rostest__strip_prefix var prefix)
