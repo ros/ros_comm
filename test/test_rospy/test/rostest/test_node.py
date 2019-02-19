@@ -66,10 +66,10 @@ def chain_callback(pub):
 
 def test_node():
     # required publications
-    string_out = rospy.Publisher("test_string_out", test_rosmaster.msg.TestString)
-    primitives_out = rospy.Publisher("test_primitives_out", test_rosmaster.msg.TestPrimitives)
-    arrays_out = rospy.Publisher("test_arrays_out", test_rosmaster.msg.TestArrays)
-    header_out = rospy.Publisher("test_header_out", test_rosmaster.msg.TestHeader)
+    string_out = rospy.Publisher("test_string_out", test_rosmaster.msg.TestString, queue_size=0)
+    primitives_out = rospy.Publisher("test_primitives_out", test_rosmaster.msg.TestPrimitives, queue_size=0)
+    arrays_out = rospy.Publisher("test_arrays_out", test_rosmaster.msg.TestArrays, queue_size=0)
+    header_out = rospy.Publisher("test_header_out", test_rosmaster.msg.TestHeader, queue_size=0)
 
     #required subs
     rospy.Subscriber("test_string_in", test_rosmaster.msg.TestString, chain_callback(string_out))
