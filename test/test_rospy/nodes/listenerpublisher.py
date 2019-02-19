@@ -48,7 +48,7 @@ def start_publishing():
     if _pub is not None:
         return
     print("registering onto listenerpublisher")
-    _pub = rospy.Publisher("listenerpublisher", String)
+    _pub = rospy.Publisher("listenerpublisher", String, queue_size=0)
     
 def callback(data):
     print(rospy.get_caller_id(), "I heard %s"%data.data)
