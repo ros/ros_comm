@@ -1573,6 +1573,12 @@ class Bag(object):
         # Write the open chunk (if any) to file
         self.flush()
 
+        # When read and write operations are mixed (e.g. bags in 'a' mode might be opened in 'r+b' mode)
+        # it could cause problems on Windows:
+        # https://stackoverflow.com/questions/14279658/mixing-read-and-write-on-python-files-in-windows
+        # to fix this, f.seek(0, os.SEEK_CUR) needs to be added after a read() before the next write()
+        self._file.seek(0, os.SEEK_CUR)
+
         # Remember this location as the start of the index
         self._index_data_pos = self._file.tell()
 
