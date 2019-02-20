@@ -199,7 +199,7 @@ def _launch_prefix_args(node):
         except NameError:
             pass
         os_posix = os.name == "posix"
-        return shlex.split(prefix, posix = os_posix)
+        return shlex.split(prefix, posix=os_posix)
     else:
         return []
 
