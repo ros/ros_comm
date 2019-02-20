@@ -198,7 +198,8 @@ def _launch_prefix_args(node):
                 prefix = prefix.encode('UTF-8')
         except NameError:
             pass
-        return shlex.split(prefix)
+        os_posix = os.name == "posix"
+        return shlex.split(prefix, posix=os_posix)
     else:
         return []
 
@@ -245,7 +246,8 @@ def create_local_process_args(node, machine, env=None):
             resolved = resolved.encode('UTF-8') #attempt to force to string for shlex/subprocess
     except NameError:
         pass
-    args = shlex.split(resolved) + remap_args
+    os_posix = os.name == "posix"
+    args = shlex.split(resolved, posix=os_posix) + remap_args
     try:
         #TODO:fuerte: pass through rospack and catkin cache
         matches = roslib.packages.find_node(node.package, node.type, rospack=rospack)
