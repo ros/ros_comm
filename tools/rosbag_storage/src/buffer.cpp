@@ -67,8 +67,8 @@ void Buffer::ensureCapacity(uint32_t capacity) {
     else {
         while (capacity_ < capacity)
         {
-          if (static_cast<uint64_t>(capacity) * 2 >=  std::numeric_limits<uint32_t>::max())
-            capacity_ = capacity;
+          if (static_cast<uint64_t>(capacity) * 2 > std::numeric_limits<uint32_t>::max())
+            capacity_ = std::numeric_limits<uint32_t>::max();
           else
             capacity_ *= 2;
         }
