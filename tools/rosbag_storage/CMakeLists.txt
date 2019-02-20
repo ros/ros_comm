@@ -48,11 +48,17 @@ add_library(rosbag_storage
   src/uncompressed_stream.cpp
 )
 target_link_libraries(rosbag_storage ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${BZIP2_LIBRARIES} ${console_bridge_LIBRARIES} ${AES_ENCRYPT_LIBRARIES})
+if(WIN32)
+  # On Windows, default library runtime output set to CATKIN_GLOBAL_BIN_DESTINATION,
+  # change it back to CATKIN_PACKAGE_LIB_DESTINATION to match the library path described in plugin description file
+  set_target_properties(rosbag_storage PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION})
+endif()
 
+# Install library
 install(TARGETS rosbag_storage
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 )
 
 install(DIRECTORY include/
@@ -60,11 +66,11 @@ install(DIRECTORY include/
   FILES_MATCHING PATTERN "*.h"
 )
 
-if(NOT WIN32)
-  install(FILES encryptor_plugins.xml
-    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  )
+install(FILES encryptor_plugins.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
 
+if(NOT WIN32)
   if(CATKIN_ENABLE_TESTING)
     find_package(rostest)
 
