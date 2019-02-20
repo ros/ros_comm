@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <utility>
+#include <limits>
 
 #include "rosbag/buffer.h"
 
@@ -65,7 +66,12 @@ void Buffer::ensureCapacity(uint32_t capacity) {
         capacity_ = capacity;
     else {
         while (capacity_ < capacity)
+        {
+          if (static_cast<uint64_t>(capacity) * 2 >=  std::numeric_limits<uint32_t>::max())
+            capacity_ = capacity;
+          else
             capacity_ *= 2;
+        }
     }
 
     buffer_ = (uint8_t*) realloc(buffer_, capacity_);
