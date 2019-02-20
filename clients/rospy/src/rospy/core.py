@@ -605,7 +605,7 @@ def signal_shutdown(reason):
 def _ros_signal(sig, stackframe):
     signal_shutdown("signal-"+str(sig))
     prev_handler = _signalChain.get(sig, None)
-    if prev_handler is not None and not type(prev_handler) == int:
+    if callable(prev_handler):
         try:
             prev_handler(sig, stackframe)
         except KeyboardInterrupt:
