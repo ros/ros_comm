@@ -33,29 +33,40 @@
 #include "std_msgs/Header.h"
 #include "ros/param.h"
 
+#include <chrono>
+
+
+//#define DEBUG
+#undef DEBUG
+
 namespace ros
 {
 
 StatisticsLogger::StatisticsLogger()
-: pub_frequency_(1.0)
+: pub_frequency_(1.0), pub_time_(1.0)
 {
 }
 
 void StatisticsLogger::init(const SubscriptionCallbackHelperPtr& helper) {
-  hasHeader_ = helper->hasHeader();
-  param::param("/enable_statistics", enable_statistics, false);
-  param::param("/statistics_window_min_elements", min_elements, 10);
-  param::param("/statistics_window_max_elements", max_elements, 100);
-  param::param("/statistics_window_min_size", min_window, 4);
-  param::param("/statistics_window_max_size", max_window, 64);
+
+    hasHeader_ = helper->hasHeader();
+    param::param("/enable_statistics", enable_statistics, false);
+    param::param("/statistics_window_min_elements", min_elements, 10);
+    param::param("/statistics_window_max_elements", max_elements, 100);
+    param::param("/statistics_window_min_size", min_window, 4);
+    param::param("/statistics_window_max_size", max_window, 64);
+#ifdef DEBUG
+    std::cout << ">>>> statistics > enable=" <<enable_statistics << std::endl;
+#endif
 }
 
 void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_header,
                                 const std::string& topic, const std::string& callerid, const SerializedMessage& m, const uint64_t& bytes_sent,
                                 const ros::Time& received_time, bool dropped)
 {
-  (void)connection_header;
-  struct StatData stats;
+#ifdef DEBUG
+  std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+#endif
 
   if (!enable_statistics)
   {
@@ -70,25 +81,24 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
 
   // callerid identifies the connection
   std::map<std::string, struct StatData>::iterator stats_it = map_.find(callerid);
+
   if (stats_it == map_.end())
   {
     // this is the first time, we received something on this connection
+    struct StatData stats;
     stats.stat_bytes_last = 0;
     stats.dropped_msgs = 0;
     stats.last_seq = 0;
     stats.last_publish = ros::Time::now();
-    map_[callerid] = stats;
-  }
-  else
-  {
-    stats = map_[callerid];
+    map_.insert(std::make_pair(callerid, stats));
+    stats_it = map_.begin();
   }
 
-  stats.arrival_time_list.push_back(received_time);
+  stats_it->second.arrival_time_list.push_back(received_time);
 
   if (dropped)
   {
-    stats.dropped_msgs++;
+    stats_it->second.dropped_msgs++;
   }
 
   // try to extract header, if the message has one. this fails sometimes,
@@ -102,7 +112,7 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
       ros::serialization::deserialize(stream, header);
       if (!header.stamp.isZero())
       {
-        stats.age_list.push_back(received_time - header.stamp);
+        stats_it->second.age_list.push_back(received_time - header.stamp);
       }
     }
     catch (ros::serialization::StreamOverrunException& e)
@@ -113,10 +123,10 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
   }
 
   // should publish new statistics?
-  if (stats.last_publish + ros::Duration(pub_frequency_) < received_time)
+  if (stats_it->second.last_publish + ros::Duration(pub_time_) < received_time)
   {
-    ros::Time window_start = stats.last_publish;
-    stats.last_publish = received_time;
+    ros::Time window_start = stats_it->second.last_publish;
+    stats_it->second.last_publish = received_time;
 
     // fill the message with the aggregated data
     rosgraph_msgs::TopicStatistics msg;
@@ -125,17 +135,17 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
     msg.node_sub = ros::this_node::getName();
     msg.window_start = window_start;
     msg.window_stop = received_time;
-    msg.delivered_msgs = stats.arrival_time_list.size();
-    msg.dropped_msgs = stats.dropped_msgs;
-    msg.traffic = bytes_sent - stats.stat_bytes_last;
+    msg.delivered_msgs = stats_it->second.arrival_time_list.size();
+    msg.dropped_msgs = stats_it->second.dropped_msgs;
+    msg.traffic = bytes_sent - stats_it->second.stat_bytes_last;
 
     // not all message types have this
-    if (stats.age_list.size() > 0)
+    if (stats_it->second.age_list.size() > 0)
     {
       msg.stamp_age_mean = ros::Duration(0);
       msg.stamp_age_max = ros::Duration(0);
 
-      for(std::list<ros::Duration>::iterator it = stats.age_list.begin(); it != stats.age_list.end(); it++)
+      for(std::list<ros::Duration>::iterator it = stats_it->second.age_list.begin(); it != stats_it->second.age_list.end(); it++)
       {
         ros::Duration age = *it;
         msg.stamp_age_mean += age;
@@ -145,16 +155,15 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
             msg.stamp_age_max = age;
         }
       }
-
-      msg.stamp_age_mean *= 1.0 / stats.age_list.size();
+      msg.stamp_age_mean *= 1.0 / stats_it->second.age_list.size();
 
       double stamp_age_variance = 0.0;
-      for(std::list<ros::Duration>::iterator it = stats.age_list.begin(); it != stats.age_list.end(); it++)
+      for(std::list<ros::Duration>::iterator it = stats_it->second.age_list.begin(); it != stats_it->second.age_list.end(); it++)
       {
         ros::Duration t = msg.stamp_age_mean - *it;
         stamp_age_variance += t.toSec() * t.toSec();
       }
-      double stamp_age_stddev = sqrt(stamp_age_variance / stats.age_list.size());
+      double stamp_age_stddev = sqrt(stamp_age_variance / stats_it->second.age_list.size());
       try
       {
         msg.stamp_age_stddev = ros::Duration(stamp_age_stddev);
@@ -180,15 +189,15 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
 
     // first, calculate the mean period between messages in this connection
     // we need at least two messages in the window for this.
-    if (stats.arrival_time_list.size() > 1)
+    if (stats_it->second.arrival_time_list.size() > 1)
     {
       msg.period_mean = ros::Duration(0);
       msg.period_max = ros::Duration(0);
 
       ros::Time prev;
-      for(std::list<ros::Time>::iterator it = stats.arrival_time_list.begin(); it != stats.arrival_time_list.end(); it++) {
+      for(std::list<ros::Time>::iterator it = stats_it->second.arrival_time_list.begin(); it != stats_it->second.arrival_time_list.end(); it++) {
 
-        if (it == stats.arrival_time_list.begin()) {
+        if (it == stats_it->second.arrival_time_list.begin()) {
           prev = *it;
           continue;
         }
@@ -199,13 +208,13 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
             msg.period_max = period;
         prev = *it;
       }
-      msg.period_mean *= 1.0 / (stats.arrival_time_list.size() - 1);
+      msg.period_mean *= 1.0 / (stats_it->second.arrival_time_list.size() - 1);
 
       // then, calc the stddev
       double period_variance = 0.0;
-      for(std::list<ros::Time>::iterator it = stats.arrival_time_list.begin(); it != stats.arrival_time_list.end(); it++)
+      for(std::list<ros::Time>::iterator it = stats_it->second.arrival_time_list.begin(); it != stats_it->second.arrival_time_list.end(); it++)
       {
-        if (it == stats.arrival_time_list.begin())
+        if (it == stats_it->second.arrival_time_list.begin())
         {
           prev = *it;
           continue;
@@ -215,7 +224,7 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
         period_variance += t.toSec() * t.toSec();
         prev = *it;
       }
-      double period_stddev = sqrt(period_variance / (stats.arrival_time_list.size() - 1));
+      double period_stddev = sqrt(period_variance / (stats_it->second.arrival_time_list.size() - 1));
       msg.period_stddev = ros::Duration(period_stddev);
     }
     else
@@ -226,34 +235,46 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
       msg.period_max = ros::Duration(0);
     }
 
-    if (!pub_.getTopic().length())
+    if(!this->initialized)
     {
-      ros::NodeHandle n("~");
-      // creating the publisher in the constructor results in a deadlock. so do it here.
-      pub_ = n.advertise<rosgraph_msgs::TopicStatistics>("/statistics", 1);
+        this->initialized = true;
+        ros::NodeHandle n("~");
+        // creating the publisher in the constructor results in a deadlock. so do it here.
+        pub_ = n.advertise<rosgraph_msgs::TopicStatistics>("/statistics", 1);
     }
 
     pub_.publish(msg);
 
     // dynamic window resizing
-    if (stats.arrival_time_list.size() > static_cast<size_t>(max_elements) && pub_frequency_ * 2 <= max_window)
+    if (stats_it->second.arrival_time_list.size() > static_cast<size_t>(max_elements) && pub_frequency_ * 2 <= max_window)
     {
       pub_frequency_ *= 2;
     }
-    if (stats.arrival_time_list.size() < static_cast<size_t>(min_elements) && pub_frequency_ / 2 >= min_window)
+    if (stats_it->second.arrival_time_list.size() < static_cast<size_t>(min_elements) && pub_frequency_ / 2 >= min_window)
     {
       pub_frequency_ /= 2;
     }
+    pub_time_ = 1.0/pub_frequency_;
 
     // clear the window
-    stats.age_list.clear();
-    stats.arrival_time_list.clear();
-    stats.dropped_msgs = 0;
-    stats.stat_bytes_last = bytes_sent;
-
+    stats_it->second.age_list.clear();
+    stats_it->second.arrival_time_list.clear();
+    stats_it->second.dropped_msgs = 0;
+    stats_it->second.stat_bytes_last = bytes_sent;
+#ifdef DEBUG
+    std::cout << -100 << std::endl;
+#endif
   }
   // store the stats for this connection
-  map_[callerid] = stats;
+  // we dont need this anymore, because we work directly on the stat variable from the map
+  //stats_it->second = stats;
+
+#ifdef DEBUG
+  std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+  std::cout << duration << std::endl;
+#endif
+
 }
 
 

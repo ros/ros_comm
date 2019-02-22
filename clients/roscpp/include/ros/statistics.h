@@ -82,6 +82,8 @@ private:
 
   // frequency to publish statistics
   double pub_frequency_;
+  // time to publish statistics
+  double pub_time_;
 
   // publisher for statistics data
   ros::Publisher pub_;
@@ -100,6 +102,8 @@ private:
     // latest total traffic volume observed
     uint64_t stat_bytes_last;
   };
+
+  bool initialized = false;
 
   // storage for statistics data
   std::map<std::string, struct StatData> map_;
