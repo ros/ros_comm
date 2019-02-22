@@ -491,10 +491,44 @@ class Loader(object):
                 print("... executing command param [%s]" % command)
             import subprocess, shlex #shlex rocks
             try:
-                os_posix = os.name == "posix"
-                if os_posix:
-                    command = shlex.split(command)
-                p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=not os_posix)
+                if os.name == 'nt':
+                    # Python scripts in ROS tend to omit .py extension since they could become executable with shebang line
+                    # special handle the use of Python scripts in Windows environment:
+                    # 1. search for a wrapper executable (of the same name) under the same directory with stat.S_IXUSR flag
+                    # 2. if no wrapper is present, prepend command with 'python' executable
+
+                    cl = shlex.split(command, posix=False) # use non-posix method on Windows
+                    if os.path.isabs(cl[0]):
+                        # trying to launch an executable from a specific location(package), e.g. xacro
+                        import stat
+                        rx_flag = stat.S_IRUSR | stat.S_IXUSR
+                        if os.path.exists(cl[0]) and os.stat(cl[0]).st_mode & rx_flag == rx_flag:
+                            pass
+                        else:
+                            d = os.path.dirname(cl[0])
+                            files_of_same_name = [
+                                os.path.join(d, f) for f in os.listdir(d)
+                                if os.path.splitext(f)[0].lower() == os.path.splitext(os.path.basename(cl[0]))[0].lower()
+                            ] if os.path.exists(d) else []
+                            executable_command = None
+                            for f in files_of_same_name:
+                                if os.stat(f).st_mode & rx_flag == rx_flag:
+                                    # found an executable wrapper of the desired Python script
+                                    executable_command = f
+
+                            if not executable_command:
+                                for f in files_of_same_name:
+                                    mode = os.stat(f).st_mode
+                                    if (mode & stat.S_IRUSR == stat.S_IRUSR) and (mode & stat.S_IXUSR != stat.S_IXUSR):
+                                        # when there is read permission but not execute permission, this is typically a Python script (in ROS)
+                                        if os.path.splitext(f)[1].lower() in ['.py', '']:
+                                            executable_command = ' '.join(['python', f])
+                            if executable_command:
+                                command = command.replace(cl[0], executable_command, 1)
+                    # no need to call shlex.split() on Windows, underlying CreateProcess() operates on strings
+                    p = subprocess.Popen(command, stdout=subprocess.PIPE)
+                else:
+                    p = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
                 c_value = p.communicate()[0]
                 if not isinstance(c_value, str):
                     c_value = c_value.decode('utf-8')
