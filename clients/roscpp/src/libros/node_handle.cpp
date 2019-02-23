@@ -55,6 +55,10 @@ boost::mutex g_nh_refcount_mutex;
 int32_t g_nh_refcount = 0;
 bool g_node_started_by_nh = false;
 
+// postpone desctruction of the managers until every NodeHandle has been desctructed.
+TopicManagerPtr g_topic_manager_;
+ServiceManagerPtr g_service_manager_;
+
 class NodeHandleBackingCollection
 {
 public:
@@ -172,6 +176,8 @@ void NodeHandle::construct(const std::string& ns, bool validate_name)
   {
     g_node_started_by_nh = true;
     ros::start();
+    g_topic_manager_ = TopicManager::instance();
+    g_service_manager_ = ServiceManager::instance();
   }
 
   ++g_nh_refcount;
@@ -187,6 +193,9 @@ void NodeHandle::destruct()
 
   if (g_nh_refcount == 0 && g_node_started_by_nh)
   {
+    // drop this instances of the manager-pointers to avoid memory curruption
+    g_topic_manager_ = NULL;
+    g_service_manager_ = NULL;
     ros::shutdown();
   }
 }
