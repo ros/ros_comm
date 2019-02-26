@@ -203,7 +203,7 @@ namespace boost_161
         boost::cv_status
         wait_until(
                 lock_type& lock,
-                const boost::chrono::time_point<chrono::system_clock, Duration>& t)
+                const boost::chrono::time_point<boost::chrono::system_clock, Duration>& t)
         {
           typedef boost::chrono::time_point<boost::chrono::system_clock, boost::chrono::nanoseconds> nano_sys_tmpt;
           wait_until(lock,
