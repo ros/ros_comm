@@ -38,6 +38,7 @@ General routines and representations for loading roslaunch model.
 
 import errno
 import os
+import sys
 from copy import deepcopy
 
 import yaml
@@ -522,7 +523,7 @@ class Loader(object):
                                     if (mode & stat.S_IRUSR == stat.S_IRUSR) and (mode & stat.S_IXUSR != stat.S_IXUSR):
                                         # when there is read permission but not execute permission, this is typically a Python script (in ROS)
                                         if os.path.splitext(f)[1].lower() in ['.py', '']:
-                                            executable_command = ' '.join(['python', f])
+                                            executable_command = ' '.join([sys.executable, f])
                             if executable_command:
                                 command = command.replace(cl[0], executable_command, 1)
                     # no need to call shlex.split() on Windows, underlying CreateProcess() operates on strings
