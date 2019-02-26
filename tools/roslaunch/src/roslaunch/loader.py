@@ -498,7 +498,7 @@ class Loader(object):
                     # 1. search for a wrapper executable (of the same name) under the same directory with stat.S_IXUSR flag
                     # 2. if no wrapper is present, prepend command with 'python' executable
 
-                    cl = shlex.split(command, posix=False) # use non-posix method on Windows
+                    cl = shlex.split(command, posix=False)  # use non-posix method on Windows
                     if os.path.isabs(cl[0]):
                         # trying to launch an executable from a specific location(package), e.g. xacro
                         import stat
