@@ -497,7 +497,7 @@ namespace XmlRpc {
     xml.resize(xml.size() + base64EncodedSize(_value.asBinary->size()));
 
     base64::encoder encoder;
-    offset += encoder.encode(&(*_value.asBinary)[0], _value.asBinary->size(), &xml[offset]);
+    offset += encoder.encode(_value.asBinary->data(), _value.asBinary->size(), &xml[offset]);
     offset += encoder.encode_end(&xml[offset]);
     xml.resize(offset);
 
@@ -613,7 +613,7 @@ namespace XmlRpc {
       case TypeBase64:
         {
           std::stringstream buffer;
-          buffer.write(&(*_value.asBinary)[0], _value.asBinary->size());
+          buffer.write(_value.asBinary->data(), _value.asBinary->size());
           base64::encoder encoder;
           encoder.encode(buffer, os);
           break;

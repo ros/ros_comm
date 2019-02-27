@@ -113,7 +113,7 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
   }
 
   // should publish new statistics?
-  if (stats.last_publish + ros::Duration(pub_frequency_) < received_time)
+  if (stats.last_publish + ros::Duration(1 / pub_frequency_) < received_time)
   {
     ros::Time window_start = stats.last_publish;
     stats.last_publish = received_time;
