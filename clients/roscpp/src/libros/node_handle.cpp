@@ -56,8 +56,8 @@ int32_t g_nh_refcount = 0;
 bool g_node_started_by_nh = false;
 
 // postpone desctruction of the managers until every NodeHandle has been desctructed.
-TopicManagerPtr g_topic_manager_;
-ServiceManagerPtr g_service_manager_;
+TopicManagerPtr g_topic_manager_{nullptr};
+ServiceManagerPtr g_service_manager_{nullptr};
 
 class NodeHandleBackingCollection
 {
