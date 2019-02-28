@@ -257,6 +257,9 @@ class MessageUpdateRule(object):
 
     valid = False
 
+    class EmptyType(Exception):
+        pass
+
     ## Initialize class
     def __init__(self, migrator, location):
         # Every rule needs to hang onto the migrator so we can potentially use it
@@ -271,23 +274,26 @@ class MessageUpdateRule(object):
         # Instantiate types dynamically based on definition
         try:
             if self.old_type == "":
-                raise Exception
+                raise self.EmptyType
             self.old_types = genpy.dynamic.generate_dynamic(self.old_type, self.old_full_text)
             self.old_class = self.old_types[self.old_type]
             self.old_md5sum = self.old_class._md5sum
-        except:
-            self.old_types = []
+        except Exception as e:
+            if not isinstance(e, self.EmptyType):
+                print("Warning: {}".format(e))
+            self.old_types = {}
             self.old_class = None
             self.old_md5sum = ""
-
         try:
             if self.new_type == "":
-                raise Exception
+                raise self.EmptyType
             self.new_types = genpy.dynamic.generate_dynamic(self.new_type, self.new_full_text)
             self.new_class = self.new_types[self.new_type]
             self.new_md5sum = self.new_class._md5sum
-        except:
-            self.new_types = []
+        except Exception as e:
+            if not isinstance(e, self.EmptyType):
+                print("Warning: {}".format(e))
+            self.old_types = {}
             self.new_class = None
             self.new_md5sum = ""
 
