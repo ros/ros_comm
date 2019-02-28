@@ -1945,6 +1945,13 @@ def stdin_publish(pub, msg_class, rate, once, filename, verbose):
     else:
         iterator = stdin_yaml_arg
 
+    exactly_one_message = False
+    for _ in iterator():
+        if exactly_one_message:
+            exactly_one_message = False
+            break
+        exactly_one_message = True
+
     r = rospy.Rate(rate) if rate is not None else None
 
     # stdin publishing can happen really fast, especially if no rate
@@ -1959,6 +1966,11 @@ def stdin_publish(pub, msg_class, rate, once, filename, verbose):
             if type(pub_args) != list:
                 pub_args = [pub_args]
             try:
+                # if exactly one message is provided and rate is not
+                # None, repeatedly publish it
+                if exactly_one_message and rate is not None:
+                    print("Got one message and a rate, publishing repeatedly")
+                    publish_message(pub, msg_class, pub_args, rate=rate, once=once, verbose=verbose)
                 # we use 'bool(r) or once' for the once value, which
                 # controls whether or not publish_message blocks and
                 # latches until exit.  We want to block if the user
@@ -1966,7 +1978,8 @@ def stdin_publish(pub, msg_class, rate, once, filename, verbose):
                 # be good to reorganize this code more conceptually
                 # but, for now, this is the best re-use of the
                 # underlying methods.
-                publish_message(pub, msg_class, pub_args, None, bool(r) or once, verbose=verbose)
+                else:
+                    publish_message(pub, msg_class, pub_args, None, bool(r) or once, verbose=verbose)
             except ValueError as e:
                 sys.stderr.write("%s\n"%str(e))
                 break
