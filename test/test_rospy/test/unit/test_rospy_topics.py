@@ -172,7 +172,7 @@ class TestRospyTopics(unittest.TestCase):
         self.assertEquals(None, impl.latch)
         
         # Now enable latch
-        pub = Publisher(name, data_class, latch=True)
+        pub = Publisher(name, data_class, latch=True, queue_size=0)
         impl = get_topic_manager().get_impl(Registration.PUB, rname)
         # have to verify latching in pub impl
         self.assert_(impl == pub.impl)
@@ -222,14 +222,14 @@ class TestRospyTopics(unittest.TestCase):
         self.failIf(impl.has_connections())
 
         # test publish() latch on a new Publisher object (this was encountered in testing, so I want a test case for it)
-        pub = Publisher('bar', data_class, latch=True)
+        pub = Publisher('bar', data_class, latch=True, queue_size=0)
         v = Val('no connection test')
         pub.impl.publish(v)
         self.assert_(v == pub.impl.latch)
 
         # test connection header
         h = {'foo': 'bar', 'fuga': 'hoge'}
-        pub = Publisher('header_test', data_class, headers=h)
+        pub = Publisher('header_test', data_class, headers=h, queue_size=0)
         self.assertEquals(h, pub.impl.headers)
         
     def test_Subscriber_unregister(self):
