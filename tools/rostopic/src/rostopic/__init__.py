@@ -1940,17 +1940,18 @@ def stdin_publish(pub, msg_class, rate, once, filename, verbose):
     """
     :param filename: name of file to read from instead of stdin, or ``None``, ``str``
     """
+    exactly_one_message = False
+
     if filename:
         iterator = file_yaml_arg(filename)
+
+        for _ in iterator():
+            if exactly_one_message:
+                exactly_one_message = False
+                break
+            exactly_one_message = True
     else:
         iterator = stdin_yaml_arg
-
-    exactly_one_message = False
-    for _ in iterator():
-        if exactly_one_message:
-            exactly_one_message = False
-            break
-        exactly_one_message = True
 
     r = rospy.Rate(rate) if rate is not None else None
 
