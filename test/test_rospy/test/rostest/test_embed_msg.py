@@ -79,7 +79,7 @@ class TestEmbedMsg(unittest.TestCase):
             rospy.resolve_name(LPNODE)), "%s is not up"%LPNODE)
         
         print("Publishing to ", PUBTOPIC)
-        pub = rospy.Publisher(PUBTOPIC, MSG)
+        pub = rospy.Publisher(PUBTOPIC, MSG, queue_size=0)
         rospy.Subscriber(LPTOPIC, MSG, self._test_embed_msg_callback) 
 
         # publish about 10 messages for fun
