@@ -220,7 +220,7 @@ def check_roslaunch(f, use_test_depends=False):
             miss_all = True
         if miss_all:
             roslaunch.core.printerrlog("Missing package dependencies: %s/package.xml: %s"%(pkg, ', '.join(miss)))
-            errors.append("Missing package dependencies: %s/package.xml: %s"%(pkg, ', '.join(miss)))
+            errors.append("Missing package dependencies: %s/package.xml: %s"%(pkg, ', '.join(miss_all)))
         elif miss:
             roslaunch.core.printerrlog("Missing package dependencies: %s/package.xml: %s (notify upstream maintainer)"%(pkg, ', '.join(miss)))
     
