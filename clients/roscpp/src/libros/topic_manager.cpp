@@ -97,9 +97,10 @@ void TopicManager::shutdown()
   }
 
   {
-    boost::recursive_mutex::scoped_lock lock1(advertised_topics_mutex_);
-    boost::mutex::scoped_lock lock2(subs_mutex_);
+    boost::lock(subs_mutex_, advertised_topics_mutex_);
     shutting_down_ = true;
+    subs_mutex_.unlock();
+    advertised_topics_mutex_.unlock();
   }
 
   // actually one should call poll_manager_->removePollThreadListener(), but the connection is not stored above
