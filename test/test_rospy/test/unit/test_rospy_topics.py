@@ -172,7 +172,7 @@ class TestRospyTopics(unittest.TestCase):
         self.assertEquals(None, impl.latch)
         
         # Now enable latch
-        pub = Publisher(name, data_class, latch=True, queue_size=0)
+        pub = Publisher(name, data_class, latch=True)
         impl = get_topic_manager().get_impl(Registration.PUB, rname)
         # have to verify latching in pub impl
         self.assert_(impl == pub.impl)
