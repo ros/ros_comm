@@ -65,7 +65,7 @@ class TestLatch(unittest.TestCase):
                          'should not happen at all.')
 
         rospy.init_node(NAME)
-        pub = rospy.Publisher('chatter', String, latch=True)
+        pub = rospy.Publisher('chatter', String, latch=True, queue_size=0)
         pub.publish(String("hello"))
         rospy.sleep(0.5)
         self.assertNotIn('CLOSE_WAIT', _get_connection_statii(proc_info),
