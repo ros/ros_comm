@@ -445,10 +445,12 @@ void Player::waitForSubscribers() const
     bool all_topics_subscribed = false;
     std::cout << "Waiting for subscribers." << std::endl;
     while (!all_topics_subscribed) {
-        all_topics_subscribed = std::all_of(std::begin(publishers_), std::end(publishers_),
-	                                    [](const PublisherMap::value_type& pub) {
-                                              return pub.second.getNumSubscribers() > 0;
-                                             });
+        all_topics_subscribed = std::all_of(
+                                        std::begin(publishers_),
+                                        std::end(publishers_),
+                                        [](const PublisherMap::value_type& pub) {
+                                          return pub.second.getNumSubscribers() > 0;
+                                         });
         ros::WallDuration(0.1).sleep();
     }
     std::cout << "Finished waiting for subscribers." << std::endl;
