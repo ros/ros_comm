@@ -255,13 +255,12 @@ bool Recorder::shouldSubscribeToTopic(std::string const& topic, bool from_node) 
     if (options_.regex) {
         // Treat the topics as regular expressions
 	return std::any_of(
-                    std::begin(options_.topics),
-                    std::end(options_.topics),
-                    [&topic] (string const& regex_str){
-                        boost::regex e(regex_str);
-                        boost::smatch what;
-                        return boost::regex_match(topic, what, e, boost::match_extra);
-                    });
+            std::begin(options_.topics), std::end(options_.topics),
+            [&topic] (string const& regex_str){
+                boost::regex e(regex_str);
+                boost::smatch what;
+                return boost::regex_match(topic, what, e, boost::match_extra);
+            });
     }
 
     return std::find(std::begin(options_.topics), std::end(options_.topics), topic)
