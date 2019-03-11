@@ -40,14 +40,11 @@
   #include <sys/select.h>
 #endif
 
-#include <boost/foreach.hpp>
 #include <boost/format.hpp>
 
 #include "rosgraph_msgs/Clock.h"
 
 #include <set>
-
-#define foreach BOOST_FOREACH
 
 using std::map;
 using std::pair;
@@ -125,7 +122,7 @@ Player::Player(PlayerOptions const& options) :
 }
 
 Player::~Player() {
-    foreach(shared_ptr<Bag> bag, bags_)
+    for (shared_ptr<Bag>& bag : bags_)
         bag->close();
 
     restoreTerminal();
@@ -135,7 +132,7 @@ void Player::publish() {
     options_.check();
 
     // Open all the bag files
-    foreach(string const& filename, options_.bags) {
+    for (string const& filename : options_.bags) {
         ROS_INFO("Opening %s", filename.c_str());
 
         try
@@ -165,7 +162,7 @@ void Player::publish() {
     
     // Publish all messages in the bags
     View full_view;
-    foreach(shared_ptr<Bag> bag, bags_)
+    for (shared_ptr<Bag>& bag : bags_)
         full_view.addQuery(*bag);
 
     const auto full_initial_time = full_view.getBeginTime();
@@ -183,10 +180,10 @@ void Player::publish() {
 
     if (options_.topics.empty())
     {
-      foreach(shared_ptr<Bag> bag, bags_)
+      for (shared_ptr<Bag>& bag : bags_)
         view.addQuery(*bag, initial_time, finish_time);
     } else {
-      foreach(shared_ptr<Bag> bag, bags_)
+      for (shared_ptr<Bag>& bag : bags_)
         view.addQuery(*bag, topics, initial_time, finish_time);
     }
 
@@ -198,7 +195,7 @@ void Player::publish() {
     }
 
     // Advertise all of our messages
-    foreach(const ConnectionInfo* c, view.getConnections())
+    for (const ConnectionInfo* c : view.getConnections())
     {
         advertise(c);
     }
@@ -317,7 +314,7 @@ void Player::publish() {
         paused_time_ = now_wt;
 
         // Call do-publish for each message
-        foreach(MessageInstance m, view) {
+        for (const MessageInstance& m : view) {
             if (!node_handle_.ok())
                 break;
 
@@ -448,10 +445,11 @@ void Player::waitForSubscribers() const
     bool all_topics_subscribed = false;
     std::cout << "Waiting for subscribers." << std::endl;
     while (!all_topics_subscribed) {
-        all_topics_subscribed = true;
-        foreach(const PublisherMap::value_type& pub, publishers_) {
-            all_topics_subscribed &= pub.second.getNumSubscribers() > 0;
-        }
+        all_topics_subscribed = std::all_of(
+            std::begin(publishers_), std::end(publishers_),
+            [](const PublisherMap::value_type& pub) {
+                return pub.second.getNumSubscribers() > 0;
+            });
         ros::WallDuration(0.1).sleep();
     }
     std::cout << "Finished waiting for subscribers." << std::endl;
