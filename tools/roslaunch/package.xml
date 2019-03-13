@@ -26,7 +26,6 @@
   <run_depend>rosclean</run_depend>
   <run_depend>rosgraph_msgs</run_depend>
   <run_depend>roslib</run_depend>
-  <run_depend>rospy</run_depend>
   <run_depend version_gte="1.11.16">rosmaster</run_depend>
   <run_depend>rosout</run_depend>
   <run_depend>rosparam</run_depend>
