@@ -33,6 +33,7 @@ Message Filter Objects
 import itertools
 import threading
 import rospy
+from functools import reduce
 
 
 class SimpleFilter(object):
