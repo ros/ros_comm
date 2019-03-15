@@ -6,24 +6,18 @@ find_package(Boost COMPONENTS system thread)
 
 include_directories(include ${Boost_INCLUDE_DIRS})
 
-catkin_package(
-  DEPENDS Boost
+catkin_package(DEPENDS Boost
   INCLUDE_DIRS include
   CFG_EXTRAS ${PROJECT_NAME}-extras.cmake
-)
-
+  )
 catkin_python_setup()
 
 catkin_install_python(
   PROGRAMS nodes/hztest nodes/paramtest nodes/publishtest
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/nodes
-)
-
-install(
-  DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/nodes)
+install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
-)
+  FILES_MATCHING PATTERN "*.h")
 
 if(CATKIN_ENABLE_TESTING)
   find_package(catkin COMPONENTS rostest)

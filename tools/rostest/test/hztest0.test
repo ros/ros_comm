@@ -3,5 +3,5 @@
   <param name="hztest0/topic" value="fake" />  
   <param name="hztest0/hz" value="0.0" />
   <param name="hztest0/test_duration" value="5.0" />    
-  <test test-name="hz0_test" pkg="rostest" type="hztest" name="hztest0" retry="3" />
+  <test test-name="hz0_test" pkg="rostest" type="hztest" name="hztest0" />
 </launch>

@@ -6,6 +6,19 @@
   <param name="hztest1/hzerror" value="0.5" />
   <param name="hztest1/test_duration" value="5.0" />    
   <param name="hztest1/wait_time" value="21.0" />    
-  <test test-name="hztest_test" pkg="rostest" type="hztest" name="hztest1" retry="3" />
+  <test test-name="hztest_test" pkg="rostest" type="hztest" name="hztest1" />
 
+  <!-- Below also works:
+
+  <test test-name="hztest_test" pkg="rostest" type="hztest" name="hztest1">
+    <rosparam>
+      topic: chatter
+      hz: 10.0
+      hzerror: 0.5
+      test_duration: 5.0
+      wait_time: 21.0
+    </rosparam>
+  </test>
+
+  -->
 </launch>
