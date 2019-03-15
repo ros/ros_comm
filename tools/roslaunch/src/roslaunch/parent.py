@@ -91,7 +91,7 @@ class ROSLaunchParent(object):
         @type  port: int
         @param verbose: (optional) print verbose output
         @type  verbose: boolean
-        @param show_summary: (optional) hether to show a summary or not
+        @param show_summary: (optional) whether to show a summary or not
         @type  show_summary: boolean
         @param force_screen: (optional) force output of all nodes to screen
         @type  force_screen: boolean
