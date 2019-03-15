@@ -492,7 +492,9 @@ class Loader(object):
                 print("... executing command param [%s]" % command)
             import subprocess, shlex #shlex rocks
             try:
-                if os.name == 'nt':
+                if os.name != 'nt':
+                    command = shlex.split(command)
+                else:
                     # Python scripts in ROS tend to omit .py extension since they could become executable with shebang line
                     # special handle the use of Python scripts in Windows environment:
                     # 1. search for a wrapper executable (of the same name) under the same directory with stat.S_IXUSR flag
@@ -503,9 +505,7 @@ class Loader(object):
                         # trying to launch an executable from a specific location(package), e.g. xacro
                         import stat
                         rx_flag = stat.S_IRUSR | stat.S_IXUSR
-                        if os.path.exists(cl[0]) and os.stat(cl[0]).st_mode & rx_flag == rx_flag:
-                            pass
-                        else:
+                        if not os.path.exists(cl[0]) or os.stat(cl[0]).st_mode & rx_flag != rx_flag:
                             d = os.path.dirname(cl[0])
                             files_of_same_name = [
                                 os.path.join(d, f) for f in os.listdir(d)
@@ -526,10 +526,7 @@ class Loader(object):
                                             executable_command = ' '.join([sys.executable, f])
                             if executable_command:
                                 command = command.replace(cl[0], executable_command, 1)
-                    # no need to call shlex.split() on Windows, underlying CreateProcess() operates on strings
-                    p = subprocess.Popen(command, stdout=subprocess.PIPE)
-                else:
-                    p = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
+                p = subprocess.Popen(command, stdout=subprocess.PIPE)
                 c_value = p.communicate()[0]
                 if not isinstance(c_value, str):
                     c_value = c_value.decode('utf-8')
