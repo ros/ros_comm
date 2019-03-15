@@ -318,10 +318,11 @@ def main(argv=sys.argv):
                 options.port = options.port or DEFAULT_MASTER_PORT
             p = roslaunch_parent.ROSLaunchParent(uuid, args, roslaunch_strs=roslaunch_strs,
                     is_core=options.core, port=options.port, local_only=options.local_only,
-                    verbose=options.verbose, show_summary=not options.no_summary, force_screen=options.force_screen,
+                    verbose=options.verbose, force_screen=options.force_screen,
                     force_log=options.force_log,
                     num_workers=options.num_workers, timeout=options.timeout,
-                    master_logger_level=options.master_logger_level)
+                    master_logger_level=options.master_logger_level,
+                    show_summary=not options.no_summary)
             p.start()
             p.spin()
 
