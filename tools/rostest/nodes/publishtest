@@ -72,10 +72,8 @@ class PublishChecker(object):
         self.topic_name = topic_name
         self.negative = negative
         self.deadline = rospy.Time.now() + rospy.Duration(timeout)
-        msg_class, _, _ = rostopic.get_topic_class(
-            rospy.resolve_name(topic_name), blocking=True)
         self.msg = None
-        self.sub = rospy.Subscriber(topic_name, msg_class, self._callback)
+        self.sub = rospy.Subscriber(topic_name, rospy.AnyMsg, self._callback)
 
     def _callback(self, msg):
         self.msg = msg
