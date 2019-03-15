@@ -73,7 +73,7 @@ class ROSLaunchParent(object):
     """
 
     def __init__(self, run_id, roslaunch_files, is_core=False, port=None, local_only=False, process_listeners=None,
-            verbose=False, show_summary=True, force_screen=False, force_log=False, is_rostest=False, roslaunch_strs=None, num_workers=NUM_WORKERS, timeout=None, master_logger_level=False):
+            verbose=False, force_screen=False, force_log=False, is_rostest=False, roslaunch_strs=None, num_workers=NUM_WORKERS, timeout=None, master_logger_level=False, show_summary=True):
         """
         @param run_id: UUID of roslaunch session
         @type  run_id: str
@@ -91,8 +91,8 @@ class ROSLaunchParent(object):
         @type  port: int
         @param verbose: (optional) print verbose output
         @type  verbose: boolean
-        @param no_summary: (optional) hide summary output
-        @type  no_summary: boolean
+        @param show_summary: (optional) hether to show a summary or not
+        @type  show_summary: boolean
         @param force_screen: (optional) force output of all nodes to screen
         @type  force_screen: boolean
         @param force_log: (optional) force output of all nodes to log
