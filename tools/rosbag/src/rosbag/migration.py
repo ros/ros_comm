@@ -43,6 +43,7 @@ import itertools
 import os
 import string
 import sys
+import traceback
 
 import genmsg.msgs
 import genpy
@@ -280,7 +281,8 @@ class MessageUpdateRule(object):
             self.old_md5sum = self.old_class._md5sum
         except Exception as e:
             if not isinstance(e, self.EmptyType):
-                print("Warning: {}".format(e))
+                print("Warning: {}".format(e), file=sys.stderr)
+                traceback.print_exc(file=sys.stderr)
             self.old_types = {}
             self.old_class = None
             self.old_md5sum = ""
@@ -292,8 +294,9 @@ class MessageUpdateRule(object):
             self.new_md5sum = self.new_class._md5sum
         except Exception as e:
             if not isinstance(e, self.EmptyType):
-                print("Warning: {}".format(e))
-            self.old_types = {}
+                print("Warning: {}".format(e), file=sys.stderr)
+                traceback.print_exc(file=sys.stderr)
+            self.new_types = {}
             self.new_class = None
             self.new_md5sum = ""
 
