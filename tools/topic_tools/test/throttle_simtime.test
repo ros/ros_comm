@@ -8,7 +8,7 @@
         args="messages input 5">
     <param name="wall_clock" value="True"/>
   </node>
-  <test test-name="throttle_simtime_hztest" pkg="rostest" type="hztest">
+  <test test-name="throttle_simtime_hztest" pkg="rostest" type="hztest" retry="3">
     <param name="topic" value="input_throttle"/>
     <param name="hz" value="5.0"/>
     <param name="hzerror" value="1.0"/>

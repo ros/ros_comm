@@ -11,7 +11,7 @@
   </node>
 
   <!-- Test that mux initially has no input because initial_topic param is set to __none -->
-  <test test-name="mux_initial_topic_none_test" pkg="rostest" type="hztest">
+  <test test-name="mux_initial_topic_none_test" pkg="rostest" type="hztest" retry="3">
     <param name="topic" value="output"/>
     <param name="hz" value="0"/>
     <param name="hzerror" value="0"/>
