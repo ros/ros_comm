@@ -45,8 +45,8 @@ def get_test_path():
 def get_example_path():
     return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'resources'))
 
-## Fake RosLaunch object
-class RosLaunchMock(object):
+## Fake ROSLaunchConfig object
+class ROSLaunchConfigMock(object):
     def __init__(self):
         self.nodes_core = []
         self.nodes = []
@@ -92,7 +92,7 @@ class TestXmlLoader(unittest.TestCase):
         
     def _load(self, test_file):
         loader = roslaunch.xmlloader.XmlLoader()
-        mock = RosLaunchMock()
+        mock = ROSLaunchConfigMock()
         self.assert_(os.path.exists(test_file), "cannot locate test file %s"%test_file)
         loader.load(test_file, mock)
         return mock
@@ -118,7 +118,7 @@ class TestXmlLoader(unittest.TestCase):
     def test_load_string(self):
         # make sure load_string isn't broken
         loader = roslaunch.xmlloader.XmlLoader()
-        mock = RosLaunchMock()
+        mock = ROSLaunchConfigMock()
 
         # test with no <launch /> element
         # #1582: test error message as well
@@ -155,10 +155,10 @@ class TestXmlLoader(unittest.TestCase):
         loader = roslaunch.xmlloader.XmlLoader()
         
         # test against empty data
-        loader.load(os.path.join(self.xml_dir, 'test-valid.xml'), RosLaunchMock())
+        loader.load(os.path.join(self.xml_dir, 'test-valid.xml'), ROSLaunchConfigMock())
 
         # sanity check with real data
-        mock = RosLaunchMock()
+        mock = ROSLaunchConfigMock()
 
         loader.load(os.path.join(self.xml_dir, 'test-node-valid.xml'), mock)
         self.assert_(mock.nodes)
@@ -178,7 +178,7 @@ class TestXmlLoader(unittest.TestCase):
             filename = os.path.join(self.xml_dir, filename)
             try:
                 self.assert_(os.path.exists(filename))
-                loader.load(filename, RosLaunchMock())
+                loader.load(filename, ROSLaunchConfigMock())
                 self.fail("xmlloader did not throw an xmlparseexception for [%s]"%filename)
             except roslaunch.xmlloader.XmlParseException:
                 pass
@@ -334,7 +334,7 @@ class TestXmlLoader(unittest.TestCase):
             filename = os.path.join(self.xml_dir, filename)
             try:
                 self.assert_(os.path.exists(filename))
-                loader.load(filename, RosLaunchMock())
+                loader.load(filename, ROSLaunchConfigMock())
                 self.fail("xmlloader did not throw an xmlloadexception for [%s]"%filename)
             except roslaunch.loader.LoadException:
                 pass
@@ -352,7 +352,7 @@ class TestXmlLoader(unittest.TestCase):
             filename = os.path.join(self.xml_dir, filename)
             try:
                 self.assert_(os.path.exists(filename))
-                loader.load(filename, RosLaunchMock())
+                loader.load(filename, ROSLaunchConfigMock())
                 self.fail("xmlloader did not throw an xmlparseexception for [%s]"%filename)
             except roslaunch.xmlloader.XmlParseException:
                 pass
@@ -513,7 +513,7 @@ class TestXmlLoader(unittest.TestCase):
             filename = os.path.join(self.xml_dir, filename)
             try:
                 self.assert_(os.path.exists(filename))
-                loader.load(filename, RosLaunchMock())
+                loader.load(filename, ROSLaunchConfigMock())
                 self.fail("xmlloader did not throw an xmlparseexception for [%s]"%filename)
             except roslaunch.xmlloader.XmlParseException:
                 pass
@@ -618,7 +618,7 @@ class TestXmlLoader(unittest.TestCase):
             filename = os.path.join(self.xml_dir, filename)
             try:
                 self.assert_(os.path.exists(filename))
-                loader.load(filename, RosLaunchMock())
+                loader.load(filename, ROSLaunchConfigMock())
                 self.fail("xmlloader did not throw an xmlparseexception for [%s]"%filename)
             except roslaunch.xmlloader.XmlParseException:
                 pass
@@ -712,7 +712,7 @@ class TestXmlLoader(unittest.TestCase):
 
     def test_remap(self):
         loader = roslaunch.xmlloader.XmlLoader()
-        mock = RosLaunchMock()
+        mock = ROSLaunchConfigMock()
         loader.load(os.path.join(self.xml_dir, 'test-remap-valid.xml'), mock)
         names = ["node%s"%i for i in range(1, 7)]
         nodes = [n for n in mock.nodes if n.type in names]
@@ -781,7 +781,7 @@ class TestXmlLoader(unittest.TestCase):
             filename = os.path.join(self.xml_dir, filename)
             try:
                 self.assert_(os.path.exists(filename))
-                loader.load(filename, RosLaunchMock())
+                loader.load(filename, ROSLaunchConfigMock())
                 self.fail("xmlloader did not throw an xmlparseexception for [%s]"%filename)
             except roslaunch.xmlloader.XmlParseException:
                 pass
@@ -799,13 +799,13 @@ class TestXmlLoader(unittest.TestCase):
             filename = os.path.join(self.xml_dir, filename)
             try:
                 self.assert_(os.path.exists(filename))
-                loader.load(filename, RosLaunchMock())
+                loader.load(filename, ROSLaunchConfigMock())
                 self.fail("xmlloader did not throw an xmlparseexception for [%s]"%filename)
             except roslaunch.xmlloader.XmlParseException:
                 pass
 
     def test_if_unless(self):
-        mock = RosLaunchMock()
+        mock = ROSLaunchConfigMock()
         loader = roslaunch.xmlloader.XmlLoader()
         filename = os.path.join(self.xml_dir, 'test-if-unless.xml')
         loader.load(filename, mock, argv=[])
@@ -831,7 +831,7 @@ class TestXmlLoader(unittest.TestCase):
             self.failIf(['py_from_%s_fail'%k, 'py_to_%s_fail'%k] in n.remap_args)
         
     def test_if_unless_invalid(self):
-        mock = RosLaunchMock()
+        mock = ROSLaunchConfigMock()
         loader = roslaunch.xmlloader.XmlLoader()
         filename = os.path.join(self.xml_dir, 'test-if-unless-invalid-both.xml')
         # this should raise, not sure XmlParseException is what we want as it destroys semantic info
@@ -843,7 +843,7 @@ class TestXmlLoader(unittest.TestCase):
             self.assert_('if' in str(e))
 
     def test_arg_invalid(self):
-        mock = RosLaunchMock()
+        mock = ROSLaunchConfigMock()
         loader = roslaunch.xmlloader.XmlLoader()
         filename = os.path.join(self.xml_dir, 'test-arg.xml')
         # this should raise, not sure XmlParseException is what we want as it destroys semantic info
@@ -874,7 +874,7 @@ class TestXmlLoader(unittest.TestCase):
         loader = roslaunch.xmlloader.XmlLoader()
         filename = os.path.join(self.xml_dir, 'test-arg.xml')
 
-        mock = RosLaunchMock()
+        mock = ROSLaunchConfigMock()
         loader.load(filename, mock, argv=["required:=test_arg", "if_test:=0"])
 
         param_d = {}
@@ -917,7 +917,7 @@ class TestXmlLoader(unittest.TestCase):
         self.assert_('/include3/include_test/p4_test' not in param_d)
 
         # test again with optional value set
-        mock = RosLaunchMock()
+        mock = ROSLaunchConfigMock()
         loader.load(filename, mock, argv=["required:=test_arg", "optional:=test_arg2", "if_test:=1"])
 
         param_d = {}
@@ -960,7 +960,7 @@ class TestXmlLoader(unittest.TestCase):
         filename = os.path.join(self.xml_dir, 'test-arg-all.xml')
 
         # Test suite A: load without an optional arg set externally
-        mock = RosLaunchMock()
+        mock = ROSLaunchConfigMock()
         loader.load(filename, mock, argv=["required:=test_arg"])
 
         param_d = {}
@@ -996,7 +996,7 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEquals(param_d['/all_override/include_test/p3_test'], 'set')
 
         # Test suite B: load with an optional arg set externally
-        mock = RosLaunchMock()
+        mock = ROSLaunchConfigMock()
         loader.load(filename, mock, argv=["required:=test_arg", "optional:=test_arg2"])
 
         param_d = {}
@@ -1036,7 +1036,7 @@ class TestXmlLoader(unittest.TestCase):
         # Test 1:
         # Can't explicitly set an arg when including a file that sets the same
         # arg as constant.
-        mock = RosLaunchMock()
+        mock = ROSLaunchConfigMock()
         filename = os.path.join(self.xml_dir, 'test-arg-invalid-include.xml')
         try:
             loader.load(filename, mock)            
@@ -1047,7 +1047,7 @@ class TestXmlLoader(unittest.TestCase):
         # Test 2:
         # Can have arg set in parent launch file, then include a file that sets
         # it constant, with pass_all_args="true"
-        mock = RosLaunchMock()
+        mock = ROSLaunchConfigMock()
         filename = os.path.join(self.xml_dir, 'test-arg-valid-include.xml')
         # Just make sure there's no exception
         loader.load(filename, mock)            
@@ -1059,7 +1059,7 @@ class TestXmlLoader(unittest.TestCase):
         ## Test 3:
         ## Can't do explicit override of arg during inclusion of file that sets
         ## it constant, even when pass_all_args="true"
-        #mock = RosLaunchMock()
+        #mock = ROSLaunchConfigMock()
         #filename = os.path.join(self.xml_dir, 'test-arg-invalid-include2.xml')
         #try:
         #    loader.load(filename, mock)            
@@ -1072,7 +1072,7 @@ class TestXmlLoader(unittest.TestCase):
         loader = roslaunch.xmlloader.XmlLoader()
         filename = os.path.join(self.xml_dir, 'test-dirname.xml')
 
-        mock = RosLaunchMock()
+        mock = ROSLaunchConfigMock()
         loader.load(filename, mock)
 
         param_d = {}
