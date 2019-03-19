@@ -44,20 +44,15 @@ NAME = 'transform_sub'
 
 class TransformSub(unittest.TestCase):
 
-  def msg_cb(self, msg):
-    self.msg = msg
-
   def test_transform_sub(self):
     rospy.init_node(NAME)
     value = rospy.get_param("~value", 1.0)
 
-    self.msg = None
-    sub = rospy.Subscriber("input", Float32, self.msg_cb)
-
-    while not self.msg:
-      rospy.sleep(1.0)
-
-    self.assertEqual(self.msg.data, value)
+    try:
+        msg = rospy.wait_for_message("input", Float32, 1.0)
+        self.assertEqual(msg.data, value)
+    except rospy.ROSException as e:
+        self.fail(str(e))
 
 if __name__ == '__main__':
   rostest.rosrun(PKG, NAME, TransformSub, sys.argv)
