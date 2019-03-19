@@ -51,7 +51,7 @@ class RosLaunchMock(object):
         self.nodes_core = []
         self.nodes = []
         self.tests = []
-        self.params = []
+        self.params = {}
         self.executables = []        
         self.clear_params = []        
         self.machines = []
@@ -79,10 +79,7 @@ class RosLaunchMock(object):
         self.executables.append(t)        
 
     def add_param(self, p, filename=None, verbose=True):
-        matches = [x for x in self.params if x.key == p.key]
-        for m in matches:
-            self.params.remove(m)
-        self.params.append(p)        
+        self.params[p.key] = p
     def add_clear_param(self, param):
         self.clear_params.append(param)
 
@@ -192,8 +189,8 @@ class TestXmlLoader(unittest.TestCase):
         mock = self._load(os.path.join(self.xml_dir, 'test-params-valid.xml'))
 
         param_d = {}
-        for p in mock.params:
-            param_d[p.key] = p.value
+        for k, v in mock.params.iteritems():
+            param_d[k] = v.value
 
         self.assertEquals('pass', param_d['/override'])
         self.assertEquals('bar2', param_d['/somestring1'])
@@ -202,9 +199,9 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEquals(2, param_d['/someinteger2'])
         self.assertAlmostEquals(3.14159, param_d['/somefloat1'], 2)
         self.assertAlmostEquals(5.0, param_d['/somefloat2'], 1)
-        self.assertEquals("a child namespace parameter 1", param_d['/wg/wgchildparam'], p.value)
-        self.assertEquals("a child namespace parameter 2", param_d['/wg2/wg2childparam1'], p.value)
-        self.assertEquals("a child namespace parameter 3", param_d['/wg2/wg2childparam2'], p.value)
+        self.assertEquals("a child namespace parameter 1", param_d['/wg/wgchildparam'])
+        self.assertEquals("a child namespace parameter 2", param_d['/wg2/wg2childparam1'])
+        self.assertEquals("a child namespace parameter 3", param_d['/wg2/wg2childparam2'])
 
         try:
             from xmlrpc.client import Binary
@@ -215,9 +212,9 @@ class TestXmlLoader(unittest.TestCase):
             contents = f.read()
         finally:
             f.close()
-        p = [p for p in mock.params if p.key == '/configfile'][0]
+        p = mock.params['/configfile']
         self.assertEquals(contents, p.value, 1)
-        p = [p for p in mock.params if p.key == '/binaryfile'][0]
+        p = mock.params['/binaryfile']
         self.assertEquals(Binary(contents), p.value, 1)
 
         f = open(os.path.join(get_example_path(), 'example.launch'))
@@ -225,7 +222,7 @@ class TestXmlLoader(unittest.TestCase):
             contents = f.read()
         finally:
             f.close()
-        p = [p for p in mock.params if p.key == '/commandoutput'][0]
+        p = mock.params['/commandoutput']
         self.assertEquals(contents, p.value, 1)
         
         
@@ -233,18 +230,18 @@ class TestXmlLoader(unittest.TestCase):
         mock = self._load(os.path.join(self.xml_dir, 'test-rosparam-valid.xml'))
 
         for prefix in ['', '/rosparam', '/node_rosparam']:
-            p = [p for p in mock.params if p.key == prefix+'/string1'][0]
+            p = mock.params[prefix+'/string1']
             self.assertEquals('bar', p.value)
-            p = [p for p in mock.params if p.key == prefix+'/robots/childparam'][0]
+            p = mock.params[prefix+'/robots/childparam']
             self.assertEquals('a child namespace parameter', p.value)
 
-        p = [p for p in mock.params if p.key == '/node_rosparam/string1'][0]
+        p = mock.params['/node_rosparam/string1']
         self.assertEquals('bar', p.value)
-        p = [p for p in mock.params if p.key == '/node_rosparam/robots/childparam'][0]
+        p = mock.params['/node_rosparam/robots/childparam']
         self.assertEquals('a child namespace parameter', p.value)
 
         # test substitution in yaml files
-        p = [p for p in mock.params if p.key == '/rosparam_subst/string1'][0]
+        p = mock.params['/rosparam_subst/string1']
         self.assertTrue('$(anon foo)' not in p.value)
         
         exes = [e for e in mock.executables if e.command == 'rosparam']
@@ -265,71 +262,70 @@ class TestXmlLoader(unittest.TestCase):
                 self.assertEquals('/rosparam/', rp_ctx)
 
         # test inline yaml examples
-        p = [p for p in mock.params if p.key == '/inline_str'][0]
+        p = mock.params['/inline_str']
         self.assertEquals('value1', p.value)
-        p = [p for p in mock.params if p.key == '/inline_list'][0]
+        p = mock.params['/inline_list']
         self.assertEquals([1, 2, 3, 4], p.value)
-        p = [p for p in mock.params if p.key == '/inline_dict/key1'][0]
+        p = mock.params['/inline_dict/key1']
         self.assertEquals('value1', p.value)
-        p = [p for p in mock.params if p.key == '/inline_dict/key2'][0]
+        p = mock.params['/inline_dict/key2']
         self.assertEquals('value2', p.value)
-        p = [p for p in mock.params if p.key == '/inline_dict2/key3'][0]
+        p = mock.params['/inline_dict2/key3']
         self.assertEquals('value3', p.value)
-        p = [p for p in mock.params if p.key == '/inline_dict2/key4'][0]
+        p = mock.params['/inline_dict2/key4']
         self.assertEquals('value4', p.value)
 
         # test substitution in inline yaml
-        p = [p for p in mock.params if p.key == '/inline_subst'][0]
+        p = mock.params['/inline_subst']
         self.assertTrue('$(anon foo)' not in p.value)
 
         # verify that later tags override 
         # - key2 is overriden
-        self.assertEquals(1, len([p for p in mock.params if p.key == '/override/key1']))
-        p = [p for p in mock.params if p.key == '/override/key1'][0]
+        p = mock.params['/override/key1']
         self.assertEquals('override1', p.value)
         # - key2 is not overriden
-        p = [p for p in mock.params if p.key == '/override/key2'][0]
+        p = mock.params['/override/key2']
         self.assertEquals('value2', p.value)
 
         # verify that 'param' attribute is not required
-        p = [p for p in mock.params if p.key == '/noparam1'][0]
+        p = mock.params['/noparam1']
         self.assertEquals('value1', p.value)
-        p = [p for p in mock.params if p.key == '/noparam2'][0]
+        p = mock.params['/noparam2']
         self.assertEquals('value2', p.value)
 
         # #3580: test degree/rad conversions
         import math
-        p = [p for p in mock.params if p.key == '/inline_degrees0'][0]
+        p = mock.params['/inline_degrees0']
         self.assertAlmostEquals(0, p.value)
-        p = [p for p in mock.params if p.key == '/inline_degrees180'][0]
+        p = mock.params['/inline_degrees180']
         self.assertAlmostEquals(p.value, math.pi)
-        p = [p for p in mock.params if p.key == '/inline_degrees360'][0]
+        p = mock.params['/inline_degrees360']
         self.assertAlmostEquals(p.value, 2 * math.pi)
 
-        p = [p for p in mock.params if p.key == '/dict_degrees/deg0'][0]
+        p = mock.params['/dict_degrees/deg0']
         self.assertAlmostEquals(0, p.value)
-        p = [p for p in mock.params if p.key == '/dict_degrees/deg180'][0]
+        p = mock.params['/dict_degrees/deg180']
         self.assertAlmostEquals(p.value, math.pi)
-        p = [p for p in mock.params if p.key == '/dict_degrees/deg360'][0]
+        p = mock.params['/dict_degrees/deg360']
         self.assertAlmostEquals(p.value, 2 * math.pi)
 
-        p = [p for p in mock.params if p.key == '/inline_rad0'][0]
+        p = mock.params['/inline_rad0']
         self.assertAlmostEquals(0, p.value)
-        p = [p for p in mock.params if p.key == '/inline_radpi'][0]
+        p = mock.params['/inline_radpi']
         self.assertAlmostEquals(p.value, math.pi)
-        p = [p for p in mock.params if p.key == '/inline_rad2pi'][0]
+        p = mock.params['/inline_rad2pi']
         self.assertAlmostEquals(p.value, 2 * math.pi)
 
-        p = [p for p in mock.params if p.key == '/dict_rad/rad0'][0]
+        p = mock.params['/dict_rad/rad0']
         self.assertAlmostEquals(0, p.value)
-        p = [p for p in mock.params if p.key == '/dict_rad/radpi'][0]
+        p = mock.params['/dict_rad/radpi']
         self.assertAlmostEquals(p.value, math.pi)
-        p = [p for p in mock.params if p.key == '/dict_rad/rad2pi'][0]
+        p = mock.params['/dict_rad/rad2pi']
         self.assertAlmostEquals(p.value, 2 * math.pi)
                     
         # rosparam file also contains empty params
         mock = self._load(os.path.join(self.xml_dir, 'test-rosparam-empty.xml'))
-        self.assertEquals([], mock.params)
+        self.assertEquals({}, mock.params)
 
     def test_rosparam_invalid(self):
         tests = ['test-rosparam-invalid-%s.xml'%i for i in range(1, 6)]
@@ -381,9 +377,9 @@ class TestXmlLoader(unittest.TestCase):
 
             if n.type == "test_node_rosparam_load":
                 self.assertEquals(0, len(exes))
-                p = [p for p in mock.params if p.key == '/rosparam_load/string1'][0]
+                p = mock.params['/rosparam_load/string1']
                 self.assertEquals('bar', p.value)
-                p = [p for p in mock.params if p.key == '/rosparam_load/robots/childparam'][0]
+                p = mock.params['/rosparam_load/robots/childparam']
                 self.assertEquals('a child namespace parameter', p.value)
             elif n.type == "test_node_rosparam_delete":
                 self.assertEquals(1, len(exes))
@@ -399,15 +395,15 @@ class TestXmlLoader(unittest.TestCase):
                 self.assertEquals('/rosparam_dump/', rp_ctx)
             elif n.type == "test_node_rosparam_load_ns":
                 self.assertEquals(0, len(exes))
-                p = [p for p in mock.params if p.key == '/load_ns/subns/string1'][0]
+                p = mock.params['/load_ns/subns/string1']
                 self.assertEquals('bar', p.value)
-                p = [p for p in mock.params if p.key == '/load_ns/subns/robots/childparam'][0]
+                p = mock.params['/load_ns/subns/robots/childparam']
                 self.assertEquals('a child namespace parameter', p.value)
             elif n.type == "test_node_rosparam_load_param":
                 self.assertEquals(0, len(exes))
-                p = [p for p in mock.params if p.key == '/load_param/param/string1'][0]
+                p = mock.params['/load_param/param/string1']
                 self.assertEquals('bar', p.value)
-                p = [p for p in mock.params if p.key == '/load_param/param/robots/childparam'][0]
+                p = mock.params['/load_param/param/robots/childparam']
                 self.assertEquals('a child namespace parameter', p.value)
             elif n.type == "test_node_rosparam_multi":
                 self.assertEquals(1, len(exes))
@@ -418,14 +414,14 @@ class TestXmlLoader(unittest.TestCase):
                 self.assertEquals('/rosparam_multi/', rp_ctx)
 
                 # test two other rosparam tags
-                p = [p for p in mock.params if p.key == '/rosparam_multi/string1'][0]
+                p = mock.params['/rosparam_multi/string1']
                 self.assertEquals('bar', p.value)
-                p = [p for p in mock.params if p.key == '/rosparam_multi/robots/childparam'][0]
+                p = mock.params['/rosparam_multi/robots/childparam']
                 self.assertEquals('a child namespace parameter', p.value)
 
-                p = [p for p in mock.params if p.key == '/rosparam_multi/msubns/string1'][0]
+                p = mock.params['/rosparam_multi/msubns/string1']
                 self.assertEquals('bar', p.value)
-                p = [p for p in mock.params if p.key == '/rosparam_multi/msubns/robots/childparam'][0]
+                p = mock.params['/rosparam_multi/msubns/robots/childparam']
                 self.assertEquals('a child namespace parameter', p.value)
                 
     ## test that ~params in groups get applied to later members of group
@@ -437,7 +433,7 @@ class TestXmlLoader(unittest.TestCase):
             u'/group1/g1node2/gparam2',
             u'/node1/param1',
             ]
-        p_names = [p.key for p in mock.params]
+        p_names = mock.params.keys()
         self.assertEquals(set([]), set(correct) ^ set(p_names), "%s does not match %s"%(p_names, correct))
 
     def test_node_param(self):
@@ -446,9 +442,7 @@ class TestXmlLoader(unittest.TestCase):
                  ('/ns_test/test_private_param2/foo2', 'bar2'),
                  ('/test_private_param3/foo3', 'bar3'), ]
         for k, v in tests:
-            p = [p for p in mock.params if p.key == k]
-            self.assertEquals(1, len(p), "%s not present in parameters: %s"%(k, mock.params))
-            self.assertEquals(v, p[0].value)
+            self.assertEquals(v, mock.params[k].value)
         node_types = [n.type for n in mock.nodes]
         
     def test_roslaunch_files(self):
@@ -739,9 +733,9 @@ class TestXmlLoader(unittest.TestCase):
     def test_substitution(self):
         mock = self._load(os.path.join(self.xml_dir, 'test-substitution.xml'))
         # for now this is mostly a trip wire test due to #1776 
-        for p in mock.params:
-            self.assert_('$' not in p.key)
-            self.assert_('$' not in p.value)            
+        for k, v in mock.params.iteritems():
+            self.assert_('$' not in k)
+            self.assert_('$' not in v.value)
         for n in mock.nodes:
             self.assert_('$' not in n.package)
             self.assert_('$' not in n.type)
@@ -817,8 +811,8 @@ class TestXmlLoader(unittest.TestCase):
         loader.load(filename, mock, argv=[])
 
         param_d = {}
-        for p in mock.params:
-            param_d[p.key] = p.value
+        for k, v in mock.params.iteritems():
+            param_d[k] = v.value
 
         keys = ['group_if', 'group_unless', 'param_if', 'param_unless']
         for k in keys:
@@ -884,8 +878,8 @@ class TestXmlLoader(unittest.TestCase):
         loader.load(filename, mock, argv=["required:=test_arg", "if_test:=0"])
 
         param_d = {}
-        for p in mock.params:
-            param_d[p.key] = p.value
+        for k, v in mock.params.iteritems():
+            param_d[k] = v.value
 
         self.assertEquals(param_d['/p1_test'], 'test_arg')
         self.assertEquals(param_d['/p2_test'], 'not_set')
@@ -927,8 +921,8 @@ class TestXmlLoader(unittest.TestCase):
         loader.load(filename, mock, argv=["required:=test_arg", "optional:=test_arg2", "if_test:=1"])
 
         param_d = {}
-        for p in mock.params:
-            param_d[p.key] = p.value
+        for k, v in mock.params.iteritems():
+            param_d[k] = v.value
             
         self.assertEquals(param_d['/p1_test'], 'test_arg')
         self.assertEquals(param_d['/p2_test'], 'test_arg2')
@@ -970,8 +964,8 @@ class TestXmlLoader(unittest.TestCase):
         loader.load(filename, mock, argv=["required:=test_arg"])
 
         param_d = {}
-        for p in mock.params:
-            param_d[p.key] = p.value
+        for k, v in mock.params.iteritems():
+            param_d[k] = v.value
 
         # Sanity check: Parent namespace
         self.assertEquals(param_d['/p1_test'], 'test_arg')
@@ -1006,8 +1000,8 @@ class TestXmlLoader(unittest.TestCase):
         loader.load(filename, mock, argv=["required:=test_arg", "optional:=test_arg2"])
 
         param_d = {}
-        for p in mock.params:
-            param_d[p.key] = p.value
+        for k, v in mock.params.iteritems():
+            param_d[k] = v.value
 
         # Sanity check: Parent namespace
         self.assertEquals(param_d['/p1_test'], 'test_arg')
@@ -1082,8 +1076,8 @@ class TestXmlLoader(unittest.TestCase):
         loader.load(filename, mock)
 
         param_d = {}
-        for p in mock.params:
-            param_d[p.key] = p.value
+        for k, v in mock.params.iteritems():
+            param_d[k] = v.value
 
         self.assertEquals(param_d['/foo'], self.xml_dir + '/bar')
         self.assertEquals(param_d['/bar'], self.xml_dir + '/test-dirname/baz')
