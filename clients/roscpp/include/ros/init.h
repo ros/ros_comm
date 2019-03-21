@@ -215,6 +215,11 @@ ROSCPP_DECL std::string getROSArg(int argc, const char* const* argv, const std::
  */
 ROSCPP_DECL void removeROSArgs(int argc, const char* const* argv, V_string& args_out);
 
+/**
+ * \brief returns the default master uri that is used if no other is specified, e.g. by defining ROS_MASTER_URI.
+ */
+ROSCPP_DECL const std::string& getDefaultMasterURI();
+
 }
 
 #endif

@@ -70,7 +70,7 @@ void init(const M_string& remappings)
     }
     else
     {
-      g_uri = "http://localhost:11311";
+      g_uri = ros::getDefaultMasterURI();
     }
 
 #ifdef _MSC_VER
