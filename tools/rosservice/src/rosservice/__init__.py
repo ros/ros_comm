@@ -733,7 +733,7 @@ def rosservicemain(argv=sys.argv):
         _fullusage()
     try:
         # filter remapping args, #3433
-        argv = [a for a in argv if not rosgraph.names.REMAP in a]
+        argv = rospy.myargv(argv)
         command = argv[1]
         if command == 'list':
             _rosservice_cmd_list(argv)
