@@ -54,8 +54,9 @@ def test_get_master_uri():
     val = get_master_uri(env=dict(ROS_MASTER_URI='foo'), argv=['__master:=bar', '__master:=bar2'])
     assert val == 'bar'
 
+    import rosgraph.rosenv
     # empty env
-    assert 'http://localhost:11311' == get_master_uri(env={})
+    assert rosgraph.rosenv.DEFAULT_MASTER_URI == get_master_uri(env={})
     
     # invalid argv
     try:
