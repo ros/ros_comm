@@ -55,6 +55,7 @@ import roslaunch.server
 import roslaunch.xmlloader 
 
 from rosmaster.master_api import NUM_WORKERS
+from roslaunch.nodeprocess import DEFAULT_TIMEOUT_SIGINT, DEFAULT_TIMEOUT_SIGTERM
 
 #TODO: probably move process listener infrastructure into here
 
@@ -74,7 +75,7 @@ class ROSLaunchParent(object):
 
     def __init__(self, run_id, roslaunch_files, is_core=False, port=None, local_only=False, process_listeners=None,
             verbose=False, force_screen=False, force_log=False, is_rostest=False, roslaunch_strs=None, num_workers=NUM_WORKERS, timeout=None, master_logger_level=False, show_summary=True,
-                 sigint_timeout=15, sigterm_timeout=2):
+                 sigint_timeout=DEFAULT_TIMEOUT_SIGINT, sigterm_timeout=DEFAULT_TIMEOUT_SIGTERM):
         """
         @param run_id: UUID of roslaunch session
         @type  run_id: str

@@ -68,6 +68,7 @@ except:
     DEFAULT_MASTER_PORT = 11311
 
 from rosmaster.master_api import NUM_WORKERS
+from roslaunch.nodeprocess import DEFAULT_TIMEOUT_SIGINT, DEFAULT_TIMEOUT_SIGTERM
 
 NAME = 'roslaunch'
 
@@ -192,12 +193,12 @@ def _get_optparse():
                       help="set rosmaster.master logger level ('debug', 'info', 'warn', 'error', 'fatal')")
     parser.add_option("--sigint-timeout",
                       dest="sigint_timeout",
-                      default=15, type=int,
+                      default=DEFAULT_TIMEOUT_SIGINT, type=int,
                       help="the SIGINT timeout used when killing nodes (in seconds).",
                       metavar="SIGINT_TIMEOUT")
     parser.add_option("--sigterm-timeout",
                       dest="sigterm_timeout",
-                      default=2, type=int,
+                      default=DEFAULT_TIMEOUT_SIGTERM, type=int,
                       help="the SIGTERM timeout used when killing nodes if SIGINT does not stop the node (in seconds).",
                       metavar="SIGTERM_TIMEOUT")
 

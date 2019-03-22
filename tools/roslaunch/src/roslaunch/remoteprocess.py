@@ -48,6 +48,7 @@ import rosgraph
 from roslaunch.core import printlog, printerrlog
 import roslaunch.pmon
 import roslaunch.server
+from roslaunch.nodeprocess import DEFAULT_TIMEOUT_SIGINT, DEFAULT_TIMEOUT_SIGTERM
 
 import logging
 _logger = logging.getLogger("roslaunch.remoteprocess")
@@ -126,7 +127,7 @@ class SSHChildROSLaunchProcess(roslaunch.server.ChildROSLaunchProcess):
     """
     Process wrapper for launching and monitoring a child roslaunch process over SSH
     """
-    def __init__(self, run_id, name, server_uri, machine, master_uri=None, sigint_timeout=15, sigterm_timeout=2):
+    def __init__(self, run_id, name, server_uri, machine, master_uri=None, sigint_timeout=DEFAULT_TIMEOUT_SIGINT, sigterm_timeout=DEFAULT_TIMEOUT_SIGTERM):
         """
         :param machine: Machine instance. Must be fully configured.
             machine.env_loader is required to be set.

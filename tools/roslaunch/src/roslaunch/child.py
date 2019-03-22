@@ -49,6 +49,7 @@ import traceback
 import roslaunch.core
 import roslaunch.pmon
 import roslaunch.server
+from roslaunch.nodeprocess import DEFAULT_TIMEOUT_SIGINT, DEFAULT_TIMEOUT_SIGTERM
 
 class ROSLaunchChild(object):
     """
@@ -57,7 +58,7 @@ class ROSLaunchChild(object):
     This must be called from the Python Main thread due to signal registration.
     """
 
-    def __init__(self, run_id, name, server_uri, sigint_timeout=15, sigterm_timeout=2):
+    def __init__(self, run_id, name, server_uri, sigint_timeout=DEFAULT_TIMEOUT_SIGINT, sigterm_timeout=DEFAULT_TIMEOUT_SIGTERM):
         """
         Startup roslaunch remote client XML-RPC services. Blocks until shutdown
         @param run_id: UUID of roslaunch session

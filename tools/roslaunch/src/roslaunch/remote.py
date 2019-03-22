@@ -48,6 +48,7 @@ from roslaunch.remoteprocess import SSHChildROSLaunchProcess
 import roslaunch.launch
 import roslaunch.server #ROSLaunchParentNode hidden dep
 from roslaunch.core import RLException, is_machine_local, printerrlog, printlog
+from roslaunch.nodeprocess import DEFAULT_TIMEOUT_SIGINT, DEFAULT_TIMEOUT_SIGTERM
 
 _CHILD_REGISTER_TIMEOUT = 10.0 #seconds
     
@@ -56,7 +57,7 @@ class ROSRemoteRunner(roslaunch.launch.ROSRemoteRunnerIF):
     Manages the running of remote roslaunch children
     """
     
-    def __init__(self, run_id, rosconfig, pm, server, sigint_timeout=15, sigterm_timeout=2):
+    def __init__(self, run_id, rosconfig, pm, server, sigint_timeout=DEFAULT_TIMEOUT_SIGINT, sigterm_timeout=DEFAULT_TIMEOUT_SIGTERM):
         """
         :param run_id: roslaunch run_id of this runner, ``str``
         :param config: launch configuration, ``ROSConfig``

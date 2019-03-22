@@ -70,6 +70,7 @@ import rosgraph.xmlrpc as xmlrpc
 import roslaunch.config 
 from roslaunch.pmon import ProcessListener, Process
 import roslaunch.xmlloader
+from roslaunch.nodeprocess import DEFAULT_TIMEOUT_SIGINT, DEFAULT_TIMEOUT_SIGTERM
 
 from roslaunch.launch import ROSLaunchRunner
 from roslaunch.core import RLException, \
@@ -243,7 +244,7 @@ class ROSLaunchChildHandler(ROSLaunchBaseHandler):
     it can track processes across requests
     """    
     
-    def __init__(self, run_id, name, server_uri, pm, sigint_timeout=15, sigterm_timeout=2):
+    def __init__(self, run_id, name, server_uri, pm, sigint_timeout=DEFAULT_TIMEOUT_SIGINT, sigterm_timeout=DEFAULT_TIMEOUT_SIGTERM):
         """
         @param server_uri: XML-RPC URI of server
         @type  server_uri: str
@@ -483,7 +484,7 @@ class ROSLaunchChildNode(ROSLaunchNode):
     XML-RPC server for roslaunch child processes
     """    
 
-    def __init__(self, run_id, name, server_uri, pm, sigint_timeout=15, sigterm_timeout=2):
+    def __init__(self, run_id, name, server_uri, pm, sigint_timeout=DEFAULT_TIMEOUT_SIGINT, sigterm_timeout=DEFAULT_TIMEOUT_SIGTERM):
         """
     ## Startup roslaunch remote client XML-RPC services. Blocks until shutdown
     ## @param name: name of remote client

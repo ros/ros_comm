@@ -55,13 +55,16 @@ from rosmaster.master_api import NUM_WORKERS
 import logging
 _logger = logging.getLogger("roslaunch")
 
+DEFAULT_TIMEOUT_SIGINT  = 15.0 #seconds
+DEFAULT_TIMEOUT_SIGTERM = 2.0 #seconds
+
 _counter = 0
 def _next_counter():
     global _counter
     _counter += 1
     return _counter
 
-def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS, timeout=None, master_logger_level=False, sigint_timeout=15, sigterm_timeout=2):
+def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS, timeout=None, master_logger_level=False, sigint_timeout=DEFAULT_TIMEOUT_SIGINT, sigterm_timeout=DEFAULT_TIMEOUT_SIGTERM):
     """
     Launch a master
     @param type_: name of master executable (currently just Master.ZENMASTER)
@@ -103,7 +106,7 @@ def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS
     log_output = False
     return LocalProcess(run_id, package, 'master', args, os.environ, log_output, None, required=True, sigint_timeout=sigint_timeout, sigterm_timeout=sigterm_timeout)
 
-def create_node_process(run_id, node, master_uri, sigint_timeout=15, sigterm_timeout=2):
+def create_node_process(run_id, node, master_uri, sigint_timeout=DEFAULT_TIMEOUT_SIGINT, sigterm_timeout=DEFAULT_TIMEOUT_SIGTERM):
     """
     Factory for generating processes for launching local ROS
     nodes. Also registers the process with the L{ProcessMonitor} so that
@@ -166,7 +169,7 @@ class LocalProcess(Process):
     
     def __init__(self, run_id, package, name, args, env, log_output,
             respawn=False, respawn_delay=0.0, required=False, cwd=None,
-            is_node=True, sigint_timeout=15, sigterm_timeout=2):
+            is_node=True, sigint_timeout=DEFAULT_TIMEOUT_SIGINT, sigterm_timeout=DEFAULT_TIMEOUT_SIGTERM):
         """
         @param run_id: unique run ID for this roslaunch. Used to
           generate log directory location. run_id may be None if this
