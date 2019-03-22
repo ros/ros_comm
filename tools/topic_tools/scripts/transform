@@ -87,8 +87,8 @@ class TopicOp:
 
         self.output_class = roslib.message.get_message_class(args.output_type)
 
-        self.sub = rospy.Subscriber(input_topic, input_class, self.callback)
         self.pub = rospy.Publisher(args.output_topic, self.output_class, queue_size=1, latch=args.latch)
+        self.sub = rospy.Subscriber(input_topic, input_class, self.callback)
 
     def callback(self, m):
         if self.input_fn is not None:
