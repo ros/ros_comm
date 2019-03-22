@@ -52,7 +52,7 @@ import rosgraph.network
 
 from roslaunch.core import *
 #from roslaunch.core import setup_env
-from roslaunch.nodeprocess import create_master_process, create_node_process
+from roslaunch.nodeprocess import create_master_process, create_node_process, DEFAULT_TIMEOUT_SIGINT, DEFAULT_TIMEOUT_SIGTERM
 from roslaunch.pmon import start_process_monitor, ProcessListener
 
 from roslaunch.rlutil import update_terminal_name
@@ -236,7 +236,7 @@ class ROSLaunchRunner(object):
     """
     
     def __init__(self, run_id, config, server_uri=None, pmon=None, is_core=False, remote_runner=None, is_child=False, is_rostest=False, num_workers=NUM_WORKERS, timeout=None,
-                 master_logger_level=False, sigint_timeout=15, sigterm_timeout=2):
+                 master_logger_level=False, sigint_timeout=DEFAULT_TIMEOUT_SIGINT, sigterm_timeout=DEFAULT_TIMEOUT_SIGTERM):
         """
         @param run_id: /run_id for this launch. If the core is not
             running, this value will be used to initialize /run_id. If
