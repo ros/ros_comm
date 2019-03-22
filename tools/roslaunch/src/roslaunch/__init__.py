@@ -193,12 +193,12 @@ def _get_optparse():
                       help="set rosmaster.master logger level ('debug', 'info', 'warn', 'error', 'fatal')")
     parser.add_option("--sigint-timeout",
                       dest="sigint_timeout",
-                      default=DEFAULT_TIMEOUT_SIGINT, type=int,
+                      default=DEFAULT_TIMEOUT_SIGINT, type=float,
                       help="the SIGINT timeout used when killing nodes (in seconds).",
                       metavar="SIGINT_TIMEOUT")
     parser.add_option("--sigterm-timeout",
                       dest="sigterm_timeout",
-                      default=DEFAULT_TIMEOUT_SIGTERM, type=int,
+                      default=DEFAULT_TIMEOUT_SIGTERM, type=float,
                       help="the SIGTERM timeout used when killing nodes if SIGINT does not stop the node (in seconds).",
                       metavar="SIGTERM_TIMEOUT")
 
