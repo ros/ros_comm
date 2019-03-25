@@ -1130,9 +1130,8 @@ def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, ve
     if verbose2:
         topic_types = _master_get_topic_types(master)
         
-        def getTopic(item): return item[0]
-        sortedPubs = sorted(pubs, key=getTopic)
-        sortedSubs = sorted(subs, key=getTopic)
+        sortedPubs = sorted(pubs, key=lambda item: item[0])
+        sortedSubs = sorted(subs, key=lambda item: item[0])
         sortedAll = []
         
         pubsPos = 0
@@ -1162,11 +1161,8 @@ def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, ve
             sortedAll.append([subItem[0], 0, len(subItem[1])])
             subsPos += 1
             
-        pubsMax = 0
-        subsMax = 0
-        for t, p, s in sortedAll:
-            if p > pubsMax: pubsMax = p
-            if s > subsMax: subsMax = s
+        pubsMax = max(sortedAll, key=lambda item: item[1])[1]
+        subsMax = max(sortedAll, key=lambda item: item[2])[2]
             
         pubsDigits = len(str(pubsMax))
         subsDigits = len(str(subsMax))   
@@ -1179,10 +1175,8 @@ def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, ve
             pubStr = ("%" + str(pubsDigits) + "d pub") % (p)
             subStr = ("%" + str(subsDigits) + "d sub") % (s)
             
-            if p != 1: pubStr += "s,"
-            else: pubStr += ", "
-            if s != 1: subStr += "s,"
-            else: subStr += ", "
+            pubStr += "s," if p != 1 else ", "
+            subStr += "s," if p != 1 else ", "
             
             print(indent+" * %s %s %s [%s]"%(pubStr, subStr, t, topic_type(t, topic_types)))
         print('')
