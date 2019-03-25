@@ -1120,16 +1120,35 @@ def _rostopic_list_bag(bag_file, topic=None):
                 if rospy.is_shutdown():
                     break
 
-def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, verbose, verbose2, indent=''):
+def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, verbose, indent=''):
     def topic_type(t, topic_types):
         matches = [t_type for t_name, t_type in topic_types if t_name == t]
         if matches:
             return matches[0]
         return 'unknown type'
 
-    if verbose2:
+    if verbose:
         topic_types = _master_get_topic_types(master)
+
+        if not subscribers_only:
+            print("\n%sPublished topics:"%indent)
+            for t, ttype, tlist in pubs:
+                if len(tlist) > 1:
+                    print(indent+" * %s [%s] %s publishers"%(t, ttype, len(tlist)))
+                else:
+                    print(indent+" * %s [%s] 1 publisher"%(t, ttype))
+
+        if not publishers_only:
+            print(indent)
+            print(indent+"Subscribed topics:")
+            for t, ttype, tlist in subs:
+                if len(tlist) > 1:
+                    print(indent+" * %s [%s] %s subscribers"%(t, ttype, len(tlist)))
+                else:
+                    print(indent+" * %s [%s] 1 subscriber"%(t, ttype))
+        print('')
         
+        # combined view
         sortedPubs = sorted(pubs, key=lambda item: item[0])
         sortedSubs = sorted(subs, key=lambda item: item[0])
         sortedAll = []
@@ -1181,26 +1200,7 @@ def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, ve
             print(indent+" * %s %s %s [%s]"%(pubStr, subStr, t, topic_type(t, topic_types)))
         print('')
 
-    elif verbose:
-        topic_types = _master_get_topic_types(master)
 
-        if not subscribers_only:
-            print("\n%sPublished topics:"%indent)
-            for t, ttype, tlist in pubs:
-                if len(tlist) > 1:
-                    print(indent+" * %s [%s] %s publishers"%(t, ttype, len(tlist)))
-                else:
-                    print(indent+" * %s [%s] 1 publisher"%(t, ttype))                    
-
-        if not publishers_only:
-            print(indent)
-            print(indent+"Subscribed topics:")
-            for t, ttype, tlist in subs:
-                if len(tlist) > 1:
-                    print(indent+" * %s [%s] %s subscribers"%(t, ttype, len(tlist)))
-                else:
-                    print(indent+" * %s [%s] 1 subscriber"%(t, ttype))
-        print('')
     else:
         if publishers_only:
             topics = [t for t, _, _ in pubs]
@@ -1264,7 +1264,7 @@ def _rostopic_list_group_by_host(master, pubs, subs):
     host_sub_topics = build_map(master, subs, uricache)
     return host_pub_topics, host_sub_topics
 
-def _rostopic_list(topic, verbose=False, verbose2=False,
+def _rostopic_list(topic, verbose=False,
                    subscribers_only=False, publishers_only=False,
                    group_by_host=False):
     """
@@ -1272,13 +1272,12 @@ def _rostopic_list(topic, verbose=False, verbose2=False,
     
     :param topic: topic name to list information or None to match all topics, ``str``
     :param verbose: print additional debugging information, ``bool``
-    :param verbose2: like verbose, but with an unified ordered list, ``bool``
     :param subscribers_only: print information about subscriptions only, ``bool``
     :param publishers_only: print information about subscriptions only, ``bool``
     :param group_by_host: group topic list by hostname, ``bool``
     """
     # #1563
-    if subscribers_only and publishers_only and not verbose2:
+    if subscribers_only and publishers_only:
         raise ROSTopicException("cannot specify both subscribers- and publishers-only")
     
     master = rosgraph.Master('/rostopic')
@@ -1300,11 +1299,11 @@ def _rostopic_list(topic, verbose=False, verbose2=False,
                 print("Host [%s]:" % hostname)
                 _sub_rostopic_list(master, pubs, subs,
                                    publishers_only, subscribers_only,
-                                   verbose, verbose2, indent='  ')
+                                   verbose, indent='  ')
     else:
         _sub_rostopic_list(master, pubs, subs,
                            publishers_only, subscribers_only,
-                           verbose, verbose2)
+                           verbose)
 
 def get_info_text(topic):
     """
@@ -2103,9 +2102,6 @@ def _rostopic_cmd_list(argv):
     parser.add_option("-v", "--verbose",
                       dest="verbose", default=False,action="store_true",
                       help="list full details about each topic")
-    parser.add_option("-V", "--verbose2",
-                      dest="verbose2", default=False,action="store_true",
-                      help="like -v, but with an unified ordered list")
     parser.add_option("-p",
                       dest="publishers", default=False,action="store_true",
                       help="list only publishers")
@@ -2131,10 +2127,10 @@ def _rostopic_cmd_list(argv):
             parser.error("--host option is not valid with bags")
         _rostopic_list_bag(options.bag, topic)
     else:
-        if options.subscribers and options.publishers and not options.verbose2:
+        if options.subscribers and options.publishers:
             parser.error("you may only specify one of -p, -s")
 
-        exitval = _rostopic_list(topic, verbose=options.verbose, verbose2=options.verbose2, subscribers_only=options.subscribers, publishers_only=options.publishers, group_by_host=options.hostname) or 0
+        exitval = _rostopic_list(topic, verbose=options.verbose, subscribers_only=options.subscribers, publishers_only=options.publishers, group_by_host=options.hostname) or 0
         if exitval != 0:
             sys.exit(exitval)
 
