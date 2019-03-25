@@ -100,6 +100,17 @@ def _master_get_topic_types(master):
         val = master.getPublishedTopics('/')
     return val
 
+def _topic_type(t, topic_types):
+    """
+    Returns the topic type of the given topic based on topic_types.
+    :param t the topic
+    :param topic_types  a list of topic names and topic types (the return value of _master_get_topic_types)
+    """
+    matches = [t_type for t_name, t_type in topic_types if t_name == t]
+    if matches:
+        return matches[0]
+    return 'unknown type'
+
 class ROSTopicHz(object):
     """
     ROSTopicHz receives messages for a topic and computes frequency stats
@@ -1121,11 +1132,6 @@ def _rostopic_list_bag(bag_file, topic=None):
                     break
 
 def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, verbose, indent=''):
-    def topic_type(t, topic_types):
-        matches = [t_type for t_name, t_type in topic_types if t_name == t]
-        if matches:
-            return matches[0]
-        return 'unknown type'
 
     if verbose:
         topic_types = _master_get_topic_types(master)
@@ -1197,7 +1203,7 @@ def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, ve
             pubStr += "s," if p != 1 else ", "
             subStr += "s," if p != 1 else ", "
             
-            print(indent+" * %s %s %s [%s]"%(pubStr, subStr, t, topic_type(t, topic_types)))
+            print(indent+" * %s %s %s [%s]"%(pubStr, subStr, t, _topic_type(t, topic_types)))
         print('')
 
 
@@ -1214,11 +1220,6 @@ def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, ve
 def get_topic_list(master=None):
     if not master:
         master = rosgraph.Master('/rostopic')
-    def topic_type(t, topic_types):
-        matches = [t_type for t_name, t_type in topic_types if t_name == t]
-        if matches:
-            return matches[0]
-        return 'unknown type'
 
     # Return an array of tuples; (<topic>, <type>, <node_count>)
     state = master.getSystemState()
@@ -1227,10 +1228,10 @@ def get_topic_list(master=None):
     pubs, subs, _ = state
     pubs_out = []
     for topic, nodes in pubs:
-        pubs_out.append((topic, topic_type(topic, topic_types), nodes))
+        pubs_out.append((topic, _topic_type(topic, topic_types), nodes))
     subs_out = []
     for topic, nodes in subs:
-        subs_out.append((topic, topic_type(topic, topic_types), nodes))
+        subs_out.append((topic, _topic_type(topic, topic_types), nodes))
 
     # List of published topics, list of subscribed topics.
     return (pubs_out, subs_out)
@@ -1317,11 +1318,6 @@ def get_info_text(topic):
         from io import StringIO
     import itertools
     buff = StringIO()
-    def topic_type(t, topic_types):
-        matches = [t_type for t_name, t_type in topic_types if t_name == t]
-        if matches:
-            return matches[0]
-        return 'unknown type'
 
     master = rosgraph.Master('/rostopic')
     try:
@@ -1338,7 +1334,7 @@ def get_info_text(topic):
     if not pubs and not subs:
         raise ROSTopicException("Unknown topic %s"%topic)
 
-    buff.write("Type: %s\n\n"%topic_type(topic, topic_types))
+    buff.write("Type: %s\n\n"%_topic_type(topic, topic_types))
 
     if pubs:
         buff.write("Publishers: \n")
