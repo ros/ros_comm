@@ -1142,14 +1142,14 @@ def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, ve
             subItem = sortedSubs[subsPos]
             
             if pubItem[0] == subItem[0]:
-                sortedAll.append([pubItem[0], len(pubItem[1]), len(subItem[1])])
+                sortedAll.append([pubItem[0], len(pubItem[2]), len(subItem[2])])
                 pubsPos += 1
                 subsPos += 1
             elif pubItem[0] < subItem[0]:
-                sortedAll.append([pubItem[0], len(pubItem[1]), 0])
+                sortedAll.append([pubItem[0], len(pubItem[2]), 0])
                 pubsPos += 1
             else:
-                sortedAll.append([subItem[0], 0, len(subItem[1])])
+                sortedAll.append([subItem[0], 0, len(subItem[2])])
                 subsPos += 1
         
         while pubsPos < len(sortedPubs):
