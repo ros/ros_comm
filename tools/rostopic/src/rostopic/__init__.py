@@ -1136,25 +1136,6 @@ def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, ve
     if verbose:
         topic_types = _master_get_topic_types(master)
 
-        if not subscribers_only:
-            print("\n%sPublished topics:"%indent)
-            for t, ttype, tlist in pubs:
-                if len(tlist) > 1:
-                    print(indent+" * %s [%s] %s publishers"%(t, ttype, len(tlist)))
-                else:
-                    print(indent+" * %s [%s] 1 publisher"%(t, ttype))
-
-        if not publishers_only:
-            print(indent)
-            print(indent+"Subscribed topics:")
-            for t, ttype, tlist in subs:
-                if len(tlist) > 1:
-                    print(indent+" * %s [%s] %s subscribers"%(t, ttype, len(tlist)))
-                else:
-                    print(indent+" * %s [%s] 1 subscriber"%(t, ttype))
-        print('')
-        
-        # combined view
         sortedPubs = sorted(pubs, key=lambda item: item[0])
         sortedSubs = sorted(subs, key=lambda item: item[0])
         sortedAll = []
@@ -1205,8 +1186,6 @@ def _sub_rostopic_list(master, pubs, subs, publishers_only, subscribers_only, ve
             
             print(indent+" * %s %s %s [%s]"%(pubStr, subStr, t, _topic_type(t, topic_types)))
         print('')
-
-
     else:
         if publishers_only:
             topics = [t for t, _, _ in pubs]
