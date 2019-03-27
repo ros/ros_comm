@@ -13,7 +13,7 @@
     <param name="topic" value="output"/>
     <param name="hz" value="5.0"/>
     <param name="hzerror" value="0.5"/>
-    <param name="test_duration" value="2.0" retry="3" />
+    <param name="test_duration" value="2.0"/>
   </test>
 
 </launch>
