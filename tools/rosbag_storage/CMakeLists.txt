@@ -28,19 +28,17 @@ add_definitions(${BZIP2_DEFINITIONS})
 set(AES_ENCRYPT_SOURCE "")
 set(AES_ENCRYPT_LIBRARIES "")
 if(NOT WIN32)
-  set(AES_ENCRYPT_SOURCE "src/aes_encryptor.cpp")
+  set(AES_ENCRYPT_SOURCE "src/aes_encryptor.cpp" "src/gpgme_utils.cpp")
   set(AES_ENCRYPT_LIBRARIES "crypto" "gpgme")
 endif()
 
 add_library(rosbag_storage
-  ${AES_ENCRYPT_SOURCE}
   src/bag.cpp
   src/bag_player.cpp
   src/buffer.cpp
   src/bz2_stream.cpp
   src/lz4_stream.cpp
   src/chunked_file.cpp
-  src/encryptor.cpp
   src/message_instance.cpp
   src/query.cpp
   src/stream.cpp
@@ -61,6 +59,19 @@ install(TARGETS rosbag_storage
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 )
 
+add_library(rosbag_default_encryption_plugins
+  ${AES_ENCRYPT_SOURCE}
+  src/no_encryptor.cpp
+)
+
+target_link_libraries(rosbag_default_encryption_plugins ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${AES_ENCRYPT_LIBRARIES})
+
+install(TARGETS rosbag_default_encryption_plugins
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 install(DIRECTORY include/
   DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h"
@@ -74,10 +85,10 @@ if(NOT WIN32)
   if(CATKIN_ENABLE_TESTING)
     find_package(rostest)
 
-    catkin_add_gtest(test_aes_encryptor test/test_aes_encryptor.cpp
+    catkin_add_gtest(test_aes_encryptor test/test_aes_encryptor.cpp src/gpgme_utils.cpp
       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test)
     if(TARGET test_aes_encryptor)
-      target_link_libraries(test_aes_encryptor rosbag_storage ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+      target_link_libraries(test_aes_encryptor rosbag_storage ${BZIP2_LIBRARIES}  ${AES_ENCRYPT_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
     endif()
   endif()
 endif()

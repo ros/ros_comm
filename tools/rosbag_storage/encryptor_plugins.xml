@@ -1,4 +1,4 @@
-<library path="lib/librosbag_storage">
+<library path="lib/librosbag_default_encryption_plugins">
   <class name="rosbag/NoEncryptor" type="rosbag::NoEncryptor" base_class_type="rosbag::EncryptorBase">
     <description>This is a plugin for no encryption.</description>
   </class>
