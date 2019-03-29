@@ -166,7 +166,7 @@ class ParamDictionary(object):
         finally:
             self.lock.release()
     
-    def set_param(self, key, value, notify_task=None, caller_id = None):
+    def set_param(self, key, value, notify_task=None, caller_id=None):
         """
         Set the parameter in the parameter dictionary.
 
@@ -334,7 +334,7 @@ def _compute_all_keys(param_key, param_value, all_keys=None):
             _compute_all_keys(new_k, v, all_keys)
     return all_keys
 
-def compute_param_updates(subscribers, param_key, param_value, caller_id_to_ignore = None):
+def compute_param_updates(subscribers, param_key, param_value, caller_id_to_ignore=None):
     """
     Compute subscribers that should be notified based on the parameter update
     @param subscribers: parameter subscribers
