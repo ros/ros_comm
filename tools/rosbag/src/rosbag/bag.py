@@ -79,7 +79,7 @@ class ROSBagException(Exception):
     """
     Base class for exceptions in rosbag.
     """
-    def __init__(self, value = None):
+    def __init__(self, value=None):
         self.value = value
         #fix for #1209. needed in Python 2.7.
         # For details: https://stackoverflow.com/questions/41808912/cannot-unpickle-exception-subclass
