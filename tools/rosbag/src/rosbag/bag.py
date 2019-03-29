@@ -733,8 +733,11 @@ class Bag(object):
 
                     msg_count = 0
                     for connection in connections:
-                        for chunk in self._chunks:
-                            msg_count += chunk.connection_counts.get(connection.id, 0)
+                        if self._chunks:
+                            for chunk in self._chunks:
+                                msg_count += chunk.connection_counts.get(connection.id, 0)
+                        else:
+                            msg_count += len(self._connection_indexes.get(connection.id, []))
                     topic_msg_counts[topic] = msg_count
 
                     if self._connection_indexes_read:
