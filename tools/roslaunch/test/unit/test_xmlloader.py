@@ -189,7 +189,7 @@ class TestXmlLoader(unittest.TestCase):
         mock = self._load(os.path.join(self.xml_dir, 'test-params-valid.xml'))
 
         param_d = {}
-        for k, v in mock.params.iteritems():
+        for k, v in mock.params.items():
             param_d[k] = v.value
 
         self.assertEquals('pass', param_d['/override'])
@@ -733,7 +733,7 @@ class TestXmlLoader(unittest.TestCase):
     def test_substitution(self):
         mock = self._load(os.path.join(self.xml_dir, 'test-substitution.xml'))
         # for now this is mostly a trip wire test due to #1776 
-        for k, v in mock.params.iteritems():
+        for k, v in mock.params.items():
             self.assert_('$' not in k)
             self.assert_('$' not in v.value)
         for n in mock.nodes:
@@ -811,7 +811,7 @@ class TestXmlLoader(unittest.TestCase):
         loader.load(filename, mock, argv=[])
 
         param_d = {}
-        for k, v in mock.params.iteritems():
+        for k, v in mock.params.items():
             param_d[k] = v.value
 
         keys = ['group_if', 'group_unless', 'param_if', 'param_unless']
@@ -878,7 +878,7 @@ class TestXmlLoader(unittest.TestCase):
         loader.load(filename, mock, argv=["required:=test_arg", "if_test:=0"])
 
         param_d = {}
-        for k, v in mock.params.iteritems():
+        for k, v in mock.params.items():
             param_d[k] = v.value
 
         self.assertEquals(param_d['/p1_test'], 'test_arg')
@@ -921,7 +921,7 @@ class TestXmlLoader(unittest.TestCase):
         loader.load(filename, mock, argv=["required:=test_arg", "optional:=test_arg2", "if_test:=1"])
 
         param_d = {}
-        for k, v in mock.params.iteritems():
+        for k, v in mock.params.items():
             param_d[k] = v.value
             
         self.assertEquals(param_d['/p1_test'], 'test_arg')
@@ -964,7 +964,7 @@ class TestXmlLoader(unittest.TestCase):
         loader.load(filename, mock, argv=["required:=test_arg"])
 
         param_d = {}
-        for k, v in mock.params.iteritems():
+        for k, v in mock.params.items():
             param_d[k] = v.value
 
         # Sanity check: Parent namespace
@@ -1000,7 +1000,7 @@ class TestXmlLoader(unittest.TestCase):
         loader.load(filename, mock, argv=["required:=test_arg", "optional:=test_arg2"])
 
         param_d = {}
-        for k, v in mock.params.iteritems():
+        for k, v in mock.params.items():
             param_d[k] = v.value
 
         # Sanity check: Parent namespace
@@ -1076,7 +1076,7 @@ class TestXmlLoader(unittest.TestCase):
         loader.load(filename, mock)
 
         param_d = {}
-        for k, v in mock.params.iteritems():
+        for k, v in mock.params.items():
             param_d[k] = v.value
 
         self.assertEquals(param_d['/foo'], self.xml_dir + '/bar')
