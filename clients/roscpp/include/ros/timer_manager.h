@@ -27,6 +27,9 @@
 
 #ifndef ROSCPP_TIMER_MANAGER_H
 #define ROSCPP_TIMER_MANAGER_H
+#if !defined(__APPLE__) && !defined(WIN32)
+#define BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
+#endif
 
 // check if we might need to include our own backported version boost::condition_variable
 // in order to use CLOCK_MONOTONIC for the SteadyTimer
@@ -574,18 +577,22 @@ void TimerManager<T, D, E>::threadFunc()
         break;
       }
 
+      // We're using steady time here to cope with system time changes. #1558
+
       // If we're on simulation time we need to check now() against sleep_end more often than on system time,
       // since simulation time may be running faster than real time.
       if (!T::isSystemTime())
       {
-        timers_cond_.timed_wait(lock, boost::posix_time::milliseconds(1));
+        boost::chrono::steady_clock::time_point end_point = boost::chrono::steady_clock::now() + boost::chrono::milliseconds(1);
+        timers_cond_.wait_until(lock, end_point);
       }
       else
       {
         // On system time we can simply sleep for the rest of the wait time, since anything else requiring processing will
         // signal the condition variable
         int64_t remaining_time = std::max<int64_t>((sleep_end - current).toSec() * 1000.0f, 1);
-        timers_cond_.timed_wait(lock, boost::posix_time::milliseconds(remaining_time));
+        boost::chrono::steady_clock::time_point end_point = boost::chrono::steady_clock::now() + boost::chrono::milliseconds(remaining_time);
+        timers_cond_.wait_until(lock, end_point);
       }
     }
 
