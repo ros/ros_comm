@@ -74,6 +74,10 @@ class RelayField(object):
             '--wait-for-start', action='store_true',
             help='Wait for input messages.'
             )
+        parser.add_argument(
+            '--tcpnodelay', dest='tcp_nodelay', action='store_true',
+            help='use the TCP_NODELAY transport hint when subscribing to topics'
+            )
 
         # get and strip out ros args first                                                                                                                      
         argv = rospy.myargv()
@@ -90,7 +94,7 @@ class RelayField(object):
 
         self.output_class = roslib.message.get_message_class(args.output_type)
 
-        self.sub = rospy.Subscriber(input_topic, input_class, self.callback)
+        self.sub = rospy.Subscriber(input_topic, input_class, self.callback, tcp_nodelay=args.tcp_nodelay)
         self.pub = rospy.Publisher(args.output_topic, self.output_class,
                                    queue_size=1)
 
