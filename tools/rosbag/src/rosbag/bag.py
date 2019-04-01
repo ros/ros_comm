@@ -79,8 +79,11 @@ class ROSBagException(Exception):
     """
     Base class for exceptions in rosbag.
     """
-    def __init__(self, value):
+    def __init__(self, value=None):
         self.value = value
+        #fix for #1209. needed in Python 2.7.
+        # For details: https://stackoverflow.com/questions/41808912/cannot-unpickle-exception-subclass
+        self.args = (value,)
 
     def __str__(self):
         return self.value
@@ -96,7 +99,8 @@ class ROSBagUnindexedException(ROSBagException):
     """
     Exception for unindexed bags.
     """
-    def __init__(self):
+    def __init__(self, *args):
+        #*args needed for #1209
         ROSBagException.__init__(self, 'Unindexed bag')
 
 class ROSBagEncryptNotSupportedException(ROSBagException):
