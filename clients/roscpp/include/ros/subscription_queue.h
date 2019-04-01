@@ -28,6 +28,11 @@
 #ifndef ROSCPP_SUBSCRIPTION_QUEUE_H
 #define ROSCPP_SUBSCRIPTION_QUEUE_H
 
+// Make sure we use CLOCK_MONOTONIC for the condition variable wait_for if not Apple.
+#ifndef __APPLE__
+#define BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
+#endif
+
 #include "forwards.h"
 #include "common.h"
 #include "ros/message_event.h"
