@@ -82,7 +82,7 @@ def myargv(argv=None):
     """
     if argv is None:
         argv = sys.argv
-    return [a for a in argv if not rosgraph.names.REMAP in a]
+    return [a for a in argv if not rosgraph.names.is_legal_remap(a)]
 
 def load_command_line_node_params(argv):
     """
@@ -97,7 +97,7 @@ def load_command_line_node_params(argv):
     try:
         mappings = {}
         for arg in argv:
-            if rosgraph.names.REMAP in arg:
+            if rosgraph.names.is_legal_remap(arg):
                 src, dst = [x.strip() for x in arg.split(rosgraph.names.REMAP)]
                 if src and dst:
                     if len(src) > 1 and src[0] == '_' and src[1] != '_':
