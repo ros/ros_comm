@@ -39,7 +39,6 @@ SubscriptionQueue::SubscriptionQueue(const std::string& topic, int32_t queue_siz
 , full_(false)
 , queue_size_(0)
 , allow_concurrent_callbacks_(allow_concurrent_callbacks)
-, notify_when_ready_condition_(NULL)
 {}
 
 SubscriptionQueue::~SubscriptionQueue()
@@ -165,9 +164,6 @@ CallbackInterface::CallResult SubscriptionQueue::call()
     i.helper->call(params);
   }
 
-  if (notify_when_ready_condition_)
-    notify_when_ready_condition_->notify_one();
-
   return CallbackInterface::Success;
 }
 
@@ -189,10 +185,6 @@ bool SubscriptionQueue::full()
 bool SubscriptionQueue::fullNoLock()
 {
   return (size_ > 0) && (queue_size_ >= (uint32_t)size_);
-}
-
-void SubscriptionQueue::setNotifyWhenReady(boost::condition_variable* condition) {
-  notify_when_ready_condition_ = condition;
 }
 
 }

@@ -126,8 +126,6 @@ void CallbackQueue::addCallback(const CallbackInterfacePtr& callback, uint64_t r
 
   if (callback->ready())
     condition_.notify_one();
-  else
-    callback->setNotifyWhenReady(&condition_);
 }
 
 CallbackQueue::IDInfoPtr CallbackQueue::getIDInfo(uint64_t id)
@@ -406,6 +404,7 @@ CallbackQueue::CallOneResult CallbackQueue::callOneCB(TLS* tls)
       {
         tls->cb_it = tls->callbacks.erase(tls->cb_it);
         result = cb->call();
+        condition_.notify_one();
       }
     }
 

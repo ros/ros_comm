@@ -28,11 +28,6 @@
 #ifndef ROSCPP_SUBSCRIPTION_QUEUE_H
 #define ROSCPP_SUBSCRIPTION_QUEUE_H
 
-// Make sure we use CLOCK_MONOTONIC for the condition variable wait_for if not Apple.
-#ifndef __APPLE__
-#define BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
-#endif
-
 #include "forwards.h"
 #include "common.h"
 #include "ros/message_event.h"
@@ -79,8 +74,6 @@ public:
 
   virtual CallbackInterface::CallResult call();
   virtual bool ready();
-  virtual void setNotifyWhenReady(boost::condition_variable* condition);
-
   bool full();
 
 private:
@@ -93,8 +86,6 @@ private:
   D_Item queue_;
   uint32_t queue_size_;
   bool allow_concurrent_callbacks_;
-
-  boost::condition_variable* notify_when_ready_condition_;
 
   boost::recursive_mutex callback_mutex_;
 };
