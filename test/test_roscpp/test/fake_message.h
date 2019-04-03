@@ -32,10 +32,10 @@
 /*
  * Subscription queue test helper classes
  */
+#ifndef TEST_ROSCPP_FAKE_MESSAGE_H
+#define TEST_ROSCPP_FAKE_MESSAGE_H
 
 #include "ros/subscription_callback_helper.h"
-
-using namespace ros;
 
 class FakeMessage
 {
@@ -48,14 +48,14 @@ public:
     virtual uint8_t *deserialize(uint8_t *read_ptr) { return read_ptr; }
 };
 
-class FakeSubHelper : public SubscriptionCallbackHelper
+class FakeSubHelper : public ros::SubscriptionCallbackHelper
 {
 public:
     FakeSubHelper()
         : calls_(0)
     {}
 
-    virtual VoidConstPtr deserialize(const SubscriptionCallbackHelperDeserializeParams&)
+    virtual ros::VoidConstPtr deserialize(const ros::SubscriptionCallbackHelperDeserializeParams&)
     {
       return boost::make_shared<FakeMessage>();
     }
@@ -63,7 +63,7 @@ public:
     virtual std::string getMD5Sum() { return ""; }
     virtual std::string getDataType() { return ""; }
 
-    virtual void call(SubscriptionCallbackHelperCallParams& params)
+    virtual void call(ros::SubscriptionCallbackHelperCallParams& params)
     {
       (void)params;
       {
@@ -87,3 +87,5 @@ public:
     boost::function<void(void)> cb_;
 };
 typedef boost::shared_ptr<FakeSubHelper> FakeSubHelperPtr;
+
+#endif // TEST_ROSCPP_FAKE_MESSAGE_H

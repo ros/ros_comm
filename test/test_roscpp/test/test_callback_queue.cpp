@@ -47,7 +47,7 @@
 #include <boost/thread.hpp>
 #include <boost/function.hpp>
 
-#include "fake_message.cpp"
+#include "fake_message.h"
 
 using namespace ros;
 
