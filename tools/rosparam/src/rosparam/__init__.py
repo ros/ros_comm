@@ -185,7 +185,7 @@ def load_str(str, filename, default_namespace=None, verbose=False):
     """
     paramlist = []
     default_namespace = default_namespace or get_ros_namespace()
-    for doc in yaml.load_all(str):
+    for doc in yaml.safe_load_all(str):
         if NS in doc:
             ns = ns_join(default_namespace, doc.get(NS, None))
             if verbose:
@@ -367,7 +367,7 @@ def set_param(param, value, verbose=False):
     :param param: parameter name, ``str``
     :param value: yaml-encoded value, ``str``
     """
-    set_param_raw(param, yaml.load(value), verbose=verbose)
+    set_param_raw(param, yaml.safe_load(value), verbose=verbose)
 
 def upload_params(ns, values, verbose=False):
     """
