@@ -82,7 +82,7 @@ public:
     virtual bool hasHeader() { return false; }
 
     boost::mutex mutex_;
-    int32_t calls_;
+    uint32_t calls_;
 
     boost::function<void(void)> cb_;
 };

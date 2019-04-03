@@ -78,7 +78,7 @@ TEST(SubscriptionQueue, queueSize)
   ASSERT_EQ(queue.call(), CallbackInterface::Success);
   ASSERT_EQ(queue.call(), CallbackInterface::Invalid);
 
-  ASSERT_EQ(helper->calls_, 2);
+  ASSERT_EQ(helper->calls_, 2u);
 }
 
 TEST(SubscriptionQueue, infiniteQueue)
@@ -109,7 +109,7 @@ TEST(SubscriptionQueue, infiniteQueue)
 
   ASSERT_EQ(queue.call(), CallbackInterface::Invalid);
 
-  ASSERT_EQ(helper->calls_, 10001);
+  ASSERT_EQ(helper->calls_, 10001u);
 }
 
 TEST(SubscriptionQueue, clearCall)
@@ -205,7 +205,7 @@ TEST(SubscriptionQueue, concurrentCallbacks)
   t1.join();
   t2.join();
 
-  ASSERT_EQ(helper->calls_, 2);
+  ASSERT_EQ(helper->calls_, 2u);
 }
 
 void waitForASecond()
@@ -227,9 +227,9 @@ TEST(SubscriptionQueue, nonConcurrentOrdering)
   t1.join();
   t2.join();
 
-  ASSERT_EQ(helper->calls_, 1);
+  ASSERT_EQ(helper->calls_, 1u);
   queue.call();
-  ASSERT_EQ(helper->calls_, 2);
+  ASSERT_EQ(helper->calls_, 2u);
 }
 
 int main(int argc, char** argv)

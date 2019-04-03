@@ -413,7 +413,7 @@ TEST_P(CallbackQueueParamTest, threadedCallOneSlow)
   const size_t num_callbacks_to_call = runThreadedTest(cb, callOneThread, &num_call_one_calls,
       num_threads, test_duration, pause_between_callbacks, call_one_timeout);
 
-  const int32_t num_callbacks_called = helper->calls_;
+  const uint32_t num_callbacks_called = helper->calls_;
   const size_t num_ready_called = cb->ready_count;
 
   // what should happen: even though we have multiple processing threads,
