@@ -404,7 +404,9 @@ CallbackQueue::CallOneResult CallbackQueue::callOneCB(TLS* tls)
       {
         tls->cb_it = tls->callbacks.erase(tls->cb_it);
         result = cb->call();
-        condition_.notify_one();
+	if (result == CallbackInterface::Success) {
+          condition_.notify_one();
+	}
       }
     }
 
