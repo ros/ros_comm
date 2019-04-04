@@ -106,7 +106,7 @@ class TestSlaveApi(unittest.TestCase):
     def load_profile(self, filename):
         import yaml
         with open(filename) as f:
-            d = yaml.load(f)
+            d = yaml.safe_load(f)
         self.required_pubs = d.get('pubs', {})
         self.required_subs = d.get('subs', {})
         

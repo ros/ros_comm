@@ -1250,7 +1250,7 @@ class Bag(object):
                         else:
                            setattr(self, a, DictObject(b) if isinstance(b, dict) else b)
 
-            obj = DictObject(yaml.load(s))
+            obj = DictObject(yaml.safe_load(s))
             try:
                 val = eval('obj.' + key)
             except Exception as ex:

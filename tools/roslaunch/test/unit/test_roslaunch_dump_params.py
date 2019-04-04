@@ -53,7 +53,7 @@ class TestDumpParams(unittest.TestCase):
         o, e = p.communicate()
         self.assert_(p.returncode == 0, "Return code nonzero for param dump! Code: %d" % (p.returncode))
 
-        self.assertEquals({'/noop': 'noop'}, yaml.load(o))
+        self.assertEquals({'/noop': 'noop'}, yaml.safe_load(o))
 
         p = Popen([cmd, '--dump-params', 'roslaunch', 'test-dump-rosparam.launch'], stdout = PIPE)
         o, e = p.communicate()
@@ -95,7 +95,7 @@ class TestDumpParams(unittest.TestCase):
             '/noparam1': 'value1',
             '/noparam2': 'value2',
             }
-        output_val = yaml.load(o)
+        output_val = yaml.safe_load(o)
         if not val == output_val:
             for k, v in val.items():
                 if k not in output_val:

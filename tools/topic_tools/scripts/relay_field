@@ -98,7 +98,7 @@ class RelayField(object):
         if self.input_fn is not None:
             m = self.input_fn(m)
 
-        msg_generation = yaml.load(self.expression)
+        msg_generation = yaml.safe_load(self.expression)
         pub_args = _eval_in_dict_impl(msg_generation, None, {'m': m})
 
         now = rospy.get_rostime()
