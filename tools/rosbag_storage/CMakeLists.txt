@@ -66,7 +66,6 @@ add_library(rosbag_default_encryption_plugins
 
 target_link_libraries(rosbag_default_encryption_plugins rosbag_storage ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${AES_ENCRYPT_LIBRARIES})
 
-# Install library
 install(TARGETS rosbag_default_encryption_plugins
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
