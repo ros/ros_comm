@@ -47,9 +47,6 @@ from roslaunch.core import Param, RosbinExecutable, RLException, PHASE_SETUP
 
 from rosgraph.names import make_global_ns, ns_join, PRIV_NAME, load_mappings, is_legal_name, canonicalize_name
 
-#lazy-import global for yaml and rosparam
-rosparam = None
-
 class LoadException(RLException):
     """Error loading data as specified (e.g. cannot find included files, etc...)"""
     pass
@@ -406,11 +403,9 @@ class Loader(object):
                 text = subst_function(text)
             # parse YAML text
             # - lazy import: we have to import rosparam in oder to to configure the YAML constructors
-            global rosparam
-            if rosparam is None:
-                import rosparam
+            import rosparam
             try:
-                data = yaml.safe_load(text)
+                data = rosparam.yaml_load(text)
                 # #3162: if there is no YAML, load() will return an
                 # empty string.  We want an empty dictionary instead
                 # for our representation of empty.
