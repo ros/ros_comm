@@ -155,7 +155,7 @@ def yaml_load(str):
     return yaml.load(str, Loader=ROSSafeLoader)
 
 def yaml_load_all(str):
-    return yaml.load_all(str, Loader(ROSSafeLoader))
+    return yaml.load_all(str, Loader=ROSSafeLoader)
 
 def load_file(filename, default_namespace=None, verbose=False):
     """
