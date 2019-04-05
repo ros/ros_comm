@@ -236,10 +236,10 @@ template<class T, class D, class E>
 TimerManager<T, D, E>::TimerManager() :
   new_timer_(false), id_counter_(0), thread_started_(false), quit_(false)
 {
-#if (BOOST_VERSION < 106700) && !defined(BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC)
+#if !defined(BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC) && !defined(BOOST_THREAD_INTERNAL_CLOCK_IS_MONO)
   ROS_ASSERT_MSG(false,
-                 "ros::TimerManager was instantiated by package " ROS_PACKAGE_NAME
-                 "without that BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC is defined! "
+                 "ros::TimerManager was instantiated by package " ROS_PACKAGE_NAME ", but "
+                 "neither BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC nor BOOST_THREAD_INTERNAL_CLOCK_IS_MONO is defined! "
                  "Be aware that timers might misbehave when system time jumps, "
                  "e.g. due to network time corrections.");
 #endif
