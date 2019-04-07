@@ -73,7 +73,7 @@ class ROSLaunchParent(object):
     """
 
     def __init__(self, run_id, roslaunch_files, is_core=False, port=None, local_only=False, process_listeners=None,
-            verbose=False, force_screen=False, force_log=False, is_rostest=False, roslaunch_strs=None, num_workers=NUM_WORKERS, timeout=None, master_logger_level=False):
+            verbose=False, force_screen=False, force_log=False, is_rostest=False, roslaunch_strs=None, num_workers=NUM_WORKERS, timeout=None, master_logger_level=False, show_summary=True):
         """
         @param run_id: UUID of roslaunch session
         @type  run_id: str
@@ -91,6 +91,8 @@ class ROSLaunchParent(object):
         @type  port: int
         @param verbose: (optional) print verbose output
         @type  verbose: boolean
+        @param show_summary: (optional) whether to show a summary or not
+        @type  show_summary: boolean
         @param force_screen: (optional) force output of all nodes to screen
         @type  force_screen: boolean
         @param force_log: (optional) force output of all nodes to log
@@ -118,6 +120,7 @@ class ROSLaunchParent(object):
         self.port = port
         self.local_only = local_only
         self.verbose = verbose
+        self.show_summary = show_summary
         self.num_workers = num_workers
         self.timeout = timeout
         self.master_logger_level = master_logger_level
@@ -166,8 +169,8 @@ class ROSLaunchParent(object):
         # print runner info to user, put errors last to make the more visible
         if self.is_core:
             print("ros_comm version %s" % (self.config.params['/rosversion'].value))
-            
-        print(self.config.summary(local=self.remote_runner is None))
+        if self.show_summary:    
+            print(self.config.summary(local=self.remote_runner is None))
         if self.config:
             for err in self.config.config_errors:
                 printerrlog("WARNING: %s"%err)

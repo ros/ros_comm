@@ -53,6 +53,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       ("regex,e", "match topics using regular expressions")
       ("exclude,x", po::value<std::string>(), "exclude topics matching regular expressions")
       ("quiet,q", "suppress console output")
+      ("publish,p", "Publish a msg when the record begin")
       ("output-prefix,o", po::value<std::string>(), "prepend PREFIX to beginning of bag name")
       ("output-name,O", po::value<std::string>(), "record bagnamed NAME.bag")
       ("buffsize,b", po::value<int>()->default_value(256), "Use an internal buffer of SIZE MB (Default: 256)")
@@ -103,6 +104,8 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     }
     if (vm.count("quiet"))
       opts.quiet = true;
+    if (vm.count("publish"))
+      opts.publish = true;
     if (vm.count("output-prefix"))
     {
       opts.prefix = vm["output-prefix"].as<std::string>();

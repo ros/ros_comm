@@ -39,6 +39,8 @@
 #if !defined(_MSC_VER)
   #include <termios.h>
   #include <unistd.h>
+#else
+  #include <windows.h>
 #endif
 #include <time.h>
 
@@ -178,6 +180,8 @@ private:
     void restoreTerminal();
 
     void updateRateTopicTime(const ros::MessageEvent<topic_tools::ShapeShifter const>& msg_event);
+
+    void advertise(const ConnectionInfo* c);
 
     void doPublish(rosbag::MessageInstance const& m);
 

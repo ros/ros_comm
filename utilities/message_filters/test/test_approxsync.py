@@ -36,6 +36,7 @@ import rostest
 import rospy
 import unittest
 import random
+import copy
 
 import message_filters
 from message_filters import ApproximateTimeSynchronizer
@@ -65,6 +66,7 @@ class TestApproxSync(unittest.TestCase):
         m0 = MockFilter()
         m1 = MockFilter()
         ts = ApproximateTimeSynchronizer([m0, m1], 1, 0.1)
+        rospy.rostime.set_rostime_initialized(True)
         ts.registerCallback(self.cb_collector_2msg)
 
         if 0:
@@ -98,25 +100,54 @@ class TestApproxSync(unittest.TestCase):
 
         # Scramble sequences of length N of headerless and header-having messages.
         # Make sure that TimeSequencer recombines them.
-        rospy.rostime.set_rostime_initialized(True)
         random.seed(0)
         for N in range(1, 10):
             m0 = MockFilter()
             m1 = MockFilter()
             seq0 = [MockMessage(rospy.Time(t), random.random()) for t in range(N)]
             seq1 = [MockHeaderlessMessage(random.random()) for t in range(N)]
-            # random.shuffle(seq0)
+            # new shuffled sequences
+            seq0r = copy.copy(seq0)
+            seq1r = copy.copy(seq1)
+            random.shuffle(seq0r)
+            random.shuffle(seq1r)
             ts = ApproximateTimeSynchronizer([m0, m1], N, 0.1, allow_headerless=True)
             ts.registerCallback(self.cb_collector_2msg)
             self.collector = []
-            for msg in random.sample(seq0, N):
-                m0.signalMessage(msg)
-            self.assertEqual(self.collector, [])
-            for i in random.sample(range(N), N):
-                msg = seq1[i]
-                rospy.rostime._set_rostime(rospy.Time(i+0.05))
-                m1.signalMessage(msg)
-            self.assertEqual(set(self.collector), set(zip(seq0, seq1)))
+            for i in range(N):
+                # clock time needs to be continuous
+                rospy.rostime._set_rostime(rospy.Time(i))
+                m0.signalMessage(seq0r[i])
+                m1.signalMessage(seq1r[i])
+            self.assertEqual(set(self.collector), set(zip(seq0, seq1r)))
+
+        # clear buffer on sequences with non-continuous time
+        random.seed(0)
+        for N in range(2, 10):
+            m0 = MockFilter()
+            m1 = MockFilter()
+            seq0 = [MockMessage(rospy.Time(t), random.random()) for t in range(N)]
+            seq1 = [MockMessage(rospy.Time(t), random.random()) for t in range(N)]
+            ts = ApproximateTimeSynchronizer([m0, m1], N, 0.1)
+            ts.registerCallback(self.cb_collector_2msg)
+            self.collector = []
+            seq_time = [rospy.Time(i) for i in range(10, 10+N)]
+            # select a random time in sequence at which time jumps backwards
+            ind_rand = random.randint(1, N-1)
+            random_jump = random.uniform(1/1000.0, 100/1000.0)
+            # jump backward in time by 'random_jump', starting at 'ind_rand'
+            for i in range(N-1, ind_rand-1, -1):
+                seq_time[i] = seq_time[i-1]-rospy.Duration(random_jump)
+            for i in range(N):
+                rospy.rostime._set_rostime(seq_time[i])
+                m0.signalMessage(seq0[i])
+                if i==ind_rand:
+                    # expect buffer reset
+                    assert(len(ts.queues[0])==0 and len(ts.queues[1])==0)
+                m1.signalMessage(seq1[i])
+            # expect N synchronisation minus 1 buffer reset
+            assert(len(self.collector)==(N-1))
+
 
 if __name__ == '__main__':
     if 1:

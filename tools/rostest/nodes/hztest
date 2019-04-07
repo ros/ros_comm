@@ -144,7 +144,7 @@ Test Duration: %s"""%(hz, hzerror, topic, test_duration))
         # we have to wait until the first message is received before measuring the rate
         # as time can advance too much before publisher is up
         
-        # - give the test 20 seconds to start, may parameterize this in the future
+        # give the test wait_time seconds to start
         wallclock_timeout_t = time.time() + wait_time
         while not self.message_received and time.time() < wallclock_timeout_t:
             time.sleep(0.1)
@@ -199,8 +199,6 @@ Test Duration: %s"""%(hz, hzerror, topic, test_duration))
                 curr = time.time()
             else:
                 curr_rostime = rospy.get_rostime()
-
-                #print "CURR ROSTIME", curr_rostime.to_sec()
                 
                 if curr_rostime.is_zero():
                     return

@@ -46,6 +46,20 @@ using namespace XmlRpc;
 
 bool g_should_exist = true;
 
+#ifdef _WIN32
+int setenv(const char *name, const char *value, int overwrite)
+{
+  if(!overwrite)
+  {
+    size_t envsize = 0;
+    const errno_t errcode = getenv_s(&envsize, NULL, 0, name);
+    if(errcode || envsize)
+      return errcode;
+  }
+  return _putenv_s(name, value);
+}
+#endif
+
 TEST(CheckMaster, checkMaster)
 {
   ASSERT_EQ(ros::master::check(), g_should_exist);

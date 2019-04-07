@@ -32,28 +32,34 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
+#ifndef ROSBAG_GPGME_UTILS_H
+#define ROSBAG_GPGME_UTILS_H
+
 #include "rosbag/encryptor.h"
 
-#include <pluginlib/class_list_macros.hpp>
+#ifndef _WIN32
+  #include <gpgme.h>
 
-PLUGINLIB_EXPORT_CLASS(rosbag::NoEncryptor, rosbag::EncryptorBase)
+namespace rosbag {
 
-namespace rosbag
-{
+//! Initialize GPGME library
+/*!
+ * This method initializes GPGME library, and set locale.
+ */
+void initGpgme();
 
-uint32_t NoEncryptor::encryptChunk(const uint32_t chunk_size, const uint64_t, ChunkedFile&) { return chunk_size; }
+//! Get GPG key
+/*!
+ * \param ctx GPGME context
+ * \param user User name of the GPG key
+ * \param key GPG key found
+ *
+ * This method outputs a GPG key in the system keyring corresponding to the given user name.
+ * This method throws BagException if the key is not found or error occurred.
+ */
+void getGpgKey(gpgme_ctx_t& ctx, std::string const& user, gpgme_key_t& key);
 
-void NoEncryptor::decryptChunk(ChunkHeader const& chunk_header, Buffer& decrypted_chunk, ChunkedFile& file) const {
-    decrypted_chunk.setSize(chunk_header.compressed_size);
-    file.read((char*) decrypted_chunk.getData(), chunk_header.compressed_size);
 }
+#endif
 
-void NoEncryptor::writeEncryptedHeader(boost::function<void(ros::M_string const&)> write_header, ros::M_string const& header_fields, ChunkedFile&) {
-    write_header(header_fields);
-}
-
-bool NoEncryptor::readEncryptedHeader(boost::function<bool(ros::Header&)> read_header, ros::Header& header, Buffer&, ChunkedFile&) {
-    return read_header(header);
-}
-
-}  // namespace rosbag
+#endif

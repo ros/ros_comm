@@ -8,7 +8,6 @@ if(TARGET test_base64)
   target_link_libraries(test_base64 xmlrpcpp)
 endif()
 
-set_target_properties(test_base64 PROPERTIES COMPILE_FLAGS -std=c++11)
 if(WIN32)
   # On Windows, gtest can be built as shared (dll) or static (lib),
   # to simplify the problem, here we require to match BUILD_SHARED_LIBS we used

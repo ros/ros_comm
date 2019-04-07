@@ -322,7 +322,10 @@ def rosservice_find(service_type):
     try:
         _, _, services = master.getSystemState()
         for s, l in services:
-            t = get_service_type(s)
+            try:
+                t = get_service_type(s)
+            except ROSServiceIOException:
+                continue
             if t == service_type:
                 matches.append(s)
     except socket.error:
@@ -730,7 +733,7 @@ def rosservicemain(argv=sys.argv):
         _fullusage()
     try:
         # filter remapping args, #3433
-        argv = [a for a in argv if not rosgraph.names.REMAP in a]
+        argv = rospy.myargv(argv)
         command = argv[1]
         if command == 'list':
             _rosservice_cmd_list(argv)

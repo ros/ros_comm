@@ -41,7 +41,8 @@
 #include "std_msgs/String.h"
 
 #include "rosbag/bag.h"
-#include "rosbag/encryptor.h"
+#include "rosbag/aes_encryptor.h"
+#include "rosbag/gpgme_utils.h"
 #include "rosbag/view.h"
 
 const char *GPG_KEY_USER = "Foo00";

@@ -175,9 +175,9 @@ void LZ4Stream::read(void* ptr, size_t size) {
     switch (ret) {
     case ROSLZ4_OK: break;
     case ROSLZ4_STREAM_END:
-        if (getUnused() || getUnusedLength() > 0)
+        if (getUnused() || getUnusedLength() > 0) {
             CONSOLE_BRIDGE_logError("unused data already available");
-        else {
+	} else {
             setUnused(lz4s_.input_next);
             setUnusedLength(lz4s_.input_left);
         }

@@ -1,0 +1,17 @@
+<package>
+  <name>test_rostest</name>
+  <version>1.14.3</version>
+  <description>
+    Tests for rostest.
+  </description>
+  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
+  <license>BSD</license>
+
+  <url>http://ros.org/wiki/rostest</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rostest</build_depend>
+
+  <test_depend>rostopic</test_depend>
+</package>

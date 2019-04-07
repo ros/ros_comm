@@ -45,7 +45,7 @@ from xml.dom import Node as DomNode
 
 import rospkg
 
-from .loader import convert_value
+from .loader import convert_value, load_mappings
 from .substitution_args import resolve_args
 
 NAME="roslaunch-deps"
@@ -118,6 +118,7 @@ def _parse_subcontext(tags, context):
     return subcontext
 
 def _parse_launch(tags, launch_file, file_deps, verbose, context):
+    context['filename'] = os.path.abspath(launch_file)
     dir_path = os.path.dirname(os.path.abspath(launch_file))
     launch_file_pkg = rospkg.get_package_name(dir_path)
             
@@ -205,7 +206,7 @@ def parse_launch(launch_file, file_deps, verbose):
 
     file_deps[launch_file] = RoslaunchDeps()
     launch_tag = dom[0]
-    context = { 'arg': {}}
+    context = { 'arg': load_mappings(sys.argv) }
     _parse_launch(launch_tag.childNodes, launch_file, file_deps, verbose, context)
 
 def rl_file_deps(file_deps, launch_file, verbose=False):

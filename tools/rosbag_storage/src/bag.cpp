@@ -39,11 +39,7 @@
 #include <assert.h>
 #include <iomanip>
 
-#include <boost/foreach.hpp>
-
 #include "console_bridge/console.h"
-
-#define foreach BOOST_FOREACH
 
 using std::map;
 using std::priority_queue;
@@ -298,7 +294,7 @@ void Bag::startReadingVersion200() {
         readChunkInfoRecord();
 
     // Read the connection indexes for each chunk
-    foreach(ChunkInfo const& chunk_info, chunks_) {
+    for (ChunkInfo const& chunk_info : chunks_) {
         curr_chunk_info_ = chunk_info;
 
         seek(curr_chunk_info_.pos);
@@ -538,7 +534,7 @@ void Bag::writeIndexRecords() {
         CONSOLE_BRIDGE_logDebug("Writing INDEX_DATA: connection=%d ver=%d count=%d", connection_id, INDEX_VERSION, index_size);
 
         // Write the index record data (pairs of timestamp and position in file)
-        foreach(IndexEntry const& e, index) {
+        for (IndexEntry const& e : index) {
             write((char*) &e.time.sec,  4);
             write((char*) &e.time.nsec, 4);
             write((char*) &e.offset,    4);
@@ -910,7 +906,7 @@ uint32_t Bag::readMessageDataSize(IndexEntry const& index_entry) const {
 }
 
 void Bag::writeChunkInfoRecords() {
-    foreach(ChunkInfo const& chunk_info, chunks_) {
+    for (ChunkInfo const& chunk_info : chunks_) {
         // Write the chunk info header
         M_string header;
         uint32_t chunk_connection_count = chunk_info.connection_counts.size();

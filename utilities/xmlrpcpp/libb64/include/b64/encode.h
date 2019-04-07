@@ -8,6 +8,8 @@ For details, see http://sourceforge.net/projects/libb64
 #ifndef BASE64_ENCODE_H
 #define BASE64_ENCODE_H
 
+#include "xmlrpcpp/XmlRpcDecl.h"
+
 #include <iostream>
 
 namespace base64
@@ -17,7 +19,7 @@ namespace base64
 		#include "cencode.h"
 	}
 
-	struct encoder
+	struct XMLRPCPP_DECL encoder
 	{
 		base64_encodestate _state;
 		int _buffersize;

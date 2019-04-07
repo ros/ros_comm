@@ -35,7 +35,7 @@
 """
 Support for using numpy with rospy messages.
 
-For tutorials, see U{http://www.ros.org/wiki/rospy_tutorials/Tutorials/numpy}
+For tutorials, see U{http://wiki.ros.org/rospy_tutorials/Tutorials/numpy}
 
 Listener example::
     from rospy.numpy_msg import numpy_msg

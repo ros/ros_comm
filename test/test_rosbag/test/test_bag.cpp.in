@@ -37,14 +37,11 @@
 #include <set>
 
 #include <boost/assign/list_of.hpp>
-#include <boost/foreach.hpp>
 
 #include <gtest/gtest.h>
 
 #include "std_msgs/String.h"
 #include "std_msgs/Int32.h"
-
-#define foreach BOOST_FOREACH
 
 class BagTest : public testing::Test
 {
@@ -67,7 +64,7 @@ protected:
 
     void dumpContents(rosbag::Bag& b) {
         rosbag::View view(b);
-        foreach(rosbag::MessageInstance m, view)
+        for (const rosbag::MessageInstance& m : view)
             std::cout << m.getTime() << ": [" << m.getTopic() << "]" << std::endl;
     }
 
@@ -78,7 +75,7 @@ protected:
         int message_count = 0;
 
         rosbag::View view(b);
-        foreach(rosbag::MessageInstance m, view) {
+        for (const rosbag::MessageInstance& m : view) {
             std_msgs::String::ConstPtr s = m.instantiate<std_msgs::String>();
             if (s != NULL) {
                 ASSERT_EQ(s->data, foo_.data);
@@ -200,7 +197,7 @@ TEST(rosbag, simple_write_and_read_works) {
 
     int count = 0;
     rosbag::View view(b2, rosbag::TopicQuery(topics));
-    foreach(rosbag::MessageInstance const m, view) {
+    for (rosbag::MessageInstance const& m : view) {
         std_msgs::String::ConstPtr s = m.instantiate<std_msgs::String>();
         if (s != NULL)
         {
@@ -238,7 +235,7 @@ TEST(rosbag, read_indexed_1_2_succeeds) {
 
     int32_t i = 0;
 
-    foreach(rosbag::MessageInstance const m, view) {
+    for (rosbag::MessageInstance const& m : view) {
         std_msgs::Int32::ConstPtr imsg = m.instantiate<std_msgs::Int32>();
         if (imsg != NULL) {
             ASSERT_EQ(imsg->data, i++);
@@ -258,7 +255,7 @@ TEST(rosbag, write_then_read_without_read_mode_fails) {
     try
     {
         rosbag::View view(b);
-        foreach(rosbag::MessageInstance const m, view) {
+        for (rosbag::MessageInstance const& m : view) {
             std_msgs::String::ConstPtr s = m.instantiate<std_msgs::String>();
             if (s != NULL) {
                 ASSERT_EQ(s->data, std::string("foo"));
@@ -311,7 +308,7 @@ TEST(rosbag, time_query_works) {
     int i = 23;
 
     rosbag::View view(bag, ros::Time(23, 1), ros::Time(782, 1));
-    foreach(rosbag::MessageInstance const m, view) {
+    for (rosbag::MessageInstance const& m : view) {
         std_msgs::Int32::ConstPtr imsg = m.instantiate<std_msgs::Int32>();
         if (imsg != NULL) {
             ASSERT_EQ(imsg->data, i++);
@@ -350,7 +347,7 @@ TEST(rosbag, topic_query_works) {
     int i = 0;
 
     rosbag::View view(bag, rosbag::TopicQuery(t));
-    foreach(rosbag::MessageInstance const m, view) {
+    for (rosbag::MessageInstance const& m : view) {
         std_msgs::Int32::ConstPtr imsg = m.instantiate<std_msgs::Int32>();
         if (imsg != NULL) {
             ASSERT_EQ(imsg->data, i++);
@@ -378,7 +375,7 @@ TEST(rosbag, bad_topic_query_works) {
     std::vector<std::string> t = boost::assign::list_of("t1");
 
     rosbag::View view(bag, rosbag::TopicQuery(t));
-    foreach(rosbag::MessageInstance const m, view) {
+    for (rosbag::MessageInstance const& m : view) {
       (void)m;
       FAIL();
     }
@@ -427,7 +424,7 @@ TEST(rosbag, multiple_bag_works) {
 
     int i = 0;
 
-    foreach(rosbag::MessageInstance const m, view) {
+    for (rosbag::MessageInstance const& m : view) {
         std_msgs::Int32::ConstPtr imsg = m.instantiate<std_msgs::Int32>();
         if (imsg != NULL) {
             ASSERT_EQ(imsg->data, i++);
@@ -477,7 +474,7 @@ TEST(rosbag, overlapping_query_works) {
     int i = 0;
     int j = 0;
 
-    foreach(rosbag::MessageInstance const m, view1) {
+    for (rosbag::MessageInstance const& m : view1) {
       std_msgs::Int32::ConstPtr imsg = m.instantiate<std_msgs::Int32>();
       if (imsg != NULL) {
         ASSERT_EQ(imsg->data, i);
@@ -492,7 +489,7 @@ TEST(rosbag, overlapping_query_works) {
 
     i = 0;
 
-    foreach(rosbag::MessageInstance const m, view2) {
+    for (rosbag::MessageInstance const& m : view2) {
         std_msgs::Int32::ConstPtr imsg = m.instantiate<std_msgs::Int32>();
         if (imsg != NULL) {
             ASSERT_EQ(imsg->data, i++);

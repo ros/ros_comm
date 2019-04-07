@@ -35,8 +35,6 @@
 #ifndef ROSBAG_BAG_PLAYER_H
 #define ROSBAG_BAG_PLAYER_H
 
-#include <boost/foreach.hpp>
-
 #include "rosbag/bag.h"
 #include "rosbag/view.h"
 
@@ -91,7 +89,7 @@ private:
 
 /* A class for playing back bag files at an API level. It supports
    relatime, as well as accelerated and slowed playback. */
-class BagPlayer
+class ROSBAG_STORAGE_DECL BagPlayer
 {
 public:
   /* Constructor expecting the filename of a bag */

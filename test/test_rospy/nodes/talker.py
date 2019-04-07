@@ -44,7 +44,7 @@ from std_msgs.msg import String
 
 def talker():
     # create our publish handle
-    pub = rospy.Publisher('chatter', String)
+    pub = rospy.Publisher('chatter', String, queue_size=0)
 
     # in ROS, nodes are unique named. If two nodes with the same
     # node are launched, the previous one is kicked off. The 

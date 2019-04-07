@@ -41,7 +41,7 @@ from rosgraph_msgs.msg import Clock
 
 def faketime():
     rospy.set_param('/use_sim_time', True)
-    pub = rospy.Publisher('/clock', Clock)
+    pub = rospy.Publisher('/clock', Clock, queue_size=0)
     rospy.init_node('fake_time')
     c = Clock()
     while not rospy.is_shutdown():
