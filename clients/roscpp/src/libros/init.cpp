@@ -595,9 +595,9 @@ void shutdown()
   {
     g_internal_queue_thread.join();
   }
-  /*ros::console::deregister_appender(g_rosout_appender);
+  ros::console::deregister_appender(g_rosout_appender);
   delete g_rosout_appender;
-  g_rosout_appender = 0;*/
+  g_rosout_appender = 0;
 
   if (g_started)
   {
