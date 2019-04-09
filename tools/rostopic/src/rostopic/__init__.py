@@ -1770,9 +1770,9 @@ def _rostopic_cmd_pub(argv):
         parser.error("topic type must be specified")
     if 0:
         if len(args) > 2 and options.parameter:
-            parser.error("args confict with -p setting")        
+            parser.error("args conflict with -p setting")        
     if len(args) > 2 and options.file:
-        parser.error("args confict with -f setting")        
+        parser.error("args conflict with -f setting")        
     topic_name, topic_type = args[0], args[1]
 
     # type-case using YAML
