@@ -35,10 +35,8 @@
 #ifndef ROSCPP_SERVICE_SERVER_LINK_H
 #define ROSCPP_SERVICE_SERVER_LINK_H
 
-// check if we might need to include our own backported version boost::condition_variable
-// in order to use CLOCK_MONOTONIC for the condition variable
-#include "ros/common.h"
-#include ROSCPP_BOOST_CONDITION_VARIABLE_HEADER
+#include <ros/common.h>
+#include <ros/internal_condition_variable.h>
 
 #include <boost/thread/mutex.hpp>
 #include <boost/shared_array.hpp>
@@ -67,7 +65,7 @@ private:
     SerializedMessage* resp_;
 
     bool finished_;
-    ROSCPP_BOOST_CONDITION_VARIABLE finished_condition_;
+    roscpp::internal::condition_variable finished_condition_;
     boost::mutex finished_mutex_;
     boost::thread::id caller_thread_id_;
 

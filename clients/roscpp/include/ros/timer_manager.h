@@ -28,12 +28,8 @@
 #ifndef ROSCPP_TIMER_MANAGER_H
 #define ROSCPP_TIMER_MANAGER_H
 
-// check if we might need to include our own backported version boost::condition_variable
-// in order to use CLOCK_MONOTONIC for the SteadyTimer
-#include "ros/common.h"
-#include ROSCPP_BOOST_CONDITION_VARIABLE_HEADER
-
 #include "ros/forwards.h"
+#include "ros/internal_condition_variable.h"
 #include "ros/time.h"
 #include "ros/file_log.h"
 
@@ -131,7 +127,7 @@ private:
 
   V_TimerInfo timers_;
   boost::mutex timers_mutex_;
-  ROSCPP_BOOST_CONDITION_VARIABLE timers_cond_;
+  roscpp::internal::condition_variable timers_cond_;
   volatile bool new_timer_;
 
   boost::mutex waiting_mutex_;
