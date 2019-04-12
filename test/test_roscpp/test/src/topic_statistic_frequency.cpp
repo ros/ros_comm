@@ -57,7 +57,7 @@ TEST(TopicStatisticFrequency, statisticFrequency)
   ASSERT_TRUE(agg.frequencyAcceptable("/very_fast_chatter", 171));
   ASSERT_TRUE(agg.frequencyAcceptable("/fast_chatter", 53));
   ASSERT_TRUE(agg.frequencyAcceptable("/slow_chatter", 18));
-  ASSERT_TRUE(agg.frequencyAcceptable("/very_slow_chatter", 0.4));
+  ASSERT_TRUE(agg.frequencyAcceptable("/very_slow_chatter", 0.8));
 }
 
 

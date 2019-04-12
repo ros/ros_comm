@@ -2,10 +2,10 @@
 <launch>
   <param name="/enable_statistics" value="true" />
   <!-- default 10 would take 5s to warm up for very slow talker -->
-  <param name="/statistics_window_min_elements" value="5" />
+  <param name="/statistics_window_min_elements" value="4" />
 
   <!-- under 1Hz important, since checking window starts there -->
-  <node name="very_slow_talker" pkg="test_roscpp" type="test_roscpp-publisher_rate" required="true" args="0.4">
+  <node name="very_slow_talker" pkg="test_roscpp" type="test_roscpp-publisher_rate" required="true" args="0.8">
     <remap from="data" to="very_slow_chatter" />
   </node>
   <node name="very_slow_listener" pkg="test_roscpp" type="test_roscpp-subscriber" required="true">
