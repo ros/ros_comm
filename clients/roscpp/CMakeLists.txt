@@ -24,9 +24,6 @@ find_package(Boost REQUIRED COMPONENTS chrono filesystem system)
 
 # Make sure we use CLOCK_MONOTONIC for the condition variable wait_for if not Apple.
 if(NOT APPLE AND NOT WIN32)
-  if(Boost_VERSION LESS 106100)
-    set(ROSCPP_USE_BACKPORTED_BOOST_CONDITION_VARIABLE_IMPLEMENTATION ON)
-  endif()
   if(Boost_VERSION LESS 106700)
     # CLOCK_MONOTONIC became the default in Boost 1.67:
     # https://github.com/boostorg/thread/commit/1e84b978b2bb0aae830cc14533dea3b7ddda5cde

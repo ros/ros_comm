@@ -35,12 +35,8 @@
 #ifndef ROSCPP_CALLBACK_QUEUE_H
 #define ROSCPP_CALLBACK_QUEUE_H
 
-// check if we might need to include our own backported version boost::condition_variable
-// in order to use CLOCK_MONOTONIC for the condition variable
-#include "ros/common.h"
-#include ROSCPP_BOOST_CONDITION_VARIABLE_HEADER
-
 #include "ros/callback_queue_interface.h"
+#include "ros/internal_condition_variable.h"
 #include "ros/time.h"
 
 #include <boost/shared_ptr.hpp>
@@ -166,7 +162,7 @@ protected:
   D_CallbackInfo callbacks_;
   size_t calling_;
   boost::mutex mutex_;
-  ROSCPP_BOOST_CONDITION_VARIABLE condition_;
+  roscpp::internal::condition_variable condition_;
 
   boost::mutex id_info_mutex_;
   M_IDInfo id_info_;
