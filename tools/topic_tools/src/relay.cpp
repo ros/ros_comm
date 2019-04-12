@@ -46,7 +46,6 @@ string g_output_topic;
 string g_monitor_topic;
 ros::Publisher g_pub;
 ros::Subscriber* g_sub;
-ros::Timer g_timer;
 bool g_lazy;
 bool g_stealth;
 ros::TransportHints g_th;
@@ -172,6 +171,7 @@ int main(int argc, char **argv)
     g_th.unreliable().reliable(); // Prefers unreliable, but will accept reliable.
 
   pnh.param<bool>("stealth", g_stealth, false);
+  ros::Timer g_timer;
   if (g_stealth)
   {
     double monitor_rate;
