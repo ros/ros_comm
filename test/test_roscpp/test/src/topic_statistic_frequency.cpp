@@ -7,14 +7,9 @@
 #include <boost/thread.hpp>
 #include <std_msgs/Int8MultiArray.h>
 
-static int g_argc;
-static char** g_argv;
-
 class Aggregator {
 public:
   std::map<std::string, ros::Duration> topic_period_mean_map_;
-
-  Aggregator() {}
 
   void cb(const rosgraph_msgs::TopicStatistics& msg) {
     topic_period_mean_map_[msg.topic] = msg.period_mean;
@@ -64,8 +59,6 @@ TEST(TopicStatisticFrequency, statisticFrequency)
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
-  g_argc = argc;
-  g_argv = argv;
   ros::init(argc, argv, "topic_statistic_frequency");
   ros::NodeHandle nh;
   return RUN_ALL_TESTS();
