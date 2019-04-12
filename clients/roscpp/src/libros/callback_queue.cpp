@@ -226,7 +226,7 @@ CallbackQueue::CallOneResult CallbackQueue::callOne(ros::WallDuration timeout)
       return Disabled;
     }
 
-    ros::WallTime start_time(ros::WallTime::now());
+    ros::SteadyTime start_time(ros::SteadyTime::now());
 
     if (callbacks_.empty())
     {
@@ -271,7 +271,7 @@ CallbackQueue::CallOneResult CallbackQueue::callOne(ros::WallDuration timeout)
     {
       // do not spend more than `timeout` seconds in the callback; we already waited for some time when waiting for
       // nonempty queue
-      ros::WallTime now(ros::WallTime::now());
+      ros::SteadyTime now(ros::SteadyTime::now());
       ros::WallDuration time_spent = now - start_time;
       ros::WallDuration time_to_wait = timeout - time_spent;
 
