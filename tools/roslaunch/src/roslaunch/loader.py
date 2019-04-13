@@ -405,7 +405,7 @@ class Loader(object):
             # - lazy import: we have to import rosparam in oder to to configure the YAML constructors
             import rosparam
             try:
-                data = rosparam.yaml_load(text)
+                data = yaml.safe_load(text)
                 # #3162: if there is no YAML, load() will return an
                 # empty string.  We want an empty dictionary instead
                 # for our representation of empty.
