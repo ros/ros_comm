@@ -42,6 +42,7 @@ import itertools
 import sys
 import traceback
 import logging
+import copy
 
 from xml.dom.minidom import parse, parseString
 from xml.dom import Node as DomNode #avoid aliasing
@@ -186,6 +187,10 @@ class XmlLoader(loader.Loader):
         if args and '$' in args:
             # Populate resolve_dict with name of the current file being processed.
             context.resolve_dict['filename'] = context.filename
+            if 'param' not in context.resolve_dict:
+                context.resolve_dict['param'] = {}
+            context.resolve_dict['param'] = context.params
+            
             return substitution_args.resolve_args(args, context=context.resolve_dict, resolve_anon=self.resolve_anon)
         else:
             return args
@@ -294,8 +299,19 @@ class XmlLoader(loader.Loader):
         try:
             self._check_attrs(tag, context, ros_config, XmlLoader.ARG_ATTRS)
             (name,) = self.reqd_attrs(tag, context, ('name',))
-            value, default, doc = self.opt_attrs(tag, context, ('value', 'default', 'doc'))
             
+            params_restore_point = copy.deepcopy(context.params)
+            resolve_dict_restore_point = copy.deepcopy(context.resolve_dict)
+            # Use context to emulate get_param functionality in substitution_args
+            for key,v in ros_config.params.items():
+                p = Param(key,v)
+                context.add_param(p)
+            value, default, doc = self.opt_attrs(tag, context, ('value', 'default', 'doc'))
+            context.params = copy.deepcopy(params_restore_point)
+            context.resolve_dict = copy.deepcopy(resolve_dict_restore_point)
+            # Restore it to valid state.
+            # This is an isolated function that only manipulates the element <arg>.
+            # Therefore, it is impossible to violate any to be loaded ROS parameters.
             if value is not None and default is not None:
                 raise XmlParseException(
                     "<arg> tag must have one and only one of value/default.")

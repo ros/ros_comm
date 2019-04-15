@@ -295,6 +295,23 @@ def _arg(resolved, a, args, context):
         context['arg'] = {}
     return resolved.replace("$(%s)" % a, _eval_arg(name=args[0], args=context['arg']))
 
+def _param(resolved, a, args, context):
+    """
+    process $(param) arg
+
+    :returns updated resolved argument, ``str``
+    :raises: :exc:`ArgException` If arg invalidly specified
+    """
+    if(len(args) == 0):
+        raise SubstitutionException("$(param var) must specify a variable name [%s]"%(a))
+    elif len(args) > 1:
+        raise SubstitutionException("$(param var) may only specify one arg [%s]"%(a))
+    
+    resolve_arg = '/'+args[0]
+    for param in context['param']:
+        if param.key==resolve_arg:
+            return resolved.replace("$(%s)" % a, str(param.value.value)) # +2 for equals sign
+
 # Create a dictionary of global symbols that will be available in the eval
 # context.  We disable all the builtins, then add back True and False, and also
 # add true and false for convenience (because we accept those lower-case strings
@@ -383,6 +400,7 @@ def resolve_args(arg_str, context=None, resolve_anon=True, filename=None):
         'dirname': _dirname,
         'anon': _anon,
         'arg': _arg,
+        'param': _param,
     }
     resolved = _resolve_args(arg_str, context, resolve_anon, commands)
     # then resolve 'find' as it requires the subsequent path to be expanded already
@@ -393,7 +411,7 @@ def resolve_args(arg_str, context=None, resolve_anon=True, filename=None):
     return resolved
 
 def _resolve_args(arg_str, context, resolve_anon, commands):
-    valid = ['find', 'env', 'optenv', 'dirname', 'anon', 'arg']
+    valid = ['find', 'env', 'optenv', 'dirname', 'anon', 'arg','param']
     resolved = arg_str
     for a in _collect_args(arg_str):
         splits = [s for s in a.split(' ') if s]
@@ -455,5 +473,4 @@ def _collect_args(arg_str):
         if state == _IN:
             buff.write(c)
     return args
-
 
