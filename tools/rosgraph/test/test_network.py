@@ -152,6 +152,7 @@ class NetworkTest(unittest.TestCase):
         assert ('localhost', 1234) == parse_http_host_and_port('http://localhost:1234')
         assert ('localhost', 1) == parse_http_host_and_port('http://localhost:1')
         assert ('willowgarage.com', 1) == parse_http_host_and_port('http://willowgarage.com:1')
+        assert ('FEDC:BA98:7654:3210:FEDC:BA98:7654:3210'.lower(), 81) == parse_http_host_and_port('http://[FEDC:BA98:7654:3210:FEDC:BA98:7654:3210]:81')
     
     def test_get_local_address(self):
         # mostly a tripwire test
