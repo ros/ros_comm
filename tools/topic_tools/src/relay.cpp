@@ -171,13 +171,13 @@ int main(int argc, char **argv)
     g_th.unreliable().reliable(); // Prefers unreliable, but will accept reliable.
 
   pnh.param<bool>("stealth", g_stealth, false);
-  ros::Timer g_timer;
+  ros::Timer monitor_timer;
   if (g_stealth)
   {
     double monitor_rate;
     pnh.param<string>("monitor_topic", g_monitor_topic, g_input_topic);
     pnh.param<double>("monitor_rate", monitor_rate, 1.0);
-    g_timer = n.createTimer(ros::Duration(monitor_rate), &timer_cb);
+    monitor_timer = n.createTimer(ros::Duration(monitor_rate), &timer_cb);
   }
 
   subscribe();
