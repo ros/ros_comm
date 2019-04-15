@@ -83,11 +83,10 @@ def parse_http_host_and_port(url):
     :returns: hostname and port number in URL or 80 (default), ``(str, int)``
     :raises: :exc:`ValueError` If the url does not validate
     """
-    assert sys.version_info >= (2, 5)
     if not url:
         raise ValueError('not a valid URL')        
     p = urlparse.urlparse(url)
-    if not p.scheme or not p.hostname: #protocol and host
+    if not p.scheme or not p.hostname:
         raise ValueError('not a valid URL')
     port = p.port if p.port else 80
     return p.hostname, port
