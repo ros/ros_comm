@@ -227,7 +227,7 @@ class TestRosparam(unittest.TestCase):
         with fakestdout() as b:
             rosparam.yamlmain([cmd, 'get', "g1"])
             import yaml
-            d = yaml.load(b.getvalue())
+            d = yaml.safe_load(b.getvalue())
             self.assertEquals(d['float'], 10.0)
             self.assertEquals(d['int'], 10.0)
             self.assertEquals(d['string'], "g1-foo-value")
@@ -346,18 +346,18 @@ class TestRosparam(unittest.TestCase):
         import yaml
         with open(f_out) as b:
             with open(f) as b2:
-                self.assertEquals(yaml.load(b.read()), yaml.load(b2.read()))
+                self.assertEquals(yaml.safe_load(b.read()), yaml.safe_load(b2.read()))
 
         rosparam.yamlmain([cmd, 'dump', '-v', f_out, 'rosparam_dump'])                
         with open(f_out) as b:
             with open(f) as b2:
-                self.assertEquals(yaml.load(b.read()), yaml.load(b2.read()))
+                self.assertEquals(yaml.safe_load(b.read()), yaml.safe_load(b2.read()))
 
         # yaml file and std_out should be the same
         with fakestdout() as b:
             rosparam.yamlmain([cmd, 'dump'])
             with open(f) as b2:
-                self.assertEquals(yaml.load(b.getvalue())['rosparam_dump'], yaml.load(b2.read()))
+                self.assertEquals(yaml.safe_load(b.getvalue())['rosparam_dump'], yaml.safe_load(b2.read()))
 
     def test_fullusage(self):
         import rosparam
