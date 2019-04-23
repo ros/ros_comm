@@ -1264,7 +1264,7 @@ class _TopicManager(object):
             rmap = self.subs
             impl_class = _SubscriberImpl
         else:
-            raise TypeError("invalid reg_type: %s"%s)
+            raise TypeError("invalid reg_type: %s"%reg_type)
         with self.lock:
             impl = rmap.get(resolved_name, None)            
             if not impl:
