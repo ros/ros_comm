@@ -512,7 +512,7 @@ class Subscriber(Topic):
     the messages are of a given type.
     """
     def __init__(self, name, data_class, callback=None, callback_args=None,
-                 queue_size=None, buff_size=DEFAULT_BUFF_SIZE, tcp_nodelay=False):
+                 queue_size=None, buff_size=DEFAULT_BUFF_SIZE, tcp_nodelay=True):
         """
         Constructor.
 
@@ -552,11 +552,8 @@ class Subscriber(Topic):
           buff_size to a non-default value affects all subscribers to
           this topic in this process.
         @type  buff_size: int
-        @param tcp_nodelay: if True, request TCP_NODELAY from
-          publisher.  Use of this option is not generally recommended
-          in most cases as it is better to rely on timestamps in
-          message data. Setting tcp_nodelay to True enables TCP_NODELAY
-          for all subscribers in the same python process.
+        @param tcp_nodelay: set the nodelay transport hint.
+          The default is False (same as roscpp).
         @type  tcp_nodelay: bool
         @raise ROSException: if parameters are invalid
         """
