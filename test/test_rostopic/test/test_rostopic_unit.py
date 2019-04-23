@@ -249,16 +249,16 @@ class TestRostopicUnit(unittest.TestCase):
         m = String('foo')
         self.assertEquals('data: "foo"', strify_message(m, field_filter=f))
         m = TVals(Time(123, 456), Duration(78, 90))
-        v = yaml.load(strify_message(m, field_filter=f))
+        v = yaml.safe_load(strify_message(m, field_filter=f))
         self.assertEquals({'t': {'secs': 123, 'nsecs': 456}, 'd': {'secs': 78, 'nsecs': 90}}, v)
         m = simple_v
-        v = yaml.load(strify_message(m, field_filter=f))
+        v = yaml.safe_load(strify_message(m, field_filter=f))
         self.assertEquals(simple_d, v)
         m = arrays_v
-        v = yaml.load(strify_message(m, field_filter=f))
+        v = yaml.safe_load(strify_message(m, field_filter=f))
         self.assertEquals(arrays_d, v)
         m = embed_v
-        v = yaml.load(strify_message(m, field_filter=f))
+        v = yaml.safe_load(strify_message(m, field_filter=f))
         self.assertEquals(embed_d, v)
 
         f = create_field_filter(echo_nostr=True, echo_noarr=False)
@@ -267,16 +267,16 @@ class TestRostopicUnit(unittest.TestCase):
         m = String('foo')
         self.assertEquals('', strify_message(m, field_filter=f))
         m = TVals(Time(123, 456), Duration(78, 90))
-        v = yaml.load(strify_message(m, field_filter=f))
+        v = yaml.safe_load(strify_message(m, field_filter=f))
         self.assertEquals({'t': {'secs': 123, 'nsecs': 456}, 'd': {'secs': 78, 'nsecs': 90}}, v)
         m = simple_v
-        v = yaml.load(strify_message(m, field_filter=f))
+        v = yaml.safe_load(strify_message(m, field_filter=f))
         self.assertEquals(simple_nostr, v)
         m = arrays_v
-        v = yaml.load(strify_message(m, field_filter=f))
+        v = yaml.safe_load(strify_message(m, field_filter=f))
         self.assertEquals(arrays_nostr, v)
         m = embed_v
-        v = yaml.load(strify_message(m, field_filter=f))
+        v = yaml.safe_load(strify_message(m, field_filter=f))
         self.assertEquals({'simple': simple_nostr, 'arrays': arrays_nostr}, v)
 
         f = create_field_filter(echo_nostr=False, echo_noarr=True)
@@ -285,16 +285,16 @@ class TestRostopicUnit(unittest.TestCase):
         m = String('foo')
         self.assertEquals('data: "foo"', strify_message(m, field_filter=f))
         m = TVals(Time(123, 456), Duration(78, 90))
-        v = yaml.load(strify_message(m, field_filter=f))
+        v = yaml.safe_load(strify_message(m, field_filter=f))
         self.assertEquals({'t': {'secs': 123, 'nsecs': 456}, 'd': {'secs': 78, 'nsecs': 90}}, v)
         m = simple_v
-        v = yaml.load(strify_message(m, field_filter=f))
+        v = yaml.safe_load(strify_message(m, field_filter=f))
         self.assertEquals(simple_d, v)
         m = arrays_v
-        v = yaml.load(strify_message(m, field_filter=f))
+        v = yaml.safe_load(strify_message(m, field_filter=f))
         self.assertEquals(None, v)
         m = embed_v
-        v = yaml.load(strify_message(m, field_filter=f))
+        v = yaml.safe_load(strify_message(m, field_filter=f))
         self.assertEquals({'simple': simple_d, 'arrays': None}, v)
 
         f = create_field_filter(echo_nostr=True, echo_noarr=True)
@@ -303,13 +303,13 @@ class TestRostopicUnit(unittest.TestCase):
         m = String('foo')
         self.assertEquals('', strify_message(m, field_filter=f))
         m = TVals(Time(123, 456), Duration(78, 90))
-        v = yaml.load(strify_message(m, field_filter=f))
+        v = yaml.safe_load(strify_message(m, field_filter=f))
         self.assertEquals({'t': {'secs': 123, 'nsecs': 456}, 'd': {'secs': 78, 'nsecs': 90}}, v)
         m = simple_v
-        v = yaml.load(strify_message(m, field_filter=f))
+        v = yaml.safe_load(strify_message(m, field_filter=f))
         self.assertEquals(simple_nostr, v)
         m = embed_v
-        v = yaml.load(strify_message(m, field_filter=f))
+        v = yaml.safe_load(strify_message(m, field_filter=f))
         self.assertEquals({'simple': simple_nostr, 'arrays': None}, v)
 
     def test_create_field_filter(self):

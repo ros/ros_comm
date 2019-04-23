@@ -99,6 +99,7 @@ def construct_yaml_binary(loader, node):
 # register the (de)serializers with pyyaml
 yaml.add_representer(Binary,represent_xml_binary)
 yaml.add_constructor(u'tag:yaml.org,2002:binary', construct_yaml_binary)
+yaml.SafeLoader.add_constructor(u'tag:yaml.org,2002:binary', construct_yaml_binary)
 
 def construct_angle_radians(loader, node):
     """
@@ -185,7 +186,7 @@ def load_str(str, filename, default_namespace=None, verbose=False):
     """
     paramlist = []
     default_namespace = default_namespace or get_ros_namespace()
-    for doc in yaml.load_all(str):
+    for doc in yaml.safe_load_all(str):
         if NS in doc:
             ns = ns_join(default_namespace, doc.get(NS, None))
             if verbose:
@@ -638,10 +639,14 @@ def yamlmain(argv=None):
 
 yaml.add_constructor(u'!radians', construct_angle_radians)
 yaml.add_constructor(u'!degrees', construct_angle_degrees)
+yaml.SafeLoader.add_constructor(u'!radians', construct_angle_radians)
+yaml.SafeLoader.add_constructor(u'!degrees', construct_angle_degrees)
 
 # allow both !degrees 180, !radians 2*pi
 pattern = re.compile(r'^deg\([^\)]*\)$')
 yaml.add_implicit_resolver(u'!degrees', pattern, first="deg(")
+yaml.SafeLoader.add_implicit_resolver(u'!degrees', pattern, first="deg(")
 pattern = re.compile(r'^rad\([^\)]*\)$')
 yaml.add_implicit_resolver(u'!radians', pattern, first="rad(")
+yaml.SafeLoader.add_implicit_resolver(u'!radians', pattern, first="rad(")
 

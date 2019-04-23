@@ -406,7 +406,7 @@ class Loader(object):
             if rosparam is None:
                 import rosparam
             try:
-                data = yaml.load(text)
+                data = yaml.safe_load(text)
                 # #3162: if there is no YAML, load() will return an
                 # empty string.  We want an empty dictionary instead
                 # for our representation of empty.

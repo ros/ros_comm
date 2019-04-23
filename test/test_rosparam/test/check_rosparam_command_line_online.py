@@ -120,7 +120,7 @@ class TestRosparamOnline(unittest.TestCase):
         # - dictionary
         output = Popen([cmd, 'get', "g1"], stdout=PIPE).communicate()[0]
         import yaml
-        d = yaml.load(output)
+        d = yaml.safe_load(output)
         self.assertEquals(d['float'], 10.0)
         self.assertEquals(d['int'], 10.0)
         self.assertEquals(d['string'], "g1-foo-value")

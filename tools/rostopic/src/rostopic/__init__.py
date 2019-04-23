@@ -1759,7 +1759,7 @@ def _rostopic_cmd_pub(argv):
     try:
         pub_args = []
         for arg in args[2:]:
-            pub_args.append(yaml.load(arg))
+            pub_args.append(yaml.safe_load(arg))
     except Exception as e:
         parser.error("Argument error: "+str(e))
 
@@ -1802,7 +1802,7 @@ def file_yaml_arg(filename):
         try:
             with open(filename, 'r') as f:
                 # load all documents
-                data = yaml.load_all(f)
+                data = yaml.safe_load_all(f)
                 for d in data:
                     yield [d]
         except yaml.YAMLError as e:
@@ -1980,7 +1980,7 @@ def stdin_yaml_arg():
 
             if arg.strip() == '---': # End of document
                 try:
-                    loaded = yaml.load(buff.rstrip())
+                    loaded = yaml.safe_load(buff.rstrip())
                 except Exception as e:
                     sys.stderr.write("Invalid YAML: %s\n"%str(e))
                 if loaded is not None:

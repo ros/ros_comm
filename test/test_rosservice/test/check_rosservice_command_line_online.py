@@ -122,7 +122,7 @@ class TestRosserviceOnline(unittest.TestCase):
             output = Popen([cmd, 'call', name, v], stdout=PIPE).communicate()[0]
             output = output.strip()
             self.assert_(output, output)
-            val = yaml.load(output)['header']
+            val = yaml.safe_load(output)['header']
             self.assertEquals('', val['frame_id'])
             self.assert_(val['seq'] >= 0)
             self.assertEquals(0, val['stamp']['secs'])
@@ -131,7 +131,7 @@ class TestRosserviceOnline(unittest.TestCase):
         # test with auto headers
         for v in ['{header: auto}', '{header: {stamp: now}}']:
             output = Popen([cmd, 'call', name, v], stdout=PIPE).communicate()[0]
-            val = yaml.load(output.strip())['header']
+            val = yaml.safe_load(output.strip())['header']
             self.assertEquals('', val['frame_id'])
             self.assert_(val['seq'] >= 0)
             self.assert_(val['stamp']['secs'] >= int(t))

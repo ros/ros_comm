@@ -101,7 +101,7 @@ def load_command_line_node_params(argv):
                 src, dst = [x.strip() for x in arg.split(rosgraph.names.REMAP)]
                 if src and dst:
                     if len(src) > 1 and src[0] == '_' and src[1] != '_':
-                        mappings[src[1:]] = yaml.load(dst)
+                        mappings[src[1:]] = yaml.safe_load(dst)
         return mappings
     except Exception as e:
         raise rospy.exceptions.ROSInitException("invalid command-line parameters: %s"%(str(e)))

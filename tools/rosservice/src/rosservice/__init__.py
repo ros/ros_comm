@@ -604,7 +604,7 @@ def _rosservice_cmd_call(argv):
         # convert empty args to YAML-empty strings
         if arg == '':
             arg = "''" 
-        service_args.append(yaml.load(arg))
+        service_args.append(yaml.safe_load(arg))
     if not service_args and has_service_args(service_name, service_class=service_class):
         if sys.stdin.isatty():
             parser.error("Please specify service arguments")
@@ -647,7 +647,7 @@ def _stdin_yaml_arg():
                 elif arg.strip() != '---':
                     buff = buff + arg
             try:
-                loaded = yaml.load(buff.rstrip())
+                loaded = yaml.safe_load(buff.rstrip())
             except Exception as e:
                 print("Invalid YAML: %s"%str(e), file=sys.stderr)
             if loaded is not None:
