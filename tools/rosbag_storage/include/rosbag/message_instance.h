@@ -93,7 +93,6 @@ public:
     //! Size of serialized message
     uint32_t size() const;
 
-private:
     MessageInstance(ConnectionInfo const* connection_info, IndexEntry const& index, Bag const& bag);
 
     ConnectionInfo const* connection_info_;

@@ -44,6 +44,7 @@ add_library(rosbag_storage
   src/stream.cpp
   src/view.cpp
   src/uncompressed_stream.cpp
+  src/random_access_bag.cpp
 )
 target_link_libraries(rosbag_storage ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${BZIP2_LIBRARIES} ${console_bridge_LIBRARIES} ${AES_ENCRYPT_LIBRARIES})
 if(WIN32)
@@ -90,5 +91,12 @@ if(NOT WIN32)
     if(TARGET test_aes_encryptor)
       target_link_libraries(test_aes_encryptor rosbag_storage ${BZIP2_LIBRARIES}  ${AES_ENCRYPT_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
     endif()
+    
+    catkin_add_gtest(test_random_access_bag test/test_random_access_bag.cpp
+      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test)
+    if(TARGET test_random_access_bag)
+      target_link_libraries(test_random_access_bag rosbag_storage ${catkin_LIBRARIES})
+    endif()
+    
   endif()
 endif()
