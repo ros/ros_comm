@@ -97,6 +97,7 @@ bool call(const std::string& service_name, Service& service)
  * \param service_name Name of the service to wait for.
  * \param timeout The amount of time to wait for, in milliseconds.  If timeout is -1,
  * waits until the node is shutdown
+ * \note rospy wait_for_service() has timeout in seconds.
  * \return true on success, false otherwise
  */
 ROSCPP_DECL bool waitForService(const std::string& service_name, int32_t timeout);
