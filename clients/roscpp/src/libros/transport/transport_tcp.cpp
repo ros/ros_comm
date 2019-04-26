@@ -138,6 +138,10 @@ bool TransportTCP::initializeSocket()
   {
     ROS_DEBUG("Adding tcp socket [%d] to pollset", sock_);
     poll_set_->addSocket(sock_, boost::bind(&TransportTCP::socketUpdate, this, _1), shared_from_this());
+#if defined(POLLRDHUP) // POLLRDHUP is not part of POSIX!
+    // This is needed to detect dead connections. #1704
+    poll_set_->addEvents(sock_, POLLRDHUP);
+#endif
   }
 
   if (!(flags_ & SYNCHRONOUS))
@@ -696,6 +700,9 @@ void TransportTCP::socketUpdate(int events)
 
   if((events & POLLERR) ||
      (events & POLLHUP) ||
+#if defined(POLLRDHUP) // POLLRDHUP is not part of POSIX!
+     (events & POLLRDHUP) ||
+#endif
      (events & POLLNVAL))
   {
     uint32_t error = -1;
