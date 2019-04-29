@@ -64,7 +64,7 @@ public:
 
   int getSum() {
     int s = 0;
-    for (int i = 0; i < numberView->size(); ++i) {
+    for (uint64_t i = 0; i < numberView->size(); ++i) {
       s += numberView->at<std_msgs::Int32>(i)->data;
     }
     return s;

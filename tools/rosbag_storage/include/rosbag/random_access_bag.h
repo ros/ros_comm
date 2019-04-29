@@ -58,7 +58,7 @@ public:
 
   virtual ~RandomAccessBag();
 
-  template <typename T> boost::shared_ptr<T> at(int position) {
+  template <typename T> boost::shared_ptr<T> at(uint64_t position) {
     assert(position >= 0 and position < size());
     return instantiate<T>(msgPtr.at(position));
   }
