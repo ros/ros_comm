@@ -302,9 +302,7 @@ def play_cmd(argv):
 
 def filter_cmd(argv):
     def expr_eval(expr):
-        def eval_fn(topic, m, t):
-            return eval(expr)
-        return eval_fn
+        return eval("lambda topic, m, t: %s" % expr)
 
     parser = optparse.OptionParser(usage="""rosbag filter [options] INBAG OUTBAG EXPRESSION
 
