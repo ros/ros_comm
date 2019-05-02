@@ -51,7 +51,6 @@ PRIV_NAME = '~'
 REMAP = ":="
 ANYTYPE = '*'
 
-
 if sys.hexversion > 0x03000000: #Python3
     def isstring(s):
         return isinstance(s, str) #Python 3.x
