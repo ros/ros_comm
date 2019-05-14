@@ -1602,7 +1602,7 @@ def _resource_name_package(name):
         return None
     return name[:name.find('/')]
 
-def create_publisher(topic_name, topic_type, latch):
+def create_publisher(topic_name, topic_type, latch, disable_rostime=True):
     """
     Create rospy.Publisher instance from the string topic name and
     type. This is a powerful method as it allows creation of
@@ -1623,7 +1623,7 @@ def create_publisher(topic_name, topic_type, latch):
         pkg = _resource_name_package(topic_type)
         raise ROSTopicException("invalid message type: %s.\nIf this is a valid message type, perhaps you need to type 'rosmake %s'"%(topic_type, pkg))
     # disable /rosout and /rostime as this causes blips in the pubsub network due to rostopic pub often exiting quickly
-    rospy.init_node('rostopic', anonymous=True, disable_rosout=True, disable_rostime=True)
+    rospy.init_node('rostopic', anonymous=True, disable_rosout=True, disable_rostime=disable_rostime)
     pub = rospy.Publisher(topic_name, msg_class, latch=latch, queue_size=100)
     return pub, msg_class
 
@@ -1746,6 +1746,8 @@ def _rostopic_cmd_pub(argv):
                       help="enable latching for -f, -r and piped input.  This latches the first message.")
     parser.add_option("-s", '--substitute-keywords', dest="substitute_keywords", default=False, action="store_true",
                       help="When publishing with a rate, performs keyword ('now' or 'auto') substitution for each message")
+    parser.add_option('--use-rostime', dest="use_rostime", default=False, action="store_true",
+                      help="use rostime for time stamps, else walltime is used")
     #parser.add_option("-p", '--param', dest="parameter", metavar='/PARAM', default=None,
     #                  help="read args from ROS parameter (Bagy format)")
     
@@ -1789,7 +1791,7 @@ def _rostopic_cmd_pub(argv):
 
     # if no rate, or explicit latch, we latch
     latch = (rate == None) or options.latch
-    pub, msg_class = create_publisher(topic_name, topic_type, latch)
+    pub, msg_class = create_publisher(topic_name, topic_type, latch, disable_rostime=not options.use_rostime)
 
     if 0 and options.parameter:
         param_name = rosgraph.names.script_resolve_name('rostopic', options.parameter)
