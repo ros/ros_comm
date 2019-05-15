@@ -1612,6 +1612,7 @@ def create_publisher(topic_name, topic_type, latch, disable_rostime=True):
     :param topic_name: name of topic, ``str``
     :param topic_type: name of topic type, ``str``
     :param latch: latching topic, ``bool``
+    :param latch: disbale_rostime: whether to disable rostime (use walltime instead), ``bool``
     :returns: topic :class:`rospy.Publisher`, :class:`Message` class
     """
     topic_name = rosgraph.names.script_resolve_name('rostopic', topic_name)
