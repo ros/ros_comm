@@ -119,9 +119,6 @@ public:
     /*! Set the horizon that the clock will run to */
     void setHorizon(const ros::Time& horizon);
 
-    /*! Set the horizon that the clock will run to */
-    void setWCHorizon(const ros::WallTime& horizon);
-
     /*! Set the current time */
     void setTime(const ros::Time& time);
 
@@ -132,7 +129,7 @@ public:
      *
      * If horizon has been reached this function returns immediately
      */
-    void runClock(const ros::WallDuration& duration);
+    void runClock(const ros::WallDuration& duration, const ros::WallTime& wc_horizon);
 
     //! Sleep as necessary, but don't let the click run 
     void runStalledClock(const ros::WallDuration& duration);
@@ -140,7 +137,6 @@ public:
     //! Step the clock to the horizon
     void stepClock();
 
-    bool horizonReached();
 
 private:
     bool do_publish_;
@@ -155,7 +151,6 @@ private:
     
     ros::WallTime next_pub_;
 
-    ros::WallTime wc_horizon_;
     ros::Time horizon_;
     ros::Time current_;
 };
