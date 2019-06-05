@@ -25,8 +25,7 @@ catkin_package(
 
 add_library(rosbag
   src/player.cpp
-  src/recorder.cpp
-  src/time_translator.cpp)
+  src/recorder.cpp)
 
 target_link_libraries(rosbag ${catkin_LIBRARIES} ${Boost_LIBRARIES}
   ${BZIP2_LIBRARIES}
