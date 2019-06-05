@@ -525,6 +525,33 @@ void Player::doPublish(MessageInstance const& m) {
                     return;
                 }
                 break;
+            case '+':
+                {
+                    double timeScale = time_publisher_.getTimeScale();
+                    if (timeScale >= 1.0)
+                        timeScale += 1.0;
+                    else
+                        timeScale += 0.1;
+                    if (timeScale > 10.0)
+                        timeScale = 10.0;
+                    printf("\nTime scale set to: %0.2f\n", timeScale);
+                    time_publisher_.setTimeScale(timeScale);
+                }
+                break;
+            case '-':
+                {
+                    double timeScale = time_publisher_.getTimeScale();
+                    if (timeScale > 1.0)
+                        timeScale -= 1.0;
+                    else
+                        timeScale -= 0.1;
+                    if (timeScale < 0.1)
+                        timeScale = 0.1;
+                    printf("\nTime scale set to: %0.2f\n", timeScale);
+                    time_publisher_.setTimeScale(timeScale);
+                }
+                break;
+
             case 't':
                 pause_for_topics_ = !pause_for_topics_;
                 break;
