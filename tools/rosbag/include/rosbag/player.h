@@ -55,7 +55,6 @@
 
 #include <topic_tools/shape_shifter.h>
 
-#include "rosbag/time_translator.h"
 #include "rosbag/macros.h"
 
 namespace rosbag {
@@ -116,9 +115,6 @@ public:
     
     void setTimeScale(double time_scale);
 
-    /*! Set the horizon that the clock will run to */
-    void setHorizon(const ros::Time& horizon);
-
     /*! Set the current time */
     void setTime(const ros::Time& time);
 
@@ -129,14 +125,13 @@ public:
      *
      * If horizon has been reached this function returns immediately
      */
-    void runClock(const ros::WallDuration& duration, const ros::WallTime& wc_horizon);
+    void runClock(const ros::WallDuration& duration, const ros::Time& horizon);
 
     //! Sleep as necessary, but don't let the click run 
     void runStalledClock(const ros::WallDuration& duration);
 
     //! Step the clock to the horizon
-    void stepClock();
-
+    void stepClock(const ros::Time& horizon);
 
 private:
     bool do_publish_;
@@ -151,8 +146,11 @@ private:
     
     ros::WallTime next_pub_;
 
-    ros::Time horizon_;
     ros::Time current_;
+
+    /*! Convenience functions for converting durations between wall and ros time. */
+    ros::Duration toRosDuration(const ros::WallDuration& duration);
+    ros::WallDuration toWallDuration(const ros::Duration& duration);
 };
 
 
@@ -186,7 +184,7 @@ private:
 
     bool pauseCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
 
-    void processPause(const bool paused, ros::WallTime &horizon);
+    void processPause(const bool paused);
 
     void waitForSubscribers() const;
 
@@ -227,7 +225,6 @@ private:
 #endif
     int     maxfd_;
 
-    TimeTranslator time_translator_;
     TimePublisher time_publisher_;
 
     ros::Time start_time_;
