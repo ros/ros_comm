@@ -34,6 +34,9 @@
 #include <test_roscpp/TestStringString.h>
 
 #include <stdlib.h>
+#ifdef _WIN32
+# include <windows.h>
+#endif
 
 bool srvCallback(test_roscpp::TestStringString::Request &,
                  test_roscpp::TestStringString::Response &res)
