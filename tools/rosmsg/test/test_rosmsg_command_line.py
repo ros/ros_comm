@@ -53,7 +53,7 @@ class TestRosmsg(unittest.TestCase):
         sub = ['show', 'md5', 'package', 'packages', 'list']
         
         for cmd in ['rosmsg', 'rossrv']:
-            glob_cmd=[os.path.join(_SCRIPT_FOLDER, cmd)]
+            glob_cmd=[sys.executable, os.path.join(_SCRIPT_FOLDER, cmd)]
             output = Popen(glob_cmd, stdout=PIPE, env=self.new_environ).communicate()[0].decode()
             self.assert_('Commands' in output)
             output = Popen(glob_cmd+['-h'], stdout=PIPE, env=self.new_environ).communicate()[0].decode()
@@ -92,14 +92,14 @@ class TestRosmsg(unittest.TestCase):
 
     def test_cmd_list(self):
         # - multi-line
-        output1 = Popen([os.path.join(_SCRIPT_FOLDER,'rosmsg'), 'list'], stdout=PIPE).communicate()[0].decode()
+        output1 = Popen([sys.executable, os.path.join(_SCRIPT_FOLDER,'rosmsg'), 'list'], stdout=PIPE).communicate()[0].decode()
         l1 = [x.strip() for x in output1.split('\n') if x.strip()]
         for p in ['std_msgs/String', 'test_rosmaster/Floats']:
             self.assert_(p in l1)
         for p in ['std_srvs/Empty', 'roscpp/Empty']:
             self.assert_(p not in l1)
 
-        output1 = Popen([os.path.join(_SCRIPT_FOLDER,'rossrv'), 'list'], stdout=PIPE).communicate()[0].decode()
+        output1 = Popen([sys.executable, os.path.join(_SCRIPT_FOLDER,'rossrv'), 'list'], stdout=PIPE).communicate()[0].decode()
         l1 = [x.strip() for x in output1.split('\n') if x.strip()]
         for p in ['std_srvs/Empty', 'roscpp/Empty']:
             self.assert_(p in l1)
