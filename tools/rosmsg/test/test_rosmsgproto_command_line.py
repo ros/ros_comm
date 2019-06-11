@@ -60,7 +60,7 @@ class RosMsgProtoCommandlineTestMsg(unittest.TestCase):
         # proto depends on python 2.7 having OrderedDict
         if _NO_DICT: raise SkipTest("Test skipped because Python version too low")
         self.new_environ = os.environ
-        self.new_environ["PYTHONPATH"] = os.path.join(os.getcwd(), "src")+':'+os.environ['PYTHONPATH']
+        self.new_environ["PYTHONPATH"] = os.path.join(os.getcwd(), "src")+os.linesep+os.environ['PYTHONPATH']
     
     def testFail(self):
         cmd = copy.copy(ROSMSGPROTO_FN)

@@ -57,7 +57,7 @@ class TestRosgraphOffline(unittest.TestCase):
         env['ROS_MASTER_URI'] = 'http://localhost:11312'
         kwds = { 'env': env, 'stdout': PIPE, 'stderr': PIPE}
 
-        msg = "ERROR: Unable to communicate with master!\n"
+        msg = "ERROR: Unable to communicate with master!" + os.linesep
 
         output = Popen([cmd], **kwds).communicate()
         self.assertEquals(msg, output[1].decode())
