@@ -228,13 +228,39 @@ CallbackQueue::CallOneResult CallbackQueue::callOne(ros::WallDuration timeout)
       return Disabled;
     }
 
-    ros::SteadyTime start_time(ros::SteadyTime::now());
+    boost::chrono::steady_clock::time_point wait_until =
+        boost::chrono::steady_clock::now() + boost::chrono::nanoseconds(timeout.toNSec());
+    while (!cb_info.callback) {
+      D_CallbackInfo::iterator it = callbacks_.begin();
+      for (; it != callbacks_.end();)
+      {
+        CallbackInfo& info = *it;
 
-    if (callbacks_.empty())
-    {
+        if (info.marked_for_removal)
+        {
+          it = callbacks_.erase(it);
+          continue;
+        }
+
+        if (info.callback->ready())
+        {
+          cb_info = info;
+          it = callbacks_.erase(it);
+          break;
+        }
+
+        ++it;
+      }
+
+      // Found a ready callback?
+      if (cb_info.callback) {
+        break;
+      }
+
+      boost::cv_status wait_status = boost::cv_status::no_timeout;
       if (!timeout.isZero())
       {
-        condition_.wait_for(lock, boost::chrono::nanoseconds(timeout.toNSec()));
+        wait_status = condition_.wait_until(lock, wait_until);
       }
 
       if (callbacks_.empty())
@@ -246,43 +272,11 @@ CallbackQueue::CallOneResult CallbackQueue::callOne(ros::WallDuration timeout)
       {
         return Disabled;
       }
-    }
 
-    D_CallbackInfo::iterator it = callbacks_.begin();
-    for (; it != callbacks_.end();)
-    {
-      CallbackInfo& info = *it;
-
-      if (info.marked_for_removal)
+      if (wait_status == boost::cv_status::timeout)
       {
-        it = callbacks_.erase(it);
-        continue;
+        return TryAgain;
       }
-
-      if (info.callback->ready())
-      {
-        cb_info = info;
-        it = callbacks_.erase(it);
-        break;
-      }
-
-      ++it;
-    }
-
-    if (!cb_info.callback)
-    {
-      // do not spend more than `timeout` seconds in the callback; we already waited for some time when waiting for
-      // nonempty queue
-      ros::SteadyTime now(ros::SteadyTime::now());
-      ros::WallDuration time_spent = now - start_time;
-      ros::WallDuration time_to_wait = timeout - time_spent;
-
-      if (time_to_wait.toNSec() > 0)
-      {
-        condition_.wait_for(lock, boost::chrono::nanoseconds(time_to_wait.toNSec()));
-      }
-
-      return TryAgain;
     }
 
     ++calling_;
