@@ -157,7 +157,7 @@ bool TransportUDP::connect(const std::string& host, int port, int connection_id)
     return false;
   }
 
-  sockaddr_in sin;
+  sockaddr_in sin = {};
   sin.sin_family = AF_INET;
   if (inet_addr(host.c_str()) == INADDR_NONE)
   {
