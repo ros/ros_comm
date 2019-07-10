@@ -200,9 +200,7 @@ bool ServiceManager::unregisterService(const std::string& service)
            network::getHost().c_str(), connection_manager_->getTCPPort());
   args[2] = string(uri_buf);
 
-  master::execute("unregisterService", args, result, payload, false);
-
-  return true;
+  return master::execute("unregisterService", args, result, payload, false);
 }
 
 bool ServiceManager::isServiceAdvertised(const string& serv_name)
