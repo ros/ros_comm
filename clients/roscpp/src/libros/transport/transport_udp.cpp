@@ -62,6 +62,8 @@ TransportUDP::TransportUDP(PollSet* poll_set, int flags, int max_datagram_size)
 , expecting_read_(false)
 , expecting_write_(false)
 , is_server_(false)
+, server_address_{}
+, local_address_{}
 , server_port_(-1)
 , local_port_(-1)
 , poll_set_(poll_set)
