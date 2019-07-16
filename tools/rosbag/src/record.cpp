@@ -126,7 +126,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
         ROS_WARN("Use of \"--split <MAX_SIZE>\" has been deprecated.  Please use --split --size <MAX_SIZE> or --split --duration <MAX_DURATION>");
         if (S < 0)
           throw ros::Exception("Split size must be 0 or positive");
-        opts.max_size = 1048576 * S;
+        opts.max_size = 1048576 * static_cast<uint64_t>(S);
       }
     }
     if(vm.count("max-splits"))
