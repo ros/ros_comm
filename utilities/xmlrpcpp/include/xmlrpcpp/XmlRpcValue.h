@@ -42,7 +42,7 @@ namespace XmlRpc {
     typedef std::vector<XmlRpcValue> ValueArray;
     typedef std::map<std::string, XmlRpcValue> ValueStruct;
     typedef ValueStruct::iterator iterator;
-
+    typedef ValueStruct::const_iterator const_iterator;
 
     //! Constructors
     XmlRpcValue() : _type(TypeInvalid) { _value.asBinary = 0; }
@@ -97,11 +97,16 @@ namespace XmlRpc {
     XmlRpcValue const& operator[](int i) const { assertArray(i+1); return _value.asArray->at(i); }
     XmlRpcValue& operator[](int i)             { assertArray(i+1); return _value.asArray->at(i); }
 
+    XmlRpcValue& operator[](std::string const& k) const { assertStruct(); return (*_value.asStruct)[k]; }
     XmlRpcValue& operator[](std::string const& k) { assertStruct(); return (*_value.asStruct)[k]; }
+    XmlRpcValue& operator[](const char* k) const { assertStruct(); std::string s(k); return (*_value.asStruct)[s]; }
     XmlRpcValue& operator[](const char* k) { assertStruct(); std::string s(k); return (*_value.asStruct)[s]; }
 
     iterator begin() {assertStruct(); return (*_value.asStruct).begin(); }
     iterator end() {assertStruct(); return (*_value.asStruct).end(); }
+
+    const_iterator begin() const {assertStruct(); return (*_value.asStruct).begin(); }
+    const_iterator end() const {assertStruct(); return (*_value.asStruct).end(); }
 
     // Accessors
     //! Return true if the value has been set to something.
@@ -144,6 +149,7 @@ namespace XmlRpc {
     void assertTypeOrInvalid(Type t);
     void assertArray(int size) const;
     void assertArray(int size);
+    void assertStruct() const;
     void assertStruct();
 
     // XML decoding
