@@ -42,7 +42,7 @@ namespace XmlRpc {
     typedef std::vector<XmlRpcValue> ValueArray;
     typedef std::map<std::string, XmlRpcValue> ValueStruct;
     typedef ValueStruct::iterator iterator;
-
+    typedef ValueStruct::const_iterator const_iterator;
 
     //! Constructors
     XmlRpcValue() : _type(TypeInvalid) { _value.asBinary = 0; }
@@ -105,8 +105,8 @@ namespace XmlRpc {
     iterator begin() {assertStruct(); return (*_value.asStruct).begin(); }
     iterator end() {assertStruct(); return (*_value.asStruct).end(); }
 
-    iterator begin() {assertStruct(); return (*_value.asStruct).begin(); }
-    iterator end() {assertStruct(); return (*_value.asStruct).end(); }
+    const_iterator begin() const {assertStruct(); return (*_value.asStruct).begin(); }
+    const_iterator end() const {assertStruct(); return (*_value.asStruct).end(); }
 
     // Accessors
     //! Return true if the value has been set to something.
