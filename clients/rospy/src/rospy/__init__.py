@@ -94,7 +94,7 @@ __all__ = [
     'INFO',
     'WARN',
     'ERROR',
-    'FATAL'
+    'FATAL',
     'is_shutdown',
     'signal_shutdown',
     'get_node_uri',
