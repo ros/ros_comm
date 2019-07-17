@@ -200,7 +200,7 @@ public:
       current_file_size_ += written;
       if (fflush(handle_))
       {
-        std::cerr << "Error flushing rosout log file '" << log_file_name_.c_str() << "': " << strerror(ferror(handle_));
+        std::cerr << "Error flushing rosout log file '" << log_file_name_.c_str() << "': " << strerror(errno);
       }
 
       // check for rolling
@@ -209,7 +209,7 @@ public:
         std::cout << "rosout log file " << log_file_name_.c_str() << " reached max size, rotating log files" << std::endl;
         if (fclose(handle_))
         {
-          std::cerr << "Error closing rosout log file '" << log_file_name_.c_str() << "': " << strerror(ferror(handle_)) << std::endl;
+          std::cerr << "Error closing rosout log file '" << log_file_name_.c_str() << "': " << strerror(errno) << std::endl;
         }
         if (current_backup_index_ == max_backup_index_)
         {
