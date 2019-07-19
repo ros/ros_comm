@@ -276,7 +276,7 @@ bool TransportTCP::connect(const std::string& host, int port)
 
     bool found = false;
     struct addrinfo* it = addr;
-    char namebuf[128] = {0};
+    char namebuf[128] = {};
     for (; it; it = it->ai_next)
     {
       if (!s_use_ipv6_ && it->ai_family == AF_INET)
