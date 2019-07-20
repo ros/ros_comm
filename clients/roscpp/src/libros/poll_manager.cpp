@@ -27,6 +27,7 @@
 
 #include "ros/poll_manager.h"
 #include "ros/common.h"
+#include <tracetools/tracetools.h>
 
 #include <signal.h>
 
@@ -71,6 +72,8 @@ void PollManager::shutdown()
 
 void PollManager::threadFunc()
 {
+  ros::trace::task_init("PollManager");
+
   disableAllSignalsInThisThread();
 
   while (!shutting_down_)

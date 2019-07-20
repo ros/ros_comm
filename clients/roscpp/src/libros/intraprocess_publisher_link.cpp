@@ -41,6 +41,7 @@
 #include "ros/this_node.h"
 #include "ros/connection_manager.h"
 #include "ros/file_log.h"
+#include <tracetools/tracetools.h>
 
 #include <boost/bind.hpp>
 
@@ -118,6 +119,7 @@ void IntraProcessPublisherLink::handleMessage(const SerializedMessage& m, bool s
 
   if (parent)
   {
+    ros::trace::publisher_link_handle_message(this, m.message_start);
     stats_.drops_ += parent->handleMessage(m, ser, nocopy, header_.getValues(), shared_from_this());
   }
 }

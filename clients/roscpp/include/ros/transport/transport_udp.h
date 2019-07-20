@@ -121,6 +121,7 @@ public:
 
   int getMaxDatagramSize() const {return max_datagram_size_;}
 
+  virtual const std::string getAddress(bool local) const;
 private:
   /**
    * \brief Initializes the assigned socket -- sets it to non-blocking and enables reading

@@ -40,10 +40,10 @@
 #include "ros/init.h"
 #include "ros/file_log.h"
 #include "ros/subscribe_options.h"
-
 #include "xmlrpcpp/XmlRpc.h"
 
 #include <ros/console.h>
+#include <tracetools/tracetools.h>
 
 using namespace XmlRpc; // A battle to be fought later
 using namespace std; // sigh
@@ -744,6 +744,7 @@ void TopicManager::publish(const std::string& topic, const boost::function<Seria
       m.message_start = m2.message_start;
     }
 
+    ros::trace::publisher_message_queued(topic, m.message_start);
     p->publish(m);
 
     // If we're not doing a serialized publish we don't need to signal the pollset.  The write()

@@ -131,6 +131,10 @@ public:
    */
   virtual void parseHeader(const Header& header) { (void)header; }
 
+
+  /** Returns local or remote address in the protocol-specific format. */
+  virtual const std::string getAddress(bool local) const = 0;
+
 protected:
   Callback disconnect_cb_;
   Callback read_cb_;
