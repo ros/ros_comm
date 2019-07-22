@@ -710,9 +710,9 @@ std::string TransportUDP::getClientURI()
 
   sockaddr_in *sin = (sockaddr_in *)&sas;
 
-  char namebuf[128];
+  char namebuf[128] = {};
   int port = ntohs(sin->sin_port);
-  strcpy(namebuf, inet_ntoa(sin->sin_addr));
+  strncpy(namebuf, inet_ntoa(sin->sin_addr), sizeof(namebuf)-1);
 
   std::string ip = namebuf;
   std::stringstream uri;

@@ -276,7 +276,7 @@ bool TransportTCP::connect(const std::string& host, int port)
 
     bool found = false;
     struct addrinfo* it = addr;
-    char namebuf[128];
+    char namebuf[128] = {};
     for (; it; it = it->ai_next)
     {
       if (!s_use_ipv6_ && it->ai_family == AF_INET)
@@ -288,7 +288,7 @@ bool TransportTCP::connect(const std::string& host, int port)
         address->sin_family = it->ai_family;
         address->sin_port = htons(port);
 	
-        strcpy(namebuf, inet_ntoa(address->sin_addr));
+        strncpy(namebuf, inet_ntoa(address->sin_addr), sizeof(namebuf)-1);
         found = true;
         break;
       }
@@ -734,14 +734,14 @@ std::string TransportTCP::getClientURI()
   sockaddr_in *sin = (sockaddr_in *)&sas;
   sockaddr_in6 *sin6 = (sockaddr_in6 *)&sas;
 
-  char namebuf[128];
+  char namebuf[128] = {};
   int port;
 
   switch (sas.ss_family)
   {
     case AF_INET:
       port = ntohs(sin->sin_port);
-      strcpy(namebuf, inet_ntoa(sin->sin_addr));
+      strncpy(namebuf, inet_ntoa(sin->sin_addr), sizeof(namebuf)-1);
       break;
     case AF_INET6:
       port = ntohs(sin6->sin6_port);
