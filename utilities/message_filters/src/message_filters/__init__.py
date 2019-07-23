@@ -279,7 +279,7 @@ class ApproximateTimeSynchronizer(TimeSynchronizer):
                 return
             topic_stamps = sorted(topic_stamps, key=lambda x: x[1])
             stamps.append(topic_stamps)
-        for vv in itertools.product(*[zip(*s)[0] for s in stamps]):
+        for vv in itertools.product(*[next(iter(zip(*s))) for s in stamps]):
             vv = list(vv)
             # insert the new message
             if my_queue_index is not None:
