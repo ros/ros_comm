@@ -42,20 +42,25 @@ import roslaunch
 import roslaunch.rlutil
 import rosunit
 
-def check_roslaunch_file(roslaunch_file, use_test_depends=False):
+def check_roslaunch_file(roslaunch_file, use_test_depends=False, ignore_default_args=False):
     print("checking", roslaunch_file)
     error_msg = roslaunch.rlutil.check_roslaunch(roslaunch_file, use_test_depends=use_test_depends)
     # error message has to be XML attr safe
     if error_msg:
+        # #953 option to implement ignore default arg errors
+        if ignore_default_args:
+            import re
+            if re.compile('requires the \'.*\' arg to be set').search(error_msg):
+                return None
         return "[%s]:\n\t%s"%(roslaunch_file,error_msg)
 
-def check_roslaunch_dir(roslaunch_dir, use_test_depends=False):
+def check_roslaunch_dir(roslaunch_dir, use_test_depends=False, ignore_default_args=False):
     error_msgs = []
     for f in os.listdir(roslaunch_dir):
         if f.endswith('.launch'):
             roslaunch_file = os.path.join(roslaunch_dir, f)
             if os.path.isfile(roslaunch_file):
-                error_msgs.append(check_roslaunch_file(roslaunch_file, use_test_depends=use_test_depends))
+                error_msgs.append(check_roslaunch_file(roslaunch_file, use_test_depends=use_test_depends, ignore_default_args=ignore_default_args))
     # error message has to be XML attr safe
     return '\n'.join([e for e in error_msgs if e])
 
@@ -70,6 +75,9 @@ if __name__ == '__main__':
     parser.add_option("-t", "--use-test-depends",
                       action="store_true", dest="test_depends", default=False,
                       help="Assuming packages listed in test_depends are also installed")
+    parser.add_option("--ignore-default-args",
+                      action="store_true", dest="ignore_default_args", default=False,
+                      help="Ignore check for default value of <arg> parameters")
 
     options, args = parser.parse_args()
     if not args:
@@ -87,10 +95,10 @@ if __name__ == '__main__':
     pkg_dir = r.get_path(pkg)
 
     if os.path.isfile(roslaunch_path):
-        error_msg = check_roslaunch_file(roslaunch_path, use_test_depends=options.test_depends)
+        error_msg = check_roslaunch_file(roslaunch_path, use_test_depends=options.test_depends, ignore_default_args=options.ignore_default_args)
     else:
         print("checking *.launch in directory", roslaunch_path)
-        error_msg = check_roslaunch_dir(roslaunch_path, use_test_depends=options.test_depends)
+        error_msg = check_roslaunch_dir(roslaunch_path, use_test_depends=options.test_depends, ignore_default_args=options.ignore_default_args)
     relpath = os.path.abspath(roslaunch_path)[len(os.path.abspath(pkg_dir))+1:]
     outname = relpath.replace('.', '_').replace(os.sep, '_')
     if outname == '_':
