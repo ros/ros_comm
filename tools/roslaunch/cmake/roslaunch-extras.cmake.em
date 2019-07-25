@@ -20,12 +20,14 @@ set(roslaunch_check_script ${roslaunch_DIR}/../scripts/roslaunch-check)
 # :param USE_TEST_DEPENDENCIES: beside run dependencies also consider test
 #   dependencies when checking if all dependencies of a launch file are present
 # :type USE_TEST_DEPENDENCIES: option
+# :param IGNORE_DEFAULT_ARGS: ignore the errors for default values not being set in <arg> tags
+# :type IGNORE_DEFAULT_ARGS: option
 # :param ARGV: arbitrary arguments in the form 'key=value'
 #   which will be set as environment variables
 # :type ARGV: string
 #
 function(roslaunch_add_file_check path)
-  cmake_parse_arguments(_roslaunch "USE_TEST_DEPENDENCIES" "" "DEPENDENCIES" ${ARGN})
+  cmake_parse_arguments(_roslaunch "USE_TEST_DEPENDENCIES;IGNORE_DEFAULT_ARGS" "" "DEPENDENCIES" ${ARGN})
   if(IS_ABSOLUTE ${path})
     set(abspath ${path})
   else()
@@ -56,9 +58,13 @@ function(roslaunch_add_file_check path)
   set(output_file_name "roslaunch-check_${testname}.xml")
   string(REPLACE ";" " " _roslaunch_UNPARSED_ARGUMENTS "${_roslaunch_UNPARSED_ARGUMENTS}")
   set(use_test_dependencies "")
+  set(ignore_default_args "")
   if(${_roslaunch_USE_TEST_DEPENDENCIES})
     set(use_test_dependencies " -t")
   endif()
-  set(cmd ${cmd} "${roslaunch_check_script} -o '${output_path}/${output_file_name}'${use_test_dependencies} '${abspath}' ${_roslaunch_UNPARSED_ARGUMENTS}")
+  if(${_roslaunch_IGNORE_DEFAULT_ARGS})
+    set(ignore_default_args " -i")
+  endif()
+  set(cmd ${cmd} "${roslaunch_check_script} -o '${output_path}/${output_file_name}'${use_test_dependencies}${ignore_default_args} '${abspath}' ${_roslaunch_UNPARSED_ARGUMENTS}")
   catkin_run_tests_target("roslaunch-check" ${testname} "${output_file_name}" COMMAND ${cmd} DEPENDENCIES ${_roslaunch_DEPENDENCIES})
 endfunction()
