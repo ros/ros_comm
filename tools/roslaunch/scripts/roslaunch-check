@@ -75,7 +75,7 @@ if __name__ == '__main__':
     parser.add_option("-t", "--use-test-depends",
                       action="store_true", dest="test_depends", default=False,
                       help="Assuming packages listed in test_depends are also installed")
-    parser.add_option("--ignore-default-args",
+    parser.add_option("-i", "--ignore-default-args",
                       action="store_true", dest="ignore_default_args", default=False,
                       help="Ignore check for default value of <arg> parameters")
 
