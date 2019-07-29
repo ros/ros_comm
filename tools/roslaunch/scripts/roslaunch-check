@@ -44,14 +44,9 @@ import rosunit
 
 def check_roslaunch_file(roslaunch_file, use_test_depends=False, ignore_default_args=False):
     print("checking", roslaunch_file)
-    error_msg = roslaunch.rlutil.check_roslaunch(roslaunch_file, use_test_depends=use_test_depends)
+    error_msg = roslaunch.rlutil.check_roslaunch(roslaunch_file, use_test_depends=use_test_depends, ignore_default_args=ignore_default_args)
     # error message has to be XML attr safe
     if error_msg:
-        # #953 option to implement ignore default arg errors
-        if ignore_default_args:
-            import re
-            if re.compile('requires the \'.*\' arg to be set').search(error_msg):
-                return None
         return "[%s]:\n\t%s"%(roslaunch_file,error_msg)
 
 def check_roslaunch_dir(roslaunch_dir, use_test_depends=False, ignore_default_args=False):
