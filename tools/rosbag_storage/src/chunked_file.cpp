@@ -100,7 +100,9 @@ void ChunkedFile::open(string const& filename, string const& mode) {
                 file_ = fopen(filename.c_str(), "w+b");
             #endif
         else {
-            fclose(file_);
+            if (fclose(file_) != 0)
+              throw BagIOException((format("Error closing file: %1%") % filename.c_str()).str());
+
             // open existing file for update
             #if defined(_MSC_VER) && (_MSC_VER >= 1400 )
                 fopen_s( &file_, filename.c_str(), "r+b" );
