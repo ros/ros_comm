@@ -332,8 +332,11 @@ def roslaunch_deps(files, verbose=False, use_test_depends=False, ignore_default_
         try:
             rl_file_deps(file_deps, launch_file, verbose)
         except RoslaunchDepsException as e:
-            import re
-            if not re.compile(r'No value for arg').search(str(e)):
+            if ignore_default_args:
+                import re
+                if not re.compile(r'No value for arg').search(str(e)):
+                    raise RoslaunchDepsException(str(e))
+            else:
                 raise RoslaunchDepsException(str(e))
 
     calculate_missing(base_pkg, missing, file_deps, use_test_depends=use_test_depends)
