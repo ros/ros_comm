@@ -38,7 +38,10 @@ in rosgraph.roslogger.
 
 import logging
 import os
-from StringIO import StringIO
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 import sys
 
 from nose.tools import assert_regexp_matches
