@@ -86,21 +86,21 @@ class RoslaunchDeps(object):
 
 def _get_arg_value(tag, context):
     name = tag.attributes['name'].value
-    if tag.attributes.has_key('value'):
+    if 'value' in tag.attributes.keys():
         return resolve_args(tag.attributes['value'].value, context)
     elif name in context['arg']:
         return context['arg'][name]
-    elif tag.attributes.has_key('default'):
+    elif 'default' in tag.attributes.keys():
         return resolve_args(tag.attributes['default'].value, context)
     else:
         raise RoslaunchDepsException("No value for arg [%s]"%(name))
 
 def _check_ifunless(tag, context):
-    if tag.attributes.has_key('if'):
+    if 'if' in tag.attributes.keys():
         val = resolve_args(tag.attributes['if'].value, context)
         if not convert_value(val, 'bool'):
             return False
-    elif tag.attributes.has_key('unless'):
+    elif 'unless' in tag.attributes.keys():
         val = resolve_args(tag.attributes['unless'].value, context)
         if convert_value(val, 'bool'):
             return False

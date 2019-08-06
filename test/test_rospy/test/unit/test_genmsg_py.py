@@ -44,7 +44,13 @@ import random
 import math
 
 from roslib.message import SerializationError
-        
+
+try:
+    long
+except NameError:
+    long = int
+
+
 class TestGenmsgPy(unittest.TestCase):
 
     def test_PythonKeyword(self):

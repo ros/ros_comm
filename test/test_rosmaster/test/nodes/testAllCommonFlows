@@ -12,7 +12,7 @@ import sys, os
 BOOTSTRAP_VERSION = "0.1"
 
 # Read in ROS_ROOT
-if not os.environ.has_key('ROS_ROOT'):
+if 'ROS_ROOT' not in os.environ:
   print """\nCannot run ROS: ROS_ROOT is not set.\nPlease set the ROS_ROOT environment variable to the 
 location of your ROS install.\n"""
   sys.exit(-1)

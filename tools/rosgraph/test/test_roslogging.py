@@ -32,7 +32,10 @@
 
 import logging
 import os
-from StringIO import StringIO
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 import sys
 
 import re
