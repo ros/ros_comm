@@ -218,7 +218,7 @@ class TestXmlLoader(unittest.TestCase):
         p = [p for p in mock.params if p.key == '/configfile'][0]
         self.assertEquals(contents, p.value, 1)
         p = [p for p in mock.params if p.key == '/binaryfile'][0]
-        self.assertEquals(Binary(contents), p.value, 1)
+        self.assertEquals(Binary(contents.encode()), p.value, 1)
 
         f = open(os.path.join(get_example_path(), 'example.launch'))
         try:

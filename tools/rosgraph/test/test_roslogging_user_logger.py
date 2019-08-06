@@ -51,12 +51,16 @@ import rosgraph.roslogging
 
 # set user defined custom logger
 class UserCustomLogger(logging.Logger):
-    def findCaller(self):
+    def findCaller(self, stack_info=False):
         """Returns static caller.
 
         This method is being overwritten in rosgraph.roslogging.
         """
-        return '<filename>', '<lineno>', '<func_name>'
+        if sys.version_info > (3, 2):
+            # Dummy last argument to match Python3 return type
+            return '<filename>', '<lineno>', '<func_name>', None
+        else:
+            return '<filename>', '<lineno>', '<func_name>'
 
     def _log(self, level, msg, args, exc_info=None, extra=None):
         """Write log with ROS_IP.

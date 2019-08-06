@@ -240,7 +240,7 @@ def create_names_filter(names):
     """
     returns a function to use as filter that returns all objects slots except those with names in list.
     """
-    return lambda obj : filter(lambda slotname : not slotname in names, obj.__slots__)
+    return lambda obj : list(filter(lambda slotname : not slotname in names, obj.__slots__))
 
 
 def init_rosmsg_proto():
