@@ -69,7 +69,7 @@ class TestRospyExceptions(unittest.TestCase):
             raise ROSTimeMovedBackwardsException(1.0)
         except ROSInterruptException as e:
             # ensure the message is not changed, because old code may check it
-            self.assertEqual("ROS time moved backwards", e.message)
+            self.assertEqual("ROS time moved backwards", str(e))
         try:
             time = 1.0
             raise ROSTimeMovedBackwardsException(time)

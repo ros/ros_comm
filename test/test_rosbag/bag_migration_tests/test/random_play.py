@@ -39,7 +39,7 @@ import sys
 try:
     from cStringIO import StringIO
 except ImportError:
-    from io import StringIO
+    from io import BytesIO as StringIO
 import time
 from random_messages import RandomMsgGen
 import subprocess

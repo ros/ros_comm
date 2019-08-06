@@ -209,9 +209,9 @@ class TestRosbag(unittest.TestCase):
             os.system(cmd % (inbag_filename, outbag1_filename))
             os.system(cmd % (outbag1_filename, outbag2_filename))
             
-            with open(outbag1_filename, 'r') as h:
+            with open(outbag1_filename, 'rb') as h:
                 outbag1_md5 = hashlib.md5(h.read()).hexdigest()
-            with open(outbag2_filename, 'r') as h:
+            with open(outbag2_filename, 'rb') as h:
                 outbag2_md5 = hashlib.md5(h.read()).hexdigest()
             self.assertEquals(outbag1_md5, outbag2_md5)
         finally:
