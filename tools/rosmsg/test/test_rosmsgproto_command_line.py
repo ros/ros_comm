@@ -67,37 +67,37 @@ class RosMsgProtoCommandlineTestMsg(unittest.TestCase):
         cmd.extend(["msg", "foo123barxyz"])
         call = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE, env = self.new_environ)
         (output, erroutput) = call.communicate()
-        self.assertEqual('', output)
-        self.assertTrue('Unknown message name foo123barxyz' in erroutput)
+        self.assertEqual(b'', output)
+        self.assertTrue('Unknown message name foo123barxyz' in erroutput.decode())
 
     def testSilentFail(self):
         cmd = copy.copy(ROSMSGPROTO_FN)
         cmd.extend(["msg", "-s", "foo123barxyz"])
         call = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE, env = self.new_environ)
         (output, erroutput) = call.communicate()
-        self.assertEqual('', output)
-        self.assertEqual('', erroutput)
+        self.assertEqual(b'', output)
+        self.assertEqual(b'', erroutput)
 
     def testSilentFailCpp(self):
         cmd = copy.copy(ROSMSGPROTO_FN)
         cmd.extend(["msg", "-s", "foo123barxyz::bar"])
         call = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE, env = self.new_environ)
         (output, erroutput) = call.communicate()
-        self.assertEqual('', output)
-        self.assertEqual('', erroutput)
+        self.assertEqual(b'', output)
+        self.assertEqual(b'', erroutput)
 
     def testSilentFailDot(self):
         cmd = copy.copy(ROSMSGPROTO_FN)
         cmd.extend(["msg", "-s", "foo123barxyz.bar"])
         call = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE, env = self.new_environ)
         (output, erroutput) = call.communicate()
-        self.assertEqual('', output)
-        self.assertEqual('', erroutput)
+        self.assertEqual(b'', output)
+        self.assertEqual(b'', erroutput)
 
     def testSilentFailMode(self):
         cmd = copy.copy(ROSMSGPROTO_FN)
         cmd.extend(["msgfoobar", "-s", "foo123barxyz.bar"])
         call = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE, env = self.new_environ)
         (output, erroutput) = call.communicate()
-        self.assertEqual('', output)
-        self.assertEqual('', erroutput)
+        self.assertEqual(b'', output)
+        self.assertEqual(b'', erroutput)

@@ -48,9 +48,9 @@ class TestRostopicOffline(unittest.TestCase):
         cmd = 'rostopic'
 
         sub = ['bw', 'echo', 'hz', 'delay', 'info', 'list', 'pub', 'type','find']
-        output = Popen([cmd], stdout=PIPE).communicate()[0]
+        output = Popen([cmd], stdout=PIPE).communicate()[0].decode()
         self.assert_('Commands' in output)
-        output = Popen([cmd, '-h'], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, '-h'], stdout=PIPE).communicate()[0].decode()
         self.assert_('Commands' in output)
         # make sure all the commands are in the usage
         for c in sub:
@@ -59,16 +59,16 @@ class TestRostopicOffline(unittest.TestCase):
 
         for c in sub:
             output = Popen([cmd, c, '-h'], stdout=PIPE, stderr=PIPE).communicate()
-            self.assert_("usage:" in output[0].lower(), output)
+            self.assert_("usage:" in output[0].decode().lower(), output)
             # make sure usage refers to the command
-            self.assert_("%s %s"%(cmd, c) in output[0], output)
+            self.assert_("%s %s"%(cmd, c) in output[0].decode(), output)
             
         # test no args on commands that require args
         for c in ['bw', 'echo', 'hz', 'delay', 'info', 'pub', 'type', 'find']:
             output = Popen([cmd, c], stdout=PIPE, stderr=PIPE).communicate()
-            self.assert_("usage:" in output[0].lower() or "usage:" in output[1].lower(), output)
+            self.assert_("usage:" in output[0].decode().lower() or "usage:" in output[1].decode().lower(), output)
             # make sure usage refers to the command
-            self.assert_("%s %s"%(cmd, c) in output[1], output)
+            self.assert_("%s %s"%(cmd, c) in output[1].decode(), output)
             
     def test_offline(self):
         cmd = 'rostopic'
@@ -80,19 +80,19 @@ class TestRostopicOffline(unittest.TestCase):
 
         msg = "ERROR: Unable to communicate with master!\n"
 
-        output = Popen([cmd, 'bw', 'chatter'], **kwds).communicate()
-        self.assert_(output[1].endswith(msg))
-        output = Popen([cmd, 'echo', 'chatter'], **kwds).communicate()
-        self.assert_(output[1].endswith(msg))
-        output = Popen([cmd, 'hz', 'chatter'], **kwds).communicate()
-        self.assert_(output[1].endswith(msg))
-        output = Popen([cmd, 'delay', 'chatter'], **kwds).communicate()
-        self.assert_(output[1].endswith(msg))
-        output = Popen([cmd, 'list'], **kwds).communicate()
-        self.assert_(output[1].endswith(msg))
-        output = Popen([cmd, 'pub', 'chatter', 'std_msgs/String', 'hello'], **kwds).communicate()
-        self.assert_(output[1].endswith(msg))
-        output = Popen([cmd, 'type', 'chatter'], **kwds).communicate()
-        self.assert_(output[1].endswith(msg))
-        output = Popen([cmd, 'type', 'std_msgs/String'], **kwds).communicate()
-        self.assert_(output[1].endswith(msg))
+        output = Popen([cmd, 'bw', 'chatter'], **kwds).communicate()[1].decode()
+        self.assert_(output.endswith(msg))
+        output = Popen([cmd, 'echo', 'chatter'], **kwds).communicate()[1].decode()
+        self.assert_(output.endswith(msg))
+        output = Popen([cmd, 'hz', 'chatter'], **kwds).communicate()[1].decode()
+        self.assert_(output.endswith(msg))
+        output = Popen([cmd, 'delay', 'chatter'], **kwds).communicate()[1].decode()
+        self.assert_(output.endswith(msg))
+        output = Popen([cmd, 'list'], **kwds).communicate()[1].decode()
+        self.assert_(output.endswith(msg))
+        output = Popen([cmd, 'pub', 'chatter', 'std_msgs/String', 'hello'], **kwds).communicate()[1].decode()
+        self.assert_(output.endswith(msg))
+        output = Popen([cmd, 'type', 'chatter'], **kwds).communicate()[1].decode()
+        self.assert_(output.endswith(msg))
+        output = Popen([cmd, 'type', 'std_msgs/String'], **kwds).communicate()[1].decode()
+        self.assert_(output.endswith(msg))
