@@ -363,6 +363,35 @@ class TestRospyClientOnline(unittest.TestCase):
             time.sleep(0.5)
         self.assert_(t3.done)
         self.failIf(t3.success)
+
+    def test_wait_for_service_duration(self):
+        # lazy-import for coverage
+        import rospy
+        import time
+
+        # test wait for service with timeout in success case
+        def task2():
+            rospy.wait_for_service('add_two_ints',
+                                   timeout=rospy.Duration.from_sec(1.0))
+        timeout_t = time.time() + 5.
+        t2 = TestTask(task2)
+        t2.start()
+        while not t2.done and time.time() < timeout_t:
+            time.sleep(0.5)
+        self.assert_(t2.success)
+
+        # test wait for service in failure case
+        def task3():
+            # #2842 raising bounds from .1 to .3 for amazon VM
+            rospy.wait_for_service('fake_service',
+                                   timeout=rospy.Duration.from_sec(0.3))
+        timeout_t = time.time() + 2.
+        t3 = TestTask(task3)
+        t3.start()
+        while not t3.done and time.time() < timeout_t:
+            time.sleep(0.5)
+        self.assert_(t3.done)
+        self.failIf(t3.success)
     
     def test_ServiceProxy_wait_for_service(self):
         """
@@ -403,6 +432,45 @@ class TestRospyClientOnline(unittest.TestCase):
         fake_proxy = rospy.ServiceProxy('fake_service', test_rosmaster.srv.AddTwoInts)
         timeout_t = time.time() + 2.        
         t3 = TestTask(ProxyTask(fake_proxy, timeout=0.1))        
+        t3.start()
+        while not t3.done and time.time() < timeout_t:
+            time.sleep(0.5)
+        self.assert_(t3.done)
+        self.failIf(t3.success)
+
+    def test_ServiceProxy_wait_for_service_duration(self):
+        """
+        Test ServiceProxy.wait_for_service
+        """
+        # lazy-import for coverage
+        import rospy
+        import time
+        import test_rosmaster.srv
+
+        # test wait for service in success case
+        proxy = rospy.ServiceProxy('add_two_ints', test_rosmaster.srv.AddTwoInts)
+        class ProxyTask(object):
+            def __init__(self, proxy, timeout=None):
+                self.proxy = proxy
+                self.timeout = timeout
+            def __call__(self):
+                if self.timeout is None:
+                    self.proxy.wait_for_service()
+                else:
+                    self.proxy.wait_for_service(timeout=self.timeout)
+
+        # test wait for service with timeout in success case
+        timeout_t = time.time() + 5.
+        t2 = TestTask(ProxyTask(proxy, timeout=rospy.Duration.from_sec(1.)))
+        t2.start()
+        while not t2.done and time.time() < timeout_t:
+            time.sleep(0.5)
+        self.assert_(t2.success)
+
+        # test wait for service in failure case
+        fake_proxy = rospy.ServiceProxy('fake_service', test_rosmaster.srv.AddTwoInts)
+        timeout_t = time.time() + 2.
+        t3 = TestTask(ProxyTask(fake_proxy, timeout=rospy.Duration.from_sec(0.1)))
         t3.start()
         while not t3.done and time.time() < timeout_t:
             time.sleep(0.5)
@@ -518,6 +586,38 @@ class TestRospyClientOnline(unittest.TestCase):
             return rospy.wait_for_message('fake_topic', std_msgs.msg.String, timeout=.3)
         timeout_t = time.time() + 2.        
         t3 = TestTask(task3)        
+        t3.start()
+        while not t3.done and time.time() < timeout_t:
+            time.sleep(0.5)
+        self.failIf(t3.success)
+        self.assert_(t3.done)
+        self.assert_(t3.value is None)
+
+    def test_wait_for_message_duration(self):
+        # lazy-import for coverage
+        import rospy
+        import std_msgs.msg
+        import time
+
+        # test wait for message with timeout
+        def task2():
+            return rospy.wait_for_message('chatter', std_msgs.msg.String,
+                                          timeout=rospy.Duration.from_sec(2.))
+        timeout_t = time.time() + 5.
+        t2 = TestTask(task2)
+        t2.start()
+        while not t2.done and time.time() < timeout_t:
+            time.sleep(0.5)
+        self.assert_(t2.success)
+        self.assert_('hello' in t2.value.data)
+
+        # test wait for message with timeout FAILURE
+        def task3():
+            # #2842 raising bounds from .1 to .3 for amazon VM
+            return rospy.wait_for_message('fake_topic', std_msgs.msg.String,
+                                          timeout=rospy.Duration.from_sec(.3))
+        timeout_t = time.time() + 2.
+        t3 = TestTask(task3)
         t3.start()
         while not t3.done and time.time() < timeout_t:
             time.sleep(0.5)
