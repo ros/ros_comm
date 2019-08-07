@@ -191,7 +191,7 @@ def load_mappings(argv):
     """    
     mappings = {}
     for arg in argv:
-        if REMAP in arg:
+        if is_legal_remap(arg):
             try:
                 src, dst = [x.strip() for x in arg.split(REMAP)]
                 if src and dst:
@@ -242,6 +242,17 @@ def is_legal_base_name(name):
         return False
     m = BASE_NAME_LEGAL_CHARS_P.match(name)
     return m is not None and m.group(0) == name
+
+REMAP_PATTERN = re.compile('^([\~\/A-Za-z]|_|__)[\w\/]*' + REMAP + '.*')
+
+def is_legal_remap(arg):
+    """
+    Validates that arg is a legal remap according to U{http://wiki.ros.org/Remapping%20Arguments}.
+    """
+    if arg is None:
+        return False
+    m = REMAP_PATTERN.match(arg)
+    return m is not None and m.group(0) == arg
 
 def canonicalize_name(name):
     """
