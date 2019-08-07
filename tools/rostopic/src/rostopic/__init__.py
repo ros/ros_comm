@@ -1192,11 +1192,11 @@ def _rostopic_list_group_by_host(master, pubs, subs):
                 if not puri.hostname in tmap:
                     tmap[puri.hostname] = []
                 # recreate the system state data structure, but for a single host
-                matches = [l for x, l in tmap[puri.hostname] if x == topic]
+                matches = [l for x, _, l in tmap[puri.hostname] if x == topic]
                 if matches:
                     matches[0].append(p)
                 else:
-                    tmap[puri.hostname].append((topic, [p]))
+                    tmap[puri.hostname].append((topic, ttype, [p]))
         return tmap
         
     uricache = {}
