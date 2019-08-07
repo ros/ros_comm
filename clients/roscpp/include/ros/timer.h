@@ -73,6 +73,7 @@ public:
 
   bool hasStarted() const { return impl_ && impl_->hasStarted(); }
   bool isValid() { return impl_ && impl_->isValid(); }
+  bool isValid() const { return impl_ && impl_->isValid(); }
   operator void*() { return isValid() ? (void*)1 : (void*)0; }
 
   bool operator<(const Timer& rhs)
@@ -101,6 +102,7 @@ private:
 
     bool hasStarted() const;
     bool isValid();
+    bool isValid() const;
     bool hasPending();
     void setPeriod(const Duration& period, bool reset=true);
 
