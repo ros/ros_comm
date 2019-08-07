@@ -118,6 +118,13 @@ def checkmessages(migrator, messages):
             
     return migrations
 
+def _migrate_connection_header(conn_header, new_msg_type):
+    conn_header['type'] = new_msg_type._type
+    conn_header['md5sum'] = new_msg_type._md5sum
+    conn_header['message_definition'] = new_msg_type._full_text
+
+    return conn_header
+
 ## Fix a bag so that it can be played in the current system
 #
 # @param migrator The message migrator to use
@@ -132,10 +139,11 @@ def fixbag(migrator, inbag, outbag):
     if not False in [m[1] == [] for m in res]:
         bag = rosbag.Bag(inbag, 'r')
         rebag = rosbag.Bag(outbag, 'w', options=bag.options)
-        for topic, msg, t in bag.read_messages(raw=True):
+        for topic, msg, t, conn_header in bag.read_messages(raw=True, return_connection_header=True):
             new_msg_type = migrator.find_target(msg[4])
             mig_msg = migrator.migrate_raw(msg, (new_msg_type._type, None, new_msg_type._md5sum, None, new_msg_type))
-            rebag.write(topic, mig_msg, t, raw=True)
+            new_conn_header = _migrate_connection_header(conn_header, new_msg_type)
+            rebag.write(topic, mig_msg, t, connection_header=new_conn_header, raw=True)
         rebag.close()
         bag.close()
         return True
@@ -158,13 +166,14 @@ def fixbag2(migrator, inbag, outbag, force=False):
     if len(migrations) == 0 or force:
         bag = rosbag.Bag(inbag, 'r')
         rebag = rosbag.Bag(outbag, 'w', options=bag.options)
-        for topic, msg, t in bag.read_messages(raw=True):
+        for topic, msg, t, conn_header in bag.read_messages(raw=True, return_connection_header=True):
             new_msg_type = migrator.find_target(msg[4])
             if new_msg_type != None:
                 mig_msg = migrator.migrate_raw(msg, (new_msg_type._type, None, new_msg_type._md5sum, None, new_msg_type))
-                rebag.write(topic, mig_msg, t, raw=True)
+                new_conn_header = _migrate_connection_header(conn_header, new_msg_type)
+                rebag.write(topic, mig_msg, t, connection_header=new_conn_header, raw=True)
             else:
-                rebag.write(topic, msg, t, raw=True)
+                rebag.write(topic, msg, t, connection_header=connection_header, raw=True)
         rebag.close()
         bag.close()
 
