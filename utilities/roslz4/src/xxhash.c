@@ -331,7 +331,10 @@ XXH_errorcode XXH32_resetState(void* state_in, U32 seed)
 void* XXH32_init (U32 seed)
 {
     void* state = XXH_malloc (sizeof(struct XXH_state32_t));
-    XXH32_resetState(state, seed);
+    if (state != NULL)
+    {
+      XXH32_resetState(state, seed);
+    }
     return state;
 }
 
