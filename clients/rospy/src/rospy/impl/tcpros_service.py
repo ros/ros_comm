@@ -89,7 +89,7 @@ def wait_for_service(service, timeout=None):
     possible. For timeout=0 uses cases, just call the service without
     waiting.
     @type  timeout: double|rospy.Duration
-    @note  roscpp waitForService() has timeout specified in milisecs.
+    @note  roscpp waitForService() has timeout specified in millisecs.
     @raise ROSException: if specified timeout is exceeded
     @raise ROSInterruptException: if shutdown interrupts wait
     """
