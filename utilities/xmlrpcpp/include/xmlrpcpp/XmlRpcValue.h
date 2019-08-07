@@ -80,6 +80,7 @@ namespace XmlRpc {
 
     // Operators
     XmlRpcValue& operator=(XmlRpcValue const& rhs);
+    XmlRpcValue& operator=(bool const& rhs) { return operator=(XmlRpcValue(rhs)); }
     XmlRpcValue& operator=(int const& rhs) { return operator=(XmlRpcValue(rhs)); }
     XmlRpcValue& operator=(double const& rhs) { return operator=(XmlRpcValue(rhs)); }
     XmlRpcValue& operator=(const char* rhs) { return operator=(XmlRpcValue(std::string(rhs))); }
