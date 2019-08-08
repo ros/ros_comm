@@ -69,7 +69,7 @@ class RospyLogger(logging.getLoggerClass()):
             f = f.f_back
 
         # Jump up two more frames, as the logger methods have been double wrapped.
-        if f.f_back and f.f_code and f.f_code.co_name == '_base_logger':
+        if f is not None and f.f_back and f.f_code and f.f_code.co_name == '_base_logger':
             f = f.f_back
             if f.f_back:
                 f = f.f_back
