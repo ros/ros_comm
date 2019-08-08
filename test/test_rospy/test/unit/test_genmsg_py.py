@@ -135,13 +135,13 @@ class TestGenmsgPy(unittest.TestCase):
         self._test_ser_deser(m, c)
         self.assertEquals((1., 2., 3.), c.f32_3)
         
-        m,c = TestFixedArray(u8_1 = 'x'), TestFixedArray()
+        m,c = TestFixedArray(u8_1 = b'x'), TestFixedArray()
         self._test_ser_deser(m, c)
-        self.assertEquals('x', c.u8_1)
+        self.assertEquals(b'x', c.u8_1)
 
-        m,c = TestFixedArray(u8_3 = 'xyz'), TestFixedArray()
+        m,c = TestFixedArray(u8_3 = b'xyz'), TestFixedArray()
         self._test_ser_deser(m, c)
-        self.assertEquals('xyz', c.u8_3)
+        self.assertEquals(b'xyz', c.u8_3)
 
         m,c = TestFixedArray(s_1 = ['']), TestFixedArray()
         self._test_ser_deser(m, c)
@@ -364,7 +364,7 @@ class TestGenmsgPy(unittest.TestCase):
         UInt8MultiArray(layout=MultiArrayLayout()).serialize(buff)
         data = ''.join([chr(i) for i in range(0, 100)])
         v = UInt8MultiArray(data=data)
-        self._test_ser_deser(UInt8MultiArray(data=data),UInt8MultiArray())
+        self._test_ser_deser(UInt8MultiArray(data=data.encode()),UInt8MultiArray())
         
         self.assertEquals(Int32MultiArray(),Int32MultiArray())
         self.assertEquals(Int32MultiArray(layout=MultiArrayLayout()),Int32MultiArray())

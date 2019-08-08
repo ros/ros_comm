@@ -48,7 +48,7 @@ class ConnectionOverride(rospy.impl.transport.Transport):
     def __init__(self, endpoint_id):
         super(ConnectionOverride, self).__init__(rospy.impl.transport.OUTBOUND, endpoint_id)
         self.endpoint_id = endpoint_id
-        self.data = ''
+        self.data = b''
 
     def set_cleanup_callback(self, cb): pass
     def write_data(self, data):
@@ -164,7 +164,7 @@ class TestRospyTopics(unittest.TestCase):
         try:
             from cStringIO import StringIO
         except ImportError:
-            from io import StringIO
+            from io import BytesIO as StringIO
         buff = StringIO()
         Val('hello world-1').serialize(buff)
         # - check equals, but strip length field first

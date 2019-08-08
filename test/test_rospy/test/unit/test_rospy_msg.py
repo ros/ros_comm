@@ -38,7 +38,7 @@ import unittest
 try:
     from cStringIO import StringIO
 except ImportError:
-    from io import StringIO
+    from io import BytesIO as StringIO
 import time
 import random
 
@@ -87,7 +87,7 @@ class TestRospyMsg(unittest.TestCase):
 
         fmt = "<II%ss"%len(teststr)
         size = struct.calcsize(fmt) - 4
-        valid = struct.pack(fmt, size, len(teststr), teststr)
+        valid = struct.pack(fmt, size, len(teststr), teststr.encode())
         
         rospy.msg.serialize_message(buff, seq, val)
 
@@ -142,7 +142,7 @@ class TestRospyMsg(unittest.TestCase):
         for t in teststrs:
             fmt = "<II%ss"%len(t)
             size = struct.calcsize(fmt) - 4
-            valids.append(struct.pack(fmt, size, len(t), t))
+            valids.append(struct.pack(fmt, size, len(t), t.encode()))
         data_class = Val
 
         def validate_vals(vals, teststrs=teststrs):
@@ -199,12 +199,12 @@ class TestRospyMsg(unittest.TestCase):
         
         #deserialize with extra data leftover
         b.truncate(0)
-        b.write(valids[0]+'leftovers')
+        b.write(valids[0]+b'leftovers')
         rospy.msg.deserialize_messages(b, msg_queue, data_class)
         self.assertEquals(1, len(msg_queue))
         validate_vals(msg_queue)
         # - leftovers should be pushed to the front of the buffer
-        self.assertEquals('leftovers', b.getvalue())
+        self.assertEquals(b'leftovers', b.getvalue())
         
         del msg_queue[:]
 
