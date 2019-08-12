@@ -66,7 +66,8 @@ class RospyLogger(logging.getLoggerClass()):
             filename = os.path.normcase(co.co_filename)
             if filename == file_name and f.f_lineno == lineno and co.co_name == func_name:
                 break
-            f = f.f_back
+            if f.f_back:
+                f = f.f_back
 
         # Jump up two more frames, as the logger methods have been double wrapped.
         if f is not None and f.f_back and f.f_code and f.f_code.co_name == '_base_logger':
