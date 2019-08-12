@@ -115,7 +115,7 @@ class TestParamsBasic(unittest.TestCase):
             self.assertEquals(get_param("commandoutput"), text_data)
         # test 'textfile' attribute
         self.assertEquals(get_param("textfile"), text_data)
-        # test 'binfile' attribute
+        ## test 'binfile' attribute
         bindata = get_param("binaryfile")
         self.assertTrue(isinstance(bindata, Binary))
         self.assertEquals(bindata.data, binary_data)
