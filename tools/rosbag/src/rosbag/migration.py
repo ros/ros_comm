@@ -846,7 +846,7 @@ class MessageMigrator(object):
                 if (tmp_sn != first_sn):
                     sn_range.append(tmp_sn)
                 if (tmp_sn.new_class._type == new_type):
-                    found_new_type == True
+                    found_new_type = True
                 if (found_new_type and tmp_sn.new_class._type != new_type):
                     break
 
