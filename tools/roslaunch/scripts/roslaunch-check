@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
     if error_msg:
         print("FAILURE:\n%s"%error_msg, file=sys.stderr)
-        with open(test_file, 'w') as f:
+        with open(test_file, 'wb') as f:
             message = "roslaunch check [%s] failed"%(roslaunch_path)
             f.write(rosunit.junitxml.test_failure_junit_xml(test_name, message, stdout=error_msg,
                     class_name="roslaunch.RoslaunchCheck", testcase_name="%s_%s" % (pkg, outname)))
@@ -121,6 +121,6 @@ if __name__ == '__main__':
         sys.exit(1)
     else:
         print("passed")
-        with open(test_file, 'w') as f:
+        with open(test_file, 'wb') as f:
             f.write(rosunit.junitxml.test_success_junit_xml(test_name,
                     class_name="roslaunch.RoslaunchCheck", testcase_name="%s_%s" % (pkg, outname)))
