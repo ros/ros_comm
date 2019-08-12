@@ -89,7 +89,7 @@ def load_plugins():
             else:
                 print("Loaded plugin", p_module)
 
-        except Exception:
-            print("Unable to load plugin [%s] from package [%s]"%(p_module, pkg), file=sys.stderr)
+        except Exception as e:
+            print("Unable to load plugin [%s] from package [%s]. Exception thrown: [%s]"%(p_module, pkg, str(e)), file=sys.stderr)
     return static_plugins, online_plugins
 
