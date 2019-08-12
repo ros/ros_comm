@@ -714,7 +714,7 @@ class XmlLoader(loader.Loader):
             argv = sys.argv
 
         self._launch_tag(launch, ros_config, filename)
-        self.root_context = loader.LoaderContext(get_ros_namespace(), filename)
+        self.root_context = loader.LoaderContext(get_ros_namespace(argv=argv), filename)
         loader.load_sysargs_into_context(self.root_context, argv)
 
         if len(launch.getElementsByTagName('master')) > 0:
