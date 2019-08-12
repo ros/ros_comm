@@ -272,7 +272,7 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
         @raise ROSBagFormatException: if GPG key user is not found in header
         """
         try:
-            self._encrypted_symmetric_key = _read_str_field(header, self._ENCRYPTED_KEY_FIELD_NAME)
+            self._encrypted_symmetric_key = _read_bytes_field(header, self._ENCRYPTED_KEY_FIELD_NAME)
         except ROSBagFormatException:
             raise ROSBagFormatException('Encrypted symmetric key is not found in header')
         try:
@@ -390,7 +390,7 @@ def _decrypt_string_gpg(input):
     dec_data = gpg.decrypt(input, passphrase='clearpath')
     if not dec_data.ok:
         raise ROSBagEncryptException('Failed to decrypt bag: {}.  Have you installed a required private key?'.format(dec_data.status))
-    return str(dec_data)
+    return dec_data.data
 
 class Bag(object):
     """
@@ -1923,6 +1923,7 @@ def _read_uint32(f): return _unpack_uint32(f.read(4))
 def _read_uint64(f): return _unpack_uint64(f.read(8))
 def _read_time  (f): return _unpack_time  (f.read(8))
 
+def _decode_bytes(v):  return v
 def _decode_str(v):    return v if type(v) is str else v.decode()
 def _unpack_uint8(v):  return struct.unpack('<B', v)[0]
 def _unpack_uint32(v): return struct.unpack('<L', v)[0]
@@ -1972,6 +1973,7 @@ def _read_field(header, field, unpack_fn):
     
     return value
 
+def _read_bytes_field (header, field): return _read_field(header, field, _decode_bytes)
 def _read_str_field   (header, field): return _read_field(header, field, _decode_str)
 def _read_uint8_field (header, field): return _read_field(header, field, _unpack_uint8)
 def _read_uint32_field(header, field): return _read_field(header, field, _unpack_uint32)
