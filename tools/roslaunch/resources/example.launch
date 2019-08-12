@@ -30,7 +30,7 @@
   <!-- upload the contents of a file as base64 binary as a param -->
   <param name="binaryfile" binfile="$(find roslaunch)/resources/example.launch" />
   <!-- upload the output of a command as a param. -->
-  <param name="commandoutput" command="cat &quot;$(find roslaunch)/resources/example.launch&quot;" />
+  <param name="commandoutput" command="cat &quot;$(find roslaunch)/resources/example.launch&quot;" unless="$(eval optenv('OS', 'unknown').lower().startswith('windows'))" />
   
   <!-- Group a collection of tags. ns attribute is optional -->
   <group ns="wg"> 
