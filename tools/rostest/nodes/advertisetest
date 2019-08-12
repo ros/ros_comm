@@ -1,0 +1,189 @@
+#!/usr/bin/env python
+###############################################################################
+# Software License Agreement (BSD License)
+#
+# Copyright (c) 2019, Yuki Furuta
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+#  * Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above
+#    copyright notice, this list of conditions and the following
+#    disclaimer in the documentation and/or other materials provided
+#    with the distribution.
+#  * Neither the name of Willow Garage, Inc. nor the names of its
+#    contributors may be used to endorse or promote products derived
+#    from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+###############################################################################
+
+"""
+Integration test node that checks if the specified topics are advertised.
+below parameters must be set:
+
+<test name="advertisetest"
+      test-name="advertisetest"
+      pkg="rostest" type="advertisetest">
+  <rosparam>
+    topics:
+      - name: a topic name
+        timeout: timeout for the topic
+      - name: another topic name
+        timeout: timeout for the topic
+        type: std_msgs/String
+      - name: another topic name
+        timeout: timeout for the topic
+        negative: true
+    services:
+      - name: a service name
+        timeout: timeout for the service
+      - name: a service name
+        timeout: timeout for the service
+        type: std_srvs/Trigger
+      - name: another service name
+        timeout: timeout for the service
+        negative: true
+  </rosparam>
+</test>
+
+Author: Yuki Furuta <me@furushchev.ru>
+"""
+
+import sys
+import time
+import unittest
+
+from nose.tools import assert_equal, assert_false, assert_true
+
+import rospy
+import rosservice
+
+
+PKG = 'rostest'
+NAME = 'advertisetest'
+
+
+class AdvertiseTest(unittest.TestCase):
+    def __init__(self, *args):
+        super(self.__class__, self).__init__(*args)
+        rospy.init_node(NAME)
+        # scrape rosparam
+        self.topics = {}
+        params = rospy.get_param('~topics', [])
+        for param in params:
+            if 'name' not in param:
+                self.fail("'name' field in rosparam is required but not specified.")
+            topic = {'timeout': 10, 'type': None, 'negative': False,}
+            topic.update(param)
+            self.topics[topic['name']] = topic
+        self.services = {}
+        params = rospy.get_param('~services', [])
+        for param in params:
+            if 'name' not in param:
+                self.fail("'name' field in rosparam is required but not specified.")
+            service = {'timeout': 10, 'type': None, 'negative': False,}
+            service.update(param)
+            self.services[service['name']] = service
+        # check if there is at least one topic or one service
+        if not self.topics and not self.services:
+            self.fail('No topic or service is specified in rosparam.')
+
+    def setUp(self):
+        # warn on /use_sim_time is true
+        use_sim_time = rospy.get_param('/use_sim_time', False)
+        self.t_start = time.time()
+        while not rospy.is_shutdown() and \
+                use_sim_time and (rospy.Time.now() == rospy.Time(0)):
+            rospy.logwarn_throttle(
+                1, '/use_sim_time is specified and rostime is 0, /clock is published?')
+            if time.time() - t_start > 10:
+                self.fail('Timed out (10s) of /clock publication.')
+            # must use time.sleep because /clock isn't yet published, so rospy.sleep hangs.
+            time.sleep(0.1)
+
+    def test_advertise_topics(self):
+        """Test topics are advertised"""
+        if self.topics:
+            t_start = self.t_start
+            t_name_set = set(self.topics.keys())
+            t_timeout_max = max(t['timeout'] for t in self.topics.values())
+            finished_topics = []
+            while not rospy.is_shutdown():
+                t_now = time.time()
+                t_elapsed = t_now - t_start
+                if not t_name_set:
+                    break
+                if t_elapsed > t_timeout_max:
+                    break
+                for t_name, t_type in rospy.get_published_topics():
+                    if t_name in t_name_set:
+                        t_name_set.remove(t_name)
+                        topic = self.topics[t_name]
+                        assert_true(t_elapsed < topic['timeout'],
+                                    'Topic [%s] is advertised before timeout [%s] secs' % (topic['name'], topic['timeout']))
+                        assert_false(topic['negative'],
+                                     'Topic [%s] is not advertised' % (topic['name']))
+                        if topic['type'] is not None:
+                            assert_equal(t_type, topic['type'],
+                                         'Topic type of [%s] is [%s]' % (topic['name'], topic['type']))
+                time.sleep(0.05)
+
+            for t_name in t_name_set:
+                topic = self.topics[t_name]
+                assert_true(topic['negative'],
+                            'Topic [%s] is not advertised' % (topic['name']))
+
+    def test_advertise_services(self):
+        """Test services are advertised"""
+        if self.services:
+            t_start = self.t_start
+            s_name_set = set(self.services.keys())
+            t_timeout_max = max(t['timeout'] for t in self.services.values())
+            finished_topics = []
+            while not rospy.is_shutdown():
+                t_now = time.time()
+                t_elapsed = t_now - t_start
+                if not s_name_set:
+                    break
+                if t_elapsed > t_timeout_max:
+                    break
+
+                for s_name in rosservice.get_service_list():
+                    if s_name in s_name_set:
+                        s_name_set.remove(s_name)
+                        service = self.services[s_name]
+                        assert_true(t_elapsed < service['timeout'],
+                                    'Service [%s] is advertised before timeout [%s] secs' % (service['name'], service['timeout']))
+                        assert_false(service['negative'],
+                                     'Service [%s] is not advertised' % (service['name']))
+                        if service['type'] is not None:
+                            s_type = rosservice.get_service_type(s_name)
+                            assert_equal(s_type, service['type'],
+                                         'Service type of [%s] is [%s]' % (service['name'], service['type']))
+                time.sleep(0.05)
+
+            for s_name in s_name_set:
+                service = self.services[s_name]
+                assert_true(service['negative'],
+                            'Service [%s] is not advertised' % (service['name']))
+
+
+if __name__ == '__main__':
+    import rostest
+    rostest.run(PKG, NAME, AdvertiseTest, sys.argv)

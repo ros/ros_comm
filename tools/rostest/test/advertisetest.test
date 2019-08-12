@@ -1,0 +1,28 @@
+<launch>
+  <node pkg="rostopic" type="rostopic" name="freq_topic_pub" args="pub /frequent_topic std_msgs/Bool 'data: false' -r 10" />
+  <node pkg="rostopic" type="rostopic" name="once_topic_pub" args="pub /once_topic std_msgs/Bool 'data: false' -1l" />
+  <node pkg="rostest" type="service_server.py" name="service_server"/>
+
+  <test test-name="advertisetest_test" pkg="rostest" type="advertisetest" time-limit="5.0" retry="3">
+    <rosparam>
+      topics:
+      - name: /frequent_topic
+        timeout: 2.
+      - name: /once_topic
+        type: std_msgs/Bool
+        timeout: 2.
+      - name: /advertised_topic
+        timeout: 2.
+        negative: true
+      services:
+      - name: /empty
+        timeout: 2.
+      - name: /set_bool
+        type: std_srvs/SetBool
+        timeout: 2.
+      - name: /unadvertised_service
+        timeout: 2.
+        negative: true
+    </rosparam>
+  </test>
+</launch>
