@@ -112,7 +112,7 @@ class TestParamsBasic(unittest.TestCase):
 
         # test 'command' attribute
         if os.name != 'nt':  # skip testcase for `cat` command in Windows
-            self.assertEquals(get_param("commandoutput"), text_data)
+            self.assertEquals(get_param("commandoutput"), binary_data)
         # test 'textfile' attribute
         self.assertEquals(get_param("textfile"), text_data)
         ## test 'binfile' attribute
