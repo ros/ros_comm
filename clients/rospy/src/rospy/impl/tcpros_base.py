@@ -157,7 +157,8 @@ class TCPServer(object):
                 (errno, msg) = e.args
                 if errno == 4: #interrupted system call
                     continue
-                raise
+                if not self.is_shutdown:
+                    raise
             if self.is_shutdown:
                 break
             try:
