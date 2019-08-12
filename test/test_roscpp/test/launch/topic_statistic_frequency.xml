@@ -1,0 +1,39 @@
+<!-- basic smoke test for TopicStatistics -->
+<launch>
+  <param name="/enable_statistics" value="true" />
+  <!-- default 10 would take 5s to warm up for very slow talker -->
+  <param name="/statistics_window_min_elements" value="4" />
+
+  <!-- under 1Hz important, since checking window starts there -->
+  <node name="very_slow_talker" pkg="test_roscpp" type="test_roscpp-publisher_rate" required="true" args="0.8">
+    <remap from="data" to="very_slow_chatter" />
+  </node>
+  <node name="very_slow_listener" pkg="test_roscpp" type="test_roscpp-subscriber" required="true">
+    <remap from="data" to="very_slow_chatter" />
+  </node>
+
+  <!-- publishing within fairly normal range of frequencies -->
+  <node name="slow_talker" pkg="test_roscpp" type="test_roscpp-publisher_rate" required="true" args="18">
+    <remap from="data" to="slow_chatter" />
+  </node>
+  <node name="slow_listener" pkg="test_roscpp" type="test_roscpp-subscriber" required="true">
+    <remap from="data" to="slow_chatter" />
+  </node>
+
+  <node name="fast_talker" pkg="test_roscpp" type="test_roscpp-publisher_rate" required="true" args="53">
+    <remap from="data" to="fast_chatter" />
+  </node>
+  <node name="fast_listener" pkg="test_roscpp" type="test_roscpp-subscriber" required="true">
+    <remap from="data" to="fast_chatter" />
+  </node>
+
+  <!-- fast outlier (for most ros systems) -->
+  <node name="very_fast_talker" pkg="test_roscpp" type="test_roscpp-publisher_rate" required="true" args="171">
+    <remap from="data" to="/very_fast_chatter" />
+  </node>
+  <node name="very_fast_listener" pkg="test_roscpp" type="test_roscpp-subscriber" required="true">
+    <remap from="data" to="/very_fast_chatter" />
+  </node>
+
+  <test test-name="roscpp_topic_statistics" pkg="test_roscpp" type="test_roscpp-topic_statistic_frequency" />
+</launch>

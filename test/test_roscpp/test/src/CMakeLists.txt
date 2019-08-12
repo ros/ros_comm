@@ -205,12 +205,19 @@ add_dependencies(${PROJECT_NAME}-string_msg_expect ${std_msgs_EXPORTED_TARGETS})
 add_executable(${PROJECT_NAME}-stamped_topic_statistics_empty_timestamp EXCLUDE_FROM_ALL stamped_topic_statistics_empty_timestamp.cpp)
 target_link_libraries(${PROJECT_NAME}-stamped_topic_statistics_empty_timestamp ${GTEST_LIBRARIES} ${catkin_LIBRARIES})
 
-# The publisher and subscriber are compiled but not registered as a unit test
+add_executable(${PROJECT_NAME}-topic_statistic_frequency EXCLUDE_FROM_ALL topic_statistic_frequency.cpp)
+target_link_libraries(${PROJECT_NAME}-topic_statistic_frequency ${GTEST_LIBRARIES} ${catkin_LIBRARIES})
+
+# The publishers and subscriber are compiled but not registered as a unit test
 # since the test execution requires a network connection which drops packages.
 # Call scripts/test_udp_with_dropped_packets.sh to run the test.
 add_executable(${PROJECT_NAME}-publisher EXCLUDE_FROM_ALL publisher.cpp)
 target_link_libraries(${PROJECT_NAME}-publisher ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME}-publisher ${std_msgs_EXPORTED_TARGETS})
+
+add_executable(${PROJECT_NAME}-publisher_rate EXCLUDE_FROM_ALL publisher_rate.cpp)
+target_link_libraries(${PROJECT_NAME}-publisher_rate ${catkin_LIBRARIES})
+add_dependencies(${PROJECT_NAME}-publisher_rate ${std_msgs_EXPORTED_TARGETS})
 
 add_executable(${PROJECT_NAME}-subscriber EXCLUDE_FROM_ALL subscriber.cpp)
 target_link_libraries(${PROJECT_NAME}-subscriber ${catkin_LIBRARIES})
@@ -281,6 +288,7 @@ if(TARGET tests)
     ${PROJECT_NAME}-publisher
     ${PROJECT_NAME}-subscriber
     ${PROJECT_NAME}-stamped_topic_statistics_empty_timestamp
+    ${PROJECT_NAME}-topic_statistic_frequency
   )
 endif()
 
@@ -346,3 +354,4 @@ add_dependencies(${PROJECT_NAME}-left_right ${${PROJECT_NAME}_EXPORTED_TARGETS})
 add_dependencies(${PROJECT_NAME}-string_msg_expect ${${PROJECT_NAME}_EXPORTED_TARGETS})
 add_dependencies(${PROJECT_NAME}-stamped_topic_statistics_empty_timestamp
  ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}-topic_statistic_frequency ${${PROJECT_NAME}_EXPORTED_TARGETS})

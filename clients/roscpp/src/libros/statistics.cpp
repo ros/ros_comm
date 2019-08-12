@@ -113,7 +113,8 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
   }
 
   // should publish new statistics?
-  if (stats.last_publish + ros::Duration(1 / pub_frequency_) < received_time)
+  double pub_period = 1.0 / pub_frequency_;
+  if (stats.last_publish + ros::Duration(pub_period) < received_time)
   {
     ros::Time window_start = stats.last_publish;
     stats.last_publish = received_time;
@@ -236,11 +237,11 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
     pub_.publish(msg);
 
     // dynamic window resizing
-    if (stats.arrival_time_list.size() > static_cast<size_t>(max_elements) && pub_frequency_ * 2 <= max_window)
+    if (stats.arrival_time_list.size() > static_cast<size_t>(max_elements) && pub_period / 2.0 >= min_window)
     {
       pub_frequency_ *= 2;
     }
-    if (stats.arrival_time_list.size() < static_cast<size_t>(min_elements) && pub_frequency_ / 2 >= min_window)
+    if (stats.arrival_time_list.size() < static_cast<size_t>(min_elements) && pub_period * 2.0 <= max_window)
     {
       pub_frequency_ /= 2;
     }

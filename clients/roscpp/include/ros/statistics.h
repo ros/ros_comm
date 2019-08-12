@@ -67,11 +67,13 @@ public:
 
 private:
 
-  // these are hard constrains
+  // Range of window length, in seconds
   int max_window;
   int min_window;
 
-  // these are soft constrains
+  // Range of acceptable messages in window.
+  // Window size will be adjusted if number of observed is
+  // outside this range.
   int max_elements;
   int min_elements;
 
