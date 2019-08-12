@@ -217,7 +217,7 @@ shared_ptr<ros::Subscriber> Recorder::subscribe(string const& topic) {
 
     ros::SubscribeOptions ops;
     ops.topic = topic;
-    ops.queue_size = 100;
+    ops.queue_size = 1000;
     ops.md5sum = ros::message_traits::md5sum<topic_tools::ShapeShifter>();
     ops.datatype = ros::message_traits::datatype<topic_tools::ShapeShifter>();
     ops.helper = boost::make_shared<ros::SubscriptionCallbackHelperT<
