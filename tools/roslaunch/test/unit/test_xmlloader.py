@@ -220,13 +220,9 @@ class TestXmlLoader(unittest.TestCase):
         p = [p for p in mock.params if p.key == '/binaryfile'][0]
         self.assertEquals(Binary(contents.encode()), p.value, 1)
 
-        f = open(os.path.join(get_example_path(), 'example.launch'))
-        try:
-            contents = f.read()
-        finally:
-            f.close()
-        p = [p for p in mock.params if p.key == '/commandoutput'][0]
-        self.assertEquals(contents, p.value, 1)
+        if os.name != 'nt':  # skip testcase for `cat` command in Windows
+            p = [p for p in mock.params if p.key == '/commandoutput'][0]
+            self.assertEquals(contents, p.value, 1)
         
         
     def test_rosparam_valid(self):

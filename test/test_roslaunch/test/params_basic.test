@@ -60,7 +60,7 @@
   
   <param name="textfile" textfile="$(find roslaunch)/resources/example.launch" />
   <param name="binaryfile" binfile="$(find roslaunch)/resources/example.launch" />
-  <param name="commandoutput" command="cat &quot;$(find roslaunch)/resources/example.launch&quot;" />
+  <param name="commandoutput" command="cat &quot;$(find roslaunch)/resources/example.launch&quot;" unless="$(eval optenv('OS', 'unknown').lower().startswith('windows'))" />
 
   <test test-name="params_basic" pkg="test_roslaunch" type="params_basic.py" />
 </launch>
