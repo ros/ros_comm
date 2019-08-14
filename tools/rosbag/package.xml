@@ -30,7 +30,7 @@
   <run_depend>boost</run_depend>
   <run_depend>genmsg</run_depend>
   <run_depend>genpy</run_depend>
-  <run_depend>python-crypto</run_depend>
+  <run_depend>python-cryptography</run_depend>
   <run_depend>python-gnupg</run_depend>
   <run_depend>python-rospkg</run_depend>
   <run_depend>rosbag_storage</run_depend>
