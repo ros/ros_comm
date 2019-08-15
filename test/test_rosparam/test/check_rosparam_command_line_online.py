@@ -69,56 +69,56 @@ class TestRosparamOnline(unittest.TestCase):
                   '/g2/string', '/g2/int', '/g2/float',
                   ]
         # - we aren't matching against the core services as those can make the test suites brittle
-        output = Popen([cmd, 'list'], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'list'], stdout=PIPE).communicate()[0].decode()
         l = set(output.split())
         for t in params:
             self.assert_(t in l)
 
         # get
         # - strings
-        output = Popen([cmd, 'get', "string"], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'get', "string"], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('foo-value', output.strip())
         # -- pretty
-        output = Popen([cmd, 'get', '-p', "string"], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'get', '-p', "string"], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('foo-value', output.strip())
-        output = Popen([cmd, 'get', "/string"], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'get', "/string"], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('foo-value', output.strip())
-        output = Popen([cmd, 'get', "g1/string"], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'get', "g1/string"], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('g1-foo-value', output.strip())
-        output = Popen([cmd, 'get', "/g1/string"], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'get', "/g1/string"], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('g1-foo-value', output.strip())
-        output = Popen([cmd, 'get', "/g2/string"], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'get', "/g2/string"], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('g2-foo-value', output.strip())
         # - ints
-        output = Popen([cmd, 'get', "int"], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'get', "int"], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('1', output.strip())
         # -- pretty
-        output = Popen([cmd, 'get', '-p', "int"], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'get', '-p', "int"], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('1', output.strip())
-        output = Popen([cmd, 'get', "/int"], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'get', "/int"], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('1', output.strip())
-        output = Popen([cmd, 'get', "g1/int"], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'get', "g1/int"], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('10', output.strip())
-        output = Popen([cmd, 'get', "/g1/int"], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'get', "/g1/int"], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('10', output.strip())
-        output = Popen([cmd, 'get', "/g2/int"], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'get', "/g2/int"], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('20', output.strip())
         # - floats
-        output = Popen([cmd, 'get', "float"], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'get', "float"], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('1.0', output.strip())
         # -- pretty
-        output = Popen([cmd, 'get', '-p', "float"], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'get', '-p', "float"], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('1.0', output.strip())
-        output = Popen([cmd, 'get', "/float"], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'get', "/float"], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('1.0', output.strip())
-        output = Popen([cmd, 'get', "g1/float"], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'get', "g1/float"], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('10.0', output.strip())
-        output = Popen([cmd, 'get', "/g1/float"], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'get', "/g1/float"], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('10.0', output.strip())
-        output = Popen([cmd, 'get', "/g2/float"], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'get', "/g2/float"], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('20.0', output.strip())
         # - dictionary
-        output = Popen([cmd, 'get', "g1"], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, 'get', "g1"], stdout=PIPE).communicate()[0].decode()
         import yaml
         d = yaml.safe_load(output)
         self.assertEquals(d['float'], 10.0)
