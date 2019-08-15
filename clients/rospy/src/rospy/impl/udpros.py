@@ -269,6 +269,7 @@ class UDPROSTransport(rospy.transport.Transport):
         serialize_message(self.write_buff, seq, msg)
         self.write_data(self.write_buff.getvalue())
         self.write_buff.truncate(0)
+        self.write_buff.seek(0)
 
     def write_data(self, data):
         """
