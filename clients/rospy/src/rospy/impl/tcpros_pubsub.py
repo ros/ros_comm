@@ -180,7 +180,7 @@ def robust_connect_subscriber(conn, dest_addr, dest_port, pub_uri, receive_cb, r
             
             # check to see if publisher state has changed
             conn.done = not check_if_still_publisher(resolved_topic_name, pub_uri)
-	
+
     if not conn.done:
         conn.receive_loop(receive_cb)	    
 

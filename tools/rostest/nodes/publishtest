@@ -57,8 +57,6 @@ import sys
 import time
 import unittest
 
-from nose.tools import assert_true
-
 import rospy
 import rostopic
 
@@ -139,12 +137,9 @@ class PublishTest(unittest.TestCase):
                     continue  # skip if there is no test result
                 finished_topics.append(checker.topic_name)
                 if checker.negative:
-                    assert_true(
-                        ret, 'Topic [%s] is published' % (checker.topic_name))
+                    assert ret, 'Topic [%s] is published' % (checker.topic_name)
                 else:
-                    assert_true(
-                        ret,
-                        'Topic [%s] is not published' % (checker.topic_name))
+                    assert ret, 'Topic [%s] is not published' % (checker.topic_name)
             rospy.sleep(0.01)
 
 

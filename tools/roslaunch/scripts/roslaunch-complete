@@ -50,6 +50,6 @@ except roslaunch.core.RLException:
 # Currently don't put := after that as the completion will escape := to \:\=
 # Unfortunately we also want the escaping for roslaunch, when completing filenames
 complete_args = [a for a in sorted(roslaunch_args.keys())]
-print " ".join(complete_args)
+print(" ".join(complete_args))
 sys.exit(0)
 

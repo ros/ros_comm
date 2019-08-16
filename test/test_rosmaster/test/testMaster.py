@@ -83,7 +83,7 @@ def testGraphState(master, graphNodes, graphFlows):
     assert not diff, "Graph nodes %s does not match expected %s: %s"%(graph[0], graphNodes, diff)
     # stringify for comparison
     expectedFlows = ["%s:%s:1"%f for f in graphFlows] # :1 = connected
-    print graph[1]
+    print(graph[1])
     remoteFlows = ["%s:%s:%s"%(src,snk,c) for (src,snk,c) in graph[1]]
     if expectedFlows or remoteFlows:
         #assert set(expectedFlows) ^ set(remoteFlows), "Graph flows [%s] does not match expected [%s]"%(graph[1], graphFlows)
@@ -95,7 +95,7 @@ def testParamState(master, myState):
     for (k, v) in myState.items():
         if HAS_PARAM:
             assert apiSuccess(master.hasParam(callerId, k))
-        print "verifying parameter %s"%k
+        print("verifying parameter %s"%k)
         v2 = apiSuccess(master.getParam(callerId, k))
         if isinstance(v2, DateTime):
             assert DateTime(v) == v2, "[%s]: %s != %s, %s"%(k, v, v2, v2.__class__)
@@ -124,7 +124,7 @@ class ParamServerTestCase(ROSGraphTestCase):
                 count = 0
                 for val in vals:
                     key = "%s-%s"%(type,count)
-                    print "master.setParam(%s,%s,%s)"%(callerId, key, val)
+                    print("master.setParam(%s,%s,%s)"%(callerId, key, val))
                     master.setParam(callerId, key, val)
                     if HAS_PARAM:                    
                         assert apiSuccess(master.hasParam(callerId, key))
@@ -161,14 +161,14 @@ class ParamServerTestCase(ROSGraphTestCase):
             ]
         master = self.master
 
-        print "Putting parameters onto the server"
+        print("Putting parameters onto the server")
         # put our params into the parameter server
         contexts = ['', 'scope1', 'scope2', 'scope.subscope1', 'scope.sub1.sub2']
         myState = {}
         for ctx in contexts:
             self._testSetParam(ctx, myState, testVals, master)
 
-        print "Deleting all of our parameters"
+        print("Deleting all of our parameters")
         # delete all of our parameters
         paramKeys = myState.keys()
         for key in paramKeys:
@@ -493,7 +493,7 @@ class MasterTestCase(ROSGraphTestCase):
         #testNode must have :in and :out
         #:in and :out
         testFlowNames = ["%s:%s"%(name, v) for v in ["in", "out"]]
-        print "FLOW NAMES", apiSuccess(master.getFlowNames('master', ''))        
+        print("FLOW NAMES", apiSuccess(master.getFlowNames('master', '')))
         flows = apiSuccess(master.getFlowNames('%s.caller'%subgraph, ''))
         assert not set([x[0] for x in flows]) ^ set(testFlowNames), "%s vs. %s"%([x[0] for x in flows], testFlowNames)
         
@@ -656,7 +656,7 @@ class MasterTestCase(ROSGraphTestCase):
                  [['wg.addNodeTest',      'testAddNodeA'], [TEST_MACHINE, 0]],
                  ]
         for fullname, args in tests:
-            print "testAddNode: testing", fullname
+            print("testAddNode: testing", fullname)
             subcontext, name = fullname
             if subcontext:
                 fullname = '%s.%s'%(subcontext, name)

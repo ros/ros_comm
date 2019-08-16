@@ -69,8 +69,6 @@ import sys
 import time
 import unittest
 
-from nose.tools import assert_equal, assert_false, assert_true
-
 import rospy
 import rosservice
 
@@ -135,19 +133,19 @@ class AdvertiseTest(unittest.TestCase):
                     if t_name in t_name_set:
                         t_name_set.remove(t_name)
                         topic = self.topics[t_name]
-                        assert_true(t_elapsed < topic['timeout'],
-                                    'Topic [%s] is advertised before timeout [%s] secs' % (topic['name'], topic['timeout']))
-                        assert_false(topic['negative'],
-                                     'Topic [%s] is not advertised' % (topic['name']))
+                        assert t_elapsed < topic['timeout'], \
+                            'Topic [%s] is advertised before timeout [%s] secs' % (topic['name'], topic['timeout'])
+                        assert not topic['negative'], \
+                            'Topic [%s] is not advertised' % (topic['name'])
                         if topic['type'] is not None:
-                            assert_equal(t_type, topic['type'],
-                                         'Topic type of [%s] is [%s]' % (topic['name'], topic['type']))
+                            assert t_type == topic['type'], \
+                                'Topic type of [%s] is [%s]' % (topic['name'], topic['type'])
                 time.sleep(0.05)
 
             for t_name in t_name_set:
                 topic = self.topics[t_name]
-                assert_true(topic['negative'],
-                            'Topic [%s] is not advertised' % (topic['name']))
+                assert topic['negative'], \
+                    'Topic [%s] is not advertised' % (topic['name'])
 
     def test_advertise_services(self):
         """Test services are advertised"""
@@ -168,20 +166,20 @@ class AdvertiseTest(unittest.TestCase):
                     if s_name in s_name_set:
                         s_name_set.remove(s_name)
                         service = self.services[s_name]
-                        assert_true(t_elapsed < service['timeout'],
-                                    'Service [%s] is advertised before timeout [%s] secs' % (service['name'], service['timeout']))
-                        assert_false(service['negative'],
-                                     'Service [%s] is not advertised' % (service['name']))
+                        assert t_elapsed < service['timeout'], \
+                            'Service [%s] is advertised before timeout [%s] secs' % (service['name'], service['timeout'])
+                        assert not service['negative'], \
+                            'Service [%s] is not advertised' % (service['name'])
                         if service['type'] is not None:
                             s_type = rosservice.get_service_type(s_name)
-                            assert_equal(s_type, service['type'],
-                                         'Service type of [%s] is [%s]' % (service['name'], service['type']))
+                            assert s_type == service['type'], \
+                                'Service type of [%s] is [%s]' % (service['name'], service['type'])
                 time.sleep(0.05)
 
             for s_name in s_name_set:
                 service = self.services[s_name]
-                assert_true(service['negative'],
-                            'Service [%s] is not advertised' % (service['name']))
+                assert service['negative'], \
+                    'Service [%s] is not advertised' % (service['name'])
 
 
 if __name__ == '__main__':

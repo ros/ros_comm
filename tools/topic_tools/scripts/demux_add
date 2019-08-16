@@ -45,14 +45,14 @@ USAGE = 'USAGE: demux_add DEMUX_NAME TOPIC'
 def call_srv(m, t):
     # There's probably a nicer rospy way of doing this
     s = m + '/add'
-    print "Waiting for service \"%s\""%(s)
+    print("Waiting for service \"%s\""%(s))
     rospy.wait_for_service(s)
-    print "Adding \"%s\" to demux \"%s\""%(t, m)
+    print("Adding \"%s\" to demux \"%s\""%(t, m))
     try:
         srv = rospy.ServiceProxy(s, DemuxAdd)
-	return srv(t)
+        return srv(t)
     except rospy.ServiceException, e:
-        print "Service call failed: %s"%e
+        print("Service call failed: %s"%e)
 
 def usage():
     return "%s "%sys.argv[0]
@@ -60,8 +60,8 @@ def usage():
 if __name__ == "__main__":
     args = rospy.myargv()
     if len(args) != 3:
-        print USAGE
-	sys.exit(1)
+        print(USAGE)
+        sys.exit(1)
 
     m = args[1]
     t = args[2]

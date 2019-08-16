@@ -68,7 +68,7 @@ def go():
     # Now start publishing on b
     while not rospy.is_shutdown():
         b_pub.publish('foo')
-	rospy.sleep(0.2)
+        rospy.sleep(0.2)
 
 if __name__ == "__main__":
     go()

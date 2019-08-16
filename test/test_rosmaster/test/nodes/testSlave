@@ -13,8 +13,8 @@ BOOTSTRAP_VERSION = "0.1"
 
 # Read in ROS_ROOT
 if 'ROS_ROOT' not in os.environ:
-  print """\nCannot run ROS: ROS_ROOT is not set.\nPlease set the ROS_ROOT environment variable to the 
-location of your ROS install.\n"""
+  print("""\nCannot run ROS: ROS_ROOT is not set.\nPlease set the ROS_ROOT environment variable to the 
+location of your ROS install.\n""")
   sys.exit(-1)
 rosRoot = os.environ['ROS_ROOT']
 
@@ -23,7 +23,7 @@ rospackLatest = os.popen(os.path.join(rosRoot,'rospack')+' latest rospy', 'r')
 rospyDir = rospackLatest.read()
 rospackLatest.close()
 if rospyDir is None or not os.path.isdir(rospyDir.strip()):
-  print "\nERROR: Cannot locate rospy installation.\n"
+  print("\nERROR: Cannot locate rospy installation.\n")
   sys.exit(-1)
 
 # Run launcher bootstrapper

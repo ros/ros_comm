@@ -259,7 +259,7 @@ class LoggingIdentical(object):
         - caller_id (str): Id to identify the caller
         - msg (str): Contents of message to log
         """
-        msg_hash = md5(msg).hexdigest()
+        msg_hash = md5(msg.encode()).hexdigest()
 
         if msg_hash != self.last_logging_msg_table.get(caller_id):
             self.last_logging_msg_table[caller_id] = msg_hash
