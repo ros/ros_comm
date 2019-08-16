@@ -45,7 +45,7 @@ def talker():
     count = 0
     while not rospy.is_shutdown():
         str = "hello world %d"%count
-        print str
+        print(str)
         pub.publish(String(str))
         count += 1
         rospy.sleep(0.01)

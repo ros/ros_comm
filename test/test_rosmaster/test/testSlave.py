@@ -274,7 +274,7 @@ class SlaveTestCase(TestRosClient):
             sourceUri = sourceUris[sourceName]
             sink = sinks[sinkName]
             callerId, sourceLocator, sinkLocator = test[1]
-            print "Testing", test
+            print("Testing", test)
             val = apiSuccess(sink.sinkConnectFlow(callerId, sourceLocator, sinkLocator, sourceUri, reliable))
             assert type(val) == int
 
@@ -290,7 +290,7 @@ class SlaveTestCase(TestRosClient):
             sourceName, sinkName = test[0]
             sink = sinks[sinkName]
             callerId, sourceLocator, sinkLocator = test[1]
-            print "Testing", test
+            print("Testing", test)
             assert 1 == apiSuccess(sink.sinkKillFlow(callerId, sourceLocator, sinkLocator)),\
                    "sink did not report 1 flow killed: %s, %s"%(getLastVal(), getLastMsg())
     
