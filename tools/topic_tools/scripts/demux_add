@@ -50,7 +50,7 @@ def call_srv(m, t):
     print("Adding \"%s\" to demux \"%s\""%(t, m))
     try:
         srv = rospy.ServiceProxy(s, DemuxAdd)
-	return srv(t)
+        return srv(t)
     except rospy.ServiceException, e:
         print("Service call failed: %s"%e)
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     args = rospy.myargv()
     if len(args) != 3:
         print(USAGE)
-	sys.exit(1)
+        sys.exit(1)
 
     m = args[1]
     t = args[2]

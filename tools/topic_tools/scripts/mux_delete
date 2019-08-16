@@ -49,7 +49,7 @@ def call_srv(m, t):
     print("Deleting \"%s\" from mux \"%s\""%(t, m))
     try:
         srv = rospy.ServiceProxy(s, MuxDelete)
-	return srv(t)
+        return srv(t)
     except rospy.ServiceException as e:
         print("Service call failed: %s"%e)
 
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     args = rospy.myargv()
     if len(args) != 3:
         print(USAGE)
-	sys.exit(1)
+        sys.exit(1)
 
     m = args[1]
     t = args[2]

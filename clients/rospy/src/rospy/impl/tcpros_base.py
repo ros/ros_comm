@@ -446,7 +446,7 @@ class TCPROSTransport(Transport):
         else: # Python 3.x
             self.read_buff = BytesIO()
             self.write_buff = BytesIO()
-                    	    
+
         #self.write_buff = StringIO()
         self.header = header
 
@@ -651,7 +651,7 @@ class TCPROSTransport(Transport):
         if sock is None:
             return
         sock.setblocking(1)
-	# TODO: add bytes received to self.stat_bytes
+        # TODO: add bytes received to self.stat_bytes
         self._validate_header(read_ros_handshake_header(sock, self.read_buff, self.protocol.buff_size))
                 
     def send_message(self, msg, seq):

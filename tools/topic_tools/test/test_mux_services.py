@@ -63,37 +63,37 @@ class MuxServiceTestCase(unittest.TestCase):
             
     def test_add_delete_list(self):
         add_srv, delete_srv, list_srv, select_srv = self.make_srv_proxies()
-	# Check initial condition
+        # Check initial condition
         topics = list_srv().topics
         self.assertEquals(set(topics), set(['/input']))
-	# Add a topic and make sure it's there
+        # Add a topic and make sure it's there
         add_srv('/new_input')
         topics = list_srv().topics
         self.assertEquals(set(topics), set(['/input', '/new_input']))
-	# Try to add the same topic again, make sure it fails, and that
-	# nothing changes.
-	try:
+        # Try to add the same topic again, make sure it fails, and that
+        # nothing changes.
+        try:
             add_srv('/new_input')
-	except rospy.ServiceException:
-	    pass
-	else:
-	    self.fail('service call should have thrown an exception')
+        except rospy.ServiceException:
+            pass
+        else:
+            self.fail('service call should have thrown an exception')
         topics = list_srv().topics
         self.assertEquals(set(topics), set(['/input', '/new_input']))
-	# Select a topic, then try to delete it, make sure it fails, and
-	# that nothing changes.
-	select_srv('/input')
-	try:
+        # Select a topic, then try to delete it, make sure it fails, and
+        # that nothing changes.
+        select_srv('/input')
+        try:
             delete_srv('/input')
-	except rospy.ServiceException:
-	    pass
-	else:
-	    self.fail('service call should have thrown an exception')
+        except rospy.ServiceException:
+            pass
+        else:
+            self.fail('service call should have thrown an exception')
         topics = list_srv().topics
         self.assertEquals(set(topics), set(['/input', '/new_input']))
-	# Select nothing, to allow deletion
-	select_srv('__none')
-	# Delete topics
+        # Select nothing, to allow deletion
+        select_srv('__none')
+        # Delete topics
         delete_srv('/input')
         topics = list_srv().topics
         self.assertEquals(set(topics), set(['/new_input']))

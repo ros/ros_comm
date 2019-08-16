@@ -162,7 +162,7 @@ class SSHChildROSLaunchProcess(roslaunch.server.ChildROSLaunchProcess):
         except ImportError as e:
             _logger.error("cannot use SSH: paramiko is not installed")
             return None, "paramiko is not installed"
-		#load user's ssh configuration
+        #load user's ssh configuration
         config_block = {'hostname': None, 'user': None, 'identityfile': None}
         ssh_config = paramiko.SSHConfig()
         try:
