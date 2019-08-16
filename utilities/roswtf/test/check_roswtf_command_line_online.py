@@ -64,7 +64,7 @@ class TestRostopicOnline(unittest.TestCase):
     ## test that the rosmsg command works
     def test_cmd_help(self):
         cmd = 'roswtf'
-        output = Popen([cmd, '-h'], stdout=PIPE).communicate()[0]
+        output = Popen([cmd, '-h'], stdout=PIPE).communicate()[0].decode()
         self.assert_('Options' in output)
             
     def test_offline(self):
@@ -117,12 +117,12 @@ class TestRostopicOnline(unittest.TestCase):
         # every package in the ROS stack, which doesn't work.
 
         output, err = Popen([cmd], **kwds).communicate()
-        self._check_output([cmd], output, err)
+        self._check_output([cmd], output.decode(), err.decode())
 
         # run roswtf on a simple launch file online
         rospack = rospkg.RosPack()
         p = os.path.join(rospack.get_path('roswtf'), 'test', 'min.launch')
-        output = Popen([cmd, p], **kwds).communicate()[0]
+        output = Popen([cmd, p], **kwds).communicate()[0].decode()
         self._check_output([cmd, p], output)
 
     def _check_output(self, cmd, output, error=None):
