@@ -74,7 +74,7 @@ class TestTopicStatistics(unittest.TestCase):
         return abs(found_freq - expected) / expected <= error_margin
 
     def test_frequencies(self):
-        rospy.Subscriber('/statistics', TopicStatistics, self.new_msg)
+        sub = rospy.Subscriber('/statistics', TopicStatistics, self.new_msg)
 
         self.assert_eventually(
             lambda: '/very_fast_chatter' in self.topic_statistic_msg_map)

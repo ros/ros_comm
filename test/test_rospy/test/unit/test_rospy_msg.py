@@ -199,6 +199,7 @@ class TestRospyMsg(unittest.TestCase):
         
         #deserialize with extra data leftover
         b.truncate(0)
+        b.seek(0)
         b.write(valids[0]+b'leftovers')
         rospy.msg.deserialize_messages(b, msg_queue, data_class)
         self.assertEquals(1, len(msg_queue))
@@ -224,7 +225,6 @@ class TestRospyMsg(unittest.TestCase):
         #deserialize multiple values with max_msgs
         max_msgs = 5
         b.truncate(0)
-        b.seek(0)
         for v in valids:
             b.write(v)
         rospy.msg.deserialize_messages(b, msg_queue, data_class, max_msgs=max_msgs)
