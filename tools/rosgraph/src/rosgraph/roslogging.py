@@ -154,10 +154,14 @@ def configure_logging(logname, level=logging.INFO, filename=None, env=None):
     if not config_file:
         # search for logging config file in ROS_HOME, ROS_ETC_DIR or relative
         # to the rosgraph package directory.
-        rosgraph_d = rospkg.RosPack().get_path('rosgraph')
-        for config_dir in [os.path.join(rospkg.get_ros_home(), 'config'),
-                           rospkg.get_etc_ros_dir(),
-                           os.path.join(rosgraph_d, 'conf')]:
+        config_dirs = [os.path.join(rospkg.get_ros_home(), 'config'),
+                       rospkg.get_etc_ros_dir()]
+        try:
+            config_dirs.append(os.path.join(
+                rospkg.RosPack().get_path('rosgraph'), 'conf'))
+        except rospkg.common.ResourceNotFound:
+            pass
+        for config_dir in config_dirs:
             for extension in ('conf', 'yaml'):
                 f = os.path.join(config_dir,
                                  'python_logging{}{}'.format(os.path.extsep,
