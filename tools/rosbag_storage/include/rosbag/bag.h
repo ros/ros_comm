@@ -600,8 +600,11 @@ void Bag::doWrite(std::string const& topic, ros::Time const& time, T const& msg,
 
         std::multiset<IndexEntry>& chunk_connection_index = curr_chunk_connection_indexes_[connection_info->id];
         chunk_connection_index.insert(chunk_connection_index.end(), index_entry);
-        std::multiset<IndexEntry>& connection_index = connection_indexes_[connection_info->id];
-        connection_index.insert(connection_index.end(), index_entry);
+
+        if (mode_ != BagMode::Write) {
+          std::multiset<IndexEntry>& connection_index = connection_indexes_[connection_info->id];
+          connection_index.insert(connection_index.end(), index_entry);
+        }
 
         // Increment the connection count
         curr_chunk_info_.connection_counts[connection_info->id]++;
