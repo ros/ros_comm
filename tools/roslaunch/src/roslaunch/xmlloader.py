@@ -632,7 +632,7 @@ class XmlLoader(loader.Loader):
             loader.post_process_include_args(child_ns)
 
         except ArgException as e:
-            if not self.ignore_default_args:
+            if not self.ignore_unset_args:
                 raise XmlParseException("included file [%s] requires the '%s' arg to be set"%(inc_filename, str(e)))
         except XmlParseException as e:
             raise XmlParseException("while processing %s:\n%s"%(inc_filename, str(e)))
@@ -751,7 +751,7 @@ class XmlLoader(loader.Loader):
             ros_config.add_roslaunch_file(filename)            
             self._load_launch(launch, ros_config, is_core=core, filename=filename, argv=argv, verbose=verbose)
         except ArgException as e:
-            if not self.ignore_default_args:
+            if not self.ignore_unset_args:
                 raise XmlParseException("[%s] requires the '%s' arg to be set"%(filename, str(e)))
         except SubstitutionException as e:
             raise XmlParseException(str(e))

@@ -297,7 +297,7 @@ def calculate_missing(base_pkg, missing, file_deps, use_test_depends=False):
     return missing
 
 
-def roslaunch_deps(files, verbose=False, use_test_depends=False, ignore_default_args=False):
+def roslaunch_deps(files, verbose=False, use_test_depends=False, ignore_unset_args=False):
     """
     @param packages: list of packages to check
     @type  packages: [str]
@@ -306,8 +306,8 @@ def roslaunch_deps(files, verbose=False, use_test_depends=False, ignore_default_
     @type  files: [str]
     @param use_test_depends [bool]: use test_depends as installed package
     @type  use_test_depends: [bool]
-    @param ignore_default_args [bool]: ignore exceptions raised by missing default value for <arg> tags
-    @type  ignore_default_args: [bool]
+    @param ignore_unset_args [bool]: ignore exceptions raised by missing default value for <arg> tags
+    @type  ignore_unset_args: [bool]
     @return: base_pkg, file_deps, missing.
       base_pkg is the package of all files
       file_deps is a { filename : RoslaunchDeps } dictionary of
@@ -332,7 +332,7 @@ def roslaunch_deps(files, verbose=False, use_test_depends=False, ignore_default_
         try:
             rl_file_deps(file_deps, launch_file, verbose)
         except RoslaunchDepsException as e:
-            if ignore_default_args:
+            if ignore_unset_args:
                 import re
                 if not re.compile(r'No value for arg').search(str(e)):
                     raise RoslaunchDepsException(str(e))

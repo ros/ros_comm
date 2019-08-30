@@ -180,18 +180,18 @@ def get_or_generate_uuid(options_runid, options_wait_for_master):
                 val = roslaunch.core.generate_run_id()
     return val
 
-def check_roslaunch(f, use_test_depends=False, ignore_default_args=False):
+def check_roslaunch(f, use_test_depends=False, ignore_unset_args=False):
     """
     Check roslaunch file for errors, returning error message if check fails. This routine
     is mainly to support rostest's roslaunch_check.
 
     :param f: roslaunch file name, ``str``
     :param use_test_depends: Consider test_depends, ``Bool``
-    :param ignore_default_args: Consider ignore default arg requirements, ``Bool``
+    :param ignore_unset_args: Consider ignore default arg requirements, ``Bool``
     :returns: error message or ``None``
     """
     try:
-        rl_config = roslaunch.config.load_config_default([f], DEFAULT_MASTER_PORT, verbose=False, ignore_default_args=ignore_default_args)
+        rl_config = roslaunch.config.load_config_default([f], DEFAULT_MASTER_PORT, verbose=False, ignore_unset_args=ignore_unset_args)
     except roslaunch.core.RLException as e:
         return str(e)
     
@@ -199,7 +199,7 @@ def check_roslaunch(f, use_test_depends=False, ignore_default_args=False):
     errors = []
     # check for missing deps
     try:
-        base_pkg, file_deps, missing = roslaunch.depends.roslaunch_deps([f], use_test_depends=use_test_depends, ignore_default_args=ignore_default_args)
+        base_pkg, file_deps, missing = roslaunch.depends.roslaunch_deps([f], use_test_depends=use_test_depends, ignore_unset_args=ignore_unset_args)
     except rospkg.common.ResourceNotFound as r:
         errors.append("Could not find package [%s] included from [%s]"%(str(r), f))
         missing = {}
