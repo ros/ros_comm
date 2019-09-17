@@ -467,9 +467,11 @@ bool Recorder::checkSize()
         {
             if (options_.split)
             {
+                ROS_INFO("Check size - stop writing %s", target_filename_.c_str());
                 stopWriting();
                 split_count_++;
                 checkNumSplits();
+                ROS_INFO("Check size - start writing");
                 startWriting();
             } else {
                 ros::shutdown();
@@ -490,10 +492,12 @@ bool Recorder::checkDuration(const ros::Time& t)
             {
                 while (start_time_ + options_.max_duration < t)
                 {
+                    ROS_INFO("Check duration - stop writing %s", target_filename_.c_str());
                     stopWriting();
                     split_count_++;
                     checkNumSplits();
                     start_time_ += options_.max_duration;
+                    ROS_INFO("Check duration - start writing");
                     startWriting();
                 }
             } else {
@@ -509,6 +513,7 @@ bool Recorder::checkDuration(const ros::Time& t)
 //! Thread that actually does writing to file.
 void Recorder::doRecord() {
     // Open bag file for writing
+    ROS_INFO("Do record - start writing");
     startWriting();
 
     // Schedule the disk space check
@@ -563,6 +568,7 @@ void Recorder::doRecord() {
             bag_.write(out.topic, out.time, *out.msg, out.connection_header);
     }
 
+    ROS_INFO("Do record - stop writing %s", target_filename_.c_str());
     stopWriting();
 }
 
