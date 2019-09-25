@@ -51,7 +51,7 @@ import time
 import yaml
 
 from Cryptodome.Cipher import AES
-from Cryptodome.Random import random
+from Cryptodome.Random import get_random_bytes
 
 import gnupg
 
@@ -226,7 +226,7 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
         f.seek(chunk_data_pos)
         chunk = _read(f, chunk_size)
         # Encrypt chunk
-        iv = random.getrandbits(AES.block_size)
+        iv = get_random_bytes(AES.block_size)
         f.seek(chunk_data_pos)
         f.write(iv)
         cipher = AES.new(self._symmetric_key, AES.MODE_CBC, iv)
@@ -304,7 +304,7 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
                 v = v.encode()
             header_str += _pack_uint32(len(k) + 1 + len(v)) + k + equal + v
 
-        iv = random.getrandbits(AES.block_size)
+        iv = get_random_bytes(AES.block_size)
         enc_str = iv
         cipher = AES.new(self._symmetric_key, AES.MODE_CBC, iv)
         enc_str += cipher.encrypt(_add_padding(header_str))
@@ -350,7 +350,7 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
     def _build_symmetric_key(self):
         if not self._gpg_key_user:
             return
-        self._symmetric_key = random.getrandbits(AES.block_size)
+        self._symmetric_key = get_random_bytes(AES.block_size)
         self._encrypted_symmetric_key = _encrypt_string_gpg(self._gpg_key_user, self._symmetric_key)
 
     def _decrypt_encrypted_header(self, f):
@@ -371,9 +371,10 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
         header = cipher.decrypt(encrypted_header)
         return _remove_padding(header)
 
-def _add_padding(input_str):
+def _add_padding(input_bytes):
     # Add PKCS#7 padding to input string
-    return input_str + (AES.block_size - len(input_str) % AES.block_size) * chr(AES.block_size - len(input_str) % AES.block_size)
+    padding_num = AES.block_size - len(input_bytes) % AES.block_size
+    return input_bytes + bytes((padding_num,) * padding_num)
 
 def _remove_padding(input_str):
     # Remove PKCS#7 padding from input string
