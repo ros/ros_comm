@@ -44,6 +44,7 @@ The common entry point for most libraries is the L{XmlRpcNode} class.
 
 import errno
 import logging
+import os
 import select
 import socket
 
@@ -129,14 +130,18 @@ class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
             logger = logging.getLogger('xmlrpc')
             if logger:
                 logger.error(traceback.format_exc())
-    
-class ForkingXMLRPCServer(socketserver.ForkingMixIn, SimpleXMLRPCServer):
-    """
-    Adds ThreadingMixin to SimpleXMLRPCServer to support multiple concurrent
-    requests via forking. Also makes logging toggleable.      
-    """
-    def __init__(self, addr, request_handler=SilenceableXMLRPCRequestHandler, log_requests=1):
-        SimpleXMLRPCServer.__init__(self, addr, request_handler, log_requests)
+
+
+# ForkingMixIn and the Forking classes mentioned below are only available on POSIX 
+# platforms that support fork().
+if hasattr(os, "fork"):
+    class ForkingXMLRPCServer(socketserver.ForkingMixIn, SimpleXMLRPCServer):
+        """
+        Adds ThreadingMixin to SimpleXMLRPCServer to support multiple concurrent
+        requests via forking. Also makes logging toggleable.      
+        """
+        def __init__(self, addr, request_handler=SilenceableXMLRPCRequestHandler, log_requests=1):
+            SimpleXMLRPCServer.__init__(self, addr, request_handler, log_requests)
     
 
 class XmlRpcHandler(object):
