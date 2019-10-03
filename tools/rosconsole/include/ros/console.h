@@ -330,7 +330,7 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
 
 #define ROSCONSOLE_DEFINE_LOCATION(cond, level, name) \
   ROSCONSOLE_AUTOINIT; \
-  static ::ros::console::LogLocation __rosconsole_define_location__loc = {false, false, ::ros::console::levels::Count, 0}; /* Initialized at compile-time */ \
+  static ::ros::console::LogLocation __rosconsole_define_location__loc = {false, false, ::ros::console::levels::Count, NULL}; /* Initialized at compile-time */ \
   if (ROS_UNLIKELY(!__rosconsole_define_location__loc.initialized_)) \
   { \
     initializeLogLocation(&__rosconsole_define_location__loc, name, level); \
@@ -346,7 +346,7 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
     ::ros::console::print(filter, __rosconsole_define_location__loc.logger_, __rosconsole_define_location__loc.level_, __FILE__, __LINE__, __ROSCONSOLE_FUNCTION__, __VA_ARGS__)
 
 #define ROSCONSOLE_PRINT_AT_LOCATION(...) \
-    ROSCONSOLE_PRINT_AT_LOCATION_WITH_FILTER(0, __VA_ARGS__)
+    ROSCONSOLE_PRINT_AT_LOCATION_WITH_FILTER(NULL, __VA_ARGS__)
 
 // inside a macro which uses args use only well namespaced variable names in order to not overlay variables coming in via args
 #define ROSCONSOLE_PRINT_STREAM_AT_LOCATION_WITH_FILTER(filter, args) \
@@ -358,7 +358,7 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
   } while (0)
 
 #define ROSCONSOLE_PRINT_STREAM_AT_LOCATION(args) \
-    ROSCONSOLE_PRINT_STREAM_AT_LOCATION_WITH_FILTER(0, args)
+    ROSCONSOLE_PRINT_STREAM_AT_LOCATION_WITH_FILTER(NULL, args)
 
 /**
  * \brief Log to a given named logger at a given verbosity level, only if a given condition has been met, with printf-style formatting
