@@ -240,7 +240,7 @@ bool TransportUDP::createIncoming(int port, bool is_server)
 
   sock_ = socket(AF_INET, SOCK_DGRAM, 0);
 
-  if (sock_ <= 0)
+  if (sock_ == ROS_INVALID_SOCKET)
   {
     ROS_ERROR("socket() failed with error [%s]", last_socket_error_string());
     return false;
