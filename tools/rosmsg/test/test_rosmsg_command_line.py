@@ -46,7 +46,7 @@ class TestRosmsg(unittest.TestCase):
 
     def setUp(self):
         self.new_environ = os.environ
-        self.new_environ["PYTHONPATH"] = os.path.join(os.getcwd(), "src")+':'+os.environ['PYTHONPATH']
+        self.new_environ["PYTHONPATH"] = os.path.join(os.getcwd(), "src")+os.pathsep+os.environ['PYTHONPATH']
 
     ## test that the rosmsg command works
     def test_cmd_help(self):
@@ -140,7 +140,7 @@ class TestRosmsg(unittest.TestCase):
         output = Popen(['rossrv', 'show', 'std_srvs/Empty'], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('---', output.strip())
         output = Popen(['rossrv', 'show', 'test_rosmaster/AddTwoInts'], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('int64 a\nint64 b\n---\nint64 sum', output.strip())
+        self.assertEquals(os.linesep.join(['int64 a', 'int64 b', '---', 'int64 sum']), output.strip())
 
         # test against test_rosmsg package
         d = os.path.abspath(os.path.dirname(__file__))
@@ -156,23 +156,24 @@ class TestRosmsg(unittest.TestCase):
                 text = f.read()
             with open(os.path.join(msg_raw_d, '%s.msg'%t), 'r') as f:
                 text_raw = f.read()
-            text = text+'\n' # running command adds one new line
-            text_raw = text_raw+'\n'
+            text = text.strip()
+            text_raw = text_raw.strip()
             type_ =test_message_package+'/'+t
             output = Popen(['rosmsg', 'show', type_], stdout=PIPE).communicate()[0].decode()
-            self.assertEquals(text, output)
+            self.assertEquals(text, output.strip())
             output = Popen(['rosmsg', 'show', '-r',type_], stdout=PIPE).communicate()[0].decode()
-            self.assertEquals(text_raw, output)
+            self.assertEquals(text_raw, output.strip())
             output = Popen(['rosmsg', 'show', '--raw', type_], stdout=PIPE).communicate()[0].decode()
-            self.assertEquals(text_raw, output)
+            self.assertEquals(text_raw, output.strip())
 
             # test as search
             type_ = t
-            text = "[test_rosmaster/%s]:\n%s"%(t, text)
-            text_raw = "[test_rosmaster/%s]:\n%s"%(t, text_raw)
+            text_prefix = "[test_rosmaster/%s]:"%t
+            text = os.linesep.join([text_prefix, text])
+            text_raw = os.linesep.join([text_prefix, text_raw])
             output = Popen(['rosmsg', 'show', type_], stdout=PIPE).communicate()[0].decode()
-            self.assertEquals(text, output)
+            self.assertEquals(text, output.strip())
             output = Popen(['rosmsg', 'show', '-r',type_], stdout=PIPE, stderr=PIPE).communicate()
-            self.assertEquals(text_raw, output[0].decode(), "Failed: %s"%(str(output)))
+            self.assertEquals(text_raw, output[0].decode().strip(), "Failed: %s"%(str(output)))
             output = Popen(['rosmsg', 'show', '--raw', type_], stdout=PIPE).communicate()[0].decode()
-            self.assertEquals(text_raw, output)
+            self.assertEquals(text_raw, output.strip())
