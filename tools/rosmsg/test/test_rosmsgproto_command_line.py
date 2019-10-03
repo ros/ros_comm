@@ -49,7 +49,7 @@ import rosmsg
 
 from nose.plugins.skip import SkipTest
 
-ROSMSGPROTO_FN = [os.path.join(os.getcwd(), '../scripts/rosmsg-proto')]
+ROSMSGPROTO_FN = [sys.executable, os.path.join(os.getcwd(), '../scripts/rosmsg-proto')]
 _NO_DICT = True
 if "OrderedDict" in collections.__dict__:
     _NO_DICT = False
