@@ -89,6 +89,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
 
     if (vm.count("help")) {
       std::cout << desc << std::endl;
+      std::cout << ">> Starsky modified rosbag <<" << std::endl;
       exit(0);
     }
 
