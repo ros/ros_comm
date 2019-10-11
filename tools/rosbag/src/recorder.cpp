@@ -155,16 +155,16 @@ int Recorder::run() {
     last_buffer_warn_ = Time();
     queue_ = new std::queue<OutgoingMessage>;
 
+    if (!ros::Time::waitForValid(ros::WallDuration(2.0)))
+      ROS_WARN("/use_sim_time set to true and no clock published.  Still waiting for valid time...");
+
+    ros::Time::waitForValid();
+
     // Subscribe to each topic
     if (!options_.regex) {
     	foreach(string const& topic, options_.topics)
 			subscribe(topic);
     }
-
-    if (!ros::Time::waitForValid(ros::WallDuration(2.0)))
-      ROS_WARN("/use_sim_time set to true and no clock published.  Still waiting for valid time...");
-
-    ros::Time::waitForValid();
 
     start_time_ = ros::Time::now();
 
