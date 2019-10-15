@@ -270,7 +270,7 @@ class TestGenmsgPy(unittest.TestCase):
         widths = [(8, Int8), (16, Int16), (32, Int32), (64, Int64)]
         for w, cls in widths:
             maxp = long(math.pow(2, w-1)) - 1
-            maxn = -long(math.pow(2, w-1)) + 1
+            maxn = -long(math.pow(2, w-1))
             self._test_ser_deser(cls(maxp), cls())
             self._test_ser_deser(cls(maxn), cls())
             try:
