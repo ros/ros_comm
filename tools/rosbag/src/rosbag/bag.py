@@ -389,7 +389,7 @@ def _encrypt_string_gpg(key_user, input):
 
 def _decrypt_string_gpg(input):
     gpg = gnupg.GPG()
-    dec_data = gpg.decrypt(input, passphrase='clearpath')
+    dec_data = gpg.decrypt(input)
     if not dec_data.ok:
         raise ROSBagEncryptException('Failed to decrypt bag: {}.  Have you installed a required private key?'.format(dec_data.status))
     return dec_data.data
