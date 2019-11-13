@@ -251,10 +251,10 @@ class ROSLaunchChildHandler(ROSLaunchBaseHandler):
         @param pm: process monitor to use
         @type  pm: L{ProcessMonitor}
         @param sigint_timeout: The SIGINT timeout used when killing nodes (in seconds).
-        @type  sigint_timeout: int
+        @type  sigint_timeout: float
         @param sigterm_timeout: The SIGTERM timeout used when killing nodes if SIGINT does not stop the node (
                                 in seconds).
-        @type  sigterm_timeout: int
+        @type  sigterm_timeout: float
         @raise RLException: If parameters are invalid
         """
         super(ROSLaunchChildHandler, self).__init__(pm)        
@@ -492,10 +492,10 @@ class ROSLaunchChildNode(ROSLaunchNode):
     ## @param server_uri: XML-RPC URI of roslaunch server
     ## @type  server_uri: str
     ## @param sigint_timeout: The SIGINT timeout used when killing nodes (in seconds).
-    ## @type  sigint_timeout: int
+    ## @type  sigint_timeout: float
     ## @param sigterm_timeout: The SIGTERM timeout used when killing nodes if SIGINT does not stop the node (
     ##                         in seconds).
-    ## @type  sigterm_timeout: int
+    ## @type  sigterm_timeout: float
     ## @return: XML-RPC URI
     ## @rtype: str
         """        

@@ -268,9 +268,9 @@ class ROSLaunchRunner(object):
         @param master_logger_level: Specify roscore's rosmaster.master logger level, use default if it is False.
         @type master_logger_level: str or False
         @param sigint_timeout: The SIGINT timeout used when killing nodes (in seconds).
-        @type sigint_timeout: int
+        @type sigint_timeout: float
         @param sigterm_timeout: The SIGTERM timeout used when killing nodes if SIGINT does not stop the node (in seconds).
-        @type sigterm_timeout: int
+        @type sigterm_timeout: float
         """
         if run_id is None:
             raise RLException("run_id is None")

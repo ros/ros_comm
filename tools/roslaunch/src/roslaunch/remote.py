@@ -64,9 +64,9 @@ class ROSRemoteRunner(roslaunch.launch.ROSRemoteRunnerIF):
         :param pm process monitor, ``ProcessMonitor``
         :param server: roslaunch parent server, ``ROSLaunchParentNode``
         :param sigint_timeout: The SIGINT timeout used when killing nodes (in seconds).
-        :type sigint_timeout: int
+        :type sigint_timeout: float
         :param sigterm_timeout: The SIGTERM timeout used when killing nodes if SIGINT does not stop the node (in seconds).
-        :type sigterm_timeout: int
+        :type sigterm_timeout: float
         """
         self.run_id = run_id
         self.rosconfig = rosconfig

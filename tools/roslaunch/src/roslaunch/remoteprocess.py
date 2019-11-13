@@ -132,9 +132,9 @@ class SSHChildROSLaunchProcess(roslaunch.server.ChildROSLaunchProcess):
         :param machine: Machine instance. Must be fully configured.
             machine.env_loader is required to be set.
         :param sigint_timeout: The SIGINT timeout used when killing nodes (in seconds).
-        :type sigint_timeout: int
+        :type sigint_timeout: float
         :param sigterm_timeout: The SIGTERM timeout used when killing nodes if SIGINT does not stop the node (in seconds).
-        :type sigterm_timeout: int
+        :type sigterm_timeout: float
         """
         if not machine.env_loader:
             raise ValueError("machine.env_loader must have been assigned before creating ssh child instance")
