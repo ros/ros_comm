@@ -212,7 +212,7 @@ def load_mappings(argv):
 import re
 
 #~,/, or ascii char followed by (alphanumeric, _, /)
-NAME_LEGAL_CHARS_P = re.compile('^[\~\/A-Za-z][\w\/]*$')
+NAME_LEGAL_CHARS_P = re.compile(r'^[\~\/A-Za-z][\w\/]*$')
 def is_legal_name(name):
     """
     Check if name is a legal ROS name for graph resources
@@ -232,7 +232,7 @@ def is_legal_name(name):
     m = NAME_LEGAL_CHARS_P.match(name)
     return m is not None and m.group(0) == name and not '//' in name
     
-BASE_NAME_LEGAL_CHARS_P = re.compile('^[A-Za-z][\w]*$') #ascii char followed by (alphanumeric, _)
+BASE_NAME_LEGAL_CHARS_P = re.compile(r'^[A-Za-z][\w]*$') #ascii char followed by (alphanumeric, _)
 def is_legal_base_name(name):
     """
     Validates that name is a legal base name for a graph resource. A base name has
@@ -243,7 +243,7 @@ def is_legal_base_name(name):
     m = BASE_NAME_LEGAL_CHARS_P.match(name)
     return m is not None and m.group(0) == name
 
-REMAP_PATTERN = re.compile('^([\~\/A-Za-z]|_|__)[\w\/]*' + REMAP + '.*')
+REMAP_PATTERN = re.compile(r'^([\~\/A-Za-z]|_|__)[\w\/]*' + REMAP + '.*')
 
 def is_legal_remap(arg):
     """
