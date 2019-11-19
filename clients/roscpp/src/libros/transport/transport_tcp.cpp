@@ -282,7 +282,7 @@ bool TransportTCP::connect(const std::string& host, int port)
         address->sin_family = it->ai_family;
         address->sin_port = htons(port);
 	
-        strcpy(namebuf, inet_ntoa(address->sin_addr));
+        inet_ntop(AF_INET, (void*)&(address->sin_addr), namebuf, sizeof(namebuf));
         found = true;
         break;
       }
@@ -735,7 +735,7 @@ std::string TransportTCP::getClientURI()
   {
     case AF_INET:
       port = ntohs(sin->sin_port);
-      strcpy(namebuf, inet_ntoa(sin->sin_addr));
+      inet_ntop(AF_INET, (void*)&(sin->sin_addr), namebuf, sizeof(namebuf));
       break;
     case AF_INET6:
       port = ntohs(sin6->sin6_port);

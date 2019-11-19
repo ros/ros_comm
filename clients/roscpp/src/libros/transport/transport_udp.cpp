@@ -712,7 +712,7 @@ std::string TransportUDP::getClientURI()
 
   char namebuf[128];
   int port = ntohs(sin->sin_port);
-  strcpy(namebuf, inet_ntoa(sin->sin_addr));
+  inet_ntop(AF_INET, (void*)&(sin->sin_addr), namebuf, sizeof(namebuf));
 
   std::string ip = namebuf;
   std::stringstream uri;
