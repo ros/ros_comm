@@ -49,12 +49,12 @@ from rospkg.environment import ROS_LOG_DIR
 class LoggingException(Exception): pass
 
 class RospyLogger(logging.getLoggerClass()):
-    def findCaller(self, stack_info=False):
+    def findCaller(self, *args, **kwargs):
         """
         Find the stack frame of the caller so that we can note the source
         file name, line number, and function name with class name if possible.
         """
-        file_name, lineno, func_name = super(RospyLogger, self).findCaller()[:3]
+        file_name, lineno, func_name = super(RospyLogger, self).findCaller(*args, **kwargs)[:3]
         file_name = os.path.normcase(file_name)
 
         f = inspect.currentframe()
