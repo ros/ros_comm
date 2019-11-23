@@ -127,7 +127,7 @@ def test_roslogging_user_logger():
             'INFO',
             os.environ['ROS_IP'],
             msg,
-            '[0-9]*\.[0-9]*',
+            r'[0-9]*\.[0-9]*',
             '[0-9]*',
             'rosout.custom_logger_test',
             '<filename>',
@@ -135,7 +135,7 @@ def test_roslogging_user_logger():
             '<func_name>',
             # depending if rospy.get_name() is available
             '(/unnamed|<unknown_node_name>)',
-            '[0-9]*\.[0-9]*',
+            r'[0-9]*\.[0-9]*',
         ])
         assert_regexp_matches(lout.getvalue().strip(), log_expected)
 

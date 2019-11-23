@@ -110,7 +110,7 @@ try:
             log_out = ' '.join([
                 'INFO',
                 'on ' + loc,
-                '[0-9]*\.[0-9]*',
+                r'[0-9]*\.[0-9]*',
                 '[0-9]*',
                 'rosout',
                 re.escape(this_file),
@@ -118,7 +118,7 @@ try:
                 function,
                 # depending if rospy.get_name() is available
                 '(/unnamed|<unknown_node_name>)',
-                '[0-9]*\.[0-9]*',
+                r'[0-9]*\.[0-9]*',
             ])
             assert_regexp_matches(lout.getvalue().splitlines()[i], log_out)
 
