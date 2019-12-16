@@ -91,11 +91,6 @@ class TestRoslaunchRlutil(unittest.TestCase):
         assert error_msg is None
         
     def test_check_roslaunch(self):
-        from roslaunch.rlutil import check_roslaunch
-
-        test_ignore_unset_args_p = os.path.join(get_test_path(), 'test', 'xml', 'test-ignore-unset-args.launch')
-        try:
-            result = check_roslaunch(test_ignore_unset_args_p, ignore_unset_args=True)
-            self.assertEqual(result, None)
-        except roslaunch.RLException:
-            pass
+        filename = os.path.join(get_test_path(), 'test', 'xml', 'test-ignore-unset-args.launch')
+        error_msg = roslaunch.rlutil.check_roslaunch(filename, ignore_unset_args=True)
+        assert error_msg is None
