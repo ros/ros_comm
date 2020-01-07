@@ -187,6 +187,8 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
         super(_ROSBagAesCbcEncryptor, self).__init__()
         # User name of GPG key used for symmetric key encryption
         self._gpg_key_user = None
+        # GPG passphrase
+        self._gpg_passphrase = None
         # Symmetric key for encryption/decryption
         self._symmetric_key = None
         # Encrypted symmetric key
@@ -202,6 +204,7 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
         @raise ROSBagException: if GPG key user has already been set
         """
         if bag._mode != 'w':
+            self._gpg_passphrase = os.getenv('ROSBAG_GPG_PASSPHRASE', None)
             return
         if self._gpg_key_user == gpg_key_user:
             return
@@ -281,7 +284,7 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
         except ROSBagFormatException:
             raise ROSBagFormatException('GPG key user is not found in header')
         try:
-            self._symmetric_key = _decrypt_string_gpg(self._encrypted_symmetric_key)
+            self._symmetric_key = _decrypt_string_gpg(self._encrypted_symmetric_key, self._gpg_passphrase)
         except ROSBagFormatException:
             raise
 
@@ -387,9 +390,9 @@ def _encrypt_string_gpg(key_user, input):
         raise ROSBagEncryptException('Failed to encrypt bag: {}.  Have you installed a required public key?'.format(enc_data.status))
     return str(enc_data)
 
-def _decrypt_string_gpg(input):
+def _decrypt_string_gpg(input, passphrase=None):
     gpg = gnupg.GPG()
-    dec_data = gpg.decrypt(input, passphrase='clearpath')
+    dec_data = gpg.decrypt(input, passphrase=passphrase)
     if not dec_data.ok:
         raise ROSBagEncryptException('Failed to decrypt bag: {}.  Have you installed a required private key?'.format(dec_data.status))
     return dec_data.data
