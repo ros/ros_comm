@@ -56,6 +56,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       ("publish,p", "Publish a msg when the record begin")
       ("output-prefix,o", po::value<std::string>(), "prepend PREFIX to beginning of bag name")
       ("output-name,O", po::value<std::string>(), "record bagnamed NAME.bag")
+      ("file-name,f", po::value<std::string>(), "file for custom record freq")
       ("buffsize,b", po::value<int>()->default_value(256), "Use an internal buffer of SIZE MB (Default: 256)")
       ("chunksize", po::value<int>()->default_value(768), "Set chunk size of message data, in KB (Default: 768. Advanced)")
       ("limit,l", po::value<int>()->default_value(0), "Only record NUM messages on each topic")
@@ -69,7 +70,8 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       ("duration", po::value<std::string>(), "Record a bag of maximum duration in seconds, unless 'm', or 'h' is appended.")
       ("node", po::value<std::string>(), "Record all topics subscribed to by a specific node.")
       ("tcpnodelay", "Use the TCP_NODELAY transport hint when subscribing to topics.")
-      ("udp", "Use the UDP transport hint when subscribing to topics.");
+      ("udp", "Use the UDP transport hint when subscribing to topics.")
+      ("custom-freq,c", "Use custom freq to record topics");
 
   
     po::positional_options_description p;
@@ -104,6 +106,8 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     }
     if (vm.count("quiet"))
       opts.quiet = true;
+    if (vm.count("custom-freq"))
+      opts.custom_freq = true;
     if (vm.count("publish"))
       opts.publish = true;
     if (vm.count("output-prefix"))
@@ -115,6 +119,10 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     {
       opts.prefix = vm["output-name"].as<std::string>();
       opts.append_date = false;
+    }
+    if (vm.count("file-name"))
+    {
+      opts.file_name = vm["file-name"].as<std::string>();
     }
     if (vm.count("split"))
     {

@@ -46,6 +46,9 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <unordered_map>
+#include <yaml-cpp/yaml.h>
+
 
 #include <boost/thread/condition.hpp>
 #include <boost/thread/mutex.hpp>
@@ -94,6 +97,7 @@ struct ROSBAG_DECL RecorderOptions
     bool            regex;
     bool            do_exclude;
     bool            quiet;
+    bool            custom_freq;
     bool            append_date;
     bool            snapshot;
     bool            verbose;
@@ -101,6 +105,7 @@ struct ROSBAG_DECL RecorderOptions
     CompressionType compression;
     std::string     prefix;
     std::string     name;
+    std::string     file_name;
     boost::regex    exclude_regex;
     uint32_t        buffer_size;
     uint32_t        chunk_size;
@@ -190,6 +195,9 @@ private:
     ros::WallTime                 warn_next_;
 
     ros::Publisher                pub_begin_write;
+    std::map<std::string, int>    custom_record_freq_;
+    YAML::Node                    custom_freq_config_;
+    std::map<std::string, ros::Time> topic_time_catcher_;
 };
 
 } // namespace rosbag

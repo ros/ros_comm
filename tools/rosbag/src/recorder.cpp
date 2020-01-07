@@ -93,6 +93,8 @@ RecorderOptions::RecorderOptions() :
     regex(false),
     do_exclude(false),
     quiet(false),
+    custom_freq(false),
+    file_name(""),
     append_date(true),
     snapshot(false),
     verbose(false),
@@ -124,6 +126,18 @@ Recorder::Recorder(RecorderOptions const& options) :
     split_count_(0),
     writing_enabled_(true)
 {
+    if(options_.custom_freq){
+        try {
+                custom_freq_config_ = YAML::LoadFile(options_.file_name);
+        } catch (std::exception& e) {
+                ROS_ERROR_STREAM("Error loading file " <<options_.file_name);
+                ROS_DEBUG_STREAM(e.what());
+                exit (EXIT_FAILURE);
+        }
+        for(YAML::const_iterator it = custom_freq_config_.begin(); it!=custom_freq_config_.end(); ++it){
+            custom_record_freq_.insert_or_assign(it->first.as<std::string>(), it->second.as<int>());
+        }
+    }
 }
 
 int Recorder::run() {
@@ -538,8 +552,23 @@ void Recorder::doRecord() {
 
         try
         {
-            if (scheduledCheckDisk() && checkLogging())
-                bag_.write(out.topic, out.time, *out.msg, out.connection_header);
+            if (scheduledCheckDisk() && checkLogging()){
+                if(options_.custom_freq && custom_record_freq_.find(out.topic)!=custom_record_freq_.end()){
+                    if(topic_time_catcher_.find(out.topic)==topic_time_catcher_.end()){
+                        topic_time_catcher_.insert_or_assign(out.topic, out.time);
+                        bag_.write(out.topic, out.time, *out.msg, out.connection_header);
+                    }
+                    else if((out.time.toSec() - topic_time_catcher_.at(out.topic).toSec())> (1.0f/custom_record_freq_.at(out.topic))){
+                        topic_time_catcher_.insert_or_assign(out.topic, out.time);
+                        bag_.write(out.topic, out.time, *out.msg, out.connection_header);
+                    }
+                }
+                else
+                {
+                    bag_.write(out.topic, out.time, *out.msg, out.connection_header);
+                }
+            }
+            
         }
         catch (rosbag::BagException &ex)
         {
