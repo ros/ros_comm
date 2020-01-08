@@ -44,7 +44,6 @@ The common entry point for most libraries is the L{XmlRpcNode} class.
 
 import errno
 import logging
-import os
 import select
 import socket
 
@@ -132,9 +131,8 @@ class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
                 logger.error(traceback.format_exc())
 
 
-# ForkingMixIn and the Forking classes mentioned below are only available on POSIX 
-# platforms that support fork().
-if hasattr(os, "fork"):
+# ForkingMixIn and the Forking classes mentioned below are only available on POSIX platforms.
+if hasattr(socketserver, "ForkingMixIn"):
     class ForkingXMLRPCServer(socketserver.ForkingMixIn, SimpleXMLRPCServer):
         """
         Adds ThreadingMixin to SimpleXMLRPCServer to support multiple concurrent
