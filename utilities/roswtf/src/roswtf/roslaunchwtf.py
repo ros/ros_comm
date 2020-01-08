@@ -293,6 +293,8 @@ def _load_online_ctx(ctx):
     
 def wtf_check_online(ctx):
     _load_online_ctx(ctx)
+    if not ctx.roslaunch_uris:
+        return
     for r in online_roslaunch_warnings:
         warning_rule(r, r[0](ctx), ctx)
     for r in online_roslaunch_errors:
