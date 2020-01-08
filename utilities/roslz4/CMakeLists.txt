@@ -13,7 +13,7 @@ if (NOT lz4_INCLUDE_DIRS)
   message(FATAL_ERROR "lz4 includes not found")
 endif()
 
-find_library(lz4_LIBRARIES NAMES lz4)
+find_library(lz4_LIBRARIES NAMES lz4 liblz4)
 if (NOT lz4_LIBRARIES)
   message(FATAL_ERROR "lz4 library not found")
 endif()
