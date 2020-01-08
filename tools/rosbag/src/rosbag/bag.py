@@ -194,7 +194,7 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
         # Encrypted symmetric key
         self._encrypted_symmetric_key = None
 
-    def initialize(self, bag, gpg_key_user):
+    def initialize(self, bag, gpg_key_user, passphrase=None):
         """
         Initialize encryptor by composing AES symmetric key.
         @param bag: bag to be encrypted/decrypted
@@ -204,7 +204,7 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
         @raise ROSBagException: if GPG key user has already been set
         """
         if bag._mode != 'w':
-            self._gpg_passphrase = os.getenv('ROSBAG_GPG_PASSPHRASE', None)
+            self._gpg_passphrase = passphrase or os.getenv('ROSBAG_GPG_PASSPHRASE', None)
             return
         if self._gpg_key_user == gpg_key_user:
             return
