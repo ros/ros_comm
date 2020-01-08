@@ -50,6 +50,8 @@ function(roslaunch_add_file_check path)
     set(testname "${testname}${_ext}")
   endif()
 
+  # escape drive and path separator
+  string(REPLACE ":" "_" testname ${testname})
   string(REPLACE "/" "_" testname ${testname})
   set(output_path ${CATKIN_TEST_RESULTS_DIR}/${PROJECT_NAME})
   set(cmd "${CMAKE_COMMAND} -E make_directory ${output_path}")
