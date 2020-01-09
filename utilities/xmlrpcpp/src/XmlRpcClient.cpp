@@ -327,12 +327,12 @@ XmlRpcClient::generateHeader(size_t length) const
   header += _host;
 
   char buff[40];
-  snprintf(buff,40,":%d\r\n", _port);
+  std::snprintf(buff,40,":%d\r\n", _port);
 
   header += buff;
   header += "Content-Type: text/xml\r\nContent-length: ";
 
-  snprintf(buff,40,"%zu\r\n\r\n", length);
+  std::snprintf(buff,40,"%zu\r\n\r\n", length);
 
   return header + buff;
 }

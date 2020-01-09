@@ -146,7 +146,7 @@ bool ServiceManager::advertiseService(const AdvertiseServiceOptions& ops)
   args[0] = this_node::getName();
   args[1] = ops.service;
   char uri_buf[1024];
-  snprintf(uri_buf, sizeof(uri_buf), "rosrpc://%s:%d",
+  std::snprintf(uri_buf, sizeof(uri_buf), "rosrpc://%s:%d",
            network::getHost().c_str(), connection_manager_->getTCPPort());
   args[2] = string(uri_buf);
   args[3] = xmlrpc_manager_->getServerURI();
@@ -196,7 +196,7 @@ bool ServiceManager::unregisterService(const std::string& service)
   args[0] = this_node::getName();
   args[1] = service;
   char uri_buf[1024];
-  snprintf(uri_buf, sizeof(uri_buf), "rosrpc://%s:%d",
+  std::snprintf(uri_buf, sizeof(uri_buf), "rosrpc://%s:%d",
            network::getHost().c_str(), connection_manager_->getTCPPort());
   args[2] = string(uri_buf);
 

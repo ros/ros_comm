@@ -84,7 +84,7 @@ void XmlRpcUtil::log(int level, const char* fmt, ...)
     va_list va;
     char buf[1024];
     va_start( va, fmt);
-    vsnprintf(buf,sizeof(buf)-1,fmt,va);
+    std::vsnprintf(buf,sizeof(buf)-1,fmt,va);
     va_end(va);
     buf[sizeof(buf)-1] = 0;
     XmlRpcLogHandler::getLogHandler()->log(level, buf);
@@ -97,7 +97,7 @@ void XmlRpcUtil::error(const char* fmt, ...)
   va_list va;
   va_start(va, fmt);
   char buf[1024];
-  vsnprintf(buf,sizeof(buf)-1,fmt,va);
+  std::vsnprintf(buf,sizeof(buf)-1,fmt,va);
   va_end(va);
   buf[sizeof(buf)-1] = 0;
   XmlRpcErrorHandler::getErrorHandler()->error(buf);

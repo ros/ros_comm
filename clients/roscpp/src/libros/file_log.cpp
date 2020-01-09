@@ -34,14 +34,6 @@
 
 #include <boost/filesystem.hpp>
 
-#ifdef _MSC_VER
-  #ifdef snprintf
-    #undef snprintf
-  #endif
-  #define snprintf _snprintf_s
-#endif
-
-
 namespace fs = boost::filesystem;
 
 namespace ros
@@ -112,7 +104,7 @@ void init(const M_string& remappings)
       }
 
       char pid_str[100];
-      snprintf(pid_str, sizeof(pid_str), "%d", pid);
+      std::snprintf(pid_str, sizeof(pid_str), "%d", pid);
       log_file_name += std::string("_") + std::string(pid_str) + std::string(".log");
     }
 

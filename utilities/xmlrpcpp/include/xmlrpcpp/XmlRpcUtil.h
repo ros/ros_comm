@@ -14,8 +14,6 @@
 #include "xmlrpcpp/XmlRpcDecl.h"
 
 #if defined(_MSC_VER)
-# define snprintf	    _snprintf_s
-# define vsnprintf    _vsnprintf_s
 # define strcasecmp	  _stricmp
 # define strncasecmp	_strnicmp
 #elif defined(__BORLANDC__)
