@@ -14,6 +14,7 @@
 static int poll( struct pollfd *pfd, int nfds, int timeout)
 {
   // workaround: "Windows 8 Bugs 309411 – WSAPoll does not report failed connections"
+  // https://curl.haxx.se/mail/lib-2012-10/0038.html
   // the following logic is to use select() to check all writable socket connnection status.
   // if all the sockets to be checked are not connected, it reports SOCKET_ERROR to
   // error out, instead of going to WSAPoll() which causes infinitely wait situation.
