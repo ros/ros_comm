@@ -336,7 +336,20 @@ void start()
 
   ros::Time::init();
 
-  if (!(g_init_options & init_options::NoRosout))
+  bool no_rosout = false;
+  std::string no_rosout_env;
+  if (get_environment_variable(no_rosout_env,"ROSCPP_NO_ROSOUT"))
+  {
+    try
+    {
+      no_rosout = boost::lexical_cast<bool>(no_rosout_env.c_str());
+    }
+    catch (boost::bad_lexical_cast&)
+    {
+    }
+  }
+
+  if (!(no_rosout || (g_init_options & init_options::NoRosout)))
   {
     g_rosout_appender = new ROSOutAppender;
     ros::console::register_appender(g_rosout_appender);
