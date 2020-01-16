@@ -260,6 +260,14 @@ struct ApproximateTime : public PolicyBase<M0, M1, M2, M3, M4, M5, M6, M7, M8>
     inter_message_lower_bounds_[i] = lower_bound;
   }
 
+  void setInterMessageLowerBound(ros::Duration lower_bound) {
+    ROS_ASSERT(lower_bound >= ros::Duration(0,0));
+    for (size_t i = 0; i < inter_message_lower_bounds_.size(); i++)
+    {
+      inter_message_lower_bounds_[i] = lower_bound;
+    }
+  }
+
   void setMaxIntervalDuration(ros::Duration max_interval_duration) {
     ROS_ASSERT(max_interval_duration >= ros::Duration(0,0));
     max_interval_duration_ = max_interval_duration;
