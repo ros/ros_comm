@@ -300,18 +300,15 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
     //void Recorder::doQueue(topic_tools::ShapeShifter::ConstPtr msg, string const& topic, shared_ptr<ros::Subscriber> subscriber, shared_ptr<int> count) {
     Time rectime = Time::now();
 
-
-        if(options_.custom_freq && custom_record_freq_.find(subscriber->getTopic())!=custom_record_freq_.end()){
+    if(options_.custom_freq && custom_record_freq_.find(subscriber->getTopic())!=custom_record_freq_.end()){
         if(topic_time_catcher_.find(subscriber->getTopic())==topic_time_catcher_.end()){
             topic_time_catcher_.insert_or_assign(subscriber->getTopic(), ros::Time::now());
-            // subscribe(subscriber->getTopic());
         }
         else if((ros::Time::now().toSec() - topic_time_catcher_.at(subscriber->getTopic()).toSec())> (1.0f/custom_record_freq_.at(subscriber->getTopic()))){
             topic_time_catcher_.insert_or_assign(subscriber->getTopic(), ros::Time::now());
-            // subscribe(subscriber->getTopic());
         }
         else{
-            return ;
+            return;
         }
     }
     
@@ -567,10 +564,8 @@ void Recorder::doRecord() {
 
         try
         {
-            if (scheduledCheckDisk() && checkLogging()){
-                    bag_.write(out.topic, out.time, *out.msg, out.connection_header);
-            }
-            
+            if (scheduledCheckDisk() && checkLogging())
+                bag_.write(out.topic, out.time, *out.msg, out.connection_header);
         }
         catch (rosbag::BagException &ex)
         {
