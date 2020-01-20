@@ -626,27 +626,10 @@ void Recorder::doCheckMaster(ros::TimerEvent const& e, ros::NodeHandle& node_han
     (void)node_handle;
     ros::master::V_TopicInfo topics;
     if (ros::master::getTopics(topics)) {
-	    for (ros::master::TopicInfo const& t : topics) {
-	        if (shouldSubscribeToTopic(t.name)){
-                if(options_.custom_freq && custom_record_freq_.find(t.name)!=custom_record_freq_.end()){
-                    if(topic_time_catcher_.find(t.name)==topic_time_catcher_.end()){
-                        topic_time_catcher_.insert_or_assign(t.name, ros::Time::now());
-                        subscribe(t.name);
-                    }
-                    else if((ros::Time::now().toSec() - topic_time_catcher_.at(t.name).toSec())> (1.0f/custom_record_freq_.at(t.name))){
-                        topic_time_catcher_.insert_or_assign(t.name, ros::Time::now());
-                        subscribe(t.name);
-                    }
-                    else{
-                        continue;
-                    }
-                }
-                else
-                {
-                    subscribe(t.name);
-                }
-            }
-        }
+	for (ros::master::TopicInfo const& t : topics) {
+	    if (shouldSubscribeToTopic(t.name))
+	        subscribe(t.name);
+	}
     }
     
     if (options_.node != std::string(""))
@@ -676,33 +659,10 @@ void Recorder::doCheckMaster(ros::TimerEvent const& e, ros::NodeHandle& node_han
           
           if (!c.isFault() && resp2.valid() && resp2.size() > 0 && static_cast<int>(resp2[0]) == 1)
           {
-            for(int i = 0; i < resp2[2].size(); i++){
-                if (shouldSubscribeToTopic(resp2[2][i][0], true)){
-                    if(options_.custom_freq && custom_record_freq_.find(resp2[2][i][0])!=custom_record_freq_.end()){
-                        if(topic_time_catcher_.find(resp2[2][i][0])==topic_time_catcher_.end()){
-                            topic_time_catcher_.insert_or_assign(resp2[2][i][0], ros::Time::now());
-                            subscribe(resp2[2][i][0]);
-                        }
-                        else if((ros::Time::now().toSec() - topic_time_catcher_.at(resp2[2][i][0]).toSec())> (1.0f/custom_record_freq_.at(resp2[2][i][0]))){
-                            topic_time_catcher_.insert_or_assign(resp2[2][i][0], ros::Time::now());
-                            subscribe(resp2[2][i][0]);
-                        }
-                        else{
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        subscribe(resp2[2][i][0]);
-                    }                
-            }
-                    }                
-            }
-                    }                
-            }
-                    }                
-                    // subscribe(resp2[2][i][0]);
-                }
+            for(int i = 0; i < resp2[2].size(); i++)
+            {
+              if (shouldSubscribeToTopic(resp2[2][i][0], true))
+                subscribe(resp2[2][i][0]);
             }
           } else {
             ROS_ERROR("Node at: [%s] failed to return subscriptions.", static_cast<std::string>(resp[2]).c_str());
@@ -711,7 +671,6 @@ void Recorder::doCheckMaster(ros::TimerEvent const& e, ros::NodeHandle& node_han
       }
     }
 }
-
 void Recorder::doTrigger() {
     ros::NodeHandle nh;
     ros::Publisher pub = nh.advertise<std_msgs::Empty>("snapshot_trigger", 1, true);
