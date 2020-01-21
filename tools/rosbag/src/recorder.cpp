@@ -94,7 +94,6 @@ RecorderOptions::RecorderOptions() :
     do_exclude(false),
     quiet(false),
     custom_freq(false),
-    file_name(""),
     append_date(true),
     snapshot(false),
     verbose(false),
@@ -102,6 +101,7 @@ RecorderOptions::RecorderOptions() :
     compression(compression::Uncompressed),
     prefix(""),
     name(""),
+    file_name(""),
     exclude_regex(),
     buffer_size(1048576 * 256),
     chunk_size(1024 * 768),
@@ -136,7 +136,7 @@ Recorder::Recorder(RecorderOptions const& options) :
         }
         for(YAML::const_iterator it = custom_freq_config_.begin(); it!=custom_freq_config_.end(); ++it){
             if(!custom_record_freq_.empty() && custom_record_freq_.find(it->first.as<std::string>())!=custom_record_freq_.end()){
-                ROS_WARN("Duplicate topic in file, Topic name:= %s ; Topics will be recorded on the basis of first entry", it->first.as<std::string>().c_str());
+                ROS_WARN("Duplicate topic in file, Topic name:= %s ; Topic will be recorded on the basis of first entry", it->first.as<std::string>().c_str());
             }
             custom_record_freq_.emplace(it->first.as<std::string>(), it->second.as<int>());
         }
@@ -303,14 +303,16 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
     //void Recorder::doQueue(topic_tools::ShapeShifter::ConstPtr msg, string const& topic, shared_ptr<ros::Subscriber> subscriber, shared_ptr<int> count) {
     Time rectime = Time::now();
     std::string topic_name = subscriber->getTopic();
-    float interval = 1.0f/custom_record_freq_.at(topic_name);
 
     if(options_.custom_freq && custom_record_freq_.find(topic_name) != custom_record_freq_.end()){
+        ros::Duration interval = ros::Duration(double(1)/custom_record_freq_.at(topic_name));
         if(topic_time_catcher_.find(topic_name) == topic_time_catcher_.end()){
-            topic_time_catcher_.emplace(topic_name, rectime + ros::Duration(interval));
+            topic_time_catcher_.emplace(topic_name, rectime + interval);
         }
-        else if(rectime.toSec() > topic_time_catcher_.at(topic_name).toSec()){
-            topic_time_catcher_.insert_or_assign(topic_name, rectime + ros::Duration(interval));
+        else if(rectime > topic_time_catcher_.at(topic_name)){
+            // correctoness in interval
+            interval -= (rectime - topic_time_catcher_.at(topic_name));
+            topic_time_catcher_.insert_or_assign(topic_name, rectime + interval);
         }
         else{
             return;
