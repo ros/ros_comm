@@ -48,7 +48,6 @@
 #include <list>
 #include <yaml-cpp/yaml.h>
 
-
 #include <boost/thread/condition.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/regex.hpp>
