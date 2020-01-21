@@ -135,7 +135,10 @@ Recorder::Recorder(RecorderOptions const& options) :
                 exit (EXIT_FAILURE);
         }
         for(YAML::const_iterator it = custom_freq_config_.begin(); it!=custom_freq_config_.end(); ++it){
-            custom_record_freq_.insert_or_assign(it->first.as<std::string>(), it->second.as<int>());
+            if(!custom_record_freq_.empty() && custom_record_freq_.find(it->first.as<std::string>())!=custom_record_freq_.end()){
+                ROS_WARN("Duplicate topic in file, Topic name:= %s ; Topics will be recorded on the basis of first entry", it->first.as<std::string>().c_str());
+            }
+            custom_record_freq_.emplace(it->first.as<std::string>(), it->second.as<int>());
         }
     }
 }
@@ -225,7 +228,7 @@ int Recorder::run() {
 
 shared_ptr<ros::Subscriber> Recorder::subscribe(string const& topic) {
     ROS_INFO("Subscribing to %s", topic.c_str());
-    
+
     ros::NodeHandle nh;
     shared_ptr<int> count(boost::make_shared<int>(options_.limit));
     shared_ptr<ros::Subscriber> sub(boost::make_shared<ros::Subscriber>());
@@ -299,13 +302,15 @@ std::string Recorder::timeToStr(T ros_t)
 void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>& msg_event, string const& topic, shared_ptr<ros::Subscriber> subscriber, shared_ptr<int> count) {
     //void Recorder::doQueue(topic_tools::ShapeShifter::ConstPtr msg, string const& topic, shared_ptr<ros::Subscriber> subscriber, shared_ptr<int> count) {
     Time rectime = Time::now();
+    std::string topic_name = subscriber->getTopic();
+    float interval = 1.0f/custom_record_freq_.at(topic_name);
 
-    if(options_.custom_freq && custom_record_freq_.find(subscriber->getTopic())!=custom_record_freq_.end()){
-        if(topic_time_catcher_.find(subscriber->getTopic())==topic_time_catcher_.end()){
-            topic_time_catcher_.insert_or_assign(subscriber->getTopic(), ros::Time::now());
+    if(options_.custom_freq && custom_record_freq_.find(topic_name) != custom_record_freq_.end()){
+        if(topic_time_catcher_.find(topic_name) == topic_time_catcher_.end()){
+            topic_time_catcher_.emplace(topic_name, rectime + ros::Duration(interval));
         }
-        else if((ros::Time::now().toSec() - topic_time_catcher_.at(subscriber->getTopic()).toSec())> (1.0f/custom_record_freq_.at(subscriber->getTopic()))){
-            topic_time_catcher_.insert_or_assign(subscriber->getTopic(), ros::Time::now());
+        else if(rectime.toSec() > topic_time_catcher_.at(topic_name).toSec()){
+            topic_time_catcher_.insert_or_assign(topic_name, rectime + ros::Duration(interval));
         }
         else{
             return;
@@ -313,7 +318,7 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
     }
     
     if (options_.verbose)
-        cout << "Received message on topic " << subscriber->getTopic() << endl;
+        cout << "Received message on topic " << topic_name << endl;
 
     OutgoingMessage out(topic, msg_event.getMessage(), msg_event.getConnectionHeaderPtr(), rectime);
     

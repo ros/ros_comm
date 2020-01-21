@@ -70,8 +70,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       ("duration", po::value<std::string>(), "Record a bag of maximum duration in seconds, unless 'm', or 'h' is appended.")
       ("node", po::value<std::string>(), "Record all topics subscribed to by a specific node.")
       ("tcpnodelay", "Use the TCP_NODELAY transport hint when subscribing to topics.")
-      ("udp", "Use the UDP transport hint when subscribing to topics.")
-      ("custom-freq,c", "Use custom freq to record topics");
+      ("udp", "Use the UDP transport hint when subscribing to topics.");
 
   
     po::positional_options_description p;
@@ -106,8 +105,6 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     }
     if (vm.count("quiet"))
       opts.quiet = true;
-    if (vm.count("custom-freq"))
-      opts.custom_freq = true;
     if (vm.count("publish"))
       opts.publish = true;
     if (vm.count("output-prefix"))
@@ -122,6 +119,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     }
     if (vm.count("file-name"))
     {
+      opts.custom_freq = true;
       opts.file_name = vm["file-name"].as<std::string>();
     }
     if (vm.count("split"))

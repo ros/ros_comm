@@ -82,7 +82,6 @@ def record_cmd(argv):
     parser.add_option("-p", "--publish",       dest="publish",       default=False, action="store_true",          help="publish a msg when the record begin")
     parser.add_option("-x", "--exclude",       dest="exclude_regex", default="",    action="store",               help="exclude topics matching the follow regular expression (subtracts from -a or regex)")
     parser.add_option("-q", "--quiet",         dest="quiet",         default=False, action="store_true",          help="suppress console output")
-    parser.add_option("-c", "--custom-freq",   dest="custom_freq",   default=False, action="store_true",          help="record topics with custom freq")
     parser.add_option("-o", "--output-prefix", dest="prefix",        default=None,  action="store",               help="prepend PREFIX to beginning of bag name (name will always end with date stamp)")
     parser.add_option("-O", "--output-name",   dest="name",          default=None,  action="store",               help="record to bag with name NAME.bag")
     parser.add_option("-f", "--file-name",     dest="file_name",     default=None,  action="store",               help="file with custom freq")
@@ -117,7 +116,6 @@ def record_cmd(argv):
 
     if options.num != 0:      cmd.extend(['--limit', str(options.num)])
     if options.quiet:         cmd.extend(["--quiet"])
-    if options.custom_freq:   cmd.extend(["--custom-freq"])
     if options.file_name:     cmd.extend(["-f",options.file_name])
     if options.prefix:        cmd.extend(["-o", options.prefix])
     if options.name:          cmd.extend(["-O", options.name])
