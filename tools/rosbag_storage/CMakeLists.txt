@@ -29,9 +29,13 @@ set(AES_ENCRYPT_SOURCE "")
 set(AES_ENCRYPT_LIBRARIES "")
 if(NOT WIN32)
   set(AES_ENCRYPT_SOURCE "src/aes_encryptor.cpp" "src/gpgme_utils.cpp")
-  find_library(AES_ENCRYPT_LIBRARIES 
-    NAMES "crypto" "gpgme"
+  find_library(GPGME_LIBRARY
+    NAMES "gpgme"
     PATHS /usr/local/lib)
+  find_library(CRYPTO_LIBRARY
+    NAMES "crypto"
+    PATHS /usr/local/lib)
+  set(AES_ENCRYPT_LIBRARIES ${GPGME_LIBRARY} ${CRYPTO_LIBRARY})
 endif()
 
 add_library(rosbag_storage
