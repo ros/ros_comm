@@ -191,7 +191,7 @@ void PollSet::update(int poll_timeout)
   boost::shared_ptr<std::vector<socket_pollfd> > ofds = poll_sockets(epfd_, &ufds_.front(), ufds_.size(), poll_timeout);
   if (!ofds)
   {
-    if (errno != EINTR)
+    if (last_socket_error() != EINTR)
     {
       ROS_ERROR_STREAM("poll failed with error " << last_socket_error_string());
     }
