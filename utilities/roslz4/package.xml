@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
-<package>
+<?xml-model
+  href="http://download.ros.org/schema/package_format3.xsd"
+  schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>roslz4</name>
   <version>1.15.0</version>
   <description>
@@ -13,11 +16,13 @@
   <author email="bcharrow@seas.upenn.edu">Ben Charrow</author>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend condition="$ROS_PYTHON_VERSION == 2">python-setuptools</buildtool_depend>
+  <buildtool_depend condition="$ROS_PYTHON_VERSION == 3">python3-setuptools</buildtool_depend>
 
   <build_depend>lz4</build_depend>
   <build_depend>cpp_common</build_depend>
 
-  <run_depend>lz4</run_depend>
+  <exec_depend>lz4</exec_depend>
 
   <test_depend>rosunit</test_depend>
 </package>

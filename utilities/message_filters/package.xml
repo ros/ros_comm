@@ -1,4 +1,8 @@
-<package>
+<?xml version="1.0"?>
+<?xml-model
+  href="http://download.ros.org/schema/package_format3.xsd"
+  schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>message_filters</name>
   <version>1.15.0</version>
   <description>
@@ -13,6 +17,8 @@
   <author>Vijay Pradeep</author>
 
   <buildtool_depend version_gte="0.5.68">catkin</buildtool_depend>
+  <buildtool_depend condition="$ROS_PYTHON_VERSION == 2">python-setuptools</buildtool_depend>
+  <buildtool_depend condition="$ROS_PYTHON_VERSION == 3">python3-setuptools</buildtool_depend>
 
   <build_depend>boost</build_depend>
   <build_depend>rosconsole</build_depend>
@@ -20,8 +26,8 @@
   <build_depend>rostest</build_depend>
   <build_depend>rosunit</build_depend>
 
-  <run_depend>rosconsole</run_depend>
-  <run_depend>roscpp</run_depend>
+  <exec_depend>rosconsole</exec_depend>
+  <exec_depend>roscpp</exec_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>
