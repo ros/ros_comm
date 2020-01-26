@@ -14,7 +14,7 @@
 
   <buildtool_depend version_gte="0.5.68">catkin</buildtool_depend>
 
-  <build_depend>boost</build_depend>
+  <build_depend>libboost-thread-dev</build_depend>
   <build_depend>rosconsole</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>rostest</build_depend>
