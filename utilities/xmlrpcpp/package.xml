@@ -21,7 +21,7 @@
   <depend>cpp_common</depend>
   <depend version_gte="0.6.9">rostime</depend>
 
-  <test_depend>boost</test_depend>
+  <test_depend>libboost-thread-dev</test_depend>
 
   <export>
     <rosdoc external="http://xmlrpcpp.sourceforge.net/doc/hierarchy.html"/>
