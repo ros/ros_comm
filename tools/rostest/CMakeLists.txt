@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(rostest)
 
 find_package(catkin COMPONENTS rosunit)
-find_package(Boost COMPONENTS system thread)
+find_package(Boost COMPONENTS thread)
 
 include_directories(include ${Boost_INCLUDE_DIRS})
 
