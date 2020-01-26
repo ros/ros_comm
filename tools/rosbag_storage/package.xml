@@ -10,9 +10,9 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>boost</build_depend>
   <build_depend>bzip2</build_depend>
   <build_depend version_gte="0.3.17">cpp_common</build_depend>
+  <build_depend>libboost-filesystem-dev</build_depend>
   <build_depend>libconsole-bridge-dev</build_depend>
   <build_depend>libgpgme-dev</build_depend>
   <build_depend>libssl-dev</build_depend>
@@ -24,9 +24,9 @@
   <build_depend>roslz4</build_depend>
   <build_depend>std_msgs</build_depend>
 
-  <run_depend>boost</run_depend>
   <run_depend>bzip2</run_depend>
   <run_depend version_gte="0.3.17">cpp_common</run_depend>
+  <run_depend>libboost-filesystem-dev</run_depend>
   <run_depend>libconsole-bridge-dev</run_depend>
   <run_depend>libgpgme-dev</run_depend>
   <run_depend>libssl-dev</run_depend>
