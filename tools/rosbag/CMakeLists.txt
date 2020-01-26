@@ -6,7 +6,7 @@ if(NOT WIN32)
 endif()
 
 find_package(catkin REQUIRED COMPONENTS rosbag_storage rosconsole roscpp std_srvs topic_tools xmlrpcpp)
-find_package(Boost REQUIRED COMPONENTS date_time regex program_options filesystem)
+find_package(Boost REQUIRED COMPONENTS date_time filesystem program_options regex thread)
 find_package(BZip2 REQUIRED)
 
 catkin_python_setup()
