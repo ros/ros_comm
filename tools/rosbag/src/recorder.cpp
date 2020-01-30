@@ -101,7 +101,6 @@ RecorderOptions::RecorderOptions() :
     compression(compression::Uncompressed),
     prefix(""),
     name(""),
-    file_name(""),
     exclude_regex(),
     buffer_size(1048576 * 256),
     chunk_size(1024 * 768),
@@ -112,7 +111,8 @@ RecorderOptions::RecorderOptions() :
     max_duration(-1.0),
     node(""),
     min_space(1024 * 1024 * 1024),
-    min_space_str("1G")
+    min_space_str("1G"),
+    custom_record_freq({})
 {
 }
 
@@ -124,24 +124,7 @@ Recorder::Recorder(RecorderOptions const& options) :
     exit_code_(0),
     queue_size_(0),
     split_count_(0),
-    writing_enabled_(true)
-{
-    if(options_.custom_freq){
-        try {
-                custom_freq_config_ = YAML::LoadFile(options_.file_name);
-        } catch (std::exception& e) {
-                ROS_ERROR_STREAM("Error loading file " <<options_.file_name);
-                ROS_DEBUG_STREAM(e.what());
-                exit (EXIT_FAILURE);
-        }
-        for(YAML::const_iterator it = custom_freq_config_.begin(); it!=custom_freq_config_.end(); ++it){
-            if(!custom_record_freq_.empty() && custom_record_freq_.find(it->first.as<std::string>())!=custom_record_freq_.end()){
-                ROS_WARN("Duplicate topic in file, Topic name:= %s ; Topic will be recorded on the basis of first entry", it->first.as<std::string>().c_str());
-            }
-            custom_record_freq_.emplace(it->first.as<std::string>(), it->second.as<int>());
-        }
-    }
-}
+    writing_enabled_(true) {}
 
 int Recorder::run() {
     if (options_.trigger) {
@@ -158,7 +141,7 @@ int Recorder::run() {
 
         // Make sure topics are specified
         if (!options_.record_all && (options_.node == std::string(""))) {
-            fprintf(stderr, "No topics specified.\n");
+            fprintf(stderr, "No topic %ld   specified .\n", options_.custom_record_freq.size());
             return 1;
         }
     }
@@ -304,15 +287,14 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
     Time rectime = Time::now();
     std::string topic_name = subscriber->getTopic();
 
-    if(options_.custom_freq && custom_record_freq_.find(topic_name) != custom_record_freq_.end()){
-        ros::Duration interval = ros::Duration(double(1)/custom_record_freq_.at(topic_name));
+    if(options_.custom_freq && options_.custom_record_freq.find(topic_name) != options_.custom_record_freq.end()){
+        ros::Duration interval = options_.custom_record_freq.at(topic_name);
         if(topic_time_catcher_.find(topic_name) == topic_time_catcher_.end()){
             topic_time_catcher_.emplace(topic_name, rectime + interval);
         }
         else if(rectime > topic_time_catcher_.at(topic_name)){
-            // correctoness in interval
-            interval -= (rectime - topic_time_catcher_.at(topic_name));
-            topic_time_catcher_.insert_or_assign(topic_name, rectime + interval);
+            std::map<std::string, ros::Time>::iterator it = topic_time_catcher_.find(topic_name); 
+            it->second = topic_time_catcher_.at(topic_name) + interval;
         }
         else{
             return;

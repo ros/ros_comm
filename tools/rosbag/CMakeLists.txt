@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(rosbag)
-set (CMAKE_CXX_STANDARD 17)
 if(NOT WIN32)
   set_directory_properties(PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra")
 endif()

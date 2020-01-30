@@ -120,7 +120,37 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     if (vm.count("file-name"))
     {
       opts.custom_freq = true;
-      opts.file_name = vm["file-name"].as<std::string>();
+      YAML::Node custom_freq_config;
+
+      try 
+      {
+        custom_freq_config = YAML::LoadFile(vm["file-name"].as<std::string>());
+      } 
+      catch (std::exception& e) 
+      {
+        ROS_ERROR_STREAM("Error loading file " <<vm["file-name"].as<std::string>());
+        ROS_DEBUG_STREAM(e.what());
+        exit (EXIT_FAILURE);
+      }
+
+      for (YAML::const_iterator it = custom_freq_config.begin(); it!=custom_freq_config.end(); ++it)
+      {
+        if (!opts.custom_record_freq.empty() && opts.custom_record_freq.find(it->first.as<std::string>())!=opts.custom_record_freq.end()){
+          ROS_WARN("Duplicate topic in file, Topic name:= %s ; Topic will be recorded on the basis of first entry", it->first.as<std::string>().c_str());
+        }
+        double freq = it->second.as<double>();
+        opts.topics.push_back(it->first.as<std::string>());
+        if (freq == -1)
+        {
+          continue;
+        }
+        if (freq < 0.001 && freq > 0)
+        {
+            ROS_WARN("Topic has freq less than 0.001, Topic name:= %s ; Topic will be recorded at 0.001 hz", it->first.as<std::string>().c_str());
+            freq = 0.001;
+        }
+        opts.custom_record_freq.emplace(it->first.as<std::string>(), ros::Duration(double(1)/freq));
+      }
     }
     if (vm.count("split"))
     {

@@ -103,7 +103,6 @@ struct ROSBAG_DECL RecorderOptions
     CompressionType compression;
     std::string     prefix;
     std::string     name;
-    std::string     file_name;
     boost::regex    exclude_regex;
     uint32_t        buffer_size;
     uint32_t        chunk_size;
@@ -116,6 +115,7 @@ struct ROSBAG_DECL RecorderOptions
     unsigned long long min_space;
     std::string min_space_str;
     ros::TransportHints transport_hints;
+    std::map<std::string, ros::Duration>    custom_record_freq;
 
     std::vector<std::string> topics;
 };
@@ -193,8 +193,6 @@ private:
     ros::WallTime                 warn_next_;
 
     ros::Publisher                pub_begin_write;
-    std::map<std::string, int>    custom_record_freq_;
-    YAML::Node                    custom_freq_config_;
     std::map<std::string, ros::Time> topic_time_catcher_;
 };
 

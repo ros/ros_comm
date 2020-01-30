@@ -3,19 +3,16 @@ This is a custom rosbag package which provides all the feature of [original rosb
 
 ## how to record custom rosbag
 ```shell
-rosbag record --file-name record.yaml -a
+rosbag record --file-name record.yaml
 ```
-> this only throttles down the topics mentioned in record.yaml, other topics will be recorded at their publish rate.
+> this only records and throttles down the topics mentioned in record.yaml
 ### param 
 * --file-name: file which has topics for custom recording
 
-## To-Do
-* currently it does not detect topic to record from file (file is only used for freq control of specific topic which is being recorded)
-
-
 ## example:- record.yaml
 ```yaml
-# topic_name: freq(must be an integer)
+# topic_name: freq(double)
+# topic_name: -1 (it will recorded at publish freq)
 "/chatter": 2
 "/raw_odom": 1
 "/realsense_bottom/accel/sample": 1
