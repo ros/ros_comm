@@ -93,6 +93,11 @@ class RospyLogger(logging.getLoggerClass()):
             return co.co_filename, f.f_lineno, func_name
 
     # TODO(lucasw) does LoggerAdapter help here?
+    def debug(self, msg, *args, **kwargs):
+        # bypass this parameter around the parent class
+        self.num_frames_back = kwargs.pop('num_frames_back', 3)
+        super(RospyLogger, self).debug(msg, *args, **kwargs)
+
     def info(self, msg, *args, **kwargs):
         # bypass this parameter around the parent class
         self.num_frames_back = kwargs.pop('num_frames_back', 3)
@@ -105,6 +110,11 @@ class RospyLogger(logging.getLoggerClass()):
     def error(self, msg, *args, **kwargs):
         self.num_frames_back = kwargs.pop('num_frames_back', 3)
         super(RospyLogger, self).error(msg, *args, **kwargs)
+
+    def critical(self, msg, *args, **kwargs):
+        # bypass this parameter around the parent class
+        self.num_frames_back = kwargs.pop('num_frames_back', 3)
+        super(RospyLogger, self).critical(msg, *args, **kwargs)
 
 logging.setLoggerClass(RospyLogger)
 
