@@ -162,6 +162,11 @@ def _base_logger(msg, *args, **kwargs):
     level = kwargs.pop('logger_level', None)
     once = kwargs.pop('logger_once', False)
     throttle_identical = kwargs.pop('logger_throttle_identical', False)
+    num_frames_back = kwargs.get('num_frames_back', 2)
+    frame = inspect.currentframe()
+    for _ in range(num_frames_back):
+        if frame.f_back is not None:
+            frame = frame.f_back
 
     rospy_logger = logging.getLogger('rosout')
     if name:
@@ -169,22 +174,22 @@ def _base_logger(msg, *args, **kwargs):
     logfunc = getattr(rospy_logger, level)
 
     if once:
-        caller_id = _frame_to_caller_id(inspect.currentframe().f_back.f_back)
+        caller_id = _frame_to_caller_id(frame)
         if _logging_once(caller_id):
-            logfunc(msg, *args)
+            logfunc(msg, *args, **kwargs)
     elif throttle_identical:
-        caller_id = _frame_to_caller_id(inspect.currentframe().f_back.f_back)
+        caller_id = _frame_to_caller_id(frame)
         throttle_elapsed = False
         if throttle is not None:
             throttle_elapsed = _logging_throttle(caller_id, throttle)
         if _logging_identical(caller_id, msg) or throttle_elapsed:
-            logfunc(msg, *args)
+            logfunc(msg, *args, **kwargs)
     elif throttle:
-        caller_id = _frame_to_caller_id(inspect.currentframe().f_back.f_back)
+        caller_id = _frame_to_caller_id(frame)
         if _logging_throttle(caller_id, throttle):
-            logfunc(msg, *args)
+            logfunc(msg, *args, **kwargs)
     else:
-        logfunc(msg, *args)
+        logfunc(msg, *args, **kwargs)
 
 
 def logdebug(msg, *args, **kwargs):

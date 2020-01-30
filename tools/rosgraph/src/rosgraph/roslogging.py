@@ -69,11 +69,13 @@ class RospyLogger(logging.getLoggerClass()):
             if f.f_back:
                 f = f.f_back
 
-        # Jump up two more frames, as the logger methods have been double wrapped.
-        if f is not None and f.f_back and f.f_code and f.f_code.co_name == '_base_logger':
-            f = f.f_back
-            if f.f_back:
-                f = f.f_back
+        # Jump up 1 frame to get past this subclass up to logging
+        f = f.f_back
+        # Jump up N more frames, as the logger methods have been double wrapped.
+        if f is not None and f.f_code and f.f_code.co_name == '_base_logger':
+            for _ in range(self.num_frames_back):
+                if f.f_back is not None:
+                    f = f.f_back
         co = f.f_code
         func_name = co.co_name
 
@@ -89,6 +91,20 @@ class RospyLogger(logging.getLoggerClass()):
             return co.co_filename, f.f_lineno, func_name, None
         else:
             return co.co_filename, f.f_lineno, func_name
+
+    # TODO(lucasw) does LoggerAdapter help here?
+    def info(self, msg, *args, **kwargs):
+        # bypass this parameter around the parent class
+        self.num_frames_back = kwargs.pop('num_frames_back', 3)
+        super(RospyLogger, self).info(msg, *args, **kwargs)
+
+    def warn(self, msg, *args, **kwargs):
+        self.num_frames_back = kwargs.pop('num_frames_back', 3)
+        super(RospyLogger, self).warn(msg, *args, **kwargs)
+
+    def error(self, msg, *args, **kwargs):
+        self.num_frames_back = kwargs.pop('num_frames_back', 3)
+        super(RospyLogger, self).error(msg, *args, **kwargs)
 
 logging.setLoggerClass(RospyLogger)
 
