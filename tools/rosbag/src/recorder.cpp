@@ -123,7 +123,7 @@ Recorder::Recorder(RecorderOptions const& options) :
     exit_code_(0),
     queue_size_(0),
     split_count_(0),
-    writing_enabled_(true) 
+    writing_enabled_(true)
 {
 }
 
@@ -142,7 +142,7 @@ int Recorder::run() {
 
         // Make sure topics are specified
         if (!options_.record_all && (options_.node == std::string(""))) {
-            fprintf(stderr, "No topic specified.\n");
+            fprintf(stderr, "No topics specified.\n");
             return 1;
         }
     }

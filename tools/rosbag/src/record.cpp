@@ -136,6 +136,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       {
         if (!opts.custom_record_freq.empty() && opts.custom_record_freq.find(it->first.as<std::string>())!=opts.custom_record_freq.end()){
           ROS_WARN("Duplicate topic in file, Topic name:= %s ; Topic will be recorded on the basis of first entry", it->first.as<std::string>().c_str());
+          continue;
         }
         double freq = it->second.as<double>();
         opts.topics.push_back(it->first.as<std::string>());
