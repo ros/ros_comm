@@ -119,7 +119,6 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     }
     if (vm.count("file-name"))
     {
-      opts.custom_freq = true;
       YAML::Node custom_freq_config;
 
       try 

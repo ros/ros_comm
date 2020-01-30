@@ -93,7 +93,6 @@ RecorderOptions::RecorderOptions() :
     regex(false),
     do_exclude(false),
     quiet(false),
-    custom_freq(false),
     append_date(true),
     snapshot(false),
     verbose(false),
@@ -124,7 +123,9 @@ Recorder::Recorder(RecorderOptions const& options) :
     exit_code_(0),
     queue_size_(0),
     split_count_(0),
-    writing_enabled_(true) {}
+    writing_enabled_(true) 
+{
+}
 
 int Recorder::run() {
     if (options_.trigger) {
@@ -141,7 +142,7 @@ int Recorder::run() {
 
         // Make sure topics are specified
         if (!options_.record_all && (options_.node == std::string(""))) {
-            fprintf(stderr, "No topic %ld   specified .\n", options_.custom_record_freq.size());
+            fprintf(stderr, "No topic specified.\n");
             return 1;
         }
     }
@@ -287,7 +288,7 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
     Time rectime = Time::now();
     std::string topic_name = subscriber->getTopic();
 
-    if(options_.custom_freq && options_.custom_record_freq.find(topic_name) != options_.custom_record_freq.end()){
+    if(options_.custom_record_freq.find(topic_name) != options_.custom_record_freq.end()){
         ros::Duration interval = options_.custom_record_freq.at(topic_name);
         if(topic_time_catcher_.find(topic_name) == topic_time_catcher_.end()){
             topic_time_catcher_.emplace(topic_name, rectime + interval);

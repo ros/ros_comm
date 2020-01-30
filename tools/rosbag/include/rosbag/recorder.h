@@ -95,7 +95,6 @@ struct ROSBAG_DECL RecorderOptions
     bool            regex;
     bool            do_exclude;
     bool            quiet;
-    bool            custom_freq;
     bool            append_date;
     bool            snapshot;
     bool            verbose;

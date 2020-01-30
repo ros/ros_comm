@@ -101,7 +101,6 @@ def record_cmd(argv):
     (options, args) = parser.parse_args(argv)
 
     if len(args) == 0 and not options.all and not options.node and not options.file_name:
-        parser.error(options.file_name)
         parser.error("You must specify a topic name or else use the '-a' option.")
 
     if options.prefix is not None and options.name is not None:
