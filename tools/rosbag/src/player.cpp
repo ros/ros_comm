@@ -141,7 +141,7 @@ void Player::publish() {
             bag->open(filename, bagmode::Read);
             bags_.push_back(bag);
         }
-        catch (BagUnindexedException ex) {
+        catch (const BagUnindexedException& ex) {
             std::cerr << "Bag file " << filename << " is unindexed.  Run rosbag reindex." << std::endl;
             return;
         }
