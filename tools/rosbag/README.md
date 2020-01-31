@@ -1,12 +1,15 @@
 # rosbag
 This is a custom rosbag package which provides all the feature of [original rosbag](http://wiki.ros.org/rosbag/Commandline) with custom freq recording of topics.
 
+## dependency
+* Yaml-CPP :- https://github.com/jbeder/yaml-cpp
+
 ## how to record custom rosbag
 ```shell
 rosbag record --file-name record.yaml
 ```
 > this only records and throttles down the topics mentioned in record.yaml
-### param 
+## param 
 * --file-name: file which has topics for custom recording
 
 ## example:- record.yaml
