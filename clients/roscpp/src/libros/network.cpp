@@ -34,6 +34,7 @@
 #include <ros/assert.h>
 #ifdef HAVE_IFADDRS_H
   #include <ifaddrs.h>
+  #include <sys/socket.h>  // supports FreeBSD, which does not include this in ifaddrs.h
 #endif
 
 #include <boost/lexical_cast.hpp>

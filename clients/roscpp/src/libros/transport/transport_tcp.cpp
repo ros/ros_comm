@@ -42,6 +42,7 @@
 #include <boost/bind.hpp>
 #include <fcntl.h>
 #include <errno.h>
+#include <sys/socket.h>  // explicit include required for FreeBSD
 namespace ros
 {
 
