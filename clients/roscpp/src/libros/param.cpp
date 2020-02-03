@@ -266,14 +266,11 @@ bool getImpl(const std::string& key, XmlRpc::XmlRpcValue& v, bool use_cache)
       {
         if (it->second.valid())
         {
-          ROS_DEBUG_NAMED("cached_parameters", "Using cached parameter value for key [%s]", mapped_key.c_str());
-
           v = it->second;
           return true;
         }
         else
         {
-          ROS_DEBUG_NAMED("cached_parameters", "Cached parameter is invalid for key [%s]", mapped_key.c_str());
           return false;
         }
       }
@@ -290,13 +287,8 @@ bool getImpl(const std::string& key, XmlRpc::XmlRpcValue& v, bool use_cache)
 
         if (!master::execute("subscribeParam", params, result, payload, false))
         {
-          ROS_DEBUG_NAMED("cached_parameters", "Subscribe to parameter [%s]: call to the master failed", mapped_key.c_str());
           g_subscribed_params.erase(mapped_key);
           use_cache = false;
-        }
-        else
-        {
-          ROS_DEBUG_NAMED("cached_parameters", "Subscribed to parameter [%s]", mapped_key.c_str());
         }
       }
     }
@@ -314,8 +306,6 @@ bool getImpl(const std::string& key, XmlRpc::XmlRpcValue& v, bool use_cache)
   if (use_cache)
   {
     boost::mutex::scoped_lock lock(g_params_mutex);
-
-    ROS_DEBUG_NAMED("cached_parameters", "Caching parameter [%s] with value type [%d]", mapped_key.c_str(), v.getType());
     g_params[mapped_key] = v;
   }
 
