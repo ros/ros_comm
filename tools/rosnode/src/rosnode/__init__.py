@@ -365,6 +365,7 @@ def rosnode_ping(node_name, max_count=None, verbose=False):
                     return False
                 except ValueError:
                     print("unknown network error contacting node: %s"%(str(e)))
+                    return False
             if max_count and count >= max_count:
                 break
             time.sleep(1.0)
