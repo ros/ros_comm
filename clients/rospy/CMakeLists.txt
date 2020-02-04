@@ -12,3 +12,7 @@ catkin_install_python(PROGRAMS
   rosbuild/scripts/gensrv_py.py
   rosbuild/scripts/genutil.py
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/rosbuild/scripts)
+catkin_install_python(PROGRAMS
+  test_nodes/talker.py
+  test_nodes/listener.py
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test_nodes/)
