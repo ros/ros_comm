@@ -386,7 +386,7 @@ void Recorder::startWriting() {
     try {
         bag_.open(write_filename_, bagmode::Write);
     }
-    catch (rosbag::BagException e) {
+    catch (const rosbag::BagException& e) {
         ROS_ERROR("Error writing: %s", e.what());
         exit_code_ = 1;
         ros::shutdown();
@@ -483,7 +483,7 @@ void Recorder::doRecord() {
     {
         checkDisk();
     }
-    catch (rosbag::BagException &ex)
+    catch (const rosbag::BagException& ex)
     {
         ROS_ERROR_STREAM(ex.what());
         exit_code_ = 1;
@@ -541,7 +541,7 @@ void Recorder::doRecord() {
             if (scheduledCheckDisk() && checkLogging())
                 bag_.write(out.topic, out.time, *out.msg, out.connection_header);
         }
-        catch (rosbag::BagException &ex)
+        catch (const rosbag::BagException& ex)
         {
             ROS_ERROR_STREAM(ex.what());
             exit_code_ = 1;
@@ -574,7 +574,7 @@ void Recorder::doRecordSnapshotter() {
         try {
             bag_.open(write_filename, bagmode::Write);
         }
-        catch (rosbag::BagException ex) {
+        catch (const rosbag::BagException& ex) {
             ROS_ERROR("Error writing: %s", ex.what());
             return;
         }
@@ -692,7 +692,7 @@ bool Recorder::checkDisk() {
     {
         info = boost::filesystem::space(p);
     }
-    catch (boost::filesystem::filesystem_error &e) 
+    catch (const boost::filesystem::filesystem_error& e) 
     { 
         ROS_WARN("Failed to check filesystem stats [%s].", e.what());
         writing_enabled_ = false;
