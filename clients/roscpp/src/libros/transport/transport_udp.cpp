@@ -38,7 +38,9 @@
 
 #include <ros/assert.h>
 #include <boost/bind.hpp>
-#include <sys/socket.h>  // explicit include required for FreeBSD
+#ifndef _WIN32
+  #include <sys/socket.h>  // explicit include required for FreeBSD
+#endif
 
 #include <fcntl.h>
 #if defined(__APPLE__)

@@ -42,7 +42,9 @@
 #include <boost/bind.hpp>
 #include <fcntl.h>
 #include <errno.h>
-#include <sys/socket.h>  // explicit include required for FreeBSD
+#ifndef _WIN32
+  #include <sys/socket.h>  // explicit include required for FreeBSD
+#endif
 namespace ros
 {
 
