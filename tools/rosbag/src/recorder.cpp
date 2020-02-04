@@ -366,7 +366,7 @@ void Recorder::snapshotTrigger(std_msgs::Empty::ConstPtr trigger) {
     (void)trigger;
     updateFilenames();
     
-    ROS_INFO("Triggered snapshot recording with name %s.", target_filename_.c_str());
+    ROS_INFO("Triggered snapshot recording with name '%s'.", target_filename_.c_str());
     
     {
         boost::mutex::scoped_lock lock(queue_mutex_);
@@ -391,7 +391,7 @@ void Recorder::startWriting() {
         exit_code_ = 1;
         ros::shutdown();
     }
-    ROS_INFO("Recording to %s.", target_filename_.c_str());
+    ROS_INFO("Recording to '%s'.", target_filename_.c_str());
 
     if (options_.publish)
     {
@@ -402,7 +402,7 @@ void Recorder::startWriting() {
 }
 
 void Recorder::stopWriting() {
-    ROS_INFO("Closing %s.", target_filename_.c_str());
+    ROS_INFO("Closing '%s'.", target_filename_.c_str());
     bag_.close();
     rename(write_filename_.c_str(), target_filename_.c_str());
 }
@@ -672,13 +672,13 @@ bool Recorder::checkDisk() {
     free_space = (unsigned long long) (fiData.f_bsize) * (unsigned long long) (fiData.f_bavail);
     if (free_space < options_.min_space)
     {
-        ROS_ERROR("Less than %s of space free on disk with %s.  Disabling recording.", options_.min_space_str.c_str(), bag_.getFileName().c_str());
+        ROS_ERROR("Less than %s of space free on disk with '%s'.  Disabling recording.", options_.min_space_str.c_str(), bag_.getFileName().c_str());
         writing_enabled_ = false;
         return false;
     }
     else if (free_space < 5 * options_.min_space)
     {
-        ROS_WARN("Less than 5 x %s of space free on disk with %s.", options_.min_space_str.c_str(), bag_.getFileName().c_str());
+        ROS_WARN("Less than 5 x %s of space free on disk with '%s'.", options_.min_space_str.c_str(), bag_.getFileName().c_str());
     }
     else
     {
@@ -705,7 +705,7 @@ bool Recorder::checkDisk() {
     }
     else if (info.available < 5 * options_.min_space)
     {
-        ROS_WARN("Less than 5 x %s of space free on disk with %s.", options_.min_space_str.c_str(), bag_.getFileName().c_str());
+        ROS_WARN("Less than 5 x %s of space free on disk with '%s'.", options_.min_space_str.c_str(), bag_.getFileName().c_str());
         writing_enabled_ = true;
     }
     else
