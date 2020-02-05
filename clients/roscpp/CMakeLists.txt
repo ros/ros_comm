@@ -20,6 +20,8 @@ list(GET roscpp_VERSION_LIST 0 roscpp_VERSION_MAJOR)
 list(GET roscpp_VERSION_LIST 1 roscpp_VERSION_MINOR)
 list(GET roscpp_VERSION_LIST 2 roscpp_VERSION_PATCH)
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ros/common.h.in ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/ros/common.h)
+
 find_package(Boost REQUIRED COMPONENTS chrono filesystem system)
 
 # Make sure we use CLOCK_MONOTONIC for the condition variable wait_for if not Apple.
@@ -33,8 +35,6 @@ if(NOT APPLE AND NOT WIN32)
     add_definitions(-DBOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC)
   endif()
 endif()
-
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ros/common.h.in ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/ros/common.h)
 
 include_directories(include ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/ros ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 # this is needed for use within a bazel workspace. See #1548 for details.

@@ -35,8 +35,8 @@
 #ifndef ROSCPP_ROSOUT_APPENDER_H
 #define ROSCPP_ROSOUT_APPENDER_H
 
-#include <ros/common.h>
 #include <ros/message_forward.h>
+#include "common.h"
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/condition_variable.hpp>

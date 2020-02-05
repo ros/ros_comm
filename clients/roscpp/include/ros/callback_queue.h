@@ -37,6 +37,7 @@
 
 #include "ros/callback_queue_interface.h"
 #include "ros/time.h"
+#include "common.h"
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/condition_variable.hpp>
