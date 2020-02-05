@@ -97,3 +97,7 @@ configure_file(test/random_play_sim.xml.in
   ${PROJECT_BINARY_DIR}/test/random_play_sim.xml)
 add_rostest(${PROJECT_BINARY_DIR}/test/random_play_sim.xml
   DEPENDENCIES run_tests_test_rosbag_rostest_test_random_record.xml)
+
+# Make sure that rostest random_record.xml is not executed twice, running in
+# parallel (https://github.com/ros/ros_comm/pull/1651#issuecomment-482148146):
+add_dependencies(run_tests_test_rosbag_rostest_test_random_play.xml run_tests_test_rosbag_rostest_test_random_play_sim.xml)
