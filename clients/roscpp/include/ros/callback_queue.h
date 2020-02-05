@@ -36,10 +36,10 @@
 #define ROSCPP_CALLBACK_QUEUE_H
 
 #include "ros/callback_queue_interface.h"
-#include "ros/internal_condition_variable.h"
 #include "ros/time.h"
 
 #include <boost/shared_ptr.hpp>
+#include <boost/thread/condition_variable.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/thread/tss.hpp>
@@ -162,7 +162,7 @@ protected:
   D_CallbackInfo callbacks_;
   size_t calling_;
   boost::mutex mutex_;
-  roscpp::internal::condition_variable condition_;
+  boost::condition_variable condition_;
 
   boost::mutex id_info_mutex_;
   M_IDInfo id_info_;

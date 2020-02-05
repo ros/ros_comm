@@ -36,8 +36,8 @@
 #define ROSCPP_SERVICE_SERVER_LINK_H
 
 #include <ros/common.h>
-#include <ros/internal_condition_variable.h>
 
+#include <boost/thread/condition_variable.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -65,7 +65,7 @@ private:
     SerializedMessage* resp_;
 
     bool finished_;
-    roscpp::internal::condition_variable finished_condition_;
+    boost::condition_variable finished_condition_;
     boost::mutex finished_mutex_;
     boost::thread::id caller_thread_id_;
 

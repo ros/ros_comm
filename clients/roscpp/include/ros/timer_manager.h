@@ -29,10 +29,10 @@
 #define ROSCPP_TIMER_MANAGER_H
 
 #include "ros/forwards.h"
-#include "ros/internal_condition_variable.h"
 #include "ros/time.h"
 #include "ros/file_log.h"
 
+#include <boost/thread/condition_variable.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
@@ -128,7 +128,7 @@ private:
 
   V_TimerInfo timers_;
   boost::mutex timers_mutex_;
-  roscpp::internal::condition_variable timers_cond_;
+  boost::condition_variable timers_cond_;
   volatile bool new_timer_;
 
   boost::mutex waiting_mutex_;
