@@ -1937,20 +1937,32 @@ def stdin_publish(pub, msg_class, rate, once, filename, verbose):
     :param filename: name of file to read from instead of stdin, or ``None``, ``str``
     """
 
-    # stdin/file input has a rate by default
-    r = rospy.Rate(rate) if rate is not None else rospy.Rate(10)
-
     # stdin publishing can happen really fast, especially if no rate
     # is set, so try to make sure someone is listening before we
     # publish, though we don't wait too long.
     #wait_for_subscriber(pub, SUBSCRIBER_TIMEOUT)
 
+    num = 0
+    printed = False
+
     while not rospy.is_shutdown():
         if filename:
             iterator = file_yaml_arg(filename)
+            for _ in iterator():
+                num = num + 1
         else:
             iterator = stdin_yaml_arg
         count = 0
+
+        # stdin/file input has a rate by default if more than one message
+        if num == 1:
+            r = rate
+        else:
+            r = rospy.Rate(rate) if rate is not None else rospy.Rate(0.3)
+            s = "publishing messages with rate %s "%(rate if rate is not None else 0.3)
+            if not printed:
+                print(s)
+                printed = True
 
         for pub_args in iterator():
             if rospy.is_shutdown():
@@ -1959,9 +1971,13 @@ def stdin_publish(pub, msg_class, rate, once, filename, verbose):
                 if type(pub_args) != list:
                     pub_args = [pub_args]
                 try:
-                    publish_message(pub, msg_class, pub_args, None, True, verbose=verbose)
-                    s = "publishing [%s]"%(pub_args) if verbose else "publishing message #%i"%count
-                    print(s)
+                    if num == 1:
+                        publish_message(pub, msg_class, pub_args, r, once, verbose=verbose)
+                    else:
+                        # publish once as we loop over the different messages
+                        publish_message(pub, msg_class, pub_args, None, True, verbose=verbose)
+                        s = "publishing [%s]"%(pub_args) if verbose else "publishing message #%i"%count
+                        print(s)
                 except ValueError as e:
                     sys.stderr.write("%s\n"%str(e))
                     break
@@ -1969,6 +1985,12 @@ def stdin_publish(pub, msg_class, rate, once, filename, verbose):
                 r.sleep()
             count = count + 1
         if once:
+            if num == 1:
+                s = "publishing and latching [%s]"%(msg_class) if verbose else "publishing and latching message for %s seconds"%_ONCE_DELAY
+                print(s)
+                timeout_t = time.time() + _ONCE_DELAY
+                while not rospy.is_shutdown() and time.time() < timeout_t:
+                    rospy.sleep(0.2)
             break
 
 def stdin_yaml_arg():
