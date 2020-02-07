@@ -46,13 +46,16 @@ class PythonPathOverride:
         if 'nt' == os.name:
             return True
         try:
+            # Skip pre python 3.2
             tempfile.TemporaryDirectory
         except AttributeError:
             return True
         return False
 
-
     def __enter__(self):
+        if self._skip():
+            return
+
         self.dir = tempfile.TemporaryDirectory(prefix="rostest_bin_hook")
         os.symlink(sys.executable, os.path.join(self.dir.name, "python"))
         os.environ['PATH'] = self.dir.name + ":" + os.environ['PATH']
