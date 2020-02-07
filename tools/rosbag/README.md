@@ -15,7 +15,7 @@ rosbag record --file-name record.yaml
 ## example:- record.yaml
 ```yaml
 # topic_name: freq(double)
-# topic_name: -1 (it will recorded at publish freq)
+# topic_name: -1 (it will be recorded at publish freq)
 "/chatter": 2
 "/raw_odom": 1
 "/realsense_bottom/accel/sample": 1

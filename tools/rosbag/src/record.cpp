@@ -134,7 +134,8 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
 
       for (YAML::const_iterator it = custom_freq_config.begin(); it!=custom_freq_config.end(); ++it)
       {
-        if (!opts.custom_record_freq.empty() && opts.custom_record_freq.find(it->first.as<std::string>())!=opts.custom_record_freq.end()){
+        if (!opts.custom_record_freq.empty() && opts.custom_record_freq.find(it->first.as<std::string>())!=opts.custom_record_freq.end())
+        {
           ROS_WARN("Duplicate topic in file, Topic name:= %s ; Topic will be recorded on the basis of first entry", it->first.as<std::string>().c_str());
           continue;
         }
