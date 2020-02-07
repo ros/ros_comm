@@ -347,7 +347,7 @@ class Machine(object):
         self.name = name
         self.env_loader = env_loader
         self.user = user or None
-        self.password = password or None
+        self.password = password
         self.address = address
         self.ssh_port = ssh_port
         self.assignable = assignable
