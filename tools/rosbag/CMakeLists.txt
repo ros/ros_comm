@@ -8,6 +8,7 @@ endif()
 find_package(catkin REQUIRED COMPONENTS rosbag_storage rosconsole roscpp std_srvs topic_tools xmlrpcpp)
 find_package(Boost REQUIRED COMPONENTS date_time regex program_options filesystem)
 find_package(BZip2 REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 catkin_python_setup()
 
@@ -15,12 +16,12 @@ catkin_python_setup()
 add_definitions(-D_FILE_OFFSET_BITS=64)
 
 include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}
-  ${BZIP2_INCLUDE_DIR}
+  ${BZIP2_INCLUDE_DIR} ${YAML_CPP_INCLUDE_DIR}
 )
 
 catkin_package(
   LIBRARIES rosbag
-  INCLUDE_DIRS include
+  INCLUDE_DIRS include ${YAML_CPP_INCLUDE_DIR}
   CATKIN_DEPENDS rosbag_storage rosconsole roscpp std_srvs topic_tools xmlrpcpp)
 
 add_library(rosbag
@@ -29,7 +30,7 @@ add_library(rosbag
   src/time_translator.cpp)
 
 target_link_libraries(rosbag ${catkin_LIBRARIES} ${Boost_LIBRARIES}
-  ${BZIP2_LIBRARIES}
+  ${BZIP2_LIBRARIES} ${YAML_CPP_LIBRARIES}
 )
 
 add_executable(record src/record.cpp)

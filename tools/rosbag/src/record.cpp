@@ -56,6 +56,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       ("publish,p", "Publish a msg when the record begin")
       ("output-prefix,o", po::value<std::string>(), "prepend PREFIX to beginning of bag name")
       ("output-name,O", po::value<std::string>(), "record bagnamed NAME.bag")
+      ("file-name,f", po::value<std::string>(), "file for custom record freq")
       ("buffsize,b", po::value<int>()->default_value(256), "Use an internal buffer of SIZE MB (Default: 256)")
       ("chunksize", po::value<int>()->default_value(768), "Set chunk size of message data, in KB (Default: 768. Advanced)")
       ("limit,l", po::value<int>()->default_value(0), "Only record NUM messages on each topic")
@@ -115,6 +116,42 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     {
       opts.prefix = vm["output-name"].as<std::string>();
       opts.append_date = false;
+    }
+    if (vm.count("file-name"))
+    {
+      YAML::Node custom_freq_config;
+
+      try 
+      {
+        custom_freq_config = YAML::LoadFile(vm["file-name"].as<std::string>());
+      } 
+      catch (std::exception& e) 
+      {
+        ROS_ERROR_STREAM("Error loading file " <<vm["file-name"].as<std::string>());
+        ROS_DEBUG_STREAM(e.what());
+        exit (EXIT_FAILURE);
+      }
+
+      for (YAML::const_iterator it = custom_freq_config.begin(); it!=custom_freq_config.end(); ++it)
+      {
+        if (!opts.custom_record_freq.empty() && opts.custom_record_freq.find(it->first.as<std::string>())!=opts.custom_record_freq.end())
+        {
+          ROS_WARN("Duplicate topic in file, Topic name:= %s ; Topic will be recorded on the basis of first entry", it->first.as<std::string>().c_str());
+          continue;
+        }
+        double freq = it->second.as<double>();
+        opts.topics.push_back(it->first.as<std::string>());
+        if (freq == -1)
+        {
+          continue;
+        }
+        if (freq < 0.001 && freq > 0)
+        {
+            ROS_WARN("Topic has freq less than 0.001, Topic name:= %s ; Topic will be recorded at 0.001 hz", it->first.as<std::string>().c_str());
+            freq = 0.001;
+        }
+        opts.custom_record_freq.emplace(it->first.as<std::string>(), ros::Duration(double(1)/freq));
+      }
     }
     if (vm.count("split"))
     {

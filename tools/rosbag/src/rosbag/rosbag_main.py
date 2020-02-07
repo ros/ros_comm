@@ -84,6 +84,7 @@ def record_cmd(argv):
     parser.add_option("-q", "--quiet",         dest="quiet",         default=False, action="store_true",          help="suppress console output")
     parser.add_option("-o", "--output-prefix", dest="prefix",        default=None,  action="store",               help="prepend PREFIX to beginning of bag name (name will always end with date stamp)")
     parser.add_option("-O", "--output-name",   dest="name",          default=None,  action="store",               help="record to bag with name NAME.bag")
+    parser.add_option("-f", "--file-name",     dest="file_name",     default=None,  action="store",               help="file with custom freq")
     parser.add_option(      "--split",         dest="split",         default=False, callback=handle_split, action="callback",    help="split the bag when maximum size or duration is reached")
     parser.add_option(      "--max-splits",    dest="max_splits",                   type='int',   action="store", help="Keep a maximum of N bag files, when reaching the maximum erase the oldest one to keep a constant number of files.", metavar="MAX_SPLITS")
     parser.add_option(      "--size",          dest="size",                         type='int',   action="store", help="record a bag of maximum size SIZE MB. (Default: infinite)", metavar="SIZE")
@@ -99,7 +100,7 @@ def record_cmd(argv):
 
     (options, args) = parser.parse_args(argv)
 
-    if len(args) == 0 and not options.all and not options.node:
+    if len(args) == 0 and not options.all and not options.node and not options.file_name:
         parser.error("You must specify a topic name or else use the '-a' option.")
 
     if options.prefix is not None and options.name is not None:
@@ -115,6 +116,7 @@ def record_cmd(argv):
 
     if options.num != 0:      cmd.extend(['--limit', str(options.num)])
     if options.quiet:         cmd.extend(["--quiet"])
+    if options.file_name:     cmd.extend(["-f",options.file_name])
     if options.prefix:        cmd.extend(["-o", options.prefix])
     if options.name:          cmd.extend(["-O", options.name])
     if options.exclude_regex: cmd.extend(["--exclude", options.exclude_regex])

@@ -110,7 +110,8 @@ RecorderOptions::RecorderOptions() :
     max_duration(-1.0),
     node(""),
     min_space(1024 * 1024 * 1024),
-    min_space_str("1G")
+    min_space_str("1G"),
+    custom_record_freq({})
 {
 }
 
@@ -285,9 +286,28 @@ std::string Recorder::timeToStr(T ros_t)
 void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>& msg_event, string const& topic, shared_ptr<ros::Subscriber> subscriber, shared_ptr<int> count) {
     //void Recorder::doQueue(topic_tools::ShapeShifter::ConstPtr msg, string const& topic, shared_ptr<ros::Subscriber> subscriber, shared_ptr<int> count) {
     Time rectime = Time::now();
+    std::string topic_name = subscriber->getTopic();
+
+    if(options_.custom_record_freq.find(topic_name) != options_.custom_record_freq.end())
+    {
+        ros::Duration interval = options_.custom_record_freq.at(topic_name);
+        std::map<std::string, ros::Time>::iterator it = topic_time_catcher_.find(topic_name);
+        if(it == topic_time_catcher_.end())
+        {
+            topic_time_catcher_.emplace(topic_name, rectime + interval);
+        }
+        else if(rectime > it->second)
+        {
+             it->second += ros::Duration(interval.toSec() * (1 + int((rectime.toSec() - it->second.toSec()) / interval.toSec())));
+        }
+        else
+        {
+            return;
+        }
+    }
     
     if (options_.verbose)
-        cout << "Received message on topic " << subscriber->getTopic() << endl;
+        cout << "Received message on topic " << topic_name << endl;
 
     OutgoingMessage out(topic, msg_event.getMessage(), msg_event.getConnectionHeaderPtr(), rectime);
     
@@ -640,7 +660,6 @@ void Recorder::doCheckMaster(ros::TimerEvent const& e, ros::NodeHandle& node_han
       }
     }
 }
-
 void Recorder::doTrigger() {
     ros::NodeHandle nh;
     ros::Publisher pub = nh.advertise<std_msgs::Empty>("snapshot_trigger", 1, true);
