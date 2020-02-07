@@ -53,9 +53,8 @@ class PythonPathOverride:
 
 
     def __enter__(self):
-
         self.dir = tempfile.TemporaryDirectory(prefix="rostest_bin_hook")
-        os.symlink(os.path.abspath(sys.executable), os.path.join(self.dir.name, "python"))
+        os.symlink(sys.executable, os.path.join(self.dir.name, "python"))
         os.environ['PATH'] = self.dir.name + ":" + os.environ['PATH']
 
     def __exit__(self, t, v, tb):
