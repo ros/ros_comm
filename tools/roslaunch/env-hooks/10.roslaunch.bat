@@ -7,6 +7,9 @@ if "%ROS_MASTER_URI%" == "" (
   set ROS_MASTER_URI=http://127.0.0.1:11311
 )
 
+:: it is discourage to set ROS_IP and ROS_HOSTNAME at the same time.
 if "%ROS_IP%" == "" (
-  set ROS_IP=127.0.0.1
+  if "%ROS_HOSTNAME%" == "" (
+    set ROS_IP=127.0.0.1
+  )
 )
