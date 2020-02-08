@@ -132,18 +132,18 @@ _rospy_logger = logging.getLogger("rospy.internal")
 # other sorts of information that scare users but are essential for
 # debugging
 
-def rospydebug(msg, *args):
+def rospydebug(msg, *args, **kwargs):
     """Internal rospy client library debug logging"""
-    _rospy_logger.debug(msg, *args)
-def rospyinfo(msg, *args):
+    _rospy_logger.debug(msg, *args, **kwargs)
+def rospyinfo(msg, *args, **kwargs):
     """Internal rospy client library debug logging"""
-    _rospy_logger.info(msg, *args)
-def rospyerr(msg, *args):
+    _rospy_logger.info(msg, *args, **kwargs)
+def rospyerr(msg, *args, **kwargs):
     """Internal rospy client library error logging"""
-    _rospy_logger.error(msg, *args)
-def rospywarn(msg, *args):
+    _rospy_logger.error(msg, *args, **kwargs)
+def rospywarn(msg, *args, **kwargs):
     """Internal rospy client library warn logging"""
-    _rospy_logger.warn(msg, *args)
+    _rospy_logger.warn(msg, *args, **kwargs)
 
 
 def _frame_to_caller_id(frame):
