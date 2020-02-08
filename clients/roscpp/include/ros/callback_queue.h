@@ -35,26 +35,12 @@
 #ifndef ROSCPP_CALLBACK_QUEUE_H
 #define ROSCPP_CALLBACK_QUEUE_H
 
-// check if we might need to include our own backported version boost::condition_variable
-// in order to use CLOCK_MONOTONIC for the condition variable
-// the include order here is important!
-#ifdef BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
-#include <boost/version.hpp>
-#if BOOST_VERSION < 106100
-// use backported version of boost condition variable, see https://svn.boost.org/trac/boost/ticket/6377
-#include "boost_161_condition_variable.h"
-#else // Boost version is 1.61 or greater and has the steady clock fixes
-#include <boost/thread/condition_variable.hpp>
-#endif
-#else // !BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
-#include <boost/thread/condition_variable.hpp>
-#endif // BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
-
 #include "ros/callback_queue_interface.h"
 #include "ros/time.h"
 #include "common.h"
 
 #include <boost/shared_ptr.hpp>
+#include <boost/thread/condition_variable.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/thread/tss.hpp>

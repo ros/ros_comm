@@ -37,6 +37,7 @@
 
 #include "ros/common.h"
 
+#include <boost/thread/condition_variable.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/enable_shared_from_this.hpp>
