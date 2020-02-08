@@ -1,0 +1,6 @@
+<launch>
+  <arg name="foo" />    <!-- no `default="something" here! -->
+  <node name="bar" pkg="bar" type="bar">
+    <param name="foo" value="$(arg foo)" />
+  </node>
+</launch>
