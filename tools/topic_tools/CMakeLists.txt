@@ -106,6 +106,7 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/lazy_transport.test)
   add_rostest(test/mux_initial_none.test)
   add_rostest(test/mux_initial_other.test)
+  add_rostest(test/transform.test)
   ## Latched test disabled until underlying issue in roscpp is resolved,
   ## #3385, #3434.
   #rosbuild_add_rostest(test/relay_latched.test)

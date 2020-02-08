@@ -79,10 +79,14 @@ class TopicOp:
 
         self.expression = args.expression
 
+        input_topic_in_ns = args.input
+        if not input_topic_in_ns.startswith('/'):
+            input_topic_in_ns = rospy.get_namespace() + args.input
+
         input_class, input_topic, self.input_fn = rostopic.get_topic_class(
-            args.input, blocking=args.wait_for_start)
+            input_topic_in_ns, blocking=args.wait_for_start)
         if input_topic is None:
-            print('ERROR: Wrong input topic (or topic field): %s' % args.input, file=sys.stderr)
+            print('ERROR: Wrong input topic (or topic field): %s' % input_topic_in_ns, file=sys.stderr)
             sys.exit(1)
 
         self.output_class = roslib.message.get_message_class(args.output_type)
