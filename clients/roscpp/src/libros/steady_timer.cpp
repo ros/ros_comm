@@ -25,92 +25,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Make sure we use CLOCK_MONOTONIC for the condition variable if not Apple.
-#ifndef __APPLE__
-#define BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
-#endif
-
 #include "ros/steady_timer.h"
 #include "ros/timer_manager.h"
 
-// check if we have really included the backported boost condition variable
-// just in case someone messes with the include order...
-#if BOOST_VERSION < 106100
-#ifndef USING_BACKPORTED_BOOST_CONDITION_VARIABLE
-#error "steady timer needs boost version >= 1.61 or the backported headers!"
-#endif
-#endif
-
 namespace ros
 {
-
-// specialization for SteadyTimer, to make sure we use a version with wait_until that uses the monotonic clock
-template<>
-void TimerManager<SteadyTime, WallDuration, SteadyTimerEvent>::threadFunc()
-{
-  SteadyTime current;
-  while (!quit_)
-  {
-    SteadyTime sleep_end;
-
-    boost::mutex::scoped_lock lock(timers_mutex_);
-
-    current = SteadyTime::now();
-
-    {
-      boost::mutex::scoped_lock waitlock(waiting_mutex_);
-
-      if (waiting_.empty())
-      {
-        sleep_end = current + WallDuration(0.1);
-      }
-      else
-      {
-        TimerInfoPtr info = findTimer(waiting_.front());
-
-        while (!waiting_.empty() && info && info->next_expected <= current)
-        {
-          current = SteadyTime::now();
-
-          //ROS_DEBUG("Scheduling timer callback for timer [%d] of period [%f], [%f] off expected", info->handle, info->period.toSec(), (current - info->next_expected).toSec());
-          CallbackInterfacePtr cb(boost::make_shared<TimerQueueCallback>(this, info, info->last_expected, info->last_real, info->next_expected));
-          info->callback_queue->addCallback(cb, (uint64_t)info.get());
-
-          waiting_.pop_front();
-
-          if (waiting_.empty())
-          {
-            break;
-          }
-
-          info = findTimer(waiting_.front());
-        }
-
-        if (info)
-        {
-          sleep_end = info->next_expected;
-        }
-      }
-    }
-
-    while (!new_timer_ && SteadyTime::now() < sleep_end && !quit_)
-    {
-      current = SteadyTime::now();
-
-      if (current >= sleep_end)
-      {
-        break;
-      }
-
-      // requires boost 1.61 for wait_until to actually use the steady clock
-      // see: https://svn.boost.org/trac/boost/ticket/6377
-      boost::chrono::steady_clock::time_point end_tp(boost::chrono::nanoseconds(sleep_end.toNSec()));
-      timers_cond_.wait_until(lock, end_tp);
-    }
-
-    new_timer_ = false;
-  }
-}
 
 SteadyTimer::Impl::Impl()
   : started_(false)
