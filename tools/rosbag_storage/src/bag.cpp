@@ -160,7 +160,7 @@ void Bag::openAppend(string const& filename) {
 }
 
 void Bag::close() {
-    if (!file_.isOpen())
+    if (!isOpen())
         return;
 
     if (mode_ & bagmode::Write || mode_ & bagmode::Append)
@@ -189,7 +189,7 @@ uint64_t Bag::getSize()     const { return file_size_;          }
 uint32_t Bag::getChunkThreshold() const { return chunk_threshold_; }
 
 void Bag::setChunkThreshold(uint32_t chunk_threshold) {
-    if (file_.isOpen() && chunk_open_)
+    if (isOpen() && chunk_open_)
         stopWritingChunk();
 
     chunk_threshold_ = chunk_threshold;
@@ -198,7 +198,7 @@ void Bag::setChunkThreshold(uint32_t chunk_threshold) {
 CompressionType Bag::getCompression() const { return compression_; }
 
 void Bag::setCompression(CompressionType compression) {
-    if (file_.isOpen() && chunk_open_)
+    if (isOpen() && chunk_open_)
         stopWritingChunk();
 
     if (!(compression == compression::Uncompressed ||
@@ -1151,4 +1151,7 @@ void Bag::swap(Bag& other) {
     swap(decompressed_chunk_, other.decompressed_chunk_);
 }
 
+bool Bag::isOpen() const { return file_.isOpen(); }
+
 } // namespace rosbag
+
