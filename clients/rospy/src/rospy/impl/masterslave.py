@@ -447,7 +447,7 @@ class ROSHandler(XmlRpcHandler):
         while not success and not is_shutdown():
             try:
                 code, msg, result = \
-                      xmlrpcapi(pub_uri).requestTopic(caller_id, topic, protocols)
+                      xmlrpcapi(pub_uri, cache=False).requestTopic(caller_id, topic, protocols)
                 success = True
             except Exception as e:
                 if getattr(e, 'errno', None) == errno.ECONNREFUSED:

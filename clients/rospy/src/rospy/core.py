@@ -632,7 +632,10 @@ def is_topic(param_name):
         return v
     return validator
 
-def xmlrpcapi(uri):
+_xmlrpc_cache = {}
+_xmlrpc_lock = threading.Lock()
+
+def xmlrpcapi(uri, cache=True):
     """
     @return: instance for calling remote server or None if not a valid URI
     @rtype: xmlrpclib.ServerProxy
@@ -642,4 +645,22 @@ def xmlrpcapi(uri):
     uriValidate = urlparse.urlparse(uri)
     if not uriValidate[0] or not uriValidate[1]:
         return None
-    return xmlrpcclient.ServerProxy(uri)
+    if not cache:
+        return xmlrpcclient.ServerProxy(uri)
+    if uri not in _xmlrpc_cache:
+        with _xmlrpc_lock:
+            if uri not in _xmlrpc_cache:  # allows lazy locking
+                _xmlrpc_cache[uri] = _LockedServerProxy(uri)
+    return _xmlrpc_cache[uri]
+
+
+class _LockedServerProxy(xmlrpcclient.ServerProxy):
+
+    def __init__(self, *args, **kwargs):
+        xmlrpcclient.ServerProxy.__init__(self, *args, **kwargs)
+        self._lock = threading.Lock()
+
+    def _ServerProxy__request(self, methodname, params):
+        with self._lock:
+            return xmlrpcclient.ServerProxy._ServerProxy__request(
+                self, methodname, params)
