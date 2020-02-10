@@ -52,6 +52,7 @@ namespace {
   {
   public:
     typedef boost::chrono::system_clock::time_point time_point;
+    typedef boost::chrono::system_clock::duration duration;
   };
 
   template<>
@@ -59,6 +60,7 @@ namespace {
   {
   public:
     typedef boost::chrono::steady_clock::time_point time_point;
+    typedef boost::chrono::steady_clock::duration duration;
   };
 }
 
@@ -592,7 +594,11 @@ void TimerManager<T, D, E>::threadFunc()
       {
         // On system time we can simply sleep for the rest of the wait time, since anything else requiring processing will
         // signal the condition variable
-        typename TimerManagerTraits<T>::time_point end_tp(boost::chrono::nanoseconds(sleep_end.toNSec()));
+        typename TimerManagerTraits<T>::time_point end_tp(
+          boost::chrono::duration_cast<typename TimerManagerTraits<T>::duration>(
+            boost::chrono::nanoseconds(sleep_end.toNSec())
+          )
+        );
         timers_cond_.wait_until(lock, end_tp);
       }
     }
