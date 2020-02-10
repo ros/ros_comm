@@ -198,9 +198,9 @@ def get_node_args(node_name, roslaunch_files):
         return ["set %s=%s&&"%(k, v) for k, v in env.items()] + args
     else:
         # sys.platform.startswith('linux')
-        # join environment vars are bash prefix args
-        return ["%s=%s"%(k, v) for k, v in env.items()] + args
-    
+        # join environment vars are bash prefix args, wrap with double quotes for variables that contains space
+        return ['%s="%s"'%(k, v) for k, v in env.items()] + args
+
 def _launch_prefix_args(node):
     if node.launch_prefix:
         prefix = node.launch_prefix
