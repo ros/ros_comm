@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
-# Copyright (c) 2009, Willow Garage, Inc.
+# Copyright (c) 2008, Willow Garage, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,33 +31,28 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import os
-import sys 
 import unittest
-import time
-        
-from subprocess import Popen, PIPE, check_call, call
+import rospy
+import rostest
+import sys
+from std_msgs.msg import *
 
-class TestRosgraphOffline(unittest.TestCase):
 
-    def setUp(self):
-        pass
+PKG = 'topic_tools'
+NAME = 'transform_sub'
 
-    ## test that the rosmsg command works
-    def test_cmd_help(self):
-        cmd = 'rosgraph'
-        output = Popen([cmd, '-h'], stdout=PIPE).communicate()[0]
-        self.assert_('Usage' in output.decode())
-            
-    def test_offline(self):
-        cmd = 'rosgraph'
 
-        # point at a different 'master'
-        env = os.environ.copy()
-        env['ROS_MASTER_URI'] = 'http://localhost:11312'
-        kwds = { 'env': env, 'stdout': PIPE, 'stderr': PIPE}
+class TransformSub(unittest.TestCase):
 
-        msg = "ERROR: Unable to communicate with master!" + os.linesep
+  def test_transform_sub(self):
+    rospy.init_node(NAME)
+    value = rospy.get_param("~value", 1.0)
 
-        output = Popen([cmd], **kwds).communicate()
-        self.assertEquals(msg, output[1].decode())
+    try:
+        msg = rospy.wait_for_message("input", Float32, 1.0)
+        self.assertEqual(msg.data, value)
+    except rospy.ROSException as e:
+        self.fail(str(e))
+
+if __name__ == '__main__':
+  rostest.rosrun(PKG, NAME, TransformSub, sys.argv)

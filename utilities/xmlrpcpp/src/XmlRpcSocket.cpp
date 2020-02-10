@@ -375,11 +375,7 @@ std::string
 XmlRpcSocket::getErrorMsg(int error)
 {
   char err[60];
-#ifdef _MSC_VER
-  strerror_s(err,60,error);
-#else
-  snprintf(err,sizeof(err),"%s",strerror(error));
-#endif
+  std::snprintf(err,sizeof(err),"%s",strerror(error));
   return std::string(err);
 }
 

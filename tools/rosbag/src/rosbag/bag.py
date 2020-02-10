@@ -51,7 +51,7 @@ import time
 import yaml
 
 from Cryptodome.Cipher import AES
-from Cryptodome.Random import random
+from Cryptodome.Random import get_random_bytes
 
 import gnupg
 
@@ -187,12 +187,14 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
         super(_ROSBagAesCbcEncryptor, self).__init__()
         # User name of GPG key used for symmetric key encryption
         self._gpg_key_user = None
+        # GPG passphrase
+        self._gpg_passphrase = None
         # Symmetric key for encryption/decryption
         self._symmetric_key = None
         # Encrypted symmetric key
         self._encrypted_symmetric_key = None
 
-    def initialize(self, bag, gpg_key_user):
+    def initialize(self, bag, gpg_key_user, passphrase=None):
         """
         Initialize encryptor by composing AES symmetric key.
         @param bag: bag to be encrypted/decrypted
@@ -202,6 +204,7 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
         @raise ROSBagException: if GPG key user has already been set
         """
         if bag._mode != 'w':
+            self._gpg_passphrase = passphrase or os.getenv('ROSBAG_GPG_PASSPHRASE', None)
             return
         if self._gpg_key_user == gpg_key_user:
             return
@@ -226,7 +229,7 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
         f.seek(chunk_data_pos)
         chunk = _read(f, chunk_size)
         # Encrypt chunk
-        iv = random.getrandbits(AES.block_size)
+        iv = get_random_bytes(AES.block_size)
         f.seek(chunk_data_pos)
         f.write(iv)
         cipher = AES.new(self._symmetric_key, AES.MODE_CBC, iv)
@@ -281,7 +284,7 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
         except ROSBagFormatException:
             raise ROSBagFormatException('GPG key user is not found in header')
         try:
-            self._symmetric_key = _decrypt_string_gpg(self._encrypted_symmetric_key)
+            self._symmetric_key = _decrypt_string_gpg(self._encrypted_symmetric_key, self._gpg_passphrase)
         except ROSBagFormatException:
             raise
 
@@ -304,7 +307,7 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
                 v = v.encode()
             header_str += _pack_uint32(len(k) + 1 + len(v)) + k + equal + v
 
-        iv = random.getrandbits(AES.block_size)
+        iv = get_random_bytes(AES.block_size)
         enc_str = iv
         cipher = AES.new(self._symmetric_key, AES.MODE_CBC, iv)
         enc_str += cipher.encrypt(_add_padding(header_str))
@@ -350,7 +353,7 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
     def _build_symmetric_key(self):
         if not self._gpg_key_user:
             return
-        self._symmetric_key = random.getrandbits(AES.block_size)
+        self._symmetric_key = get_random_bytes(AES.block_size)
         self._encrypted_symmetric_key = _encrypt_string_gpg(self._gpg_key_user, self._symmetric_key)
 
     def _decrypt_encrypted_header(self, f):
@@ -371,9 +374,10 @@ class _ROSBagAesCbcEncryptor(_ROSBagEncryptor):
         header = cipher.decrypt(encrypted_header)
         return _remove_padding(header)
 
-def _add_padding(input_str):
+def _add_padding(input_bytes):
     # Add PKCS#7 padding to input string
-    return input_str + (AES.block_size - len(input_str) % AES.block_size) * chr(AES.block_size - len(input_str) % AES.block_size)
+    padding_num = AES.block_size - len(input_bytes) % AES.block_size
+    return input_bytes + bytes((padding_num,) * padding_num)
 
 def _remove_padding(input_str):
     # Remove PKCS#7 padding from input string
@@ -386,9 +390,9 @@ def _encrypt_string_gpg(key_user, input):
         raise ROSBagEncryptException('Failed to encrypt bag: {}.  Have you installed a required public key?'.format(enc_data.status))
     return str(enc_data)
 
-def _decrypt_string_gpg(input):
+def _decrypt_string_gpg(input, passphrase=None):
     gpg = gnupg.GPG()
-    dec_data = gpg.decrypt(input, passphrase='clearpath')
+    dec_data = gpg.decrypt(input, passphrase=passphrase)
     if not dec_data.ok:
         raise ROSBagEncryptException('Failed to decrypt bag: {}.  Have you installed a required private key?'.format(dec_data.status))
     return dec_data.data

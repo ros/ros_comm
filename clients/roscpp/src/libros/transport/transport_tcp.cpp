@@ -42,6 +42,9 @@
 #include <boost/bind.hpp>
 #include <fcntl.h>
 #include <errno.h>
+#ifndef _WIN32
+  #include <sys/socket.h>  // explicit include required for FreeBSD
+#endif
 namespace ros
 {
 
@@ -393,7 +396,7 @@ bool TransportTCP::listen(int port, int backlog, const AcceptCallback& accept_cb
     sa_len_ = sizeof(sockaddr_in);
   }
 
-  if (sock_ <= 0)
+  if (sock_ == ROS_INVALID_SOCKET)
   {
     ROS_ERROR("socket() failed with error [%s]", last_socket_error_string());
     return false;

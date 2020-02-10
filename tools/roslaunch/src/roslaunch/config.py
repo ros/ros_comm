@@ -407,7 +407,7 @@ class ROSLaunchConfig(object):
             # assign to local machine
             return self.machines['']            
 
-def load_config_default(roslaunch_files, port, roslaunch_strs=None, loader=None, verbose=False, assign_machines=True):
+def load_config_default(roslaunch_files, port, roslaunch_strs=None, loader=None, verbose=False, assign_machines=True, ignore_unset_args=False):
     """
     Base routine for creating a ROSLaunchConfig from a set of 
     roslaunch_files and or launch XML strings and initializing it. This
@@ -425,6 +425,8 @@ def load_config_default(roslaunch_files, port, roslaunch_strs=None, loader=None,
     @type  verbose: bool
     @param assign_machines: (optional) assign nodes to machines (default: True)
     @type  assign_machines: bool
+    @param ignore_unset_args: (optional) ignore default arg requirements (default: False)
+    @type ignore_unset_args: bool
     @return: initialized rosconfig instance
     @rytpe: L{ROSLaunchConfig} initialized rosconfig instance
     @raises: RLException
@@ -440,6 +442,7 @@ def load_config_default(roslaunch_files, port, roslaunch_strs=None, loader=None,
         config.master.uri = rosgraph.network.create_local_xmlrpc_uri(port)
 
     loader = loader or roslaunch.xmlloader.XmlLoader()
+    loader.ignore_unset_args = ignore_unset_args
 
     # load the roscore file first. we currently have
     # last-declaration wins rules.  roscore is just a

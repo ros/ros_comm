@@ -324,7 +324,7 @@ namespace XmlRpc {
   std::string XmlRpcValue::intToXml() const
   {
     char buf[256];
-    snprintf(buf, sizeof(buf)-1, "%d", _value.asInt);
+    std::snprintf(buf, sizeof(buf)-1, "%d", _value.asInt);
     buf[sizeof(buf)-1] = 0;
     std::string xml = VALUE_TAG;
     xml += I4_TAG;
@@ -434,7 +434,7 @@ namespace XmlRpc {
   {
     struct tm* t = _value.asTime;
     char buf[20];
-    snprintf(buf, sizeof(buf)-1, "%4d%02d%02dT%02d:%02d:%02d", 
+    std::snprintf(buf, sizeof(buf)-1, "%4d%02d%02dT%02d:%02d:%02d", 
       t->tm_year,t->tm_mon,t->tm_mday,t->tm_hour,t->tm_min,t->tm_sec);
     buf[sizeof(buf)-1] = 0;
 
@@ -610,7 +610,7 @@ namespace XmlRpc {
         {
           struct tm* t = _value.asTime;
           char buf[20];
-          snprintf(buf, sizeof(buf)-1, "%4d%02d%02dT%02d:%02d:%02d", 
+          std::snprintf(buf, sizeof(buf)-1, "%4d%02d%02dT%02d:%02d:%02d", 
             t->tm_year,t->tm_mon,t->tm_mday,t->tm_hour,t->tm_min,t->tm_sec);
           buf[sizeof(buf)-1] = 0;
           os << buf;

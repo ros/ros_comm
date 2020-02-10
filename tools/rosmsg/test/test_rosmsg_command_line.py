@@ -46,14 +46,14 @@ class TestRosmsg(unittest.TestCase):
 
     def setUp(self):
         self.new_environ = os.environ
-        self.new_environ["PYTHONPATH"] = os.path.join(os.getcwd(), "src")+':'+os.environ['PYTHONPATH']
+        self.new_environ["PYTHONPATH"] = os.path.join(os.getcwd(), "src")+os.pathsep+os.environ['PYTHONPATH']
 
     ## test that the rosmsg command works
     def test_cmd_help(self):
         sub = ['show', 'md5', 'package', 'packages', 'list']
         
         for cmd in ['rosmsg', 'rossrv']:
-            glob_cmd=[os.path.join(_SCRIPT_FOLDER, cmd)]
+            glob_cmd=[sys.executable, os.path.join(_SCRIPT_FOLDER, cmd)]
             output = Popen(glob_cmd, stdout=PIPE, env=self.new_environ).communicate()[0].decode()
             self.assert_('Commands' in output)
             output = Popen(glob_cmd+['-h'], stdout=PIPE, env=self.new_environ).communicate()[0].decode()
@@ -92,14 +92,14 @@ class TestRosmsg(unittest.TestCase):
 
     def test_cmd_list(self):
         # - multi-line
-        output1 = Popen([os.path.join(_SCRIPT_FOLDER,'rosmsg'), 'list'], stdout=PIPE).communicate()[0].decode()
+        output1 = Popen([sys.executable, os.path.join(_SCRIPT_FOLDER,'rosmsg'), 'list'], stdout=PIPE).communicate()[0].decode()
         l1 = [x.strip() for x in output1.split('\n') if x.strip()]
         for p in ['std_msgs/String', 'test_rosmaster/Floats']:
             self.assert_(p in l1)
         for p in ['std_srvs/Empty', 'roscpp/Empty']:
             self.assert_(p not in l1)
 
-        output1 = Popen([os.path.join(_SCRIPT_FOLDER,'rossrv'), 'list'], stdout=PIPE).communicate()[0].decode()
+        output1 = Popen([sys.executable, os.path.join(_SCRIPT_FOLDER,'rossrv'), 'list'], stdout=PIPE).communicate()[0].decode()
         l1 = [x.strip() for x in output1.split('\n') if x.strip()]
         for p in ['std_srvs/Empty', 'roscpp/Empty']:
             self.assert_(p in l1)
@@ -140,7 +140,7 @@ class TestRosmsg(unittest.TestCase):
         output = Popen(['rossrv', 'show', 'std_srvs/Empty'], stdout=PIPE).communicate()[0].decode()
         self.assertEquals('---', output.strip())
         output = Popen(['rossrv', 'show', 'test_rosmaster/AddTwoInts'], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('int64 a\nint64 b\n---\nint64 sum', output.strip())
+        self.assertEquals(os.linesep.join(['int64 a', 'int64 b', '---', 'int64 sum']), output.strip())
 
         # test against test_rosmsg package
         d = os.path.abspath(os.path.dirname(__file__))
@@ -156,23 +156,24 @@ class TestRosmsg(unittest.TestCase):
                 text = f.read()
             with open(os.path.join(msg_raw_d, '%s.msg'%t), 'r') as f:
                 text_raw = f.read()
-            text = text+'\n' # running command adds one new line
-            text_raw = text_raw+'\n'
+            text = text.strip()
+            text_raw = text_raw.strip()
             type_ =test_message_package+'/'+t
             output = Popen(['rosmsg', 'show', type_], stdout=PIPE).communicate()[0].decode()
-            self.assertEquals(text, output)
+            self.assertEquals(text, output.strip())
             output = Popen(['rosmsg', 'show', '-r',type_], stdout=PIPE).communicate()[0].decode()
-            self.assertEquals(text_raw, output)
+            self.assertEquals(text_raw, output.strip())
             output = Popen(['rosmsg', 'show', '--raw', type_], stdout=PIPE).communicate()[0].decode()
-            self.assertEquals(text_raw, output)
+            self.assertEquals(text_raw, output.strip())
 
             # test as search
             type_ = t
-            text = "[test_rosmaster/%s]:\n%s"%(t, text)
-            text_raw = "[test_rosmaster/%s]:\n%s"%(t, text_raw)
+            text_prefix = "[test_rosmaster/%s]:"%t
+            text = os.linesep.join([text_prefix, text])
+            text_raw = os.linesep.join([text_prefix, text_raw])
             output = Popen(['rosmsg', 'show', type_], stdout=PIPE).communicate()[0].decode()
-            self.assertEquals(text, output)
+            self.assertEquals(text, output.strip())
             output = Popen(['rosmsg', 'show', '-r',type_], stdout=PIPE, stderr=PIPE).communicate()
-            self.assertEquals(text_raw, output[0].decode(), "Failed: %s"%(str(output)))
+            self.assertEquals(text_raw, output[0].decode().strip(), "Failed: %s"%(str(output)))
             output = Popen(['rosmsg', 'show', '--raw', type_], stdout=PIPE).communicate()[0].decode()
-            self.assertEquals(text_raw, output)
+            self.assertEquals(text_raw, output.strip())

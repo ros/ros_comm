@@ -106,7 +106,12 @@ def print_node_args(node_name, roslaunch_files):
     try:
         node_name = script_resolve_name('roslaunch', node_name)
         args = get_node_args(node_name, roslaunch_files)
-        print(' '.join(args))
+        if sys.platform == 'win32':
+            # launch in a new cmd window for isolated environment configuration
+            print('cmd /c \"%s\"' % (' '.join(args)))
+        else:
+            # sys.platform.startswith('linux')
+            print(' '.join(args))
     except RLException as e:
         print(str(e), file=sys.stderr)
         sys.exit(1)
@@ -187,8 +192,14 @@ def get_node_args(node_name, roslaunch_files):
 
     # resolve node name for generating args
     args = create_local_process_args(node, machine)
-    # join environment vars are bash prefix args, wrap with double quotes for variables that contains space
-    return [r'%s="%s"'%(k, v) for k, v in env.items()] + args
+    if sys.platform == "win32":
+        # set command can be used with environment variables that contain space without double quotes
+        # https://ss64.com/nt/set.html
+        return ["set %s=%s&&"%(k, v) for k, v in env.items()] + args
+    else:
+        # sys.platform.startswith('linux')
+        # join environment vars are bash prefix args, wrap with double quotes for variables that contains space
+        return [r'%s="%s"'%(k, v) for k, v in env.items()] + args
 
 def _launch_prefix_args(node):
     if node.launch_prefix:

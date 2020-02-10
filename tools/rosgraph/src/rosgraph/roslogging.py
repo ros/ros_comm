@@ -49,12 +49,12 @@ from rospkg.environment import ROS_LOG_DIR
 class LoggingException(Exception): pass
 
 class RospyLogger(logging.getLoggerClass()):
-    def findCaller(self, stack_info=False):
+    def findCaller(self, *args, **kwargs):
         """
         Find the stack frame of the caller so that we can note the source
         file name, line number, and function name with class name if possible.
         """
-        file_name, lineno, func_name = super(RospyLogger, self).findCaller()[:3]
+        file_name, lineno, func_name = super(RospyLogger, self).findCaller(*args, **kwargs)[:3]
         file_name = os.path.normcase(file_name)
 
         f = inspect.currentframe()
@@ -66,10 +66,11 @@ class RospyLogger(logging.getLoggerClass()):
             filename = os.path.normcase(co.co_filename)
             if filename == file_name and f.f_lineno == lineno and co.co_name == func_name:
                 break
-            f = f.f_back
+            if f.f_back:
+                f = f.f_back
 
         # Jump up two more frames, as the logger methods have been double wrapped.
-        if f.f_back and f.f_code and f.f_code.co_name == '_base_logger':
+        if f is not None and f.f_back and f.f_code and f.f_code.co_name == '_base_logger':
             f = f.f_back
             if f.f_back:
                 f = f.f_back
@@ -154,10 +155,14 @@ def configure_logging(logname, level=logging.INFO, filename=None, env=None):
     if not config_file:
         # search for logging config file in ROS_HOME, ROS_ETC_DIR or relative
         # to the rosgraph package directory.
-        rosgraph_d = rospkg.RosPack().get_path('rosgraph')
-        for config_dir in [os.path.join(rospkg.get_ros_home(), 'config'),
-                           rospkg.get_etc_ros_dir(),
-                           os.path.join(rosgraph_d, 'conf')]:
+        config_dirs = [os.path.join(rospkg.get_ros_home(), 'config'),
+                       rospkg.get_etc_ros_dir()]
+        try:
+            config_dirs.append(os.path.join(
+                rospkg.RosPack().get_path('rosgraph'), 'conf'))
+        except rospkg.common.ResourceNotFound:
+            pass
+        for config_dir in config_dirs:
             for extension in ('conf', 'yaml'):
                 f = os.path.join(config_dir,
                                  'python_logging{}{}'.format(os.path.extsep,

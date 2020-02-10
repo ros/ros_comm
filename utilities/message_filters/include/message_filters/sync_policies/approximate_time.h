@@ -256,13 +256,19 @@ struct ApproximateTime : public PolicyBase<M0, M1, M2, M3, M4, M5, M6, M7, M8>
   }
 
   void setInterMessageLowerBound(int i, ros::Duration lower_bound) {
-    // For correctness we only need age_penalty > -1.0, but most likely a negative age_penalty is a mistake.
     ROS_ASSERT(lower_bound >= ros::Duration(0,0));
     inter_message_lower_bounds_[i] = lower_bound;
   }
 
+  void setInterMessageLowerBound(ros::Duration lower_bound) {
+    ROS_ASSERT(lower_bound >= ros::Duration(0,0));
+    for (size_t i = 0; i < inter_message_lower_bounds_.size(); i++)
+    {
+      inter_message_lower_bounds_[i] = lower_bound;
+    }
+  }
+
   void setMaxIntervalDuration(ros::Duration max_interval_duration) {
-    // For correctness we only need age_penalty > -1.0, but most likely a negative age_penalty is a mistake.
     ROS_ASSERT(max_interval_duration >= ros::Duration(0,0));
     max_interval_duration_ = max_interval_duration;
   }

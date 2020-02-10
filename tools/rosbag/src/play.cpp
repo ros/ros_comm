@@ -75,10 +75,10 @@ rosbag::PlayerOptions parseOptions(int argc, char** argv) {
     try 
     {
       po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
-    } catch (boost::program_options::invalid_command_line_syntax& e)
+    } catch (const boost::program_options::invalid_command_line_syntax& e)
     {
       throw ros::Exception(e.what());
-    }  catch (boost::program_options::unknown_option& e)
+    } catch (const boost::program_options::unknown_option& e)
     {
       throw ros::Exception(e.what());
     }
@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
     try {
         opts = parseOptions(argc, argv);
     }
-    catch (ros::Exception const& ex) {
+    catch (const ros::Exception& ex) {
         ROS_ERROR("Error reading options: %s", ex.what());
         return 1;
     }
@@ -184,7 +184,7 @@ int main(int argc, char** argv) {
     try {
       player.publish();
     }
-    catch (std::runtime_error& e) {
+    catch (const std::runtime_error& e) {
       ROS_FATAL("%s", e.what());
       return 1;
     }

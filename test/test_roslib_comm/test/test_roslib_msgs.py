@@ -232,14 +232,14 @@ class MsgSpecTest(unittest.TestCase):
     
   def test_msg_file(self):
     import roslib.msgs    
-    f = roslib.msgs.msg_file('rosgraph_msgs', 'Log')
+    f = os.path.normcase(roslib.msgs.msg_file('rosgraph_msgs', 'Log'))
     self.assert_(os.path.isfile(f))
-    self.assert_(f.endswith('rosgraph_msgs/msg/Log.msg'))
+    self.assert_(f.endswith(os.path.normcase('rosgraph_msgs/msg/Log.msg')))
 
     # msg_file should return paths even for non-existent resources
-    f = roslib.msgs.msg_file('roslib', 'Fake')
+    f = os.path.normcase(roslib.msgs.msg_file('roslib', 'Fake'))
     self.failIf(os.path.isfile(f))
-    self.assert_(f.endswith('roslib/msg/Fake.msg'))
+    self.assert_(f.endswith(os.path.normcase('roslib/msg/Fake.msg')))
 
   def test_is_valid_msg_type(self):
     import roslib.msgs

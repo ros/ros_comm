@@ -11,9 +11,57 @@
 
 #if defined(_WINDOWS)
 # include <winsock2.h>
-static inline int poll( struct pollfd *pfd, int nfds, int timeout)
+static int poll( struct pollfd *pfd, int nfds, int timeout)
 {
-  return WSAPoll(pfd, nfds, timeout);
+  // workaround: "Windows 8 Bugs 309411 – WSAPoll does not report failed connections"
+  // https://curl.haxx.se/mail/lib-2012-10/0038.html
+  // the following logic is to use select() to check all writable socket connnection status.
+  // if all the sockets to be checked are not connected, it reports SOCKET_ERROR to
+  // error out, instead of going to WSAPoll() which causes infinitely wait situation.
+  FD_SET writable;
+  FD_SET error;
+  FD_ZERO(&writable);
+  FD_ZERO(&error);
+  for (int i = 0; i < nfds; ++i)
+  {
+    if (pfd[i].events & POLLOUT)
+    {
+      FD_SET(pfd[i].fd, &writable);
+      FD_SET(pfd[i].fd, &error);
+    }
+  }
+
+  int connectionError = 0;
+  if (writable.fd_count > 0)
+  {
+    int result = select(0, nullptr, &writable, &error, nullptr);
+    if (SOCKET_ERROR == result)
+    {
+      return SOCKET_ERROR;
+    }
+
+    if (0 != result)
+    {
+      for (int i = 0; i < nfds; ++i)
+      {
+        if ((pfd[i].events & POLLOUT) &&
+            (FD_ISSET(pfd[i].fd, &error)))
+        {
+          connectionError++;
+        }
+      }
+    }
+  }
+
+  if (connectionError == nfds)
+  {
+    // error out if all sockets are failed to connect.
+    return SOCKET_ERROR;
+  }
+  else
+  {
+    return WSAPoll(pfd, nfds, timeout);
+  }
 }
 
 # define USE_FTIME

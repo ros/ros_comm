@@ -209,6 +209,7 @@ XmlRpcServer::acceptConnection()
   }
   else  // Notify the dispatcher to listen for input on this source when we are in work()
   {
+    _accept_error = false;
     XmlRpcUtil::log(2, "XmlRpcServer::acceptConnection: creating a connection");
     _disp.addSource(this->createConnection(s), XmlRpcDispatch::ReadableEvent);
   }
