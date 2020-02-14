@@ -57,22 +57,20 @@ def get_master_uri(env=None, argv=None):
         env = os.environ
     if argv is None:
         argv = sys.argv
-    try:
-        for arg in argv:
-            if arg.startswith('__master:='):
-                val = None
-                try:
-                    _, val = arg.split(':=')
-                except:
-                    pass
-                
-                # we ignore required here because there really is no
-                # correct return value as the configuration is bad
-                # rather than unspecified
-                if not val:
-                    raise ValueError("__master remapping argument '%s' improperly specified"%arg)
-                return val
-        return env.get(ROS_MASTER_URI, DEFAULT_MASTER_URI)
-    except KeyError as e:
-        return None
+    
+    for arg in argv:
+        if arg.startswith('__master:='):
+            val = None
+            try:
+                _, val = arg.split(':=')
+            except:
+                pass
+            
+            # we ignore required here because there really is no
+            # correct return value as the configuration is bad
+            # rather than unspecified
+            if not val:
+                raise ValueError("__master remapping argument '%s' improperly specified"%arg)
+            return val
+    return env.get(ROS_MASTER_URI, DEFAULT_MASTER_URI)
         
