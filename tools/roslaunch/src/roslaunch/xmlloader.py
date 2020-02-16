@@ -388,8 +388,6 @@ class XmlLoader(loader.Loader):
                     required = self.opt_attrs(tag, context, ('machine', 'args',
                         'output', 'respawn', 'respawn_delay', 'cwd',
                         'launch-prefix', 'required'))
-            if tag.hasAttribute('machine') and not len(machine.strip()):
-                raise XmlParseException("<node> 'machine' must be non-empty: [%s]"%machine)
             if not machine and default_machine:
                 machine = default_machine.name
             # validate respawn, required
