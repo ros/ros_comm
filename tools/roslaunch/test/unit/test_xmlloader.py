@@ -757,7 +757,6 @@ class TestXmlLoader(unittest.TestCase):
                  'test-node-invalid-name-1.xml',
                  'test-node-invalid-name-2.xml',
                  'test-node-invalid-name-3.xml',
-                 'test-node-invalid-machine.xml',
                  'test-node-invalid-respawn.xml',
                  'test-node-invalid-respawn-required.xml',                 
                  'test-node-invalid-required-1.xml',
