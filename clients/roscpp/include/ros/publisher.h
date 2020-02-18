@@ -50,6 +50,7 @@ namespace ros
     Publisher() {}
     Publisher(const Publisher& rhs);
     ~Publisher();
+    Publisher& operator=(const Publisher& other) = default;
 
     /**
      * \brief Publish a message on the topic associated with this Publisher.

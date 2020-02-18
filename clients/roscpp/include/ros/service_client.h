@@ -46,6 +46,7 @@ public:
   ServiceClient(const std::string& service_name, bool persistent, const M_string& header_values, const std::string& service_md5sum);
   ServiceClient(const ServiceClient& rhs);
   ~ServiceClient();
+  ServiceClient& operator=(const ServiceClient& other) = default;
 
   /**
    * @brief Call the service aliased by this handle with the specified request/response messages.

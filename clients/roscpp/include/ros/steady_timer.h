@@ -49,6 +49,7 @@ public:
   SteadyTimer() {}
   SteadyTimer(const SteadyTimer& rhs);
   ~SteadyTimer();
+  SteadyTimer& operator=(const SteadyTimer& other) = default;
 
   /**
    * \brief Start the timer.  Does nothing if the timer is already started.
