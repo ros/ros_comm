@@ -170,7 +170,7 @@ TEST_F(BagTest, bag_not_open_fails) {
         b.write("/test", ros::Time::now(), foo_);
         FAIL();
     }
-    catch (rosbag::BagIOException ex) {
+    catch (rosbag::BagIOException& ex) {
         SUCCEED();
     }
 }
@@ -224,7 +224,7 @@ TEST(rosbag, append_indexed_1_2_fails) {
 
     FAIL();
   }
-  catch (rosbag::BagException ex) {
+  catch (rosbag::BagException& ex) {
     SUCCEED();
   }
 }
@@ -263,7 +263,7 @@ TEST(rosbag, write_then_read_without_read_mode_fails) {
         }
         FAIL();
     }
-    catch (rosbag::BagException ex) {
+    catch (rosbag::BagException& ex) {
         SUCCEED();
     }
 }
@@ -279,7 +279,7 @@ TEST_F(BagTest, read_then_write_without_write_mode_fails) {
         b2.write("chatter", ros::Time::now(), foo_);
         FAIL();
     }
-    catch (rosbag::BagException ex) {
+    catch (rosbag::BagException& ex) {
         SUCCEED();
     }
 }

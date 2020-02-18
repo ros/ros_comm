@@ -319,7 +319,7 @@ void Bag::startReadingVersion102() {
         // Read the file header record, which points to the start of the topic indexes
         readFileHeaderRecord();
     }
-    catch (BagFormatException ex) {
+    catch (BagFormatException& ex) {
         throw BagUnindexedException();
     }
 
