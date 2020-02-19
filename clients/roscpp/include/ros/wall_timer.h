@@ -49,6 +49,7 @@ public:
   WallTimer() {}
   WallTimer(const WallTimer& rhs);
   ~WallTimer();
+  WallTimer& operator=(const WallTimer& other) = default;
 
   /**
    * \brief Start the timer.  Does nothing if the timer is already started.

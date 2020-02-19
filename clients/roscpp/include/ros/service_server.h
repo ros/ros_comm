@@ -48,6 +48,7 @@ public:
   ServiceServer() {}
   ServiceServer(const ServiceServer& rhs);
   ~ServiceServer();
+  ServiceServer& operator=(const ServiceServer& other) = default;
 
   /**
    * \brief Unadvertise the service associated with this ServiceServer
