@@ -39,14 +39,14 @@ import tempfile
 
 
 class PythonPathOverride:
-    """Replace python so test scripts with unmodified shebangs use correct python version."""
+    """Replace python so test scripts with unmodified shebangs use correct Python version."""
 
     def _skip(self):
         # skip this hack on windows
         if 'nt' == os.name:
             return True
         try:
-            # Skip pre python 3.2
+            # skip pre Python 3.2
             tempfile.TemporaryDirectory
         except AttributeError:
             return True
@@ -56,9 +56,9 @@ class PythonPathOverride:
         if self._skip():
             return
 
-        self.dir = tempfile.TemporaryDirectory(prefix="rostest_bin_hook")
-        os.symlink(sys.executable, os.path.join(self.dir.name, "python"))
-        os.environ['PATH'] = self.dir.name + ":" + os.environ['PATH']
+        self.dir = tempfile.TemporaryDirectory(prefix='rostest_bin_hook')
+        os.symlink(sys.executable, os.path.join(self.dir.name, 'python'))
+        os.environ['PATH'] = self.dir.name + os.pathsep + os.environ['PATH']
 
     def __exit__(self, t, v, tb):
         if self._skip():
