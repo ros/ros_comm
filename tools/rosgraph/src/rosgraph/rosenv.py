@@ -40,7 +40,7 @@ ROS_IPV6         ="ROS_IPV6"
 ROS_HOSTNAME     ="ROS_HOSTNAME"
 ROS_NAMESPACE    ="ROS_NAMESPACE"
 
-DEFAULT_MASTER_PORT=11311  # default port for master's to bind to
+DEFAULT_MASTER_PORT = 11311  # default port for master's to bind to
 DEFAULT_MASTER_URI = 'http://localhost:%s/' % DEFAULT_MASTER_PORT
 
 def get_master_uri(env=None, argv=None):
