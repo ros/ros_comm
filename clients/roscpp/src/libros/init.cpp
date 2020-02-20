@@ -626,4 +626,9 @@ void shutdown()
   Time::shutdown();
 }
 
+const std::string& getDefaultMasterURI() {
+  static const std::string uri = "http://localhost:11311";
+  return uri;
+}
+
 }

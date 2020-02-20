@@ -55,8 +55,8 @@ from .tcpros import init_tcpros
 from .masterslave import ROSHandler
 
 DEFAULT_NODE_PORT = 0 #bind to any open port
-DEFAULT_MASTER_PORT=11311 #default port for master's to bind to
-DEFAULT_MASTER_URI = 'http://localhost:%s/'%DEFAULT_MASTER_PORT
+from rosgraph.rosenv import DEFAULT_MASTER_PORT  # default port for master's to bind to
+from rosgraph.rosenv import DEFAULT_MASTER_URI
 
 ###################################################
 # rospy module lower-level initialization
