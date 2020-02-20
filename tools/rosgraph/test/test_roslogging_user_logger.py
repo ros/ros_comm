@@ -51,7 +51,7 @@ import rosgraph.roslogging
 
 # set user defined custom logger
 class UserCustomLogger(logging.Logger):
-    def findCaller(self, stack_info=False):
+    def findCaller(self, stack_info=False, stacklevel=1):
         """Returns static caller.
 
         This method is being overwritten in rosgraph.roslogging.
