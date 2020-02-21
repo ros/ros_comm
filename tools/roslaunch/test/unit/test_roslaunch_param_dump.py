@@ -50,7 +50,7 @@ def fakestdout():
 import rospkg
 import logging
 
-SAMPLE1 = """/rosparam_load/dict1/head: 1
+SAMPLE1_OLD_YAML = """/rosparam_load/dict1/head: 1
 /rosparam_load/dict1/knees: 3
 /rosparam_load/dict1/shoulders: 2
 /rosparam_load/dict1/toes: 4
@@ -72,7 +72,39 @@ SAMPLE1 = """/rosparam_load/dict1/head: 1
 /rosparam_load/string1: bar
 /rosparam_load/string2: '10'"""
 
-SAMPLE2 = """/load_ns/subns/dict1/head: 1
+SAMPLE1_NEW_YAML = """/rosparam_load/dict1/head: 1
+/rosparam_load/dict1/knees: 3
+/rosparam_load/dict1/shoulders: 2
+/rosparam_load/dict1/toes: 4
+/rosparam_load/integer1: 1
+/rosparam_load/integer2: 2
+/rosparam_load/list1:
+- head
+- shoulders
+- knees
+- toes
+/rosparam_load/list2:
+- 1
+- 1
+- 2
+- 3
+- 5
+- 8
+/rosparam_load/preformattedtext: 'This is the first line
+
+  This is the second line
+
+  Line breaks are preserved
+
+  Indentation is stripped
+
+  '
+/rosparam_load/robots/child/grandchildparam: a grandchild namespace param
+/rosparam_load/robots/childparam: a child namespace parameter
+/rosparam_load/string1: bar
+/rosparam_load/string2: '10'"""
+
+SAMPLE2_OLD_YAML = """/load_ns/subns/dict1/head: 1
 /load_ns/subns/dict1/knees: 3
 /load_ns/subns/dict1/shoulders: 2
 /load_ns/subns/dict1/toes: 4
@@ -80,6 +112,38 @@ SAMPLE2 = """/load_ns/subns/dict1/head: 1
 /load_ns/subns/integer2: 2
 /load_ns/subns/list1: [head, shoulders, knees, toes]
 /load_ns/subns/list2: [1, 1, 2, 3, 5, 8]
+/load_ns/subns/preformattedtext: 'This is the first line
+
+  This is the second line
+
+  Line breaks are preserved
+
+  Indentation is stripped
+
+  '
+/load_ns/subns/robots/child/grandchildparam: a grandchild namespace param
+/load_ns/subns/robots/childparam: a child namespace parameter
+/load_ns/subns/string1: bar
+/load_ns/subns/string2: '10'"""
+
+SAMPLE2_NEW_YAML = """/load_ns/subns/dict1/head: 1
+/load_ns/subns/dict1/knees: 3
+/load_ns/subns/dict1/shoulders: 2
+/load_ns/subns/dict1/toes: 4
+/load_ns/subns/integer1: 1
+/load_ns/subns/integer2: 2
+/load_ns/subns/list1:
+- head
+- shoulders
+- knees
+- toes
+/load_ns/subns/list2:
+- 1
+- 1
+- 2
+- 3
+- 5
+- 8
 /load_ns/subns/preformattedtext: 'This is the first line
 
   This is the second line
@@ -107,14 +171,18 @@ def test_dump_params():
         s = b.getvalue().strip()
         # remove float vals as serialization is not stable
         s = '\n'.join([x for x in s.split('\n') if not 'float' in x])
-        assert str(s) == str(SAMPLE1), "[%s]\nvs\n[%s]"%(s, SAMPLE1)
+        assert str(s) in (SAMPLE1_OLD_YAML, SAMPLE1_NEW_YAML), \
+            "[%s]\nvs\n[%s]\nor\n[%s]" % \
+            (s, SAMPLE1_OLD_YAML, SAMPLE1_NEW_YAML)
     node_rosparam_f = os.path.join(test_d, 'test-node-rosparam-load-ns.xml')
     with fakestdout() as b:
         assert dump_params([node_rosparam_f])
         s = b.getvalue().strip()
         # remove float vals as serialization is not stable
         s = '\n'.join([x for x in s.split('\n') if not 'float' in x])
-        assert str(s) == str(SAMPLE2), "[%s]\nvs\n[%s]"%(s, SAMPLE2)
+        assert str(s) in(SAMPLE2_OLD_YAML, SAMPLE2_NEW_YAML), \
+            "[%s]\nvs\n[%s]\nor\n[%s]" % \
+            (s, SAMPLE2_OLD_YAML, SAMPLE2_NEW_YAML)
         
     invalid_f = os.path.join(test_d, 'invalid-xml.xml')
     with fakestdout() as b:
