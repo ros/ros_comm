@@ -291,14 +291,14 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
     if(options_.custom_record_freq.find(topic_name) != options_.custom_record_freq.end())
     {
         ros::Duration interval = options_.custom_record_freq.at(topic_name);
-        std::map<std::string, ros::Time>::iterator it = topic_time_catcher_.find(topic_name);
+        std::unordered_map<std::string, ros::Time>::iterator it = topic_time_catcher_.find(topic_name);
         if(it == topic_time_catcher_.end())
         {
             topic_time_catcher_.emplace(topic_name, rectime + interval);
         }
         else if(rectime > it->second)
         {
-             it->second += ros::Duration(interval.toSec() * (1 + int((rectime.toSec() - it->second.toSec()) / interval.toSec())));
+             it->second += interval * (1 + int((rectime.toSec() - it->second.toSec()) / interval.toSec()));
         }
         else
         {
