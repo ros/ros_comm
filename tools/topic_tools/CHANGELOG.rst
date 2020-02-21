@@ -2,8 +2,8 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.15.0 (2020-02-21)
+-------------------
 * fix flakyness of transform test (`#1890 <https://github.com/ros/ros_comm/issues/1890>`_)
 
 1.14.4 (2020-02-20)

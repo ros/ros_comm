@@ -2,8 +2,8 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.15.0 (2020-02-21)
+-------------------
 * update test to pass with old and new yaml (`#1893 <https://github.com/ros/ros_comm/issues/1893>`_)
 
 1.14.4 (2020-02-20)
