@@ -33,4 +33,39 @@
 
 from rostest import rostestmain
 
-rostestmain()
+import os
+import sys
+import tempfile
+
+
+class PythonPathOverride:
+    """Replace python so test scripts with unmodified shebangs use correct Python version."""
+
+    def _skip(self):
+        # skip this hack on windows
+        if 'nt' == os.name:
+            return True
+        try:
+            # skip pre Python 3.2
+            tempfile.TemporaryDirectory
+        except AttributeError:
+            return True
+        return False
+
+    def __enter__(self):
+        if self._skip():
+            return
+
+        self.dir = tempfile.TemporaryDirectory(prefix='rostest_bin_hook')
+        os.symlink(sys.executable, os.path.join(self.dir.name, 'python'))
+        os.environ['PATH'] = self.dir.name + os.pathsep + os.environ['PATH']
+
+    def __exit__(self, t, v, tb):
+        if self._skip():
+            return
+
+        self.dir.cleanup()
+
+
+with PythonPathOverride():
+    rostestmain()
