@@ -2,6 +2,19 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* bump CMake minimum version to avoid CMP0048 warning (`#1869 <https://github.com/ros/ros_comm/issues/1869>`_)
+* [Windows] make test code to be more portable (`#1726 <https://github.com/ros/ros_comm/issues/1726>`_)
+* add --use-rostime for pub (`#1717 <https://github.com/ros/ros_comm/issues/1717>`_)
+* _rostopic_list_group_by_host: publisher/subscriber lists have correct type now (`#1780 <https://github.com/ros/ros_comm/issues/1780>`_)
+* more Python 3 compatibility (`#1783 <https://github.com/ros/ros_comm/issues/1783>`_)
+* switch to yaml.safe_load(_all) to prevent YAMLLoadWarning (`#1688 <https://github.com/ros/ros_comm/issues/1688>`_)
+* fix typo, confict -> conflict (`#1690 <https://github.com/ros/ros_comm/issues/1690>`_)
+* repeatedly republish message from file (`#1635 <https://github.com/ros/ros_comm/issues/1635>`_)
+* duplicate test nodes which aren't available to other packages, add missing dependencies (`#1611 <https://github.com/ros/ros_comm/issues/1611>`_)
+* update wiki.ros.org URLs (`#1536 <https://github.com/ros/ros_comm/issues/1536>`_)
+
 1.14.3 (2018-08-06)
 -------------------
 

@@ -2,6 +2,16 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* bump CMake minimum version to avoid CMP0048 warning (`#1869 <https://github.com/ros/ros_comm/issues/1869>`_)
+* more Python 3 compatibility (`#1795 <https://github.com/ros/ros_comm/issues/1795>`_)
+* rostest: add advertisetest (`#1761 <https://github.com/ros/ros_comm/issues/1761>`_)
+* fix flaky hztests (`#1661 <https://github.com/ros/ros_comm/issues/1661>`_)
+* use AnyMsg in publishtest (`#1659 <https://github.com/ros/ros_comm/issues/1659>`_)
+* fix various test problems (`#1601 <https://github.com/ros/ros_comm/issues/1601>`_)
+* invoke rostest from CMake with the PYTHON_EXECUTABLE (`#1583 <https://github.com/ros/ros_comm/issues/1583>`_)
+
 1.14.3 (2018-08-06)
 -------------------
 

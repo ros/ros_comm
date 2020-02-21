@@ -2,6 +2,30 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add default ROS_MASTER_URI (`#1666 <https://github.com/ros/ros_comm/issues/1666>`_)
+* bump CMake minimum version to avoid CMP0048 warning (`#1869 <https://github.com/ros/ros_comm/issues/1869>`_)
+* reuse xmlrpc connections everywhere (`#1471 <https://github.com/ros/ros_comm/issues/1471>`_)
+* use cached parameter for rosout_disable_topics_generation (`#1881 <https://github.com/ros/ros_comm/issues/1881>`_)
+* add args and kwargs to rospy.log* (`#1289 <https://github.com/ros/ros_comm/issues/1289>`_)
+* add kwargs to internal logging functions (`#1290 <https://github.com/ros/ros_comm/issues/1290>`_)
+* add get_param_cached (`#1515 <https://github.com/ros/ros_comm/issues/1515>`_)
+* more Python 3 compatibility (`#1795 <https://github.com/ros/ros_comm/issues/1795>`_)
+* fix line endings to be LF (`#1794 <https://github.com/ros/ros_comm/issues/1794>`_)
+* use condition attributes to specify Python 2 and 3 dependencies (`#1792 <https://github.com/ros/ros_comm/issues/1792>`_)
+* fix dynamic windowing for Topic Statistics (`#1695 <https://github.com/ros/ros_comm/issues/1695>`_)
+* do not raise socket exception during shutdown (`#1720 <https://github.com/ros/ros_comm/issues/1720>`_)
+* add possibility to pass rospy.Duration as timeout to wait_for_service and wait_for_message (`#1703 <https://github.com/ros/ros_comm/issues/1703>`_)
+* add is_legal_remap() to rosgraph to make remap-detection more precise (`#1683 <https://github.com/ros/ros_comm/issues/1683>`_)
+* add missing comma in the list of strings (`#1760 <https://github.com/ros/ros_comm/issues/1760>`_)
+* switch to yaml.safe_load(_all) to prevent YAMLLoadWarning (`#1688 <https://github.com/ros/ros_comm/issues/1688>`_)
+* fix error handling for Topic constructor (`#1701 <https://github.com/ros/ros_comm/issues/1701>`_)
+* make sigterm handling Python 3 compatible (`#1559 <https://github.com/ros/ros_comm/issues/1559>`_)
+* update wiki.ros.org URLs (`#1536 <https://github.com/ros/ros_comm/issues/1536>`_)
+* show connection info on rosnode info (`#1497 <https://github.com/ros/ros_comm/issues/1497>`_)
+* import socket, threading in udpros.py (`#1494 <https://github.com/ros/ros_comm/issues/1494>`_)
+
 1.14.3 (2018-08-06)
 -------------------
 * maintain exception info in RosOutHandler (`#1442 <https://github.com/ros/ros_comm/issues/1442>`_)

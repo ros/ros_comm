@@ -2,6 +2,15 @@
 Changelog for package rosmaster
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* bump CMake minimum version to avoid CMP0048 warning (`#1869 <https://github.com/ros/ros_comm/issues/1869>`_)
+* use thread local storage for caching instances of ServerProxy (`#1732 <https://github.com/ros/ros_comm/issues/1732>`_)
+* use condition attributes to specify Python 2 and 3 dependencies (`#1792 <https://github.com/ros/ros_comm/issues/1792>`_)
+* fix issue occuring during alternating calls of getParamCached and setParam (`#1439 <https://github.com/ros/ros_comm/issues/1439>`_)
+* fix docstring in unregisterSubscriber (`#1553 <https://github.com/ros/ros_comm/issues/1553>`_)
+* set correctly typed @apivalidate default return values (`#1472 <https://github.com/ros/ros_comm/issues/1472>`_)
+
 1.14.3 (2018-08-06)
 -------------------
 

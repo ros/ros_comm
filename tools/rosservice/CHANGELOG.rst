@@ -2,6 +2,14 @@
 Changelog for package rosservice
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* bump CMake minimum version to avoid CMP0048 warning (`#1869 <https://github.com/ros/ros_comm/issues/1869>`_)
+* switch to yaml.safe_load(_all) to prevent YAMLLoadWarning (`#1688 <https://github.com/ros/ros_comm/issues/1688>`_)
+* rosservice: use myargv() (`#1667 <https://github.com/ros/ros_comm/issues/1667>`_)
+* catch exeption when searching for services and a single service fails (`#1519 <https://github.com/ros/ros_comm/issues/1519>`_)
+* update wiki.ros.org URLs (`#1536 <https://github.com/ros/ros_comm/issues/1536>`_)
+
 1.14.3 (2018-08-06)
 -------------------
 

@@ -2,6 +2,25 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* bump CMake minimum version to avoid CMP0048 warning (`#1869 <https://github.com/ros/ros_comm/issues/1869>`_)
+* [Windows] workaround WSAPoll doesn't report failed connections (`#1816 <https://github.com/ros/ros_comm/issues/1816>`_)
+* fix base64 decode error on ARM platforms (`#1853 <https://github.com/ros/ros_comm/issues/1853>`_)
+* use c++11 std::snprintf (`#1820 <https://github.com/ros/ros_comm/issues/1820>`_)
+* fix dead loop if accept connection error in XmlRpcServer (`#1791 <https://github.com/ros/ros_comm/issues/1791>`_)
+* fix test build errors (`#1723 <https://github.com/ros/ros_comm/issues/1723>`_)
+* fix base64 encode error (`#1769 <https://github.com/ros/ros_comm/issues/1769>`_)
+* XmlRpcValue added bool assignment operator (`#1709 <https://github.com/ros/ros_comm/issues/1709>`_)
+* add const indexer for xmlrpc (`#1759 <https://github.com/ros/ros_comm/issues/1759>`_)
+* xmlrpcpp: fixed invalid zero index (`#1631 <https://github.com/ros/ros_comm/issues/1631>`_)
+* avoid calling memcpy on NULL pointer with size 0 (`#1546 <https://github.com/ros/ros_comm/issues/1546>`_)
+* revert "Revert "move the winsock2.h into cpp."" (`#1588 <https://github.com/ros/ros_comm/issues/1588>`_)
+* visibility macros update (`#1591 <https://github.com/ros/ros_comm/issues/1591>`_)
+* remove explicit -std=c++11, default to 14
+* fix test code build issues on Windows (`#1479 <https://github.com/ros/ros_comm/issues/1479>`_)
+* fix issues when built or run on Windows (`#1466 <https://github.com/ros/ros_comm/issues/1466>`_)
+
 1.14.3 (2018-08-06)
 -------------------
 

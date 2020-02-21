@@ -2,6 +2,15 @@
 Changelog for package rosnode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* bump CMake minimum version to avoid CMP0048 warning (`#1869 <https://github.com/ros/ros_comm/issues/1869>`_)
+* prevent indefinitely trapping in unknown error state (`#1854 <https://github.com/ros/ros_comm/issues/1854>`_)
+* duplicate test nodes which aren't available to other packages, add missing dependencies (`#1611 <https://github.com/ros/ros_comm/issues/1611>`_)
+* update wiki.ros.org URLs (`#1536 <https://github.com/ros/ros_comm/issues/1536>`_)
+* explicitly handle socket.timeout in rosnode ping (`#1517 <https://github.com/ros/ros_comm/issues/1517>`_)
+* show connection info on rosnode info (`#1497 <https://github.com/ros/ros_comm/issues/1497>`_)
+
 1.14.3 (2018-08-06)
 -------------------
 

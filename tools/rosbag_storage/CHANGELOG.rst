@@ -2,6 +2,23 @@
 Changelog for package rosbag_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* catch polymorphic exceptions by reference (`#1887 <https://github.com/ros/ros_comm/issues/1887>`_)
+* bump CMake minimum version to avoid CMP0048 warning (`#1869 <https://github.com/ros/ros_comm/issues/1869>`_)
+* use find_library for abs path of crypto and gpgme libraries (`#1867 <https://github.com/ros/ros_comm/issues/1867>`_)
+* remove unnecessary writing to map in write only mode (`#1798 <https://github.com/ros/ros_comm/issues/1798>`_)
+* check for fclose returning 0 (`#1750 <https://github.com/ros/ros_comm/issues/1750>`_)
+* fix windows build (`#1687 <https://github.com/ros/ros_comm/issues/1687>`_)
+* move bag encryption plugins into separate library (`#1499 <https://github.com/ros/ros_comm/issues/1499>`_)
+* modernization: replaced BOOST_FOREACH with range-based for loops, used algorithm, where appropriated (`#1640 <https://github.com/ros/ros_comm/issues/1640>`_)
+* fix dangeling if-else (`#1637 <https://github.com/ros/ros_comm/issues/1637>`_)
+* fix infinite loop in rosbag buffer resize (`#1623 <https://github.com/ros/ros_comm/issues/1623>`_)
+* update CMakeLists.txt in rosbag_storage (`#1618 <https://github.com/ros/ros_comm/issues/1618>`_)
+* fix various test problems (`#1601 <https://github.com/ros/ros_comm/issues/1601>`_)
+* visibility macros update (`#1591 <https://github.com/ros/ros_comm/issues/1591>`_)
+* fix issues when built or run on Windows (`#1466 <https://github.com/ros/ros_comm/issues/1466>`_)
+
 1.14.3 (2018-08-06)
 -------------------
 

@@ -2,6 +2,22 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* bump CMake minimum version to avoid CMP0048 warning (`#1869 <https://github.com/ros/ros_comm/issues/1869>`_)
+* use node namespace when looking up topic  (`#1663 <https://github.com/ros/ros_comm/issues/1663>`_)
+* more Windows test code fixes (`#1727 <https://github.com/ros/ros_comm/issues/1727>`_)
+* more Python 3 compatibility (`#1795 <https://github.com/ros/ros_comm/issues/1795>`_)
+* relay: fix boost::lock exception (`#1696 <https://github.com/ros/ros_comm/issues/1696>`_)
+* relay_field: add --tcpnodely (`#1682 <https://github.com/ros/ros_comm/issues/1682>`_)
+* switch to yaml.safe_load(_all) to prevent YAMLLoadWarning (`#1688 <https://github.com/ros/ros_comm/issues/1688>`_)
+* fix flaky hztests (`#1661 <https://github.com/ros/ros_comm/issues/1661>`_)
+* transform: create publisher before subscriber, because callback may use the publisher (`#1669 <https://github.com/ros/ros_comm/issues/1669>`_)
+* duplicate test nodes which aren't available to other packages, add missing dependencies (`#1611 <https://github.com/ros/ros_comm/issues/1611>`_)
+* mux: do not dereference the end-iterator (`#1579 <https://github.com/ros/ros_comm/issues/1579>`_)
+* fix topic_tools environment hook (`#1486 <https://github.com/ros/ros_comm/issues/1486>`_)
+* mux: add ~latch option (`#1489 <https://github.com/ros/ros_comm/issues/1489>`_)
+
 1.14.3 (2018-08-06)
 -------------------
 

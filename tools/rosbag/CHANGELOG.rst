@@ -2,6 +2,32 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* bump CMake minimum version to avoid CMP0048 warning (`#1869 <https://github.com/ros/ros_comm/issues/1869>`_)
+* add quotes around file name so they can be click selected in terminal (`#1813 <https://github.com/ros/ros_comm/issues/1813>`_)
+* catch exceptions by const ref (`#1874 <https://github.com/ros/ros_comm/issues/1874>`_)
+* read GPG passphrase from an environment variable (`#1856 <https://github.com/ros/ros_comm/issues/1856>`_)
+* fix missing import of roslib (`#1818 <https://github.com/ros/ros_comm/issues/1818>`_)
+* fix regression from pycrypodome switchover (`#1814 <https://github.com/ros/ros_comm/issues/1814>`_)
+* use condition attributes to specify Python 2 and 3 dependencies (`#1792 <https://github.com/ros/ros_comm/issues/1792>`_)
+* add pycryptodome as default (`#1609 <https://github.com/ros/ros_comm/issues/1609>`_)
+* encrypted rosbag fixes for Python 3 (`#1777 <https://github.com/ros/ros_comm/issues/1777>`_)
+* fix bug in bag migration (`#1786 <https://github.com/ros/ros_comm/issues/1786>`_)
+* keep latched topics latched (`#1708 <https://github.com/ros/ros_comm/issues/1708>`_)
+* wrap the rosbag filter eval in a lambda (`#1712 <https://github.com/ros/ros_comm/issues/1712>`_)
+* record: fix signed int overflow (`#1741 <https://github.com/ros/ros_comm/issues/1741>`_)
+* switch to yaml.safe_load(_all) to prevent YAMLLoadWarning (`#1688 <https://github.com/ros/ros_comm/issues/1688>`_)
+* pickleable rosbag exceptions (`#1210 <https://github.com/ros/ros_comm/issues/1210>`_ revisited). (`#1652 <https://github.com/ros/ros_comm/issues/1652>`_)
+* fix topic message count for rosbag indexed v1.2 (`#1648 <https://github.com/ros/ros_comm/issues/1648>`_)
+* fix wrong error handling in migration (`#1639 <https://github.com/ros/ros_comm/issues/1639>`_)
+* modernization: replaced BOOST_FOREACH with range-based for-loops, used algorithm where appropriated (`#1641 <https://github.com/ros/ros_comm/issues/1641>`_)
+* fix IOError during Python file operation (`#1617 <https://github.com/ros/ros_comm/issues/1617>`_)
+* add Windows.h usage explicitly (`#44 <https://github.com/ros/ros_comm/issues/44>`_) (`#1616 <https://github.com/ros/ros_comm/issues/1616>`_)
+* fix waitForSubscribers hanging with simtime (`#1543 <https://github.com/ros/ros_comm/issues/1543>`_)
+* publish last message from latch topics when start time > 0 (`#1537 <https://github.com/ros/ros_comm/issues/1537>`_)
+* add a new option to publish when a bag write begin (`#1527 <https://github.com/ros/ros_comm/issues/1527>`_)
+
 1.14.3 (2018-08-06)
 -------------------
 * restore API compatibility (`#1473 <https://github.com/ros/ros_comm/issues/1473>`_) (regression from 1.14.0)

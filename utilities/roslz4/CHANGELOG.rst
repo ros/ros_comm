@@ -2,6 +2,14 @@
 Changelog for package roslz4
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* bump CMake minimum version to avoid CMP0048 warning (`#1869 <https://github.com/ros/ros_comm/issues/1869>`_)
+* add alternative lz4 name for Windows (`#1821 <https://github.com/ros/ros_comm/issues/1821>`_)
+* check for XXH_malloc NULL return (`#1778 <https://github.com/ros/ros_comm/issues/1778>`_)
+* update install destination for roslz4 (`#1620 <https://github.com/ros/ros_comm/issues/1620>`_)
+* fix issues when built or run on Windows (`#1466 <https://github.com/ros/ros_comm/issues/1466>`_)
+
 1.14.3 (2018-08-06)
 -------------------
 
