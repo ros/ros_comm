@@ -2,6 +2,10 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* update test to pass with old and new yaml (`#1893 <https://github.com/ros/ros_comm/issues/1893>`_)
+
 1.14.4 (2020-02-20)
 -------------------
 * allow empty machine arg in node tag (`#1885 <https://github.com/ros/ros_comm/issues/1885>`_)
