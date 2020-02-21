@@ -45,6 +45,7 @@
 #include <queue>
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <list>
 #include <yaml-cpp/yaml.h>
 
@@ -114,7 +115,7 @@ struct ROSBAG_DECL RecorderOptions
     unsigned long long min_space;
     std::string min_space_str;
     ros::TransportHints transport_hints;
-    std::map<std::string, ros::Duration>    custom_record_freq;
+    std::unordered_map<std::string, ros::Duration>    custom_record_freq;
 
     std::vector<std::string> topics;
 };
@@ -192,7 +193,7 @@ private:
     ros::WallTime                 warn_next_;
 
     ros::Publisher                pub_begin_write;
-    std::map<std::string, ros::Time> topic_time_catcher_;
+    std::unordered_map<std::string, ros::Time> topic_time_catcher_;
 };
 
 } // namespace rosbag
