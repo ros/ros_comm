@@ -2,8 +2,8 @@
 Changelog for package rosbag_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.14.4 (2020-02-20)
+-------------------
 * catch polymorphic exceptions by reference (`#1887 <https://github.com/ros/ros_comm/issues/1887>`_)
 * bump CMake minimum version to avoid CMP0048 warning (`#1869 <https://github.com/ros/ros_comm/issues/1869>`_)
 * use find_library for abs path of crypto and gpgme libraries (`#1867 <https://github.com/ros/ros_comm/issues/1867>`_)

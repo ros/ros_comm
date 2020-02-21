@@ -2,8 +2,8 @@
 Changelog for package message_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.14.4 (2020-02-20)
+-------------------
 * bump CMake minimum version to avoid CMP0048 warning (`#1869 <https://github.com/ros/ros_comm/issues/1869>`_)
 * add overload of ApproximateTime::setInterMessageLowerBound() to set all topics to the same value (`#1860 <https://github.com/ros/ros_comm/issues/1860>`_)
 * update approximate time filter to work with Python 2 and 3 (`#1660 <https://github.com/ros/ros_comm/issues/1660>`_)

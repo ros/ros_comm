@@ -2,8 +2,8 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.14.4 (2020-02-20)
+-------------------
 * bump CMake minimum version to avoid CMP0048 warning (`#1869 <https://github.com/ros/ros_comm/issues/1869>`_)
 * use node namespace when looking up topic  (`#1663 <https://github.com/ros/ros_comm/issues/1663>`_)
 * more Windows test code fixes (`#1727 <https://github.com/ros/ros_comm/issues/1727>`_)
