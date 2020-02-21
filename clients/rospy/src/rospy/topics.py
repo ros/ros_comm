@@ -1173,7 +1173,7 @@ class _TopicManager(object):
         Check all registered publication and subscriptions.
         """
         with self.lock:
-            for t in chain(iter(self.pubs.values()), iter(self.subs.values())):
+            for t in chain(list(self.pubs.values()), list(self.subs.values())):
                 t.check()
         
     def _add(self, ps, rmap, reg_type):
