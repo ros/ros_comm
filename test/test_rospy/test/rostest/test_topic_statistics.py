@@ -51,7 +51,10 @@ class TestTopicStatistics(unittest.TestCase):
         self.topic_statistic_msg_map = {}
 
     def new_msg(self, msg):
-        self.topic_statistic_msg_map[msg.topic] = msg
+        # need at least two messages to compute the period fields
+        # since messages without period fields aren't useful skip them
+        if msg.delivered_msgs > 1:
+            self.topic_statistic_msg_map[msg.topic] = msg
 
     def assert_eventually(
         self, cond, timeout=rospy.Duration(5.0), interval=rospy.Duration(0.5)
