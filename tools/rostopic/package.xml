@@ -1,8 +1,4 @@
-<?xml version="1.0"?>
-<?xml-model
-  href="http://download.ros.org/schema/package_format3.xsd"
-  schematypens="http://www.w3.org/2001/XMLSchema"?>
-<package format="3">
+<package>
   <name>rostopic</name>
   <version>1.15.0</version>
   <description>
@@ -27,9 +23,9 @@
 
   <build_depend>rostest</build_depend>
 
-  <exec_depend version_gte="0.5.4">genpy</exec_depend>
-  <exec_depend>rosbag</exec_depend>
-  <exec_depend>rospy</exec_depend>
+  <run_depend version_gte="0.5.4">genpy</run_depend>
+  <run_depend>rosbag</run_depend>
+  <run_depend>rospy</run_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>

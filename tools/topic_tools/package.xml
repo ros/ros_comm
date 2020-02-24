@@ -1,8 +1,4 @@
-<?xml version="1.0"?>
-<?xml-model
-  href="http://download.ros.org/schema/package_format3.xsd"
-  schematypens="http://www.w3.org/2001/XMLSchema"?>
-<package format="3">
+<package>
   <name>topic_tools</name>
   <version>1.15.0</version>
   <description>
@@ -31,12 +27,12 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>xmlrpcpp</build_depend>
 
-  <exec_depend>message_runtime</exec_depend>
-  <exec_depend>rosconsole</exec_depend>
-  <exec_depend>roscpp</exec_depend>
-  <exec_depend>rostime</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>xmlrpcpp</exec_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>rosconsole</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rostime</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>xmlrpcpp</run_depend>
 
   <test_depend>rosbash</test_depend>
   <!--

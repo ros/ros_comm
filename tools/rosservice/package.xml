@@ -1,8 +1,4 @@
-<?xml version="1.0"?>
-<?xml-model
-  href="http://download.ros.org/schema/package_format3.xsd"
-  schematypens="http://www.w3.org/2001/XMLSchema"?>
-<package format="3">
+<package>
   <name>rosservice</name>
   <version>1.15.0</version>
   <description>
@@ -21,11 +17,11 @@
 
   <buildtool_depend version_gte="0.5.78">catkin</buildtool_depend>
 
-  <exec_depend>genpy</exec_depend>
-  <exec_depend>rosgraph</exec_depend>
-  <exec_depend>roslib</exec_depend>
-  <exec_depend>rospy</exec_depend>
-  <exec_depend>rosmsg</exec_depend>
+  <run_depend>genpy</run_depend>
+  <run_depend>rosgraph</run_depend>
+  <run_depend>roslib</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>rosmsg</run_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>

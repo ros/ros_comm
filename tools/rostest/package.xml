@@ -1,8 +1,4 @@
-<?xml version="1.0"?>
-<?xml-model
-  href="http://download.ros.org/schema/package_format3.xsd"
-  schematypens="http://www.w3.org/2001/XMLSchema"?>
-<package format="3">
+<package>
   <name>rostest</name>
   <version>1.15.0</version>
   <description>
@@ -19,12 +15,12 @@
   <build_depend>boost</build_depend>
   <build_depend>rosunit</build_depend>
 
-  <exec_depend>boost</exec_depend>
-  <exec_depend>rosgraph</exec_depend>
-  <exec_depend>roslaunch</exec_depend>
-  <exec_depend>rosmaster</exec_depend>
-  <exec_depend>rospy</exec_depend>
-  <exec_depend>rosunit</exec_depend>
+  <run_depend>boost</run_depend>
+  <run_depend>rosgraph</run_depend>
+  <run_depend>roslaunch</run_depend>
+  <run_depend>rosmaster</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>rosunit</run_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>

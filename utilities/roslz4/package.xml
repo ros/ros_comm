@@ -1,8 +1,4 @@
-<?xml version="1.0"?>
-<?xml-model
-  href="http://download.ros.org/schema/package_format3.xsd"
-  schematypens="http://www.w3.org/2001/XMLSchema"?>
-<package format="3">
+<package>
   <name>roslz4</name>
   <version>1.15.0</version>
   <description>
@@ -20,7 +16,7 @@
   <build_depend>lz4</build_depend>
   <build_depend>cpp_common</build_depend>
 
-  <exec_depend>lz4</exec_depend>
+  <run_depend>lz4</run_depend>
 
   <test_depend>rosunit</test_depend>
 </package>
