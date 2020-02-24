@@ -67,6 +67,8 @@ class TestTopicStatistics(unittest.TestCase):
         ''' return True if topic message's measured frequency
         is within some error margin of expected frequency '''
         msg = self.topic_statistic_msg_map[topic]
+        # need at least two messages to compute the period fields
+        assert msg.delivered_msgs > 1
         found_freq = 1.0 / msg.period_mean.to_sec()
         rospy.loginfo(
             "Testing {}'s found frequency {} against expected {}".format(
