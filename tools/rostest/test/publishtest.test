@@ -3,7 +3,7 @@
     <node pkg="rostopic" type="rostopic" name="freq_topic_pub" args="pub /frequent_topic std_msgs/Bool 'data: false' -r 10" />
     <node pkg="rostopic" type="rostopic" name="once_topic_pub" args="pub /once_topic std_msgs/Bool 'data: false' -1l" />
 
-    <test test-name="publishtest_test" pkg="rostest" type="publishtest" time-limit="3.0" retry="3">
+    <test test-name="publishtest_test" pkg="rostest" type="publishtest" time-limit="5.0" retry="3">
         <rosparam>
             topics:
               - name: /frequent_topic
