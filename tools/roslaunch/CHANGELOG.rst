@@ -2,8 +2,8 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.15.1 (2020-02-24)
+-------------------
 * use setuptools instead of distutils (`#1870 <https://github.com/ros/ros_comm/issues/1870>`_)
 
 1.15.0 (2020-02-21)

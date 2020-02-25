@@ -2,8 +2,8 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.15.1 (2020-02-24)
+-------------------
 * increase time limit of advertisetest/publishtest.test to reduce flakyness (`#1897 <https://github.com/ros/ros_comm/issues/1897>`_)
 * use setuptools instead of distutils (`#1870 <https://github.com/ros/ros_comm/issues/1870>`_)
 

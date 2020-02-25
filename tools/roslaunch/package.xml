@@ -4,7 +4,7 @@
   schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>roslaunch</name>
-  <version>1.15.0</version>
+  <version>1.15.1</version>
   <description>
     roslaunch is a tool for easily launching multiple ROS <a
     href="http://ros.org/wiki/Nodes">nodes</a> locally and remotely
