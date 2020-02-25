@@ -88,7 +88,8 @@ class TestTopicStatistics(unittest.TestCase):
         self.assert_eventually(
             lambda: '/slow_chatter' in self.topic_statistic_msg_map)
         self.assert_eventually(
-            lambda: '/very_slow_chatter' in self.topic_statistic_msg_map)
+            lambda: '/very_slow_chatter' in self.topic_statistic_msg_map,
+            timeout=rospy.Duration(10.0))
 
         self.assertTrue(self.frequency_acceptable('/very_fast_chatter', 150))
         self.assertTrue(self.frequency_acceptable('/fast_chatter', 53))
