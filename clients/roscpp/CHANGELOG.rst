@@ -2,6 +2,10 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix missing boost dependencies (`#1895 <https://github.com/ros/ros_comm/issues/1895>`_)
+
 1.15.0 (2020-02-21)
 -------------------
 

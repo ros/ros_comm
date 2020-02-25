@@ -2,6 +2,11 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* increase time limit of advertisetest/publishtest.test to reduce flakyness (`#1897 <https://github.com/ros/ros_comm/issues/1897>`_)
+* use setuptools instead of distutils (`#1870 <https://github.com/ros/ros_comm/issues/1870>`_)
+
 1.15.0 (2020-02-21)
 -------------------
 * wrap rostest call to add `python` pointing to sys.executable in PATH (`#1879 <https://github.com/ros/ros_comm/issues/1879>`_)
