@@ -3,7 +3,7 @@
   <node pkg="rostopic" type="rostopic" name="once_topic_pub" args="pub /once_topic std_msgs/Bool 'data: false' -1l" />
   <node pkg="rostest" type="service_server.py" name="service_server"/>
 
-  <test test-name="advertisetest_test" pkg="rostest" type="advertisetest" time-limit="5.0" retry="3">
+  <test test-name="advertisetest_test" pkg="rostest" type="advertisetest" time-limit="7.0" retry="3">
     <rosparam>
       topics:
       - name: /frequent_topic
