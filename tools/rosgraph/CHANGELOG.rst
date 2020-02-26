@@ -2,6 +2,10 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add timestamp formatting for rosconsole (`#1892 <https://github.com/ros/ros_comm/issues/1892>`_)
+
 1.15.1 (2020-02-24)
 -------------------
 * use setuptools instead of distutils (`#1870 <https://github.com/ros/ros_comm/issues/1870>`_)
