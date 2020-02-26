@@ -1,6 +1,6 @@
 <package>
   <name>test_rosservice</name>
-  <version>1.15.1</version>
+  <version>1.15.2</version>
   <description>
     Tests for the rosservice tool.
   </description>
