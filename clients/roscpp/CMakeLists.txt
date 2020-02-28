@@ -24,18 +24,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/ros/common.h.in ${CATKIN_DEVE
 
 find_package(Boost REQUIRED COMPONENTS chrono filesystem system)
 
-# Make sure we use CLOCK_MONOTONIC for the condition variable wait_for if not Apple.
-if(NOT APPLE AND NOT WIN32)
-  if(Boost_VERSION LESS 106100)
-    message(FATAL_ERROR "${PROJECT_NAME} requires Boost 1.61 or above.")
-  endif()
-  if(Boost_VERSION LESS 106700)
-    # CLOCK_MONOTONIC became the default in Boost 1.67:
-    # https://github.com/boostorg/thread/commit/1e84b978b2bb0aae830cc14533dea3b7ddda5cde
-    add_definitions(-DBOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC)
-  endif()
-endif()
-
 include_directories(include ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/ros ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 # this is needed for use within a bazel workspace. See #1548 for details.
 include_directories(${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION})
