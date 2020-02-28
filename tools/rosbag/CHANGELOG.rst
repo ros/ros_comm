@@ -2,8 +2,8 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.15.3 (2020-02-28)
+-------------------
 * remove Boost version check since Noetic only targets platforms with 1.67+ (`#1903 <https://github.com/ros/ros_comm/issues/1903>`_)
 
 1.15.2 (2020-02-25)

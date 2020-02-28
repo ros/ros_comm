@@ -1,6 +1,6 @@
 <package>
   <name>test_rostopic</name>
-  <version>1.15.2</version>
+  <version>1.15.3</version>
   <description>
     Tests for rostopic.
   </description>
