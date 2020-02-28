@@ -2,6 +2,9 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.15.2 (2020-02-25)
 -------------------
 * add timestamp formatting for rosconsole (`#1892 <https://github.com/ros/ros_comm/issues/1892>`_)
