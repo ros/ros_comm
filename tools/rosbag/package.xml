@@ -20,7 +20,11 @@
   <author>Jeremy Leibs</author>
   <author>James Bowman</author>
 
-  <depend>boost</depend>
+  <depend>libboost-date-time-dev</depend>
+  <depend>libboost-filesystem-dev</depend>
+  <depend>libboost-program-options-dev</depend>
+  <depend>libboost-regex-dev</depend>
+  <depend>libboost-thread-dev</depend>
   <depend>rosbag_storage</depend>
   <depend>rosconsole</depend>
   <depend>roscpp</depend>

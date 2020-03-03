@@ -17,7 +17,7 @@ if(WIN32)
 endif()
 
 # Some of the tests that follow use boost threads.
-find_package(Boost REQUIRED COMPONENTS system thread)
+find_package(Boost REQUIRED COMPONENTS thread)
 include_directories(${Boost_INCLUDE_DIRS})
 
 add_library(test_fixtures test_fixtures.cpp)
