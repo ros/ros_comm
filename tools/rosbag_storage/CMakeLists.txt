@@ -8,7 +8,7 @@ endif()
 
 find_package(console_bridge REQUIRED)
 find_package(catkin REQUIRED COMPONENTS cpp_common pluginlib roscpp_serialization roscpp_traits rostime roslz4 std_msgs)
-find_package(Boost REQUIRED COMPONENTS date_time filesystem program_options regex)
+find_package(Boost REQUIRED COMPONENTS filesystem)
 find_package(BZip2 REQUIRED)
 
 catkin_package(
