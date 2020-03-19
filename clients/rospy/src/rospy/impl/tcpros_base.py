@@ -586,6 +586,14 @@ class TCPROSTransport(Transport):
                 #
                 # no reconnection as error is not 1.-4.
                 self.close()
+            else:
+                try:
+                    self.socket.shutdown(socket.SHUT_RDWR)
+                except:
+                    pass
+                finally:
+                    self.socket.close()
+                self.socket = None
             raise TransportInitError(str(e)) #re-raise i/o error
                 
     def _validate_header(self, header):
