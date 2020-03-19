@@ -2,6 +2,9 @@
 Changelog for package message_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.15.3 (2020-02-28)
 -------------------
 
