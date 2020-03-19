@@ -154,6 +154,8 @@ class TCPServer(object):
                 (client_sock, client_addr) = self.server_sock.accept()
             except socket.timeout:
                 continue
+            except ConnectionAbortedError:
+                continue
             except IOError as e:
                 (e_errno, msg) = e.args
                 if e_errno == errno.EINTR: #interrupted system call
