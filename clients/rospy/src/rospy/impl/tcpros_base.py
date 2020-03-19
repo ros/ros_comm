@@ -320,11 +320,14 @@ class TCPROSServer(object):
         #and then use that to do the writing
         try:
             buff_size = 4096 # size of read buffer
+            timeout = sock.gettimeout()
+            sock.settimeout(30)
             if python3 == 0:
                 #initialize read_ros_handshake_header with BytesIO for Python 3 (instead of bytesarray())    
                 header = read_ros_handshake_header(sock, StringIO(), buff_size)
             else:
                 header = read_ros_handshake_header(sock, BytesIO(), buff_size)
+            sock.settimeout(timeout)
             
             if 'topic' in header:
                 err_msg = self.topic_connection_handler(sock, client_addr, header)
