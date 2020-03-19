@@ -578,7 +578,8 @@ class TCPROSTransport(Transport):
                 self.close()
             elif not isinstance(e, socket.timeout) and e.errno not in [
                     errno.ENETDOWN, errno.ENETUNREACH, errno.ENETRESET,
-                    errno.ECONNABORTED, errno.ETIMEDOUT, errno.EHOSTDOWN, errno.EHOSTUNREACH]:
+                    errno.ECONNABORTED, errno.ECONNRESET, errno.ETIMEDOUT,
+                    errno.EHOSTDOWN, errno.EHOSTUNREACH]:
                 # reconnect in follow cases, otherwise close the socket:
                 # 1. socket.timeout: on timeouts caused by delays on wireless links
                 # 2. ENETDOWN (100), ENETUNREACH (101), ENETRESET (102), ECONNABORTED (103):
@@ -586,8 +587,10 @@ class TCPROSTransport(Transport):
                 #     are thrown on interface shutdown e.g. on reconnection in LTE networks
                 # 3. ETIMEDOUT (110): same like 1. (for completeness)
                 # 4. EHOSTDOWN (112), EHOSTUNREACH (113): while network and/or DNS-server is not reachable
+                # 5. ECONNRESET (104): The connection was reset by the peer. Connections may be backed up we
+                #     just need to try again.
                 #
-                # no reconnection as error is not 1.-4.
+                # no reconnection as error is not 1.-5.
                 self.close()
             else:
                 try:
