@@ -2,8 +2,8 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.15.4 (2020-03-19)
+-------------------
 * add exception for ConnectionAbortedError (`#1908 <https://github.com/ros/ros_comm/issues/1908>`_)
 * fix mac trying to use epoll instead of kqueue (`#1907 <https://github.com/ros/ros_comm/issues/1907>`_)
 * fix AttributeError: __exit_\_ (`#1915 <https://github.com/ros/ros_comm/issues/1915>`_, regression from 1.14.4)
