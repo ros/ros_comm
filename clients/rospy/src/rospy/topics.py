@@ -192,7 +192,13 @@ class Poller(object):
     on multiple platforms.  NOT thread-safe.
     """
     def __init__(self):
-        if hasattr(select, 'epoll'):
+        if hasattr(select, 'kqueue'):
+            self.poller = select.kqueue()
+            self.add_fd = self.add_kqueue
+            self.remove_fd = self.remove_kqueue
+            self.error_iter = self.error_kqueue_iter
+            self.kevents = []
+        elif hasattr(select, 'epoll'):
             self.poller = select.epoll()
             self.add_fd = self.add_epoll
             self.remove_fd = self.remove_epoll
@@ -202,12 +208,6 @@ class Poller(object):
             self.add_fd = self.add_poll
             self.remove_fd = self.remove_poll
             self.error_iter = self.error_poll_iter
-        elif hasattr(select, 'kqueue'):
-            self.poller = select.kqueue()
-            self.add_fd = self.add_kqueue
-            self.remove_fd = self.remove_kqueue
-            self.error_iter = self.error_kqueue_iter
-            self.kevents = []
         else:
             #TODO: non-Noop impl for Windows
             self.poller = self.noop
@@ -1173,7 +1173,7 @@ class _TopicManager(object):
         Check all registered publication and subscriptions.
         """
         with self.lock:
-            for t in chain(iter(self.pubs.values()), iter(self.subs.values())):
+            for t in chain(list(self.pubs.values()), list(self.subs.values())):
                 t.check()
         
     def _add(self, ps, rmap, reg_type):

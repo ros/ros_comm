@@ -4,7 +4,7 @@
   <node pkg="rostopic" type="rostopic" name="rostopic_pub"
         args="pub -r 2 /num1 std_msgs/Float32 'data: 1.0'"/>
   <node pkg="topic_tools" type="transform" name="transform"
-        args="/num1 /num2 std_msgs/Float32 'm.data * 3.0'"/>
+        args="--wait-for-start /num1 /num2 std_msgs/Float32 'm.data * 3.0'"/>
 
   <test test-name="transform_" pkg="topic_tools"
       type="test_transform.py" time-limit="3.0"
@@ -18,7 +18,7 @@
     <node pkg="rostopic" type="rostopic" name="rostopic_pub"
         args="pub -r 2 num3 std_msgs/Float32 'data: 3.0'" />
     <node pkg="topic_tools" type="transform" name="transform"
-        args="num3 num4 std_msgs/Float32 'm.data * 2.0'"/>
+        args="--wait-for-start num3 num4 std_msgs/Float32 'm.data * 2.0'"/>
 
     <test test-name="transform_ns" pkg="topic_tools"
         type="test_transform.py" time-limit="3.0"
