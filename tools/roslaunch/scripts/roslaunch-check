@@ -53,6 +53,7 @@ def check_roslaunch_file(roslaunch_file, use_test_depends=False, ignore_unset_ar
 def check_roslaunch_dir(roslaunch_dir, use_test_depends=False, ignore_unset_args=False):
     roslaunch_files = []
     for dirpath, dirnames, filenames in os.walk(roslaunch_dir):
+        dirnames[:] = [d for d in dirnames if not d.startswith(".")]
         for filename in fnmatch.filter(filenames, "*.launch"):
             roslaunch_files.append(os.path.join(dirpath, filename))
     error_msgs = []
