@@ -141,16 +141,15 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
         }
         double freq = it->second.as<double>();
         opts.topics.push_back(it->first.as<std::string>());
-        if (freq == -1)
+
+        if (freq == 0)
         {
-          continue;
-        }
-        if (freq < 0.001 && freq > 0)
+            opts.custom_record_freq.emplace(it->first.as<std::string>(), ros::Duration(-1));
+        } 
+        else 
         {
-            ROS_WARN("Topic has freq less than 0.001, Topic name:= %s ; Topic will be recorded at 0.001 hz", it->first.as<std::string>().c_str());
-            freq = 0.001;
+            opts.custom_record_freq.emplace(it->first.as<std::string>(), ros::Duration(double(1)/freq));
         }
-        opts.custom_record_freq.emplace(it->first.as<std::string>(), ros::Duration(double(1)/freq));
       }
     }
     if (vm.count("split"))
