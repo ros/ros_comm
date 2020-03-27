@@ -59,25 +59,25 @@ struct ROSBAG_STORAGE_DECL ConnectionInfo
 
 struct ChunkInfo
 {
-    ros::Time   start_time;    //! earliest timestamp of a message in the chunk
-    ros::Time   end_time;      //! latest timestamp of a message in the chunk
-    uint64_t    pos;           //! absolute byte offset of chunk record in bag file
+    ros::Time   start_time;    //!< earliest timestamp of a message in the chunk
+    ros::Time   end_time;      //!< latest timestamp of a message in the chunk
+    uint64_t    pos;           //!< absolute byte offset of chunk record in bag file
 
-    std::map<uint32_t, uint32_t> connection_counts;   //! number of messages in each connection stored in the chunk
+    std::map<uint32_t, uint32_t> connection_counts;   //!< number of messages in each connection stored in the chunk
 };
 
 struct ROSBAG_STORAGE_DECL ChunkHeader
 {
-    std::string compression;          //! chunk compression type, e.g. "none" or "bz2" (see constants.h)
-    uint32_t    compressed_size;      //! compressed size of the chunk in bytes
-    uint32_t    uncompressed_size;    //! uncompressed size of the chunk in bytes
+    std::string compression;          //!< chunk compression type, e.g. "none" or "bz2" (see constants.h)
+    uint32_t    compressed_size;      //!< compressed size of the chunk in bytes
+    uint32_t    uncompressed_size;    //!< uncompressed size of the chunk in bytes
 };
 
 struct ROSBAG_STORAGE_DECL IndexEntry
 {
-    ros::Time time;            //! timestamp of the message
-    uint64_t  chunk_pos;       //! absolute byte offset of the chunk record containing the message
-    uint32_t  offset;          //! relative byte offset of the message record (either definition or data) in the chunk
+    ros::Time time;            //!< timestamp of the message
+    uint64_t  chunk_pos;       //!< absolute byte offset of the chunk record containing the message
+    uint32_t  offset;          //!< relative byte offset of the message record (either definition or data) in the chunk
 
     bool operator<(IndexEntry const& b) const { return time < b.time; }
 };
