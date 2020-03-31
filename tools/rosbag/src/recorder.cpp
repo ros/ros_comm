@@ -162,7 +162,10 @@ int Recorder::run() {
     // Subscribe to each topic
     if (!options_.regex) {
     	for (string const& topic : options_.topics)
+        if (shouldSubscribeToTopic(topic)) 
+        {
             subscribe(topic);
+        }
     }
 
     if (!ros::Time::waitForValid(ros::WallDuration(2.0)))
@@ -241,6 +244,13 @@ bool Recorder::isSubscribed(string const& topic) const {
 bool Recorder::shouldSubscribeToTopic(std::string const& topic, bool from_node) {
     // ignore already known topics
     if (isSubscribed(topic)) {
+        return false;
+    }
+
+    // ignore if mentioned in file with 0
+    if (options_.custom_record_freq.find(topic) != options_.custom_record_freq.end() 
+        && options_.custom_record_freq.at(topic) == ros::Duration(-1)) 
+    {
         return false;
     }
 
