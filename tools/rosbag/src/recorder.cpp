@@ -160,8 +160,8 @@ int Recorder::run() {
     queue_ = new std::queue<OutgoingMessage>;
 
     // Subscribe to each topic
-    if (!options_.regex) {
-    	for (string const& topic : options_.topics)
+    if (!options_.regex && options_.custom_record_freq.empty()) {
+        for (string const& topic : options_.topics)
         if (shouldSubscribeToTopic(topic)) 
         {
             subscribe(topic);
@@ -196,8 +196,7 @@ int Recorder::run() {
 
 
     ros::Timer check_master_timer;
-    if (options_.record_all || options_.regex || (options_.node != std::string("")))
-    {
+    if (options_.record_all || options_.regex || (options_.node != std::string("")) || !options_.custom_record_freq.empty()) {
         // check for master first
         doCheckMaster(ros::TimerEvent(), nh);
         check_master_timer = nh.createTimer(ros::Duration(1.0), boost::bind(&Recorder::doCheckMaster, this, _1, boost::ref(nh)));
@@ -247,13 +246,27 @@ bool Recorder::shouldSubscribeToTopic(std::string const& topic, bool from_node) 
         return false;
     }
 
-    // ignore if mentioned in file with 0
-    if (options_.custom_record_freq.find(topic) != options_.custom_record_freq.end() 
-        && options_.custom_record_freq.at(topic) == ros::Duration(-1)) 
-    {
-        return false;
+    if (!options_.custom_record_freq.empty()) {
+        // Treat the topics as regular expressions
+        for(const auto& regex_str : options_.topics)
+        {
+            boost::regex e(regex_str);
+            boost::smatch what;
+            if (options_.custom_record_freq.find(regex_str) != options_.custom_record_freq.end() &&
+                boost::regex_match(topic, what, e, boost::match_extra))
+            {
+                if (options_.custom_record_freq[regex_str] == ros::Duration(-1))
+                {
+                    return false;
+                }
+                else
+                {
+                    options_.custom_record_freq[topic] = options_.custom_record_freq[regex_str];
+                    return true;
+                }
+            }
+        }
     }
-
     // subtract exclusion regex, if any
     if(options_.do_exclude && boost::regex_match(topic, options_.exclude_regex)) {
         return false;
@@ -298,8 +311,8 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
     Time rectime = Time::now();
     std::string topic_name = subscriber->getTopic();
 
-    if(options_.custom_record_freq.find(topic_name) != options_.custom_record_freq.end())
-    {
+    if (options_.custom_record_freq.find(topic_name) != options_.custom_record_freq.end() &&
+            options_.custom_record_freq.at(topic_name) != ros::Duration(-2)) {
         ros::Duration interval = options_.custom_record_freq.at(topic_name);
         std::unordered_map<std::string, ros::Time>::iterator it = topic_time_catcher_.find(topic_name);
         if(it == topic_time_catcher_.end())

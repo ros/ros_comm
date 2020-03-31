@@ -145,8 +145,12 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
         if (freq == 0)
         {
             opts.custom_record_freq.emplace(it->first.as<std::string>(), ros::Duration(-1));
-        } 
-        else 
+        }
+        else if (freq == -1)
+        {
+            opts.custom_record_freq.emplace(it->first.as<std::string>(), ros::Duration(-2));
+        }
+        else
         {
             opts.custom_record_freq.emplace(it->first.as<std::string>(), ros::Duration(double(1)/freq));
         }
