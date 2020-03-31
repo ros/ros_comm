@@ -160,11 +160,14 @@ int Recorder::run() {
     queue_ = new std::queue<OutgoingMessage>;
 
     // Subscribe to each topic
-    if (!options_.regex && options_.custom_record_freq.empty()) {
-        for (string const& topic : options_.topics)
-        if (shouldSubscribeToTopic(topic)) 
+    if (!options_.regex && options_.custom_record_freq.empty()) 
+    {
+        for (string const& topic : options_.topics) 
         {
-            subscribe(topic);
+            if (shouldSubscribeToTopic(topic)) 
+            {
+                subscribe(topic);
+            }
         }
     }
 
