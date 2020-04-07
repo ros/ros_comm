@@ -314,8 +314,8 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
     Time rectime = Time::now();
     std::string topic_name = subscriber->getTopic();
 
-    if (options_.custom_record_freq.find(topic_name) != options_.custom_record_freq.end() &&
-            options_.custom_record_freq.at(topic_name) != ros::Duration(-2)) {
+    if (options_.custom_record_freq.find(topic_name) != options_.custom_record_freq.end()) 
+    {
         ros::Duration interval = options_.custom_record_freq.at(topic_name);
         std::unordered_map<std::string, ros::Time>::iterator it = topic_time_catcher_.find(topic_name);
         if(it == topic_time_catcher_.end())
