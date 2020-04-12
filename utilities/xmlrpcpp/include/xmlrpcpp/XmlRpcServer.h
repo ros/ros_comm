@@ -96,9 +96,6 @@ namespace XmlRpc {
     //! Create a new connection object for processing requests from a specific client.
     virtual XmlRpcServerConnection* createConnection(int socket);
 
-    //! Count number of free file descriptors
-    int countFreeFDs();
-
     // Whether the introspection API is supported by this server
     bool _introspectionEnabled;
 
@@ -123,8 +120,6 @@ namespace XmlRpc {
     // Retry time for accept.
     double _accept_retry_time_sec;
 
-    // Minimum number of free file descriptors before rejecting clients.
-    static const int FREE_FD_BUFFER;
 #ifndef _WINDOWS
     // List of all file descriptors, used for counting open files.
     std::vector<struct pollfd> pollfds;
