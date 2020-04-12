@@ -197,7 +197,7 @@ XmlRpcServer::acceptConnection()
     _accept_retry_time_sec = _disp.getTime() + ACCEPT_RETRY_INTERVAL_SEC;
     return 0; // Stop monitoring this FD
   }
-  else if( countFreeFDs() < FREE_FD_BUFFER )
+  else if ( !enoughFreeFDs() )
   {
     XmlRpcSocket::close(s);
     XmlRpcUtil::error("XmlRpcServer::acceptConnection: Rejecting client, not enough free file descriptors");
@@ -216,12 +216,11 @@ XmlRpcServer::acceptConnection()
   return XmlRpcDispatch::ReadableEvent; // Continue to monitor this fd
 }
 
-int XmlRpcServer::countFreeFDs() {
-  // NOTE(austin): this function is not free, but in a few small tests it only
-  // takes about 1.2mS when querying 50k file descriptors.
+bool XmlRpcServer::enoughFreeFDs() {
+  // This function is just to check if enough FDs are there.
   //
   // If the underlying system calls here fail, this will print an error and
-  // return 0
+  // return false
 
 #if !defined(_WINDOWS)
   int free_fds = 0;
@@ -230,10 +229,9 @@ int XmlRpcServer::countFreeFDs() {
 
   // Get the current soft limit on the number of file descriptors.
   if(getrlimit(RLIMIT_NOFILE, &limit) == 0) {
-    // If we have infinite file descriptors, always return FREE_FD_BUFFER so
-    // that we never hit the low-water mark.
+    // If we have infinite file descriptors, always return true.
     if( limit.rlim_max == RLIM_INFINITY ) {
-      return FREE_FD_BUFFER;
+      return true;
     }
 
     // Poll the available file descriptors.
@@ -245,11 +243,15 @@ int XmlRpcServer::countFreeFDs() {
         if(pollfds[i].revents & POLLNVAL) {
           free_fds++;
         }
+        if (free_fds >= FREE_FD_BUFFER) {
+          // Checked enough FDs are not opened.
+          return true;
+        }
       }
     } else {
       // poll() may fail if interrupted, if the pollfds array is a bad pointer,
       // if nfds exceeds RLIMIT_NOFILE, or if the system is out of memory.
-      XmlRpcUtil::error("XmlRpcServer::countFreeFDs: poll() failed: %s",
+      XmlRpcUtil::error("XmlRpcServer::enoughFreeFDs: poll() failed: %s",
                         strerror(errno));
     }
   } else {
@@ -257,13 +259,13 @@ int XmlRpcServer::countFreeFDs() {
     // resource is invalid or the second argument is invalid. I'm not sure
     // either of these can actually fail in this code, but it's better to
     // check.
-    XmlRpcUtil::error("XmlRpcServer::countFreeFDs: Could not get open file "
+    XmlRpcUtil::error("XmlRpcServer::enoughFreeFDs: Could not get open file "
                       "limit, getrlimit() failed: %s", strerror(errno));
   }
 
-  return free_fds;
+  return false;
 #else
-  return FREE_FD_BUFFER;
+  return true;
 #endif
 }
 

@@ -96,8 +96,8 @@ namespace XmlRpc {
     //! Create a new connection object for processing requests from a specific client.
     virtual XmlRpcServerConnection* createConnection(int socket);
 
-    //! Count number of free file descriptors
-    int countFreeFDs();
+    //! Check if enough number of free file descriptors
+    bool enoughFreeFDs();
 
     // Whether the introspection API is supported by this server
     bool _introspectionEnabled;
