@@ -16,6 +16,11 @@ rosbag record --file-name record.yaml
 ```yaml
 # topic_name: freq(double)
 # topic_name: -1 (it will be recorded at publish freq)
+#           : 0 (it will not be recorded)
+# For topic name same regular expressions cli can be used: ex. "/realsense(.*)" : 0
+# [used by default rosbag](http://wiki.ros.org/rosbag/Commandline)
+# if there is a topic in a namespace which has been excluded using regular expressions: 
+#   to record that topic put that topic before the regular expression
 "/chatter": 2
 "/raw_odom": 1
 "/realsense_bottom/accel/sample": 1
