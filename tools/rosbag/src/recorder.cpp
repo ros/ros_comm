@@ -199,7 +199,8 @@ int Recorder::run() {
 
 
     ros::Timer check_master_timer;
-    if (options_.record_all || options_.regex || (options_.node != std::string("")) || !options_.custom_record_freq.empty()) {
+    if (options_.record_all || options_.regex || (options_.node != std::string("")) || !options_.custom_record_freq.empty())
+    {
         // check for master first
         doCheckMaster(ros::TimerEvent(), nh);
         check_master_timer = nh.createTimer(ros::Duration(1.0), boost::bind(&Recorder::doCheckMaster, this, _1, boost::ref(nh)));
@@ -245,11 +246,13 @@ bool Recorder::isSubscribed(string const& topic) const {
 
 bool Recorder::shouldSubscribeToTopic(std::string const& topic, bool from_node) {
     // ignore already known topics
-    if (isSubscribed(topic)) {
+    if (isSubscribed(topic)) 
+    {
         return false;
     }
 
-    if (!options_.custom_record_freq.empty()) {
+    if (!options_.custom_record_freq.empty()) 
+    {
         // Treat the topics as regular expressions
         for(const auto& regex_str : options_.topics)
         {
@@ -323,8 +326,11 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
             topic_time_catcher_.emplace(topic_name, rectime + interval);
         }
         else if(rectime > it->second)
-        {
-             it->second += interval * (1 + int((rectime.toSec() - it->second.toSec()) / interval.toSec()));
+        {   
+            if (interval > ros::Duration(0))
+            {
+                it->second += interval * (1 + int((rectime.toSec() - it->second.toSec()) / interval.toSec()));
+            }
         }
         else
         {
