@@ -54,61 +54,145 @@ TIMEOUT = 10.0 #seconds
 
 class TestRosout(unittest.TestCase):
 
-    def setUp(self):
-        self.callback_data = []
+    callback_data = None
 
-    def _subscriber_callback(self, data):
+    @classmethod
+    def _set_callback_data(cls, data):
+        cls.callback_data = data
+
+    @classmethod
+    def _subscriber_callback(cls, data):
         if MSG_PREFIX in data.msg:
-            self.callback_data.append(data)
+            cls._set_callback_data(data)
 
-    # Test that rosout is outputting as expected by creating a subscriber that subscribes to it
-    def test_rosout(self):
-        self.assert_(not self.callback_data, 'invalid test fixture')
-
-        rospy.Subscriber(SUBTOPIC, Log, self._subscriber_callback)
-
+    @classmethod
+    def setUpClass(cls):
+        cls.subscriber = rospy.Subscriber(SUBTOPIC, Log, cls._subscriber_callback)
         # https://answers.ros.org/question/251194/rospy-subscriber-needs-sleep-some-time-until-the-first-message-is-received/
         rospy.sleep(0.5)
 
-        log_levels = [
-            rospy.DEBUG,
-            rospy.WARN,
-            rospy.INFO,
-            rospy.ERROR,
-            rospy.FATAL
-        ]
+    def setUp(self):
+        self._set_callback_data(None)
 
-        log_msgs = [
-            MSG_PREFIX + 'logging test debug message',
-            MSG_PREFIX + 'logging test warn message',
-            MSG_PREFIX + 'logging test info message',
-            MSG_PREFIX + 'logging test err message',
-            MSG_PREFIX + 'logging test fatal message'
-        ]
+    # Test that rosout is outputting debug messages as expected
+    def test_rosout_dbg(self):
+        self.assertIsNone(self.callback_data, 'invalid test fixture')
 
-        rospy.logdebug(log_msgs[0])
-        rospy.logwarn(log_msgs[1])
-        rospy.loginfo(log_msgs[2])
-        rospy.logerr(log_msgs[3])
-        rospy.logfatal(log_msgs[4])
+        log_msg = MSG_PREFIX + 'logging test debug message'
+        rospy.logdebug(log_msg)
 
         # wait for log messages to be received
         timeout_time = time.time() + TIMEOUT
-        while len(self.callback_data) < len(log_msgs) and time.time() < timeout_time:
+        while not self.callback_data and time.time() < timeout_time:
             time.sleep(0.1)
+        print(self.callback_data)
 
         # checking number of messages received on /rosout is expected
-        self.assertEquals(len(log_msgs), len(self.callback_data),
-            'expected to receive %d log messages but got %d' % (len(log_msgs), len(self.callback_data)))
+        self.assertIsNotNone(self.callback_data, 'did not receive expected message')
 
-        # checking contents of messages
-        for (callback_data, log_level, log_msg) in zip(self.callback_data, log_levels, log_msgs):
-            self.assertEquals(log_level, callback_data.level)
-            self.assertEquals(SUBTOPIC, callback_data.name)
-            self.assertEquals(log_msg, callback_data.msg)
-            self.assertEquals(NAME+'.py', callback_data.file)
-            self.assertEquals('TestRosout.test_rosout', callback_data.function)
-            self.assertEquals([SUBTOPIC], callback_data.topics)
+        # checking contents of message
+        self.assertEquals(rospy.DEBUG, self.callback_data.level)
+        self.assertEquals(SUBTOPIC, self.callback_data.name)
+        self.assertEquals(log_msg, self.callback_data.msg)
+        self.assertEquals(NAME+'.py', self.callback_data.file)
+        self.assertEquals('TestRosout.test_rosout_dbg', self.callback_data.function)
+        self.assertEquals([SUBTOPIC], self.callback_data.topics)
+
+    # Test that rosout is outputting info messages as expected
+    def test_rosout_info(self):
+        self.assertIsNone(self.callback_data, 'invalid test fixture')
+
+        log_msg = MSG_PREFIX + 'logging test info message'
+        rospy.loginfo(log_msg)
+
+        # wait for log messages to be received
+        timeout_time = time.time() + TIMEOUT
+        while not self.callback_data and time.time() < timeout_time:
+            time.sleep(0.1)
+        print(self.callback_data)
+
+        # checking number of messages received on /rosout is expected
+        self.assertIsNotNone(self.callback_data, 'did not receive expected message')
+
+        # checking contents of message
+        self.assertEquals(rospy.INFO, self.callback_data.level)
+        self.assertEquals(SUBTOPIC, self.callback_data.name)
+        self.assertEquals(log_msg, self.callback_data.msg)
+        self.assertEquals(NAME+'.py', self.callback_data.file)
+        self.assertEquals('TestRosout.test_rosout_info', self.callback_data.function)
+        self.assertEquals([SUBTOPIC], self.callback_data.topics)
+
+    # Test that rosout is outputting warning messages as expected
+    def test_rosout_warn(self):
+        self.assertIsNone(self.callback_data, 'invalid test fixture')
+
+        log_msg = MSG_PREFIX + 'logging test warning message'
+        rospy.logwarn(log_msg)
+
+        # wait for log messages to be received
+        timeout_time = time.time() + TIMEOUT
+        while not self.callback_data and time.time() < timeout_time:
+            time.sleep(0.1)
+        print(self.callback_data)
+
+        # checking number of messages received on /rosout is expected
+        self.assertIsNotNone(self.callback_data, 'did not receive expected message')
+
+        # checking contents of message
+        self.assertEquals(rospy.WARN, self.callback_data.level)
+        self.assertEquals(SUBTOPIC, self.callback_data.name)
+        self.assertEquals(log_msg, self.callback_data.msg)
+        self.assertEquals(NAME+'.py', self.callback_data.file)
+        self.assertEquals('TestRosout.test_rosout_warn', self.callback_data.function)
+        self.assertEquals([SUBTOPIC], self.callback_data.topics)
+
+    # Test that rosout is outputting error messages as expected
+    def test_rosout_err(self):
+        self.assertIsNone(self.callback_data, 'invalid test fixture')
+
+        log_msg = MSG_PREFIX + 'logging test error message'
+        rospy.logerr(log_msg)
+
+        # wait for log messages to be received
+        timeout_time = time.time() + TIMEOUT
+        while not self.callback_data and time.time() < timeout_time:
+            time.sleep(0.1)
+        print(self.callback_data)
+
+        # checking number of messages received on /rosout is expected
+        self.assertIsNotNone(self.callback_data, 'did not receive expected message')
+
+        # checking contents of message
+        self.assertEquals(rospy.ERROR, self.callback_data.level)
+        self.assertEquals(SUBTOPIC, self.callback_data.name)
+        self.assertEquals(log_msg, self.callback_data.msg)
+        self.assertEquals(NAME+'.py', self.callback_data.file)
+        self.assertEquals('TestRosout.test_rosout_err', self.callback_data.function)
+        self.assertEquals([SUBTOPIC], self.callback_data.topics)
+
+    # Test that rosout is outputting fatal messages as expected
+    def test_rosout_fatal(self):
+        self.assertIsNone(self.callback_data, 'invalid test fixture')
+
+        log_msg = MSG_PREFIX + 'logging test fatal message'
+        rospy.logfatal(log_msg)
+
+        # wait for log messages to be received
+        timeout_time = time.time() + TIMEOUT
+        while not self.callback_data and time.time() < timeout_time:
+            time.sleep(0.1)
+        print(self.callback_data)
+
+        # checking number of messages received on /rosout is expected
+        self.assertIsNotNone(self.callback_data, 'did not receive expected message')
+
+        # checking contents of message
+        self.assertEquals(rospy.FATAL, self.callback_data.level)
+        self.assertEquals(SUBTOPIC, self.callback_data.name)
+        self.assertEquals(log_msg, self.callback_data.msg)
+        self.assertEquals(NAME+'.py', self.callback_data.file)
+        self.assertEquals('TestRosout.test_rosout_fatal', self.callback_data.function)
+        self.assertEquals([SUBTOPIC], self.callback_data.topics)
 
 
 if __name__ == '__main__':
