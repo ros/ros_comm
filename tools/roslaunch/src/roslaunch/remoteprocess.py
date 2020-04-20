@@ -153,11 +153,6 @@ class SSHChildROSLaunchProcess(roslaunch.server.ChildROSLaunchProcess):
             env_command = 'env %s=%s' % (rosgraph.ROS_MASTER_URI, self.master_uri)
             command = '%s %s' % (env_command, command)
         try:
-            import Crypto
-        except ImportError as e:
-            _logger.error("cannot use SSH: pycrypto is not installed")
-            return None, "pycrypto is not installed"
-        try:
             import paramiko
         except ImportError as e:
             _logger.error("cannot use SSH: paramiko is not installed")
