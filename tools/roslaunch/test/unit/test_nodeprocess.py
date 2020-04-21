@@ -259,25 +259,29 @@ class TestNodeprocess(unittest.TestCase):
         self.assert_(isinstance(p, LocalProcess))
 
         p.start()
-        time.sleep(1)  # give it time to start
+        time.sleep(3)  # give it time to start
 
         before_stop_call_time = time.time()
         p.stop()
         after_stop_call_time = time.time()
 
         signals = dict()
-        with open(signal_log_file, 'r') as f:
-            lines = f.readlines()
-            for line in lines:
-                sig, timestamp = line.split(" ")
-                sig = int(sig)
-                timestamp = float(timestamp)
-                signals[sig] = timestamp
+        
+        try:
+            with open(signal_log_file, 'r') as f:
+                lines = f.readlines()
+                for line in lines:
+                    sig, timestamp = line.split(" ")
+                    sig = int(sig)
+                    timestamp = float(timestamp)
+                    signals[sig] = timestamp
+        except IOError:
+            self.fail("Could not open %s" % signal_log_file)
 
         self.assertSetEqual({signal.SIGINT, signal.SIGTERM}, set(signals.keys()))
-        self.assertAlmostEqual(before_stop_call_time, signals[signal.SIGINT], places=0)
-        self.assertAlmostEqual(before_stop_call_time, signals[signal.SIGTERM] - sigint_timeout, places=0)
-        self.assertAlmostEqual(before_stop_call_time, after_stop_call_time - sigint_timeout - sigterm_timeout, places=0)
+        self.assertAlmostEqual(before_stop_call_time, signals[signal.SIGINT], delta=1)
+        self.assertAlmostEqual(before_stop_call_time, signals[signal.SIGTERM] - sigint_timeout, delta=1)
+        self.assertAlmostEqual(before_stop_call_time, after_stop_call_time - sigint_timeout - sigterm_timeout, delta=1)
 
     def test__cleanup_args(self):
         # #1595
