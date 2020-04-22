@@ -209,7 +209,9 @@ public:
     return true;
   }
 };
-static_assert(sizeof(condition_variable_monotonic) == sizeof(boost::condition_variable));
+static_assert(
+    sizeof(condition_variable_monotonic) == sizeof(boost::condition_variable),
+    "sizeof(ros::internal::condition_variable_monotonic) != sizeof(boost::condition_variable)");
 
 #endif
 
