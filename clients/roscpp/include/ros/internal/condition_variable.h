@@ -156,8 +156,10 @@ public:
       pthread_mutex_t *the_mutex = &internal_mutex;
       guard.activate(m);
       res = pthread_cond_wait(&cond, the_mutex);
+#if BOOST_VERSION >= 106500
       check_for_interruption.check();
       guard.deactivate();
+#endif
 #else
       pthread_mutex_t *the_mutex = m.mutex()->native_handle();
       res = pthread_cond_wait(&cond, the_mutex);
@@ -184,8 +186,10 @@ public:
       pthread_mutex_t *the_mutex = &internal_mutex;
       guard.activate(m);
       cond_res = pthread_cond_timedwait(&cond, the_mutex, &timeout);
+#if BOOST_VERSION >= 106500
       check_for_interruption.check();
       guard.deactivate();
+#endif
 #else
       pthread_mutex_t *the_mutex = m.mutex()->native_handle();
       cond_res = pthread_cond_timedwait(&cond, the_mutex, &timeout);
