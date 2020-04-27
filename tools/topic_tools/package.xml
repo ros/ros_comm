@@ -18,6 +18,7 @@
   <buildtool_depend version_gte="0.5.78">catkin</buildtool_depend>
 
   <build_depend>cpp_common</build_depend>
+  <build_depend>message_filters</build_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>rosconsole</build_depend>
   <build_depend>roscpp</build_depend>

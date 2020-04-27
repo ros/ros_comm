@@ -5,7 +5,7 @@ if(NOT WIN32)
   set_directory_properties(PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra")
 endif()
 
-find_package(catkin COMPONENTS cpp_common message_generation rosconsole roscpp rostime std_msgs xmlrpcpp)
+find_package(catkin COMPONENTS cpp_common message_filters message_generation rosconsole roscpp rostime std_msgs xmlrpcpp)
 catkin_python_setup()
 
 include_directories(include)
@@ -54,6 +54,9 @@ target_link_libraries(drop topic_tools ${catkin_LIBRARIES})
 
 add_executable(throttle src/throttle.cpp)
 target_link_libraries(throttle topic_tools ${catkin_LIBRARIES})
+
+add_executable(synchronized_throttle src/synchronized_throttle.cpp)
+target_link_libraries(synchronized_throttle topic_tools ${catkin_LIBRARIES})
 
 install(TARGETS topic_tools
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
