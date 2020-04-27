@@ -111,6 +111,8 @@ struct ApproximateTime : public PolicyBase<M0, M1, M2, M3, M4, M5, M6, M7, M8>
   ApproximateTime(uint32_t queue_size)
   : parent_(0)
   , queue_size_(queue_size)
+  , enable_reset_(false)
+  , num_reset_deques_(0)
   , num_non_empty_deques_(0)
   , pivot_(NO_PIVOT)
   , max_interval_duration_(ros::DURATION_MAX)
@@ -118,6 +120,7 @@ struct ApproximateTime : public PolicyBase<M0, M1, M2, M3, M4, M5, M6, M7, M8>
   , has_dropped_messages_(9, false)
   , inter_message_lower_bounds_(9, ros::Duration(0))
   , warned_about_incorrect_bound_(9, false)
+  , last_stamps_(9, ros::Time(0, 0))
   {
     ROS_ASSERT(queue_size_ > 0);  // The synchronizer will tend to drop many messages with a queue size of 1. At least 2 is recommended.
   }
@@ -143,6 +146,9 @@ struct ApproximateTime : public PolicyBase<M0, M1, M2, M3, M4, M5, M6, M7, M8>
     has_dropped_messages_ = rhs.has_dropped_messages_;
     inter_message_lower_bounds_ = rhs.inter_message_lower_bounds_;
     warned_about_incorrect_bound_ = rhs.warned_about_incorrect_bound_;
+    last_stamps_ = rhs.last_stamps_;
+    enable_reset_ = rhs.enable_reset_;
+    num_reset_deques_ = rhs.num_reset_deques_;
 
     return *this;
   }
@@ -153,25 +159,23 @@ struct ApproximateTime : public PolicyBase<M0, M1, M2, M3, M4, M5, M6, M7, M8>
   }
 
   template<int i>
-  void checkInterMessageBound()
+  bool checkInterMessageBound()
   {
     namespace mt = ros::message_traits;
-    if (warned_about_incorrect_bound_[i])
-    {
-      return;
-    }
+
     std::deque<typename mpl::at_c<Events, i>::type>& deque = boost::get<i>(deques_);
     std::vector<typename mpl::at_c<Events, i>::type>& v = boost::get<i>(past_);
     ROS_ASSERT(!deque.empty());
     const typename mpl::at_c<Messages, i>::type &msg = *(deque.back()).getMessage();
     ros::Time msg_time = mt::TimeStamp<typename mpl::at_c<Messages, i>::type>::value(msg);
     ros::Time previous_msg_time;
+    bool check_ok = true;
     if (deque.size() == (size_t) 1)
     {
       if (v.empty())
       {
-	// We have already published (or have never received) the previous message, we cannot check the bound
-	return;
+        // We have already published (or have never received) the previous message, we cannot check the bound
+        return check_ok;
       }
       const typename mpl::at_c<Messages, i>::type &previous_msg = *(v.back()).getMessage();
       previous_msg_time = mt::TimeStamp<typename mpl::at_c<Messages, i>::type>::value(previous_msg);
@@ -184,16 +188,21 @@ struct ApproximateTime : public PolicyBase<M0, M1, M2, M3, M4, M5, M6, M7, M8>
     }
     if (msg_time < previous_msg_time)
     {
-      ROS_WARN_STREAM("Messages of type " << i << " arrived out of order (will print only once)");
+      if (!warned_about_incorrect_bound_[i])
+        ROS_WARN_STREAM("Messages of type " << i << " arrived out of order (will print only once)");
       warned_about_incorrect_bound_[i] = true;
+      check_ok = false;
     }
     else if ((msg_time - previous_msg_time) < inter_message_lower_bounds_[i])
     {
-      ROS_WARN_STREAM("Messages of type " << i << " arrived closer (" << (msg_time - previous_msg_time)
-		      << ") than the lower bound you provided (" << inter_message_lower_bounds_[i]
-		      << ") (will print only once)");
+      if (!warned_about_incorrect_bound_[i])
+        ROS_WARN_STREAM("Messages of type " << i << " arrived closer (" << (msg_time - previous_msg_time)
+                        << ") than the lower bound you provided (" << inter_message_lower_bounds_[i]
+                        << ") (will print only once)");
       warned_about_incorrect_bound_[i] = true;
+      check_ok = false;
     }
+    return check_ok;
   }
 
 
@@ -201,6 +210,26 @@ struct ApproximateTime : public PolicyBase<M0, M1, M2, M3, M4, M5, M6, M7, M8>
   void add(const typename mpl::at_c<Events, i>::type& evt)
   {
     boost::mutex::scoped_lock lock(data_mutex_);
+
+    // check if time jumped back in simulation time
+    ros::Time now = evt.getReceiptTime();
+    if (ros::Time::isSimTime() && enable_reset_)
+    {
+      if (now < last_stamps_[i])
+      {
+        ++num_reset_deques_;
+        if (num_reset_deques_ == 1)
+        {
+          ROS_WARN("Detected jump back in time. Clearing message filter queues");
+        }
+        clearDeque<i>();
+        if (num_reset_deques_ >= RealTypeCount::value)
+        {
+          num_reset_deques_ = 0;
+        }
+      }
+    }
+    last_stamps_[i] = now;
 
     std::deque<typename mpl::at_c<Events, i>::type>& deque = boost::get<i>(deques_);
     deque.push_back(evt);
@@ -215,7 +244,11 @@ struct ApproximateTime : public PolicyBase<M0, M1, M2, M3, M4, M5, M6, M7, M8>
     }
     else
     {
-      checkInterMessageBound<i>();
+      if (!checkInterMessageBound<i>())
+        if (ros::Time::isSimTime() && enable_reset_)
+        {
+          dequeDeleteFront<i>();
+        }
     }
     // Check whether we have more messages than allowed in the queue.
     // Note that during the above call to process(), queue i may contain queue_size_+1 messages.
@@ -273,7 +306,37 @@ struct ApproximateTime : public PolicyBase<M0, M1, M2, M3, M4, M5, M6, M7, M8>
     max_interval_duration_ = max_interval_duration;
   }
 
+  void setReset(const bool reset)
+  {
+    // Set this true to reset queue on ROS time jumped back
+    enable_reset_ = reset;
+  }
+
 private:
+  template<int i>
+  void clearDeque()
+  {
+    num_non_empty_deques_ = 0;
+    recover<0>();
+    recover<1>();
+    recover<2>();
+    recover<3>();
+    recover<4>();
+    recover<5>();
+    recover<6>();
+    recover<7>();
+    recover<8>();
+    std::deque<typename mpl::at_c<Events, i>::type>& q = boost::get<i>(deques_);
+    if (!q.empty())
+    {
+      --num_non_empty_deques_;
+    }
+    q.clear();
+    warned_about_incorrect_bound_[i] = false;
+    candidate_ = Tuple();
+    pivot_ = NO_PIVOT;
+  }
+
   // Assumes that deque number <index> is non empty
   template<int i>
   void dequeDeleteFront()
@@ -835,6 +898,8 @@ private:
 
   Sync* parent_;
   uint32_t queue_size_;
+  bool enable_reset_;
+  uint32_t num_reset_deques_;
 
   static const uint32_t NO_PIVOT = 9;  // Special value for the pivot indicating that no pivot has been selected
 
@@ -854,6 +919,7 @@ private:
   std::vector<bool> has_dropped_messages_;
   std::vector<ros::Duration> inter_message_lower_bounds_;
   std::vector<bool> warned_about_incorrect_bound_;
+  std::vector<ros::Time> last_stamps_;
 };
 
 } // namespace sync

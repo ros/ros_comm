@@ -92,6 +92,8 @@ struct ExactTime : public PolicyBase<M0, M1, M2, M3, M4, M5, M6, M7, M8>
   ExactTime(uint32_t queue_size)
   : parent_(0)
   , queue_size_(queue_size)
+  , enable_reset_(false)
+  , last_stamp_(0)
   {
   }
 
@@ -104,6 +106,7 @@ struct ExactTime : public PolicyBase<M0, M1, M2, M3, M4, M5, M6, M7, M8>
   {
     parent_ = rhs.parent_;
     queue_size_ = rhs.queue_size_;
+    enable_reset_ = rhs.enable_reset_;
     last_signal_time_ = rhs.last_signal_time_;
     tuples_ = rhs.tuples_;
 
@@ -123,6 +126,17 @@ struct ExactTime : public PolicyBase<M0, M1, M2, M3, M4, M5, M6, M7, M8>
     namespace mt = ros::message_traits;
 
     boost::mutex::scoped_lock lock(mutex_);
+
+    if (ros::Time::isSimTime() && enable_reset_)
+    {
+      ros::Time now = ros::Time::now();
+      if (now < last_stamp_)
+      {
+        ROS_WARN("Detected jump back in time. Clearing the message filters queue");
+        tuples_.clear();
+      }
+      last_stamp_ = now;
+    }
 
     Tuple& t = tuples_[mt::TimeStamp<typename mpl::at_c<Messages, i>::type>::value(*evt.getMessage())];
     boost::get<i>(t) = evt;
@@ -168,6 +182,11 @@ struct ExactTime : public PolicyBase<M0, M1, M2, M3, M4, M5, M6, M7, M8>
   #else
     return drop_signal_.addCallback(callback, t);
   #endif
+  }
+
+  void setReset(const bool reset)
+  {
+    enable_reset_ = reset;
   }
 
 private:
@@ -244,9 +263,11 @@ private:
   Sync* parent_;
 
   uint32_t queue_size_;
+  bool enable_reset_;
   typedef std::map<ros::Time, Tuple> M_TimeToTuple;
   M_TimeToTuple tuples_;
   ros::Time last_signal_time_;
+  ros::Time last_stamp_;
 
   Signal drop_signal_;
 
