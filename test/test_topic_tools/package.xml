@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>test_topic_tools</name>
+  <version>1.14.5</version>
+  <description>Tests for topic_tools</description>
+  <maintainer email="me@furushchev.ru">Yuki Furuta</maintainer>
+  <license>BSD</license>
+  <author email="me@furushchev.ru">Yuki Furuta</author>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>rostest</depend>
+  <depend>std_msgs</depend>
+  <depend>topic_tools</depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>roscpp</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+</package>

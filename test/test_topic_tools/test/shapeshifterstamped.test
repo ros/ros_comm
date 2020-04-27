@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="rostopic" type="rostopic" name="rostopic_pub"
+        args="pub -s -r 10 input test_topic_tools/TestStamped '{header: {stamp: now}, message: foo}'"/>
+
+  <test test-name="test_shapeshifterstamped" pkg="test_topic_tools" type="test_topic_tools-test_shapeshifterstamped"/>
+</launch>
