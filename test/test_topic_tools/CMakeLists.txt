@@ -30,4 +30,6 @@ if(CATKIN_ENABLE_TESTING)
 
   add_rostest_gtest(${PROJECT_NAME}-test_shapeshifterstamped test/shapeshifterstamped.test test/test_shapeshifterstamped.cpp)
   target_link_libraries(${PROJECT_NAME}-test_shapeshifterstamped ${catkin_LIBRARIES})
+
+  add_rostest(test/synchronized_throttle.test)
 endif()

@@ -1,0 +1,30 @@
+<launch>
+  <node name="topic_pub" pkg="rostopic" type="rostopic"
+        args="pub -s -r 10 /foo test_topic_tools/TestStamped '{header: {stamp: now}, message: bar}'" />
+
+  <node name="throttle" pkg="topic_tools" type="throttle"
+        args="messages /foo 5.0 /bar"/>
+
+  <node name="sync_throttle"
+        pkg="topic_tools" type="synchronized_throttle"
+        args="1.0 /foo /bar /baz"
+        output="screen">
+    <rosparam>
+      approximate_sync: false
+      suffix: sync
+    </rosparam>
+  </node>
+
+  <node name="async_throttle"
+        pkg="topic_tools" type="synchronized_throttle"
+        args="1.0 /foo /bar /baz"
+        output="screen">
+    <rosparam>
+      approximate_sync: true
+      suffix: async
+    </rosparam>
+  </node>
+
+  <test test-name="test_synchronized_throttle"
+        pkg="test_topic_tools" type="test_synchronized_throttle.py"/>
+</launch>
