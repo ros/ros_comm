@@ -93,7 +93,9 @@ boost::signals2::connection Connection::addDropListener(const DropFunc& slot)
 void Connection::removeDropListener(const boost::signals2::connection& c)
 {
   boost::recursive_mutex::scoped_lock lock(drop_mutex_);
-  c.disconnect();
+  if (c.connected()) {
+    c.disconnect();
+  }
 }
 
 void Connection::onReadable(const TransportPtr& transport)
@@ -337,7 +339,10 @@ void Connection::drop(DropReason reason)
 
   if (did_drop)
   {
-    drop_signal_(shared_from_this(), reason);
+    {
+      boost::recursive_mutex::scoped_lock lock(drop_mutex_);
+      drop_signal_(shared_from_this(), reason);
+    }
     transport_->close();
   }
 }
