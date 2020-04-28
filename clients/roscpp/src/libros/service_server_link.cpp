@@ -340,14 +340,14 @@ bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& re
 
   bool immediate = false;
   {
-    boost::mutex::scoped_lock lock(call_queue_mutex_);
-
     if (connection_->isDropped())
     {
       ROSCPP_LOG_DEBUG("ServiceServerLink::call called on dropped connection for service [%s]", service_name_.c_str());
       info->call_finished_ = true;
       return false;
     }
+
+    boost::mutex::scoped_lock lock(call_queue_mutex_);
 
     if (call_queue_.empty() && header_written_ && header_read_)
     {
