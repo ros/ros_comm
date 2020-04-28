@@ -93,7 +93,7 @@ def roswtf_main():
 def _roswtf_main():
     # performance optimization
     rospack = rospkg.RosPack()
-    all_pkgs = rospack.list()
+    all_packages = rospack.list()
 
     import argparse
     parser = argparse.ArgumentParser(usage="usage: roswtf [launch file]", description="roswtf is a tool for verifying a ROS installation and running system. Checks provided launchfile if provided, else current stack or package.")
@@ -117,16 +117,19 @@ def _roswtf_main():
                         help="launch files to check. 0...n files can be passed")
     #TODO: --all-pkgs option
     args = parser.parse_args()
-    roswtf_node(args)
+    roswtf_node(args.all_packages, args.disable_plugins, args.launch_files, args.offline)
 
 
-def roswtf_node(args):
+def roswtf_node(all_packages=False, disable_plugins=False, launch_files=[], offline=False):
     """
-    @type args: argparse.Namespace
+    @type all_packages: 
+    @type disable_plugins:
+    @type launch_files: 
+    @type offline: 
     """
     launch_files = names = None
-    if args.launch_files:
-        launch_files = args.launch_files
+    if launch_files:
+        launch_files = launch_files
         if 0:
             # disable names for now as don't have any rules yet
             launch_files = [a for a in args if os.path.isfile(a)]
@@ -143,7 +146,7 @@ def roswtf_node(args):
     import roswtf.roslaunchwtf
     import roswtf.stacks    
     import roswtf.plugins
-    if not args.disable_plugins:
+    if not disable_plugins:
         static_plugins, online_plugins = roswtf.plugins.load_plugins()
     else:
         static_plugins, online_plugins = [], []
@@ -173,9 +176,9 @@ def roswtf_node(args):
         else:
             print("No package or stack in the current directory")
             ctx = WtfContext.from_env()
-        if args.all_packages:
+        if all_packages:
             print("roswtf will run against all packages")
-            ctx.pkgs = all_pkgs
+            ctx.pkgs = all_packages
 
     # static checks
     wtf_check_environment(ctx)
@@ -203,7 +206,7 @@ def roswtf_node(args):
 
     try:
 
-        if args.offline or not ctx.ros_master_uri or invalid_url(ctx.ros_master_uri) or not rosgraph.is_master_online():
+        if offline or not ctx.ros_master_uri or invalid_url(ctx.ros_master_uri) or not rosgraph.is_master_online():
             online_checks = False
         else:
             online_checks = True
