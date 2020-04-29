@@ -368,7 +368,7 @@ The following variables are available:
                 else:
                     print('NO MATCH', verbose_pattern(topic, msg, t))          
 
-                total_bytes += len(serialized_bytes)
+                total_bytes += len(serialized_bytes) 
                 meter.step(total_bytes)
         else:
             for topic, raw_msg, t, conn_header in inbag.read_messages(raw=True, return_connection_header=True):
@@ -502,9 +502,9 @@ def check_cmd(argv):
         sys.exit(1)
 
     mm = MessageMigrator(args[1:] + append_rule, not options.noplugins)
-       
-    migrations = checkbag(mm, args[0])
 
+    migrations = checkbag(mm, args[0])
+       
     if len(migrations) == 0:
         print('Bag file does not need any migrations.')
         exit(0)
