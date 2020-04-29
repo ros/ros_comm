@@ -32,11 +32,15 @@
 // message stream density, etc., rather than just being greedy and stuffing
 // the output as fast as it can. 
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <deque>
+#include <ostream>
+#include <set>
 #include "topic_tools/shape_shifter.h"
 #include "topic_tools/parse.h"
+#include <XmlRpcValue.h>
 
 using std::string;
 using std::vector;
@@ -60,6 +64,9 @@ bool g_lazy;
 bool g_force_latch = false;
 bool g_force_latch_value = true;
 ros::TransportHints g_th;
+ros::WallDuration g_wait_for_subscribers_timeout{ 1.0 };
+ros::WallDuration g_wait_for_subscribers_connect_time{ 0.0 };
+vector<string> g_wait_for_subscribers;
 
 class Sent
 {
@@ -104,6 +111,99 @@ bool is_latching(const boost::shared_ptr<const ros::M_string>& connection_header
   return false;
 }
 
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::set<T>& object)
+{
+  std::copy(object.begin(), object.end(), std::ostream_iterator<T>(os, " "));
+  return os;
+}
+
+void wait_for_subscribers()
+{
+  // Skip if we do not have to wait for any subscriber
+  if (g_wait_for_subscribers.empty())
+  {
+    return;
+  }
+
+  // Set the advertise time
+  const auto advertise_time = ros::WallTime::now();
+
+  // Separate explicit subscribers
+  const auto& num_subscribers = g_wait_for_subscribers.size();
+
+  std::vector<std::string> explicit_subscribers;
+  explicit_subscribers.reserve(num_subscribers);
+  std::copy_if(g_wait_for_subscribers.begin(), g_wait_for_subscribers.end(), std::back_inserter(explicit_subscribers),
+               [](const std::string& subscriber) { return subscriber != "*"; });
+
+  // Wait for the explicit pending subscribers to subscribe
+  std::set<std::string> pending_subscribers(explicit_subscribers.begin(), explicit_subscribers.end());
+  while (!pending_subscribers.empty() && ros::WallTime::now() < advertise_time + g_wait_for_subscribers_timeout)
+  {
+    // Get subscribers
+    XmlRpc::XmlRpcValue req(ros::this_node::getName()), res, data;
+    if (!ros::master::execute("getSystemState", req, res, data, false))
+    {
+      ROS_ERROR("Failed to communicate with rosmaster");
+      return;
+    }
+
+    // Check if any of the explicit pending subscribers has subscribed to the output topic advertised
+    XmlRpc::XmlRpcValue sub_info = data[1];
+    for (int i = 0; i < sub_info.size(); ++i)
+    {
+      const auto& topic_name = sub_info[i][0];
+      if (topic_name != g_output_topic)
+      {
+        continue;
+      }
+
+      // Remove any explicit pending subscribers that has subscribed
+      auto& subscribers = sub_info[i][1];
+      for (int j = 0; j < subscribers.size(); ++j)
+      {
+        const auto subscriber_iter = pending_subscribers.find(static_cast<std::string>(subscribers[j]));
+        if (subscriber_iter != pending_subscribers.end())
+        {
+          pending_subscribers.erase(subscriber_iter);
+        }
+      }
+    }
+
+    ROS_DEBUG_STREAM("Waiting for explicit subscribers [" << pending_subscribers << "] to " << g_output_topic);
+    ros::WallDuration(0.1).sleep();
+  }
+
+  // Check if we timed out
+  if (!pending_subscribers.empty())
+  {
+    ROS_WARN_STREAM("The subscribers [" << pending_subscribers << "] did not connect after waiting longer than "
+                                       << g_wait_for_subscribers_timeout);
+    return;
+  }
+
+  // Wait for one more subscriber with any name, if requested
+  while (g_pub.getNumSubscribers() < num_subscribers &&
+         ros::WallTime::now() < advertise_time + g_wait_for_subscribers_timeout)
+  {
+    ROS_DEBUG_STREAM("Waiting for subscribers to " << g_output_topic);
+    ros::WallDuration(0.1).sleep();
+  }
+
+  // Check if we timed out
+  if (g_pub.getNumSubscribers() < num_subscribers)
+  {
+    ROS_WARN_STREAM("No (other) subscriber connected after waiting longer than " << g_wait_for_subscribers_timeout);
+  }
+
+  // Wait a bit more so the subscribers are connected properly
+  if (g_pub.getNumSubscribers() > 0)
+  {
+    ros::WallDuration(g_wait_for_subscribers_connect_time).sleep();
+  }
+}
+
 void in_cb(const ros::MessageEvent<ShapeShifter>& msg_event)
 {
   boost::shared_ptr<ShapeShifter const> const &msg = msg_event.getConstMessage();
@@ -115,6 +215,9 @@ void in_cb(const ros::MessageEvent<ShapeShifter>& msg_event)
     g_pub = msg->advertise(*g_node, g_output_topic, 10, latch, conn_cb);
     g_advertised = true;
     printf("advertised as %s\n", g_output_topic.c_str());
+
+    // Allow subscribers to connect to the advertise topic, so they can received the first message published
+    wait_for_subscribers();
   }
   // If we're in lazy subscribe mode, and nobody's listening, 
   // then unsubscribe, #3546.
@@ -200,6 +303,21 @@ int main(int argc, char **argv)
   pnh.getParam("unreliable", unreliable);
   pnh.getParam("lazy", g_lazy);
   g_force_latch = pnh.getParam("force_latch", g_force_latch_value);
+
+  double wait_for_subscribers_timeout{ g_wait_for_subscribers_timeout.toSec() };
+  pnh.getParam("wait_for_subscribers_timeout", wait_for_subscribers_timeout);
+  g_wait_for_subscribers_timeout.fromSec(wait_for_subscribers_timeout);
+
+  double wait_for_subscribers_connect_time{ g_wait_for_subscribers_connect_time.toSec() };
+  pnh.getParam("wait_for_subscribers_connect_time", wait_for_subscribers_connect_time);
+  g_wait_for_subscribers_connect_time.fromSec(wait_for_subscribers_connect_time);
+
+  pnh.getParam("wait_for_subscribers", g_wait_for_subscribers);
+
+  // Remove duplicates
+  std::sort(g_wait_for_subscribers.begin(), g_wait_for_subscribers.end());
+  g_wait_for_subscribers.erase(std::unique(g_wait_for_subscribers.begin(), g_wait_for_subscribers.end()),
+                               g_wait_for_subscribers.end());
 
   if (unreliable)
     g_th.unreliable().reliable(); // Prefers unreliable, but will accept reliable.
