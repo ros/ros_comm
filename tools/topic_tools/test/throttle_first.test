@@ -1,0 +1,17 @@
+<launch>
+  <node pkg="rostopic" type="rostopic" name="rostopic_pub"
+        args="pub -r 10.0 input std_msgs/String chatter"/>
+
+  <node pkg="topic_tools" type="throttle" name="throttle"
+        args="messages input 0.001"/>
+
+  <test test-name="throttle_publishtest" pkg="rostest" type="publishtest">
+    <rosparam>
+      topics:
+        - name: input
+          timeout: 2.0
+        - name: input_throttle
+          timeout: 2.0
+    </rosparam>
+  </test>
+</launch>
