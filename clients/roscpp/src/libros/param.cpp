@@ -797,6 +797,30 @@ void paramUpdateCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& resul
   ros::param::update((std::string)params[1], params[2]);
 }
 
+void unsubscribeCachedParam(void) {
+  // lock required, all of the cached parameter will be unsubscribed here.
+  boost::mutex::scoped_lock lock(g_params_mutex);
+
+  for(S_string::iterator itr = g_subscribed_params.begin(); itr != g_subscribed_params.end(); ++itr)
+  {
+    XmlRpc::XmlRpcValue params, result, payload;
+    std::string mapped_key(itr->c_str());
+    params[0] = this_node::getName();
+    params[1] = XMLRPCManager::instance()->getServerURI();
+    params[2] = mapped_key;
+
+    if (!master::execute("unsubscribeParam", params, result, payload, false))
+    {
+      ROS_DEBUG_NAMED("cached_parameters", "Unsubscribe to parameter [%s]: call to the master failed", mapped_key.c_str());
+    }
+    else
+    {
+      ROS_DEBUG_NAMED("cached_parameters", "Unsubscribed to parameter [%s]", mapped_key.c_str());
+      g_subscribed_params.erase(mapped_key);
+    }
+  }
+}
+
 void init(const M_string& remappings)
 {
   M_string::const_iterator it = remappings.begin();

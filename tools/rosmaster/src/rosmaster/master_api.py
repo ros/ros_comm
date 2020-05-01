@@ -462,6 +462,7 @@ class ROSMasterHandler(object):
             val = self.param_server.subscribe_param(key, (caller_id, caller_api))
         finally:
             self.ps_lock.release()
+        mloginfo("+CACHEDPARAM [%s] by %s",key, caller_id)
         return 1, "Subscribed to parameter [%s]"%key, val
 
     @apivalidate(0, (is_api('caller_api'), non_empty_str('key'),))
@@ -486,6 +487,7 @@ class ROSMasterHandler(object):
             retval = self.param_server.unsubscribe_param(key, (caller_id, caller_api))
         finally:
             self.ps_lock.release()
+        mloginfo("-CACHEDPARAM [%s] by %s",key, caller_id)
         return 1, "Unsubscribe to parameter [%s]"%key, 1
 
 

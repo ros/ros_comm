@@ -591,6 +591,11 @@ ROSCPP_DECL bool search(const std::string& key, std::string& result);
  */
 ROSCPP_DECL bool getParamNames(std::vector<std::string>& keys);
 
+/**
+ * \brief Unsubscribe all of cached parameter from the master.
+ */
+ROSCPP_DECL void unsubscribeCachedParam(void);
+
 /** \brief Assign value from parameter server, with default.
  *
  * This method tries to retrieve the indicated parameter value from the
