@@ -97,6 +97,7 @@ from rospy.impl.tcpros import get_tcpros_handler, DEFAULT_BUFF_SIZE
 from rospy.impl.tcpros_pubsub import QueuedConnection
 
 _logger = logging.getLogger('rospy.topics')
+_rosout_logger = logging.getLogger('rosout')
 
 # wrap genpy implementation and map it to rospy namespace
 import genpy
@@ -1266,7 +1267,11 @@ class _TopicManager(object):
         else:
             raise TypeError("invalid reg_type: %s"%reg_type)
         with self.lock:
-            impl = rmap.get(resolved_name, None)            
+            impl = rmap.get(resolved_name, None)
+            if impl and reg_type == Registration.SUB:
+                _rosout_logger.warning("more than one subscription to %s - "
+                    "subscribing twice to the same topic in one process is not "
+                    "supported properly, see: https://github.com/ros/ros_comm/issues/1351" % resolved_name)
             if not impl:
                 impl = impl_class(resolved_name, data_class)
                 self._add(impl, rmap, reg_type)
