@@ -34,7 +34,8 @@ function _roscomplete_rosrun_transform
 {
     if is_transform_node; then
         _roscomplete_node_transform
-    else
+    elif [[ "$_sav_transform_roscomplete_rosrun" != "_roscomplete_rosrun_transform" ]]; then
+
         eval "$_sav_transform_roscomplete_rosrun"
     fi
 }
