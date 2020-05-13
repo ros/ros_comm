@@ -211,7 +211,6 @@ target_link_libraries(${PROJECT_NAME}-topic_statistic_frequency ${GTEST_LIBRARIE
 add_executable(${PROJECT_NAME}-multiple_latched_publishers EXCLUDE_FROM_ALL multiple_latched_publishers.cpp)
 target_link_libraries(${PROJECT_NAME}-multiple_latched_publishers ${GTEST_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME}-multiple_latched_publishers ${std_msgs_EXPORTED_TARGETS})
-set_property(TARGET ${PROJECT_NAME}-multiple_latched_publishers PROPERTY CXX_STANDARD 11)
 
 # The publishers and subscriber are compiled but not registered as a unit test
 # since the test execution requires a network connection which drops packages.
