@@ -185,11 +185,6 @@ bool Publication::enqueueMessage(const SerializedMessage& m)
     sub_link->enqueueMessage(m, true, false);
   }
 
-  if (latch_)
-  {
-    last_message_ = m;
-  }
-
   return true;
 }
 
@@ -209,11 +204,6 @@ void Publication::addSubscriberLink(const SubscriberLinkPtr& sub_link)
     {
       ++intraprocess_subscriber_count_;
     }
-  }
-
-  if (latch_ && last_message_.buf)
-  {
-    sub_link->enqueueMessage(last_message_, true, true);
   }
 
   // This call invokes the subscribe callback if there is one.
@@ -331,6 +321,10 @@ void Publication::peerConnect(const SubscriberLinkPtr& sub_link)
   for (; it != end; ++it)
   {
     const SubscriberCallbacksPtr& cbs = *it;
+    if (cbs->push_latched_message_)
+    {
+      cbs->push_latched_message_(sub_link);
+    }
     if (cbs->connect_ && cbs->callback_queue_)
     {
       CallbackInterfacePtr cb(boost::make_shared<PeerConnDisconnCallback>(cbs->connect_, sub_link, cbs->has_tracked_object_, cbs->tracked_object_));

@@ -178,7 +178,6 @@ private:
 
   bool latch_;
   bool has_header_;
-  SerializedMessage last_message_;
 
   uint32_t intraprocess_subscriber_count_;
 
