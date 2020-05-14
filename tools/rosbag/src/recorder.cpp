@@ -296,7 +296,7 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
 
         queue_->push(out);
         queue_size_ += out.msg->size();
-
+        
         if (options_.repeat_latched)
         {
             ros::M_string::const_iterator it = out.connection_header->find("latching");
