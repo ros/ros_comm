@@ -72,7 +72,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       ("udp", "Use the UDP transport hint when subscribing to topics.")
       ("repeat-latched", "Repeat latched msgs at the start of each new bag file.");
 
-
+  
     po::positional_options_description p;
     p.add("topic", -1);
     
