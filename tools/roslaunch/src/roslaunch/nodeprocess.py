@@ -221,7 +221,6 @@ class LocalProcess(Process):
         self.sigint_timeout = sigint_timeout
         self.sigterm_timeout = sigterm_timeout
 
-
     # NOTE: in the future, info() is going to have to be sufficient for relaunching a process
     def get_info(self):
         """
