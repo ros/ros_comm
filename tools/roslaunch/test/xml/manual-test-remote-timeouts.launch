@@ -1,0 +1,14 @@
+<launch>
+
+    <!-- To be used with roslaunch/test/manual-test-remote-timeouts.sh -->
+
+    <arg name="address" />
+    <arg name="env_loader" />
+    <arg name="user" />
+    <arg name="timeout" default="10.0" />
+
+    <machine name="remote" address="$(arg address)" user="$(arg user)" env-loader="$(arg env_loader)" timeout="$(arg timeout)" />
+
+    <node name="signal_logger" pkg="roslaunch" type="signal_logger.py" machine="remote" output="screen" />
+
+</launch>

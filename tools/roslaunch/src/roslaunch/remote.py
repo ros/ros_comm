@@ -48,6 +48,7 @@ from roslaunch.remoteprocess import SSHChildROSLaunchProcess
 import roslaunch.launch
 import roslaunch.server #ROSLaunchParentNode hidden dep
 from roslaunch.core import RLException, is_machine_local, printerrlog, printlog
+from roslaunch.nodeprocess import DEFAULT_TIMEOUT_SIGINT, DEFAULT_TIMEOUT_SIGTERM
 
 _CHILD_REGISTER_TIMEOUT = 10.0 #seconds
     
@@ -56,17 +57,23 @@ class ROSRemoteRunner(roslaunch.launch.ROSRemoteRunnerIF):
     Manages the running of remote roslaunch children
     """
     
-    def __init__(self, run_id, rosconfig, pm, server):
+    def __init__(self, run_id, rosconfig, pm, server, sigint_timeout=DEFAULT_TIMEOUT_SIGINT, sigterm_timeout=DEFAULT_TIMEOUT_SIGTERM):
         """
         :param run_id: roslaunch run_id of this runner, ``str``
         :param config: launch configuration, ``ROSConfig``
         :param pm process monitor, ``ProcessMonitor``
         :param server: roslaunch parent server, ``ROSLaunchParentNode``
+        :param sigint_timeout: The SIGINT timeout used when killing nodes (in seconds).
+        :type sigint_timeout: float
+        :param sigterm_timeout: The SIGTERM timeout used when killing nodes if SIGINT does not stop the node (in seconds).
+        :type sigterm_timeout: float
         """
         self.run_id = run_id
         self.rosconfig = rosconfig
         self.server = server
         self.pm = pm
+        self.sigint_timeout = sigint_timeout
+        self.sigterm_timeout = sigterm_timeout
         self.logger = logging.getLogger('roslaunch.remote')
         self.listeners = []
         
@@ -90,7 +97,8 @@ class ROSRemoteRunner(roslaunch.launch.ROSRemoteRunnerIF):
         self.logger.info("remote[%s] starting roslaunch", name)
         printlog("remote[%s] starting roslaunch"%name)
             
-        p = SSHChildROSLaunchProcess(self.run_id, name, server_node_uri, machine, self.rosconfig.master.uri)
+        p = SSHChildROSLaunchProcess(self.run_id, name, server_node_uri, machine, self.rosconfig.master.uri,
+                                     sigint_timeout=self.sigint_timeout, sigterm_timeout=self.sigterm_timeout)
         success = p.start()
         self.pm.register(p)
         if not success: #treat as fatal

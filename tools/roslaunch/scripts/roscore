@@ -34,6 +34,7 @@
 import sys
 from optparse import OptionParser
 from rosmaster.master_api import NUM_WORKERS
+from roslaunch.nodeprocess import DEFAULT_TIMEOUT_SIGINT, DEFAULT_TIMEOUT_SIGTERM
 
 NAME = 'roscore'
 
@@ -59,6 +60,16 @@ def _get_optparse():
     parser.add_option("--master-logger-level",
                       dest="master_logger_level", default=False, type=str,
                       help="set rosmaster.master logger level ('debug', 'info', 'warn', 'error', 'fatal')")
+    parser.add_option("--sigint-timeout",
+                      dest="sigint_timeout",
+                      default=DEFAULT_TIMEOUT_SIGINT, type=float,
+                      help="the SIGINT timeout used when killing the core (in seconds).",
+                      metavar="SIGINT_TIMEOUT")
+    parser.add_option("--sigterm-timeout",
+                      dest="sigterm_timeout",
+                      default=DEFAULT_TIMEOUT_SIGTERM, type=float,
+                      help="the SIGTERM timeout used when killing core if SIGINT does not stop the core (in seconds).",
+                      metavar="SIGTERM_TIMEOUT")
     return parser
 
 
