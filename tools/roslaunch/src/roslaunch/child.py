@@ -49,6 +49,7 @@ import traceback
 import roslaunch.core
 import roslaunch.pmon
 import roslaunch.server
+from roslaunch.nodeprocess import DEFAULT_TIMEOUT_SIGINT, DEFAULT_TIMEOUT_SIGTERM
 
 class ROSLaunchChild(object):
     """
@@ -57,7 +58,7 @@ class ROSLaunchChild(object):
     This must be called from the Python Main thread due to signal registration.
     """
 
-    def __init__(self, run_id, name, server_uri):
+    def __init__(self, run_id, name, server_uri, sigint_timeout=DEFAULT_TIMEOUT_SIGINT, sigterm_timeout=DEFAULT_TIMEOUT_SIGTERM):
         """
         Startup roslaunch remote client XML-RPC services. Blocks until shutdown
         @param run_id: UUID of roslaunch session
@@ -66,6 +67,11 @@ class ROSLaunchChild(object):
         @type  name: str
         @param server_uri: XML-RPC URI of roslaunch server
         @type  server_uri: str
+        @param sigint_timeout: The SIGINT timeout used when killing nodes (in seconds).
+        @type  sigint_timeout: float
+        @param sigterm_timeout: The SIGTERM timeout used when killing nodes if SIGINT does not stop the node (
+                                in seconds).
+        @type  sigterm_timeout: float
         @return: XML-RPC URI
         @rtype:  str
         """
@@ -77,6 +83,8 @@ class ROSLaunchChild(object):
         self.server_uri = server_uri
         self.child_server = None
         self.pm = None
+        self.sigint_timeout = sigint_timeout
+        self.sigterm_timeout = sigterm_timeout
 
         roslaunch.pmon._init_signal_handlers()
 
@@ -102,7 +110,9 @@ class ROSLaunchChild(object):
             try:
                 self.logger.info("starting roslaunch child process [%s], server URI is [%s]", self.name, self.server_uri)
                 self._start_pm()
-                self.child_server = roslaunch.server.ROSLaunchChildNode(self.run_id, self.name, self.server_uri, self.pm)
+                self.child_server = roslaunch.server.ROSLaunchChildNode(self.run_id, self.name, self.server_uri,
+                                                                        self.pm, sigint_timeout=self.sigint_timeout,
+                                                                        sigterm_timeout=self.sigterm_timeout)
                 self.logger.info("... creating XMLRPC server for child")
                 self.child_server.start()
                 self.logger.info("... started XMLRPC server for child")

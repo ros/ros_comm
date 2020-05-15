@@ -68,6 +68,7 @@ except:
     DEFAULT_MASTER_PORT = 11311
 
 from rosmaster.master_api import NUM_WORKERS
+from roslaunch.nodeprocess import DEFAULT_TIMEOUT_SIGINT, DEFAULT_TIMEOUT_SIGTERM
 
 NAME = 'roslaunch'
 
@@ -193,6 +194,16 @@ def _get_optparse():
     parser.add_option("--master-logger-level",
                       dest="master_logger_level", default=False, type=str,
                       help="set rosmaster.master logger level ('debug', 'info', 'warn', 'error', 'fatal')")
+    parser.add_option("--sigint-timeout",
+                      dest="sigint_timeout",
+                      default=DEFAULT_TIMEOUT_SIGINT, type=float,
+                      help="the SIGINT timeout used when killing nodes (in seconds).",
+                      metavar="SIGINT_TIMEOUT")
+    parser.add_option("--sigterm-timeout",
+                      dest="sigterm_timeout",
+                      default=DEFAULT_TIMEOUT_SIGTERM, type=float,
+                      help="the SIGTERM timeout used when killing nodes if SIGINT does not stop the node (in seconds).",
+                      metavar="SIGTERM_TIMEOUT")
 
     return parser
     
@@ -296,7 +307,9 @@ def main(argv=sys.argv):
             # client spins up an XML-RPC server that waits for
             # commands and configuration from the server.
             from . import child as roslaunch_child
-            c = roslaunch_child.ROSLaunchChild(uuid, options.child_name, options.server_uri)
+            c = roslaunch_child.ROSLaunchChild(uuid, options.child_name, options.server_uri,
+                                               sigint_timeout=options.sigint_timeout,
+                                               sigterm_timeout=options.sigterm_timeout)
             c.run()
         else:
             logger.info('starting in server mode')
@@ -326,7 +339,9 @@ def main(argv=sys.argv):
                     num_workers=options.num_workers, timeout=options.timeout,
                     master_logger_level=options.master_logger_level,
                     show_summary=not options.no_summary,
-                    force_required=options.force_required)
+                    force_required=options.force_required,
+                    sigint_timeout=options.sigint_timeout,
+                    sigterm_timeout=options.sigterm_timeout)
             p.start()
             p.spin()
 
