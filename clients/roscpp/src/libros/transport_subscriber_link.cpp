@@ -52,6 +52,7 @@ TransportSubscriberLink::TransportSubscriberLink()
 TransportSubscriberLink::~TransportSubscriberLink()
 {
   drop();
+  connection_->removeDropListener(dropped_conn_);
 }
 
 bool TransportSubscriberLink::initialize(const ConnectionPtr& connection)

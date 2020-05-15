@@ -32,6 +32,8 @@
 #include "publisher_link.h"
 #include "connection.h"
 
+#include <boost/signals2/connection.hpp>
+
 namespace ros
 {
 class Header;
@@ -79,6 +81,7 @@ private:
   void onRetryTimer(const ros::SteadyTimerEvent&);
 
   ConnectionPtr connection_;
+  boost::signals2::connection dropped_conn_;
 
   int32_t retry_timer_handle_;
   bool needs_retry_;
