@@ -69,7 +69,8 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       ("duration", po::value<std::string>(), "Record a bag of maximum duration in seconds, unless 'm', or 'h' is appended.")
       ("node", po::value<std::string>(), "Record all topics subscribed to by a specific node.")
       ("tcpnodelay", "Use the TCP_NODELAY transport hint when subscribing to topics.")
-      ("udp", "Use the UDP transport hint when subscribing to topics.");
+      ("udp", "Use the UDP transport hint when subscribing to topics.")
+      ("repeat-latched", "Repeat latched msgs at the start of each new bag file.");
 
   
     po::positional_options_description p;
@@ -106,6 +107,8 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
       opts.quiet = true;
     if (vm.count("publish"))
       opts.publish = true;
+    if (vm.count("repeat-latched"))
+      opts.repeat_latched = true;
     if (vm.count("output-prefix"))
     {
       opts.prefix = vm["output-prefix"].as<std::string>();

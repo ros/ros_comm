@@ -38,24 +38,9 @@ using namespace topic_tools;
 
 bool ShapeShifter::uses_old_API_ = false;
 
-ShapeShifter::ShapeShifter()
-  :  typed(false),
-     msgBuf(NULL),
-     msgBufUsed(0),
-     msgBufAlloc(0)
-{ 
-}
+ShapeShifter::ShapeShifter() : typed(false) {}
 
-
-ShapeShifter::~ShapeShifter()
-{
-  if (msgBuf)
-    delete[] msgBuf;
-  
-  msgBuf = NULL;
-  msgBufAlloc = 0;
-}
-
+ShapeShifter::~ShapeShifter() {}
 
 std::string const& ShapeShifter::getDataType()          const { return datatype; }
 
@@ -88,6 +73,5 @@ ros::Publisher ShapeShifter::advertise(ros::NodeHandle& nh, const std::string& t
 
 uint32_t ShapeShifter::size() const
 {
-  return msgBufUsed;
+  return msgBuf.size();
 }
-

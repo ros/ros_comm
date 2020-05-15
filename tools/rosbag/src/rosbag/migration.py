@@ -173,7 +173,7 @@ def fixbag2(migrator, inbag, outbag, force=False):
                 new_conn_header = _migrate_connection_header(conn_header, new_msg_type)
                 rebag.write(topic, mig_msg, t, connection_header=new_conn_header, raw=True)
             else:
-                rebag.write(topic, msg, t, connection_header=connection_header, raw=True)
+                rebag.write(topic, msg, t, connection_header=conn_header, raw=True)
         rebag.close()
         bag.close()
 

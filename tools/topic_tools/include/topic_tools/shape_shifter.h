@@ -99,10 +99,7 @@ private:
   std::string md5, datatype, msg_def, latching;
   bool typed;
 
-  uint8_t *msgBuf;
-  uint32_t msgBufUsed;
-  uint32_t msgBufAlloc;
-  
+  std::vector<uint8_t> msgBuf;
 };
   
 }
@@ -207,7 +204,10 @@ boost::shared_ptr<M> ShapeShifter::instantiate() const
   
   boost::shared_ptr<M> p(boost::make_shared<M>());
 
-  ros::serialization::IStream s(msgBuf, msgBufUsed);
+  // The IStream never modifies its data, and nothing else has access to this
+  // object, so the const_cast here is ok
+  ros::serialization::IStream s(const_cast<unsigned char*>(msgBuf.data()),
+                                msgBuf.size());
   ros::serialization::deserialize(s, *p);
 
   return p;
@@ -215,8 +215,8 @@ boost::shared_ptr<M> ShapeShifter::instantiate() const
 
 template<typename Stream>
 void ShapeShifter::write(Stream& stream) const {
-  if (msgBufUsed > 0)
-    memcpy(stream.advance(msgBufUsed), msgBuf, msgBufUsed);
+  if (msgBuf.size() > 0)
+    memcpy(stream.advance(msgBuf.size()), msgBuf.data(), msgBuf.size());
 }
 
 template<typename Stream>
@@ -224,20 +224,13 @@ void ShapeShifter::read(Stream& stream)
 {
   stream.getLength();
   stream.getData();
-    
+
   // stash this message in our buffer
-  if (stream.getLength() > msgBufAlloc)
-  {
-    delete[] msgBuf;
-    msgBuf = new uint8_t[stream.getLength()];
-    msgBufAlloc = stream.getLength();
-  }
-  msgBufUsed = stream.getLength();
-  memcpy(msgBuf, stream.getData(), stream.getLength());
+  msgBuf.resize(stream.getLength());
+  memcpy(msgBuf.data(), stream.getData(), stream.getLength());
 }
 
 } // namespace topic_tools
 
 
 #endif
-

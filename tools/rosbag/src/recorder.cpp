@@ -297,6 +297,19 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
         queue_->push(out);
         queue_size_ += out.msg->size();
         
+        if (options_.repeat_latched)
+        {
+            ros::M_string::const_iterator it = out.connection_header->find("latching");
+            if ((it != out.connection_header->end()) && (it->second == "1"))
+            {
+                ros::M_string::const_iterator it2 = out.connection_header->find("callerid");
+                if (it2 != out.connection_header->end())
+                {
+                    latched_msgs_.insert({{subscriber->getTopic(), it2->second}, out});
+                }
+            }
+        }
+
         // Check to see if buffer has been exceeded
         while (options_.buffer_size > 0 && queue_size_ > options_.buffer_size) {
             OutgoingMessage drop = queue_->front();
@@ -392,6 +405,18 @@ void Recorder::startWriting() {
         ros::shutdown();
     }
     ROS_INFO("Recording to '%s'.", target_filename_.c_str());
+
+    if (options_.repeat_latched)
+    {
+        // Start each new bag file with copies of all latched messages.
+        ros::Time now = ros::Time::now();
+        for (auto const& out : latched_msgs_)
+        {
+            // Overwrite the original receipt time, otherwise the new bag will
+            // have a gap before the new messages start.
+            bag_.write(out.second.topic, now, *out.second.msg);
+        }
+    }
 
     if (options_.publish)
     {

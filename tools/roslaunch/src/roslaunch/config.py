@@ -267,7 +267,8 @@ class ROSLaunchConfig(object):
                 namespaces[ns] = [n]
             else:
                 namespaces[ns].append(n)
-        for k,v in namespaces.items():
+        for k in sorted(namespaces):
+            v = namespaces[k]
             summary += '  %s\n'%k + '\n'.join(sorted(['    %s'%_summary_name(n) for n in v]))
             summary += '\n'
         return summary
