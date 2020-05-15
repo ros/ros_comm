@@ -93,9 +93,7 @@ boost::signals2::connection Connection::addDropListener(const DropFunc& slot)
 void Connection::removeDropListener(const boost::signals2::connection& c)
 {
   boost::recursive_mutex::scoped_lock lock(drop_mutex_);
-  if (c.connected()) {
-    c.disconnect();
-  }
+  c.disconnect();
 }
 
 void Connection::onReadable(const TransportPtr& transport)
