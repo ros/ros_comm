@@ -256,7 +256,7 @@ class ROSLaunchChildHandler(ROSLaunchBaseHandler):
                                 in seconds).
         @type  sigterm_timeout: float
         @raise RLException: If parameters are invalid
-        """
+        """            
         super(ROSLaunchChildHandler, self).__init__(pm)        
         if server_uri is None:
             raise RLException("server_uri is not initialized")

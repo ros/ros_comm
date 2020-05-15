@@ -271,9 +271,15 @@ class ROSLaunchRunner(object):
         @type sigint_timeout: float
         @param sigterm_timeout: The SIGTERM timeout used when killing nodes if SIGINT does not stop the node (in seconds).
         @type sigterm_timeout: float
+        @raise RLException: If sigint_timeout or sigterm_timeout are nonpositive.
         """
         if run_id is None:
             raise RLException("run_id is None")
+        if sigint_timeout <= 0:
+            raise RLException("sigint_timeout must be a positive number, received %f" % sigint_timeout)
+        if sigterm_timeout <= 0:
+            raise RLException("sigterm_timeout must be a positive number, received %f" % sigterm_timeout)
+
         self.run_id = run_id
 
         # In the future we should can separate the notion of a core

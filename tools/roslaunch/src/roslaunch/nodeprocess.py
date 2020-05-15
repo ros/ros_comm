@@ -80,10 +80,10 @@ def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS
     @param master_logger_level: rosmaster.master logger debug level
     @type  master_logger_level=: str or False
     @param sigint_timeout: The SIGINT timeout used when killing nodes (in seconds).
-    @type sigint_timeout: int
+    @type sigint_timeout: float
     @param sigterm_timeout: The SIGTERM timeout used when killing nodes if SIGINT does not stop the node (in seconds).
-    @type sigterm_timeout: int
-    @raise RLException: if type_ or port is invalid
+    @type sigterm_timeout: float
+    @raise RLException: if type_ or port is invalid or sigint_timeout or sigterm_timeout are nonpositive.
     """
     if port < 1 or port > 65535:
         raise RLException("invalid port assignment: %s"%port)
@@ -104,7 +104,8 @@ def create_master_process(run_id, type_, ros_root, port, num_workers=NUM_WORKERS
 
     _logger.info("process[master]: launching with args [%s]"%args)
     log_output = False
-    return LocalProcess(run_id, package, 'master', args, os.environ, log_output, None, required=True, sigint_timeout=sigint_timeout, sigterm_timeout=sigterm_timeout)
+    return LocalProcess(run_id, package, 'master', args, os.environ, log_output, None, required=True,
+                        sigint_timeout=sigint_timeout, sigterm_timeout=sigterm_timeout)
 
 def create_node_process(run_id, node, master_uri, sigint_timeout=DEFAULT_TIMEOUT_SIGINT, sigterm_timeout=DEFAULT_TIMEOUT_SIGTERM):
     """
@@ -119,12 +120,13 @@ def create_node_process(run_id, node, master_uri, sigint_timeout=DEFAULT_TIMEOUT
     @param master_uri: API URI for master node
     @type  master_uri: str
     @param sigint_timeout: The SIGINT timeout used when killing nodes (in seconds).
-    @type sigint_timeout: int
+    @type sigint_timeout: float
     @param sigterm_timeout: The SIGTERM timeout used when killing nodes if SIGINT does not stop the node (in seconds).
-    @type sigterm_timeout: int
+    @type sigterm_timeout: float
     @return: local process instance
     @rtype: L{LocalProcess}
     @raise NodeParamsException: If the node's parameters are improperly specific
+    @raise RLException: If sigint_timeout or sigterm_timeout are nonpositive.
     """    
     _logger.info("create_node_process: package[%s] type[%s] machine[%s] master_uri[%s]", node.package, node.type, node.machine, master_uri)
     # check input args
@@ -194,16 +196,16 @@ class LocalProcess(Process):
         @param is_node: (optional) if True, process is ROS node and accepts ROS node command-line arguments. Default: True
         @type  is_node: False
         @param sigint_timeout: The SIGINT timeout used when killing nodes (in seconds).
-        @type sigint_timeout: int
+        @type sigint_timeout: float
         @param sigterm_timeout: The SIGTERM timeout used when killing nodes if SIGINT does not stop the node (in seconds).
-        @type sigterm_timeout: int
+        @type sigterm_timeout: float
+        @raise RLException: If sigint_timeout or sigterm_timeout are nonpositive.
         """    
         super(LocalProcess, self).__init__(package, name, args, env,
                 respawn, respawn_delay, required)
 
         if sigint_timeout <= 0:
             raise RLException("sigint_timeout must be a positive number, received %f" % sigint_timeout)
-
         if sigterm_timeout <= 0:
             raise RLException("sigterm_timeout must be a positive number, received %f" % sigterm_timeout)
 

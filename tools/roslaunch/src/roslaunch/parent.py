@@ -112,15 +112,20 @@ class ROSLaunchParent(object):
         @param force_required: (optional) whether to make all nodes required
         @type force_required: boolean
         @param sigint_timeout: The SIGINT timeout used when killing nodes (in seconds).
-        @type sigint_timeout: int
+        @type sigint_timeout: float
         @param sigterm_timeout: The SIGTERM timeout used when killing nodes if SIGINT does not stop the node (in seconds).
-        @type sigterm_timeout: int
+        @type sigterm_timeout: float
+        @raise RLException: If sigint_timeout or sigterm_timeout are nonpositive.
         """
-
+        if sigint_timeout <= 0:
+            raise RLException("sigint_timeout must be a positive number, received %f" % sigint_timeout)
+        if sigterm_timeout <= 0:
+            raise RLException("sigterm_timeout must be a positive number, received %f" % sigterm_timeout)
+        
         self.logger = logging.getLogger('roslaunch.parent')
         self.run_id = run_id
         self.process_listeners = process_listeners
-
+        
         self.roslaunch_files = roslaunch_files
         self.roslaunch_strs = roslaunch_strs
         self.is_core = is_core
