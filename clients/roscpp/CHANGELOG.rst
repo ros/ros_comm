@@ -2,8 +2,8 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.15.5 (2020-05-15)
+-------------------
 * check if async socket connect is success or failure before TransportTCP::read() and TransportTCP::write() (`#1954 <https://github.com/ros/ros_comm/issues/1954>`_)
 * fix bug that connection drop signal related funtion throw a bad_weak exception (`#1940 <https://github.com/ros/ros_comm/issues/1940>`_)
 * multiple latched publishers per process on the same topic (`#1544 <https://github.com/ros/ros_comm/issues/1544>`_)

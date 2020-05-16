@@ -2,8 +2,8 @@
 Changelog for package message_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.15.5 (2020-05-15)
+-------------------
 * clear message queue on simtime jumping back (`#1518 <https://github.com/ros/ros_comm/issues/1518>`_)
 
 1.15.4 (2020-03-19)
