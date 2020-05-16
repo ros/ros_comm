@@ -2,6 +2,13 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add --sigint-timeout and --sigterm-timeout parameters (`#1937 <https://github.com/ros/ros_comm/issues/1937>`_)
+* roslaunch-check: search dir recursively (`#1914 <https://github.com/ros/ros_comm/issues/1914>`_)
+* sort printed nodes by namespace alphabetically (`#1934 <https://github.com/ros/ros_comm/issues/1934>`_)
+* remove pycrypto import (not used) (`#1922 <https://github.com/ros/ros_comm/issues/1922>`_)
+
 1.15.4 (2020-03-19)
 -------------------
 

@@ -2,6 +2,9 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.15.4 (2020-03-19)
 -------------------
 * restrict boost dependencies to components used (`#1871 <https://github.com/ros/ros_comm/issues/1871>`_)

@@ -2,6 +2,14 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* check if async socket connect is success or failure before TransportTCP::read() and TransportTCP::write() (`#1954 <https://github.com/ros/ros_comm/issues/1954>`_)
+* fix bug that connection drop signal related funtion throw a bad_weak exception (`#1940 <https://github.com/ros/ros_comm/issues/1940>`_)
+* multiple latched publishers per process on the same topic (`#1544 <https://github.com/ros/ros_comm/issues/1544>`_)
+* fix negative numbers in ros statistics (`#1531 <https://github.com/ros/ros_comm/issues/1531>`_)
+* remove extra \n in ROS_DEBUG (`#1925 <https://github.com/ros/ros_comm/issues/1925>`_)
+
 1.15.4 (2020-03-19)
 -------------------
 * restrict boost dependencies to components used (`#1871 <https://github.com/ros/ros_comm/issues/1871>`_)

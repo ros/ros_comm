@@ -2,6 +2,10 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* check if enough FDs are free, instead counting the total free FDs (`#1929 <https://github.com/ros/ros_comm/issues/1929>`_)
+
 1.15.4 (2020-03-19)
 -------------------
 * restrict boost dependencies to components used (`#1871 <https://github.com/ros/ros_comm/issues/1871>`_)

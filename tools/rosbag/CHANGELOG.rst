@@ -2,6 +2,11 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add option to repeat latched messages at the start of bag splits (`#1850 <https://github.com/ros/ros_comm/issues/1850>`_)
+* fix bag migration failures caused by typo in connection_header assignment (`#1952 <https://github.com/ros/ros_comm/issues/1952>`_)
+
 1.15.4 (2020-03-19)
 -------------------
 * restrict boost dependencies to components used (`#1871 <https://github.com/ros/ros_comm/issues/1871>`_)

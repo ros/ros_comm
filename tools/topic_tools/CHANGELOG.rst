@@ -2,6 +2,11 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* avoid infinite recursion in rosrun tab completion when rosbash is not installed (`#1948 <https://github.com/ros/ros_comm/issues/1948>`_)
+* fix bare pointer in topic_tools::ShapeShifter (`#1722 <https://github.com/ros/ros_comm/issues/1722>`_)
+
 1.15.4 (2020-03-19)
 -------------------
 
