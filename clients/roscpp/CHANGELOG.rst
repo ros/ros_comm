@@ -2,8 +2,8 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.15.6 (2020-05-21)
+-------------------
 * fix a bug that using a destroyed connection object (`#1950 <https://github.com/ros/ros_comm/issues/1950>`_)
 
 1.15.5 (2020-05-15)
