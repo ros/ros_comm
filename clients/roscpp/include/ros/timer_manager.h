@@ -594,12 +594,7 @@ void TimerManager<T, D, E>::threadFunc()
       {
         // On system time we can simply sleep for the rest of the wait time, since anything else requiring processing will
         // signal the condition variable
-        typename TimerManagerTraits<T>::time_point end_tp(
-          boost::chrono::duration_cast<typename TimerManagerTraits<T>::duration>(
-            boost::chrono::nanoseconds(sleep_end.toNSec())
-          )
-        );
-        timers_cond_.wait_until(lock, end_tp);
+        timers_cond_.wait_for(lock, boost::chrono::nanoseconds((sleep_end - current).toNSec()));
       }
     }
 
