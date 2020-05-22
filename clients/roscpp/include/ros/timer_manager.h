@@ -46,24 +46,6 @@
 namespace ros
 {
 
-namespace {
-  template<class T>
-  class TimerManagerTraits
-  {
-  public:
-    typedef boost::chrono::system_clock::time_point time_point;
-    typedef boost::chrono::system_clock::duration duration;
-  };
-
-  template<>
-  class TimerManagerTraits<SteadyTime>
-  {
-  public:
-    typedef boost::chrono::steady_clock::time_point time_point;
-    typedef boost::chrono::steady_clock::duration duration;
-  };
-}
-
 template<class T, class D, class E>
 class TimerManager
 {
