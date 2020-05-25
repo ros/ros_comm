@@ -41,8 +41,8 @@
 
   <exec_depend>genmsg</exec_depend>
   <exec_depend>genpy</exec_depend>
-  <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-pycryptodome</exec_depend>
-  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-pycryptodome</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-pycryptodomex</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-pycryptodomex</exec_depend>
   <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-gnupg</exec_depend>
   <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-gnupg</exec_depend>
   <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-rospkg</exec_depend>
