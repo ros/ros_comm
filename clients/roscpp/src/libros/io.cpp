@@ -416,9 +416,9 @@ int is_async_connected(socket_fd_t &socket, int &err) {
                (!FD_ISSET(socket, &wfds) && FD_ISSET(socket, &exceptfds)));
     if (FD_ISSET(socket, &exceptfds)) {
       // an error occurred during connection
-      int errinfo;
+      int errinfo = 0;
       socklen_t errlen = sizeof(int);
-      if (getsockopt(socket, SOL_SOCKET, SO_ERROR, &errinfo, &errlen) == -1)
+      if (getsockopt(socket, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&errinfo), &errlen) == -1)
       {
         // getsockopt() error
         ROSCPP_CONN_LOG_DEBUG("getsockopt() on socket[%d] failed with error [%s]",
