@@ -2,6 +2,9 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.14.5 (2020-03-19)
 -------------------
 * add exception for ConnectionAbortedError (`#1908 <https://github.com/ros/ros_comm/issues/1908>`_)

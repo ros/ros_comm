@@ -2,6 +2,11 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix a bug that using a destroyed connection object (`#1950 <https://github.com/ros/ros_comm/issues/1950>`_)
+* remove extra n in ROS_DEBUG (`#1925 <https://github.com/ros/ros_comm/issues/1925>`_)
+
 1.14.5 (2020-03-19)
 -------------------
 
