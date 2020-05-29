@@ -4,7 +4,7 @@
   schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>test_rosparam</name>
-  <version>1.14.5</version>
+  <version>1.14.6</version>
   <description>
     A package containing the unit tests for rosparam.
   </description>

@@ -1,6 +1,6 @@
 <package>
   <name>test_roslib_comm</name>
-  <version>1.14.5</version>
+  <version>1.14.6</version>
   <description>
     Unit tests verifying that roslib is operating as expected.
   </description>

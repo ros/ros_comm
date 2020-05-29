@@ -2,8 +2,8 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.14.6 (2020-05-29)
+-------------------
 * fix NameError in launch error handling (`#1965 <https://github.com/ros/ros_comm/issues/1965>`_)
 * sort printed nodes by namespace alphabetically (`#1934 <https://github.com/ros/ros_comm/issues/1934>`_)
 * remove pycrypto import (not used) (`#1922 <https://github.com/ros/ros_comm/issues/1922>`_)
