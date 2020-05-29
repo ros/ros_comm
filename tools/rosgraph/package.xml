@@ -4,7 +4,7 @@
   schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
  <name>rosgraph</name>
-  <version>1.15.6</version>
+  <version>1.15.7</version>
   <description>
     rosgraph contains the rosgraph command-line tool, which prints
     information about the ROS Computation Graph. It also provides an
