@@ -218,8 +218,10 @@ def _validate_args(parser, options, args):
 
     elif len(args) == 0:
         parser.error("you must specify at least one input file")
-    elif [f for f in args if not (f == '-' or os.path.exists(f))]:
-        parser.error("The following input files do not exist: %s"%f)
+    else:
+        missing_files = [f for f in args if not (f == '-' or os.path.exists(f))]
+        if missing_files:
+            parser.error("The following input files do not exist: %s"%', '.join(missing_files))
 
     if args.count('-') > 1:
         parser.error("Only a single instance of the dash ('-') may be specified.")
