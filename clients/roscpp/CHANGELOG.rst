@@ -2,6 +2,10 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix Windows build break (`#1961 <https://github.com/ros/ros_comm/issues/1961>`_) (regression from 1.15.5)
+
 1.15.6 (2020-05-21)
 -------------------
 * fix a bug that using a destroyed connection object (`#1950 <https://github.com/ros/ros_comm/issues/1950>`_)
