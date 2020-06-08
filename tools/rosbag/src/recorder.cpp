@@ -454,6 +454,13 @@ void Recorder::startWriting() {
 }
 
 void Recorder::stopWriting() {
+    for (const auto& topic : options_.custom_record_freq)
+    {
+        if (topic.second == ros::Duration(-2))
+        {
+            currently_recording_.erase(topic.first);
+        }
+    }
     ROS_INFO("Closing %s.", target_filename_.c_str());
     bag_.close();
     rename(write_filename_.c_str(), target_filename_.c_str());
