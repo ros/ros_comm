@@ -45,6 +45,11 @@ import rosunit
 
 import rosgraph
 
+try:
+    from importlib import reload
+except ImportError:
+    pass
+
 XML_OUTPUT_FLAG = '--gtest_output=xml:' #use gtest-compatible flag
 
 _GLOBAL_CALLER_ID = '/script'
