@@ -274,7 +274,7 @@ def main(argv=sys.argv):
             elif options.file_list:
                 rlutil.print_file_list(args)
             elif options.ros_args:
-                import arg_dump as roslaunch_arg_dump
+                from . import arg_dump as roslaunch_arg_dump
                 roslaunch_arg_dump.dump_args(args)
             else:
                 node_args.print_node_list(args)
