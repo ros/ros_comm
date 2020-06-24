@@ -1055,7 +1055,7 @@ class _PublisherImpl(_TopicImpl):
         else:
             conns = [connection_override]
 
-        # #2128 test our buffer. I don't now how this got closed in
+        # #2128 test our buffer. I don't know how this got closed in
         # that case, but we can at least diagnose the problem.
         b = self.buff
         try:
