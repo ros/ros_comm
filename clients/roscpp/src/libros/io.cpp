@@ -380,6 +380,31 @@ pollfd_vector_ptr poll_sockets(int epfd, socket_pollfd *fds, nfds_t nfds, int ti
  * @return int : 1 on connected, 0 on connecting, -1 on failure.
  */
 int is_async_connected(socket_fd_t &socket, int &err) {
+#ifdef HAVE_EPOLL
+    int nfds = 1;
+    int epfd = create_socket_watcher();
+    add_socket_to_watcher(epfd, socket);
+    set_events_on_socket(epfd, socket, EPOLLIN | EPOLLOUT);
+    struct epoll_event ev[nfds];
+    int fd_cnt = ::epoll_wait(epfd, ev, nfds, 0);
+    close_socket_watcher(epfd);
+    if (fd_cnt < 0) {
+      if (errno != EINTR) {
+        ROS_ERROR("Error in epoll_wait! %s", strerror(errno));
+        err = errno;
+        return -1;
+      }
+    } else if (fd_cnt == 0) {
+      err = 0;
+      return 0;
+    } else if (ev[0].events & EPOLLERR || ev[0].events & EPOLLHUP) {
+      // attempt to retrieve the error on the file descriptor epoll is waiting on
+      err = 0;
+      socklen_t errlen = sizeof(err);
+      getsockopt(socket, SOL_SOCKET, SO_ERROR, (void *)&err, &errlen);
+      return -1;
+    }
+#else // HAVE_EPOLL
     // use zero-timeout select to check if async socket
     fd_set wfds, exceptfds;
     FD_ZERO(&wfds);
@@ -433,7 +458,7 @@ int is_async_connected(socket_fd_t &socket, int &err) {
       err = errinfo;
       return -1;
     }
-#else
+#else // WIN32
     // In Linux:
     //    Both success and failure is reported in the writefds set.
     //    We must use getsockopt() to read the SO_ERROR option at level SOL_SOCKET to determine whether
@@ -463,7 +488,8 @@ int is_async_connected(socket_fd_t &socket, int &err) {
       err = errinfo;
       return -1;
     }
-#endif
+#endif // WIN32
+#endif // HAVE_EPOLL
     err = 0;
     return 1;
 }
