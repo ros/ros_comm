@@ -43,38 +43,6 @@
 #include <std_msgs/builtin_bool.h>
 
 
-TEST(MultipleLatchedPublishers, PublisherIncompatibleAdvertise)
-{
-  {
-    ros::NodeHandle nh;
-    auto pub1 = nh.advertise<bool>("foo", 10, true);
-    auto pub2 = nh.advertise<bool>("foo", 10, false);
-    EXPECT_TRUE(pub1);
-    EXPECT_FALSE(pub2);
-  }
-  {
-    ros::NodeHandle nh;
-    auto pub1 = nh.advertise<bool>("foo", 10, false);
-    auto pub2 = nh.advertise<bool>("foo", 10, true);
-    EXPECT_TRUE(pub1);
-    EXPECT_FALSE(pub2);
-  }
-  {
-    ros::NodeHandle nh;
-    auto pub1 = nh.advertise<bool>("foo", 10, true);
-    auto pub2 = nh.advertise<bool>("foo", 10, true);
-    EXPECT_TRUE(pub1);
-    EXPECT_TRUE(pub2);
-  }
-  {
-    ros::NodeHandle nh;
-    auto pub1 = nh.advertise<bool>("foo", 10, false);
-    auto pub2 = nh.advertise<bool>("foo", 10, false);
-    EXPECT_TRUE(pub1);
-    EXPECT_TRUE(pub2);
-  }
-}
-
 TEST(MultipleLatchedPublishers, LatchedPublisherReceiveMultiple)
 {
   ros::NodeHandle nh;
@@ -83,8 +51,15 @@ TEST(MultipleLatchedPublishers, LatchedPublisherReceiveMultiple)
     nh.advertise<bool>("foo", 10, true),
     nh.advertise<bool>("foo", 10, true),
   };
+  std::vector<ros::Publisher> unlatched_publishers = {
+    nh.advertise<bool>("foo", 10, false),
+    nh.advertise<bool>("foo", 10, false),
+  };
 
   for (auto& pub : latched_publishers) {
+    pub.publish(true);
+  }
+  for (auto& pub : unlatched_publishers) {
     pub.publish(true);
   }
 

@@ -346,13 +346,6 @@ bool TopicManager::advertise(const AdvertiseOptions& ops, const SubscriberCallba
         return false;
       }
 
-      if (pub->isLatched() != ops.latch)
-      {
-        ROS_ERROR("Tried to advertise on topic [%s] with latch=%d but the topic is already advertised with latch=%d",
-                  ops.topic.c_str(), ops.latch, pub->isLatched());
-        return false;
-      }
-
       pub->addCallbacks(callbacks);
 
       return true;
