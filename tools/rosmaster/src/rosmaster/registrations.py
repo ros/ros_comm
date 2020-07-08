@@ -464,7 +464,7 @@ class RegistrationManager(object):
             else:
                 bumped_api = node_ref.api
                 self.thread_pool.queue_task(bumped_api, shutdown_node_task,
-                                            (bumped_api, caller_id, "new node registered with same name"))
+                                            (bumped_api, caller_id, "new node registered with same name {}".format(node_ref.id)))
 
         node_ref = NodeRef(caller_id, caller_api)
         self.nodes[caller_id] = node_ref
