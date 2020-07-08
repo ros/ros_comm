@@ -303,9 +303,14 @@ class XmlLoader(loader.Loader):
             params_restore_point = copy.deepcopy(context.params)
             resolve_dict_restore_point = copy.deepcopy(context.resolve_dict)
             # Use context to emulate get_param functionality in substitution_args
-            for key,v in ros_config.params.items():
-                p = Param(key,v)
-                context.add_param(p)
+            if ros_config.params:
+                if type(ros_config.params) is list:
+                    for p in ros_config.params:
+                        context.add_param(p)
+                else: # implies map
+                    for key,v in ros_config.params.items():
+                        p = Param(key,v)
+                        context.add_param(p)
             value, default, doc = self.opt_attrs(tag, context, ('value', 'default', 'doc'))
             context.params = copy.deepcopy(params_restore_point)
             context.resolve_dict = copy.deepcopy(resolve_dict_restore_point)
