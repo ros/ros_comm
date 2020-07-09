@@ -322,7 +322,13 @@ class TestXmlLoader(unittest.TestCase):
         self.assertAlmostEquals(p.value, math.pi)
         p = [p for p in mock.params if p.key == '/dict_rad/rad2pi'][0]
         self.assertAlmostEquals(p.value, 2 * math.pi)
-                    
+
+        p = [p for p in mock.params if p.key == '/get_from_launch_param'][0]
+        self.assertAlmostEquals(3.7231, p.value)
+
+        p = [p for p in mock.params if p.key == '/param_subst_test_for_tags'][0]
+        self.assertEquals('bar', p.value)
+
         # rosparam file also contains empty params
         mock = self._load(os.path.join(self.xml_dir, 'test-rosparam-empty.xml'))
         self.assertEquals([], mock.params)
