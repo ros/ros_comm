@@ -290,8 +290,8 @@ class XmlLoader(loader.Loader):
 
             # compute name and value
             ptype = (tag.getAttribute('type') or 'auto').lower().strip()
-            
-            vals = self.opt_attrs(tag, context, ('value', 'textfile', 'binfile', 'command'))
+            opt_attrs_fn = lambda ctx: self.opt_attrs(tag, ctx, ('value', 'textfile', 'binfile', 'command'))
+            vals = self._exec_fn_with_tmp_ctx(context, ros_config, opt_attrs_fn)
             if len([v for v in vals if v is not None]) != 1:
                 raise XmlParseException(
                     "<param> tag must have one and only one of value/textfile/binfile.")
