@@ -23,4 +23,5 @@
     <param name="$(arg param4_name)_test" value="$(arg include_arg)" />
   </group>
 
+  <param name="param_for_other_include" value="p5"/>
 </launch>
