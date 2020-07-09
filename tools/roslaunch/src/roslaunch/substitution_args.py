@@ -306,11 +306,11 @@ def _param(resolved, a, args, context):
         raise SubstitutionException("$(param var) must specify a variable name [%s]"%(a))
     elif len(args) > 1:
         raise SubstitutionException("$(param var) may only specify one arg [%s]"%(a))
-    
+
     resolve_arg = '/'+args[0]
     for param in context['param']:
         if param.key==resolve_arg:
-            return resolved.replace("$(%s)" % a, str(param.value.value)) # +2 for equals sign
+            return resolved.replace("$(%s)" % a, str(param.value)) # +2 for equals sign
 
 # Create a dictionary of global symbols that will be available in the eval
 # context.  We disable all the builtins, then add back True and False, and also
@@ -411,7 +411,7 @@ def resolve_args(arg_str, context=None, resolve_anon=True, filename=None):
     return resolved
 
 def _resolve_args(arg_str, context, resolve_anon, commands):
-    valid = ['find', 'env', 'optenv', 'dirname', 'anon', 'arg','param']
+    valid = ['find', 'env', 'optenv', 'dirname', 'anon', 'arg', 'param']
     resolved = arg_str
     for a in _collect_args(arg_str):
         splits = [s for s in a.split(' ') if s]

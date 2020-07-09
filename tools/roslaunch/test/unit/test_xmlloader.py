@@ -954,7 +954,12 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEquals(param_d['/include3/include_test/p2_test'], 'optional3')
         self.assertEquals(param_d['/include3/include_test/p3_test'], 'set')
         self.assertEquals(param_d['/include3/include_test/p4_test'], 'new3')
-        
+
+        self.assertEquals(param_d['/arg_fetched_from_param'], True)
+        self.assertEquals(param_d['/arg_fetched_from_param2'], True)
+
+        self.assertEquals(param_d['/composite_param'], 'do_not_go_gentle_into_that_good_night')
+
     # Test the new attribute <include pass_all_args={"true"|"false"}>
     def test_arg_all(self):
         loader = roslaunch.xmlloader.XmlLoader()

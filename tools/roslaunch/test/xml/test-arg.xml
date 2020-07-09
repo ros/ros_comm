@@ -94,5 +94,20 @@
     <arg name="optional" value="optional3" />
     <arg name="include_arg" value="new3" />
   </include>
-  
+
+  <param name="use_for_arg" value="test_param_arg_subst"/>
+  <arg name="from_param" value="$(param use_for_arg)"/>
+  <param name="arg_fetched_from_param" value="true" if="$(eval arg('from_param') == 'test_param_arg_subst')"/>
+  <param name="arg_fetched_from_param" value="false" unless="$(eval arg('from_param') == 'test_param_arg_subst')"/>
+
+  <arg name="from_other_launch_param" value="$(param param_for_other_include)"/>
+  <param name="arg_fetched_from_param2" value="true" if="$(eval arg('from_other_launch_param') == 'p5')"/>
+  <param name="arg_fetched_from_param2" value="false" unless="$(eval arg('from_other_launch_param') == 'p5')"/>
+
+  <param name="first_part" value="do_not"/>
+  <param name="second_part" value="go_gentle"/>
+  <param name="third_part" value="into_that"/>
+  <param name="fourth_part" value="good_night"/>
+  <arg name="from_multiple_params" value="$(param first_part)_$(param second_part)_$(param third_part)_$(param fourth_part)"/>
+  <param name="composite_param" value="$(arg from_multiple_params)"/>
 </launch>
