@@ -228,6 +228,29 @@ class XmlLoader(loader.Loader):
             if not t_a in attrs and not t_a in ['if', 'unless']:
                 ros_config.add_config_error("[%s] unknown <%s> attribute '%s'"%(context.filename, tag.tagName, t_a))
 
+    def _exec_fn_with_tmp_ctx(self, context, ros_config, fn):
+        """
+        Helper routine for executing functions in a context overwritten with ros config values.
+        @param context: LoaderContext
+        @param ros_config: launch configuration to load XML file into
+        @type  ros_config: L{ROSLaunchConfig}
+        @param fn: Generic function which takes context as its argument
+        @return: output of fn.
+        """
+        params_restore_point = copy.deepcopy(context.params)
+        resolve_dict_restore_point = copy.deepcopy(context.resolve_dict)
+        # Use context to emulate get_param functionality in substitution_args
+        if ros_config.params:
+            if type(ros_config.params) is list:
+                for p in ros_config.params:
+                    context.add_param(p)
+
+        retval = fn(context)
+
+        context.params = copy.deepcopy(params_restore_point)
+        context.resolve_dict = copy.deepcopy(resolve_dict_restore_point)
+        return retval
+
     # 'ns' attribute is now deprecated and is an alias for
     # 'param'. 'param' is required if the value is a non-dictionary
     # type
@@ -240,14 +263,16 @@ class XmlLoader(loader.Loader):
             subst_value = _bool_attr(subst_value, False, 'subst_value')
             # ns atribute is a bit out-moded and is only left in for backwards compatibility
             param = ns_join(ns or '', param or '')
-            
-            # load is the default command            
+
+            # load is the default command
             cmd = cmd or 'load'
             value = _get_text(tag)
             subst_function = None
             if subst_value:
                 subst_function = lambda x: self.resolve_args(x, context)
-            self.load_rosparam(context, ros_config, cmd, param, file, value, verbose=verbose, subst_function=subst_function)
+            load_rosparam_fn = lambda x: self.load_rosparam(x, ros_config, cmd, param, file, value, verbose=verbose,
+                subst_function=subst_function)
+            self._exec_fn_with_tmp_ctx(context, ros_config, load_rosparam_fn)
 
         except ValueError as e:
             raise loader.LoadException("error loading <rosparam> tag: \n\t"+str(e)+"\nXML is %s"%tag.toxml())
@@ -299,21 +324,10 @@ class XmlLoader(loader.Loader):
         try:
             self._check_attrs(tag, context, ros_config, XmlLoader.ARG_ATTRS)
             (name,) = self.reqd_attrs(tag, context, ('name',))
-            
-            params_restore_point = copy.deepcopy(context.params)
-            resolve_dict_restore_point = copy.deepcopy(context.resolve_dict)
-            # Use context to emulate get_param functionality in substitution_args
-            if ros_config.params:
-                if type(ros_config.params) is list:
-                    for p in ros_config.params:
-                        context.add_param(p)
-                else: # implies map
-                    for key,v in ros_config.params.items():
-                        p = Param(key,v)
-                        context.add_param(p)
-            value, default, doc = self.opt_attrs(tag, context, ('value', 'default', 'doc'))
-            context.params = copy.deepcopy(params_restore_point)
-            context.resolve_dict = copy.deepcopy(resolve_dict_restore_point)
+
+            opt_attrs_fn =  lambda x: self.opt_attrs(tag, x, ('value', 'default', 'doc'))
+            value, default, doc = self._exec_fn_with_tmp_ctx(context, ros_config, opt_attrs_fn)
+
             # Restore it to valid state.
             # This is an isolated function that only manipulates the element <arg>.
             # Therefore, it is impossible to violate any to be loaded ROS parameters.
