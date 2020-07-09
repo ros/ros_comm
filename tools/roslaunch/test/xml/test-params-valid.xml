@@ -45,5 +45,8 @@
   <!-- test that we can override params -->
   <param name="override" value="fail" />
   <param name="override" value="pass" />
+
+  <param name="base_param" value="a base param"/>
+  <param name="param_from_param" value="$(param base_param) can be extended"/>
   
 </launch>
