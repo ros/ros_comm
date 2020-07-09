@@ -61,6 +61,13 @@
   <rosparam file="$(find roslaunch)/test/params_empty2.yaml" command="load" />
   <rosparam command="load"/>
 
+  <param name="for_rosparam" value="3.7231" type="double"/>
+  <rosparam param="get_from_launch_param" subst_value="True">$(param for_rosparam)</rosparam>
+
+  <param name="file_from_param" value="params_load_subst"/>
+  <rosparam file="$(find roslaunch)/test/$(param file_from_param).yaml" subst_value="True"/>
+
+
 
 </launch>
 

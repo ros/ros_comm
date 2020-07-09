@@ -259,7 +259,8 @@ class XmlLoader(loader.Loader):
     def _rosparam_tag(self, tag, context, ros_config, verbose=True):
         try:
             self._check_attrs(tag, context, ros_config, XmlLoader.ROSPARAM_OPT_ATTRS)
-            cmd, ns, file, param, subst_value = self.opt_attrs(tag, context, (XmlLoader.ROSPARAM_OPT_ATTRS))
+            opt_attrs_fn = lambda ctx: self.opt_attrs(tag, ctx, (XmlLoader.ROSPARAM_OPT_ATTRS))
+            cmd, ns, file, param, subst_value = self._exec_fn_with_tmp_ctx(context, ros_config, opt_attrs_fn)
             subst_value = _bool_attr(subst_value, False, 'subst_value')
             # ns atribute is a bit out-moded and is only left in for backwards compatibility
             param = ns_join(ns or '', param or '')
@@ -270,7 +271,7 @@ class XmlLoader(loader.Loader):
             subst_function = None
             if subst_value:
                 subst_function = lambda x: self.resolve_args(x, context)
-            load_rosparam_fn = lambda x: self.load_rosparam(x, ros_config, cmd, param, file, value, verbose=verbose,
+            load_rosparam_fn = lambda ctx: self.load_rosparam(ctx, ros_config, cmd, param, file, value, verbose=verbose,
                 subst_function=subst_function)
             self._exec_fn_with_tmp_ctx(context, ros_config, load_rosparam_fn)
 
