@@ -224,6 +224,8 @@ class TestXmlLoader(unittest.TestCase):
             p = [p for p in mock.params if p.key == '/commandoutput'][0]
             self.assertEquals(contents, p.value, 1)
         
+        p = [p for p in mock.params if p.key == '/param_from_param'][0]
+        self.assertEquals("a base param can be extended", p.value)
         
     def test_rosparam_valid(self):
         mock = self._load(os.path.join(self.xml_dir, 'test-rosparam-valid.xml'))
