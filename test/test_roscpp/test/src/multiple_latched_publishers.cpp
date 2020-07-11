@@ -40,6 +40,7 @@
 
 #include <gtest/gtest.h>
 #include "ros/ros.h"
+#include "ros/topic_manager.h"
 #include <std_msgs/builtin_bool.h>
 
 
@@ -77,6 +78,34 @@ TEST(MultipleLatchedPublishers, LatchedPublisherReceiveMultiple)
   const auto received = received_future.get();
   EXPECT_TRUE(received);
   EXPECT_EQ(latched_publishers.size(), msg_count);
+}
+
+TEST(MultipleLatchedPublishers, TopicManagerIsLatched)
+{
+  ros::NodeHandle nh;
+  std::vector<ros::Publisher> publishers_bar = {
+    nh.advertise<bool>("bar", 10, false),
+    nh.advertise<bool>("bar", 10, true),
+    nh.advertise<bool>("bar", 10, false),
+  };
+  EXPECT_TRUE(ros::TopicManager::instance()->isLatched("/bar"));
+
+  std::vector<ros::Publisher> publishers_baz = {
+    nh.advertise<bool>("baz", 10, false),
+    nh.advertise<bool>("baz", 10, false),
+  };
+  EXPECT_FALSE(ros::TopicManager::instance()->isLatched("/baz"));
+}
+
+TEST(MultipleLatchedPublishers, TopicManagerLatchShutdown)
+{
+  ros::NodeHandle nh;
+  ros::Publisher qux_latched = nh.advertise<bool>("qux", 10, true);
+  ros::Publisher qux_unlatched = nh.advertise<bool>("qux", 10, false);
+  EXPECT_TRUE(ros::TopicManager::instance()->isLatched("/qux"));
+
+  qux_latched.shutdown();
+  EXPECT_FALSE(ros::TopicManager::instance()->isLatched("/qux"));
 }
 
 int main(int argc, char **argv) {

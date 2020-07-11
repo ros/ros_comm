@@ -58,7 +58,7 @@ public:
             const std::string& _md5sum,
             const std::string& message_definition,
             size_t max_queue,
-            bool latch,
+            bool /* unused */,
             bool has_header);
 
   ~Publication();

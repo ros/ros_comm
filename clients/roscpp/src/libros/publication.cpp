@@ -78,7 +78,7 @@ Publication::Publication(const std::string &name,
                          const std::string &_md5sum,
                          const std::string& message_definition,
                          size_t max_queue,
-                         bool latch,
+                         bool /* unused */,
                          bool has_header)
 : name_(name),
   datatype_(datatype),
@@ -87,7 +87,7 @@ Publication::Publication(const std::string &name,
   max_queue_(max_queue),
   seq_(0),
   dropped_(false),
-  latch_(latch),
+  latch_(false),
   has_header_(has_header),
   intraprocess_subscriber_count_(0)
 {
@@ -117,6 +117,12 @@ void Publication::addCallbacks(const SubscriberCallbacksPtr& callbacks)
       callbacks->callback_queue_->addCallback(cb, (uint64_t)callbacks.get());
     }
   }
+
+  // Publication singleton is latched if any of its callbacks have a latched message handler.
+  if (callbacks->push_latched_message_)
+  {
+    latch_ = true;
+  }
 }
 
 void Publication::removeCallbacks(const SubscriberCallbacksPtr& callbacks)
@@ -132,6 +138,22 @@ void Publication::removeCallbacks(const SubscriberCallbacksPtr& callbacks)
       cb->callback_queue_->removeByID((uint64_t)cb.get());
     }
     callbacks_.erase(it);
+  }
+
+  // IF the removed callbacks was latched, check for remaining latched callbacks,
+  // and if none remain, clear the latch status on the publication singleton.
+  if (callbacks->push_latched_message_)
+  {
+    V_Callback::iterator it = callbacks_.begin();
+    V_Callback::iterator end = callbacks_.end();
+    for (; it != end; ++it)
+    {
+      if ((*it)->push_latched_message_)
+      {
+        return;
+      }
+    }
+    latch_ = false;
   }
 }
 
