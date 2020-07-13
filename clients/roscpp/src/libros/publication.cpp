@@ -393,6 +393,12 @@ uint32_t Publication::getNumSubscribers()
   return (uint32_t)subscriber_links_.size();
 }
 
+bool Publication::isLatched()
+{
+  boost::mutex::scoped_lock lock(callbacks_mutex_);
+  return latch_;
+}
+
 void Publication::getPublishTypes(bool& serialize, bool& nocopy, const std::type_info& ti)
 {
   boost::mutex::scoped_lock lock(subscriber_links_mutex_);

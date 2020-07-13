@@ -115,7 +115,7 @@ public:
    */
   uint32_t getSequence() { return seq_; }
 
-  bool isLatched() { return latch_; }
+  bool isLatched();
 
   /**
    * \brief Adds a publisher to our list
@@ -139,7 +139,7 @@ public:
 
   size_t getNumCallbacks();
 
-  bool isLatching() { return latch_; }
+  bool isLatching() { return isLatched(); }
 
   void publish(SerializedMessage& m);
   void processPublishQueue();
