@@ -350,6 +350,13 @@ class TestXmlLoader(unittest.TestCase):
     def test_node_valid(self):
         nodes = self._load_valid_nodes([])
 
+    def test_node_with_subst(self):
+        mock = self._load(os.path.join(self.xml_dir, 'test-node-valid.xml'))
+        node_names = []
+        for node in mock.nodes:
+            node_names.append(node.name)
+        self.assert_("param_test_node" in node_names)
+
     def test_rostest_valid(self):
         nodes = self._load_valid_rostests([])
         

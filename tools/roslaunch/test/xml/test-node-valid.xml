@@ -78,5 +78,7 @@
 
   <node name="n30" pkg="package" type="test_launch_prefix" launch-prefix="xterm -e gdb --args" />
   
+  <param name="node_name" value="param_test_node"/>
+  <node pkg="package" type="test_param" name="$(param node_name)"/>
 </launch>
 
