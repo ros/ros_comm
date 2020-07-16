@@ -629,7 +629,8 @@ class XmlLoader(loader.Loader):
     @ifunless
     def _include_tag(self, tag, context, ros_config, default_machine, is_core, verbose):
         self._check_attrs(tag, context, ros_config, XmlLoader.INCLUDE_ATTRS)
-        inc_filename = self.resolve_args(tag.attributes['file'].value, context)
+        inc_filename_fn =  lambda x: self.resolve_args(tag.attributes['file'].value, x)
+        inc_filename = self._exec_fn_with_tmp_ctx(context, ros_config, inc_filename_fn)
 
         if tag.hasAttribute('pass_all_args'):
             pass_all_args = self.resolve_args(tag.attributes['pass_all_args'].value, context)
