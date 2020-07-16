@@ -34,5 +34,9 @@
 
   <node name="n6" pkg="pkg" type="node6" />
 
+  <param name="subst_topic" value="bar"/>
+  <node name="n7" pkg="pkg" type="node7">
+    <remap from="foo" to="$(param subst_topic)"/>
+  </node>
   
 </launch>

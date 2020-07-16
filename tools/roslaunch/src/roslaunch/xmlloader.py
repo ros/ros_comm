@@ -558,7 +558,8 @@ class XmlLoader(loader.Loader):
     def _remap_tag(self, tag, context, ros_config):
         try:
             self._check_attrs(tag, context, ros_config, XmlLoader.REMAP_ATTRS)
-            return self.reqd_attrs(tag, context, XmlLoader.REMAP_ATTRS)
+            reqd_attrs_fn =  lambda x: self.reqd_attrs(tag, x,  XmlLoader.REMAP_ATTRS)
+            return self._exec_fn_with_tmp_ctx(context, ros_config, reqd_attrs_fn)
         except KeyError as e:
             raise XmlParseException("<remap> tag is missing required from/to attributes: %s"%tag.toxml())
         
