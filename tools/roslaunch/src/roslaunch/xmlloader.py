@@ -237,7 +237,6 @@ class XmlLoader(loader.Loader):
         @return: output of fn.
         """
         params_restore_point = copy.deepcopy(context.params)
-        resolve_dict_restore_point = copy.deepcopy(context.resolve_dict)
         # Use context to emulate get_param functionality in substitution_args
         if ros_config.params:
             if type(ros_config.params) is list:
@@ -247,7 +246,6 @@ class XmlLoader(loader.Loader):
         retval = fn(context)
 
         context.params = copy.deepcopy(params_restore_point)
-        context.resolve_dict = copy.deepcopy(resolve_dict_restore_point)
         return retval
 
     # 'ns' attribute is now deprecated and is an alias for
