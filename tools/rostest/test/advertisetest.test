@@ -1,12 +1,12 @@
 <launch>
-  <node pkg="rostopic" type="rostopic" name="freq_topic_pub" args="pub /frequent_topic std_msgs/Bool 'data: false' -r 10" />
-  <node pkg="rostopic" type="rostopic" name="once_topic_pub" args="pub /once_topic std_msgs/Bool 'data: false' -1l" />
+  <node pkg="rostest" type="talker.py" name="freq_topic_pub"/>
+  <node pkg="rostest" type="publish_once.py" name="once_topic_pub"/>
   <node pkg="rostest" type="service_server.py" name="service_server"/>
 
   <test test-name="advertisetest_test" pkg="rostest" type="advertisetest" time-limit="7.0" retry="3">
     <rosparam>
       topics:
-      - name: /frequent_topic
+      - name: /chatter
         timeout: 2.
       - name: /once_topic
         type: std_msgs/Bool
