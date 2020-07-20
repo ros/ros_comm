@@ -57,6 +57,8 @@ bool g_use_messages;
 ros::Time g_last_time;
 bool g_use_wallclock;
 bool g_lazy;
+bool g_force_latch = false;
+bool g_force_latch_value = true;
 ros::TransportHints g_th;
 
 class Sent
@@ -87,6 +89,21 @@ void conn_cb(const ros::SingleSubscriberPublisher&)
   }
 }
 
+bool is_latching(const boost::shared_ptr<const ros::M_string>& connection_header)
+{
+  if (connection_header)
+  {
+    ros::M_string::const_iterator it = connection_header->find("latching");
+    if ((it != connection_header->end()) && (it->second == "1"))
+    {
+      ROS_DEBUG("input topic is latched; latching output topic to match");
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void in_cb(const ros::MessageEvent<ShapeShifter>& msg_event)
 {
   boost::shared_ptr<ShapeShifter const> const &msg = msg_event.getConstMessage();
@@ -94,17 +111,7 @@ void in_cb(const ros::MessageEvent<ShapeShifter>& msg_event)
 
   if (!g_advertised)
   {
-    // If the input topic is latched, make the output topic latched
-    bool latch = false;
-    if (connection_header)
-    {
-      ros::M_string::const_iterator it = connection_header->find("latching");
-      if((it != connection_header->end()) && (it->second == "1"))
-      {
-        ROS_DEBUG("input topic is latched; latching output topic to match");
-        latch = true;
-      }
-    }
+    const bool latch = g_force_latch ? g_force_latch_value : is_latching(connection_header);
     g_pub = msg->advertise(*g_node, g_output_topic, 10, latch, conn_cb);
     g_advertised = true;
     printf("advertised as %s\n", g_output_topic.c_str());
@@ -192,6 +199,7 @@ int main(int argc, char **argv)
   pnh.getParam("wall_clock", g_use_wallclock);
   pnh.getParam("unreliable", unreliable);
   pnh.getParam("lazy", g_lazy);
+  g_force_latch = pnh.getParam("force_latch", g_force_latch_value);
 
   if (unreliable)
     g_th.unreliable().reliable(); // Prefers unreliable, but will accept reliable.
