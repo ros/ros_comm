@@ -302,15 +302,15 @@ def _param(resolved, a, args, context):
     :returns updated resolved argument, ``str``
     :raises: :exc:`ArgException` If arg invalidly specified
     """
-    if(len(args) == 0):
+    if len(args) == 0:
         raise SubstitutionException("$(param var) must specify a variable name [%s]"%(a))
     elif len(args) > 1:
         raise SubstitutionException("$(param var) may only specify one arg [%s]"%(a))
     
-    resolve_arg = '/'+args[0]
+    resolve_arg = '/' + args[0]
     for param in context['param']:
-        if param.key==resolve_arg:
-            return resolved.replace("$(%s)" % a, str(param.value)) # +2 for equals sign
+        if param.key == resolve_arg:
+            return resolved.replace("$(%s)" % a, str(param.value))  # +2 for equals sign
 
 # Create a dictionary of global symbols that will be available in the eval
 # context.  We disable all the builtins, then add back True and False, and also
