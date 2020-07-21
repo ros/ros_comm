@@ -610,7 +610,14 @@ namespace XmlRpc {
       default:           break;
       case TypeBoolean:  os << _value.asBool; break;
       case TypeInt:      os << _value.asInt; break;
-      case TypeDouble:   os << _value.asDouble; break;
+      case TypeDouble:
+        {
+          char buf[100]; // Should be long enough
+          std::snprintf(buf, sizeof(buf)-1, getDoubleFormat().c_str(), _value.asDouble);
+          buf[sizeof(buf)-1] = 0;
+          os << buf;
+          break;
+        }
       case TypeString:   os << *_value.asString; break;
       case TypeDateTime:
         {
