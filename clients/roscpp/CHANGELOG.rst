@@ -2,8 +2,8 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.15.8 (2020-07-23)
+-------------------
 * change is_async_connected to use epoll when available (`#1983 <https://github.com/ros/ros_comm/issues/1983>`_)
 * allow mixing latched and unlatched publishers (`#1991 <https://github.com/ros/ros_comm/issues/1991>`_)
 

@@ -2,8 +2,8 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.15.8 (2020-07-23)
+-------------------
 * fix bad relative import (still Python 2 style) (`#1973 <https://github.com/ros/ros_comm/issues/1973>`_)
 
 1.15.7 (2020-05-28)

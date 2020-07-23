@@ -2,8 +2,8 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.15.8 (2020-07-23)
+-------------------
 * remove not existing NodeProxy from rospy __all_\_ (`#2007 <https://github.com/ros/ros_comm/issues/2007>`_)
 * fix typo in topics.py (`#1977 <https://github.com/ros/ros_comm/issues/1977>`_)
 

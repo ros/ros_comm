@@ -2,8 +2,8 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.15.8 (2020-07-23)
+-------------------
 * remove dependency on rostopic from rostest package (`#2002 <https://github.com/ros/ros_comm/issues/2002>`_)
 * fix missing reload() function in Python 3 (`#1968 <https://github.com/ros/ros_comm/issues/1968>`_)
 

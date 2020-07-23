@@ -2,8 +2,8 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.15.8 (2020-07-23)
+-------------------
 * add latch param to throttle (`#1944 <https://github.com/ros/ros_comm/issues/1944>`_)
 
 1.15.7 (2020-05-28)
