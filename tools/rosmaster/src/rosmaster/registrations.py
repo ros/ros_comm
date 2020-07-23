@@ -125,7 +125,7 @@ def shutdown_node_task(api, caller_id, reason):
     @type  reason: str
     """
     try:
-        xmlrpcapi(api).shutdown('/master', reason)
+        xmlrpcapi(api).shutdown('/master', "[{}] Reason: {}".format(caller_id, reason))
     except:
         pass #expected in many common cases
     remove_server_proxy(api)
@@ -464,7 +464,7 @@ class RegistrationManager(object):
             else:
                 bumped_api = node_ref.api
                 self.thread_pool.queue_task(bumped_api, shutdown_node_task,
-                                            (bumped_api, caller_id, "new node registered with same name {}".format(node_ref.id)))
+                                            (bumped_api, caller_id, "new node registered with same name"))
 
         node_ref = NodeRef(caller_id, caller_api)
         self.nodes[caller_id] = node_ref
