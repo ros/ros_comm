@@ -107,7 +107,6 @@ __all__ = [
     'logerr_throttle', 'logfatal_throttle',
     'parse_rosrpc_uri',
     'MasterProxy',
-    'NodeProxy',    
     'ROSException',
     'ROSSerializationException',
     'ROSInitException',
