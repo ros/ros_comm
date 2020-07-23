@@ -113,7 +113,6 @@ __all__ = [
     'logerr_once', 'logfatal_once',
     'parse_rosrpc_uri',
     'MasterProxy',
-    'NodeProxy',    
     'ROSException',
     'ROSSerializationException',
     'ROSInitException',
