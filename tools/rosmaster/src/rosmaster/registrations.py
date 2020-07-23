@@ -125,7 +125,7 @@ def shutdown_node_task(api, caller_id, reason):
     @type  reason: str
     """
     try:
-        xmlrpcapi(api).shutdown('/master', reason)
+        xmlrpcapi(api).shutdown('/master', "[{}] Reason: {}".format(caller_id, reason))
     except:
         pass #expected in many common cases
     remove_server_proxy(api)
