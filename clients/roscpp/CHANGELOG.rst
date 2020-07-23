@@ -2,6 +2,11 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* change is_async_connected to use epoll when available (`#1983 <https://github.com/ros/ros_comm/issues/1983>`_)
+* allow mixing latched and unlatched publishers (`#1991 <https://github.com/ros/ros_comm/issues/1991>`_)
+
 1.15.7 (2020-05-28)
 -------------------
 * fix Windows build break (`#1961 <https://github.com/ros/ros_comm/issues/1961>`_) (regression from 1.15.5)
