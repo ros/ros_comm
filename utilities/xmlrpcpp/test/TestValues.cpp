@@ -49,7 +49,7 @@ TEST(XmlRpc, Bool) {
 }
 
 TEST(XmlRpc, testBoolean) {
-  XmlRpcValue booleanFalse(false);
+  const XmlRpcValue booleanFalse(false);
   XmlRpcValue booleanTrue(true);
   int offset = 0;
   XmlRpcValue booleanFalseXml("<value><boolean>0</boolean></value>", &offset);
@@ -75,7 +75,7 @@ TEST(XmlRpc, testBoolean) {
 
 // Int
 TEST(XmlRpc, testInt) {
-  XmlRpcValue int0(0);
+  const XmlRpcValue int0(0);
   ASSERT_EQ(XmlRpcValue::TypeInt, int0.getType());
 
   XmlRpcValue int1(1);
@@ -110,7 +110,7 @@ TEST(XmlRpc, testInt) {
 
 TEST(XmlRpc, testDouble) {
   // Double
-  XmlRpcValue d(43.7);
+  const XmlRpcValue d(43.7);
   ASSERT_EQ(XmlRpcValue::TypeDouble, d.getType());
   EXPECT_EQ("<value><double>43.700000000000003</double></value>", d.toXml());
   EXPECT_DOUBLE_EQ(43.7, double(d));
@@ -130,7 +130,7 @@ TEST(XmlRpc, testDouble) {
 
 TEST(XmlRpc, testString) {
   // String
-  XmlRpcValue s("Now is the time <&");
+  const XmlRpcValue s("Now is the time <&");
   ASSERT_EQ(XmlRpcValue::TypeString, s.getType());
   EXPECT_EQ(18, s.size());
   EXPECT_EQ("<value>Now is the time &lt;&amp;</value>", s.toXml());
@@ -178,7 +178,7 @@ TEST(XmlRpc, testDateTime) {
   // DateTime
   int offset = 0;
   // Construct from XML
-  XmlRpcValue dateTime(
+  const XmlRpcValue dateTime(
       "<value><dateTime.iso8601>19040503T03:12:35</dateTime.iso8601></value>",
       &offset);
   ASSERT_EQ(XmlRpcValue::TypeDateTime, dateTime.getType());
@@ -286,7 +286,7 @@ TEST(XmlRpc, testArray) {
   EXPECT_EQ(a, aXml);
 
   // Array copy works
-  XmlRpcValue copy(a);
+  const XmlRpcValue copy(a);
   ASSERT_EQ(a.getType(), copy.getType());
   ASSERT_EQ(a.size(), copy.size());
   for (int i = 0; i < 3; i++) {
@@ -345,7 +345,7 @@ TEST(XmlRpc, testStruct) {
                        "</struct></value>";
 
   int offset = 0;
-  XmlRpcValue structXml(csStructXml, &offset);
+  const XmlRpcValue structXml(csStructXml, &offset);
   EXPECT_EQ(struct1, structXml);
 
   for (XmlRpcValue::iterator itr = struct1.begin(); itr != struct1.end();
@@ -399,7 +399,7 @@ TEST(XmlRpc, testStruct) {
 
 TEST(XmlRpc, base64) {
   char data[] = {1, 2};
-  XmlRpcValue bin(data, 2);
+  const XmlRpcValue bin(data, 2);
 
   EXPECT_EQ(XmlRpcValue::TypeBase64, bin.getType());
   EXPECT_EQ(2, bin.size());
