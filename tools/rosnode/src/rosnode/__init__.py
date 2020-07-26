@@ -406,7 +406,7 @@ def rosnode_ping_all(verbose=False):
     
 def cleanup_master_blacklist(master, blacklist):
     """
-    Remove registrations from ROS Master that match blacklist.    
+    Remove registrations from ROS Master and node cache (_caller_apis) that match blacklist.    
     @param master: rosgraph Master instance
     @type  master: rosgraph.Master
     @param blacklist: list of nodes to scrub
@@ -429,6 +429,7 @@ def cleanup_master_blacklist(master, blacklist):
                 service_api = master.lookupService(s)
                 master_n = rosgraph.Master(n)
                 master_n.unregisterService(s, service_api)
+		_caller_apis.pop(n, None)
 
 def cleanup_master_whitelist(master, whitelist):
     """
