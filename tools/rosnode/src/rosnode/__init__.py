@@ -429,7 +429,7 @@ def cleanup_master_blacklist(master, blacklist):
                 service_api = master.lookupService(s)
                 master_n = rosgraph.Master(n)
                 master_n.unregisterService(s, service_api)
-		_caller_apis.pop(n, None)
+        _caller_apis.pop(n, None)
 
 def cleanup_master_whitelist(master, whitelist):
     """
