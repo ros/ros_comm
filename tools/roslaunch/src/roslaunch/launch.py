@@ -292,6 +292,7 @@ class ROSLaunchRunner(object):
         self.is_child = is_child
         self.is_core = is_core
         self.is_rostest = is_rostest
+        self.exit_code = 0
         self.num_workers = num_workers
         self.timeout = timeout
         self.master_logger_level = master_logger_level
@@ -618,7 +619,7 @@ class ROSLaunchRunner(object):
         #self.pm.join()
         self.logger.info("process monitor is done spinning, initiating full shutdown")
         self.stop()
-        printlog_bold("done")
+        printlog_bold("roslaunch runner done")
     
     def stop(self):
         """
@@ -629,6 +630,7 @@ class ROSLaunchRunner(object):
             printlog("shutting down processing monitor...")
             self.logger.info("shutting down processing monitor %s"%self.pm)            
             self.pm.shutdown()
+            self.exit_code = self.pm.exit_code
             self.pm.join()
             self.pm = None
             printlog("... shutting down processing monitor complete")
