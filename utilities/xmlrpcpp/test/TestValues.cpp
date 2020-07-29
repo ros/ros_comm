@@ -126,6 +126,21 @@ TEST(XmlRpc, testDouble) {
   std::stringstream ss;
   ss << d;
   EXPECT_EQ("43.7", ss.str());
+  ss.str("");
+
+  // Test format
+  const XmlRpc::XmlRpcValue a(2.0);
+  ASSERT_EQ(XmlRpcValue::TypeDouble, d.getType());
+
+  XmlRpc::XmlRpcValue::setDoubleFormat("%32.10f");
+  ss << a;
+  EXPECT_EQ("                    2.0000000000", ss.str());
+  ss.str("");
+
+  XmlRpc::XmlRpcValue::setDoubleFormat("%10.32f");
+  ss << a;
+  EXPECT_EQ("2.00000000000000000000000000000000", ss.str());
+  ss.str("");
 }
 
 TEST(XmlRpc, testString) {
