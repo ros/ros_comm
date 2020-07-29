@@ -612,10 +612,20 @@ namespace XmlRpc {
       case TypeInt:      os << _value.asInt; break;
       case TypeDouble:
         {
-          char buf[100]; // Should be long enough
-          std::snprintf(buf, sizeof(buf)-1, getDoubleFormat().c_str(), _value.asDouble);
-          buf[sizeof(buf)-1] = 0;
-          os << buf;
+          int required_size;
+          char buf[128]; // Should be long enough
+          required_size = std::snprintf(buf, sizeof(buf)-1,
+                                        getDoubleFormat().c_str(), _value.asDouble);
+          if (required_size < (int) sizeof(buf)) {
+            buf[sizeof(buf)-1] = 0;
+            os << buf;
+          } else {
+            char required_buf[required_size+1];
+            std::snprintf(required_buf, required_size,
+                          getDoubleFormat().c_str(), _value.asDouble);
+            required_buf[required_size] = 0;
+            os << required_buf;
+          }
           break;
         }
       case TypeString:   os << *_value.asString; break;
