@@ -169,11 +169,12 @@ CallbackInterface::CallResult SubscriptionQueue::call()
 
 bool SubscriptionQueue::ready()
 {
-  if (!allow_concurrent_callbacks_) {
-    boost::recursive_mutex::scoped_try_lock lock(callback_mutex_, boost::try_to_lock);
-    return lock.owns_lock();
-  } else
+  if (allow_concurrent_callbacks_)
+  {
     return true;
+  }
+  boost::recursive_mutex::scoped_try_lock lock(callback_mutex_, boost::try_to_lock);
+  return lock.owns_lock();
 }
 
 bool SubscriptionQueue::full()

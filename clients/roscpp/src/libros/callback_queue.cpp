@@ -125,7 +125,9 @@ void CallbackQueue::addCallback(const CallbackInterfacePtr& callback, uint64_t r
   }
 
   if (callback->ready())
+  {
     condition_.notify_one();
+  }
 }
 
 CallbackQueue::IDInfoPtr CallbackQueue::getIDInfo(uint64_t id)
@@ -275,7 +277,8 @@ CallbackQueue::CallOneResult CallbackQueue::callOne(ros::WallDuration timeout)
       ros::WallDuration time_spent = now - start_time;
       ros::WallDuration time_to_wait = timeout - time_spent;
 
-      if (time_to_wait.toNSec() > 0) {
+      if (time_to_wait.toNSec() > 0)
+      {
         condition_.wait_for(lock, boost::chrono::nanoseconds(time_to_wait.toNSec()));
       }
 
@@ -404,9 +407,10 @@ CallbackQueue::CallOneResult CallbackQueue::callOneCB(TLS* tls)
       {
         tls->cb_it = tls->callbacks.erase(tls->cb_it);
         result = cb->call();
-	if (result == CallbackInterface::Success) {
+        if (result == CallbackInterface::Success)
+        {
           condition_.notify_one();
-	}
+        }
       }
     }
 
