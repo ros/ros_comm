@@ -615,16 +615,19 @@ namespace XmlRpc {
           int required_size;
           char buf[128]; // Should be long enough
           required_size = std::snprintf(buf, sizeof(buf)-1,
-                                        getDoubleFormat().c_str(), _value.asDouble);
-          if (required_size < (int) sizeof(buf)) {
+                            getDoubleFormat().c_str(), _value.asDouble);
+          if (required_size >= 0 && required_size < (int) sizeof(buf)) {
             buf[sizeof(buf)-1] = 0;
             os << buf;
-          } else {
+          } else if (required_size >= (int) sizeof(buf)) {
+            int ret;
             char required_buf[required_size+1];
-            std::snprintf(required_buf, required_size,
-                          getDoubleFormat().c_str(), _value.asDouble);
-            required_buf[required_size] = 0;
-            os << required_buf;
+            ret = std::snprintf(required_buf, required_size,
+                    getDoubleFormat().c_str(), _value.asDouble);
+            if (ret == required_size) {
+              required_buf[required_size] = 0;
+              os << required_buf;
+            }
           }
           break;
         }
@@ -632,11 +635,14 @@ namespace XmlRpc {
       case TypeDateTime:
         {
           struct tm* t = _value.asTime;
+          int ret;
           char buf[20];
-          std::snprintf(buf, sizeof(buf)-1, "%4d%02d%02dT%02d:%02d:%02d", 
-            t->tm_year,t->tm_mon,t->tm_mday,t->tm_hour,t->tm_min,t->tm_sec);
-          buf[sizeof(buf)-1] = 0;
-          os << buf;
+          ret = std::snprintf(buf, sizeof(buf)-1, "%4d%02d%02dT%02d:%02d:%02d",
+                  t->tm_year,t->tm_mon,t->tm_mday,t->tm_hour,t->tm_min,t->tm_sec);
+          if (ret > 0) {
+            buf[sizeof(buf)-1] = 0;
+            os << buf;
+          }
           break;
         }
       case TypeBase64:
