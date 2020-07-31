@@ -257,7 +257,7 @@ CallbackQueue::CallOneResult CallbackQueue::callOne(ros::WallDuration timeout)
         break;
       }
 
-      boost::cv_status wait_status = boost::cv_status::no_timeout;
+      boost::cv_status wait_status = boost::cv_status::timeout;
       if (!timeout.isZero())
       {
         wait_status = condition_.wait_until(lock, wait_until);
