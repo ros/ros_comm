@@ -2,6 +2,10 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add latch param to throttle (`#1944 <https://github.com/ros/ros_comm/issues/1944>`_)
+
 1.14.6 (2020-05-29)
 -------------------
 * avoid infinite recursion in rosrun tab completion when rosbash is not installed (`#1948 <https://github.com/ros/ros_comm/issues/1948>`_)

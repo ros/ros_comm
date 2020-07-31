@@ -2,6 +2,9 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.14.6 (2020-05-29)
 -------------------
 * fix NameError in launch error handling (`#1965 <https://github.com/ros/ros_comm/issues/1965>`_)

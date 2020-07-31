@@ -2,6 +2,11 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix subscription busy wait melodic (`#1684 <https://github.com/ros/ros_comm/issues/1684>`_, `#2014 <https://github.com/ros/ros_comm/issues/2014>`_)
+* use an internal implementation of boost::condition_variable with monotonic clock (`#1932 <https://github.com/ros/ros_comm/issues/1932>`_)
+
 1.14.6 (2020-05-29)
 -------------------
 * fix a bug that using a destroyed connection object (`#1950 <https://github.com/ros/ros_comm/issues/1950>`_)

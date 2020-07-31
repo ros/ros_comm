@@ -2,6 +2,10 @@
 Changelog for package rosmaster
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add node name to shutdown message for duplicate nodes (`#1992 <https://github.com/ros/ros_comm/issues/1992>`_)
+
 1.14.6 (2020-05-29)
 -------------------
 
