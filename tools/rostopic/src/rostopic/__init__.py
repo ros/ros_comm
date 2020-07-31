@@ -282,7 +282,7 @@ def _get_ascii_table(header, cols):
     # sum of col and each 3 spaces width
     table_width = sum(col_widths) + 3 * (len(header) - 1)
     n_rows = len(cols[header[0]])
-    body = '\n'.join('   '.join(cols[h][i] for h in header) for i in xrange(n_rows))
+    body = '\n'.join('   '.join(cols[h][i] for h in header) for i in range(n_rows))
     table = '{header}\n{hline}\n{body}\n'.format(
         header='   '.join(header_aligned), hline='=' * table_width, body=body)
     return table
