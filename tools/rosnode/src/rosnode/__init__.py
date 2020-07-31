@@ -303,14 +303,14 @@ def rosnode_ping(node_name, max_count=None, verbose=False, skip_cache=False):
     @type  max_count: int
     @param verbose: print ping information to screen
     @type  verbose: bool
-	@param skip_cache: flag to skip cached data and force to lookup from master
-	@type  skip_cache: bool
+    @param skip_cache: flag to skip cached data and force to lookup from master
+    @type  skip_cache: bool
     @return: True if node pinged
     @rtype: bool
     @raise ROSNodeIOException: if unable to communicate with master
     """
     master = rosgraph.Master(ID)
-    node_api = get_api_uri(master, node_name, skip_cache)
+    node_api = get_api_uri(master, node_name, skip_cache=skip_cache)
     if not node_api:
         print("cannot ping [%s]: unknown node"%node_name, file=sys.stderr)
         return False
