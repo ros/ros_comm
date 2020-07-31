@@ -4,7 +4,7 @@
   schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>test_roslaunch</name>
-  <version>1.14.6</version>
+  <version>1.14.7</version>
   <description>
     Tests for roslaunch which depend on rostest.
   </description>

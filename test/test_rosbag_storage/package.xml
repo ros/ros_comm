@@ -1,6 +1,6 @@
 <package>
   <name>test_rosbag_storage</name>
-  <version>1.14.6</version>
+  <version>1.14.7</version>
   <description>
     A package containing the unit tests for rosbag_storage.
   </description>
