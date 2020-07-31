@@ -237,7 +237,8 @@ TEST(CallbackQueue, removeCallbackWhileExecuting)
   // Now, we need to serve the callback queue from another thread.
   bool done = false;
   boost::atomic<size_t> calls(0);
-  boost::thread t = boost::thread(boost::bind(&callAvailableThread, &queue, boost::ref(done), &calls));
+  ros::WallDuration call_one_timeout(0.1);
+  boost::thread t = boost::thread(boost::bind(&callAvailableThread, &queue, boost::ref(done), &calls, call_one_timeout));
 
   ros::WallDuration(1.0).sleep(); // Callback 1 should be being served now.
 
