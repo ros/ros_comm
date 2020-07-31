@@ -151,7 +151,7 @@ public:
     int res = 0;
     {
 #if defined BOOST_THREAD_PROVIDES_INTERRUPTIONS
-      boost::thread_cv_detail::lock_on_exit<boost::unique_lock<boost::mutex>> guard;
+      boost::thread_cv_detail::lock_on_exit<boost::unique_lock<boost::mutex> > guard;
       boost::detail::interruption_checker check_for_interruption(&internal_mutex, &cond);
       pthread_mutex_t *the_mutex = &internal_mutex;
       guard.activate(m);
@@ -181,7 +181,7 @@ public:
     int cond_res;
     {
 #if defined BOOST_THREAD_PROVIDES_INTERRUPTIONS
-      boost::thread_cv_detail::lock_on_exit<boost::unique_lock<boost::mutex>> guard;
+      boost::thread_cv_detail::lock_on_exit<boost::unique_lock<boost::mutex> > guard;
       boost::detail::interruption_checker check_for_interruption(&internal_mutex, &cond);
       pthread_mutex_t *the_mutex = &internal_mutex;
       guard.activate(m);
@@ -209,10 +209,6 @@ public:
     return true;
   }
 };
-static_assert(
-    sizeof(condition_variable_monotonic) == sizeof(boost::condition_variable),
-    "sizeof(ros::internal::condition_variable_monotonic) != sizeof(boost::condition_variable)");
-
 #endif
 
 }  // namespace internal
