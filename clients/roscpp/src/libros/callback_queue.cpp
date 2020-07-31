@@ -124,7 +124,10 @@ void CallbackQueue::addCallback(const CallbackInterfacePtr& callback, uint64_t r
     callbacks_.push_back(info);
   }
 
-  condition_.notify_one();
+  if (callback->ready())
+  {
+    condition_.notify_one();
+  }
 }
 
 CallbackQueue::IDInfoPtr CallbackQueue::getIDInfo(uint64_t id)
@@ -225,6 +228,8 @@ CallbackQueue::CallOneResult CallbackQueue::callOne(ros::WallDuration timeout)
       return Disabled;
     }
 
+    ros::SteadyTime start_time(ros::SteadyTime::now());
+
     if (callbacks_.empty())
     {
       if (!timeout.isZero())
@@ -266,6 +271,17 @@ CallbackQueue::CallOneResult CallbackQueue::callOne(ros::WallDuration timeout)
 
     if (!cb_info.callback)
     {
+      // do not spend more than `timeout` seconds in the callback; we already waited for some time when waiting for
+      // nonempty queue
+      ros::SteadyTime now(ros::SteadyTime::now());
+      ros::WallDuration time_spent = now - start_time;
+      ros::WallDuration time_to_wait = timeout - time_spent;
+
+      if (time_to_wait.toNSec() > 0)
+      {
+        condition_.wait_for(lock, boost::chrono::nanoseconds(time_to_wait.toNSec()));
+      }
+
       return TryAgain;
     }
 
@@ -391,6 +407,10 @@ CallbackQueue::CallOneResult CallbackQueue::callOneCB(TLS* tls)
       {
         tls->cb_it = tls->callbacks.erase(tls->cb_it);
         result = cb->call();
+        if (result == CallbackInterface::Success)
+        {
+          condition_.notify_one();
+        }
       }
     }
 
