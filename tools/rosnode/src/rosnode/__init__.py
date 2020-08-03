@@ -294,7 +294,7 @@ def rosnode_listnodes(namespace=None, list_uri=False, list_all=False):
     """
     print(_sub_rosnode_listnodes(namespace=namespace, list_uri=list_uri, list_all=list_all))
     
-def rosnode_ping(node_name, max_count=None, verbose=False):
+def rosnode_ping(node_name, max_count=None, verbose=False, skip_cache=False):
     """
     Test connectivity to node by calling its XMLRPC API
     @param node_name: name of node to ping
@@ -303,12 +303,14 @@ def rosnode_ping(node_name, max_count=None, verbose=False):
     @type  max_count: int
     @param verbose: print ping information to screen
     @type  verbose: bool
+    @param skip_cache: flag to skip cached data and force to lookup from master
+    @type  skip_cache: bool
     @return: True if node pinged
     @rtype: bool
     @raise ROSNodeIOException: if unable to communicate with master
     """
     master = rosgraph.Master(ID)
-    node_api = get_api_uri(master,node_name)
+    node_api = get_api_uri(master, node_name, skip_cache=skip_cache)
     if not node_api:
         print("cannot ping [%s]: unknown node"%node_name, file=sys.stderr)
         return False
@@ -376,7 +378,7 @@ def rosnode_ping(node_name, max_count=None, verbose=False):
         print("ping average: %fms"%(acc/count))
     return True
 
-def rosnode_ping_all(verbose=False):
+def rosnode_ping_all(verbose=False, skip_cache=False):
     """
     Ping all running nodes
     @return [str], [str]: pinged nodes, un-pingable nodes
@@ -398,7 +400,7 @@ def rosnode_ping_all(verbose=False):
     pinged = []
     unpinged = []
     for node in nodes:
-        if rosnode_ping(node, max_count=1, verbose=verbose):
+        if rosnode_ping(node, max_count=1, verbose=verbose, skip_cache=skip_cache):
             pinged.append(node)
         else:
             unpinged.append(node)
