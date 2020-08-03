@@ -28,21 +28,6 @@
 #ifndef ROSCPP_TIMER_MANAGER_H
 #define ROSCPP_TIMER_MANAGER_H
 
-// check if we might need to include our own backported version boost::condition_variable
-// in order to use CLOCK_MONOTONIC for the SteadyTimer
-// the include order here is important!
-#ifdef BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
-#include <boost/version.hpp>
-#if BOOST_VERSION < 106100
-// use backported version of boost condition variable, see https://svn.boost.org/trac/boost/ticket/6377
-#include "boost_161_condition_variable.h"
-#else // Boost version is 1.61 or greater and has the steady clock fixes
-#include <boost/thread/condition_variable.hpp>
-#endif
-#else // !BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
-#include <boost/thread/condition_variable.hpp>
-#endif // BOOST_THREAD_HAS_CONDATTR_SET_CLOCK_MONOTONIC
-
 #include "ros/forwards.h"
 #include "ros/time.h"
 #include "ros/file_log.h"
@@ -53,12 +38,29 @@
 
 #include "ros/assert.h"
 #include "ros/callback_queue_interface.h"
+#include "ros/internal/condition_variable.h"
 
 #include <vector>
 #include <list>
 
 namespace ros
 {
+
+namespace {
+  template<class T>
+  class TimerManagerTraits
+  {
+  public:
+    typedef boost::chrono::system_clock::time_point time_point;
+  };
+
+  template<>
+  class TimerManagerTraits<SteadyTime>
+  {
+  public:
+    typedef boost::chrono::steady_clock::time_point time_point;
+  };
+}
 
 template<class T, class D, class E>
 class TimerManager
@@ -125,7 +127,7 @@ private:
 
   V_TimerInfo timers_;
   boost::mutex timers_mutex_;
-  boost::condition_variable timers_cond_;
+  ros::internal::condition_variable_monotonic timers_cond_;
   volatile bool new_timer_;
 
   boost::mutex waiting_mutex_;
@@ -221,9 +223,7 @@ private:
 template<class T, class D, class E>
 TimerManager<T, D, E>::TimerManager() :
   new_timer_(false), id_counter_(0), thread_started_(false), quit_(false)
-{
-
-}
+{}
 
 template<class T, class D, class E>
 TimerManager<T, D, E>::~TimerManager()
@@ -570,14 +570,14 @@ void TimerManager<T, D, E>::threadFunc()
       // since simulation time may be running faster than real time.
       if (!T::isSystemTime())
       {
-        timers_cond_.timed_wait(lock, boost::posix_time::milliseconds(1));
+        timers_cond_.wait_for(lock, boost::chrono::milliseconds(1));
       }
       else
       {
         // On system time we can simply sleep for the rest of the wait time, since anything else requiring processing will
         // signal the condition variable
-        int64_t remaining_time = std::max<int64_t>((sleep_end - current).toSec() * 1000.0f, 1);
-        timers_cond_.timed_wait(lock, boost::posix_time::milliseconds(remaining_time));
+        typename TimerManagerTraits<T>::time_point end_tp(boost::chrono::nanoseconds(sleep_end.toNSec()));
+        timers_cond_.wait_until(lock, end_tp);
       }
     }
 

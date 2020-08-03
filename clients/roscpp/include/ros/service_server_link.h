@@ -36,6 +36,7 @@
 #define ROSCPP_SERVICE_SERVER_LINK_H
 
 #include "ros/common.h"
+#include "ros/internal/condition_variable.h"
 
 #include <boost/thread/mutex.hpp>
 #include <boost/shared_array.hpp>
@@ -64,7 +65,7 @@ private:
     SerializedMessage* resp_;
 
     bool finished_;
-    boost::condition_variable finished_condition_;
+    ros::internal::condition_variable_monotonic finished_condition_;
     boost::mutex finished_mutex_;
     boost::thread::id caller_thread_id_;
 
