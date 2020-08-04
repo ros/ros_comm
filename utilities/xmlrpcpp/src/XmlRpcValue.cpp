@@ -1,4 +1,5 @@
 
+#include "ros/ros.h"
 #include "xmlrpcpp/XmlRpcValue.h"
 #include "xmlrpcpp/XmlRpcException.h"
 #include "xmlrpcpp/XmlRpcUtil.h"
@@ -14,6 +15,7 @@
 #endif
 
 #include <sstream>
+#include <mutex>
 
 namespace XmlRpc {
 
@@ -612,10 +614,19 @@ namespace XmlRpc {
       case TypeInt:      os << _value.asInt; break;
       case TypeDouble:
         {
-          int required_size;
+          static std::once_flag once;
+          int ret, required_size;
           char buf[128]; // Should be long enough
-          required_size = std::snprintf(buf, sizeof(buf)-1,
-                            getDoubleFormat().c_str(), _value.asDouble);
+          ret = std::snprintf(buf, sizeof(buf)-1,
+                  getDoubleFormat().c_str(), _value.asDouble);
+          if (ret < 0) {
+            std::call_once(once,
+              [](){ROS_WARN("Failed to format with %s, using default %%.16g format",
+                getDoubleFormat().c_str());});
+            required_size = std::snprintf(buf, sizeof(buf)-1, "%.16g", _value.asDouble);
+          } else {
+            required_size = ret;
+          }
           if (required_size >= 0 && required_size < (int) sizeof(buf)) {
             buf[sizeof(buf)-1] = 0;
             os << buf;
@@ -628,6 +639,8 @@ namespace XmlRpc {
               required_buf[required_size] = 0;
               os << required_buf;
             }
+          } else {
+            ROS_ERROR("Unexpected error to format %s", getDoubleFormat().c_str());
           }
           break;
         }
@@ -642,6 +655,8 @@ namespace XmlRpc {
           if (ret > 0) {
             buf[sizeof(buf)-1] = 0;
             os << buf;
+          } else {
+            ROS_ERROR("Unexpected error to format TypeDateTime");
           }
           break;
         }
