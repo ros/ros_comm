@@ -119,7 +119,7 @@ endif()
 
 catkin_add_gtest(TestValues TestValues.cpp)
 if(TARGET TestValues)
-  target_link_libraries(TestValues xmlrpcpp roscpp)
+  target_link_libraries(TestValues xmlrpcpp)
 endif()
 
 catkin_add_gtest(test_util test_util.cpp)

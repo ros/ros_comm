@@ -1,5 +1,4 @@
 
-#include "ros/ros.h"
 #include "xmlrpcpp/XmlRpcValue.h"
 #include "xmlrpcpp/XmlRpcException.h"
 #include "xmlrpcpp/XmlRpcUtil.h"
@@ -621,7 +620,7 @@ namespace XmlRpc {
                   getDoubleFormat().c_str(), _value.asDouble);
           if (ret < 0) {
             std::call_once(once,
-              [](){ROS_WARN("Failed to format with %s, using default %%.16g format",
+              [](){XmlRpcUtil::error("Failed to format with %s, using default %%.16g format",
                 getDoubleFormat().c_str());});
             required_size = std::snprintf(buf, sizeof(buf)-1, "%.16g", _value.asDouble);
           } else {
@@ -640,7 +639,7 @@ namespace XmlRpc {
               os << required_buf;
             }
           } else {
-            ROS_ERROR("Unexpected error to format %s", getDoubleFormat().c_str());
+            XmlRpcUtil::error("Unexpected error to format %s", getDoubleFormat().c_str());
           }
           break;
         }
@@ -656,7 +655,7 @@ namespace XmlRpc {
             buf[sizeof(buf)-1] = 0;
             os << buf;
           } else {
-            ROS_ERROR("Unexpected error to format TypeDateTime");
+            XmlRpcUtil::error("Unexpected error to format TypeDateTime");
           }
           break;
         }
