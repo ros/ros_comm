@@ -1,0 +1,21 @@
+<launch>
+  <node pkg="rostest" type="service_server.py" name="service_server"/>
+
+    <test test-name="test_service" pkg="rostest" type="servicetest" >
+      <rosparam>
+        calls:
+          - name: /trigger_spec
+            input: None
+            output: {'success': True, 'message': 'well done!'}
+          - name: /trigger
+            input: None
+            output: {'success': False, 'message': ''}
+          - name: /empty
+            input: None
+            output: None
+          - name: /set_bool
+            input: {'data': True}
+            output: {'success': True, 'message': 'True'}
+      </rosparam>
+    </test>
+</launch>
