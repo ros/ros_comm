@@ -1,0 +1,21 @@
+<launch>
+
+    <node name="dummy_node" pkg="rostest" type="dummy_filter.py">
+        <param name="wait" value="0.2" />
+    </node>
+    <test test-name="filter_test" pkg="rostest" type="filtertest">
+        <rosparam>
+            filters:
+                - topic_in: /filter_in
+                  topic_out: /filter_out
+                  msg_in: {'data': 2.0}
+                  msg_out: {'data': 4.0}
+                  timeout: 1.0
+                - topic_in: /filter_in
+                  topic_out: /filter_out
+                  msg_in: {'data': -1.0}
+                  msg_out: {'data': -2.0}
+                  timeout: 1.0
+        </rosparam>
+    </test>
+</launch>
