@@ -187,8 +187,6 @@ class XmlLoader(loader.Loader):
         if args and '$' in args:
             # Populate resolve_dict with name of the current file being processed.
             context.resolve_dict['filename'] = context.filename
-            if 'param' not in context.resolve_dict:
-                context.resolve_dict['param'] = {}
             context.resolve_dict['param'] = context.params
             return substitution_args.resolve_args(args, context=context.resolve_dict, resolve_anon=self.resolve_anon)
         else:
@@ -245,7 +243,7 @@ class XmlLoader(loader.Loader):
 
         retval = fn(context)
 
-        context.params = copy.deepcopy(params_restore_point)
+        context.params = params_restore_point
         return retval
 
     # 'ns' attribute is now deprecated and is an alias for
