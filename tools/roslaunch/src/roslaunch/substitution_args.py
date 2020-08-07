@@ -61,6 +61,11 @@ class ArgException(SubstitutionException):
     Exception for missing $(arg) values
     """
     pass
+class ParamException(SubstitutionException):
+    """
+    Exception for missing $(param) values
+    """
+    pass
 
 def _eval_env(name):
     try:
@@ -311,7 +316,7 @@ def _param(resolved, a, args, context):
     for param in context['param']:
         if param.key == resolve_arg:
             return resolved.replace("$(%s)" % a, str(param.value))  # +2 for equals sign
-
+    raise ParamException(args[0])
 # Create a dictionary of global symbols that will be available in the eval
 # context.  We disable all the builtins, then add back True and False, and also
 # add true and false for convenience (because we accept those lower-case strings

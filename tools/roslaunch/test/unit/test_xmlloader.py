@@ -884,7 +884,14 @@ class TestXmlLoader(unittest.TestCase):
             self.fail("should have raised with multiple decl")
         except roslaunch.xmlloader.XmlParseException as e:
             self.assert_('grounded' in str(e))
-            
+        
+        # test with invalid $(param unknown)
+        filename = os.path.join(self.xml_dir, 'test-arg-invalid-param-sub.xml')
+        try:
+            loader.load(filename, mock, argv=[])
+            self.fail("should have raised with unknown param")
+        except roslaunch.xmlloader.XmlParseException as e:
+            self.assert_('is not defined' in str(e))
                     
     def test_arg(self):
         loader = roslaunch.xmlloader.XmlLoader()

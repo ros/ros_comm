@@ -336,6 +336,9 @@ class XmlLoader(loader.Loader):
         except substitution_args.ArgException as e:
             raise XmlParseException(
                 "arg '%s' is not defined. \n\nArg xml is %s"%(e, tag.toxml()))
+        except substitution_args.ParamException as e:
+            raise XmlParseException(
+                "param '%s' is not defined. \n\n Param xml is %s"%(e, tag.toxml()))
         except ResourceNotFound as e:
             raise ResourceNotFound(
                 "The following package was not found in {}: {}".format(tag.toxml(), e))

@@ -1,0 +1,3 @@
+<launch>
+    <arg name="get_from_nonexistent_param" value="$(param non_existent_param)"/>
+</launch>
