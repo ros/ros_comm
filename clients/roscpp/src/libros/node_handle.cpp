@@ -68,6 +68,10 @@ public:
   V_SrvCImpl srv_cs_;
 
   boost::mutex mutex_;
+
+  // keep shared_ptrs to these managers to avoid assertions. Fixes #838
+  TopicManagerPtr keep_alive_topic_manager = TopicManager::instance();
+  ServiceManagerPtr keep_alive_service_manager = ServiceManager::instance();
 };
 
 NodeHandle::NodeHandle(const std::string& ns, const M_string& remappings)

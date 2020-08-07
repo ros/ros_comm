@@ -51,8 +51,9 @@ del monkey_patch
 
 import errno
 import socket
+import threading
 
-_proxies = {} #cache ServerProxys
+_proxies = threading.local() #cache ServerProxys
 def xmlrpcapi(uri):
     """
     @return: instance for calling remote server or None if not a valid URI
@@ -63,16 +64,16 @@ def xmlrpcapi(uri):
     uriValidate = urlparse(uri)
     if not uriValidate[0] or not uriValidate[1]:
         return None
-    if not uri in _proxies:
-        _proxies[uri] = ServerProxy(uri)
+    if not uri in _proxies.__dict__:
+        _proxies.__dict__[uri] = ServerProxy(uri)
     close_half_closed_sockets()
-    return _proxies[uri]
+    return _proxies.__dict__[uri]
 
 
 def close_half_closed_sockets():
     if not hasattr(socket, 'TCP_INFO'):
         return
-    for proxy in _proxies.values():
+    for proxy in _proxies.__dict__.values():
         transport = proxy("transport")
         if transport._connection and transport._connection[1] is not None and transport._connection[1].sock is not None:
             try:
@@ -86,5 +87,5 @@ def close_half_closed_sockets():
 
 
 def remove_server_proxy(uri):
-    if uri in _proxies:
-        del _proxies[uri]
+    if uri in _proxies.__dict__:
+        del _proxies.__dict__[uri]

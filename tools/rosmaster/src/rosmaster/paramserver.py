@@ -166,7 +166,7 @@ class ParamDictionary(object):
         finally:
             self.lock.release()
     
-    def set_param(self, key, value, notify_task=None):
+    def set_param(self, key, value, notify_task=None, caller_id=None):
         """
         Set the parameter in the parameter dictionary.
 
@@ -178,6 +178,8 @@ class ParamDictionary(object):
         [(subscribers, param_key, param_value)*]. The empty dictionary
         represents an unset parameter.
         @type  notify_task: fn(updates)
+        @param caller_id: the caller id
+        @type caller_id: str
         """
         try:
             self.lock.acquire()
@@ -208,7 +210,7 @@ class ParamDictionary(object):
 
             # ParamDictionary needs to queue updates so that the updates are thread-safe
             if notify_task:
-                updates = compute_param_updates(self.reg_manager.param_subscribers, key, value)
+                updates = compute_param_updates(self.reg_manager.param_subscribers, key, value, caller_id)
                 if updates:
                     notify_task(updates)
         finally:
@@ -332,7 +334,7 @@ def _compute_all_keys(param_key, param_value, all_keys=None):
             _compute_all_keys(new_k, v, all_keys)
     return all_keys
 
-def compute_param_updates(subscribers, param_key, param_value):
+def compute_param_updates(subscribers, param_key, param_value, caller_id_to_ignore=None):
     """
     Compute subscribers that should be notified based on the parameter update
     @param subscribers: parameter subscribers
@@ -341,6 +343,8 @@ def compute_param_updates(subscribers, param_key, param_value):
     @type  param_key: str
     @param param_value: parameter value
     @type  param_value: str
+    @param caller_id_to_ignore: the caller to ignore
+    @type caller_id_to_ignore: str
     """
     
     # logic correct for both updates and deletions
@@ -368,6 +372,11 @@ def compute_param_updates(subscribers, param_key, param_value):
             ns_key = sub_key + SEP
         if param_key.startswith(ns_key):
             node_apis = subscribers[sub_key]
+            if caller_id_to_ignore is not None:
+                node_apis = [
+                    (caller_id, caller_api)
+                    for (caller_id, caller_api) in node_apis
+                    if caller_id != caller_id_to_ignore]
             updates.append((node_apis, param_key, param_value))
         elif all_keys is not None and ns_key.startswith(param_key) \
              and not sub_key in all_keys:

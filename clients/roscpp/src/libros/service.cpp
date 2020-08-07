@@ -88,7 +88,8 @@ bool service::waitForService(const std::string& service_name, ros::Duration time
 {
   std::string mapped_name = names::resolve(service_name);
 
-  Time start_time = Time::now();
+  const WallTime start_time = WallTime::now();
+  const WallDuration wall_timeout{timeout.toSec()};
 
   bool printed = false;
   bool result = false;
@@ -103,17 +104,17 @@ bool service::waitForService(const std::string& service_name, ros::Duration time
     {
       printed = true;
 
-      if (timeout >= Duration(0))
+      if (wall_timeout >= WallDuration(0))
       {
-        Time current_time = Time::now();
+        const WallTime current_time = WallTime::now();
 
-        if ((current_time - start_time) >= timeout)
+        if ((current_time - start_time) >= wall_timeout)
         {
           return false;
         }
       }
 
-      Duration(0.02).sleep();
+      WallDuration(0.02).sleep();
     }
   }
 

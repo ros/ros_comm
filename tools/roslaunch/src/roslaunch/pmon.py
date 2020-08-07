@@ -586,7 +586,9 @@ class ProcessMonitor(Thread):
                     break #stop polling
             for d in dead:
                 try:
-                    if d.should_respawn():
+                    # when should_respawn() returns 0.0, bool(0.0) evaluates to False
+                    # work around this by checking if the return value is False
+                    if d.should_respawn() is not False:
                         respawn.append(d)
                     else:
                         self.unregister(d)

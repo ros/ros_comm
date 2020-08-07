@@ -1173,7 +1173,7 @@ class _TopicManager(object):
         Check all registered publication and subscriptions.
         """
         with self.lock:
-            for t in chain(iter(self.pubs.values()), iter(self.subs.values())):
+            for t in chain(list(self.pubs.values()), list(self.subs.values())):
                 t.check()
         
     def _add(self, ps, rmap, reg_type):
@@ -1264,7 +1264,7 @@ class _TopicManager(object):
             rmap = self.subs
             impl_class = _SubscriberImpl
         else:
-            raise TypeError("invalid reg_type: %s"%s)
+            raise TypeError("invalid reg_type: %s"%reg_type)
         with self.lock:
             impl = rmap.get(resolved_name, None)            
             if not impl:

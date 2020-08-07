@@ -337,8 +337,8 @@ void Connection::drop(DropReason reason)
 
   if (did_drop)
   {
-    drop_signal_(shared_from_this(), reason);
     transport_->close();
+    drop_signal_(shared_from_this(), reason);
   }
 }
 

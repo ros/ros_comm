@@ -1,4 +1,5 @@
 <launch>
+  <arg name="another_parameter_not_used" value="dummy"/>
   <arg name="grounded" value="not_set"/>
   <include file="$(find roslaunch)/test/xml/test-arg-invalid-included.xml" pass_all_args="true"/>
 </launch>

@@ -94,7 +94,7 @@ __all__ = [
     'INFO',
     'WARN',
     'ERROR',
-    'FATAL'
+    'FATAL',
     'is_shutdown',
     'signal_shutdown',
     'get_node_uri',
@@ -107,7 +107,6 @@ __all__ = [
     'logerr_throttle', 'logfatal_throttle',
     'parse_rosrpc_uri',
     'MasterProxy',
-    'NodeProxy',    
     'ROSException',
     'ROSSerializationException',
     'ROSInitException',

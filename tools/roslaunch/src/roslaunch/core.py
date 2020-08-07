@@ -208,9 +208,9 @@ def setup_env(node, machine, master_uri, env=None):
         if ns[-1] == '/':
             ns = ns[:-1]
         if ns:
-            d[rosgraph.ROS_NAMESPACE] = ns 
+            d[rosgraph.ROS_NAMESPACE] = str(ns)
         for name, value in node.env_args:
-            d[name] = value
+            d[str(name)] = str(value)
 
     return d
 
@@ -346,7 +346,7 @@ class Machine(object):
         self.name = name
         self.env_loader = env_loader
         self.user = user or None
-        self.password = password or None
+        self.password = password
         self.address = address
         self.ssh_port = ssh_port
         self.assignable = assignable

@@ -52,6 +52,11 @@ bool Timer::Impl::isValid()
   return !period_.isZero();
 }
 
+bool Timer::Impl::isValid() const
+{
+  return !period_.isZero();
+}
+
 void Timer::Impl::start()
 {
   if (!started_)

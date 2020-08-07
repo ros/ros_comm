@@ -322,7 +322,10 @@ def rosservice_find(service_type):
     try:
         _, _, services = master.getSystemState()
         for s, l in services:
-            t = get_service_type(s)
+            try:
+                t = get_service_type(s)
+            except ROSServiceIOException:
+                continue
             if t == service_type:
                 matches.append(s)
     except socket.error:

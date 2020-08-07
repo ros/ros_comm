@@ -240,7 +240,7 @@ bool TransportUDP::createIncoming(int port, bool is_server)
 
   sock_ = socket(AF_INET, SOCK_DGRAM, 0);
 
-  if (sock_ <= 0)
+  if (sock_ == ROS_INVALID_SOCKET)
   {
     ROS_ERROR("socket() failed with error [%s]", last_socket_error_string());
     return false;
@@ -710,9 +710,9 @@ std::string TransportUDP::getClientURI()
 
   sockaddr_in *sin = (sockaddr_in *)&sas;
 
-  char namebuf[128];
+  char namebuf[128] = {};
   int port = ntohs(sin->sin_port);
-  strcpy(namebuf, inet_ntoa(sin->sin_addr));
+  strncpy(namebuf, inet_ntoa(sin->sin_addr), sizeof(namebuf)-1);
 
   std::string ip = namebuf;
   std::stringstream uri;

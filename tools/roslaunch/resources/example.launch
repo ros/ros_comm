@@ -70,4 +70,10 @@
     <include file="does/not/exist.launch" />
     <node pkg="doesnt_exist" type="nope" name="nope" />
   </group>
+
+  <!-- Pass over argument from commandline. Set to false should fail -->
+  <arg name="commandline_true_arg" default="true" />
+  <group unless="$(arg commandline_true_arg)">
+    <node pkg="doesnt_exist" type="nope" name="nope" />
+  </group>
 </launch>

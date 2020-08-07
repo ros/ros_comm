@@ -20,7 +20,7 @@ function _roscomplete_node_transform
     fi
 }
 
-_sav_transform_roscomplete_rosrun=$(complete | grep -w rosrun | awk '{print $3}')
+_sav_transform_roscomplete_rosrun=$(complete | { grep -w rosrun || test $? = 1; } | awk '{print $3}')
 
 function is_transform_node
 {
