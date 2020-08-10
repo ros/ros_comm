@@ -2,8 +2,8 @@
 Changelog for package rosnode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.15 (2020-08-10)
+--------------------
 * explicitly handle socket.timeout in rosnode ping (`#1517 <https://github.com/ros/ros_comm/issues/1517>`_)
 
 1.12.14 (2018-08-23)

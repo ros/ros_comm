@@ -2,8 +2,8 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.15 (2020-08-10)
+--------------------
 * fix NameError in launch error handling (`#1965 <https://github.com/ros/ros_comm/issues/1965>`_)
 * allow empty ssh password for remote launching (`#1826 <https://github.com/ros/ros_comm/issues/1826>`_)
 * fix missing args (`#1733 <https://github.com/ros/ros_comm/issues/1733>`_)

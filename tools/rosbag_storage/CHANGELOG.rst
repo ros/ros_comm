@@ -2,8 +2,8 @@
 Changelog for package rosbag_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.15 (2020-08-10)
+--------------------
 * fix brief description comments after members (`#1920 <https://github.com/ros/ros_comm/issues/1920>`_)
 * check for fclose returning 0 in rosbag_storage (`#1750 <https://github.com/ros/ros_comm/issues/1750>`_)
 * fix infinite loop in rosbag buffer resize (`#1623 <https://github.com/ros/ros_comm/issues/1623>`_)

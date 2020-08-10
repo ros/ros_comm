@@ -2,8 +2,8 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.15 (2020-08-10)
+--------------------
 * close sockets when server responds with HTTP/1.0 (`#1284 <https://github.com/ros/ros_comm/issues/1284>`_)
 * add bool assignment operator (`#1709 <https://github.com/ros/ros_comm/issues/1709>`_)
 * add const indexer for xmlrpc (`#1759 <https://github.com/ros/ros_comm/issues/1759>`_)

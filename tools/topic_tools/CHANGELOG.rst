@@ -2,8 +2,8 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.15 (2020-08-10)
+--------------------
 * transfom: create publisher before subscriber, because callback may use the publisher (`#1669 <https://github.com/ros/ros_comm/issues/1669>`_)
 * mux: do not dereference the end-iterator (`#1579 <https://github.com/ros/ros_comm/issues/1579>`_)
 * fix topic_tools environment hook (`#1486 <https://github.com/ros/ros_comm/issues/1486>`_)

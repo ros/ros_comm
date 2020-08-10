@@ -2,8 +2,8 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.15 (2020-08-10)
+--------------------
 * close sockets when server responds with HTTP/1.0 (`#1284 <https://github.com/ros/ros_comm/issues/1284>`_)
 * fix a bug that using a destroyed connection object (`#1950 <https://github.com/ros/ros_comm/issues/1950>`_)
 * remove extra \n in ROS_DEBUG (`#1925 <https://github.com/ros/ros_comm/issues/1925>`_)

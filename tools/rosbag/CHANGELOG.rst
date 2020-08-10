@@ -2,8 +2,8 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.12.15 (2020-08-10)
+--------------------
 * fix roslib not being imported (`#1818 <https://github.com/ros/ros_comm/issues/1818>`_)
 * remove deadcode (`#1786 <https://github.com/ros/ros_comm/issues/1786>`_)
 * record: fix signed int overflow (`#1741 <https://github.com/ros/ros_comm/issues/1741>`_)
