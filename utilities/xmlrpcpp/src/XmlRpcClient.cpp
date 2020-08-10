@@ -471,16 +471,10 @@ XmlRpcClient::parseResponse(XmlRpcValue& result)
       
   _response = "";
 
-  if (_header.size() < 8 || _header.find("HTTP/") != 0)
-    XmlRpcUtil::error("Error XmlRpcClient::parseResponse: Header does not start with protocol");
-  else
-  {
-    const unsigned protocolVersion = atoi(&_header[5]) * 10 + atoi(&_header[7]);
-    if (protocolVersion == 10)
-    {
-      setKeepOpen(false);
-      close();
-    }
+  // Close connection if protocol is HTTP/1.0
+  if (_header.size() > 8 && _header[5] == '1' && _header[7] == '0') {
+    setKeepOpen(false);
+    close();
   }
 
   _header = "";
