@@ -2,6 +2,12 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* transfom: create publisher before subscriber, because callback may use the publisher (`#1669 <https://github.com/ros/ros_comm/issues/1669>`_)
+* mux: do not dereference the end-iterator (`#1579 <https://github.com/ros/ros_comm/issues/1579>`_)
+* fix topic_tools environment hook (`#1486 <https://github.com/ros/ros_comm/issues/1486>`_)
+
 1.12.14 (2018-08-23)
 --------------------
 * check that output topic is valid in demux (`#1367 <https://github.com/ros/ros_comm/issues/1367>`_)

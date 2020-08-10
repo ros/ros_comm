@@ -2,6 +2,11 @@
 Changelog for package roswtf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* do not try to run online checks if there are no roslaunch uris (`#1848 <https://github.com/ros/ros_comm/issues/1848>`_)
+* print exception content to show better idea why loading plugin failed (`#1721 <https://github.com/ros/ros_comm/issues/1721>`_)
+
 1.12.14 (2018-08-23)
 --------------------
 

@@ -2,6 +2,29 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* close sockets when server responds with HTTP/1.0 (`#1284 <https://github.com/ros/ros_comm/issues/1284>`_)
+* fix a bug that using a destroyed connection object (`#1950 <https://github.com/ros/ros_comm/issues/1950>`_)
+* remove extra \n in ROS_DEBUG (`#1925 <https://github.com/ros/ros_comm/issues/1925>`_)
+* do not display error message if poll yields EINTR (`#1868 <https://github.com/ros/ros_comm/issues/1868>`_)
+* TransportTCP: Allow socket() to return 0 (`#1707 <https://github.com/ros/ros_comm/issues/1707>`_)
+* add Timer::isValid() const (`#1779 <https://github.com/ros/ros_comm/issues/1779>`_)
+* transport_tcp: enable poll event POLLRDHUP to detect dead (`#1704 <https://github.com/ros/ros_comm/issues/1704>`_)
+* unregisterService returns result of execute("unregisterService") (`#1751 <https://github.com/ros/ros_comm/issues/1751>`_)
+* fix string check (`#1771 <https://github.com/ros/ros_comm/issues/1771>`_)
+* resolve memory leak (`#1503 <https://github.com/ros/ros_comm/issues/1503>`_)
+* fix Exception boost::lock_error thrown from shutdown method (`#1656 <https://github.com/ros/ros_comm/issues/1656>`_)
+* TopicManager: avoid deadlock (`#1645 <https://github.com/ros/ros_comm/issues/1645>`_)
+* service: use WallTime/WallDuration for waiting (`#1638 <https://github.com/ros/ros_comm/issues/1638>`_)
+* fix bug in statistics decision making if one should publish (`#1625 <https://github.com/ros/ros_comm/issues/1625>`_)
+* fix race due unprotected access to callbacks\_ in roscpp client (`#1595 <https://github.com/ros/ros_comm/issues/1595>`_)
+* remove nullptr access from Timer().hasStarted() (`#1541 <https://github.com/ros/ros_comm/issues/1541>`_)
+* add const specifier to `NodeHandle::param(param_name, default_val)`. (`#1539 <https://github.com/ros/ros_comm/issues/1539>`_)
+* fix stamp_age_mean overflow when stamp age very big (`#1526 <https://github.com/ros/ros_comm/issues/1526>`_)
+* use an internal implementation of boost::condition_variable with monotonic clock [kinetic-devel] (`#2011 <https://github.com/ros/ros_comm/issues/2011>`_)
+* fix compiler warnings about unused variables (`#1428 <https://github.com/ros/ros_comm/issues/1428>`_) (`#1576 <https://github.com/ros/ros_comm/issues/1576>`_)
+
 1.12.14 (2018-08-23)
 --------------------
 * add hasStarted() to Timer API (`#1464 <https://github.com/ros/ros_comm/issues/1464>`_)

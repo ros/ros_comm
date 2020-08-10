@@ -2,6 +2,17 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix NameError in launch error handling (`#1965 <https://github.com/ros/ros_comm/issues/1965>`_)
+* allow empty ssh password for remote launching (`#1826 <https://github.com/ros/ros_comm/issues/1826>`_)
+* fix missing args (`#1733 <https://github.com/ros/ros_comm/issues/1733>`_)
+* fix $(dirname) for roslaunch-check. (`#1624 <https://github.com/ros/ros_comm/issues/1624>`_)
+* make roslaunch-check respect arg remappings with command line argument (`#1653 <https://github.com/ros/ros_comm/issues/1653>`_)
+* respawn if process died while checking should_respawn() (`#1590 <https://github.com/ros/ros_comm/issues/1590>`_)
+* normalize strings to utf-8 before setting as environment variable (`#1593 <https://github.com/ros/ros_comm/issues/1593>`_)
+* exclude unused args check if pass_all_args is set (`#1520 <https://github.com/ros/ros_comm/issues/1520>`_)
+
 1.12.14 (2018-08-23)
 --------------------
 * fix "pass_all_args" for roslaunch-check, add nosetest (`#1368 <https://github.com/ros/ros_comm/issues/1368>`_)

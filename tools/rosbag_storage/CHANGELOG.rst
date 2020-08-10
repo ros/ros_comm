@@ -2,6 +2,13 @@
 Changelog for package rosbag_storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix brief description comments after members (`#1920 <https://github.com/ros/ros_comm/issues/1920>`_)
+* check for fclose returning 0 in rosbag_storage (`#1750 <https://github.com/ros/ros_comm/issues/1750>`_)
+* fix infinite loop in rosbag buffer resize (`#1623 <https://github.com/ros/ros_comm/issues/1623>`_)
+* add rosbag::Bag::isOpen (`#1190 <https://github.com/ros/ros_comm/issues/1190>`_) (`#1789 <https://github.com/ros/ros_comm/issues/1789>`_)
+
 1.12.14 (2018-08-23)
 --------------------
 
