@@ -472,7 +472,7 @@ XmlRpcClient::parseResponse(XmlRpcValue& result)
   _response = "";
 
   // Close connection if protocol is HTTP/1.0
-  if (_header.size() > 8 && _header[5] == '1' && _header[7] == '0') {
+  if (_header.rfind("HTTP/1.0", 0) == 0) {
     setKeepOpen(false);
     close();
   }
