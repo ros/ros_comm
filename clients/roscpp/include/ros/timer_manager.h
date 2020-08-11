@@ -349,7 +349,7 @@ int32_t TimerManager<T, D, E>::add(const D& period, const boost::function<void(c
     {
       boost::mutex::scoped_lock lock(waiting_mutex_);
       waiting_.push_back(info->handle);
-      waiting_.sort(boost::bind(&TimerManager::waitingCompare, this, _1, _2));
+      waiting_.sort(boost::bind(&TimerManager::waitingCompare, this, boost::placeholders::_1, boost::placeholders::_2));
     }
 
     new_timer_ = true;
@@ -416,7 +416,7 @@ void TimerManager<T, D, E>::schedule(const TimerInfoPtr& info)
 
     waiting_.push_back(info->handle);
     // waitingCompare requires a lock on the timers_mutex_
-    waiting_.sort(boost::bind(&TimerManager::waitingCompare, this, _1, _2));
+    waiting_.sort(boost::bind(&TimerManager::waitingCompare, this, boost::placeholders::_1, boost::placeholders::_2));
   }
 
   new_timer_ = true;
@@ -490,7 +490,7 @@ void TimerManager<T, D, E>::setPeriod(int32_t handle, const D& period, bool rese
     // In this case, let next_expected be updated only in updateNext
     
     info->period = period;
-    waiting_.sort(boost::bind(&TimerManager::waitingCompare, this, _1, _2));
+    waiting_.sort(boost::bind(&TimerManager::waitingCompare, this, boost::placeholders::_1, boost::placeholders::_2));
   }
 
   new_timer_ = true;

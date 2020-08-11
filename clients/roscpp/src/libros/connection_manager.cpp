@@ -66,7 +66,7 @@ void ConnectionManager::start()
   tcpserver_transport_ = boost::make_shared<TransportTCP>(&poll_manager_->getPollSet());
   if (!tcpserver_transport_->listen(network::getTCPROSPort(), 
 				    MAX_TCPROS_CONN_QUEUE, 
-				    boost::bind(&ConnectionManager::tcprosAcceptConnection, this, _1)))
+				    boost::bind(&ConnectionManager::tcprosAcceptConnection, this, boost::placeholders::_1)))
   {
     ROS_FATAL("Listen on port [%d] failed", network::getTCPROSPort());
     ROS_BREAK();
@@ -142,7 +142,7 @@ void ConnectionManager::addConnection(const ConnectionPtr& conn)
   boost::mutex::scoped_lock lock(connections_mutex_);
 
   connections_.insert(conn);
-  conn->addDropListener(boost::bind(&ConnectionManager::onConnectionDropped, this, _1));
+  conn->addDropListener(boost::bind(&ConnectionManager::onConnectionDropped, this, boost::placeholders::_1));
 }
 
 void ConnectionManager::onConnectionDropped(const ConnectionPtr& conn)
@@ -190,7 +190,7 @@ void ConnectionManager::tcprosAcceptConnection(const TransportTCPPtr& transport)
   ConnectionPtr conn(boost::make_shared<Connection>());
   addConnection(conn);
 
-  conn->initialize(transport, true, boost::bind(&ConnectionManager::onConnectionHeaderReceived, this, _1, _2));
+  conn->initialize(transport, true, boost::bind(&ConnectionManager::onConnectionHeaderReceived, this, boost::placeholders::_1, boost::placeholders::_2));
 }
 
 bool ConnectionManager::onConnectionHeaderReceived(const ConnectionPtr& conn, const Header& header)
