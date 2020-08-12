@@ -2,8 +2,8 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.14.8 (2020-08-12)
+-------------------
 * remove 'using namespace' from condition_variable.h (`#2020 <https://github.com/ros/ros_comm/issues/2020>`_)
 * support boost 1.66 (`#2016 <https://github.com/ros/ros_comm/issues/2016>`_)
 
