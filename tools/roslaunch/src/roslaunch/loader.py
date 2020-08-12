@@ -74,7 +74,7 @@ def convert_value(value, type_):
         try:
             if '.' in value:
                 return float(value)
-            else:
+            if '_' not in value:
                 return int(value)
         except ValueError as e:
             pass
