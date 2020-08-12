@@ -131,7 +131,13 @@ class MasterProxy(object):
         @param val: parameter value
         @type val: XMLRPC legal value
         """
-        self.target.setParam(rospy.names.get_caller_id(), rospy.names.resolve_name(key), val)
+        resolved_key = rospy.names.resolve_name(key)
+
+        self.target.setParam(rospy.names.get_caller_id(), resolved_key, val)
+        try:
+            rospy.impl.paramserver.get_param_server_cache().update(resolved_key, val)
+        except KeyError:
+            pass
         
     def search_param(self, key):
         """
