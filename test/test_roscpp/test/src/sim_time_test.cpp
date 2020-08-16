@@ -46,7 +46,7 @@
 #include <rosgraph_msgs/Clock.h>
 
 #include <boost/thread.hpp>
-#include <boost/bind/bind.hpp>
+#include <boost/bind.hpp>
 
 int g_argc;
 char** g_argv;

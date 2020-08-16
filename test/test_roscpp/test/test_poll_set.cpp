@@ -41,7 +41,7 @@
 
 #include <fcntl.h>
 
-#include <boost/bind/bind.hpp>
+#include <boost/bind.hpp>
 #include <boost/thread.hpp>
 
 using namespace ros;

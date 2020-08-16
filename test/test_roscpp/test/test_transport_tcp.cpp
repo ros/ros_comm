@@ -37,7 +37,7 @@
 #include "ros/poll_set.h"
 #include "ros/transport/transport_tcp.h"
 
-#include <boost/bind/bind.hpp>
+#include <boost/bind.hpp>
 #include <boost/thread.hpp>
 
 using namespace ros;

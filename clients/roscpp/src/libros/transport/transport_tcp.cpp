@@ -39,7 +39,7 @@
 #include "ros/file_log.h"
 #include <ros/assert.h>
 #include <sstream>
-#include <boost/bind/bind.hpp>
+#include <boost/bind.hpp>
 #include <fcntl.h>
 #include <errno.h>
 #ifndef _WIN32

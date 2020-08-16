@@ -45,7 +45,7 @@
 #include <boost/function.hpp>
 #include <boost/thread/mutex.hpp>
 
-#include <boost/bind/bind.hpp>
+#include <boost/bind.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/mpl/or.hpp>

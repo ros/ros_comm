@@ -28,7 +28,7 @@
 #include "ros/subscriber_link.h"
 #include "ros/publication.h"
 
-#include <boost/bind/bind.hpp>
+#include <boost/bind.hpp>
 
 namespace ros
 {

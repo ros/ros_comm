@@ -39,7 +39,7 @@
 #include <ros/assert.h>
 
 #include <boost/shared_array.hpp>
-#include <boost/bind/bind.hpp>
+#include <boost/bind.hpp>
 
 namespace ros
 {
