@@ -111,14 +111,14 @@ TEST(SimpleFilter, callbackTypes)
 {
   Helper h;
   Filter f;
-  f.registerCallback(boost::bind(&Helper::cb0, &h, _1));
-  f.registerCallback<const Msg&>(boost::bind(&Helper::cb1, &h, _1));
-  f.registerCallback<MsgConstPtr>(boost::bind(&Helper::cb2, &h, _1));
-  f.registerCallback<const ros::MessageEvent<Msg const>&>(boost::bind(&Helper::cb3, &h, _1));
-  f.registerCallback<Msg>(boost::bind(&Helper::cb4, &h, _1));
-  f.registerCallback<const MsgPtr&>(boost::bind(&Helper::cb5, &h, _1));
-  f.registerCallback<MsgPtr>(boost::bind(&Helper::cb6, &h, _1));
-  f.registerCallback<const ros::MessageEvent<Msg>&>(boost::bind(&Helper::cb7, &h, _1));
+  f.registerCallback(boost::bind(&Helper::cb0, &h, boost::placeholders::_1));
+  f.registerCallback<const Msg&>(boost::bind(&Helper::cb1, &h, boost::placeholders::_1));
+  f.registerCallback<MsgConstPtr>(boost::bind(&Helper::cb2, &h, boost::placeholders::_1));
+  f.registerCallback<const ros::MessageEvent<Msg const>&>(boost::bind(&Helper::cb3, &h, boost::placeholders::_1));
+  f.registerCallback<Msg>(boost::bind(&Helper::cb4, &h, boost::placeholders::_1));
+  f.registerCallback<const MsgPtr&>(boost::bind(&Helper::cb5, &h, boost::placeholders::_1));
+  f.registerCallback<MsgPtr>(boost::bind(&Helper::cb6, &h, boost::placeholders::_1));
+  f.registerCallback<const ros::MessageEvent<Msg>&>(boost::bind(&Helper::cb7, &h, boost::placeholders::_1));
 
   f.add(Filter::EventType(boost::make_shared<Msg>()));
   EXPECT_EQ(h.counts_[0], 1);
@@ -143,7 +143,7 @@ TEST(SimpleFilter, oldRegisterWithNewFilter)
 {
   OldFilter f;
   Helper h;
-  f.registerCallback(boost::bind(&Helper::cb3, &h, _1));
+  f.registerCallback(boost::bind(&Helper::cb3, &h, boost::placeholders::_1));
 }
 
 int main(int argc, char **argv){

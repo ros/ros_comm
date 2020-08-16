@@ -184,7 +184,7 @@ int Recorder::run() {
         record_thread = boost::thread(boost::bind(&Recorder::doRecordSnapshotter, this));
 
         // Subscribe to the snapshot trigger
-        trigger_sub = nh.subscribe<std_msgs::Empty>("snapshot_trigger", 100, boost::bind(&Recorder::snapshotTrigger, this, _1));
+        trigger_sub = nh.subscribe<std_msgs::Empty>("snapshot_trigger", 100, boost::bind(&Recorder::snapshotTrigger, this, boost::placeholders::_1));
     }
     else
         record_thread = boost::thread(boost::bind(&Recorder::doRecord, this));
@@ -196,7 +196,7 @@ int Recorder::run() {
     {
         // check for master first
         doCheckMaster(ros::TimerEvent(), nh);
-        check_master_timer = nh.createTimer(ros::Duration(1.0), boost::bind(&Recorder::doCheckMaster, this, _1, boost::ref(nh)));
+        check_master_timer = nh.createTimer(ros::Duration(1.0), boost::bind(&Recorder::doCheckMaster, this, boost::placeholders::_1, boost::ref(nh)));
     }
 
     ros::AsyncSpinner s(10);
@@ -223,7 +223,7 @@ shared_ptr<ros::Subscriber> Recorder::subscribe(string const& topic) {
     ops.datatype = ros::message_traits::datatype<topic_tools::ShapeShifter>();
     ops.helper = boost::make_shared<ros::SubscriptionCallbackHelperT<
         const ros::MessageEvent<topic_tools::ShapeShifter const> &> >(
-            boost::bind(&Recorder::doQueue, this, _1, topic, sub, count));
+            boost::bind(&Recorder::doQueue, this, boost::placeholders::_1, topic, sub, count));
     ops.transport_hints = options_.transport_hints;
     *sub = nh.subscribe(ops);
 

@@ -254,7 +254,7 @@ protected:
     transports_[0] = boost::make_shared<TransportTCP>(&poll_set_);
     transports_[1] = boost::make_shared<TransportTCP>(&poll_set_);
 
-    if (!transports_[0]->listen(0, 100, boost::bind(&Polled::connectionReceived, this, _1)))
+    if (!transports_[0]->listen(0, 100, boost::bind(&Polled::connectionReceived, this, boost::placeholders::_1)))
     {
       FAIL();
     }
@@ -278,12 +278,12 @@ protected:
       FAIL();
     }
 
-    transports_[1]->setReadCallback(boost::bind(&Polled::onReadable, this, _1, 1));
-    transports_[2]->setReadCallback(boost::bind(&Polled::onReadable, this, _1, 2));
-    transports_[1]->setWriteCallback(boost::bind(&Polled::onWriteable, this, _1, 1));
-    transports_[2]->setWriteCallback(boost::bind(&Polled::onWriteable, this, _1, 2));
-    transports_[1]->setDisconnectCallback(boost::bind(&Polled::onDisconnect, this, _1, 1));
-    transports_[2]->setDisconnectCallback(boost::bind(&Polled::onDisconnect, this, _1, 2));
+    transports_[1]->setReadCallback(boost::bind(&Polled::onReadable, this, boost::placeholders::_1, 1));
+    transports_[2]->setReadCallback(boost::bind(&Polled::onReadable, this, boost::placeholders::_1, 2));
+    transports_[1]->setWriteCallback(boost::bind(&Polled::onWriteable, this, boost::placeholders::_1, 1));
+    transports_[2]->setWriteCallback(boost::bind(&Polled::onWriteable, this, boost::placeholders::_1, 2));
+    transports_[1]->setDisconnectCallback(boost::bind(&Polled::onDisconnect, this, boost::placeholders::_1, 1));
+    transports_[2]->setDisconnectCallback(boost::bind(&Polled::onDisconnect, this, boost::placeholders::_1, 2));
 
     transports_[1]->enableRead();
     transports_[2]->enableRead();

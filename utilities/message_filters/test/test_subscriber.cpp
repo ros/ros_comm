@@ -64,7 +64,7 @@ TEST(Subscriber, simple)
   ros::NodeHandle nh;
   Helper h;
   Subscriber<Msg> sub(nh, "test_topic", 0);
-  sub.registerCallback(boost::bind(&Helper::cb, &h, _1));
+  sub.registerCallback(boost::bind(&Helper::cb, &h, boost::placeholders::_1));
   ros::Publisher pub = nh.advertise<Msg>("test_topic", 0);
 
   ros::Time start = ros::Time::now();
@@ -83,7 +83,7 @@ TEST(Subscriber, subUnsubSub)
   ros::NodeHandle nh;
   Helper h;
   Subscriber<Msg> sub(nh, "test_topic", 0);
-  sub.registerCallback(boost::bind(&Helper::cb, &h, _1));
+  sub.registerCallback(boost::bind(&Helper::cb, &h, boost::placeholders::_1));
   ros::Publisher pub = nh.advertise<Msg>("test_topic", 0);
 
   sub.unsubscribe();
@@ -106,7 +106,7 @@ TEST(Subscriber, subInChain)
   Helper h;
   Chain<Msg> c;
   c.addFilter(boost::make_shared<Subscriber<Msg> >(boost::ref(nh), "test_topic", 0));
-  c.registerCallback(boost::bind(&Helper::cb, &h, _1));
+  c.registerCallback(boost::bind(&Helper::cb, &h, boost::placeholders::_1));
   ros::Publisher pub = nh.advertise<Msg>("test_topic", 0);
 
   ros::Time start = ros::Time::now();

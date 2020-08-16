@@ -285,7 +285,7 @@ int main(int argc, char **argv)
   g_pub_selected.publish(t);
 
   // Create the one subscriber
-  g_sub = ros::Subscriber(n.subscribe<ShapeShifter>(g_input_topic, 10, boost::bind(in_cb, _1)));
+  g_sub = ros::Subscriber(n.subscribe<ShapeShifter>(g_input_topic, 10, boost::bind(in_cb, boost::placeholders::_1)));
 
 
   // New service

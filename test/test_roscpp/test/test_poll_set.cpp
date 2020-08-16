@@ -261,7 +261,7 @@ public:
 TEST_F(Poller, read)
 {
   SocketHelper sh(sockets_[0]);
-  ASSERT_TRUE(poll_set_.addSocket(sh.socket_, boost::bind(&SocketHelper::processEvents, &sh, _1)));
+  ASSERT_TRUE(poll_set_.addSocket(sh.socket_, boost::bind(&SocketHelper::processEvents, &sh, boost::placeholders::_1)));
 
   char b = 0;
 
@@ -295,7 +295,7 @@ TEST_F(Poller, read)
 TEST_F(Poller, write)
 {
   SocketHelper sh(sockets_[0]);
-  ASSERT_TRUE(poll_set_.addSocket(sh.socket_, boost::bind(&SocketHelper::processEvents, &sh, _1)));
+  ASSERT_TRUE(poll_set_.addSocket(sh.socket_, boost::bind(&SocketHelper::processEvents, &sh, boost::placeholders::_1)));
   ASSERT_TRUE(poll_set_.addEvents(sh.socket_, POLLOUT));
 
   poll_set_.update(1);
@@ -313,8 +313,8 @@ TEST_F(Poller, readAndWrite)
 {
   SocketHelper sh1(sockets_[0]);
   SocketHelper sh2(sockets_[1]);
-  ASSERT_TRUE(poll_set_.addSocket(sh1.socket_, boost::bind(&SocketHelper::processEvents, &sh1, _1)));
-  ASSERT_TRUE(poll_set_.addSocket(sh2.socket_, boost::bind(&SocketHelper::processEvents, &sh2, _1)));
+  ASSERT_TRUE(poll_set_.addSocket(sh1.socket_, boost::bind(&SocketHelper::processEvents, &sh1, boost::placeholders::_1)));
+  ASSERT_TRUE(poll_set_.addSocket(sh2.socket_, boost::bind(&SocketHelper::processEvents, &sh2, boost::placeholders::_1)));
 
   ASSERT_TRUE(poll_set_.addEvents(sh1.socket_, POLLIN));
   ASSERT_TRUE(poll_set_.addEvents(sh2.socket_, POLLIN));
@@ -350,8 +350,8 @@ TEST_F(Poller, readAndWrite)
 TEST_F(Poller, multiAddDel)
 {
   SocketHelper sh(sockets_[0]);
-  ASSERT_TRUE(poll_set_.addSocket(sh.socket_, boost::bind(&SocketHelper::processEvents, &sh, _1)));
-  ASSERT_FALSE(poll_set_.addSocket(sh.socket_, boost::bind(&SocketHelper::processEvents, &sh, _1)));
+  ASSERT_TRUE(poll_set_.addSocket(sh.socket_, boost::bind(&SocketHelper::processEvents, &sh, boost::placeholders::_1)));
+  ASSERT_FALSE(poll_set_.addSocket(sh.socket_, boost::bind(&SocketHelper::processEvents, &sh, boost::placeholders::_1)));
 
   ASSERT_TRUE(poll_set_.addEvents(sh.socket_, 0));
   ASSERT_FALSE(poll_set_.addEvents(sh.socket_ + 1, 0));
@@ -367,7 +367,7 @@ void addThread(PollSet* ps, SocketHelper* sh, boost::barrier* barrier)
 {
   barrier->wait();
 
-  ps->addSocket(sh->socket_, boost::bind(&SocketHelper::processEvents, sh, _1));
+  ps->addSocket(sh->socket_, boost::bind(&SocketHelper::processEvents, sh, boost::placeholders::_1));
   ps->addEvents(sh->socket_, POLLIN);
   ps->addEvents(sh->socket_, POLLOUT);
 }
@@ -460,11 +460,11 @@ void addDelManyTimesThread(PollSet* ps, SocketHelper* sh1, SocketHelper* sh2, bo
 
   for (int i = 0; i < count; ++i)
   {
-    ps->addSocket(sh1->socket_, boost::bind(&SocketHelper::processEvents, sh1, _1));
+    ps->addSocket(sh1->socket_, boost::bind(&SocketHelper::processEvents, sh1, boost::placeholders::_1));
     ps->addEvents(sh1->socket_, POLLIN);
     ps->addEvents(sh1->socket_, POLLOUT);
 
-    ps->addSocket(sh2->socket_, boost::bind(&SocketHelper::processEvents, sh2, _1));
+    ps->addSocket(sh2->socket_, boost::bind(&SocketHelper::processEvents, sh2, boost::placeholders::_1));
     ps->addEvents(sh2->socket_, POLLIN);
     ps->addEvents(sh2->socket_, POLLOUT);
 

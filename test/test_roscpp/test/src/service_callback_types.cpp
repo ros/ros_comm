@@ -82,12 +82,12 @@ TEST(ServiceCallbackTypes, compile)
   std::vector<ros::ServiceServer> srvs;
   srvs.push_back(n.advertiseService("add_two_ints", add));
   srvs.push_back(n.advertiseService("add_two_ints2", add2));
-  srvs.push_back(n.advertiseService<ros::ServiceEvent<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response> >("add_two_ints3", boost::bind(add3, _1, std::string("blah"))));
+  srvs.push_back(n.advertiseService<ros::ServiceEvent<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response> >("add_two_ints3", boost::bind(add3, boost::placeholders::_1, std::string("blah"))));
 
   A a;
   srvs.push_back(n.advertiseService("add_two_ints10", &A::add, &a));
   srvs.push_back(n.advertiseService("add_two_ints11", &A::add2, &a));
-  srvs.push_back(n.advertiseService<ros::ServiceEvent<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response> >("add_two_ints12", boost::bind(&A::add3, &a, _1, std::string("blah"))));
+  srvs.push_back(n.advertiseService<ros::ServiceEvent<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response> >("add_two_ints12", boost::bind(&A::add3, &a, boost::placeholders::_1, std::string("blah"))));
 }
 
 int main(int argc, char **argv)

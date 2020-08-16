@@ -673,12 +673,12 @@ void Bag::writeConnectionRecord(ConnectionInfo const* connection_info, const boo
     header[CONNECTION_FIELD_NAME] = toHeaderString(&connection_info->id);
 
     if (encrypt)
-        encryptor_->writeEncryptedHeader(boost::bind(&Bag::writeHeader, this, _1), header, file_);
+        encryptor_->writeEncryptedHeader(boost::bind(&Bag::writeHeader, this, boost::placeholders::_1), header, file_);
     else
         writeHeader(header);
 
     if (encrypt)
-        encryptor_->writeEncryptedHeader(boost::bind(&Bag::writeHeader, this, _1), *connection_info->header, file_);
+        encryptor_->writeEncryptedHeader(boost::bind(&Bag::writeHeader, this, boost::placeholders::_1), *connection_info->header, file_);
     else
         writeHeader(*connection_info->header);
 }
@@ -695,7 +695,7 @@ void Bag::appendConnectionRecordToBuffer(Buffer& buf, ConnectionInfo const* conn
 
 void Bag::readConnectionRecord() {
     ros::Header header;
-    if (!encryptor_->readEncryptedHeader(boost::bind(&Bag::readHeader, this, _1), header, header_buffer_, file_))
+    if (!encryptor_->readEncryptedHeader(boost::bind(&Bag::readHeader, this, boost::placeholders::_1), header, header_buffer_, file_))
         throw BagFormatException("Error reading CONNECTION header");
     M_string& fields = *header.getValues();
 
@@ -708,7 +708,7 @@ void Bag::readConnectionRecord() {
     readField(fields, TOPIC_FIELD_NAME,      true, topic);
 
     ros::Header connection_header;
-    if (!encryptor_->readEncryptedHeader(boost::bind(&Bag::readHeader, this, _1), connection_header, header_buffer_, file_))
+    if (!encryptor_->readEncryptedHeader(boost::bind(&Bag::readHeader, this, boost::placeholders::_1), connection_header, header_buffer_, file_))
         throw BagFormatException("Error reading connection header");
 
     // If this is a new connection, update connections
