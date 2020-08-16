@@ -4,7 +4,7 @@
 #include <std_msgs/UInt64.h>
 
 #include <gtest/gtest.h>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 /**
  * @brief Helper function to create std_msgs::* messages.

@@ -42,7 +42,7 @@
 #include <ros/message_event.h>
 #include <ros/subscription_callback_helper.h>
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <string>
 

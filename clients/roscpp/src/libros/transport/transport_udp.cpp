@@ -37,7 +37,7 @@
 #include "ros/file_log.h"
 
 #include <ros/assert.h>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #ifndef _WIN32
   #include <sys/socket.h>  // explicit include required for FreeBSD
 #endif
