@@ -140,7 +140,7 @@ bool TransportTCP::initializeSocket()
   if (poll_set_)
   {
     ROS_DEBUG("Adding tcp socket [%d] to pollset", sock_);
-    poll_set_->addSocket(sock_, boost::bind(&TransportTCP::socketUpdate, this, _1), shared_from_this());
+    poll_set_->addSocket(sock_, boost::bind(&TransportTCP::socketUpdate, this, boost::placeholders::_1), shared_from_this());
 #if defined(POLLRDHUP) // POLLRDHUP is not part of POSIX!
     // This is needed to detect dead connections. #1704
     poll_set_->addEvents(sock_, POLLRDHUP);

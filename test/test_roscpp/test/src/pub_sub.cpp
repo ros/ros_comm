@@ -73,7 +73,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
 
   ros::Publisher pub = nh.advertise<test_roscpp::TestArray>("roscpp/pubsub_test", 1);
-  ros::Subscriber sub = nh.subscribe<test_roscpp::TestArray>("roscpp/subpub_test", 1, boost::bind(messageCallback, _1, pub));
+  ros::Subscriber sub = nh.subscribe<test_roscpp::TestArray>("roscpp/subpub_test", 1, boost::bind(messageCallback, boost::placeholders::_1, pub));
 
   ros::spin();
 }

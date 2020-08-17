@@ -154,13 +154,13 @@ public:
   size_t addFilter(const boost::shared_ptr<F>& filter)
   {
     FilterInfo info;
-    info.add_func = boost::bind((void(F::*)(const EventType&))&F::add, filter.get(), _1);
+    info.add_func = boost::bind((void(F::*)(const EventType&))&F::add, filter.get(), boost::placeholders::_1);
     info.filter = filter;
     info.passthrough = boost::make_shared<PassThrough<M> >();
 
     last_filter_connection_.disconnect();
     info.passthrough->connectInput(*filter);
-    last_filter_connection_ = info.passthrough->registerCallback(typename SimpleFilter<M>::EventCallback(boost::bind(&Chain::lastFilterCB, this, _1)));
+    last_filter_connection_ = info.passthrough->registerCallback(typename SimpleFilter<M>::EventCallback(boost::bind(&Chain::lastFilterCB, this, boost::placeholders::_1)));
     if (!filters_.empty())
     {
       filter->connectInput(*filters_.back().passthrough);
@@ -196,7 +196,7 @@ public:
   void connectInput(F& f)
   {
     incoming_connection_.disconnect();
-    incoming_connection_ = f.registerCallback(typename SimpleFilter<M>::EventCallback(boost::bind(&Chain::incomingCB, this, _1)));
+    incoming_connection_ = f.registerCallback(typename SimpleFilter<M>::EventCallback(boost::bind(&Chain::incomingCB, this, boost::placeholders::_1)));
   }
 
   /**

@@ -53,7 +53,7 @@ PollSet::PollSet()
         ROS_FATAL("create_signal_pair() failed");
     ROS_BREAK();
   }
-  addSocket(signal_pipe_[0], boost::bind(&PollSet::onLocalPipeEvents, this, _1));
+  addSocket(signal_pipe_[0], boost::bind(&PollSet::onLocalPipeEvents, this, boost::placeholders::_1));
   addEvents(signal_pipe_[0], POLLIN);
 }
 

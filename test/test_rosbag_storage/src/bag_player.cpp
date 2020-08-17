@@ -147,7 +147,7 @@ TEST_F(BagPlayerTest, bag_player_message_instance)
 TEST_F(BagPlayerTest, bag_player_message_class)
 {
   rosbag::BagPlayer player(bag_filename);
-  player.register_callback<std_msgs::UInt64>(topic, boost::bind(&BagPlayerTest::callbackMessage, this, _1));
+  player.register_callback<std_msgs::UInt64>(topic, boost::bind(&BagPlayerTest::callbackMessage, this, boost::placeholders::_1));
   player.start_play();
 
   EXPECT_EQ(bag_messages, num_messages);
@@ -158,7 +158,7 @@ TEST_F(BagPlayerTest, bag_player_message_instance_class)
 {
   rosbag::BagPlayer player(bag_filename);
   player.register_callback<rosbag::MessageInstance>(topic,
-                                                    boost::bind(&BagPlayerTest::callbackMessageInstance, this, _1));
+                                                    boost::bind(&BagPlayerTest::callbackMessageInstance, this, boost::placeholders::_1));
   player.start_play();
 
   EXPECT_EQ(bag_messages, num_messages);

@@ -80,10 +80,10 @@ class Subscriptions : public testing::Test
       ROS_INFO("Subscribing %d", cb_num);
       boost::function<void(const test_roscpp::TestArrayConstPtr&)> funcs[4] =
       {
-        boost::bind(&Subscriptions::cb0, this, _1),
-        boost::bind(&Subscriptions::cb1, this, _1),
-        boost::bind(&Subscriptions::cb2, this, _1),
-        boost::bind(&Subscriptions::cb3, this, _1),
+        boost::bind(&Subscriptions::cb0, this, boost::placeholders::_1),
+        boost::bind(&Subscriptions::cb1, this, boost::placeholders::_1),
+        boost::bind(&Subscriptions::cb2, this, boost::placeholders::_1),
+        boost::bind(&Subscriptions::cb3, this, boost::placeholders::_1),
       };
 
       subs_[cb_num] = nh_.subscribe("roscpp/pubsub_test", 10, funcs[cb_num]);

@@ -424,7 +424,7 @@ void LatencyTest::sendThread(boost::barrier* all_connected, uint32_t thread_inde
     pubs.push_back(nh.advertise<test_roscpp::LatencyMessage>(ss.str(), 0));
 
     ss << "_return";
-    subs.push_back(nh.subscribe<test_roscpp::LatencyMessage>(ss.str(), 0, boost::bind(&LatencyTest::sendCallback, this, _1, boost::ref(pubs[i]), thread_index), ros::VoidConstPtr(), ros::TransportHints().tcpNoDelay()));
+    subs.push_back(nh.subscribe<test_roscpp::LatencyMessage>(ss.str(), 0, boost::bind(&LatencyTest::sendCallback, this, boost::placeholders::_1, boost::ref(pubs[i]), thread_index), ros::VoidConstPtr(), ros::TransportHints().tcpNoDelay()));
   }
 
   bool cont = true;
@@ -493,7 +493,7 @@ LatencyResult LatencyTest::run()
     ss << "_return";
     std::string pub_topic = ss.str();
     pubs.push_back(nh.advertise<test_roscpp::LatencyMessage>(pub_topic, 0));
-    subs.push_back(nh.subscribe<test_roscpp::LatencyMessage>(sub_topic, 0, boost::bind(&LatencyTest::receiveCallback, this, _1, boost::ref(pubs.back())), ros::VoidConstPtr(), ros::TransportHints().tcpNoDelay()));
+    subs.push_back(nh.subscribe<test_roscpp::LatencyMessage>(sub_topic, 0, boost::bind(&LatencyTest::receiveCallback, this, boost::placeholders::_1, boost::ref(pubs.back())), ros::VoidConstPtr(), ros::TransportHints().tcpNoDelay()));
   }
 
   boost::barrier all_connected(1 + sender_threads_);
@@ -655,9 +655,9 @@ STLatencyResult STLatencyTest::run()
   nh.setCallbackQueue(&receive_queue_);
 
   ros::Publisher recv_pub = nh.advertise<test_roscpp::LatencyMessage>("stlatency_perf_test_return", 0);
-  ros::Subscriber recv_sub = nh.subscribe<test_roscpp::LatencyMessage>("stlatency_perf_test", 0, boost::bind(&STLatencyTest::receiveCallback, this, _1, boost::ref(recv_pub)), ros::VoidConstPtr(), ros::TransportHints().tcpNoDelay());
+  ros::Subscriber recv_sub = nh.subscribe<test_roscpp::LatencyMessage>("stlatency_perf_test", 0, boost::bind(&STLatencyTest::receiveCallback, this, boost::placeholders::_1, boost::ref(recv_pub)), ros::VoidConstPtr(), ros::TransportHints().tcpNoDelay());
   ros::Publisher send_pub = nh.advertise<test_roscpp::LatencyMessage>("stlatency_perf_test", 0);
-  ros::Subscriber send_sub = nh.subscribe<test_roscpp::LatencyMessage>("stlatency_perf_test_return", 0, boost::bind(&STLatencyTest::sendCallback, this, _1, boost::ref(send_pub)), ros::VoidConstPtr(), ros::TransportHints().tcpNoDelay());
+  ros::Subscriber send_sub = nh.subscribe<test_roscpp::LatencyMessage>("stlatency_perf_test_return", 0, boost::bind(&STLatencyTest::sendCallback, this, boost::placeholders::_1, boost::ref(send_pub)), ros::VoidConstPtr(), ros::TransportHints().tcpNoDelay());
 
   ROS_INFO("Waiting for all connections to establish");
 

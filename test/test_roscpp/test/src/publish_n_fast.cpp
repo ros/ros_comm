@@ -73,7 +73,7 @@ main(int argc, char** argv)
   int min_size = atoi(argv[2]);
   int max_size = atoi(argv[3]);
 
-  ros::Publisher pub_ = n.advertise<test_roscpp::TestArray>("roscpp/pubsub_test", msg_count, boost::bind(&connectCallback, _1, msg_count, min_size, max_size));
+  ros::Publisher pub_ = n.advertise<test_roscpp::TestArray>("roscpp/pubsub_test", msg_count, boost::bind(&connectCallback, boost::placeholders::_1, msg_count, min_size, max_size));
   ros::spin();
 
   return 0;

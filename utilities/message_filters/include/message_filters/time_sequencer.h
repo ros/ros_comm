@@ -123,7 +123,7 @@ public:
   void connectInput(F& f)
   {
     incoming_connection_.disconnect();
-    incoming_connection_ = f.registerCallback(typename SimpleFilter<M>::EventCallback(boost::bind(&TimeSequencer::cb, this, _1)));
+    incoming_connection_ = f.registerCallback(typename SimpleFilter<M>::EventCallback(boost::bind(&TimeSequencer::cb, this, boost::placeholders::_1)));
   }
 
   ~TimeSequencer()
