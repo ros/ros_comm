@@ -165,7 +165,7 @@ namespace ros
     }
 
     boost::function<void(const SubscriberLinkPtr &)> getLastMessageCallback() {
-      return boost::bind(&Impl::pushLastMessage, impl_.get(), _1);
+      return boost::bind(&Impl::pushLastMessage, impl_.get(), boost::placeholders::_1);
     }
 
   private:

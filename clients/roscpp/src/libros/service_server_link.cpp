@@ -114,8 +114,8 @@ void ServiceServerLink::clearCalls()
 bool ServiceServerLink::initialize(const ConnectionPtr& connection)
 {
   connection_ = connection;
-  connection_->addDropListener(boost::bind(&ServiceServerLink::onConnectionDropped, this, _1));
-  connection_->setHeaderReceivedCallback(boost::bind(&ServiceServerLink::onHeaderReceived, this, _1, _2));
+  connection_->addDropListener(boost::bind(&ServiceServerLink::onConnectionDropped, this, boost::placeholders::_1));
+  connection_->setHeaderReceivedCallback(boost::bind(&ServiceServerLink::onHeaderReceived, this, boost::placeholders::_1, boost::placeholders::_2));
 
   M_string header;
   header["service"] = service_name_;
@@ -124,7 +124,7 @@ bool ServiceServerLink::initialize(const ConnectionPtr& connection)
   header["persistent"] = persistent_ ? "1" : "0";
   header.insert(extra_outgoing_header_values_.begin(), extra_outgoing_header_values_.end());
 
-  connection_->writeHeader(header, boost::bind(&ServiceServerLink::onHeaderWritten, this, _1));
+  connection_->writeHeader(header, boost::bind(&ServiceServerLink::onHeaderWritten, this, boost::placeholders::_1));
 
   return true;
 }
@@ -181,7 +181,7 @@ void ServiceServerLink::onRequestWritten(const ConnectionPtr& conn)
 {
   (void)conn;
   //ros::WallDuration(0.1).sleep();
-  connection_->read(5, boost::bind(&ServiceServerLink::onResponseOkAndLength, this, _1, _2, _3, _4));
+  connection_->read(5, boost::bind(&ServiceServerLink::onResponseOkAndLength, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4));
 }
 
 void ServiceServerLink::onResponseOkAndLength(const ConnectionPtr& conn, const boost::shared_array<uint8_t>& buffer, uint32_t size, bool success)
@@ -218,7 +218,7 @@ void ServiceServerLink::onResponseOkAndLength(const ConnectionPtr& conn, const b
 
   if (len > 0)
   {
-    connection_->read(len, boost::bind(&ServiceServerLink::onResponse, this, _1, _2, _3, _4));
+    connection_->read(len, boost::bind(&ServiceServerLink::onResponse, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4));
   }
   else
   {
@@ -322,7 +322,7 @@ void ServiceServerLink::processNextCall()
       request = current_call_->req_;
     }
 
-    connection_->write(request.buf, request.num_bytes, boost::bind(&ServiceServerLink::onRequestWritten, this, _1));
+    connection_->write(request.buf, request.num_bytes, boost::bind(&ServiceServerLink::onRequestWritten, this, boost::placeholders::_1));
   }
 }
 

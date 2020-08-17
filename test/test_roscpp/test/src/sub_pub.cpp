@@ -111,7 +111,7 @@ TEST_F(Subscriptions, subPub)
   ros::NodeHandle nh;
   ros::Subscriber sub = nh.subscribe("roscpp/pubsub_test", 0, &Subscriptions::messageCallback, (Subscriptions*)this);
   ASSERT_TRUE(sub);
-  pub_ = nh.advertise<test_roscpp::TestArray>("roscpp/subpub_test", 0, boost::bind(&Subscriptions::subscriberCallback, this, _1));
+  pub_ = nh.advertise<test_roscpp::TestArray>("roscpp/subpub_test", 0, boost::bind(&Subscriptions::subscriberCallback, this, boost::placeholders::_1));
   ASSERT_TRUE(pub_);
   ros::Time t1(ros::Time::now()+g_dt);
 

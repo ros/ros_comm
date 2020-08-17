@@ -67,7 +67,7 @@ int main(int argc, char** argv)
   g_msg_count = atoi(argv[1]);
 
   ros::NodeHandle nh;
-  ros::Publisher pub = nh.advertise<test_roscpp::TestEmpty>("roscpp/pubsub_test", g_msg_count, boost::bind(subscriberCallback, _1));
+  ros::Publisher pub = nh.advertise<test_roscpp::TestEmpty>("roscpp/pubsub_test", g_msg_count, boost::bind(subscriberCallback, boost::placeholders::_1));
 
   ros::spin();
 }

@@ -87,7 +87,7 @@ boost::shared_ptr<M const> waitForMessage(const std::string& topic, NodeHandle& 
 {
   SubscribeHelper<M> helper;
   SubscribeOptions ops;
-  ops.template init<M>(topic, 1, boost::bind(&SubscribeHelper<M>::callback, &helper, _1));
+  ops.template init<M>(topic, 1, boost::bind(&SubscribeHelper<M>::callback, &helper, boost::placeholders::_1));
 
   waitForMessageImpl(ops, boost::bind(&SubscribeHelper<M>::hasMessage, &helper), nh, timeout);
 

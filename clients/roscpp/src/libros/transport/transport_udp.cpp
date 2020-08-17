@@ -298,7 +298,7 @@ bool TransportUDP::initializeSocket()
   ROS_ASSERT(poll_set_ || (flags_ & SYNCHRONOUS));
   if (poll_set_)
   {
-    poll_set_->addSocket(sock_, boost::bind(&TransportUDP::socketUpdate, this, _1), shared_from_this());
+    poll_set_->addSocket(sock_, boost::bind(&TransportUDP::socketUpdate, this, boost::placeholders::_1), shared_from_this());
   }
 
   return true;

@@ -11,7 +11,7 @@
 #    wide_right_info(nh_, "/wide_stereo/right/camera_info", 10),
 #    wide(wide_left, wide_left_info, wide_right, wide_right_info, 4),
 #
-#    wide.registerCallback(boost::bind(&PersonDataRecorder::wideCB, this, _1, _2, _3, _4));
+#    wide.registerCallback(boost::bind(&PersonDataRecorder::wideCB, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4));
 
 import rostest
 import rospy

@@ -83,7 +83,7 @@ main(int argc, char** argv)
   ros::ServiceServer srv1, srv2, srv3;
   srv1 = nh.advertiseService("service_adv", caseFlip);
   srv2 = nh.advertiseService("service_adv_long", caseFlipLongRunning);
-  srv3 = nh.advertiseService<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response>("service_adv_unadv_in_callback", boost::bind(caseFlipUnadvertise, _1, _2, boost::ref(srv3)));
+  srv3 = nh.advertiseService<test_roscpp::TestStringString::Request, test_roscpp::TestStringString::Response>("service_adv_unadv_in_callback", boost::bind(caseFlipUnadvertise, boost::placeholders::_1, boost::placeholders::_2, boost::ref(srv3)));
   ros::spin();
 }
 

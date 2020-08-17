@@ -78,12 +78,12 @@ void TopicManager::start()
   connection_manager_ = ConnectionManager::instance();
   xmlrpc_manager_ = XMLRPCManager::instance();
 
-  xmlrpc_manager_->bind("publisherUpdate", boost::bind(&TopicManager::pubUpdateCallback, this, _1, _2));
-  xmlrpc_manager_->bind("requestTopic", boost::bind(&TopicManager::requestTopicCallback, this, _1, _2));
-  xmlrpc_manager_->bind("getBusStats", boost::bind(&TopicManager::getBusStatsCallback, this, _1, _2));
-  xmlrpc_manager_->bind("getBusInfo", boost::bind(&TopicManager::getBusInfoCallback, this, _1, _2));
-  xmlrpc_manager_->bind("getSubscriptions", boost::bind(&TopicManager::getSubscriptionsCallback, this, _1, _2));
-  xmlrpc_manager_->bind("getPublications", boost::bind(&TopicManager::getPublicationsCallback, this, _1, _2));
+  xmlrpc_manager_->bind("publisherUpdate", boost::bind(&TopicManager::pubUpdateCallback, this, boost::placeholders::_1, boost::placeholders::_2));
+  xmlrpc_manager_->bind("requestTopic", boost::bind(&TopicManager::requestTopicCallback, this, boost::placeholders::_1, boost::placeholders::_2));
+  xmlrpc_manager_->bind("getBusStats", boost::bind(&TopicManager::getBusStatsCallback, this, boost::placeholders::_1, boost::placeholders::_2));
+  xmlrpc_manager_->bind("getBusInfo", boost::bind(&TopicManager::getBusInfoCallback, this, boost::placeholders::_1, boost::placeholders::_2));
+  xmlrpc_manager_->bind("getSubscriptions", boost::bind(&TopicManager::getSubscriptionsCallback, this, boost::placeholders::_1, boost::placeholders::_2));
+  xmlrpc_manager_->bind("getPublications", boost::bind(&TopicManager::getPublicationsCallback, this, boost::placeholders::_1, boost::placeholders::_2));
 
   poll_manager_->addPollThreadListener(boost::bind(&TopicManager::processPublishQueues, this));
 }

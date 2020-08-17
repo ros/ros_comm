@@ -91,7 +91,7 @@ TEST(SelfSubscribe, advSub)
 
   {
     ros::Publisher pub;
-    pub = nh.advertise<test_roscpp::TestArray>("roscpp/pubsub_test", g_msg_count, boost::bind(subscriberCallback, _1, boost::ref(pub)));
+    pub = nh.advertise<test_roscpp::TestArray>("roscpp/pubsub_test", g_msg_count, boost::bind(subscriberCallback, boost::placeholders::_1, boost::ref(pub)));
     ASSERT_TRUE(pub);
     ros::Subscriber sub = nh.subscribe("roscpp/pubsub_test", g_msg_count, messageCallback);
     ASSERT_TRUE(sub);
@@ -115,7 +115,7 @@ TEST(SelfSubscribe, advSub)
     ros::Subscriber sub = nh.subscribe("roscpp/pubsub_test", g_msg_count, messageCallback);
     ASSERT_TRUE(sub);
     ros::Publisher pub;
-    pub = nh.advertise<test_roscpp::TestArray>("roscpp/pubsub_test", g_msg_count, boost::bind(subscriberCallback, _1, boost::ref(pub)));
+    pub = nh.advertise<test_roscpp::TestArray>("roscpp/pubsub_test", g_msg_count, boost::bind(subscriberCallback, boost::placeholders::_1, boost::ref(pub)));
     ASSERT_TRUE(pub);
 
     ros::Time t1(ros::Time::now()+g_dt);

@@ -87,7 +87,7 @@ TEST(TimeSequencer, simple)
 {
   TimeSequencer<Msg> seq(ros::Duration(1.0), ros::Duration(0.01), 10);
   Helper h;
-  seq.registerCallback(boost::bind(&Helper::cb, &h, _1));
+  seq.registerCallback(boost::bind(&Helper::cb, &h, boost::placeholders::_1));
   MsgPtr msg(boost::make_shared<Msg>());
   msg->header.stamp = ros::Time::now();
   seq.add(msg);

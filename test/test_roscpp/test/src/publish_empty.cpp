@@ -68,7 +68,7 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh;
   ros::Publisher pub;
-  pub = nh.advertise<test_roscpp::TestEmpty>("roscpp/pubsub_test", g_msg_count, boost::bind(subscriberCallback, _1, boost::ref(pub)));
+  pub = nh.advertise<test_roscpp::TestEmpty>("roscpp/pubsub_test", g_msg_count, boost::bind(subscriberCallback, boost::placeholders::_1, boost::ref(pub)));
 
   ros::spin();
 }
