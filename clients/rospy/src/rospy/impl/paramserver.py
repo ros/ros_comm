@@ -96,11 +96,11 @@ class ParamServerCache(object):
             # partially borrowed from rosmaster/paramserver.py
             namespaces = [x for x in key.split(SEP) if x]
             # - last namespace is the actual key we're storing in
-            value_key = namespaces[-1]
-            namespaces = namespaces[:-1]
             d = self.d
             if d is None:
                 raise KeyError(key)
+            value_key = namespaces[-1]
+            namespaces = namespaces[:-1]
             # - descend tree to the node we're setting
             for ns in namespaces:
                 if ns not in d:
