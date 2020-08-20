@@ -2,6 +2,10 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* use fully qualified ceil() in condition_variable.h (`#2025 <https://github.com/ros/ros_comm/issues/2025>`_)
+
 1.14.8 (2020-08-12)
 -------------------
 * remove 'using namespace' from condition_variable.h (`#2020 <https://github.com/ros/ros_comm/issues/2020>`_)
