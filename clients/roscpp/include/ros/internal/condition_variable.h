@@ -106,7 +106,7 @@ public:
     typedef boost::chrono::time_point<boost::chrono::steady_clock, boost::chrono::nanoseconds>
       nano_sys_tmpt;
     wait_until(lock,
-               nano_sys_tmpt(ceil<boost::chrono::nanoseconds>(t.time_since_epoch())));
+               nano_sys_tmpt(boost::chrono::ceil<boost::chrono::nanoseconds>(t.time_since_epoch())));
     return boost::chrono::steady_clock::now() < t ?
       boost::cv_status::no_timeout :
       boost::cv_status::timeout;
@@ -119,7 +119,7 @@ public:
   {
     boost::chrono::steady_clock::time_point s_now = boost::chrono::steady_clock::now();
     typename Clock::time_point c_now = Clock::now();
-    wait_until(lock, s_now + ceil<boost::chrono::nanoseconds>(t - c_now));
+    wait_until(lock, s_now + boost::chrono::ceil<boost::chrono::nanoseconds>(t - c_now));
     return Clock::now() < t ? boost::cv_status::no_timeout : boost::cv_status::timeout;
   }
 
@@ -129,7 +129,7 @@ public:
       const boost::chrono::duration<Rep, Period> &d)
   {
     boost::chrono::steady_clock::time_point c_now = boost::chrono::steady_clock::now();
-    wait_until(lock, c_now + ceil<boost::chrono::nanoseconds>(d));
+    wait_until(lock, c_now + boost::chrono::ceil<boost::chrono::nanoseconds>(d));
     return boost::chrono::steady_clock::now() - c_now < d ?
       boost::cv_status::no_timeout :
       boost::cv_status::timeout;
