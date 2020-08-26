@@ -2,6 +2,11 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* use fully qualified ceil() in condition_variable.h (`#2025 <https://github.com/ros/ros_comm/issues/2025>`_)
+* remove 'using namespace' from condition_variable.h (`#2020 <https://github.com/ros/ros_comm/issues/2020>`_)
+
 1.12.15 (2020-08-10)
 --------------------
 * close sockets when server responds with HTTP/1.0 (`#1284 <https://github.com/ros/ros_comm/issues/1284>`_)

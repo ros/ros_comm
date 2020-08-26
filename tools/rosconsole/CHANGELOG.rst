@@ -2,6 +2,9 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.12.15 (2020-08-10)
 --------------------
 * don't use 0 as null pointer in macros (`#1730 <https://github.com/ros/ros_comm/issues/1730>`_)

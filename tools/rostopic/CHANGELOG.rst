@@ -2,6 +2,9 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.12.15 (2020-08-10)
 --------------------
 * publisher/subscriber lists have correct type now (`#1780 <https://github.com/ros/ros_comm/issues/1780>`_)

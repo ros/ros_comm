@@ -2,6 +2,9 @@
 Changelog for package rosmaster
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.12.15 (2020-08-10)
 --------------------
 * use thread local storage for caching instances of ServerProxy (`#1732 <https://github.com/ros/ros_comm/issues/1732>`_)

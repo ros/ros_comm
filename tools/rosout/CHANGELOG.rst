@@ -2,6 +2,9 @@
 Changelog for package rosout
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.12.15 (2020-08-10)
 --------------------
 * fix use-after-free issue in rosout (`#1764 <https://github.com/ros/ros_comm/issues/1764>`_)

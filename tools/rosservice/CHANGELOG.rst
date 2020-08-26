@@ -2,6 +2,9 @@
 Changelog for package rosservice
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.12.15 (2020-08-10)
 --------------------
 * catch exeption when searching for services and a single service fails (`#1519 <https://github.com/ros/ros_comm/issues/1519>`_)
