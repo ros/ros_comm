@@ -103,11 +103,13 @@ public:
       boost::unique_lock<boost::mutex> &lock,
       const boost::chrono::time_point<boost::chrono::steady_clock, Duration> &t)
   {
-    using namespace boost::chrono;
-    typedef time_point<steady_clock, nanoseconds> nano_sys_tmpt;
+    typedef boost::chrono::time_point<boost::chrono::steady_clock, boost::chrono::nanoseconds>
+      nano_sys_tmpt;
     wait_until(lock,
-               nano_sys_tmpt(ceil<nanoseconds>(t.time_since_epoch())));
-    return steady_clock::now() < t ? boost::cv_status::no_timeout : boost::cv_status::timeout;
+               nano_sys_tmpt(boost::chrono::ceil<boost::chrono::nanoseconds>(t.time_since_epoch())));
+    return boost::chrono::steady_clock::now() < t ?
+      boost::cv_status::no_timeout :
+      boost::cv_status::timeout;
   }
 
   template <class Clock, class Duration>
@@ -115,10 +117,9 @@ public:
       boost::unique_lock<boost::mutex> &lock,
       const boost::chrono::time_point<Clock, Duration> &t)
   {
-    using namespace boost::chrono;
-    steady_clock::time_point s_now = steady_clock::now();
+    boost::chrono::steady_clock::time_point s_now = boost::chrono::steady_clock::now();
     typename Clock::time_point c_now = Clock::now();
-    wait_until(lock, s_now + ceil<nanoseconds>(t - c_now));
+    wait_until(lock, s_now + boost::chrono::ceil<boost::chrono::nanoseconds>(t - c_now));
     return Clock::now() < t ? boost::cv_status::no_timeout : boost::cv_status::timeout;
   }
 
@@ -127,18 +128,18 @@ public:
       boost::unique_lock<boost::mutex> &lock,
       const boost::chrono::duration<Rep, Period> &d)
   {
-    using namespace boost::chrono;
-    steady_clock::time_point c_now = steady_clock::now();
-    wait_until(lock, c_now + ceil<nanoseconds>(d));
-    return steady_clock::now() - c_now < d ? boost::cv_status::no_timeout : boost::cv_status::timeout;
+    boost::chrono::steady_clock::time_point c_now = boost::chrono::steady_clock::now();
+    wait_until(lock, c_now + boost::chrono::ceil<boost::chrono::nanoseconds>(d));
+    return boost::chrono::steady_clock::now() - c_now < d ?
+      boost::cv_status::no_timeout :
+      boost::cv_status::timeout;
   }
 
   boost::cv_status wait_until(
       boost::unique_lock<boost::mutex> &lk,
       boost::chrono::time_point<boost::chrono::steady_clock, boost::chrono::nanoseconds> tp)
   {
-    using namespace boost::chrono;
-    nanoseconds d = tp.time_since_epoch();
+    boost::chrono::nanoseconds d = tp.time_since_epoch();
     timespec ts = boost::detail::to_timespec(d);
     if (do_wait_until(lk, ts))
       return boost::cv_status::no_timeout;
