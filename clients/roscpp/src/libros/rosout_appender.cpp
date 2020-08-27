@@ -137,7 +137,10 @@ void ROSOutAppender::logThread()
         return;
       }
 
-      queue_condition_.wait(lock);
+      if (log_queue_.empty())
+      {
+        queue_condition_.wait(lock);
+      }
 
       if (shutting_down_)
       {
