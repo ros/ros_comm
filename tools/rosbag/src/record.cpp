@@ -36,6 +36,7 @@
 #include "rosbag/exceptions.h"
 
 #include "boost/program_options.hpp"
+#include <signal.h>
 #include <string>
 #include <sstream>
 
@@ -279,8 +280,20 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     return opts;
 }
 
+
+void signal_handler(int signal)
+{
+  // shutdown to let the recorder cleanup
+  (void) signal;
+  ros::shutdown();
+}
+
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "record", ros::init_options::AnonymousName);
+    ros::init(argc, argv, "record", ros::init_options::NoSigintHandler | ros::init_options::AnonymousName);
+
+    // handle SIGINT and SIGTERM signals
+    signal(SIGINT, signal_handler);
+    signal(SIGTERM, signal_handler);
 
     // Parse the command-line options
     rosbag::RecorderOptions opts;
@@ -299,6 +312,7 @@ int main(int argc, char** argv) {
     // Run the recorder
     rosbag::Recorder recorder(opts);
     int result = recorder.run();
-    
+
     return result;
 }
+
