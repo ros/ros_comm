@@ -404,7 +404,7 @@ class ROSLaunchNode(xmlrpc.XmlRpcNode):
             raise RLException("""Unable to contact my own server at [%s].
 This usually means that the network is not configured properly.
 
-A common cause is that the machine cannot ping itself.  Please check
+A common cause is that the machine cannot connect to itself.  Please check
 for errors by running:
 
 \tping %s
