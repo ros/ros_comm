@@ -172,7 +172,7 @@ class ServiceTest(unittest.TestCase):
             else:
                 srv_resp = srv_proxy()
 
-        except (genpy.SerializationError, rospy.ROSException), err:
+        except (genpy.SerializationError, rospy.ROSException) as err:
             msg_err = "Service proxy error: {}".format(err.message)
             self.fail(msg_err)
         srv_dic = message_converter.convert_ros_message_to_dictionary(srv_resp)
