@@ -101,7 +101,13 @@ def recv_buff(sock, b, buff_size):
     @return: number of bytes read
     @rtype: int
     """
-    d = sock.recv(buff_size)
+    d = None
+    while not d and not rospy.is_shutdown():
+        try:
+            d = sock.recv(buff_size)
+        except socket.error as why:
+            if not why.args or why.args[0] != errno.EINTR:
+                raise
     if d:
         b.write(d)
         return len(d)

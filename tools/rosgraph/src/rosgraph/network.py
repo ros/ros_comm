@@ -40,6 +40,7 @@ are necessary for correctly retrieving local IP address
 information.
 """
 
+import errno
 import logging
 import os
 import socket
@@ -354,7 +355,13 @@ def read_ros_handshake_header(sock, b, buff_size):
     """
     header_str = None
     while not header_str:
-        d = sock.recv(buff_size)
+        d = None
+        while not d:
+          try:
+            d = sock.recv(buff_size)
+          except socket.error as why:
+              if not why.args or why.args[0] != errno.EINTR:
+                  raise
         if not d:
             raise ROSHandshakeException("connection from sender terminated before handshake header received. %s bytes were received. Please check sender for additional details."%b.tell())
         b.write(d)
