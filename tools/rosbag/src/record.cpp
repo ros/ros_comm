@@ -280,12 +280,14 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
     return opts;
 }
 
-
+/**
+ * Handle SIGINT and SIGTERM to allow the recorder to cleanup by requesting a shutdown.
+ * \param signal
+ */
 void signal_handler(int signal)
 {
-  // shutdown to let the recorder cleanup
   (void) signal;
-  ros::shutdown();
+  ros::requestShutdown();
 }
 
 int main(int argc, char** argv) {
@@ -312,6 +314,7 @@ int main(int argc, char** argv) {
     // Run the recorder
     rosbag::Recorder recorder(opts);
     int result = recorder.run();
+    ros::waitForShutdown();
 
     return result;
 }
