@@ -281,7 +281,7 @@ rosbag::RecorderOptions parseOptions(int argc, char** argv) {
 }
 
 /**
- * Handle SIGINT and SIGTERM to allow the recorder to cleanup by requesting a shutdown.
+ * Handle SIGTERM to allow the recorder to cleanup by requesting a shutdown.
  * \param signal
  */
 void signal_handler(int signal)
@@ -291,10 +291,9 @@ void signal_handler(int signal)
 }
 
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "record", ros::init_options::NoSigintHandler | ros::init_options::AnonymousName);
+    ros::init(argc, argv, "record", ros::init_options::AnonymousName);
 
-    // handle SIGINT and SIGTERM signals
-    signal(SIGINT, signal_handler);
+    // handle SIGTERM signals
     signal(SIGTERM, signal_handler);
 
     // Parse the command-line options
