@@ -492,6 +492,11 @@ TEST(XmlRpcClient, generateRequest) {
                      "<methodCall><methodName>DoEmpty</methodName>\r\n"
                      "</methodCall>\r\n",
             a._request);
+
+  // create a request where content fits but the message will overflow and gets truncated
+  XmlRpcValue toolarge(std::string(__INT_MAX__ - 10, 'a'));
+  EXPECT_FALSE(a.generateRequest("DoFoo", toolarge));
+  EXPECT_EQ(a._request.length(), 0);
 }
 
 // Test generateHeader()
@@ -647,6 +652,11 @@ const std::string header2 = "HTTP/1.0 200 OK\r\n"
                             "Date: Mon, 30 Oct 2017 22:28:12 GMT\r\n"
                             "Content-type: text/xml\r\n"
                             "Content-length: 114\r\n\r\n";
+// Header for testing a custom Content-length value
+const std::string header3 = "HTTP/1.1 200 OK\r\n"
+                           "Server: XMLRPC++ 0.7\r\n"
+                           "Content-Type: text/xml\r\n"
+                           "Content-length: ";
 // Generic response XML
 const std::string response = "<?xml version=\"1.0\"?>\r\n"
                              "<methodResponse><params><param>\r\n"
@@ -920,6 +930,31 @@ TEST_F(MockSocketTest, readHeader_partial_err) {
   Expect_close(8);
 }
 
+// Test to fail when content-length is too large
+TEST_F(MockSocketTest, readHeader_oversize) {
+  XmlRpcClientForTest a("localhost", 42);
+
+  // Hack us into the correct initial state.
+  a.setfd(7);
+  a._connectionState = XmlRpcClientForTest::READ_HEADER;
+
+  // Add a large content-length to the standard header
+  std::string header_cl = header3;
+  header_cl += std::to_string(size_t(__INT_MAX__) + 1);
+  header_cl += "\r\n\r\n ";
+
+  Expect_nbRead(7, header_cl, false, true);
+  Expect_close(7);
+
+  EXPECT_FALSE(a.readHeader());
+  EXPECT_EQ(0, a._contentLength); // Content length should be reset
+
+  // Check that all expected function calls were made before destruction.
+  CheckCalls();
+}
+
+
+
 // Test readResponse()
 //  Test read of response in a single read call
 //  Test response spread across several read calls
@@ -1089,6 +1124,36 @@ TEST_F(MockSocketTest, readResponse_eof) {
   // Check that all expected function calls were made before destruction.
   CheckCalls();
 }
+
+// Test that readResponse closes the socket and truncates the response when too
+// much data is received (even when content-length is legitimate)
+TEST_F(MockSocketTest, readResponse_oversize) {
+  XmlRpcClientForTest a("localhost", 42);
+
+  // Hack us into the correct initial state.
+  a.setfd(8);
+  a._connectionState = XmlRpcClientForTest::READ_RESPONSE;
+
+  // Create an overflow response
+  std::string response = std::string(__INT_MAX__, 'a');
+  response += "a";
+
+  // Start with a pre-populated content-length that is within bounds
+  a._contentLength = __INT_MAX__;
+
+  // Expect to read the socket
+  Expect_nbRead(8, response, true, true);
+  // Expect the socket to close
+  Expect_close(8);
+
+  // Expect readResponse to return false because the response is too long, and
+  // truncate the response.
+  EXPECT_FALSE(a.readResponse());
+  EXPECT_EQ(a._response.size(), 0);
+
+  CheckCalls();
+}
+
 
 // Test parseResponse
 //  Test correct parsing of various response types: empty, int, double,
