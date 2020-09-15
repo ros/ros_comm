@@ -317,6 +317,12 @@ XmlRpcSocket::nbRead(int fd, std::string& s, bool *eof)
       return false;   // Error
     }
   }
+  // Watch for integer overrun
+  if (s.length() > __INT_MAX__) {
+    XmlRpcUtil::error("XmlRpcSocket::nbRead: text size (%u) exceeds the maximum allowed size (%s).",
+                      s.length(), __INT_MAX__);
+    return false;
+  }
   return true;
 }
 
@@ -325,6 +331,12 @@ XmlRpcSocket::nbRead(int fd, std::string& s, bool *eof)
 bool
 XmlRpcSocket::nbWrite(int fd, const std::string& s, int *bytesSoFar)
 {
+  // Watch for integer overrun
+  if (s.length() > __INT_MAX__) {
+    XmlRpcUtil::error("XmlRpcSocket::nbWrite: text size (%u) exceeds the maximum allowed size(%s)",
+                      s.length(), __INT_MAX__);
+    return false;
+  }
   int nToWrite = int(s.length()) - *bytesSoFar;
   char *sp = const_cast<char*>(s.c_str()) + *bytesSoFar;
   bool wouldBlock = false;
