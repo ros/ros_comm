@@ -446,7 +446,7 @@ XmlRpcClient::readHeader()
     close();
     return false;
   }
-  _contentLength = clength;
+  _contentLength = int(clength);
   	
   XmlRpcUtil::log(4, "client read content length: %d", _contentLength);
 

@@ -126,7 +126,7 @@ XmlRpcServerConnection::readHeader()
     XmlRpcUtil::error("XmlRpcServerConnection::readHeader: Invalid Content-length specified.");
     return false;
   }
-  _contentLength = clength;
+  _contentLength = int(clength);
   	
   XmlRpcUtil::log(3, "XmlRpcServerConnection::readHeader: specified content length is %d.", _contentLength);
 
