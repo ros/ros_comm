@@ -313,7 +313,6 @@ int main(int argc, char** argv) {
     // Run the recorder
     rosbag::Recorder recorder(opts);
     int result = recorder.run();
-    ros::waitForShutdown();
 
     return result;
 }
