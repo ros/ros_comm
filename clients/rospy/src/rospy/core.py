@@ -223,6 +223,10 @@ class LoggingThrottle(object):
               (now - last_logging_time) > rospy.Duration(period)):
             self.last_logging_time_table[caller_id] = now
             return True
+        elif last_logging_time > now:
+            self.last_logging_time_table = {}
+            self.last_logging_time_table[caller_id] = now
+            return True
         return False
 
 
