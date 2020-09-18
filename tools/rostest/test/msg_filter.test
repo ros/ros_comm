@@ -1,6 +1,6 @@
 <launch>
 
-    <node name="dummy_node" pkg="rostest" type="dummy_filter.py">
+    <node name="dummy_node" pkg="rostest" type="dummy_filter.py" output="screen">
         <param name="wait" value="0.2" />
     </node>
     <test test-name="filter_test" pkg="rostest" type="filtertest">
