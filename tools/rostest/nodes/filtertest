@@ -137,10 +137,10 @@ class FilterMsgTest(unittest.TestCase):
         self.is_received = True
 
     def _test_filter(self, topic_in, topic_out, msg_in, msg_out, timeout):
-        self.assert_(topic_in)
-        self.assert_(topic_out)
-        self.assert_(msg_in)
-        self.assert_(msg_out)
+        self.assertTrue(topic_in)
+        self.assertTrue(topic_out)
+        self.assertTrue(msg_in)
+        self.assertTrue(msg_out)
 
         l_pub = rospy.get_published_topics()
         rospy.loginfo("Detected topics: {}".format(l_pub))
@@ -148,7 +148,7 @@ class FilterMsgTest(unittest.TestCase):
         # getting message to send
         msg_in_type = rostopic.get_topic_type(topic_in)[0]
         rospy.loginfo("Type transiting on {}: {}".format(topic_in, msg_in_type))
-        self.assert_(msg_in_type is not None)
+        self.assertTrue(msg_in_type is not None)
 
         rospy.loginfo("Converting {} into {}".format(msg_in, msg_in_type))
         try:
@@ -164,7 +164,7 @@ class FilterMsgTest(unittest.TestCase):
         # getting message to receive
         msg_out_type = rostopic.get_topic_type(topic_out)[0]
         rospy.loginfo("Type transiting on {}: {}".format(topic_out, msg_out_type))
-        self.assert_(msg_out_type is not None)
+        self.assertTrue(msg_out_type is not None)
 
         rospy.loginfo("Converting {} into {}".format(msg_out, msg_out_type))
         try:
@@ -183,7 +183,7 @@ class FilterMsgTest(unittest.TestCase):
         pub = rospy.Publisher(topic_in, ros_msg_in.__class__, queue_size=1)
         sub = rospy.Subscriber(topic_out, ros_msg_out.__class__, self._filter_cb, queue_size=1)
         rospy.sleep(0.5)
-        self.assert_(not self.is_received, "No message should be received before publication!")
+        self.assertTrue(not self.is_received, "No message should be received before publication!")
         time_pub = rospy.get_time()
         pub.publish(ros_msg_in)
         # make sure one message gets received in the defined time.
@@ -195,7 +195,7 @@ class FilterMsgTest(unittest.TestCase):
                     break
             rospy.sleep(0.1)
 
-        self.assert_(not is_too_long, 'filter out not received within indicated duration: [%s]' % timeout)
+        self.assertTrue(not is_too_long, 'filter out not received within indicated duration: [%s]' % timeout)
 
         rospy.loginfo("A message has been received!")
         rospy.loginfo("{} at {}".format(self.filter_msg, self.filter_stamp))

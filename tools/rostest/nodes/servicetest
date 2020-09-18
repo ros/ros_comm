@@ -155,7 +155,7 @@ class ServiceTest(unittest.TestCase):
             rospy.loginfo("So far so good")
 
     def _test_service(self, srv_name, srv_input, srv_output):
-        self.assert_(srv_name)
+        self.assertTrue(srv_name)
         all_services = rosservice.get_service_list()
         self.assertIn(srv_name, all_services)
         srv_class = rosservice.get_service_class_by_name(srv_name)
