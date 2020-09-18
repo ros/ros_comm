@@ -56,14 +56,13 @@ class DummyFilterNode():
         rospy.init_node('dummy_filter', anonymous=True)
 
         self.wait = rospy.get_param('~wait', self.wait)
-        print "waiting time: {}".format(self.wait)
+        rospy.loginfo("waiting time: {}".format(self.wait))
 
     def callback(self, data):
-        rospy.loginfo(rospy.get_caller_id() + "I heard %s", data.data)
+        rospy.loginfo(rospy.get_caller_id() + " I heard %s", data.data)
         data.data = data.data * 2.0
-        print self.wait
         if self.wait is not None:
-            print "Sleeping!"
+            rospy.loginfo("Sleeping!")
             duration = rospy.Duration(self.wait)
             rospy.sleep(duration)
         self.pub.publish(data)
