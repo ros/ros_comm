@@ -621,7 +621,7 @@ namespace XmlRpc {
             std::call_once(once,
               [](){XmlRpcUtil::error("Failed to format with %s", getDoubleFormat().c_str());});
             os << _value.asDouble;
-          } else if (required_size >= 0 && required_size < static_cast<int>(sizeof(buf))) {
+          } else if (required_size < static_cast<int>(sizeof(buf))) {
             buf[sizeof(buf)-1] = 0;
             os << buf;
           } else { // required_size >= static_cast<int>(sizeof(buf)
