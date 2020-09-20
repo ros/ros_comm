@@ -501,6 +501,17 @@ class Loader(object):
                     # special handle the use of Python scripts in Windows environment:
                     # 1. search for a wrapper executable (of the same name) under the same directory with stat.S_IXUSR flag
                     # 2. if no wrapper is present, prepend command with 'python' executable
+                    def split_with_single_quote_enclosed_fixup(command):
+                        tokens = shlex.split(command, posix=False)  # use non-posix method on Windows
+                        if not ("'" in command):
+                            return tokens
+                        new_command = []
+                        for token in tokens:
+                            if token.startswith("'") and token.endswith("'"):
+                                new_command.append(token[1:-1])
+                            else:
+                                new_command.append(token)
+                        return new_command
 
                     cl = shlex.split(command, posix=False)  # use non-posix method on Windows
                     if os.path.isabs(cl[0]):
@@ -528,6 +539,7 @@ class Loader(object):
                                             executable_command = ' '.join([sys.executable, f])
                             if executable_command:
                                 command = command.replace(cl[0], executable_command, 1)
+                    command = split_with_single_quote_enclosed_fixup(command)
                 p = subprocess.Popen(command, stdout=subprocess.PIPE)
                 c_value = p.communicate()[0]
                 if not isinstance(c_value, str):
