@@ -39,33 +39,51 @@ import unittest
 import rostest
 import sys
 import time
+import signal
 import subprocess
+
+RECORD_COMMAND = ['rosbag',
+                  'record',
+                  'chatter',
+                  '-O',
+                  '--duration=5']
+SLEEP_TIME_SEC = 10
 
 class RecordCleanup(unittest.TestCase):
 
   def test_sigint_cleanup(self):
-    # Wait while the recorder creates a bag for us to examine
-    time.sleep(10.0)
-    # Send a SIGTERM to the process
-    cmd = ['kill', '-2' ,'$(pgrep rosbag)']
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    p.communicate()
-
-    # # Check that the recorded file is no longer active
-    self.assertTrue(os.path.isfile('/tmp/record_cleanup_test.bag'))
-    self.assertFalse(os.path.isfile('/tmp/record_cleanup_test.bag.active'))
+    """
+    Test that rosbag cleans up after handling SIGINT
+    """
+    self.test_signal_cleanup('/tmp/record_sigint_cleanup_test.bag', signal.SIGINT)
 
   def test_sigterm_cleanup(self):
-    # Wait while the recorder creates a bag for us to examine
-    time.sleep(10.0)
-    # Send a SIGTERM to the process
-    cmd = ['kill', '$(pgrep rosbag)']
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    p.communicate()
+    """
+    Test that rosbag cleans up after handling SIGTERM
+    """
+    self.test_signal_cleanup('/tmp/record_sigterm_cleanup_test.bag', signal.SIGTERM)
 
-    # Check that the recorded file is no longer active
-    self.assertTrue(os.path.isfile('/tmp/record_cleanup_test.bag'))
-    self.assertFalse(os.path.isfile('/tmp/record_cleanup_test.bag.active'))
+  def test_signal_cleanup(self, test_bag_file_name, signal_to_test):
+    """
+    Helper method to start rosbag record, send it a signal to stop, and check to see if
+    it cleaned up as expected.
+
+    :param test_bag_file_name: the output bag file
+    :param signal_to_test: the signal to send to rosbag
+    :return:
+    """
+    test_command = list(RECORD_COMMAND)
+    test_command.insert(4, test_bag_file_name)
+
+    p = subprocess.Popen(test_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    # wait while the recorder creates a bag for us to examine
+    time.sleep(SLEEP_TIME_SEC)
+    p.send_signal(signal_to_test)
+    p.wait()
+
+    # check that the recorded file is no longer active
+    self.assertTrue(os.path.isfile(test_bag_file_name))
+    self.assertFalse(os.path.isfile(test_bag_file_name+ '.active'))
 
 
 if __name__ == '__main__':
