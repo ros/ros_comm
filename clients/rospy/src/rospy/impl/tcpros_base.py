@@ -157,7 +157,7 @@ class TCPServer(object):
             except ConnectionAbortedError:
                 continue
             except IOError as e:
-                (e_errno, msg) = e.args
+                (e_errno, msg, *_) = e.args
                 if e_errno == errno.EINTR: #interrupted system call
                     continue
                 if not self.is_shutdown:
