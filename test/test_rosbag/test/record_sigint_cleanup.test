@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="rostopic" type="rostopic" name="rostopic_pub1"
+        args="pub -r 10 chatter std_msgs/String chatter1"/>
+  <test test-name="test_sigint_cleanup" pkg="test_rosbag" type="record_sigint_cleanup.py"/>
+</launch>
