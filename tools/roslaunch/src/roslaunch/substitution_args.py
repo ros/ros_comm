@@ -302,7 +302,7 @@ def _arg(resolved, a, args, context):
 _eval_dict={
     'true': True, 'false': False,
     'True': True, 'False': False,
-    '__builtins__': {k: __builtins__[k] for k in ['list', 'dict', 'map', 'str', 'float', 'int']},
+    '__builtins__': {k: __builtins__[k] for k in ['list', 'dict', 'map', 'filter', 'reduce', 'str', 'float', 'int']},
     'env': _eval_env,
     'optenv': _eval_optenv,
     'find': _eval_find
