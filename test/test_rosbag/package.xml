@@ -35,6 +35,7 @@
   <test_depend>python-rospkg</test_depend>
   <test_depend>roslib</test_depend>
   <test_depend>rospy</test_depend>
+  <test_depend>rostopic</test_depend>
 
   <export>
     <rosdoc config="${prefix}/rosdoc.yaml"/>
