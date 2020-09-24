@@ -1,0 +1,11 @@
+<launch>
+  <machine name="machine1" address="address1" default="true" />
+
+  <group>
+    <machine name="machine2" address="address2" default="scope" />
+    <node name="n1" pkg="pack1" type="foo_node" />  <!-- machine2 -->
+  </group>
+
+  <node name="n2" pkg="pack2" type="bar_node" />  <!-- machine1 -->
+
+</launch>

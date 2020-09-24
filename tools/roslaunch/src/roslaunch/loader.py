@@ -155,7 +155,8 @@ class LoaderContext(object):
     """
     
     def __init__(self, ns, filename, parent=None, params=None, env_args=None, \
-                     resolve_dict=None, include_resolve_dict=None, arg_names=None):
+                     resolve_dict=None, include_resolve_dict=None, arg_names=None, \
+                     default_machine=None):
         """
         @param ns: namespace
         @type  ns: str
@@ -169,6 +170,9 @@ class LoaderContext(object):
         @type include_resolve_dict: dict
         @param arg_names: name of args that have been declared in this context
         @type  arg_names: [str]
+        @param default_machine: name of the machine to use as default only
+        within this context.
+        @type  default_machine: str
         """
         self.parent = parent
         self.ns = make_global_ns(ns or '/')
@@ -184,6 +188,8 @@ class LoaderContext(object):
         self.include_resolve_dict = include_resolve_dict or None
         # when this context was created via include, was pass_all_args set?
         self.pass_all_args = False
+        # default machine to use for nodes defined later in this context
+        self.default_machine = default_machine
 
     def add_param(self, p):
         """
@@ -323,8 +329,9 @@ class LoaderContext(object):
         return LoaderContext(child_ns, self.filename, parent=self,
                              params=self.params, env_args=self.env_args[:],
                              resolve_dict=deepcopy(self.resolve_dict),
-                             arg_names=self.arg_names[:], include_resolve_dict=self.include_resolve_dict)
-        
+                             arg_names=self.arg_names[:], include_resolve_dict=self.include_resolve_dict,
+                             default_machine=self.default_machine)
+
 #TODO: in-progress refactorization. I'm slowly separating out
 #non-XML-specific logic from xmlloader and moving into Loader. Soon
 #this will mean that it will be easier to write coverage tests for

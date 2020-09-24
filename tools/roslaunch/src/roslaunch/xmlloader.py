@@ -153,9 +153,12 @@ def _float_attr(v, default, label):
 
 
 # maps machine 'default' attribute to Machine default property
-_is_default = {'true': True, 'false': False, 'never': False }
+_is_default = {'true': True, 'scope': False, 'false': False, 'never': False }
 # maps machine 'default' attribute to Machine assignable property
-_assignable = {'true': True, 'false': True, 'never': False }
+_assignable = {'true': True, 'scope': True, 'false': True, 'never': False }
+# maps machine 'default' attribute to whether this sets the default_machine in
+# the loader context
+_is_context_default = {'true': True, 'scope': True, 'false': False, 'never': False }
 
 # NOTE: code is currently in a semi-refactored state. I'm slowly
 # migrating common routines into the Loader class in the hopes it will
@@ -388,8 +391,11 @@ class XmlLoader(loader.Loader):
                     required = self.opt_attrs(tag, context, ('machine', 'args',
                         'output', 'respawn', 'respawn_delay', 'cwd',
                         'launch-prefix', 'required'))
-            if not machine and default_machine:
-                machine = default_machine.name
+            if not machine:
+                if context.default_machine:
+                    machine = context.default_machine.name
+                elif default_machine:
+                    machine = default_machine.name
             # validate respawn, required
             required, respawn = [_bool_attr(*rr) for rr in ((required, False, 'required'),\
                                                                 (respawn, False, 'respawn'))]
@@ -484,6 +490,7 @@ class XmlLoader(loader.Loader):
             try:
                 assignable = _assignable[default]
                 is_default = _is_default[default]
+                is_context_default = _is_context_default[default]
             except KeyError as e:
                 raise XmlParseException("Invalid value for 'attribute': %s"%default)
 
@@ -507,6 +514,9 @@ class XmlLoader(loader.Loader):
             m = Machine(name, address, env_loader=env_loader,
                         ssh_port=ssh_port, user=user, password=password, 
                         assignable=assignable, env_args=context.env_args, timeout=timeout)
+            # if the default tag is 'scope' set the default_machine for the current context
+            if is_context_default:
+                context.parent.default_machine = m
             return (m, is_default)
         except KeyError as e:
             raise XmlParseException("<machine> tag is missing required attribute: %s"%e)

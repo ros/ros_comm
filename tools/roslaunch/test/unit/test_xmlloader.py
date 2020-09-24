@@ -636,7 +636,14 @@ class TestXmlLoader(unittest.TestCase):
             elif m.name == 'machine9':
                 self.assertEquals(m.env_loader, '/opt/ros/fuerte/env.sh')
 
-                
+    def test_scoped_machine(self):
+        test_file = os.path.join(self.xml_dir, 'test-machine-scoped.xml')
+        mock = self._load(test_file)
+        expect_nodes = {'n1': 'machine2', 'n2': 'machine1'}
+        self.assertEquals(len(mock.nodes), len(expect_nodes))
+        for node in mock.nodes:
+            self.assertEquals(node.machine_name, expect_nodes[node.name])
+
     def test_node_subst(self):
         test_file =os.path.join(self.xml_dir, 'test-node-substitution.xml')
         keys = ['PACKAGE', 'TYPE', 'OUTPUT', 'RESPAWN']
