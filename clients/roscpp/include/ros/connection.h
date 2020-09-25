@@ -210,6 +210,8 @@ private:
   bool is_server_;
   /// Have we dropped?
   bool dropped_;
+  /// Synchronizes dropped_
+  boost::recursive_mutex dropped_mutex_;
   /// Incoming header
   Header header_;
   /// Transport associated with us

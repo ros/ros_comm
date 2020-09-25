@@ -61,7 +61,7 @@ Connection::Connection()
 
 Connection::~Connection()
 {
-  ROS_DEBUG_NAMED("superdebug", "Connection destructing, dropped=%s", dropped_ ? "true" : "false");
+  ROS_DEBUG_NAMED("superdebug", "Connection destructing, dropped=%s", isDropped() ? "true" : "false");
 
   drop(Destructing);
 }
@@ -108,14 +108,14 @@ void Connection::readTransport()
 {
   boost::recursive_mutex::scoped_try_lock lock(read_mutex_);
 
-  if (!lock.owns_lock() || dropped_ || reading_)
+  if (!lock.owns_lock() || isDropped() || reading_)
   {
     return;
   }
 
   reading_ = true;
 
-  while (!dropped_ && has_read_callback_)
+  while (!isDropped() && has_read_callback_)
   {
     ROS_ASSERT(read_buffer_);
     uint32_t to_read = read_size_ - read_filled_;
@@ -123,7 +123,7 @@ void Connection::readTransport()
     {
       int32_t bytes_read = transport_->read(read_buffer_.get() + read_filled_, to_read);
       ROS_DEBUG_NAMED("superdebug", "Connection read %d bytes", bytes_read);
-      if (dropped_)
+      if (isDropped())
       {
         return;
       }
@@ -193,7 +193,7 @@ void Connection::writeTransport()
 {
   boost::recursive_mutex::scoped_try_lock lock(write_mutex_);
 
-  if (!lock.owns_lock() || dropped_ || writing_)
+  if (!lock.owns_lock() || isDropped() || writing_)
   {
     return;
   }
@@ -201,7 +201,7 @@ void Connection::writeTransport()
   writing_ = true;
   bool can_write_more = true;
 
-  while (has_write_callback_ && can_write_more && !dropped_)
+  while (has_write_callback_ && can_write_more && !isDropped())
   {
     uint32_t to_write = write_size_ - write_sent_;
     ROS_DEBUG_NAMED("superdebug", "Connection writing %d bytes", to_write);
@@ -221,7 +221,7 @@ void Connection::writeTransport()
       can_write_more = false;
     }
 
-    if (write_sent_ == write_size_ && !dropped_)
+    if (write_sent_ == write_size_ && !isDropped())
     {
       WriteFinishedFunc callback;
 
@@ -263,7 +263,7 @@ void Connection::onWriteable(const TransportPtr& transport)
 
 void Connection::read(uint32_t size, const ReadFinishedFunc& callback)
 {
-  if (dropped_ || sending_header_error_)
+  if (isDropped() || sending_header_error_)
   {
     return;
   }
@@ -288,7 +288,7 @@ void Connection::read(uint32_t size, const ReadFinishedFunc& callback)
 
 void Connection::write(const boost::shared_array<uint8_t>& buffer, uint32_t size, const WriteFinishedFunc& callback, bool immediate)
 {
-  if (dropped_ || sending_header_error_)
+  if (isDropped() || sending_header_error_)
   {
     return;
   }
@@ -325,29 +325,24 @@ void Connection::onDisconnect(const TransportPtr& transport)
 void Connection::drop(DropReason reason)
 {
   ROSCPP_LOG_DEBUG("Connection::drop(%u)", reason);
-  bool did_drop = false;
   {
-    boost::recursive_mutex::scoped_lock lock(drop_mutex_);
+    boost::recursive_mutex::scoped_lock lock(dropped_mutex_);
     if (!dropped_)
     {
       dropped_ = true;
-      did_drop = true;
+    } else {
+      return;
     }
   }
 
-  if (did_drop)
-  {
-    transport_->close();
-    {
-      boost::recursive_mutex::scoped_lock lock(drop_mutex_);
-      drop_signal_(shared_from_this(), reason);
-    }
-  }
+  transport_->close();
+  boost::recursive_mutex::scoped_lock lock(drop_mutex_);
+  drop_signal_(shared_from_this(), reason);
 }
 
 bool Connection::isDropped()
 {
-  boost::recursive_mutex::scoped_lock lock(drop_mutex_);
+  boost::recursive_mutex::scoped_lock lock(dropped_mutex_);
   return dropped_;
 }
 
