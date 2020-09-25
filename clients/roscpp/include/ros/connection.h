@@ -260,8 +260,8 @@ private:
   /// Signal raised when this connection is dropped
   DropSignal drop_signal_;
 
-  /// Synchronizes drop() calls
-  boost::recursive_mutex drop_mutex_;
+  /// Synchronizes drop_signal_
+  boost::recursive_mutex drop_signal_mutex_;
 
   /// If we're sending a header error we disable most other calls
   bool sending_header_error_;
