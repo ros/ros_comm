@@ -493,10 +493,10 @@ TEST(XmlRpcClient, generateRequest) {
                      "</methodCall>\r\n",
             a._request);
 
-  // create a request where content fits but the message will overflow and is truncated
+  // create a request where content fits but the message will overflow and gets truncated
   XmlRpcValue toolarge(std::string(__INT_MAX__ - 10, 'a'));
   EXPECT_FALSE(a.generateRequest("DoFoo", toolarge));
-  EXPECT_EQ(a._request.length(), __INT_MAX__);
+  EXPECT_EQ(a._request.length(), 0);
 }
 
 // Test generateHeader()
@@ -1197,9 +1197,9 @@ TEST_F(MockSocketTest, readResponse_oversize) {
   Expect_close(8);
 
   // Expect readResponse to return false because the response is too long, and
-  // truncate the response to a valid size.
+  // truncate the response.
   EXPECT_FALSE(a.readResponse());
-  EXPECT_EQ(a._response.size(), __INT_MAX__);
+  EXPECT_EQ(a._response.size(), 0);
 
   CheckCalls();
 }

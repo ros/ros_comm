@@ -316,7 +316,7 @@ XmlRpcClient::generateRequest(const char* methodName, XmlRpcValue const& params)
   if (_request.length() > size_t(__INT_MAX__)) {
     XmlRpcUtil::error("XmlRpcClient::generateRequest: request length (%u) exceeds maximum allowed size (%u).",
                       _request.length(), __INT_MAX__);
-    _request.resize(__INT_MAX__);
+    _request.clear();
     return false;
   }
   return true;
@@ -476,7 +476,7 @@ XmlRpcClient::readResponse()
     if (_response.length() > size_t(__INT_MAX__)) {
       XmlRpcUtil::error("XmlRpcClient::readResponse: response length (%u) exceeds the maximum allowed size (%u).",
                         _response.length(), __INT_MAX__);
-      _response.resize(__INT_MAX__);
+      _response.clear();
       close();
       return false;
     }

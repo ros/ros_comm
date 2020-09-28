@@ -321,7 +321,7 @@ XmlRpcSocket::nbRead(int fd, std::string& s, bool *eof)
   if (s.length() > size_t(__INT_MAX__)) {
     XmlRpcUtil::error("XmlRpcSocket::nbRead: text size (%u) exceeds the maximum allowed size (%s).",
                       s.length(), __INT_MAX__);
-    s.resize(__INT_MAX__);
+    s.clear();
     return false;
   }
   return true;
