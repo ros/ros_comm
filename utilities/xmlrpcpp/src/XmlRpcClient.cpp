@@ -429,6 +429,7 @@ XmlRpcClient::readHeader()
     
     return true;  // Keep reading
   }
+
   // Decode content length
   if (lp == 0) {
     XmlRpcUtil::error("Error XmlRpcClient::readHeader: No Content-length specified");
@@ -457,7 +458,6 @@ XmlRpcClient::readHeader()
   return true;    // Continue monitoring this source
 }
 
-    
 bool
 XmlRpcClient::readResponse()
 {
@@ -472,6 +472,7 @@ XmlRpcClient::readResponse()
       return false;
     }
     _response += buff;
+
     // Avoid an overly large response
     if (_response.length() > size_t(__INT_MAX__)) {
       XmlRpcUtil::error("XmlRpcClient::readResponse: response length (%u) exceeds the maximum allowed size (%u).",
