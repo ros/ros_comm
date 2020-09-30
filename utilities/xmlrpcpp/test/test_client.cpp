@@ -492,11 +492,20 @@ TEST(XmlRpcClient, generateRequest) {
                      "<methodCall><methodName>DoEmpty</methodName>\r\n"
                      "</methodCall>\r\n",
             a._request);
+}
 
-  // create a request where content fits but the message will overflow and gets truncated
-  XmlRpcValue toolarge(std::string(__INT_MAX__ - 10, 'a'));
-  EXPECT_FALSE(a.generateRequest("DoFoo", toolarge));
-  EXPECT_EQ(a._request.length(), 0);
+// create a request where content fits but the message will overflow and gets truncated
+TEST(XmlRpcClient, generateOversizeRequest) {
+  XmlRpcClientForTest a("localhost", 42);
+  // Gracefully skip this test if there's not enough memory to run it
+  try {
+    XmlRpcValue toolarge(std::string(__INT_MAX__ - 10, 'a'));
+    EXPECT_FALSE(a.generateRequest("DoFoo", toolarge));
+    EXPECT_EQ(a._request.length(), 0);
+  }
+  catch (std::bad_alloc& err) {
+    GTEST_SKIP() << "Unable to allocate memory for overflow test\n";
+  }
 }
 
 // Test generateHeader()
@@ -1134,24 +1143,30 @@ TEST_F(MockSocketTest, readResponse_oversize) {
   a.setfd(8);
   a._connectionState = XmlRpcClientForTest::READ_RESPONSE;
 
-  // Create an overflow response
-  std::string response = std::string(__INT_MAX__, 'a');
-  response += "a";
+  try {
+    // Create an overflow response
+    std::string response = std::string(__INT_MAX__, 'a');
+    response += "a";
 
-  // Start with a pre-populated content-length that is within bounds
-  a._contentLength = __INT_MAX__;
+    // Start with a pre-populated content-length that is within bounds
+    a._contentLength = __INT_MAX__;
 
-  // Expect to read the socket
-  Expect_nbRead(8, response, true, true);
-  // Expect the socket to close
-  Expect_close(8);
+    // Expect to read the socket
+    Expect_nbRead(8, response, true, true);
+    // Expect the socket to close
+    Expect_close(8);
 
-  // Expect readResponse to return false because the response is too long, and
-  // truncate the response.
-  EXPECT_FALSE(a.readResponse());
-  EXPECT_EQ(a._response.size(), 0);
+    // Expect readResponse to return false because the response is too long, and
+    // truncate the response.
+    EXPECT_FALSE(a.readResponse());
+    EXPECT_EQ(a._response.size(), 0);
 
-  CheckCalls();
+    CheckCalls();
+  }
+  catch (std::bad_alloc& err) {
+    GTEST_SKIP() << "Unable to allocate memory for overflow test\n";
+  }
+
 }
 
 

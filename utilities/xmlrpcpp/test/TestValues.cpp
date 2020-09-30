@@ -27,9 +27,9 @@
 #include <stdlib.h>
 #include <string>
 
+#include "xmlrpcpp/XmlRpcValue.h"
 #include "xmlrpcpp/XmlRpcException.h"
 #include "xmlrpcpp/XmlRpcUtil.h"
-#include "xmlrpcpp/XmlRpcValue.h"
 
 #include <gtest/gtest.h>
 
@@ -177,26 +177,31 @@ TEST(XmlRpc, testString) {
 
 //Test decoding of a well-formed but overly large XML input
 TEST(XmlRpc, testOversizeString) {
-  std::string xml = "<tag><nexttag>";
-  xml += std::string(__INT_MAX__, 'a');
-  xml += "a</nextag></tag>";
-  int offset;
+  try {
+    std::string xml = "<tag><nexttag>";
+    xml += std::string(__INT_MAX__, 'a');
+    xml += "a</nextag></tag>";
+    int offset;
 
-  offset = 0;
-  EXPECT_EQ(XmlRpcUtil::parseTag("<tag>", xml, &offset), std::string());
-  EXPECT_EQ(offset, 0);
+    offset = 0;
+    EXPECT_EQ(XmlRpcUtil::parseTag("<tag>", xml, &offset), std::string());
+    EXPECT_EQ(offset, 0);
 
-  offset = 0;
-  EXPECT_FALSE(XmlRpcUtil::findTag("<tag>", xml, &offset));
-  EXPECT_EQ(offset, 0);
+    offset = 0;
+    EXPECT_FALSE(XmlRpcUtil::findTag("<tag>", xml, &offset));
+    EXPECT_EQ(offset, 0);
 
-  offset = 0;
-  EXPECT_FALSE(XmlRpcUtil::nextTagIs("<tag>", xml, &offset));
-  EXPECT_EQ(offset, 0);
+    offset = 0;
+    EXPECT_FALSE(XmlRpcUtil::nextTagIs("<tag>", xml, &offset));
+    EXPECT_EQ(offset, 0);
 
-  offset = 0;
-  EXPECT_EQ(XmlRpcUtil::getNextTag(xml, &offset), std::string());
-  EXPECT_EQ(offset, 0);
+    offset = 0;
+    EXPECT_EQ(XmlRpcUtil::getNextTag(xml, &offset), std::string());
+    EXPECT_EQ(offset, 0);
+  }
+  catch (std::bad_alloc& err) {
+    GTEST_SKIP() << "Unable to allocate memory for overflow tests\n";
+  }
 }
 
 TEST(XmlRpc, testDateTime) {
