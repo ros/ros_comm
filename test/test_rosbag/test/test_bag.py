@@ -343,7 +343,7 @@ class TestRosbag(unittest.TestCase):
 
     def test_get_time_empty_bag(self):
         """Test for issue #657"""
-        fn = '/tmp/test_get_time_emtpy_bag.bag'
+        fn = '/tmp/test_get_time_empty_bag.bag'
 
         with rosbag.Bag(fn, mode='w') as bag:
             self.assertRaisesRegexp(rosbag.ROSBagException,

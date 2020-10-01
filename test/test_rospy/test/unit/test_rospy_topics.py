@@ -122,7 +122,7 @@ class TestRospyTopics(unittest.TestCase):
         # round 1: test basic params
         pub = Publisher(name, data_class)
         self.assertEquals(rname, pub.resolved_name)
-        # - pub.name is left in for backwards compatiblity, but resolved_name is preferred
+        # - pub.name is left in for backwards compatibility, but resolved_name is preferred
         self.assertEquals(rname, pub.name)        
         self.assertEquals(data_class, pub.data_class)
         self.assertEquals('test_rospy/Val', pub.type)

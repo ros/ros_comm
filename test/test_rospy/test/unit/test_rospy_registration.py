@@ -238,7 +238,7 @@ class TestRospyRegistration(unittest.TestCase):
         # test that it returns if URIs are equal
         m.start('http://localhost:1234', 'http://localhost:1234')
 
-        # - test with is_shutdown overriden so we don't enter loop
+        # - test with is_shutdown overridden so we don't enter loop
         def foo():
             return True
         sys.modules['rospy.impl.registration'].__dict__['is_shutdown'] = foo

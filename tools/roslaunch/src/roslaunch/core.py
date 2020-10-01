@@ -637,7 +637,7 @@ class Test(Node):
         
 class Executable(object):
     """
-    Executable is a generic container for exectuable commands.
+    Executable is a generic container for executable commands.
     """
     
     def __init__(self, cmd, args, phase=PHASE_RUN):
@@ -657,7 +657,7 @@ class Executable(object):
         
 class RosbinExecutable(Executable):
     """
-    RosbinExecutables are exectuables stored in ROS_ROOT/bin. 
+    RosbinExecutables are executables stored in ROS_ROOT/bin.
     """
     def __init__(self, cmd, args, phase=PHASE_RUN):
         super(RosbinExecutable, self).__init__(cmd, args, phase)

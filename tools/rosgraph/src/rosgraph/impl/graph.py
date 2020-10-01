@@ -150,11 +150,11 @@ class EdgeList(object):
         @type  dest: str
         @param direction: direction string (i/o/b)
         @type  direction: str
-        @return: True if update occured
+        @return: True if update occurred
         @rtype: bool
         """
         
-        # the warnings should generally be temporary, occuring of the
+        # the warnings should generally be temporary, occurring of the
         # master/node information becomes stale while we are still
         # doing an update
         updated = False        
