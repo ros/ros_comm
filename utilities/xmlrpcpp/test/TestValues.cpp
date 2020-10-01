@@ -200,7 +200,7 @@ TEST(XmlRpc, testOversizeString) {
     EXPECT_EQ(offset, 0);
   }
   catch (std::bad_alloc& err) {
-    GTEST_SKIP() << "Unable to allocate memory for overflow tests\n";
+    std::cerr << "[ SKIPPED  ] Unable to allocate memory for test testOversizeString\n";
   }
 }
 

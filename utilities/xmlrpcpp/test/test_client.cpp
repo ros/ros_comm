@@ -504,7 +504,7 @@ TEST(XmlRpcClient, generateOversizeRequest) {
     EXPECT_EQ(a._request.length(), 0);
   }
   catch (std::bad_alloc& err) {
-    GTEST_SKIP() << "Unable to allocate memory for overflow test\n";
+    std::cerr << "[ SKIPPED  ] Unable to allocate memory for test generateOversizeRequest\n";
   }
 }
 
@@ -939,7 +939,7 @@ TEST_F(MockSocketTest, readHeader_partial_err) {
   Expect_close(8);
 }
 
-// Test to fail when content-length is too large
+// Test that the read will fail when content-length is too large
 TEST_F(MockSocketTest, readHeader_oversize) {
   XmlRpcClientForTest a("localhost", 42);
 
@@ -961,8 +961,6 @@ TEST_F(MockSocketTest, readHeader_oversize) {
   // Check that all expected function calls were made before destruction.
   CheckCalls();
 }
-
-
 
 // Test readResponse()
 //  Test read of response in a single read call
@@ -1133,42 +1131,6 @@ TEST_F(MockSocketTest, readResponse_eof) {
   // Check that all expected function calls were made before destruction.
   CheckCalls();
 }
-
-// Test that readResponse closes the socket and truncates the response when too
-// much data is received (even when content-length is legitimate)
-TEST_F(MockSocketTest, readResponse_oversize) {
-  XmlRpcClientForTest a("localhost", 42);
-
-  // Hack us into the correct initial state.
-  a.setfd(8);
-  a._connectionState = XmlRpcClientForTest::READ_RESPONSE;
-
-  try {
-    // Create an overflow response
-    std::string response = std::string(__INT_MAX__, 'a');
-    response += "a";
-
-    // Start with a pre-populated content-length that is within bounds
-    a._contentLength = __INT_MAX__;
-
-    // Expect to read the socket
-    Expect_nbRead(8, response, true, true);
-    // Expect the socket to close
-    Expect_close(8);
-
-    // Expect readResponse to return false because the response is too long, and
-    // truncate the response.
-    EXPECT_FALSE(a.readResponse());
-    EXPECT_EQ(a._response.size(), 0);
-
-    CheckCalls();
-  }
-  catch (std::bad_alloc& err) {
-    GTEST_SKIP() << "Unable to allocate memory for overflow test\n";
-  }
-
-}
-
 
 // Test parseResponse
 //  Test correct parsing of various response types: empty, int, double,
