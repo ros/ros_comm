@@ -201,7 +201,7 @@ def get_yaml_for_msg(msg, prefix='', time_offset=None, current_time=None, field_
     yaml.representer.SafeRepresenter.add_representer(None, object_representer)
 
      # we force False over None here and set the style in dumper, to
-     # avoid unecessary outer brackets pyyaml chooses e.g. to
+     # avoid unnecessary outer brackets pyyaml chooses e.g. to
      # represent msg Int32 as "{data: 0}"
     initial_flow_style = False
     if flow_style_ == True:
@@ -266,7 +266,7 @@ def rosmsg_cmd_prototype(args):
                       help="if true flexible size arrays are not filled with default instance")
     parser.add_option("-s","--silent",
                       dest="silent", default=False, action="store_true",
-                      help="if true supresses all error messages")
+                      help="if true suppresses all error messages")
     parser.add_option("-p", "--prefix", metavar="prefix", default="",
                       help="prefix to print before each line, can be used for indent")
     parser.add_option("-H","--no-hyphens",
@@ -286,7 +286,7 @@ def rosmsg_cmd_prototype(args):
         if options.exclude_slots != None and options.exclude_slots.strip() != "":
             field_filter = create_names_filter(options.exclude_slots.split(','))
     
-        # possible extentions: options for
+        # possible extensions: options for
         # - target language
         # - initial values for standard types
         # - get partial message (subtree)

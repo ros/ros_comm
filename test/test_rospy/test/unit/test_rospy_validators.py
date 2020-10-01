@@ -47,8 +47,8 @@ class TestRospyValidators(unittest.TestCase):
     def test_validators(self):
         from rospy.impl.validators import ParameterInvalid
         from rospy.impl.validators import non_empty
-        contextes = ['', '/', '/foo']
-        for context in contextes:
+        contexts = ['', '/', '/foo']
+        for context in contexts:
             valid = ['foo', 1, [1]]
             for v in valid:
                 non_empty('param-name')(v, context)

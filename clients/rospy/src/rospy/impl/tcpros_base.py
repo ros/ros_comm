@@ -263,7 +263,7 @@ class TCPROSServer(object):
     
     def __init__(self, port=0):
         """
-        Constructur
+        Constructor
         @param port: port number to bind to (default 0/any)
         @type  port: int
         """
@@ -314,7 +314,7 @@ class TCPROSServer(object):
         @type  sock: socket.socket
         @param client_addr: client address
         @type  client_addr: (str, int)
-        @raise TransportInitError: If transport cannot be succesfully initialized
+        @raise TransportInitError: If transport cannot be successfully initialized
         """
         #TODOXXX:rewrite this logic so it is possible to create TCPROSTransport object first, set its protocol,
         #and then use that to do the writing

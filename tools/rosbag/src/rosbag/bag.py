@@ -585,7 +585,7 @@ class Bag(object):
         @type  topic: str
         @param msg: message to add to bag, or tuple (if raw)
         @type  msg: Message or tuple of raw message data
-        @param t: ROS time of message publication, if None specifed, use current time [optional]
+        @param t: ROS time of message publication, if None specified, use current time [optional]
         @type  t: U{genpy.Time}
         @param raw: if True, msg is in raw format, i.e. (msg_type, serialized_bytes, md5sum, pytype)
         @type  raw: bool
@@ -2181,7 +2181,7 @@ class _BagReader102_Unindexed(_BagReader):
             try:
                 msg_type = _get_message_type(info)
             except KeyError:
-                raise ROSBagException('Cannot deserialize messages of type [%s].  Message was not preceeded in bagfile by definition' % info.datatype)
+                raise ROSBagException('Cannot deserialize messages of type [%s].  Message was not preceded in bagfile by definition' % info.datatype)
 
             # Get the timestamp
             secs  = _read_uint32_field(header, 'sec')
@@ -2403,7 +2403,7 @@ class _BagReader102_Indexed(_BagReader102_Unindexed):
         try:
             msg_type = _get_message_type(info)
         except KeyError:
-            raise ROSBagException('Cannot deserialize messages of type [%s].  Message was not preceeded in bagfile by definition' % info.datatype)
+            raise ROSBagException('Cannot deserialize messages of type [%s].  Message was not preceded in bagfile by definition' % info.datatype)
 
         # Get the timestamp
         secs  = _read_uint32_field(header, 'sec')

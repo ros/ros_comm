@@ -111,7 +111,7 @@ public:
         int written = fprintf(handle_, "%s", ss.str().c_str());
         if (written < 0)
         {
-          std::cerr << "Error writting to rosout log file '" << log_file_name_.c_str() << "': " << strerror(ferror(handle_)) << std::endl;
+          std::cerr << "Error writing to rosout log file '" << log_file_name_.c_str() << "': " << strerror(ferror(handle_)) << std::endl;
         }
         else if (written > 0)
         {
@@ -193,7 +193,7 @@ public:
     int written = fprintf(handle_, "%s", ss.str().c_str());
     if (written < 0)
     {
-      std::cerr << "Error writting to rosout log file '" << log_file_name_.c_str() << "': " << strerror(ferror(handle_)) << std::endl;
+      std::cerr << "Error writing to rosout log file '" << log_file_name_.c_str() << "': " << strerror(ferror(handle_)) << std::endl;
     }
     else if (written > 0)
     {
