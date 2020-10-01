@@ -179,7 +179,7 @@ def topic_timestamp_drift(ctx, t):
         rospy.Subscriber(t, msg_class)
 
 #TODO: these are mainly future enhancements. It's unclear to me whether or not this will be
-#useful as most of the generic rules are capable of targetting these problems as well.
+#useful as most of the generic rules are capable of targeting these problems as well.
 #The only rule that in particular seems useful is the timestamp drift. It may be too
 #expensive otherwise to run, though it would be interesting to attempt to receive a
 #message from every single topic.

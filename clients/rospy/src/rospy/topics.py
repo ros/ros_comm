@@ -420,7 +420,7 @@ class _TopicImpl(object):
             # implementation) would be to start a thread that
             # regularly polls all fds, but that would create a lot of
             # synchronization events and also have a separate thread
-            # to manage.  It would be desireable to move to this, but
+            # to manage.  It would be desirable to move to this, but
             # this change is less impactful and keeps the codebase
             # more stable as we move towards an entirely different
             # event loop for rospy -- the heart of the problem is that
@@ -599,7 +599,7 @@ class Subscriber(Topic):
 
 class _SubscriberImpl(_TopicImpl):
     """
-    Underyling L{_TopicImpl} implementation for subscriptions.
+    Underlying L{_TopicImpl} implementation for subscriptions.
     """
     def __init__(self, name, data_class):
         """
@@ -889,7 +889,7 @@ class Publisher(Topic):
 
 class _PublisherImpl(_TopicImpl):
     """
-    Underyling L{_TopicImpl} implementation for publishers.
+    Underlying L{_TopicImpl} implementation for publishers.
     """
     
     def __init__(self, name, data_class):

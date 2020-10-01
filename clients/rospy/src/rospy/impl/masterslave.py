@@ -115,7 +115,7 @@ def apivalidate(error_return_value, validators=()):
                 _logger.debug("%s%s", f.__name__, str(args[1:]))
                 #print "%s%s"%(f.func_name, str(args[1:]))
             if len(args) == 1:
-                _logger.error("%s invoked without caller_id paramter"%f.__name__)
+                _logger.error("%s invoked without caller_id parameter"%f.__name__)
                 return -1, "missing required caller_id parameter", error_return_value
             elif len(args) != f.__code__.co_argcount:
                 return -1, "Error: bad call arity", error_return_value

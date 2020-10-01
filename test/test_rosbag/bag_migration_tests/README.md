@@ -18,7 +18,7 @@ $ source devel_isolated/test_rosbag/setup.bash
 
 ## Generate Data
 
-The **generate_data** script generates *.bag* data files for one or multiple messsage generations. The output directory is the **bag_migration_tests/test** folder inside the **test_rosbag** package. It's the user responsability to move the output *.bag* files to an HTTP server and download them from the **CMakeLists.txt** file as in this example:
+The **generate_data** script generates *.bag* data files for one or multiple messsage generations. The output directory is the **bag_migration_tests/test** folder inside the **test_rosbag** package. It's the user responsibility to move the output *.bag* files to an HTTP server and download them from the **CMakeLists.txt** file as in this example:
 
 ``` cmake
 catkin_download_test_data(download_data_test_constants_gen1.bag http://download.ros.org/data/test_rosbag/constants_gen1.bag FILENAME test/constants_gen1.bag MD5 77ec8cb20e823ee3f3a87d07ea1132df )

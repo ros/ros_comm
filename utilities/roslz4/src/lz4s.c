@@ -177,7 +177,7 @@ int writeEOS(roslz4_stream *str) {
   return ROSLZ4_STREAM_END;
 }
 
-// If successfull, number of bytes written to output
+// If successful, number of bytes written to output
 // If error, LZ4 return code
 int bufferToOutput(roslz4_stream *str) {
   stream_state *state = str->state;
