@@ -801,8 +801,8 @@ void paramUpdateCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& resul
   ros::param::update((std::string)params[1], params[2]);
 }
 
-void unsubscribeCachedParam(const std::string& key) {
-
+void unsubscribeCachedParam(const std::string& key)
+{
   XmlRpc::XmlRpcValue params, result, payload;
   params[0] = this_node::getName();
   params[1] = XMLRPCManager::instance()->getServerURI();
@@ -810,8 +810,8 @@ void unsubscribeCachedParam(const std::string& key) {
   master::execute("unsubscribeParam", params, result, payload, false);
 }
 
-void unsubscribeCachedParam(void) {
-
+void unsubscribeCachedParam(void)
+{
   // lock required, all of the cached parameter will be unsubscribed.
   boost::mutex::scoped_lock lock(g_params_mutex);
 
