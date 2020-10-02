@@ -494,20 +494,6 @@ TEST(XmlRpcClient, generateRequest) {
             a._request);
 }
 
-// create a request where content fits but the message will overflow and gets truncated
-TEST(XmlRpcClient, generateOversizeRequest) {
-  XmlRpcClientForTest a("localhost", 42);
-  // Gracefully skip this test if there's not enough memory to run it
-  try {
-    XmlRpcValue toolarge(std::string(__INT_MAX__ - 10, 'a'));
-    EXPECT_FALSE(a.generateRequest("DoFoo", toolarge));
-    EXPECT_EQ(a._request.length(), 0);
-  }
-  catch (std::bad_alloc& err) {
-    std::cerr << "[ SKIPPED  ] Unable to allocate memory for test generateOversizeRequest\n";
-  }
-}
-
 // Test generateHeader()
 //  Correct header is generated for various sizes and content of request body.
 TEST(XmlRpcClient, generateHeader) {
