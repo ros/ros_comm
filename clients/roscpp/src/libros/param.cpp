@@ -804,22 +804,11 @@ void unsubscribeCachedParam(void) {
   for(S_string::iterator itr = g_subscribed_params.begin(); itr != g_subscribed_params.end(); ++itr)
   {
     XmlRpc::XmlRpcValue params, result, payload;
-    const std::string& mapped_key = *itr;
+    const std::string mapped_key(*itr);
     params[0] = this_node::getName();
     params[1] = XMLRPCManager::instance()->getServerURI();
     params[2] = mapped_key;
-
-    if (!master::execute("unsubscribeParam", params, result, payload, false))
-    {
-      ROS_DEBUG_NAMED("cached_parameters",
-        "Unsubscribe to parameter [%s]: call to the master failed", mapped_key.c_str());
-    }
-    else
-    {
-      ROS_DEBUG_NAMED("cached_parameters",
-        "Unsubscribed to parameter [%s]", mapped_key.c_str());
-      g_subscribed_params.erase(mapped_key);
-    }
+    master::execute("unsubscribeParam", params, result, payload, false);
   }
 }
 
