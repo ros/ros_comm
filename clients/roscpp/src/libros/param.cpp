@@ -804,7 +804,7 @@ void unsubscribeCachedParam(void) {
   for(S_string::iterator itr = g_subscribed_params.begin(); itr != g_subscribed_params.end(); ++itr)
   {
     XmlRpc::XmlRpcValue params, result, payload;
-    std::string mapped_key(itr->c_str());
+    const std::string& mapped_key = *itr;
     params[0] = this_node::getName();
     params[1] = XMLRPCManager::instance()->getServerURI();
     params[2] = mapped_key;
