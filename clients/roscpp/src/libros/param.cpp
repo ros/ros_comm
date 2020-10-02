@@ -232,7 +232,11 @@ bool del(const std::string& key)
   {
     boost::mutex::scoped_lock lock(g_params_mutex);
 
-    g_subscribed_params.erase(mapped_key);
+    if (g_subscribed_params.find(mapped_key) != g_subscribed_params.end())
+    {
+      g_subscribed_params.erase(mapped_key);
+      unsubscribeCachedParam(mapped_key);
+    }
     g_params.erase(mapped_key);
   }
 
@@ -797,18 +801,25 @@ void paramUpdateCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& resul
   ros::param::update((std::string)params[1], params[2]);
 }
 
+void unsubscribeCachedParam(const std::string& key) {
+
+  XmlRpc::XmlRpcValue params, result, payload;
+  params[0] = this_node::getName();
+  params[1] = XMLRPCManager::instance()->getServerURI();
+  params[2] = key;
+  master::execute("unsubscribeParam", params, result, payload, false);
+}
+
 void unsubscribeCachedParam(void) {
-  // lock required, all of the cached parameter will be unsubscribed here.
+
+  // lock required, all of the cached parameter will be unsubscribed.
   boost::mutex::scoped_lock lock(g_params_mutex);
 
-  for(S_string::iterator itr = g_subscribed_params.begin(); itr != g_subscribed_params.end(); ++itr)
+  for(S_string::iterator itr = g_subscribed_params.begin();
+    itr != g_subscribed_params.end(); ++itr)
   {
-    XmlRpc::XmlRpcValue params, result, payload;
     const std::string mapped_key(*itr);
-    params[0] = this_node::getName();
-    params[1] = XMLRPCManager::instance()->getServerURI();
-    params[2] = mapped_key;
-    master::execute("unsubscribeParam", params, result, payload, false);
+    unsubscribeCachedParam(mapped_key);
   }
 }
 

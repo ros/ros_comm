@@ -140,7 +140,7 @@ void XMLRPCManager::shutdown()
   }
 
   // before shutting down, unsubscribe all the cached parameter
-  (void) ros::param::unsubscribeCachedParam();
+  ros::param::unsubscribeCachedParam();
 
   shutting_down_ = true;
   server_thread_.join();
