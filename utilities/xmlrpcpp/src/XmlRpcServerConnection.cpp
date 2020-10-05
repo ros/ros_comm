@@ -119,11 +119,14 @@ XmlRpcServerConnection::readHeader()
     return false;   // We could try to figure it out by parsing as we read, but for now...
   }
 
-  _contentLength = atoi(lp);
-  if (_contentLength <= 0) {
-    XmlRpcUtil::error("XmlRpcServerConnection::readHeader: Invalid Content-length specified (%d).", _contentLength);
+  // avoid overly large or improperly formatted content-length
+  long int clength = 0;
+  clength = strtol(lp, nullptr, 10);
+  if ((clength < 0) || (clength > __INT_MAX__)) {
+    XmlRpcUtil::error("XmlRpcServerConnection::readHeader: Invalid Content-length specified.");
     return false;
   }
+  _contentLength = int(clength);
   	
   XmlRpcUtil::log(3, "XmlRpcServerConnection::readHeader: specified content length is %d.", _contentLength);
 
@@ -155,6 +158,13 @@ XmlRpcServerConnection::readRequest()
     bool eof;
     if ( ! XmlRpcSocket::nbRead(this->getfd(), _request, &eof)) {
       XmlRpcUtil::error("XmlRpcServerConnection::readRequest: read error (%s).",XmlRpcSocket::getErrorMsg().c_str());
+      return false;
+    }
+    // Avoid an overly large request
+    if (_request.length() > size_t(__INT_MAX__)) {
+      XmlRpcUtil::error("XmlRpcServerConnection::readRequest: request length (%u) exceeds the maximum allowed size (%u)",
+                        _request.length(), __INT_MAX__);
+      _request.resize(__INT_MAX__);
       return false;
     }
 
@@ -334,8 +344,16 @@ XmlRpcServerConnection::generateResponse(std::string const& resultXml)
   std::string body = RESPONSE_1 + resultXml + RESPONSE_2;
   std::string header = generateHeader(body);
 
-  _response = header + body;
-  XmlRpcUtil::log(5, "XmlRpcServerConnection::generateResponse:\n%s\n", _response.c_str()); 
+  // Avoid an overly large response
+  if ((header.length() + body.length()) > size_t(__INT_MAX__)) {
+    XmlRpcUtil::error("XmlRpcServerConnection::generateResponse: response length (%u) exceeds the maximum allowed size (%u).",
+                      _response.length(), __INT_MAX__);
+    _response = "";
+  }
+  else {
+    _response = header + body;
+    XmlRpcUtil::log(5, "XmlRpcServerConnection::generateResponse:\n%s\n", _response.c_str());
+  }
 }
 
 // Prepend http headers

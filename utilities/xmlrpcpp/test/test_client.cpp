@@ -647,6 +647,11 @@ const std::string header2 = "HTTP/1.0 200 OK\r\n"
                             "Date: Mon, 30 Oct 2017 22:28:12 GMT\r\n"
                             "Content-type: text/xml\r\n"
                             "Content-length: 114\r\n\r\n";
+// Header for testing a custom Content-length value
+const std::string header3 = "HTTP/1.1 200 OK\r\n"
+                           "Server: XMLRPC++ 0.7\r\n"
+                           "Content-Type: text/xml\r\n"
+                           "Content-length: ";
 // Generic response XML
 const std::string response = "<?xml version=\"1.0\"?>\r\n"
                              "<methodResponse><params><param>\r\n"
@@ -918,6 +923,29 @@ TEST_F(MockSocketTest, readHeader_partial_err) {
 
   // Expect socket close on destruction.
   Expect_close(8);
+}
+
+// Test that the read will fail when content-length is too large
+TEST_F(MockSocketTest, readHeader_oversize) {
+  XmlRpcClientForTest a("localhost", 42);
+
+  // Hack us into the correct initial state.
+  a.setfd(7);
+  a._connectionState = XmlRpcClientForTest::READ_HEADER;
+
+  // Add a large content-length to the standard header
+  std::string header_cl = header3;
+  header_cl += std::to_string(size_t(__INT_MAX__) + 1);
+  header_cl += "\r\n\r\n ";
+
+  Expect_nbRead(7, header_cl, false, true);
+  Expect_close(7);
+
+  EXPECT_FALSE(a.readHeader());
+  EXPECT_EQ(0, a._contentLength); // Content length should be reset
+
+  // Check that all expected function calls were made before destruction.
+  CheckCalls();
 }
 
 // Test readResponse()
