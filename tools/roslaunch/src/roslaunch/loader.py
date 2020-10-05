@@ -497,32 +497,28 @@ class Loader(object):
                 if os.name != 'nt':
                     command = shlex.split(command)
                 else:
+                    orig_command = command
+                    command = shlex.split(command, posix=False)  # use non-posix method on Windows
+
+                    # On Linux, single quotes are commonly used to enclose a path to escape spaces.
+                    # However, on Windows, the single quotes are treated as part of the arguments.
+                    # Special handling is required to remove the extra single quotes.
+                    if "'" in orig_command:
+                        command = [token[1:-1] if token.startswith("'") and token.endswith("'") else token for token in command]
+
                     # Python scripts in ROS tend to omit .py extension since they could become executable with shebang line
                     # special handle the use of Python scripts in Windows environment:
                     # 1. search for a wrapper executable (of the same name) under the same directory with stat.S_IXUSR flag
                     # 2. if no wrapper is present, prepend command with 'python' executable
-                    def split_with_single_quote_enclosed_fixup(command):
-                        tokens = shlex.split(command, posix=False)  # use non-posix method on Windows
-                        if not ("'" in command):
-                            return tokens
-                        new_command = []
-                        for token in tokens:
-                            if token.startswith("'") and token.endswith("'"):
-                                new_command.append(token[1:-1])
-                            else:
-                                new_command.append(token)
-                        return new_command
-
-                    cl = shlex.split(command, posix=False)  # use non-posix method on Windows
-                    if os.path.isabs(cl[0]):
+                    if os.path.isabs(command[0]):
                         # trying to launch an executable from a specific location(package), e.g. xacro
                         import stat
                         rx_flag = stat.S_IRUSR | stat.S_IXUSR
-                        if not os.path.exists(cl[0]) or os.stat(cl[0]).st_mode & rx_flag != rx_flag:
-                            d = os.path.dirname(cl[0])
+                        if not os.path.exists(command[0]) or os.stat(command[0]).st_mode & rx_flag != rx_flag:
+                            d = os.path.dirname(command[0])
                             files_of_same_name = [
                                 os.path.join(d, f) for f in os.listdir(d)
-                                if os.path.splitext(f)[0].lower() == os.path.splitext(os.path.basename(cl[0]))[0].lower()
+                                if os.path.splitext(f)[0].lower() == os.path.splitext(os.path.basename(command[0]))[0].lower()
                             ] if os.path.exists(d) else []
                             executable_command = None
                             for f in files_of_same_name:
@@ -538,8 +534,7 @@ class Loader(object):
                                         if os.path.splitext(f)[1].lower() in ['.py', '']:
                                             executable_command = ' '.join([sys.executable, f])
                             if executable_command:
-                                command = command.replace(cl[0], executable_command, 1)
-                    command = split_with_single_quote_enclosed_fixup(command)
+                                command[0] = executable_command
                 p = subprocess.Popen(command, stdout=subprocess.PIPE)
                 c_value = p.communicate()[0]
                 if not isinstance(c_value, str):
