@@ -281,6 +281,13 @@ XmlRpcClient::generateRequest(const char* methodName, XmlRpcValue const& params)
                   header.length(), body.length());
 
   _request = header + body;
+  // Limit the size of the request to avoid integer overruns
+  if (_request.length() > size_t(__INT_MAX__)) {
+    XmlRpcUtil::error("XmlRpcClient::generateRequest: request length (%u) exceeds maximum allowed size (%u).",
+                      _request.length(), __INT_MAX__);
+    _request.clear();
+    return false;
+  }
   return true;
 }
 
@@ -394,11 +401,14 @@ XmlRpcClient::readHeader()
     return false;   // We could try to figure it out by parsing as we read, but for now...
   }
 
-  _contentLength = atoi(lp);
-  if (_contentLength <= 0) {
-    XmlRpcUtil::error("Error in XmlRpcClient::readHeader: Invalid Content-length specified (%d).", _contentLength);
+  // avoid overly large or improperly formatted content-length
+  long int clength = 0;
+  clength = strtol(lp, NULL, 10);
+  if ((clength <= 0) || (clength > __INT_MAX__)) {
+    XmlRpcUtil::error("Error in XmlRpcClient::readHeader: Invalid Content-length specified.");
     return false;
   }
+  _contentLength = int(clength);
   	
   XmlRpcUtil::log(4, "client read content length: %d", _contentLength);
 
@@ -419,6 +429,14 @@ XmlRpcClient::readResponse()
       return false;
     }
 
+    // Avoid an overly large response
+    if (_response.length() > size_t(__INT_MAX__)) {
+      XmlRpcUtil::error("XmlRpcClient::readResponse: response length (%u) exceeds the maximum allowed size (%u).",
+                        _response.length(), __INT_MAX__);
+      _response.clear();
+      close();
+      return false;
+    }
     // If we haven't gotten the entire _response yet, return (keep reading)
     if (int(_response.length()) < _contentLength) {
       if (_eof) {
