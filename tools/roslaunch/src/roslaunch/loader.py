@@ -495,12 +495,19 @@ class Loader(object):
                 if os.name != 'nt':
                     command = shlex.split(command)
                 else:
+                    cl = shlex.split(command, posix=False)  # use non-posix method on Windows
+
+                    # On Linux, single quotes are commonly used to enclose a path to escape spaces.
+                    # However, on Windows, the single quotes are treated as part of the arguments.
+                    # Special handling is required to remove the extra single quotes.
+                    if "'" in command:
+                        cl = [token[1:-1] if token.startswith("'") and token.endswith("'") else token for token in cl]
+                    command = cl
+
                     # Python scripts in ROS tend to omit .py extension since they could become executable with shebang line
                     # special handle the use of Python scripts in Windows environment:
                     # 1. search for a wrapper executable (of the same name) under the same directory with stat.S_IXUSR flag
                     # 2. if no wrapper is present, prepend command with 'python' executable
-
-                    cl = shlex.split(command, posix=False)  # use non-posix method on Windows
                     if os.path.isabs(cl[0]):
                         # trying to launch an executable from a specific location(package), e.g. xacro
                         import stat
@@ -525,7 +532,7 @@ class Loader(object):
                                         if os.path.splitext(f)[1].lower() in ['.py', '']:
                                             executable_command = ' '.join([sys.executable, f])
                             if executable_command:
-                                command = command.replace(cl[0], executable_command, 1)
+                                command[0] = executable_command
                 p = subprocess.Popen(command, stdout=subprocess.PIPE)
                 c_value = p.communicate()[0]
                 if not isinstance(c_value, str):
