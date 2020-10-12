@@ -198,6 +198,10 @@ void ServiceServerLink::onResponseOkAndLength(const ConnectionPtr& conn, const b
 
   if (len > 1000000000)
   {
+    {
+      boost::mutex::scoped_lock lock(call_queue_mutex_);
+      current_call_->call_finished_ = true;
+    }
     ROS_ERROR("a message of over a gigabyte was " \
                 "predicted in tcpros. that seems highly " \
                 "unlikely, so I'll assume protocol " \
@@ -262,6 +266,7 @@ void ServiceServerLink::callFinished()
 
     current_call_->finished_ = true;
     current_call_->finished_condition_.notify_all();
+    current_call_->call_finished_ = true;
 
     saved_call = current_call_;
     current_call_ = CallInfoPtr();
