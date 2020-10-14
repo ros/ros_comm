@@ -6,11 +6,14 @@
     information about the ROS Computation Graph. It also provides an
     internal library that can be used by graphical tools.
   </description>
-  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
+  <maintainer email="jacob@openrobotics.org">Jacob Perron</maintainer>
+  <maintainer email="michael@openrobotics.org">Michael Carroll</maintainer>
+  <maintainer email="sloretz@openrobotics.org">Shane Loretz</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/rosgraph</url>
   <author>Ken Conley</author>
+  <author email="dthomas@osrfoundation.org">Dirk Thomas</author>
 
   <buildtool_depend version_gte="0.5.78">catkin</buildtool_depend>
 
