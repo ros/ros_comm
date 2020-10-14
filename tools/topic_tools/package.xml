@@ -8,12 +8,15 @@
     tools deal with messages as generic binary blobs. This means they can be
     applied to any ROS topic.
   </description>
-  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
+  <maintainer email="jacob@openrobotics.org">Jacob Perron</maintainer>
+  <maintainer email="michael@openrobotics.org">Michael Carroll</maintainer>
+  <maintainer email="sloretz@openrobotics.org">Shane Loretz</maintainer>
   <license>BSD</license>
 
   <url>http://ros.org/wiki/topic_tools</url>
   <author>Morgan Quigley</author>
   <author>Brian Gerkey</author>
+  <author email="dthomas@osrfoundation.org">Dirk Thomas</author>
 
   <buildtool_depend version_gte="0.5.78">catkin</buildtool_depend>
 

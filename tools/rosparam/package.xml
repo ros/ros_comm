@@ -15,13 +15,16 @@
 
     rosparam can be invoked within a <a href="http://wiki.ros.org/roslaunch">roslaunch</a> file.
   </description>
-  <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
+  <maintainer email="jacob@openrobotics.org">Jacob Perron</maintainer>
+  <maintainer email="michael@openrobotics.org">Michael Carroll</maintainer>
+  <maintainer email="sloretz@openrobotics.org">Shane Loretz</maintainer>
   <license>BSD</license>
 
   <url type="website">http://wiki.ros.org/rosparam</url>
   <url type="bugtracker">https://github.com/ros/ros_comm/issues</url>
   <url type="repository">https://github.com/ros/ros_comm</url>
   <author>Ken Conley</author>
+  <author email="dthomas@osrfoundation.org">Dirk Thomas</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
