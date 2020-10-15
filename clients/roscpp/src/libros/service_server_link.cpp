@@ -262,6 +262,7 @@ void ServiceServerLink::callFinished()
 
     current_call_->finished_ = true;
     current_call_->finished_condition_.notify_all();
+    current_call_->call_finished_ = true;
 
     saved_call = current_call_;
     current_call_ = CallInfoPtr();
