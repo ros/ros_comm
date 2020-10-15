@@ -372,10 +372,7 @@ bool ServiceServerLink::call(const SerializedMessage& req, SerializedMessage& re
     }
   }
 
-  if (!info->call_finished_)
-  {
-    info->call_finished_ = true;
-  }
+  info->call_finished_ = true;
 
   if (info->exception_string_.length() > 0)
   {
