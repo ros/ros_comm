@@ -29,6 +29,7 @@
 
 #include "xmlrpcpp/XmlRpcValue.h"
 #include "xmlrpcpp/XmlRpcException.h"
+#include "xmlrpcpp/XmlRpcUtil.h"
 
 #include <gtest/gtest.h>
 
@@ -126,6 +127,40 @@ TEST(XmlRpc, testDouble) {
   std::stringstream ss;
   ss << d;
   EXPECT_EQ("43.7", ss.str());
+  ss.str("");
+
+  // Test format
+  const XmlRpc::XmlRpcValue a(2.0);
+  ASSERT_EQ(XmlRpcValue::TypeDouble, d.getType());
+  const std::string save_format = XmlRpc::XmlRpcValue::getDoubleFormat();
+
+  XmlRpc::XmlRpcValue::setDoubleFormat("%32.10f");
+  ss << a;
+  EXPECT_EQ("                    2.0000000000", ss.str());
+  ss.str("");
+
+  XmlRpc::XmlRpcValue::setDoubleFormat("%10.32f");
+  ss << a;
+  EXPECT_EQ("2.00000000000000000000000000000000", ss.str());
+  ss.str("");
+
+  XmlRpc::XmlRpcValue::setDoubleFormat("%128.10f");
+  ss << a;
+  EXPECT_EQ("                                "
+            "                                "
+            "                                "
+            "                    2.000000000", ss.str());
+  ss.str("");
+
+  XmlRpc::XmlRpcValue::setDoubleFormat("%10.128f");
+  ss << a;
+  EXPECT_EQ("2.000000000000000000000000000000"
+            "00000000000000000000000000000000"
+            "00000000000000000000000000000000"
+            "000000000000000000000000000000000", ss.str());
+  ss.str("");
+
+  XmlRpc::XmlRpcValue::setDoubleFormat(save_format.c_str());
 }
 
 TEST(XmlRpc, testString) {
@@ -172,6 +207,39 @@ TEST(XmlRpc, testString) {
   std::stringstream ss;
   ss << s;
   EXPECT_EQ("Now is the time <&", ss.str());
+}
+
+//Test decoding of a well-formed but overly large XML input
+TEST(XmlRpc, testOversizeString) {
+  try {
+    std::string xml = "<tag><nexttag>";
+    xml += std::string(__INT_MAX__, 'a');
+    xml += "a</nextag></tag>";
+    int offset;
+
+    offset = 0;
+    EXPECT_EQ(XmlRpcUtil::parseTag("<tag>", xml, &offset), std::string());
+    EXPECT_EQ(offset, 0);
+
+    offset = 0;
+    EXPECT_FALSE(XmlRpcUtil::findTag("<tag>", xml, &offset));
+    EXPECT_EQ(offset, 0);
+
+    offset = 0;
+    EXPECT_FALSE(XmlRpcUtil::nextTagIs("<tag>", xml, &offset));
+    EXPECT_EQ(offset, 0);
+
+    offset = 0;
+    EXPECT_EQ(XmlRpcUtil::getNextTag(xml, &offset), std::string());
+    EXPECT_EQ(offset, 0);
+  }
+  catch (std::bad_alloc& err) {
+#ifdef GTEST_SKIP
+    GTEST_SKIP() << "Unable to allocate memory to run test\n";
+#else
+    std::cerr << "[ SKIPPED  ] XmlRpc.testOversizeString Unable to allocate memory to run test\n";
+#endif
+  }
 }
 
 TEST(XmlRpc, testDateTime) {

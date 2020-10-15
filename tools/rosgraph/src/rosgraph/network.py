@@ -175,7 +175,7 @@ def is_local_address(hostname):
     
 def get_local_address():
     """
-    :returns: default local IP address (e.g. eth0). May be overriden by ROS_IP/ROS_HOSTNAME/__ip/__hostname, ``str``
+    :returns: default local IP address (e.g. eth0). May be overridden by ROS_IP/ROS_HOSTNAME/__ip/__hostname, ``str``
     """
     override = get_address_override()
     if override:
@@ -307,7 +307,7 @@ def decode_ros_handshake_header(header_str):
     Decode serialized ROS handshake header into a Python dictionary
 
     header is a list of string key=value pairs, each prefixed by a
-    4-byte length field. It is preceeded by a 4-byte length field for
+    4-byte length field. It is preceded by a 4-byte length field for
     the entire header.
     
     :param header_str: encoded header string. May contain extra data at the end, ``str``

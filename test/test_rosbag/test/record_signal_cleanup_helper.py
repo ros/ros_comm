@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
-# Copyright (c) 2008, Willow Garage, Inc.
+# Copyright (c) 2020 Amazon.com, Inc. or its affiliates.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,35 +30,29 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#
-# Revision $Id: gossipbot.py 1013 2008-05-21 01:08:56Z sfkwc $
 
-## Simple talker demo that listens to std_msgs/Strings published 
-## to the 'chatter' topic
+import time
+import subprocess
 
-from __future__ import print_function
+RECORD_COMMAND = ['rosbag',
+                  'record',
+                  'chatter',
+                  '-O',
+                  '--duration=5']
+SLEEP_TIME_SEC = 10
 
-import sys
+def test_signal_cleanup(test_bag_file_name, test_signal):
+    """
+    Run rosbag record and send a signal to it after some time.
 
-import rospy
-from std_msgs.msg import String
+    :param test_bag_file_name: bag name for recorded output
+    :param test_signal: signal to send to rosbag
+    """
+    test_command = list(RECORD_COMMAND)
+    test_command.insert(4, test_bag_file_name)
 
-def callback(data):
-    print(rospy.get_caller_id(), "I heard %s"%data.data)
-    
-def listener():
-
-    # in ROS, nodes are unique named. If two nodes with the same
-    # node are launched, the previous one is kicked off. The 
-    # anonymous=True flag means that rospy will choose a unique
-    # name for our 'talker' node so that multiple talkers can
-    # run simultaneously.
-    rospy.init_node('listener', anonymous=True)
-
-    sub = rospy.Subscriber("chatter", String, callback)
-
-    # spin() simply keeps python from exiting until this node is stopped
-    rospy.spin()
-        
-if __name__ == '__main__':
-    listener()
+    p = subprocess.Popen(test_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    # wait while the recorder creates a bag for us to examine
+    time.sleep(SLEEP_TIME_SEC)
+    p.send_signal(test_signal)
+    p.wait()

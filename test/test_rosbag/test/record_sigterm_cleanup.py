@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Software License Agreement (BSD License)
 #
-# Copyright (c) 2008, Willow Garage, Inc.
+# Copyright (c) 2020 Amazon.com, Inc. or its affiliates.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,35 +30,31 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#
-# Revision $Id: gossipbot.py 1013 2008-05-21 01:08:56Z sfkwc $
 
-## Simple talker demo that listens to std_msgs/Strings published 
-## to the 'chatter' topic
+import roslib
+roslib.load_manifest('rosbag')
 
-from __future__ import print_function
-
+import os
+import unittest
+import rostest
 import sys
+import signal
+from record_signal_cleanup_helper import test_signal_cleanup
 
-import rospy
-from std_msgs.msg import String
+TEST_BAG_FILE_NAME = '/tmp/record_sigterm_cleanup_test.bag'
 
-def callback(data):
-    print(rospy.get_caller_id(), "I heard %s"%data.data)
-    
-def listener():
+class RecordSigtermCleanup(unittest.TestCase):
 
-    # in ROS, nodes are unique named. If two nodes with the same
-    # node are launched, the previous one is kicked off. The 
-    # anonymous=True flag means that rospy will choose a unique
-    # name for our 'talker' node so that multiple talkers can
-    # run simultaneously.
-    rospy.init_node('listener', anonymous=True)
+  def test_sigterm_cleanup(self):
+    """
+    Test that rosbag cleans up after handling SIGTERM
+    """
+    test_signal_cleanup(TEST_BAG_FILE_NAME, signal.SIGTERM)
 
-    sub = rospy.Subscriber("chatter", String, callback)
+    # check that the recorded file is no longer active
+    self.assertTrue(os.path.isfile(TEST_BAG_FILE_NAME))
+    self.assertFalse(os.path.isfile(TEST_BAG_FILE_NAME+ '.active'))
 
-    # spin() simply keeps python from exiting until this node is stopped
-    rospy.spin()
-        
+
 if __name__ == '__main__':
-    listener()
+  rostest.unitrun('test_rosbag', 'test_sigterm_cleanup', RecordSigtermCleanup, sys.argv)

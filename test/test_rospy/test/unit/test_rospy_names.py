@@ -189,7 +189,7 @@ class TestRospyNames(unittest.TestCase):
             self.assertEquals(v, validator(name, caller_id))
 
         # kwc: valid_name is currently very soft in the failures it
-        # checks as it is targetted at catching parameter
+        # checks as it is targeted at catching parameter
         # misalignment. I would like to make it more strict in the
         # future.
         invalid = [

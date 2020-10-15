@@ -347,7 +347,7 @@ class TCPROSServiceClient(TCPROSTransportProtocol):
         
     def read_messages(self, b, msg_queue, sock):
         """
-        In service implementation, reads in OK byte that preceeds each
+        In service implementation, reads in OK byte that precedes each
         response. The OK byte allows for the passing of error messages
         instead of a response message
         @param b: buffer
@@ -403,7 +403,7 @@ class ServiceProxy(_Service):
         @param persistent: (optional) if True, proxy maintains a persistent
         connection to service. While this results in better call
         performance, persistent connections are discouraged as they are
-        less resistent to network issues and service restarts.
+        less resistant to network issues and service restarts.
         @type  persistent: bool
         @param headers: (optional) arbitrary headers 
         @type  headers: dict

@@ -275,7 +275,7 @@ class ROSLaunchConfig(object):
 
     def add_executable(self, exe):
         """
-        Declare an exectuable to be run during the launch
+        Declare an executable to be run during the launch
         @param exe: Executable
         @type  exe: L{Executable}
         @raises ValueError
