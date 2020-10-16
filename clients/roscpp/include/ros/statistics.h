@@ -97,7 +97,7 @@ private:
     std::list<ros::Duration> age_list;
     // number of dropped messages
     uint64_t dropped_msgs;
-    // latest sequence number observered (if available)
+    // latest sequence number observed (if available)
     uint64_t last_seq;
     // latest total traffic volume observed
     uint64_t stat_bytes_last;

@@ -49,7 +49,7 @@ import rospy.exceptions
 import genpy
 
 ## /time support. This hooks into the rospy Time representation and
-## allows it to be overriden with data from the /time topic.
+## allows it to be overridden with data from the /time topic.
 
 _rostime_initialized = False
 _rostime_current = None

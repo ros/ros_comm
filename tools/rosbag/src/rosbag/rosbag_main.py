@@ -72,6 +72,12 @@ def _stop_process(signum, frame, old_handler, process):
         old_handler(signum, frame)
 
 
+def _send_process_sigint(signum, frame, old_handler, process):
+    process.send_signal(signal.SIGINT)
+    if old_handler:
+        old_handler(signum, frame)
+
+
 def record_cmd(argv):
     parser = optparse.OptionParser(usage="rosbag record TOPIC1 [TOPIC2 TOPIC3 ...]",
                                    description="Record a bag file with the contents of specified topics.",
@@ -141,6 +147,12 @@ def record_cmd(argv):
         signal.SIGTERM,
         lambda signum, frame: _stop_process(signum, frame, old_handler, process)
     )
+
+    old_handler = signal.signal(
+        signal.SIGINT,
+        lambda signum, frame: _send_process_sigint(signum, frame, old_handler, process)
+    )
+
     # Better way of handling it than os.execv
     # This makes sure stdin handles are passed to the process.
     process = subprocess.Popen(cmd)

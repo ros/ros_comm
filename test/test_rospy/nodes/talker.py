@@ -50,7 +50,7 @@ def talker():
     # node are launched, the previous one is kicked off. The 
     # anonymous=True flag means that rospy will choose a unique
     # name for our 'talker' node so that multiple talkers can
-    # run simultaenously.
+    # run simultaneously.
     rospy.init_node('talker', anonymous=True)
 
     count = 0

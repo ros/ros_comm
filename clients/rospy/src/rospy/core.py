@@ -85,7 +85,7 @@ _TIMEOUT_SHUTDOWN_JOIN = 5.
 import warnings
 def deprecated(func):
     """This is a decorator which can be used to mark functions
-    as deprecated. It will result in a warning being emmitted
+    as deprecated. It will result in a warning being emitted
     when the function is used."""
     def newFunc(*args, **kwargs):
         warnings.warn("Call to deprecated function %s." % func.__name__,
@@ -223,6 +223,10 @@ class LoggingThrottle(object):
               (now - last_logging_time) > rospy.Duration(period)):
             self.last_logging_time_table[caller_id] = now
             return True
+        elif last_logging_time > now:
+            self.last_logging_time_table = {}
+            self.last_logging_time_table[caller_id] = now
+            return True
         return False
 
 
@@ -325,7 +329,7 @@ import warnings
 import functools
 def deprecated(func):
     """This is a decorator which can be used to mark functions
-    as deprecated. It will result in a warning being emmitted
+    as deprecated. It will result in a warning being emitted
     when the function is used."""
     @functools.wraps(func)
     def newFunc(*args, **kwargs):

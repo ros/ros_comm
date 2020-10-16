@@ -279,11 +279,11 @@ class TestXmlLoader(unittest.TestCase):
         self.assertTrue('$(anon foo)' not in p.value)
 
         # verify that later tags override 
-        # - key2 is overriden
+        # - key2 is overridden
         self.assertEquals(1, len([p for p in mock.params if p.key == '/override/key1']))
         p = [p for p in mock.params if p.key == '/override/key1'][0]
         self.assertEquals('override1', p.value)
-        # - key2 is not overriden
+        # - key2 is not overridden
         p = [p for p in mock.params if p.key == '/override/key2'][0]
         self.assertEquals('value2', p.value)
 

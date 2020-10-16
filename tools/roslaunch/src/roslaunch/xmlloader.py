@@ -233,7 +233,7 @@ class XmlLoader(loader.Loader):
             self._check_attrs(tag, context, ros_config, XmlLoader.ROSPARAM_OPT_ATTRS)
             cmd, ns, file, param, subst_value = self.opt_attrs(tag, context, (XmlLoader.ROSPARAM_OPT_ATTRS))
             subst_value = _bool_attr(subst_value, False, 'subst_value')
-            # ns atribute is a bit out-moded and is only left in for backwards compatibility
+            # ns attribute is a bit out-moded and is only left in for backwards compatibility
             param = ns_join(ns or '', param or '')
             
             # load is the default command            

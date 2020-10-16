@@ -466,7 +466,7 @@ class ROSLaunchRunner(object):
         Launch a single L{Executable} object. Blocks until executable finishes.
         @param e: Executable
         @type  e: L{Executable}
-        @raise RLException: if exectuable fails. Failure includes non-zero exit code.
+        @raise RLException: if executable fails. Failure includes non-zero exit code.
         """
         try:
             #kwc: I'm still debating whether shell=True is proper
@@ -485,7 +485,7 @@ class ROSLaunchRunner(object):
     #TODO: define and implement behavior for remote launch
     def _launch_setup_executables(self):
         """
-        @raise RLException: if exectuable fails. Failure includes non-zero exit code.
+        @raise RLException: if executable fails. Failure includes non-zero exit code.
         """
         exes = [e for e in self.config.executables if e.phase == PHASE_SETUP]
         for e in exes:
@@ -638,7 +638,7 @@ class ROSLaunchRunner(object):
         if launched:
             self._launch_core_nodes()
         
-        # run exectuables marked as setup period. this will block
+        # run executables marked as setup period. this will block
         # until these executables exit. setup executable have to run
         # *before* parameters are uploaded so that commands like
         # rosparam delete can execute.

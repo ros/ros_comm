@@ -138,7 +138,7 @@ def apivalidate(error_return_value, validators=()):
                 _logger.debug("%s%s", func_name, str(args[1:]))
                 #print "%s%s"%(func_name, str(args[1:]))
             if len(args) == 1:
-                _logger.error("%s invoked without caller_id paramter" % func_name)
+                _logger.error("%s invoked without caller_id parameter" % func_name)
                 return -1, "missing required caller_id parameter", error_return_value
             elif len(args) != func_code.co_argcount:
                 return -1, "Error: bad call arity", error_return_value
@@ -462,6 +462,7 @@ class ROSMasterHandler(object):
             val = self.param_server.subscribe_param(key, (caller_id, caller_api))
         finally:
             self.ps_lock.release()
+        mloginfo("+CACHEDPARAM [%s] by %s",key, caller_id)
         return 1, "Subscribed to parameter [%s]"%key, val
 
     @apivalidate(0, (is_api('caller_api'), non_empty_str('key'),))
@@ -486,6 +487,7 @@ class ROSMasterHandler(object):
             retval = self.param_server.unsubscribe_param(key, (caller_id, caller_api))
         finally:
             self.ps_lock.release()
+        mloginfo("-CACHEDPARAM [%s] by %s",key, caller_id)
         return 1, "Unsubscribe to parameter [%s]"%key, 1
 
 

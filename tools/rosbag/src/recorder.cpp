@@ -135,7 +135,7 @@ int Recorder::run() {
     if (options_.topics.size() == 0) {
         // Make sure limit is not specified with automatic topic subscription
         if (options_.limit > 0) {
-            fprintf(stderr, "Specifing a count is not valid with automatic topic subscription.\n");
+            fprintf(stderr, "Specifying a count is not valid with automatic topic subscription.\n");
             return 1;
         }
 
