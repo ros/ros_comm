@@ -2,6 +2,16 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.9 (2020-10-16)
+-------------------
+* Fix deadlock when service connection is dropped (`#2074 <https://github.com/ros/ros_comm/issues/2074>`_)
+* Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)
+* Fix case where accessing cached parameters shuts down another node (`#2068 <https://github.com/ros/ros_comm/issues/2068>`_)
+* Fix spelling (`#2066 <https://github.com/ros/ros_comm/issues/2066>`_)
+* Fix Lost Wake Bug in ROSOutAppender (`#2033 <https://github.com/ros/ros_comm/issues/2033>`_)
+* Fix compatibility issue with boost 1.73 and above (`#2023 <https://github.com/ros/ros_comm/issues/2023>`_)
+* Contributors: Adel Fakih, Chen Lihui, Sean Yen, Shane Loretz, tomoya
+
 1.15.8 (2020-07-23)
 -------------------
 * change is_async_connected to use epoll when available (`#1983 <https://github.com/ros/ros_comm/issues/1983>`_)

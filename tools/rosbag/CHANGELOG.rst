@@ -2,6 +2,15 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.9 (2020-10-16)
+-------------------
+* Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)
+* Fix spelling (`#2066 <https://github.com/ros/ros_comm/issues/2066>`_)
+* Gracefully stop recording upon SIGTERM and SIGINT (`#2038 <https://github.com/ros/ros_comm/issues/2038>`_)
+* Fix compatibility issue with boost 1.73 and above (`#2023 <https://github.com/ros/ros_comm/issues/2023>`_)
+* Use heapq.merge instead of custom merge sort code (`#2017 <https://github.com/ros/ros_comm/issues/2017>`_)
+* Contributors: Devin Bonnie, Florian Friesdorf, Sean Yen, Shane Loretz, tomoya
+
 1.15.8 (2020-07-23)
 -------------------
 

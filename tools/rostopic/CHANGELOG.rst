@@ -2,6 +2,12 @@
 Changelog for package rostopic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.9 (2020-10-16)
+-------------------
+* Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)
+* Use range instead of xrange for Python 3 compatibility (`#2013 <https://github.com/ros/ros_comm/issues/2013>`_)
+* Contributors: Dirk Thomas, Shane Loretz
+
 1.15.8 (2020-07-23)
 -------------------
 

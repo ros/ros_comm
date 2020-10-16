@@ -2,6 +2,14 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.9 (2020-10-16)
+-------------------
+* Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)
+* Fix to address CVE-2020-16124 (`#2065 <https://github.com/ros/ros_comm/issues/2065>`_)
+* Fix spelling (`#2066 <https://github.com/ros/ros_comm/issues/2066>`_)
+* Fix XmlRpcValue::_doubleFormat being unused (`#2003 <https://github.com/ros/ros_comm/issues/2003>`_)
+* Contributors: Shane Loretz, Sid Faber, tomoya
+
 1.15.8 (2020-07-23)
 -------------------
 * add const versions of XmlRpcValue converting operators (`#1978 <https://github.com/ros/ros_comm/issues/1978>`_)

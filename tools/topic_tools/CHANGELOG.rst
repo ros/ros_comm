@@ -2,6 +2,12 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.9 (2020-10-16)
+-------------------
+* Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)
+* Fix compatibility issue with boost 1.73 and above (`#2023 <https://github.com/ros/ros_comm/issues/2023>`_)
+* Contributors: Sean Yen, Shane Loretz
+
 1.15.8 (2020-07-23)
 -------------------
 * add latch param to throttle (`#1944 <https://github.com/ros/ros_comm/issues/1944>`_)

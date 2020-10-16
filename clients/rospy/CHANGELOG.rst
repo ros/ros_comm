@@ -2,6 +2,13 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.9 (2020-10-16)
+-------------------
+* Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)
+* Fix spelling (`#2066 <https://github.com/ros/ros_comm/issues/2066>`_)
+* Fix error handling with Python 3 (`#2050 <https://github.com/ros/ros_comm/issues/2050>`_)
+* Contributors: Markus Grimm, Sean Yen, Shane Loretz, larslue, salihmarangoz, tomoya
+
 1.15.8 (2020-07-23)
 -------------------
 * remove not existing NodeProxy from rospy __all_\_ (`#2007 <https://github.com/ros/ros_comm/issues/2007>`_)

@@ -2,6 +2,14 @@
 Changelog for package rosnode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.9 (2020-10-16)
+-------------------
+* Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)
+* Fix spelling (`#2066 <https://github.com/ros/ros_comm/issues/2066>`_)
+* Clear cached URI for a node that has gone offline (`#2010 <https://github.com/ros/ros_comm/issues/2010>`_)
+* Add skip_cache parameter to rosnode_ping() (`#2009 <https://github.com/ros/ros_comm/issues/2009>`_)
+* Contributors: Shane Loretz, mabaue, tomoya
+
 1.15.8 (2020-07-23)
 -------------------
 
