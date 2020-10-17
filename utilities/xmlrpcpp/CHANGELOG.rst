@@ -2,6 +2,14 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.10 (2020-10-16)
+--------------------
+* Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)
+* Trap for overly large input to XmlRPCPP (`#2065 <https://github.com/ros/ros_comm/issues/2065>`_)
+* Fix spelling (`#2066 <https://github.com/ros/ros_comm/issues/2066>`_)
+* XmlRpcValue::_doubleFormat should be used during write (`#2003 <https://github.com/ros/ros_comm/issues/2003>`_)
+* Contributors: Jacob Perron, Shane Loretz, Sid Faber, tomoya
+
 1.14.9 (2020-08-20)
 -------------------
 

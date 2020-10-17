@@ -2,6 +2,14 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.10 (2020-10-16)
+--------------------
+* Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)
+* [Windows] Single quote string fix-up (`#2051 <https://github.com/ros/ros_comm/issues/2051>`_)
+* Fix spelling (`#2066 <https://github.com/ros/ros_comm/issues/2066>`_)
+* Change error message (`#2035 <https://github.com/ros/ros_comm/issues/2035>`_)
+* Contributors: Andreas Vinter-Hviid, Jacob Perron, Sean Yen, Shane Loretz, tomoya
+
 1.14.9 (2020-08-20)
 -------------------
 

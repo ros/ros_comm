@@ -2,6 +2,11 @@
 Changelog for package rosparam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.10 (2020-10-16)
+--------------------
+* Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)
+* Contributors: Jacob Perron, Shane Loretz
+
 1.14.9 (2020-08-20)
 -------------------
 

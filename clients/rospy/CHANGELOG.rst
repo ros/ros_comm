@@ -2,6 +2,15 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.10 (2020-10-16)
+--------------------
+* Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)
+* Fix spelling (`#2066 <https://github.com/ros/ros_comm/issues/2066>`_)
+* Fix log*_throttle with sim time (`#2044 <https://github.com/ros/ros_comm/issues/2044>`_)
+* Fix issue with rospy.set_param('') (`#2024 <https://github.com/ros/ros_comm/issues/2024>`_)
+* Update local parameter cache on set_param (`#2021 <https://github.com/ros/ros_comm/issues/2021>`_)
+* Contributors: Jacob Perron, Markus Grimm, Shane Loretz, larslue, salihmarangoz, tomoya
+
 1.14.9 (2020-08-20)
 -------------------
 

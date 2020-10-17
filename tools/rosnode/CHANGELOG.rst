@@ -2,6 +2,14 @@
 Changelog for package rosnode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.10 (2020-10-16)
+--------------------
+* Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)
+* Fix spelling (`#2066 <https://github.com/ros/ros_comm/issues/2066>`_)
+* Remove unavailable nodes from local node cache _caller_apis (`#2010 <https://github.com/ros/ros_comm/issues/2010>`_)
+* Add skip_cache parameter to rosnode_ping() (`#2009 <https://github.com/ros/ros_comm/issues/2009>`_)
+* Contributors: Jacob Perron, Shane Loretz, mabaue, tomoya
+
 1.14.9 (2020-08-20)
 -------------------
 
