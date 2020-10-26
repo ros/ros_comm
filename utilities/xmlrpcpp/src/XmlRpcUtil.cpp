@@ -108,6 +108,8 @@ void XmlRpcUtil::error(const char* fmt, ...)
 std::string 
 XmlRpcUtil::parseTag(const char* tag, std::string const& xml, int* offset)
 {
+  // avoid attempting to parse overly long xml input
+  if (xml.length() > size_t(__INT_MAX__)) return std::string();
   if (*offset >= int(xml.length())) return std::string();
   size_t istart = xml.find(tag, *offset);
   if (istart == std::string::npos) return std::string();
@@ -126,6 +128,7 @@ XmlRpcUtil::parseTag(const char* tag, std::string const& xml, int* offset)
 bool 
 XmlRpcUtil::findTag(const char* tag, std::string const& xml, int* offset)
 {
+  if (xml.length() > size_t(__INT_MAX__)) return false;
   if (*offset >= int(xml.length())) return false;
   size_t istart = xml.find(tag, *offset);
   if (istart == std::string::npos)
@@ -141,6 +144,7 @@ XmlRpcUtil::findTag(const char* tag, std::string const& xml, int* offset)
 bool 
 XmlRpcUtil::nextTagIs(const char* tag, std::string const& xml, int* offset)
 {
+  if (xml.length() > size_t(__INT_MAX__)) return false;
   if (*offset >= int(xml.length())) return false;
   const char* cp = xml.c_str() + *offset;
   int nc = 0;
@@ -162,6 +166,7 @@ XmlRpcUtil::nextTagIs(const char* tag, std::string const& xml, int* offset)
 std::string 
 XmlRpcUtil::getNextTag(std::string const& xml, int* offset)
 {
+  if (xml.length() > size_t(__INT_MAX__)) return std::string();
   if (*offset >= int(xml.length())) return std::string();
 
   size_t pos = *offset;

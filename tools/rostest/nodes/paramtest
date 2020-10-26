@@ -90,7 +90,7 @@ class ParamTest(unittest.TestCase):
 
         wallclock_timeout_t = time.time() + wait_time
         param_obtained = None
-        while not param_obtained and time.time() < wallclock_timeout_t:
+        while param_obtained is None and time.time() < wallclock_timeout_t:
             try:
                 param_obtained = rospy.get_param(testattr_paramname_target)
             except KeyError as e:

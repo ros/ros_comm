@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "xmlrpcpp/XmlRpcValue.h"
+#include "xmlrpcpp/XmlRpcUtil.h"
 
 
 #include <assert.h>
@@ -84,6 +85,35 @@ void testString()
   offset = 0;
   XmlRpcValue blankStringVal(emptyStringXml, &offset);
   assert(std::string(blankStringVal) == "  ");
+}
+
+//Test decoding of a well-formed but overly large XML input
+testOversizeString() {
+  try {
+    std::string xml = "<tag><nexttag>";
+    xml += std::string(__INT_MAX__, 'a');
+    xml += "a</nextag></tag>";
+    int offset;
+
+    offset = 0;
+    assert(XmlRpcUtil::parseTag("<tag>", xml, &offset) == std::string());
+    assert(offset == 0);
+
+    offset = 0;
+    assert(!XmlRpcUtil::findTag("<tag>", xml, &offset));
+    assert(offset == 0);
+
+    offset = 0;
+    assert(!XmlRpcUtil::nextTagIs("<tag>", xml, &offset));
+    assert(offset == 0);
+
+    offset = 0;
+    assert(XmlRpcUtil::getNextTag(xml, &offset) == std::string());
+    assert(offset == 0);
+  }
+  catch (std::bad_alloc& err) {
+    std::cerr << "[ SKIPPED  ] XmlRpc.testOversizeString Unable to allocate memory to run test\n";
+  }
 }
 
 
@@ -219,6 +249,9 @@ int main(int argc, char* argv[])
 
 
   testString();
+
+
+  testOversizeString();
 
 
   testDateTime();
