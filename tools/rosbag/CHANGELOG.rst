@@ -2,6 +2,12 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.12.17 (2020-10-26)
+--------------------
+* Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)
+* Gracefully stop recording upon SIGTERM and SIGINT (`#2038 <https://github.com/ros/ros_comm/issues/2038>`_)
+* Contributors: Devin Bonnie, Jacob Perron, Shane Loretz
+
 1.12.16 (2020-08-26)
 --------------------
 

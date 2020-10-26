@@ -2,6 +2,14 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.12.17 (2020-10-26)
+--------------------
+* Set call_finished\_ with true for each call inside callFinished (`#2074 <https://github.com/ros/ros_comm/issues/2074>`_)
+* Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)
+* Cached parameter should be unsubscribed (`#2068 <https://github.com/ros/ros_comm/issues/2068>`_)
+* Fix Lost Wake Bug in ROSOutAppender (`#2033 <https://github.com/ros/ros_comm/issues/2033>`_)
+* Contributors: Adel Fakih, Chen Lihui, Jacob Perron, Shane Loretz, tomoya
+
 1.12.16 (2020-08-26)
 --------------------
 * use fully qualified ceil() in condition_variable.h (`#2025 <https://github.com/ros/ros_comm/issues/2025>`_)

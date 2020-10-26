@@ -2,6 +2,12 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.12.17 (2020-10-26)
+--------------------
+* Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)
+* Change error message (`#2035 <https://github.com/ros/ros_comm/issues/2035>`_)
+* Contributors: Andreas Vinter-Hviid, Jacob Perron, Shane Loretz
+
 1.12.16 (2020-08-26)
 --------------------
 

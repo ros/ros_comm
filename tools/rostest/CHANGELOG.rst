@@ -2,6 +2,12 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.12.17 (2020-10-26)
+--------------------
+* Fix paramtest for empty values of a parameter (`#2054 <https://github.com/ros/ros_comm/issues/2054>`_)
+* Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)
+* Contributors: Jacob Perron, Levko Ivanchuk, Shane Loretz
+
 1.12.16 (2020-08-26)
 --------------------
 
