@@ -3,7 +3,9 @@
         args="pub -r 10.0 input std_msgs/String chatter"/>
 
   <node pkg="topic_tools" type="throttle" name="throttle"
-        args="messages input 0.001"/>
+        args="messages input 0.001">
+    <rosparam param="wait_for_subscribers">['/throttle_publishtest']</rosparam>
+  </node>
 
   <test test-name="throttle_publishtest" pkg="rostest" type="publishtest">
     <rosparam>
