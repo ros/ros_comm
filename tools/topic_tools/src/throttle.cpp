@@ -138,6 +138,8 @@ void wait_for_subscribers()
                [](const std::string& subscriber) { return subscriber != "*"; });
 
   // Wait for the explicit pending subscribers to subscribe
+  const auto output_topic_name = g_node->resolveName(g_output_topic);
+
   std::set<std::string> pending_subscribers(explicit_subscribers.begin(), explicit_subscribers.end());
   while (!pending_subscribers.empty() && ros::WallTime::now() < advertise_time + g_wait_for_subscribers_timeout)
   {
@@ -154,7 +156,7 @@ void wait_for_subscribers()
     for (int i = 0; i < sub_info.size(); ++i)
     {
       const auto& topic_name = sub_info[i][0];
-      if (topic_name != g_output_topic)
+      if (topic_name != output_topic_name)
       {
         continue;
       }
@@ -171,7 +173,7 @@ void wait_for_subscribers()
       }
     }
 
-    ROS_DEBUG_STREAM("Waiting for explicit subscribers [" << pending_subscribers << "] to " << g_output_topic);
+    ROS_DEBUG_STREAM("Waiting for explicit subscribers [" << pending_subscribers << "] to " << output_topic_name);
     ros::WallDuration(0.1).sleep();
   }
 
@@ -187,7 +189,7 @@ void wait_for_subscribers()
   while (g_pub.getNumSubscribers() < num_subscribers &&
          ros::WallTime::now() < advertise_time + g_wait_for_subscribers_timeout)
   {
-    ROS_DEBUG_STREAM("Waiting for subscribers to " << g_output_topic);
+    ROS_DEBUG_STREAM("Waiting for subscribers to " << output_topic_name);
     ros::WallDuration(0.1).sleep();
   }
 
