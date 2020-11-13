@@ -2682,7 +2682,12 @@ class _BagReader200(_BagReader):
             self.bag._curr_chunk_info = chunk_info
             for i in range(len(chunk_info.connection_counts)):
                 connection_id, index = self.read_connection_index_record()
-                self.bag._connection_indexes[connection_id].extend(index)
+                self.bag._connection_indexes[connection_id].append(index)
+
+        self.bag._connection_indexes = {
+            connection_id: list(heapq.merge(*indices, key=lambda x: x.time.to_nsec()))
+            for connection_id, indices in self.bag._connection_indexes.items()
+        }
 
         # Remove any connections with no entries
         # This is a workaround for a bug where connection records were being written for
@@ -2794,7 +2799,7 @@ class _BagReader200(_BagReader):
             time   = _read_time  (f)
             offset = _read_uint32(f)
             
-            index.append(_IndexEntry200(time, self.bag._curr_chunk_info.pos, offset))
+            bisect.insort_right(index, _IndexEntry200(time, self.bag._curr_chunk_info.pos, offset))
 
         return (connection_id, index)
 
