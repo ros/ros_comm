@@ -69,21 +69,21 @@ class TestRosmsg(unittest.TestCase):
         d = get_test_path()
         msg_d = os.path.join(d, 'msg')
         
-        test_message_package = 'test_rosmaster'
+        test_message_package = 'diagnostic_msgs'
         rospack = rospkg.RosPack()
         msg_raw_d = os.path.join(rospack.get_path(test_message_package), 'msg')
-        for t in ['RosmsgA', 'RosmsgB']:
-            with open(os.path.join(msg_d, '%s.msg'%t), 'r') as f:
-                text = f.read()
-            with open(os.path.join(msg_raw_d, '%s.msg'%t), 'r') as f:
-                text_raw = f.read()
-                
-            type_ = test_message_package+'/'+t
-            self.assertEquals(text, rosmsg.get_msg_text(type_, raw=False))
-            self.assertEquals(text_raw, rosmsg.get_msg_text(type_, raw=True))
+        t = 'KeyValue'
+        with open(os.path.join(msg_d, '%s.msg'%t), 'r') as f:
+            text = f.read()
+        with open(os.path.join(msg_raw_d, '%s.msg'%t), 'r') as f:
+            text_raw = f.read()
+
+        type_ = test_message_package+'/'+t
+        self.assertEquals(text, rosmsg.get_msg_text(type_, raw=False))
+        self.assertEquals(text_raw, rosmsg.get_msg_text(type_, raw=True))
             
         # test recursive types
-        t = 'RosmsgC'
+        t = 'DiagnosticStatus'
         with open(os.path.join(d, '%s_raw.txt'%t), 'r') as f:
             text = f.read()
         with open(os.path.join(msg_raw_d, '%s.msg'%t), 'r') as f:
@@ -120,24 +120,26 @@ class TestRosmsg(unittest.TestCase):
         # test msgs
         l = rosmsg.list_types('rospy', mode='.msg')
         self.assertEquals([], l)
-        l = rosmsg.list_types('test_rosmaster', mode='.msg')
-        for t in ['test_rosmaster/RosmsgA', 'test_rosmaster/RosmsgB', 'test_rosmaster/RosmsgC']:
+        l = rosmsg.list_types('diagnostic_msgs', mode='.msg')
+        for t in ['diagnostic_msgs/DiagnosticArray',
+                  'diagnostic_msgs/DiagnosticStatus',
+                  'diagnostic_msgs/KeyValue']:
             assert t in l
         
         l = rosmsg.list_types('rospy', mode='.srv')
         self.assertEquals([], l)        
-        l = rosmsg.list_types('test_rosmaster', mode='.srv')
-        for t in ['test_rosmaster/RossrvA', 'test_rosmaster/RossrvB']:
+        l = rosmsg.list_types('diagnostic_msgs', mode='.srv')
+        for t in ['diagnostic_msgs/AddDiagnostics', 'diagnostic_msgs/SelfTest']:
             assert t in l
 
     def test_get_srv_text(self):
         d = get_test_path()
         srv_d = os.path.join(d, 'srv')
         
-        test_srv_package = 'test_rosmaster'
+        test_srv_package = 'diagnostic_msgs'
         rospack = rospkg.RosPack()
         srv_raw_d = os.path.join(rospack.get_path(test_srv_package), 'srv')
-        for t in ['RossrvA', 'RossrvB']:
+        for t in ['AddDiagnostics', 'SelfTest']:
             with open(os.path.join(srv_d, '%s.srv'%t), 'r') as f:
                 text = f.read()
             with open(os.path.join(srv_raw_d, '%s.srv'%t), 'r') as f:
