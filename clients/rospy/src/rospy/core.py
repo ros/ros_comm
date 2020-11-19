@@ -595,7 +595,7 @@ def signal_shutdown(reason):
         threads = _shutdown_threads[:]
 
     for t in threads:
-        if t.isAlive():
+        if t.is_alive():
             t.join(_TIMEOUT_SHUTDOWN_JOIN)
     del _shutdown_threads[:]
     try:
