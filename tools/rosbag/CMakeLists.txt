@@ -40,7 +40,7 @@ target_link_libraries(play rosbag)
 
 if(NOT WIN32)
   add_executable(encrypt src/encrypt.cpp)
-  target_link_libraries(encrypt ${catkin_LIBRARIES})
+  target_link_libraries(encrypt ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 endif()
 
 install(DIRECTORY include/${PROJECT_NAME}/
