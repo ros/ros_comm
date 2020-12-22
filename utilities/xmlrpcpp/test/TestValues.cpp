@@ -213,7 +213,7 @@ TEST(XmlRpc, testString) {
 TEST(XmlRpc, testOversizeString) {
   try {
     std::string xml = "<tag><nexttag>";
-    xml += std::string(__INT_MAX__, 'a');
+    xml += std::string(INT_MAX, 'a');
     xml += "a</nextag></tag>";
     int offset;
 

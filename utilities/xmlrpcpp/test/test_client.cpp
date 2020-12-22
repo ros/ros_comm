@@ -935,7 +935,7 @@ TEST_F(MockSocketTest, readHeader_oversize) {
 
   // Add a large content-length to the standard header
   std::string header_cl = header3;
-  header_cl += std::to_string(size_t(__INT_MAX__) + 1);
+  header_cl += std::to_string(size_t(INT_MAX) + 1);
   header_cl += "\r\n\r\n ";
 
   Expect_nbRead(7, header_cl, false, true);
