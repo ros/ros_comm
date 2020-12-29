@@ -51,6 +51,8 @@ extern "C" {
 }
 #endif  // _WINDOWS
 
+#include <climits>
+
 #endif // MAKEDEPEND
 
 // MSG_NOSIGNAL does not exists on OS X

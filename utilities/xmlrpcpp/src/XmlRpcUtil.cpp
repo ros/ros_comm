@@ -7,6 +7,7 @@
 # include <stdarg.h>
 # include <stdio.h>
 # include <string.h>
+# include <climits>
 #endif
 
 #include "xmlrpcpp/XmlRpc.h"

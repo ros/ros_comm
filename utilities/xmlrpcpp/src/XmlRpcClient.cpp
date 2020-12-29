@@ -11,6 +11,7 @@
 	# include <strings.h>
 #endif
 #include <string.h>
+#include <climits>
 
 
 using namespace XmlRpc;
