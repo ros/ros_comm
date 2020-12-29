@@ -26,6 +26,7 @@
 
 #include <stdlib.h>
 #include <string>
+#include <climits>
 
 #include "xmlrpcpp/XmlRpcValue.h"
 #include "xmlrpcpp/XmlRpcException.h"

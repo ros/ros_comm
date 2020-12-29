@@ -26,6 +26,7 @@
 
 #include "mock_socket.h"
 #include <errno.h>
+#include <climits>
 
 #include <gtest/gtest.h>
 
