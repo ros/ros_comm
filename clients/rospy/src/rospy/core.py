@@ -509,7 +509,7 @@ def _add_shutdown_thread(t):
         # last thread may not get reaped until shutdown, but this is
         # relatively minor
         for other in _shutdown_threads[:]:
-            if not other.isAlive():
+            if not other.is_alive():
                 _shutdown_threads.remove(other)
         _shutdown_threads.append(t)
 
@@ -595,7 +595,7 @@ def signal_shutdown(reason):
         threads = _shutdown_threads[:]
 
     for t in threads:
-        if t.isAlive():
+        if t.is_alive():
             t.join(_TIMEOUT_SHUTDOWN_JOIN)
     del _shutdown_threads[:]
     try:
