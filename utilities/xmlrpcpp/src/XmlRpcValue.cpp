@@ -15,6 +15,7 @@
 
 #include <sstream>
 #include <mutex>
+#include <vector>
 
 namespace XmlRpc {
 
@@ -625,11 +626,11 @@ namespace XmlRpc {
             buf[sizeof(buf)-1] = 0;
             os << buf;
           } else { // required_size >= static_cast<int>(sizeof(buf)
-            char required_buf[required_size+1];
-            std::snprintf(required_buf, required_size,
+            std::vector<char> required_buf(required_size+1);
+            std::snprintf(required_buf.data(), required_size,
               getDoubleFormat().c_str(), _value.asDouble);
             required_buf[required_size] = 0;
-            os << required_buf;
+            os << required_buf.data();
           }
           break;
         }
