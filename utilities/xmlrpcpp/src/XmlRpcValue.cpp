@@ -15,6 +15,7 @@
 
 #include <sstream>
 #include <mutex>
+#include <vector>
 
 namespace XmlRpc {
 
