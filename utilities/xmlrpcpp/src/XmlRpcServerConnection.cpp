@@ -11,6 +11,7 @@
 #endif
 # include <string.h>
 #endif
+#include <climits>
 
 using namespace XmlRpc;
 
@@ -122,7 +123,7 @@ XmlRpcServerConnection::readHeader()
   // avoid overly large or improperly formatted content-length
   long int clength = 0;
   clength = strtol(lp, nullptr, 10);
-  if ((clength < 0) || (clength > __INT_MAX__)) {
+  if ((clength < 0) || (clength > INT_MAX)) {
     XmlRpcUtil::error("XmlRpcServerConnection::readHeader: Invalid Content-length specified.");
     return false;
   }
@@ -161,10 +162,10 @@ XmlRpcServerConnection::readRequest()
       return false;
     }
     // Avoid an overly large request
-    if (_request.length() > size_t(__INT_MAX__)) {
+    if (_request.length() > size_t(INT_MAX)) {
       XmlRpcUtil::error("XmlRpcServerConnection::readRequest: request length (%u) exceeds the maximum allowed size (%u)",
-                        _request.length(), __INT_MAX__);
-      _request.resize(__INT_MAX__);
+                        _request.length(), INT_MAX);
+      _request.resize(INT_MAX);
       return false;
     }
 
@@ -345,9 +346,9 @@ XmlRpcServerConnection::generateResponse(std::string const& resultXml)
   std::string header = generateHeader(body);
 
   // Avoid an overly large response
-  if ((header.length() + body.length()) > size_t(__INT_MAX__)) {
+  if ((header.length() + body.length()) > size_t(INT_MAX)) {
     XmlRpcUtil::error("XmlRpcServerConnection::generateResponse: response length (%u) exceeds the maximum allowed size (%u).",
-                      _response.length(), __INT_MAX__);
+                      _response.length(), INT_MAX);
     _response = "";
   }
   else {

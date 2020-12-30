@@ -11,6 +11,7 @@
 	# include <strings.h>
 #endif
 #include <string.h>
+#include <climits>
 
 
 using namespace XmlRpc;
@@ -313,9 +314,9 @@ XmlRpcClient::generateRequest(const char* methodName, XmlRpcValue const& params)
 
   _request = header + body;
   // Limit the size of the request to avoid integer overruns
-  if (_request.length() > size_t(__INT_MAX__)) {
+  if (_request.length() > size_t(INT_MAX)) {
     XmlRpcUtil::error("XmlRpcClient::generateRequest: request length (%u) exceeds maximum allowed size (%u).",
-                      _request.length(), __INT_MAX__);
+                      _request.length(), INT_MAX);
     _request.clear();
     return false;
   }
@@ -441,7 +442,7 @@ XmlRpcClient::readHeader()
   // avoid overly large or improperly formatted content-length
   long int clength = 0;
   clength = strtol(lp, nullptr, 10);
-  if ((clength <= 0) || (clength > __INT_MAX__)) {
+  if ((clength <= 0) || (clength > INT_MAX)) {
     XmlRpcUtil::error("Error in XmlRpcClient::readHeader: Invalid Content-length specified.");
     // Close the socket because we can't make further use of it.
     close();
@@ -475,9 +476,9 @@ XmlRpcClient::readResponse()
     _response += buff;
 
     // Avoid an overly large response
-    if (_response.length() > size_t(__INT_MAX__)) {
+    if (_response.length() > size_t(INT_MAX)) {
       XmlRpcUtil::error("XmlRpcClient::readResponse: response length (%u) exceeds the maximum allowed size (%u).",
-                        _response.length(), __INT_MAX__);
+                        _response.length(), INT_MAX);
       _response.clear();
       close();
       return false;
