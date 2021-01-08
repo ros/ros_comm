@@ -274,9 +274,7 @@ class XmlLoader(loader.Loader):
                 p = Param(name, value)
                 context.add_param(p)
             else:
-                p = Param(ns_join(context.ns, name), value)
-                ros_config.add_param(Param(ns_join(context.ns, name), value), filename=context.filename, verbose=verbose)
-            return p
+                self.add_param(ros_config, ns_join(context.ns, name), value, verbose=verbose)
 
         except KeyError as e:
             raise XmlParseException(

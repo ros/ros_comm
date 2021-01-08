@@ -205,6 +205,8 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEquals("a child namespace parameter 1", param_d['/wg/wgchildparam'], p.value)
         self.assertEquals("a child namespace parameter 2", param_d['/wg2/wg2childparam1'], p.value)
         self.assertEquals("a child namespace parameter 3", param_d['/wg2/wg2childparam2'], p.value)
+        self.assertEquals([0, 1, 2], param_d['/someyaml1'])
+        self.assertEquals('bar2', param_d['/someyaml2/string1'])
 
         try:
             from xmlrpc.client import Binary
@@ -439,6 +441,7 @@ class TestXmlLoader(unittest.TestCase):
     def test_node_param(self):
         mock = self._load(os.path.join(self.xml_dir, 'test-node-valid.xml'))
         tests = [('/test_private_param1/foo1', 'bar1'),
+                 ('/test_private_param1/foo2/baz', 'quz'),
                  ('/ns_test/test_private_param2/foo2', 'bar2'),
                  ('/test_private_param3/foo3', 'bar3'), ]
         for k, v in tests:
