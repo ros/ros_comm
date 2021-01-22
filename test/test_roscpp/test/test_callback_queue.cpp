@@ -66,6 +66,15 @@ public:
 };
 typedef boost::shared_ptr<CountingCallback> CountingCallbackPtr;
 
+void callAvailableThread(CallbackQueue* queue, bool& done)
+{
+  while (!done)
+  {
+    queue->callAvailable(ros::WallDuration(0.1));
+  }
+}
+
+
 TEST(CallbackQueue, singleCallback)
 {
   CountingCallbackPtr cb(boost::make_shared<CountingCallback>());
@@ -175,6 +184,75 @@ TEST(CallbackQueue, removeSelf)
   EXPECT_EQ(cb2->count, 1U);
 }
 
+class BlockingCallback : public CallbackInterface
+{
+public:
+  BlockingCallback()
+  : count(0)
+  {}
+
+  virtual CallResult call()
+  {
+    mutex_.lock();
+    ++count;
+
+    return Success;
+  }
+
+  boost::mutex mutex_;
+  size_t count;
+};
+typedef boost::shared_ptr<BlockingCallback> BlockingCallbackPtr;
+
+
+// This test checks whether removing callbacks by an id doesn't block if one of those callback is being executed.
+TEST(CallbackQueue, removeCallbackWhileExecuting)
+{
+  const uint64_t owner_id = 1;
+  const uint64_t unrelated_id = 2;
+
+  CallbackQueue queue;
+  BlockingCallbackPtr cb1(boost::make_shared<BlockingCallback>());
+  CountingCallbackPtr cb2(boost::make_shared<CountingCallback>());
+  CountingCallbackPtr cb3(boost::make_shared<CountingCallback>());
+
+  cb1->mutex_.lock();  // lock the mutex to ensure the blocking callback will stall processing of callback queue.
+
+  queue.addCallback(cb1, owner_id); // Add the blocking callback.
+
+  // Now, we need to serve the callback queue from another thread.
+  bool done = false;
+  boost::thread t = boost::thread(boost::bind(&callAvailableThread, &queue, boost::ref(done)));
+
+  ros::WallDuration(1.0).sleep(); // Callback 1 should be being served now.
+
+  queue.addCallback(cb2, unrelated_id); // Add a second callback with different owner.
+  queue.addCallback(cb3, owner_id);     // Add a third with same owner, this one should never get executed.
+
+  // Now try to remove the callback that's being executed.
+  queue.removeByID(owner_id);  // This should not block because cb1 is being served, it should prevent cb3 from running.
+
+  ros::WallDuration(1.0).sleep();
+
+  // The removeByID should not block, so now we can unblock the blocking callback.
+  cb1->mutex_.unlock(); // This allows processing of cb1 to continue.
+
+  while (!queue.isEmpty())  // Wait until the queue is empty.
+  {
+    ros::WallDuration(0.01).sleep();
+  }
+
+  // Properly shut down our callback serving thread.
+  done = true;
+  t.join();
+
+  EXPECT_EQ(cb1->count, 1U);
+  EXPECT_EQ(cb2->count, 1U);
+  EXPECT_EQ(cb3->count, 0U);
+
+  cb1->mutex_.unlock();  // Ensure the mutex is unlocked before destruction.
+}
+
 class RecursiveCallback : public CallbackInterface
 {
 public:
@@ -256,14 +334,6 @@ TEST(CallbackQueue, recursive4)
   queue.callOne();
 
   EXPECT_EQ(cb->count, 3U);
-}
-
-void callAvailableThread(CallbackQueue* queue, bool& done)
-{
-  while (!done)
-  {
-    queue->callAvailable(ros::WallDuration(0.1));
-  }
 }
 
 size_t runThreadedTest(const CountingCallbackPtr& cb, const boost::function<void(CallbackQueue*, bool&)>& threadFunc)
