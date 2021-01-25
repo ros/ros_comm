@@ -143,7 +143,7 @@ def rospyerr(msg, *args, **kwargs):
     _rospy_logger.error(msg, *args, **kwargs)
 def rospywarn(msg, *args, **kwargs):
     """Internal rospy client library warn logging"""
-    _rospy_logger.warn(msg, *args, **kwargs)
+    _rospy_logger.warning(msg, *args, **kwargs)
 
 
 def _frame_to_caller_id(frame):
@@ -190,7 +190,7 @@ def loginfo(msg, *args, **kwargs):
     _base_logger(msg, args, kwargs, level='info')
 
 def logwarn(msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, level='warn')
+    _base_logger(msg, args, kwargs, level='warning')
 
 def logerr(msg, *args, **kwargs):
     _base_logger(msg, args, kwargs, level='error')
