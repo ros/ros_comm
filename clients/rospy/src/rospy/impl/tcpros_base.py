@@ -62,7 +62,7 @@ from rospy.msg import deserialize_messages, serialize_message
 from rospy.service import ServiceException
 
 from rospy.impl.transport import Transport, BIDIRECTIONAL
-# add #2123
+
 from errno import EAGAIN, EWOULDBLOCK
 
 logger = logging.getLogger('rospy.tcpros')
@@ -102,7 +102,6 @@ def recv_buff(sock, b, buff_size):
     @return: number of bytes read
     @rtype: int
     """
-    # add #2123
     try:
         d = sock.recv(buff_size)
         if d:
@@ -111,7 +110,7 @@ def recv_buff(sock, b, buff_size):
         else: #bomb out
             raise TransportTerminated("unable to receive data from sender, check sender's logs for details")
     except socket.error as ex:
-        if ex.args[0] in (EAGAIN, EWOULDBLOCK):
+        if ex.errno not in (EAGAIN, EWOULDBLOCK):
             raise TransportTerminated("unable to receive data from sender, check sender's logs for details")
         else:
             return 0
@@ -815,7 +814,6 @@ class TCPROSTransport(Transport):
                     except:
                         pass
                     self.socket = None
-                    # add #2123
                     if str(e) == "unable to receive data from sender, check sender's logs for details":
                         break
 
