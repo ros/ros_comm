@@ -801,6 +801,11 @@ class TCPROSTransport(Transport):
                     else:
                         self._reconnect()
 
+                except TransportTerminated as e:
+                    logdebug("[%s] failed to receive incoming message : %s" % (self.name, str(e)))
+                    rospydebug("[%s] failed to receive incoming message: %s" % (self.name, traceback.format_exc()))
+                    break
+
                 except TransportException as e:
                     # set socket to None so we reconnect
                     try:
@@ -814,14 +819,12 @@ class TCPROSTransport(Transport):
                     except:
                         pass
                     self.socket = None
-                    if str(e) == "unable to receive data from sender, check sender's logs for details":
-                        break
 
                 except DeserializationError as e:
                     #TODO: how should we handle reconnect in this case?
                     
-                    logerr("[%s] error deserializing incoming request: %s"%self.name, str(e))
-                    rospyerr("[%s] error deserializing incoming request: %s"%self.name, traceback.format_exc())
+                    logerr("[%s] error deserializing incoming request: %s" % (self.name, str(e)))
+                    rospyerr("[%s] error deserializing incoming request: %s" % (self.name, traceback.format_exc()))
                 except:
                     # in many cases this will be a normal hangup, but log internally
                     try:
