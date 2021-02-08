@@ -63,7 +63,6 @@ from rospy.msg import deserialize_messages, serialize_message
 from rospy.service import ServiceException
 
 from rospy.impl.transport import Transport, BIDIRECTIONAL
-from errno import EAGAIN, EWOULDBLOCK
 
 logger = logging.getLogger('rospy.tcpros')
 
@@ -102,18 +101,12 @@ def recv_buff(sock, b, buff_size):
     @return: number of bytes read
     @rtype: int
     """
-    try:
-        d = sock.recv(buff_size)
-        if d:
-            b.write(d)
-            return len(d)
-        else: #bomb out
-            raise TransportTerminated("unable to receive data from sender, check sender's logs for details")
-    except socket.error as ex:
-        if ex.errno not in (EAGAIN, EWOULDBLOCK):
-            raise TransportTerminated("unable to receive data from sender, check sender's logs for details")
-        else:
-            return 0
+    d = sock.recv(buff_size)
+    if d:
+        b.write(d)
+        return len(d)
+    else: #bomb out
+        raise TransportTerminated("unable to receive data from sender, check sender's logs for details")
 
 class TCPServer(object):
     """
@@ -806,11 +799,6 @@ class TCPROSTransport(Transport):
                             msgs_callback(msgs, self)
                     else:
                         self._reconnect()
-
-                except TransportTerminated as e:
-                    logdebug("[%s] failed to receive incoming message : %s"%(self.name, str(e)))
-                    rospydebug("[%s] failed to receive incoming message: %s"%(self.name, traceback.format_exc()))
-                    break
 
                 except TransportException as e:
                     # set socket to None so we reconnect
