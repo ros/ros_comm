@@ -33,6 +33,7 @@
 from __future__ import print_function
 
 import optparse
+import argparse
 import os
 import shutil
 import signal
@@ -153,6 +154,108 @@ def record_cmd(argv):
     old_handler = signal.signal(
         signal.SIGINT,
         lambda signum, frame: _send_process_sigint(signum, frame, old_handler, process)
+    )
+
+    # Better way of handling it than os.execv
+    # This makes sure stdin handles are passed to the process.
+    process = subprocess.Popen(cmd)
+    process.wait()
+
+
+def generate_transform_file_action(target):
+    class FileAction(argparse.Action):
+        def __call__(self, parser, args, values, option_string=None):
+            dest = getattr(args, self.dest)
+            if dest is None:
+                dest = []
+            dest.append({target: values})
+            setattr(args, self.dest, dest)
+    return FileAction
+
+
+def generate_transform_option_action(target):
+    class OptionAction(argparse.Action):
+        def __call__(self, parser, args, values, option_string=None):
+            dest = getattr(args, self.dest)
+            if dest is None:
+                raise argparse.ArgumentTypeError(
+                    'Transform options must be specified after input/output files')
+            element = dest[-1]
+            if target in element and isinstance(element[target], list):
+                element[target] += values
+            else:
+                element[target] = values
+            setattr(args, self.dest, dest)
+    return OptionAction
+
+
+def transform_cmd(argv):
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
+                                     usage="rosbag transform [-i input.bag [transformations]]+ [-o output.bag [transformations]]+",
+                                     description="Split, merge and transform bag file topics and time range.",
+                                     epilog='''Examples:
+  # remove the /clock and the /diagnostics topics
+  rosbag transform -i input.bag --exclude /clock /diagnostics -o output.bag
+
+  # rename topic from /foo to /bar
+  rosbag transform -i input.bag -o output.bag -r /foo:=/bar
+
+  # extract 5.5 seconds from input.bag 10 seconds after the start
+  rosbag transform -i input.bag -s 10 -u 5.5 -o output.bag
+
+  # merge everything from input1.bag and input2.bag
+  rosbag transform -i input1.bag -i input2.bag -o merge.bag
+
+  # split the /camera/video topic between bag files
+  rosbag transform -i input.bag \\
+                   -o split1.bag --include /camera/video \\
+                   -o split2.bag --exclude /camera/video
+''')
+
+    parser.add_argument('-q', '--quiet',      action='store_true', help='Suppress non-error messages')
+    parser.add_argument('-n', '--no-clobber', action='store_true', help='Do not overwrite existing output files')
+
+    files = parser.add_argument_group('bag file arguments')
+    files.add_argument('-i', '--input',  action=generate_transform_file_action('input'),  dest='files', help='Read from input file BAG', metavar='BAG')
+    files.add_argument('-o', '--output', action=generate_transform_file_action('output'), dest='files', help='Write to output file BAG', metavar='BAG')
+
+    transformations = parser.add_argument_group('transformation arguments')
+    transformations.add_argument("-r", "--rename",   action=generate_transform_option_action('rename'),   dest='files', nargs='+',  metavar="OLD:=NEW", help="Rename topic from OLD name to NEW name (space separated list; output only)")
+    transformations.add_argument(      "--include",  action=generate_transform_option_action('include'),  dest='files', nargs='+',  metavar="TOPIC",    help="Include given TOPIC (space separated list)")
+    transformations.add_argument(      "--exclude",  action=generate_transform_option_action('exclude'),  dest='files', nargs='+',  metavar="TOPIC",    help="Exclude given TOPIC (space separated list)")
+    transformations.add_argument("-s", "--start",    action=generate_transform_option_action('start'),    dest='files', type=float, metavar="SEC",      help="Start SEC seconds into the bag file")
+    transformations.add_argument("-u", "--duration", action=generate_transform_option_action('duration'), dest='files', type=float, metavar="SEC",      help="Keep only SEC seconds from the bag file")
+    transformations.add_argument("-j", "--bz2",      action=generate_transform_option_action('bz2'),      dest='files', nargs=0,                        help="use BZ2 compression (output only)")
+    transformations.add_argument(      "--lz4",      action=generate_transform_option_action('lz4'),      dest='files', nargs=0,                        help="use LZ4 compression (output only)")
+
+    args = parser.parse_args(argv)
+    if args.files is None:
+        parser.print_help()
+        sys.exit(0)
+
+    transform_path = roslib.packages.find_node('rosbag', 'transform')
+    if not transform_path:
+        parser.error("Cannot find rosbag transform executable")
+    cmd = [transform_path[0]]
+
+    if args.quiet: cmd.extend(['--quiet'])
+    if args.no_clobber: cmd.extend(['--no-clobber'])
+
+    for file in args.files:
+        if 'output' in file:
+            cmd.extend(['--output', file['output']])
+            if 'rename' in file: cmd.extend(['--rename'] + file['rename'])
+            if 'bz2' in file: cmd.extend(['--bz2'])
+            if 'lz4' in file: cmd.extend(['--lz4'])
+        for arg in ['input', 'start', 'duration']:
+            if arg in file: cmd.extend(['--{}'.format(arg), str(file[arg])])
+        for arg in ['include', 'exclude']:
+            if arg in file: cmd.extend(['--{}'.format(arg)] + file[arg])
+
+    # The following lines are in style of play_cmd()
+    old_handler = signal.signal(
+        signal.SIGTERM,
+        lambda signum, frame: _stop_process(signum, frame, old_handler, process)
     )
 
     # Better way of handling it than os.execv
@@ -1005,6 +1108,7 @@ def rosbagmain(argv=None):
     cmds.add_cmd('compress', compress_cmd, 'Compress one or more bag files.')
     cmds.add_cmd('decompress', decompress_cmd, 'Decompress one or more bag files.')
     cmds.add_cmd('reindex', reindex_cmd, 'Reindexes one or more bag files.')
+    cmds.add_cmd('transform', transform_cmd, 'Split, merge and transform bag file topics and time range.')
     if sys.platform != 'win32':
         cmds.add_cmd('encrypt', encrypt_cmd, 'Encrypt one or more bag files.')
         cmds.add_cmd('decrypt', decrypt_cmd, 'Decrypt one or more bag files.')
