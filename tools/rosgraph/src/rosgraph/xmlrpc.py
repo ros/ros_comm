@@ -76,9 +76,32 @@ def isstring(s):
     except NameError:
         return isinstance(s, str)
 
-class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
 
-    protocol_version = 'HTTP/1.1'
+def check_kernel(major, minor):
+    """Small helper version to check that the current platform kernel is a
+    newer or the same as the input
+    """
+    release = platform.release().split('.')
+
+    platform_major = int(release[0])
+    platform_minor = int(release[1])
+
+    if platform_major > major:
+        return True
+    elif platform_major < major:
+        return False
+
+    if platform_minor > minor:
+        return True
+    elif platform_minor < minor:
+        return False
+
+    return True
+
+
+class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
+    if check_kernel(4,16):
+        protocol_version = 'HTTP/1.1'
 
     def log_message(self, format, *args):
         if 0:
@@ -90,7 +113,8 @@ class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
     requests via threading. Also makes logging toggleable.
     """
 
-    daemon_threads = True
+    if check_kernel(4,16):
+        daemon_threads = True
 
     def __init__(self, addr, log_requests=1):
         """
