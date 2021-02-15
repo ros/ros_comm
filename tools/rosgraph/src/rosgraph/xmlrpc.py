@@ -78,31 +78,34 @@ def isstring(s):
         return isinstance(s, str)
 
 
-def check_linux_kernel(major, minor):
-    """Small helper version to check that the current Linux kernel is a
-    newer or the same as the input.
+def _check_linux_kernel(major, minor):
+    """Small helper version to check if the current Linux kernel is older than
+    the input version and return true. If not Linux return false.
     """
+    if platform.system() != 'Linux':
+        return False
+
     release = platform.release().split('.')
 
     platform_major = int(release[0])
     platform_minor = int(release[1])
 
-    if platform_major > major:
+    if platform_major < major:
         return True
-    elif platform_major < major:
+    elif platform_major > major:
         return False
 
-    if platform_minor > minor:
+    if platform_minor < minor:
         return True
-    elif platform_minor < minor:
+    elif platform_minor > minor:
         return False
 
-    return True
+    return False
 
 
 class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
     # Linux kernels 4.15 and older encounter performance issues with HTTP/1.1
-    if platform.system() == 'Linux' and check_linux_kernel(4,16):
+    if not _check_linux_kernel(4,15):
         protocol_version = 'HTTP/1.1'
 
     def log_message(self, format, *args):
@@ -115,7 +118,7 @@ class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
     requests via threading. Also makes logging toggleable.
     """
 
-    if platform.system() == 'Linux' and check_linux_kernel(4,16):
+    if not _check_linux_kernel(4,15):
         daemon_threads = True
 
     def __init__(self, addr, log_requests=1):
