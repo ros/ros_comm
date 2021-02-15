@@ -44,6 +44,7 @@ The common entry point for most libraries is the L{XmlRpcNode} class.
 
 import errno
 import logging
+import platform
 import select
 import socket
 
@@ -78,12 +79,9 @@ def isstring(s):
 
 
 def check_linux_kernel(major, minor):
-    """Small helper version to check that the current platform kernel is a
-    newer or the same as the input
+    """Small helper version to check that the current Linux kernel is a
+    newer or the same as the input.
     """
-    if platform.system()!='Linux':
-        return True
-
     release = platform.release().split('.')
 
     platform_major = int(release[0])
@@ -104,7 +102,7 @@ def check_linux_kernel(major, minor):
 
 class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
     # Linux kernels 4.15 and older encounter performance issues with HTTP/1.1
-    if check_linux_kernel(4,16):
+    if platform.system() == 'Linux' and check_linux_kernel(4,16):
         protocol_version = 'HTTP/1.1'
 
     def log_message(self, format, *args):
@@ -117,7 +115,7 @@ class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
     requests via threading. Also makes logging toggleable.
     """
 
-    if check_linux_kernel(4,16):
+    if platform.system() == 'Linux' and check_linux_kernel(4,16):
         daemon_threads = True
 
     def __init__(self, addr, log_requests=1):
