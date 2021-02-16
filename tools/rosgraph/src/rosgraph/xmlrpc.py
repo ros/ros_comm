@@ -78,7 +78,7 @@ def isstring(s):
         return isinstance(s, str)
 
 
-def _support_http_1_1(major, minor):
+def _support_http_1_1():
     """Linux kernels 4.15 and older encounter performance issues with HTTP/1.1
     This function returns true if the Linux kernel version is greater than the
     input or if the platform is not Linux.
@@ -88,6 +88,9 @@ def _support_http_1_1(major, minor):
         return True
 
     release = platform.release().split('.')
+
+    major = 4
+    minor = 15
 
     platform_major = int(release[0])
     platform_minor = int(release[1])
@@ -106,7 +109,7 @@ def _support_http_1_1(major, minor):
 
 
 class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
-    if _support_http_1_1(4,15):
+    if _support_http_1_1:
         protocol_version = 'HTTP/1.1'
 
     def log_message(self, format, *args):
@@ -119,7 +122,7 @@ class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
     requests via threading. Also makes logging toggleable.
     """
 
-    if _support_http_1_1(4,15):
+    if _support_http_1_1:
         daemon_threads = True
 
     def __init__(self, addr, log_requests=1):
