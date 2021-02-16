@@ -95,21 +95,15 @@ def _support_http_1_1():
     platform_major = int(release[0])
     platform_minor = int(release[1])
 
-    if platform_major > major:
-        return True
-    elif platform_major < major:
+    if platform_major < major:
         return False
-
-    if platform_minor > minor:
-        return True
-    elif platform_minor < minor:
+    if platform_major == major and platform_minor <= minor:
         return False
-
-    return False
+    return True
 
 
 class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
-    if _support_http_1_1:
+    if _support_http_1_1():
         protocol_version = 'HTTP/1.1'
 
     def log_message(self, format, *args):
@@ -122,7 +116,7 @@ class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
     requests via threading. Also makes logging toggleable.
     """
 
-    if _support_http_1_1:
+    if _support_http_1_1():
         daemon_threads = True
 
     def __init__(self, addr, log_requests=1):
