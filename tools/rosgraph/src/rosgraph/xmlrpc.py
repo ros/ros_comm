@@ -79,25 +79,23 @@ def isstring(s):
 
 
 def _support_http_1_1():
-    """Linux kernels 4.15 and older encounter performance issues with HTTP/1.1
-    This function returns true if the Linux kernel version is greater than the
-    input or if the platform is not Linux.
     """
-    # HTTP/1.1 performance issue only detected on Linux
+    Determine whether HTTP 1.1 should be enabled for XMLRPC communications.
+
+    This will be true on non-Linux systems, and on Linux kernels at least as
+    new as 4.16. Linux kernels 4.15 and older cause significance performance
+    degradation in the roscore when using HTTP 1.1
+    """
     if platform.system() != 'Linux':
         return True
-
+    minimum_supported_major, minimum_supported_minor = (4, 16)
     release = platform.release().split('.')
-
-    major = 4
-    minor = 15
-
     platform_major = int(release[0])
     platform_minor = int(release[1])
-
-    if platform_major < major:
+    if platform_major < minimum_supported_major:
         return False
-    if platform_major == major and platform_minor <= minor:
+    if (platform_major == minimum_supported_major and
+        platform_minor < minimum_supported_minor):
         return False
     return True
 
