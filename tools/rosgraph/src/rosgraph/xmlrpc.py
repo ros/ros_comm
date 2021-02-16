@@ -83,7 +83,7 @@ def _support_http_1_1():
     Determine whether HTTP 1.1 should be enabled for XMLRPC communications.
 
     This will be true on non-Linux systems, and on Linux kernels at least as
-    new as 4.16. Linux kernels 4.15 and older cause significance performance
+    new as 4.16. Linux kernels 4.15 and older cause significant performance
     degradation in the roscore when using HTTP 1.1
     """
     if platform.system() != 'Linux':
