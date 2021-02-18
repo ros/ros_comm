@@ -2566,6 +2566,7 @@ class _BagReader200(_BagReader):
 
             offset = chunk_file.tell()
 
+        self.bag._connection_indexes_read = True
         # Skip over index records, connection records and chunk info records
         next_op = _peek_next_header_op(f)
         
