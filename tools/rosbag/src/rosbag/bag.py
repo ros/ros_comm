@@ -2302,7 +2302,7 @@ class _BagReader102_Indexed(_BagReader102_Unindexed):
                 _skip_record(f)
 
             offset = f.tell()
-            
+
         self.bag._connection_indexes_read = True
 
     def start_reading(self):
@@ -2428,6 +2428,7 @@ class _BagReader102_Indexed(_BagReader102_Unindexed):
             return BagMessageWithConnectionHeader(topic, msg, t, header)
         else:
             return BagMessage(topic, msg, t)
+
 
 class _BagReader200(_BagReader):
     """
