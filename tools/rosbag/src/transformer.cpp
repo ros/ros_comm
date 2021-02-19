@@ -171,10 +171,17 @@ bool FileOperation::keepTime(ros::Time const& time)
   if (duration_ > 0.0 || start_offset_ > 0.0)
   {
     auto const begin = start_time_ + ros::Duration(start_offset_);
-    auto const end = begin + ros::Duration(duration_);
-    if (time < begin || time > end)
+    if (time < begin)
     {
       return false;
+    }
+    if (duration_ > 0.0)
+    {
+      auto const end = begin + ros::Duration(duration_);
+      if (time > end)
+      {
+        return false;
+      }
     }
   }
   return true;
@@ -248,17 +255,18 @@ bool Transformer::setupView(rosbag::View& view)
     }
     file.setBag(bag_ptr);
 
+    auto begin = ros::TIME_MIN;
+    auto end = ros::TIME_MAX;
     if (file.duration() > 0.0 || file.startOffset() > 0.0)
     {
       rosbag::View time_range_view(*bag_ptr);
-      auto const begin = time_range_view.getBeginTime() + ros::Duration(file.startOffset());
-      auto const end = begin + ros::Duration(file.duration());
-      view.addQuery(*bag_ptr, bind(&FileOperation::read, file, _1), begin, end);
+      begin = time_range_view.getBeginTime() + ros::Duration(file.startOffset());
+      if (file.duration() > 0.0)
+      {
+        end = begin + ros::Duration(file.duration());
+      }
     }
-    else
-    {
-      view.addQuery(*bag_ptr, bind(&FileOperation::read, file, _1));
-    }
+    view.addQuery(*bag_ptr, bind(&FileOperation::read, file, _1), begin, end);
   }
   return true;
 }
