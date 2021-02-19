@@ -2138,6 +2138,8 @@ class _BagReader102_Unindexed(_BagReader):
             
             offset = f.tell()
 
+        self.bag._connection_indexes_read = True
+
     def read_messages(self, topics, start_time, end_time, topic_filter, raw, return_connection_header=False):
         f = self.bag._file
 
@@ -2300,6 +2302,8 @@ class _BagReader102_Indexed(_BagReader102_Unindexed):
                 _skip_record(f)
 
             offset = f.tell()
+            
+        self.bag._connection_indexes_read = True
 
     def start_reading(self):
         try:
