@@ -50,6 +50,12 @@ import roslib.packages
 from .bag import Bag, Compression, ROSBagException, ROSBagFormatException, ROSBagUnindexedException, ROSBagEncryptNotSupportedException, ROSBagEncryptException
 from .migration import MessageMigrator, fixbag2, checkbag
 
+# raw_input was renamed to input in Python 3.x
+try:
+    input = raw_input  # Python 2.x: Simulate 3.x behavior.
+except NameError:
+    pass  # Python 3.x: There is no raw_input, use input directly.
+
 def print_trans(old, new, indent):
     from_txt = '%s [%s]' % (old._type, old._md5sum)
     if new is not None:
@@ -551,11 +557,11 @@ def check_cmd(argv):
         for r in rules_left:
             if r.new_class is None:
                 print('The message type %s appears to have moved.  Please enter the type to migrate it to.' % r.old_class._type)
-                new_type = raw_input('>')
+                new_type = input('>')
                 new_class = roslib.message.get_message_class(new_type)
                 while new_class is None:
                     print("\'%s\' could not be found in your system.  Please make sure it is built." % new_type)
-                    new_type = raw_input('>')
+                    new_type = input('>')
                     new_class = roslib.message.get_message_class(new_type)
                 new_rule = mm.make_update_rule(r.old_class, new_class)
                 R = new_rule(mm, 'GENERATED.' + new_rule.__name__)
