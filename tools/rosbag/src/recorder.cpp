@@ -403,8 +403,16 @@ void Recorder::startWriting() {
 
 void Recorder::stopWriting() {
     ROS_INFO("Closing '%s'.", target_filename_.c_str());
-    bag_.close();
-    rename(write_filename_.c_str(), target_filename_.c_str());
+    try
+    {
+        bag_.close();
+        rename(write_filename_.c_str(), target_filename_.c_str());
+    }
+    catch (const rosbag::BagException& ex)
+    {
+        ROS_ERROR_STREAM(ex.what());
+        exit_code_ = 1;
+    }
 }
 
 void Recorder::checkNumSplits()
