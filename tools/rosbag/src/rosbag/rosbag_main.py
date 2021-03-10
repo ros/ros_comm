@@ -48,7 +48,7 @@ import roslib.message
 import roslib.packages
 
 from .bag import Bag, Compression, ROSBagException, ROSBagFormatException, ROSBagUnindexedException, ROSBagEncryptNotSupportedException, ROSBagEncryptException
-from .migration import MessageMigrator, fixbag2, checkbag
+from .migration import BagMigrationException, MessageMigrator, fixbag2, checkbag
 
 def print_trans(old, new, indent):
     from_txt = '%s [%s]' % (old._type, old._md5sum)
@@ -455,7 +455,7 @@ def fix_cmd(argv):
     
     try:
         migrations = fixbag2(migrator, inbag_filename, outname, options.force)
-    except (ROSBagEncryptNotSupportedException, ROSBagEncryptException) as ex:
+    except (BagMigrationException, ROSBagEncryptNotSupportedException, ROSBagEncryptException) as ex:
         print('ERROR: %s' % str(ex), file=sys.stderr)
         return
     except ROSBagUnindexedException as ex:
