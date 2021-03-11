@@ -169,19 +169,36 @@ void CallbackQueue::removeByID(uint64_t removal_id)
     }
 
     {
-      boost::unique_lock<boost::shared_mutex> rw_lock(id_info->calling_rw_mutex);
-      boost::mutex::scoped_lock lock(mutex_);
-      D_CallbackInfo::iterator it = callbacks_.begin();
-      for (; it != callbacks_.end();)
+      boost::unique_lock<boost::shared_mutex> rw_lock(id_info->calling_rw_mutex, boost::defer_lock);
+      if (rw_lock.try_lock())
       {
-        CallbackInfo& info = *it;
-        if (info.removal_id == removal_id)
+        boost::mutex::scoped_lock lock(mutex_);
+        D_CallbackInfo::iterator it = callbacks_.begin();
+        for (; it != callbacks_.end();)
         {
-          it = callbacks_.erase(it);
+          CallbackInfo& info = *it;
+          if (info.removal_id == removal_id)
+          {
+            it = callbacks_.erase(it);
+          }
+          else
+          {
+            ++it;
+          }
         }
-        else
+      }
+      else
+      {
+        // We failed to acquire the lock, it can be that we are trying to remove something from the callback queue
+        // while it is being executed. Mark it for removal and let it be cleaned up later.
+        boost::mutex::scoped_lock lock(mutex_);
+        for (D_CallbackInfo::iterator it = callbacks_.begin(); it != callbacks_.end(); it++)
         {
-          ++it;
+          CallbackInfo& info = *it;
+          if (info.removal_id == removal_id)
+          {
+            info.marked_for_removal = true;
+          }
         }
       }
     }
