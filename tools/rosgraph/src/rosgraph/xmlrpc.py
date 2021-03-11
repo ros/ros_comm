@@ -44,6 +44,7 @@ The common entry point for most libraries is the L{XmlRpcNode} class.
 
 import errno
 import logging
+import platform
 import select
 import socket
 
@@ -76,9 +77,32 @@ def isstring(s):
     except NameError:
         return isinstance(s, str)
 
-class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
 
-    protocol_version = 'HTTP/1.1'
+def _support_http_1_1():
+    """
+    Determine whether HTTP 1.1 should be enabled for XMLRPC communications.
+
+    This will be true on non-Linux systems, and on Linux kernels at least as
+    new as 4.16. Linux kernels 4.15 and older cause significant performance
+    degradation in the roscore when using HTTP 1.1
+    """
+    if platform.system() != 'Linux':
+        return True
+    minimum_supported_major, minimum_supported_minor = (4, 16)
+    release = platform.release().split('.')
+    platform_major = int(release[0])
+    platform_minor = int(release[1])
+    if platform_major < minimum_supported_major:
+        return False
+    if (platform_major == minimum_supported_major and
+        platform_minor < minimum_supported_minor):
+        return False
+    return True
+
+
+class SilenceableXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
+    if _support_http_1_1():
+        protocol_version = 'HTTP/1.1'
 
     def log_message(self, format, *args):
         if 0:
@@ -90,7 +114,8 @@ class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
     requests via threading. Also makes logging toggleable.
     """
 
-    daemon_threads = True
+    if _support_http_1_1():
+        daemon_threads = True
 
     def __init__(self, addr, log_requests=1):
         """
