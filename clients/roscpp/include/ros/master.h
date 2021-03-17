@@ -43,6 +43,8 @@ namespace master
 
 /** @brief Execute an XMLRPC call on the master
  *
+ * Calls the version with the timeout param with the global timeout defined in XmlRpcClient
+ *
  * @param method The RPC method to invoke
  * @param request The arguments to the RPC call
  * @param response [out] The resonse that was received.
@@ -52,6 +54,19 @@ namespace master
  * @return true if call succeeds, false otherwise.
  */
 ROSCPP_DECL bool execute(const std::string& method, const XmlRpc::XmlRpcValue& request, XmlRpc::XmlRpcValue& response, XmlRpc::XmlRpcValue& payload, bool wait_for_master);
+
+/** @brief Execute an XMLRPC call on the master with a timeout for the socket connection
+ *
+ * @param method The RPC method to invoke
+ * @param request The arguments to the RPC call
+ * @param response [out] The resonse that was received.
+ * @param payload [out] The payload that was received.
+ * @param wait_for_master Whether or not this call should loop until it can contact the master
+ * @param timeout In seconds the time that the socket will try to connect, -1 for infinite wait
+ *
+ * @return true if call succeeds, false otherwise.
+ */
+ROSCPP_DECL bool execute(const std::string& method, const XmlRpc::XmlRpcValue& request, XmlRpc::XmlRpcValue& response, XmlRpc::XmlRpcValue& payload, bool wait_for_master, const double timeout);
 
 /** @brief Get the hostname where the master runs.
  *
@@ -74,10 +89,24 @@ ROSCPP_DECL const std::string& getURI();
  * after ros::init has been called.  The intended usage is to check
  * whether the master is up before trying to make other requests
  * (subscriptions, advertisements, etc.).
+ * This method calls the version with a timeout with the general timeout defined in XmlRpcClient
  *
  * @returns true if the master is available, false otherwise.
  */
 ROSCPP_DECL bool check();
+
+/** @brief Check whether the master is up with a timeout for the socket connection
+ *
+ * This method tries to contact the master.  You can call it any time
+ * after ros::init has been called.  The intended usage is to check
+ * whether the master is up before trying to make other requests
+ * (subscriptions, advertisements, etc.).
+ *
+ * @param timeout In seconds the approximate time the client will try to connect, -1 for infinite wait
+ *
+ * @returns true if the master is available, false otherwise.
+ */
+ROSCPP_DECL bool check(const double timeout);
 
 /**
  * \brief Contains information retrieved from the master about a topic
