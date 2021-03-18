@@ -2,6 +2,11 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.10 (2021-03-18)
+--------------------
+* Fix AttributeError isAlive (`#2092 <https://github.com/ros/ros_comm/issues/2092>`_)
+* Contributors: Brutus The Tschiepel
+
 1.15.9 (2020-10-16)
 -------------------
 * Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)

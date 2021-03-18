@@ -2,6 +2,13 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.10 (2021-03-18)
+--------------------
+* Fix for deadlock issue related to timers (`#2121 <https://github.com/ros/ros_comm/issues/2121>`_)
+* Fix getNumPublishers() to only count fully connected (`#2107 <https://github.com/ros/ros_comm/issues/2107>`_)
+* Replace message assertion with logging in order to have release modes to fail in compilation when msg type mismatches occur (`#2096 <https://github.com/ros/ros_comm/issues/2096>`_)
+* Contributors: C. Andy Martin, Ivor Wanders, Tahsincan Köse
+
 1.15.9 (2020-10-16)
 -------------------
 * Fix deadlock when service connection is dropped (`#2074 <https://github.com/ros/ros_comm/issues/2074>`_)

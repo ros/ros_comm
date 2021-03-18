@@ -2,6 +2,11 @@
 Changelog for package rosmsg
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.10 (2021-03-18)
+--------------------
+* Clean up test dependencies (`#2103 <https://github.com/ros/ros_comm/issues/2103>`_)
+* Contributors: Kyle Fazzari
+
 1.15.9 (2020-10-16)
 -------------------
 * Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)

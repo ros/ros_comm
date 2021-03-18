@@ -2,6 +2,11 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.10 (2021-03-18)
+--------------------
+* Portable fix to recent Windows build breaks (`#2110 <https://github.com/ros/ros_comm/issues/2110>`_)
+* Contributors: Sean Yen
+
 1.15.9 (2020-10-16)
 -------------------
 * Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)

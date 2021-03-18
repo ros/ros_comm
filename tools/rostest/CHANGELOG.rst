@@ -2,6 +2,9 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.10 (2021-03-18)
+--------------------
+
 1.15.9 (2020-10-16)
 -------------------
 * Fix incorrect test expecation (`#2054 <https://github.com/ros/ros_comm/issues/2054>`_)

@@ -2,6 +2,9 @@
 Changelog for package ros_comm
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.10 (2021-03-18)
+--------------------
+
 1.15.9 (2020-10-16)
 -------------------
 * Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)

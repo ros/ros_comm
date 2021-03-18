@@ -2,6 +2,12 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.10 (2021-03-18)
+--------------------
+* Add missing Boost (`#2108 <https://github.com/ros/ros_comm/issues/2108>`_)
+* Start player in paused state (`#2086 <https://github.com/ros/ros_comm/issues/2086>`_)
+* Contributors: Francisco Vina, Timo Röhling
+
 1.15.9 (2020-10-16)
 -------------------
 * Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)
