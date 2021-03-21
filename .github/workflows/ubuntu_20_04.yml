@@ -2,6 +2,7 @@ name: Ubuntu 20.04 Noetic ros_comm
 
 on:
   push:
+  pull_request:
   workflow_dispatch:
 
 jobs:
