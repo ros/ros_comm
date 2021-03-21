@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="required" default="true"
+      doc="make the node here cause the launch to exit with the exit code of the required process" />
+  <arg name="exit_code" default="0" doc="exit with this code" />
+  <!-- roslaunch file that loads no nodes, and thus should exit immediately -->
+  <node name="exit_with_code" pkg="test_roslaunch" type="exit_with_code.py" required="$(arg required)" >
+    <param name="exit_code" value="$(arg exit_code)" />
+  </node>
+</launch>
