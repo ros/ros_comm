@@ -42,12 +42,6 @@ import rosbag.migration
 import genpy.message
 import genpy.dynamic
 
-# raw_input was renamed to input in Python 3.x
-try:
-    input = raw_input  # Python 2.x: Simulate 3.x behavior.
-except NameError:
-    pass  # Python 3.x: There is no raw_input, use input directly.
-
 def print_trans(old, new, indent):
     from_txt = '%s [%s]' % (old._type, old._md5sum)
     if new is not None:

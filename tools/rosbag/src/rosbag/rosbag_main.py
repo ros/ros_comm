@@ -50,12 +50,6 @@ import roslib.packages
 from .bag import Bag, Compression, ROSBagException, ROSBagFormatException, ROSBagUnindexedException, ROSBagEncryptNotSupportedException, ROSBagEncryptException
 from .migration import MessageMigrator, fixbag2, checkbag
 
-# raw_input was renamed to input in Python 3.x
-try:
-    input = raw_input  # Python 2.x: Simulate 3.x behavior.
-except NameError:
-    pass  # Python 3.x: There is no raw_input, use input directly.
-
 def print_trans(old, new, indent):
     from_txt = '%s [%s]' % (old._type, old._md5sum)
     if new is not None:
