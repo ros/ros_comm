@@ -59,6 +59,7 @@ class _Service(object):
         self.request_class = service_class._request_class
         self.response_class = service_class._response_class
         self.uri = None #initialize attr
+        self.uds_uri = None  # initialize attr
 
 class ServiceManager(object):
     """Keeps track of currently registered services in the ROS system"""
@@ -84,7 +85,7 @@ class ServiceManager(object):
         with self.lock:
             ret_val = []
             for name, service in self.map.items():
-                ret_val.append((name, service.uri))
+                ret_val.append((name, service.uri, service.uds_uri))
             services = list(self.map.values())
         return ret_val
     
@@ -110,7 +111,7 @@ class ServiceManager(object):
                 self.map[resolved_service_name] = service
                 
             # NOTE: this call can potentially take a long time under lock and thus needs to be reimplmented
-            self.registration_listeners.notify_added(resolved_service_name, service.uri, Registration.SRV)
+            self.registration_listeners.notify_added(resolved_service_name, service.uri, Registration.SRV, service.uds_uri)
 
         if err:
             raise ServiceException(err)
@@ -129,7 +130,7 @@ class ServiceManager(object):
                 del self.map[resolved_service_name]
                 
             # NOTE: this call can potentially take a long time under lock
-            self.registration_listeners.notify_removed(resolved_service_name, service.uri, Registration.SRV)                
+            self.registration_listeners.notify_removed(resolved_service_name, service.uri, Registration.SRV, service.uds_uri)
 
     def get_service(self, resolved_service_name):
         """

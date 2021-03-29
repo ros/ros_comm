@@ -96,14 +96,14 @@ class TestRospyRegistration(unittest.TestCase):
         class Mock(RegistrationListener):
             def __init__(self):
                 self.args = []
-            def reg_added(self, name, data_type_or_uri, reg_type): 
+            def reg_added(self, name, data_type_or_uri, reg_type, uds_uri=None):
                 self.args = ['added', name, data_type_or_uri, reg_type]
-            def reg_removed(self, name, data_type_or_uri, reg_type):
+            def reg_removed(self, name, data_type_or_uri, reg_type, uds_uri=None):
                 self.args = ['removed', name, data_type_or_uri, reg_type]
         class BadMock(RegistrationListener):
-            def reg_added(self, name, data_type_or_uri, reg_type):
+            def reg_added(self, name, data_type_or_uri, reg_type, uds_uri=None):
                 raise Exception("haha!")
-            def reg_removed(self, name, data_type_or_uri, reg_type):
+            def reg_removed(self, name, data_type_or_uri, reg_type, uds_uri=None):
                 raise Exception("haha!")                
 
         r = RegistrationListeners()

@@ -51,9 +51,10 @@ class TestRospyService(unittest.TestCase):
         
     def test_ServiceManager(self):
         class MockService(rospy.service._Service):
-            def __init__(self, name, service_class, uri):
+            def __init__(self, name, service_class, uri, uds_uri=None):
                 rospy.service._Service.__init__(self, name, service_class)
                 self.uri = uri
+                self.uds_uri = uds_uri
 
         from rospy.service import ServiceManager
         sm = ServiceManager()
@@ -67,12 +68,12 @@ class TestRospyService(unittest.TestCase):
         self.assertEquals([], sm.get_services())
 
         # test actual registration
-        mock = MockService('/serv', MockServiceClass, "rosrpc://uri:1")
+        mock = MockService('/serv', MockServiceClass, "rosrpc://uri:1", "rosrpc:///tmp/uds_uri")
         mock2 = MockService('/serv', MockServiceClass, "rosrpc://uri:2")        
 
         sm.register('/serv', mock)
         self.assertEquals(mock, sm.get_service('/serv'))
-        self.assertEquals([('/serv', mock.uri)], sm.get_services())
+        self.assertEquals([('/serv', mock.uri, mock.uds_uri)], sm.get_services())
         try:
             sm.register('/serv', mock2)
             self.fail("duplicate reg should fail")
@@ -89,10 +90,10 @@ class TestRospyService(unittest.TestCase):
         sm.register('/serv2', mock2)
         self.assertEquals(mock, sm.get_service('/serv'))
         self.assertEquals(mock2, sm.get_service('/serv2'))
-        self.assert_(('/serv', mock.uri) in sm.get_services())
-        self.assert_(('/serv2', mock2.uri) in sm.get_services())        
+        self.assert_(('/serv', mock.uri, mock.uds_uri) in sm.get_services())
+        self.assert_(('/serv2', mock2.uri, mock2.uds_uri) in sm.get_services())
         
         sm.unregister('/serv', mock)
-        self.assertEquals([('/serv2', mock2.uri)], sm.get_services())
+        self.assertEquals([('/serv2', mock2.uri, mock2.uds_uri)], sm.get_services())
         sm.unregister('/serv2', mock2)
         self.assertEquals([], sm.get_services())

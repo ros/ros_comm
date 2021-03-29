@@ -43,6 +43,7 @@
 #include <ros/macros.h>
 #include "exceptions.h"
 #include "ros/datatypes.h"
+#include "ros/common.h"
 
 namespace ros
 {
@@ -59,6 +60,10 @@ class TransportTCP;
 typedef boost::shared_ptr<TransportTCP> TransportTCPPtr;
 class TransportUDP;
 typedef boost::shared_ptr<TransportUDP> TransportUDPPtr;
+class TransportUDSStream;
+typedef boost::shared_ptr<TransportUDSStream> TransportUDSStreamPtr;
+class TransportUDSDatagram;
+typedef boost::shared_ptr<TransportUDSDatagram> TransportUDSDatagramPtr;
 class Connection;
 typedef boost::shared_ptr<Connection> ConnectionPtr;
 typedef std::set<ConnectionPtr> S_Connection;

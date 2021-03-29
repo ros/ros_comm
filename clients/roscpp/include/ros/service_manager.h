@@ -99,6 +99,15 @@ public:
    */
   bool lookupService(const std::string& name, std::string& serv_host, uint32_t& serv_port);
 
+  /** @brief Lookup the host/port, uds_path of a service.
+   *
+   * @param name The name of the service
+   * @param serv_host OUT -- The host of the service
+   * @param serv_port OUT -- The port of the service
+   * @param serv_uds_path OUT -- The UDS path of the service
+   */
+  bool lookupServiceExt(const std::string& name, std::string& serv_host, uint32_t& serv_port, std::string& serv_uds_path);
+
   /** @brief Unadvertise a service.
    *
    * This call unadvertises a service, which must have been previously

@@ -39,6 +39,11 @@ ROS_IP           ="ROS_IP"
 ROS_IPV6         ="ROS_IPV6"
 ROS_HOSTNAME     ="ROS_HOSTNAME"
 ROS_NAMESPACE    ="ROS_NAMESPACE"
+ROS_UDS_EXT_FEATURE = "ROS_UDS_EXT_FEATURE"
+
+# UDS Feature Bit Field
+# Unix Domain Socket Feature Bit Field controlled by environmental value from user.
+ROS_UDS_EXT_ABSTRACT_SOCK_NAME = 0x00000001  # enable abstract named socket
 
 DEFAULT_MASTER_PORT = 11311  # default port for master's to bind to
 DEFAULT_MASTER_URI = 'http://localhost:%s/' % DEFAULT_MASTER_PORT
@@ -74,3 +79,5 @@ def get_master_uri(env=None, argv=None):
             return val
     return env.get(ROS_MASTER_URI, DEFAULT_MASTER_URI)
         
+def ros_uds_ext_is_enable(feature):
+    return ROS_UDS_EXT_FEATURE in os.environ and (int(os.environ[ROS_UDS_EXT_FEATURE], 16) & feature != 0)

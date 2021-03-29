@@ -188,14 +188,14 @@ class Registrations(object):
         service Registrations instances are the only ones that track service API URIs.
         @param service: service name
         @type  service: str
-        @return str: service_api for registered key or None if
+        @return str: service_api, service_uds_api for registered key or None, None if
         registration is no longer valid. 
         @type: str
         """
         if self.service_api_map and service in self.service_api_map:
-            caller_id, service_api = self.service_api_map[service]
-            return service_api
-        return None
+            caller_id, service_api, service_uds_api = self.service_api_map[service]
+            return service_api, service_uds_api
+        return None, None
     
     def get_apis(self, key):
         """
@@ -245,7 +245,7 @@ class Registrations(object):
             retval.append([k, [id for id, _ in self.map[k]]])
         return retval
 
-    def register(self, key, caller_id, caller_api, service_api=None):
+    def register(self, key, caller_id, caller_api, service_api=None, service_uds_api=None):
         """
         Add caller_id into the map as a provider of the specified
         service (key).  caller_id must not have been previously
@@ -260,6 +260,8 @@ class Registrations(object):
         @type  caller_api: str
         @param service_api: (keyword) ROS service API URI if registering a service
         @type  service_api: str
+        @param service_uds_api: (keyword) ROS service API UDS URI if registering a service
+        @type  service_uds_api: str
         """
         map = self.map
         if key in map and not service_api:
@@ -272,7 +274,7 @@ class Registrations(object):
         if service_api:
             if self.service_api_map is None:
                self.service_api_map = {}
-            self.service_api_map[key] = (caller_id, service_api)
+            self.service_api_map[key] = (caller_id, service_api, service_uds_api)
         elif self.type == Registrations.SERVICE:
             raise rosmaster.exceptions.InternalException("service_api must be specified for Registrations.SERVICE")            
                    
@@ -304,7 +306,7 @@ class Registrations(object):
             for k in dead_keys:
                 del self.service_api_map[k]
     
-    def unregister(self, key, caller_id, caller_api, service_api=None):
+    def unregister(self, key, caller_id, caller_api, service_api=None, service_uds_api=None):
         """
         Remove caller_id from the map as a provider of the specified service (key).
         Subroutine for managing provider map data structure, essentially a multimap
@@ -316,6 +318,8 @@ class Registrations(object):
         @type  caller_api: str
         @param service_api: (keyword) ROS service API URI if registering a service
         @type  service_api: str
+        @param service_uds_api: (keyword) ROS service API UDS URI if registering a service
+        @type  service_uds_api: str
         @return: for ease of master integration, directly returns unregister value for
         higher-level XMLRPC API. val is the number of APIs unregistered (0 or 1)
         @rtype: code, msg, val
@@ -325,8 +329,8 @@ class Registrations(object):
             # validate against the service_api 
             if self.service_api_map is None:
                 return 1, "[%s] is not a provider of [%s]"%(caller_id, key), 0 
-            if self.service_api_map.get(key, None) != (caller_id, service_api):
-                return 1, "[%s] is no longer the current service api handle for [%s]"%(service_api, key), 0
+            if self.service_api_map.get(key, None) != (caller_id, service_api, service_uds_api):
+                return 1, "[%s,%s] is no longer the current service api handle for [%s]"%(service_api, service_uds_api, key), 0
             else:
                 del self.service_api_map[key]
                 del self.map[key]
@@ -384,7 +388,7 @@ class RegistrationManager(object):
     def get_node(self, caller_id):
         return self.nodes.get(caller_id, None)
 
-    def _register(self, r, key, caller_id, caller_api, service_api=None):
+    def _register(self, r, key, caller_id, caller_api, service_api=None, service_uds_api=None):
         # update node information
         node_ref, changed = self._register_node_api(caller_id, caller_api)
         node_ref.add(r.type, key)
@@ -394,12 +398,12 @@ class RegistrationManager(object):
             self.subscribers.unregister_all(caller_id)
             self.services.unregister_all(caller_id)
             self.param_subscribers.unregister_all(caller_id)
-        r.register(key, caller_id, caller_api, service_api)
-        
-    def _unregister(self, r, key, caller_id, caller_api, service_api=None):
+        r.register(key, caller_id, caller_api, service_api, service_uds_api)
+
+    def _unregister(self, r, key, caller_id, caller_api, service_api=None, service_uds_api=None):
         node_ref = self.nodes.get(caller_id, None)
         if node_ref != None:
-            retval = r.unregister(key, caller_id, caller_api, service_api)
+            retval = r.unregister(key, caller_id, caller_api, service_api, service_uds_api)
             # check num removed field, if 1, unregister is valid
             if retval[2] == 1:
                 node_ref.remove(r.type, key)
@@ -409,12 +413,12 @@ class RegistrationManager(object):
             retval = 1, "[%s] is not a registered node"%caller_id, 0
         return retval
     
-    def register_service(self, service, caller_id, caller_api, service_api):
+    def register_service(self, service, caller_id, caller_api, service_api, service_uds_api=None):
         """
         Register service provider
         @return: None
         """
-        self._register(self.services, service, caller_id, caller_api, service_api)
+        self._register(self.services, service, caller_id, caller_api, service_api, service_uds_api)
     def register_publisher(self, topic, caller_id, caller_api):
         """
         Register topic publisher
@@ -434,9 +438,9 @@ class RegistrationManager(object):
         """
         self._register(self.param_subscribers, param, caller_id, caller_api)
 
-    def unregister_service(self, service, caller_id, service_api):
+    def unregister_service(self, service, caller_id, service_api, service_uds_api=None):
         caller_api = None
-        return self._unregister(self.services, service, caller_id, caller_api, service_api)
+        return self._unregister(self.services, service, caller_id, caller_api, service_api, service_uds_api)
         
     def unregister_subscriber(self, topic, caller_id, caller_api):
         return self._unregister(self.subscribers, topic, caller_id, caller_api)
