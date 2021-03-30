@@ -308,6 +308,12 @@ def play_cmd(argv):
         signal.SIGTERM,
         lambda signum, frame: _stop_process(signum, frame, old_handler, process)
     )
+
+    old_handler = signal.signal(
+        signal.SIGINT,
+        lambda signum, frame: _send_process_sigint(signum, frame, old_handler, process)
+    )
+
     # Better way of handling it than os.execv
     # This makes sure stdin handles are passed to the process.
     process = subprocess.Popen(cmd)
