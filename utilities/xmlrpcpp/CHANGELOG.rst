@@ -2,6 +2,9 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.11 (2021-04-06)
+--------------------
+
 1.15.10 (2021-03-18)
 --------------------
 * Portable fix to recent Windows build breaks (`#2110 <https://github.com/ros/ros_comm/issues/2110>`_)

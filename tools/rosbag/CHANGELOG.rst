@@ -2,6 +2,13 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.11 (2021-04-06)
+--------------------
+* Handle SIGINT in rosbag play (`#2150 <https://github.com/ros/ros_comm/issues/2150>`_)
+* Catch all exceptions in record thread (`#2151 <https://github.com/ros/ros_comm/issues/2151>`_)
+* raw_input does not exist in python 3 (`#2143 <https://github.com/ros/ros_comm/issues/2143>`_)
+* Contributors: Martin Pecka, Sebastian Scherer, pseyfert
+
 1.15.10 (2021-03-18)
 --------------------
 * Add missing Boost (`#2108 <https://github.com/ros/ros_comm/issues/2108>`_)

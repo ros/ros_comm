@@ -2,6 +2,9 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.11 (2021-04-06)
+--------------------
+
 1.15.10 (2021-03-18)
 --------------------
 * Fix for deadlock issue related to timers (`#2121 <https://github.com/ros/ros_comm/issues/2121>`_)
