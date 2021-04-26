@@ -36,7 +36,10 @@
   <exec_depend>rosbag</exec_depend>
   <exec_depend>roslib</exec_depend>
 
+  <test_depend>rostest</test_depend>
   <test_depend>std_msgs</test_depend>
+  <test_depend>std_srvs</test_depend>
+  <test_depend>diagnostic_msgs</test_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>

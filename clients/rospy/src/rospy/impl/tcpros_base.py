@@ -817,8 +817,8 @@ class TCPROSTransport(Transport):
                 except DeserializationError as e:
                     #TODO: how should we handle reconnect in this case?
                     
-                    logerr("[%s] error deserializing incoming request: %s"%self.name, str(e))
-                    rospyerr("[%s] error deserializing incoming request: %s"%self.name, traceback.format_exc())
+                    logerr("[%s] error deserializing incoming request: %s"%(self.name, str(e)))
+                    rospyerr("[%s] error deserializing incoming request: %s"%(self.name, traceback.format_exc()))
                 except:
                     # in many cases this will be a normal hangup, but log internally
                     try:
@@ -847,4 +847,3 @@ class TCPROSTransport(Transport):
             finally:
                 self.socket = self.read_buff = self.write_buff = self.protocol = None
                 super(TCPROSTransport, self).close()
-

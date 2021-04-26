@@ -181,13 +181,55 @@ int Recorder::run() {
     boost::thread record_thread;
     if (options_.snapshot)
     {
-        record_thread = boost::thread(boost::bind(&Recorder::doRecordSnapshotter, this));
+        record_thread = boost::thread([this]() {
+          try
+          {
+            this->doRecordSnapshotter();
+          }
+          catch (const rosbag::BagException& ex)
+          {
+            ROS_ERROR_STREAM(ex.what());
+            exit_code_ = 1;
+          }
+          catch (const std::exception& ex)
+          {
+            ROS_ERROR_STREAM(ex.what());
+            exit_code_ = 2;
+          }
+          catch (...)
+          {
+            ROS_ERROR_STREAM("Unknown exception thrown while recording bag, exiting.");
+            exit_code_ = 3;
+          }
+        });
 
         // Subscribe to the snapshot trigger
         trigger_sub = nh.subscribe<std_msgs::Empty>("snapshot_trigger", 100, boost::bind(&Recorder::snapshotTrigger, this, _1));
     }
     else
-        record_thread = boost::thread(boost::bind(&Recorder::doRecord, this));
+    {
+        record_thread = boost::thread([this]() {
+          try
+          {
+            this->doRecord();
+          }
+          catch (const rosbag::BagException& ex)
+          {
+            ROS_ERROR_STREAM(ex.what());
+            exit_code_ = 1;
+          }
+          catch (const std::exception& ex)
+          {
+            ROS_ERROR_STREAM(ex.what());
+            exit_code_ = 2;
+          }
+          catch (...)
+          {
+            ROS_ERROR_STREAM("Unknown exception thrown while recording bag, exiting.");
+            exit_code_ = 3;
+          }
+        });
+    }
 
 
 
