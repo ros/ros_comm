@@ -2,13 +2,15 @@
 Changelog for package rosmaster
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.11 (2021-04-26)
+--------------------
+
 1.14.10 (2020-10-16)
 --------------------
 * Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)
-  New: @jacobperron, @mjcarroll, @sloretz
 * Cached parameter should be unsubscribed (`#2068 <https://github.com/ros/ros_comm/issues/2068>`_)
 * Fix spelling (`#2066 <https://github.com/ros/ros_comm/issues/2066>`_)
-* Contributors: Jacob Perron, Shane Loretz, tomoya
+* Contributors: Jacob Perron, Shane Loretz, Tomoya Fujita
 
 1.14.9 (2020-08-20)
 -------------------

@@ -2,6 +2,12 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.11 (2021-04-26)
+--------------------
+* Fix "TypeError: not enough arguments for format string" (`#2127 <https://github.com/ros/ros_comm/issues/2127>`_)
+* Fix AttributeError isAlive (`#2092 <https://github.com/ros/ros_comm/issues/2092>`_)
+* Contributors: Brutus The Tschiepel, 金梦磊
+
 1.14.10 (2020-10-16)
 --------------------
 * Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)

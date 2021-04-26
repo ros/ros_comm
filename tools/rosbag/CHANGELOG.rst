@@ -2,6 +2,14 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.11 (2021-04-26)
+--------------------
+* Handle SIGINT in rosbag play (`#2150 <https://github.com/ros/ros_comm/issues/2150>`_)
+* Catch all exceptions in record thread (`#2151 <https://github.com/ros/ros_comm/issues/2151>`_)
+* Add missing Boost (`#2108 <https://github.com/ros/ros_comm/issues/2108>`_)
+* Start player in paused state (`#2086 <https://github.com/ros/ros_comm/issues/2086>`_)
+* Contributors: Francisco Vina, Martin Pecka, Timo Röhling, pseyfert
+
 1.14.10 (2020-10-16)
 --------------------
 * Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)

@@ -2,6 +2,11 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.11 (2021-04-26)
+--------------------
+* Fix HTTP for kernel < 4.16 (`#2132 <https://github.com/ros/ros_comm/issues/2132>`_)
+* Contributors: Emerson Knapp, Jesse Ikawa
+
 1.14.10 (2020-10-16)
 --------------------
 * Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)

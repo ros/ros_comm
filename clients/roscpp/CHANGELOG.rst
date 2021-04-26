@@ -2,6 +2,13 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.11 (2021-04-26)
+--------------------
+* Fix for deadlock issue 1980 (`#2121 <https://github.com/ros/ros_comm/issues/2121>`_)
+* Fix getNumPublishers() to only count fully connected (`#2107 <https://github.com/ros/ros_comm/issues/2107>`_)
+* Replace message assertion with logging in order to have release modes to fail in compilation when msg type mismatches occur (`#2096 <https://github.com/ros/ros_comm/issues/2096>`_)
+* Contributors: C. Andy Martin, Ivor Wanders, Tahsincan Köse
+
 1.14.10 (2020-10-16)
 --------------------
 * Set call_finished\_ with true for each call inside callFinished (`#2074 <https://github.com/ros/ros_comm/issues/2074>`_)

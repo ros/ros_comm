@@ -2,13 +2,16 @@
 Changelog for package rostest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.11 (2021-04-26)
+--------------------
+
 1.14.10 (2020-10-16)
 --------------------
 * Fix paramtest for empty values of a parameter (`#2054 <https://github.com/ros/ros_comm/issues/2054>`_)
 * Update maintainers (`#2075 <https://github.com/ros/ros_comm/issues/2075>`_)
 * Fix spelling (`#2066 <https://github.com/ros/ros_comm/issues/2066>`_)
 * Install advertisetest (`#2046 <https://github.com/ros/ros_comm/issues/2046>`_)
-* Contributors: Jacob Perron, Levko Ivanchuk, Shane Loretz, beetleskin, tomoya
+* Contributors: Jacob Perron, Levko Ivanchuk, Shane Loretz, beetleskin, Tomoya Fujita
 
 1.14.9 (2020-08-20)
 -------------------
