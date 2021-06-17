@@ -408,7 +408,8 @@ def wait_for_message(topic, topic_type, timeout=None):
     wfm = _WFM()
     s = None
     try:
-        s = rospy.topics.Subscriber(topic, topic_type, wfm.cb)
+        resolve_name = rospy.names.resolve_name(topic)
+        s = rospy.topics.Subscriber(resolve_name, topic_type, wfm.cb)
         if timeout is not None:
             if isinstance(timeout, rospy.Duration):
                 timeout = timeout.to_sec()
@@ -416,7 +417,7 @@ def wait_for_message(topic, topic_type, timeout=None):
             while not rospy.core.is_shutdown() and wfm.msg is None:
                 rospy.rostime.wallsleep(0.01)
                 if time.time() >= timeout_t:
-                    raise rospy.exceptions.ROSException("timeout exceeded while waiting for message on topic %s"%topic)
+                    raise rospy.exceptions.ROSException("timeout exceeded while waiting for message on topic %s"%resolve_name)
 
         else:
             while not rospy.core.is_shutdown() and wfm.msg is None:
