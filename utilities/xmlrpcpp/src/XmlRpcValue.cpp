@@ -466,6 +466,8 @@ namespace XmlRpc {
       encoded += (encoded + 71) / 72;
       // for some input, the encoder puts two newlines at the end
       encoded += 1;
+      // add a buffer safety margin
+      encoded += 16;
       return encoded;
     }
 
