@@ -464,6 +464,8 @@ namespace XmlRpc {
       // plus a newline character per 72 output characters, rounded up.
       std::size_t encoded = (raw_size + 2) / 3 * 4;
       encoded += (encoded + 71) / 72;
+      // for some input, the encoder puts two newlines at the end
+      encoded += 1;
       return encoded;
     }
 
