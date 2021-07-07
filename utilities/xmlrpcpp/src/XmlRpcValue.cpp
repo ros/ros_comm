@@ -231,6 +231,8 @@ namespace XmlRpc {
   // should be the start of a <value> tag. Destroys any existing value.
   bool XmlRpcValue::fromXml(std::string const& valueXml, int* offset)
   {
+    if (offset == NULL) return false;
+
     int savedOffset = *offset;
 
     invalidate();
