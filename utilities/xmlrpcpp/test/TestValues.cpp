@@ -366,6 +366,54 @@ TEST(XmlRpc, testGetNextTag) {
   EXPECT_EQ(offset, 2);
 }
 
+TEST(XmlRpc, testNextTagData)
+{
+  int offset = 0;
+
+  // Test a null tag
+  EXPECT_EQ(XmlRpcUtil::nextTagData(NULL, "", &offset), std::string());
+  EXPECT_EQ(offset, 0);
+
+  // Test a null offset
+  EXPECT_EQ(XmlRpcUtil::nextTagData("<tag>", "", NULL), std::string());
+  EXPECT_EQ(offset, 0);
+
+  // Test if the offset is beyond the end of the input xml
+  offset = 20;
+  EXPECT_EQ(XmlRpcUtil::nextTagData("<tag>", "", &offset), std::string());
+  EXPECT_EQ(offset, 20);
+
+  // Test that the offset moves when finding a tag with no whitespace
+  offset = 0;
+  EXPECT_EQ(XmlRpcUtil::nextTagData("<tag>", "<tag></tag>", &offset), "");
+  EXPECT_EQ(offset, 11);
+
+  // Test that the offset moves when finding a tag with whitespace
+  offset = 0;
+  EXPECT_EQ(XmlRpcUtil::nextTagData("<tag>", "   <tag></tag>", &offset), "");
+  EXPECT_EQ(offset, 14);
+
+  // Test that the offset moves when finding a tag with whitespace
+  offset = 0;
+  EXPECT_EQ(XmlRpcUtil::nextTagData("<tag>", "   <tag>foo</tag>", &offset), "foo");
+  EXPECT_EQ(offset, 17);
+
+  // Test that the offset doesn't move when missing the tag
+  offset = 0;
+  EXPECT_EQ(XmlRpcUtil::nextTagData("<tag>", "   <foo></foo>", &offset), "");
+  EXPECT_EQ(offset, 0);
+
+  // Test that the offset doesn't move when the close tag is after other tags
+  offset = 0;
+  EXPECT_EQ(XmlRpcUtil::nextTagData("<tag>", "   <tag><foo></tag>", &offset), "");
+  EXPECT_EQ(offset, 0);
+
+  // Test that the offset doesn't move if there is no closing tag
+  offset = 0;
+  EXPECT_EQ(XmlRpcUtil::nextTagData("<tag>", "   <tag>foo", &offset), "");
+  EXPECT_EQ(offset, 0);
+}
+
 TEST(XmlRpc, testDateTime) {
   // DateTime
   int offset = 0;
