@@ -568,7 +568,7 @@ namespace XmlRpc {
 
     while (XmlRpcUtil::nextTagIs(MEMBER_TAG, valueXml, offset)) {
       // name
-      const std::string name = XmlRpcUtil::parseTag(NAME_TAG, valueXml, offset);
+      const std::string name = XmlRpcUtil::nextTagData(NAME_TAG, valueXml, offset);
       // value
       XmlRpcValue val(valueXml, offset);
       if ( ! val.valid()) {
