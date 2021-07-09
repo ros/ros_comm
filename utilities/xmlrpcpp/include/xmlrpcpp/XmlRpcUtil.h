@@ -84,7 +84,9 @@ namespace XmlRpc {
   class XMLRPCPP_DECL XmlRpcUtil {
   public:
     // hokey xml parsing
-    //! Returns contents between <tag> and </tag>, updates offset to char after </tag>
+    //! Returns contents between <tag> and </tag>, updates offset to char after </tag>.
+    //! This method will skip *any* intermediate string to find the tag; as such, it is
+    //! unsafe to use in general, and `nextTagData` should be used instead.
     static std::string parseTag(const char* tag, std::string const& xml, int* offset);
 
     //! Returns true if the tag is found and updates offset to the char after the tag
@@ -98,6 +100,9 @@ namespace XmlRpc {
     //! and updates offset to the char after the tag
     static bool nextTagIs(const char* tag, std::string const& xml, int* offset);
 
+    //! Returns contents between <tag> and </tag> at the specified offset (modulo any whitespace),
+    //! and updates offset to char after </tag>
+    static std::string nextTagData(const char* tag, std::string const& xml, int* offset);
 
     //! Convert raw text to encoded xml.
     static std::string xmlEncode(const std::string& raw);

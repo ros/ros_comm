@@ -106,6 +106,8 @@ void XmlRpcUtil::error(const char* fmt, ...)
 
 
 // Returns contents between <tag> and </tag>, updates offset to char after </tag>
+// This method will skip *any* intermediate string to find the tag; as such, it is
+// unsafe to use in general, and `nextTagData` should be used instead.
 std::string 
 XmlRpcUtil::parseTag(const char* tag, std::string const& xml, int* offset)
 {
@@ -163,6 +165,58 @@ XmlRpcUtil::nextTagIs(const char* tag, std::string const& xml, int* offset)
     return true;
   }
   return false;
+}
+
+// Returns contents between <tag> and </tag> at the specified offset (modulo any whitespace),
+// and updates offset to char after </tag>
+std::string
+XmlRpcUtil::nextTagData(const char* tag, std::string const& xml, int* offset)
+{
+  if (offset == NULL) return std::string();
+  if (xml.length() > size_t(INT_MAX)) return std::string();
+  if (*offset >= int(xml.length())) return std::string();
+
+  const char* start_cp = xml.c_str() + *offset;
+  const char* cp = start_cp;
+  while (*cp && isspace(*cp)) {
+    ++cp;
+  }
+
+  const int len = int(strnlen(tag, xml.length()));
+  // Check if the tag is next; if not, we'll get out of here
+  if (!(*cp) || (strncmp(cp, tag, len) != 0)) {
+    return std::string();
+  }
+
+  cp += len;
+
+  // Now collect all of the data up to the next tag
+  std::string ret;
+  while (*cp) {
+    if (*cp == '<') {
+      break;
+    }
+    ret += *cp;
+    cp++;
+  }
+
+  if (!(*cp)) {
+    return std::string();
+  }
+
+  // Now find the end tag
+  std::string etag = "</";
+  etag += tag + 1;
+
+  if (strncmp(cp, etag.c_str(), etag.length()) != 0) {
+    return std::string();
+  }
+
+  cp += etag.length();
+
+  *offset += (cp - start_cp);
+
+  return ret;
 }
 
 // Returns the next tag and updates offset to the char after the tag, or empty string
