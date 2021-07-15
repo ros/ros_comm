@@ -510,7 +510,8 @@ class ServiceProxy(_Service):
             except TransportInitError as e:
                 # can be a connection or md5sum mismatch
                 raise ServiceException("unable to connect to service: %s"%e)
-            self.transport = transport
+            if self.persistent:
+                self.transport = transport
         else:
             transport = self.transport
 
