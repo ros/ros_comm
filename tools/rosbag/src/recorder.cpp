@@ -92,6 +92,7 @@ RecorderOptions::RecorderOptions() :
     record_all(false),
     regex(false),
     do_exclude(false),
+    do_resub(false),
     quiet(false),
     append_date(true),
     snapshot(false),
@@ -101,6 +102,7 @@ RecorderOptions::RecorderOptions() :
     prefix(""),
     name(""),
     exclude_regex(),
+    resub_regex(),
     buffer_size(1048576 * 256),
     chunk_size(1024 * 768),
     limit(0),
@@ -252,8 +254,6 @@ int Recorder::run() {
 }
 
 shared_ptr<ros::Subscriber> Recorder::subscribe(string const& topic) {
-    ROS_INFO("Subscribing to %s", topic.c_str());
-
     ros::NodeHandle nh;
     shared_ptr<int> count(boost::make_shared<int>(options_.limit));
     shared_ptr<ros::Subscriber> sub(boost::make_shared<ros::Subscriber>());
@@ -267,15 +267,32 @@ shared_ptr<ros::Subscriber> Recorder::subscribe(string const& topic) {
         const ros::MessageEvent<topic_tools::ShapeShifter const> &> >(
             boost::bind(&Recorder::doQueue, this, boost::placeholders::_1, topic, sub, count));
     ops.transport_hints = options_.transport_hints;
-    *sub = nh.subscribe(ops);
 
-    currently_recording_.insert(topic);
-    num_subscribers_++;
+    // Be sure to synchronize access to subscription related book-keeping
+    boost::mutex::scoped_lock lock(subscribe_mutex_);
+    // There is a race while the lock is not held, so be sure to check
+    // that we aren't already recording to prevent double-subscriptions
+    if (currently_recording_.find(topic) == currently_recording_.end())
+    {
+      ROS_INFO("Subscribing to %s", topic.c_str());
+      *sub = nh.subscribe(ops);
+      currently_recording_.insert(topic);
+      num_subscribers_++;
+      // If we need to resub, add to re-sub tracking data
+      if (options_.do_resub && boost::regex_match(topic, options_.resub_regex))
+      {
+        // Set only ever stores one entry, so just call insert
+        resub_topics_.insert(topic);
+        // Need to store the subscriber each time.
+        resub_subscribers_.push_back(sub);
+      }
+    }
 
     return sub;
 }
 
-bool Recorder::isSubscribed(string const& topic) const {
+bool Recorder::isSubscribed(string const& topic) {
+    boost::mutex::scoped_lock lock(subscribe_mutex_);
     return currently_recording_.find(topic) != currently_recording_.end();
 }
 
@@ -434,6 +451,13 @@ void Recorder::snapshotTrigger(std_msgs::Empty::ConstPtr trigger) {
 }
 
 void Recorder::startWriting() {
+    // Subscribe to resub topics
+    if (options_.do_resub)
+    {
+      for (string const& topic : resub_topics_)
+          subscribe(topic);
+    }
+
     bag_.setCompression(options_.compression);
     bag_.setChunkThreshold(options_.chunk_size);
 
@@ -470,6 +494,19 @@ void Recorder::startWriting() {
 
 void Recorder::stopWriting() {
     ROS_INFO("Closing '%s'.", target_filename_.c_str());
+    // Unsubscribe from resub topics
+    if (options_.do_resub)
+    {
+      // Take care of metadata globals, be sure to hold lock
+      boost::mutex::scoped_lock lock(subscribe_mutex_);
+      for (boost::shared_ptr<ros::Subscriber> resub_sub : resub_subscribers_)
+      {
+        num_subscribers_--;
+        currently_recording_.erase(resub_sub->getTopic());
+        resub_sub->shutdown();
+      }
+      resub_subscribers_.clear();
+    }
     bag_.close();
     rename(write_filename_.c_str(), target_filename_.c_str());
 }
@@ -578,11 +615,17 @@ void Recorder::doRecord() {
             boost::xtime_get(&xt, boost::TIME_UTC_);
             xt.nsec += 250000000;
             queue_condition_.timed_wait(lock, xt);
+            // It is unsafe to hold the queue lock during checkDuration as it
+            // may alter our subscriptions, and the subscription callbacks
+            // grab the queue lock
+            lock.unlock();
             if (checkDuration(ros::Time::now()))
             {
+                // Its OK to leave the lock unlocked, as we are finished.
                 finished = true;
                 break;
             }
+            lock.lock();
         }
         if (finished)
             break;

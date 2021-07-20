@@ -93,6 +93,7 @@ struct ROSBAG_DECL RecorderOptions
     bool            record_all;
     bool            regex;
     bool            do_exclude;
+    bool            do_resub;
     bool            quiet;
     bool            append_date;
     bool            snapshot;
@@ -103,6 +104,7 @@ struct ROSBAG_DECL RecorderOptions
     std::string     prefix;
     std::string     name;
     boost::regex    exclude_regex;
+    boost::regex    resub_regex;
     uint32_t        buffer_size;
     uint32_t        chunk_size;
     uint32_t        limit;
@@ -125,7 +127,7 @@ public:
 
     void doTrigger();
 
-    bool isSubscribed(std::string const& topic) const;
+    bool isSubscribed(std::string const& topic);
 
     boost::shared_ptr<ros::Subscriber> subscribe(std::string const& topic);
 
@@ -166,8 +168,13 @@ private:
     std::string                   write_filename_;
     std::list<std::string>        current_files_;
 
+    boost::mutex                  subscribe_mutex_;      //!< mutex for subscription book-keeping
     std::set<std::string>         currently_recording_;  //!< set of currently recording topics
     int                           num_subscribers_;      //!< used for book-keeping of our number of subscribers
+    std::set<std::string>         resub_topics_;         //!< stores resub topic names (no need to ask master for full list again)
+    std::vector<
+      boost::shared_ptr<
+        ros::Subscriber> >        resub_subscribers_;    //!< stores subscribers that need resets during splits
 
     int                           exit_code_;            //!< eventual exit code
 
