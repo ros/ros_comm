@@ -1443,12 +1443,19 @@ class Bag(object):
             return isinstance(f, io.IOBase)  # Python 3...this will return false in Python 2 always
 
     def _open_read(self, f, allow_unindexed):
+        use_index_file = False
+
         if self._is_file(f):
             self._file     = f
             self._filename = None
         else:
-            self._file     = open(f, 'rb')
-            self._filename = f        
+            bag_index_path = f[:-len(".bag")] + ".idx"
+            if os.path.exists(bag_index_path):
+                use_index_file = True
+                self._file = open(bag_index_path, 'rb')
+            else:
+                self._file = open(f, 'rb')
+            self._filename = f
 
         self._mode = 'r'
 
@@ -1460,8 +1467,10 @@ class Bag(object):
             raise
 
         try:
-            self._create_reader()
+            self._create_reader(use_index_file)
             self._reader.start_reading()
+            if use_index_file:
+                self._file = open(f, 'rb')
         except ROSBagUnindexedException as ex:
             if not allow_unindexed:
                 self._close_file()
@@ -1533,13 +1542,14 @@ class Bag(object):
         self._file.close()
         self._file = None
 
-    def _create_reader(self):
+    def _create_reader(self, use_index_file=False):
         """
         @raise ROSBagException: if the bag version is unsupported
         """
         major_version, minor_version = int(self._version / 100), self._version % 100
         if major_version == 2:
             self._reader = _BagReader200(self)
+            self._reader.use_index_file = use_index_file
         elif major_version == 1:
             if minor_version == 1:
                 raise ROSBagException('unsupported bag version %d. Please convert bag to newer format.' % self._version)
@@ -2436,6 +2446,8 @@ class _BagReader200(_BagReader):
         self.decompressed_chunk     = None
         self.decompressed_chunk_io  = None
 
+        self.use_index_file = None
+
     def reindex(self):
         """
         Generates all bag index information by rereading the chunks.
@@ -2657,15 +2669,22 @@ class _BagReader200(_BagReader):
 
             # Read the chunk info records
             self.bag._chunks = [self.read_chunk_info_record() for i in range(self.bag._chunk_count)]
-    
-            # Read the chunk headers
-            self.bag._chunk_headers = {}
-            for chunk_info in self.bag._chunks:
-                self.bag._file.seek(chunk_info.pos)
-                self.bag._chunk_headers[chunk_info.pos] = self.read_chunk_header()
 
-            if not self.bag._skip_index:
-                self._read_connection_index_records()
+            if not self.use_index_file:
+                # Read the chunk headers
+                self.bag._chunk_headers = {}
+                for chunk_info in self.bag._chunks:
+                    self.bag._file.seek(chunk_info.pos)
+                    self.bag._chunk_headers[chunk_info.pos] = self.read_chunk_header()
+
+                if not self.bag._skip_index:
+                    self._read_connection_index_records()
+            else:
+                f = self.bag._file
+                index_file_size = os.stat(f.fileno()).st_size
+                while f.tell() < index_file_size:
+                    self.bag._curr_chunk_info = _ChunkInfo(0, 0, 0)  # set dummy
+                    self.read_connection_index_record(True)
 
         except ROSBagEncryptNotSupportedException:
             raise
@@ -2774,7 +2793,7 @@ class _BagReader200(_BagReader):
 
         return _ChunkHeader(compression, compressed_size, uncompressed_size, data_pos)
 
-    def read_connection_index_record(self):
+    def read_connection_index_record(self, extended=False):
         f = self.bag._file
 
         header = _read_header(f, _OP_INDEX_DATA)
@@ -2789,12 +2808,15 @@ class _BagReader200(_BagReader):
         record_size = _read_uint32(f) # skip the record data size
 
         index = []
-                
+        chunk_pos = self.bag._curr_chunk_info.pos
+
         for i in range(count):
             time   = _read_time  (f)
+            if extended:
+                chunk_pos = _read_uint64(f)
             offset = _read_uint32(f)
             
-            index.append(_IndexEntry200(time, self.bag._curr_chunk_info.pos, offset))
+            index.append(_IndexEntry200(time, chunk_pos, offset))
 
         return (connection_id, index)
 
@@ -2803,7 +2825,15 @@ class _BagReader200(_BagReader):
 
         chunk_header = self.bag._chunk_headers.get(chunk_pos)
         if chunk_header is None:
-            raise ROSBagException('no chunk at position %d' % chunk_pos)
+            if self.use_index_file:
+                self.bag._file.seek(chunk_pos)
+                try:
+                    chunk_header = self.read_chunk_header()
+                    self.bag._chunk_headers[chunk_pos] = chunk_header
+                except ROSBagException:
+                    raise ROSBagException('no chunk at position %d' % chunk_pos)
+            else:
+                raise ROSBagException('no chunk at position %d' % chunk_pos)
 
         if chunk_header.compression == Compression.NONE:
             if self.decompressed_chunk_pos != chunk_pos:
