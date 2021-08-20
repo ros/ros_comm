@@ -173,6 +173,9 @@ class TimerEvent(object):
     @type  last_real: rospy.Time
     @param current_expected: in a perfect world, this is when the current callback should have been called
     @type  current_expected: rospy.Time
+    @param current_real: when the current callback is actually being called
+                         (ros::Time::now() as of immediately before calling the callback)
+    @type  current_real: rospy.Time
     @param last_duration: contains the duration of the last callback (end time minus start time) in seconds.
                           Note that this is always in wall-clock time.
     @type  last_duration: float
