@@ -666,6 +666,17 @@ def decrypt_cmd(argv):
     # Note the second paramater is True: Python Bag class cannot read index information from encrypted bag files
     bag_op(args, True, False, lambda b: False, op, options.output_dir, options.force, options.quiet)
 
+def gen_idx_file_cmd(argv):
+    parser = optparse.OptionParser(usage='rosbag index-file [options] BAGFILE1 [BAGFILE2 ...]',
+                                   description='Generate external index file for one or more bag files.')
+    parser.add_option('-f', '--force', action='store_true', dest='force', help='force overwriting of index file if it exists')
+    (options, args) = parser.parse_args(argv)
+
+    if len(args) < 1:
+        parser.error('You must specify at least one bag file.')
+
+    index_file_op(args, options.force)
+
 def bag_op(inbag_filenames, allow_unindexed, open_inbag, copy_fn, op, output_dir=None, force=False, quiet=False):
     for inbag_filename in inbag_filenames:
         if open_inbag:
@@ -875,6 +886,117 @@ def change_encryption_op(inbag, outbag, plugin, param, compression, quiet):
     process = subprocess.Popen(cmd)
     process.wait()
 
+def index_file_op(inbag_filenames, force_overwrite):
+
+    import re
+    from io import BytesIO
+    from rosbag.bag import Bag, ROSBagException, _VERSION, _read_uint8_field, _skip_sized, _read_sized, _pack_time, \
+        _pack_uint32, _OP_CHUNK, _INDEX_VERSION, _OP_INDEX_DATA, _read_header, _pack_uint64, _pack_uint8, _write_record, \
+        _FILE_HEADER_LENGTH, _write_sized, _write_header
+
+    def write_extended_index_data_record(f, connection_id, entries):
+        header = {
+            'op':    _pack_uint8(_OP_INDEX_DATA),
+            'conn':  _pack_uint32(connection_id),
+            'ver':   _pack_uint32(_INDEX_VERSION),
+            'count': _pack_uint32(len(entries))
+        }
+
+        buffer.seek(0)
+        buffer.truncate(0)
+        for time, chunk_offset, msg_offset in entries:
+            buffer.write(_pack_time(time))
+            buffer.write(_pack_uint64(chunk_offset))
+            buffer.write(_pack_uint32(msg_offset))
+
+        _write_record(f, header, buffer.getvalue())
+
+    def read_version(f):
+        """
+        @raise ROSBagException: if the file is empty, or the version line can't be parsed
+        """
+        version_line = f.readline().rstrip().decode()
+        if len(version_line) == 0:
+            raise ROSBagException('empty file')
+
+        matches = re.match("#ROS(.*) V(\d).(\d)", version_line)
+        if matches is None or len(matches.groups()) != 3:
+            raise ROSBagException('This does not appear to be a bag file')
+
+        version_type, major_version_str, minor_version_str = matches.groups()
+
+        version = int(major_version_str) * 100 + int(minor_version_str)
+
+        return version
+
+    def write_version(f):
+        version = _VERSION + '\n'
+        version = version.encode()
+        f.write(version)
+
+    for inbag in inbag_filenames:
+
+        # check if index file already exists
+        output_idx_raw_path = inbag[:-len(".bag")] + ".idx"
+        if os.path.exists(output_idx_raw_path) and not force_overwrite:
+            print("Index file for %s does already exist -> skip" % inbag)
+            continue
+
+        # index input bag in order to access extended index data records
+        print("Start reading bag indices of %s ..." % inbag)
+        input_bag = Bag(inbag, 'r')
+        input_bag.close()
+
+        # buffer required for writing
+        buffer = BytesIO()
+
+        # get file handles
+        input_bag_raw = open(inbag, 'rb')
+        output_idx_raw = open(output_idx_raw_path, 'w+b')
+
+        # get file size of input bag
+        input_bag_raw_size = os.fstat(input_bag_raw.fileno()).st_size
+
+        # read version of input bag
+        if read_version(input_bag_raw) != 200:
+            raise ROSBagException("Only allowed to use rosbags with version 2.0")
+        input_bag_raw_file_header_pos = input_bag_raw.tell()
+
+        # write version of output bag
+        write_version(output_idx_raw)
+        output_idx_raw_file_header_pos = output_idx_raw.tell()
+
+        # copy all records to output bag (except for chunk records and index data records)
+        print("Generate index file %s ..." % output_idx_raw_path)
+        while input_bag_raw.tell() < input_bag_raw_size:
+            header = _read_header(input_bag_raw)
+            op = _read_uint8_field(header, 'op')
+            if op == _OP_CHUNK or op == _OP_INDEX_DATA:
+                # skip also associated data segment of record
+                _skip_sized(input_bag_raw)
+            else:
+                # write header to output bag
+                _write_header(output_idx_raw, header)
+                # read and write associated data segment
+                data = _read_sized(input_bag_raw)
+                _write_sized(output_idx_raw, data)
+
+        # append extended index data records
+        for conn_id, index_data in input_bag._connection_indexes.items():
+            entries = [(v.time, v.chunk_pos, v.offset) for v in index_data]
+            write_extended_index_data_record(output_idx_raw, conn_id, entries)
+
+        # update index pos (pointing to first connection record) in file header record. It is smaller because chunk records and
+        # (normal) index data records were omitted. It is now located directly after "version" and bag header record
+        input_bag_raw.seek(input_bag_raw_file_header_pos)
+        input_bag_raw_file_header = _read_header(input_bag_raw)
+        input_bag_raw_file_header["index_pos"] = _pack_uint64(output_idx_raw_file_header_pos + _FILE_HEADER_LENGTH + 2 * 4)  # add 2x size
+        output_idx_raw.seek(output_idx_raw_file_header_pos)
+        _write_record(output_idx_raw, input_bag_raw_file_header, padded_size=_FILE_HEADER_LENGTH)
+
+        print("Finished.")
+
+
 class RosbagCmds(UserDict):
     def __init__(self):
         UserDict.__init__(self)
@@ -1011,6 +1133,7 @@ def rosbagmain(argv=None):
     cmds.add_cmd('compress', compress_cmd, 'Compress one or more bag files.')
     cmds.add_cmd('decompress', decompress_cmd, 'Decompress one or more bag files.')
     cmds.add_cmd('reindex', reindex_cmd, 'Reindexes one or more bag files.')
+    cmds.add_cmd('index-file', gen_idx_file_cmd, 'Generates an extra index file to read records faster.')
     if sys.platform != 'win32':
         cmds.add_cmd('encrypt', encrypt_cmd, 'Encrypt one or more bag files.')
         cmds.add_cmd('decrypt', decrypt_cmd, 'Decrypt one or more bag files.')
