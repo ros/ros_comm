@@ -1,0 +1,148 @@
+#!/usr/bin/env python
+###############################################################################
+# Software License Agreement (BSD License)
+#
+# Copyright (c) 2021, Kei Okada
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+#  * Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above
+#    copyright notice, this list of conditions and the following
+#    disclaimer in the documentation and/or other materials provided
+#    with the distribution.
+#  * Neither the name of Willow Garage, Inc. nor the names of its
+#    contributors may be used to endorse or promote products derived
+#    from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+###############################################################################
+
+"""
+Integration test node that checks if the specified topics are subscribed.
+below parameters must be set:
+
+<test name="subscribetest"
+      test-name="subscribetest"
+      pkg="rostest" type="subscribetest">
+  <rosparam>
+    topics:
+      - name: a topic name
+        timeout: timeout for the topic
+      - name: another topic name
+        timeout: timeout for the topic
+        type: std_msgs/String
+      - name: another topic name
+        timeout: timeout for the topic
+        negative: true
+  </rosparam>
+</test>
+
+Author: Kei OKada <kei.okada@gmail.com>
+"""
+
+import sys
+import time
+import unittest
+
+import rospy
+import rosservice
+import rosgraph
+
+PKG = 'rostest'
+NAME = 'subscribetest'
+
+
+class SubscribeTest(unittest.TestCase):
+    def __init__(self, *args):
+        super(self.__class__, self).__init__(*args)
+        rospy.init_node(NAME)
+        # scrape rosparam
+        self.topics = {}
+        params = rospy.get_param('~topics', [])
+        for param in params:
+            if 'name' not in param:
+                self.fail("'name' field in rosparam is required but not specified.")
+            topic = {'timeout': 10, 'type': None, 'negative': False,}
+            topic.update(param)
+            self.topics[topic['name']] = topic
+        self.services = {}
+        # check if there is at least one topic
+        if not self.topics:
+            self.fail('No topic or service is specified in rosparam.')
+
+    def setUp(self):
+        # warn on /use_sim_time is true
+        use_sim_time = rospy.get_param('/use_sim_time', False)
+        self.t_start = time.time()
+        while not rospy.is_shutdown() and \
+                use_sim_time and (rospy.Time.now() == rospy.Time(0)):
+            rospy.logwarn_throttle(
+                1, '/use_sim_time is specified and rostime is 0, /clock is published?')
+            if time.time() - t_start > 10:
+                self.fail('Timed out (10s) of /clock publication.')
+            # must use time.sleep because /clock isn't yet published, so rospy.sleep hangs.
+            time.sleep(0.1)
+
+    def test_subscribe_topics(self):
+        """Test topics are subscribed"""
+        def topic_type(t, topic_types):
+            matches = [t_type for t_name, t_type in topic_types if t_name == t]
+            if matches:
+                return matches[0]
+            return 'unknown type'
+
+        if self.topics:
+            t_start = self.t_start
+            t_name_set = set(self.topics.keys())
+            t_timeout_max = max(t['timeout'] for t in self.topics.values())
+            finished_topics = []
+            while not rospy.is_shutdown():
+                t_now = time.time()
+                t_elapsed = t_now - t_start
+                if not t_name_set:
+                    break
+                if t_elapsed > t_timeout_max:
+                    break
+                master = rosgraph.Master('/rostopic')
+                topic_types =  master.getTopicTypes()
+
+                pubs, subs, servs = master.getSystemState()
+                for t_name, _ in subs:
+                    t_type = topic_type(t_name, topic_types)
+                    if t_name in t_name_set:
+                        t_name_set.remove(t_name)
+                        topic = self.topics[t_name]
+                        assert t_elapsed < topic['timeout'], \
+                            'Topic [%s] is subscribed before timeout [%s] secs' % (topic['name'], topic['timeout'])
+                        assert not topic['negative'], \
+                            'Topic [%s] is not subscribed' % (topic['name'])
+                        if topic['type'] is not None:
+                            assert t_type == topic['type'], \
+                                'Topic type of [%s] is [%s]' % (topic['name'], topic['type'])
+                time.sleep(0.05)
+
+            for t_name in t_name_set:
+                topic = self.topics[t_name]
+                assert topic['negative'], \
+                    'Topic [%s] is not subscribed' % (topic['name'])
+
+
+if __name__ == '__main__':
+    import rostest
+    rostest.run(PKG, NAME, SubscribeTest, sys.argv)
