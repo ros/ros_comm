@@ -215,7 +215,7 @@ TEST(XmlRpc, testOversizeString) {
   try {
     std::string xml = "<tag><nexttag>";
     xml += std::string(INT_MAX, 'a');
-    xml += "a</nextag></tag>";
+    xml += "a</nexttag></tag>";
     int offset;
 
     offset = 0;
@@ -241,6 +241,177 @@ TEST(XmlRpc, testOversizeString) {
     std::cerr << "[ SKIPPED  ] XmlRpc.testOversizeString Unable to allocate memory to run test\n";
 #endif
   }
+}
+
+TEST(XmlRpc, testParseTag) {
+  int offset = 0;
+
+  // Test a null tag
+  EXPECT_EQ(XmlRpcUtil::parseTag(NULL, "", &offset), std::string());
+  EXPECT_EQ(offset, 0);
+
+  // Test a null offset
+  EXPECT_EQ(XmlRpcUtil::parseTag("<tag>", "", NULL), std::string());
+  EXPECT_EQ(offset, 0);
+
+  // Test if the offset is beyond the end of the input xml
+  offset = 20;
+  EXPECT_EQ(XmlRpcUtil::parseTag("<tag>", "", &offset), std::string());
+  EXPECT_EQ(offset, 20);
+
+  // Test if the tag is not found in the input xml
+  offset = 0;
+  EXPECT_EQ(XmlRpcUtil::parseTag("<tag>", "<foo></foo>", &offset), std::string());
+  EXPECT_EQ(offset, 0);
+
+  // Test if the tag is found, but the end tag is not
+  EXPECT_EQ(XmlRpcUtil::parseTag("<tag>", "<tag>", &offset), std::string());
+  EXPECT_EQ(offset, 0);
+
+  // Test if the tag is found, the end tag is found, and there is a value in the middle
+  EXPECT_EQ(XmlRpcUtil::parseTag("<tag>", "<tag>foo</tag>", &offset), "foo");
+  EXPECT_EQ(offset, 14);
+}
+
+TEST(XmlRpc, testFindTag) {
+  int offset = 0;
+
+  // Test a null tag
+  EXPECT_FALSE(XmlRpcUtil::findTag(NULL, "", &offset));
+  EXPECT_EQ(offset, 0);
+
+  // Test a null offset
+  EXPECT_FALSE(XmlRpcUtil::findTag("<tag>", "", NULL));
+  EXPECT_EQ(offset, 0);
+
+  // Test if the offset is beyond the end of the input xml
+  offset = 20;
+  EXPECT_FALSE(XmlRpcUtil::findTag("<tag>", "", &offset));
+  EXPECT_EQ(offset, 20);
+
+  // Test that the offset moves when finding a tag
+  offset = 0;
+  EXPECT_TRUE(XmlRpcUtil::findTag("<subtag>", "<tag><subtag></subtag></tag>", &offset));
+  EXPECT_EQ(offset, 13);
+}
+
+TEST(XmlRpc, testNextTagIs) {
+  int offset = 0;
+
+  // Test a null tag
+  EXPECT_FALSE(XmlRpcUtil::nextTagIs(NULL, "", &offset));
+  EXPECT_EQ(offset, 0);
+
+  // Test a null offset
+  EXPECT_FALSE(XmlRpcUtil::nextTagIs("<tag>", "", NULL));
+  EXPECT_EQ(offset, 0);
+
+  // Test if the offset is beyond the end of the input xml
+  offset = 20;
+  EXPECT_FALSE(XmlRpcUtil::nextTagIs("<tag>", "", &offset));
+  EXPECT_EQ(offset, 20);
+
+  // Test that the offset moves when finding a tag with no whitespace
+  offset = 0;
+  EXPECT_TRUE(XmlRpcUtil::nextTagIs("<tag>", "<tag></tag>", &offset));
+  EXPECT_EQ(offset, 5);
+
+  // Test that the offset moves when finding a tag with whitespace
+  offset = 0;
+  EXPECT_TRUE(XmlRpcUtil::nextTagIs("<tag>", "      <tag></tag>", &offset));
+  EXPECT_EQ(offset, 11);
+
+  // Test that the offset doesn't move when the tag is not found
+  offset = 0;
+  EXPECT_FALSE(XmlRpcUtil::nextTagIs("<tag>", "      <footag></footag>", &offset));
+  EXPECT_EQ(offset, 0);
+}
+
+TEST(XmlRpc, testGetNextTag) {
+  int offset = 0;
+
+  // Test a null offset
+  EXPECT_EQ(XmlRpcUtil::getNextTag("", NULL), std::string());
+  EXPECT_EQ(offset, 0);
+
+  // Test if the offset is beyond the end of the input xml
+  offset = 20;
+  EXPECT_EQ(XmlRpcUtil::getNextTag("<tag>", &offset), std::string());
+  EXPECT_EQ(offset, 20);
+
+  // Test that the offset moves when finding a tag with no whitespace
+  offset = 0;
+  EXPECT_EQ(XmlRpcUtil::getNextTag("<tag></tag>", &offset), "<tag>");
+  EXPECT_EQ(offset, 5);
+
+  // Test that the offset moves when finding a tag with whitespace
+  offset = 0;
+  EXPECT_EQ(XmlRpcUtil::getNextTag("      <tag></tag>", &offset), "<tag>");
+  EXPECT_EQ(offset, 11);
+
+  // Test that the offset doesn't move if there are no tags
+  offset = 0;
+  EXPECT_EQ(XmlRpcUtil::getNextTag("      foo", &offset), std::string());
+  EXPECT_EQ(offset, 0);
+
+  // Test that the offset moves if there is a start < but no end >
+  offset = 0;
+  // FIXME: this should fail, but currently does not
+  EXPECT_EQ(XmlRpcUtil::getNextTag("<foo", &offset), "<foo");
+  EXPECT_EQ(offset, 4);
+
+  // Test what happens if there is no data in the tag
+  offset = 0;
+  EXPECT_EQ(XmlRpcUtil::getNextTag("<>", &offset), "<>");
+  EXPECT_EQ(offset, 2);
+}
+
+TEST(XmlRpc, testNextTagData)
+{
+  int offset = 0;
+
+  // Test a null tag
+  EXPECT_EQ(XmlRpcUtil::nextTagData(NULL, "", &offset), std::string());
+  EXPECT_EQ(offset, 0);
+
+  // Test a null offset
+  EXPECT_EQ(XmlRpcUtil::nextTagData("<tag>", "", NULL), std::string());
+  EXPECT_EQ(offset, 0);
+
+  // Test if the offset is beyond the end of the input xml
+  offset = 20;
+  EXPECT_EQ(XmlRpcUtil::nextTagData("<tag>", "", &offset), std::string());
+  EXPECT_EQ(offset, 20);
+
+  // Test that the offset moves when finding a tag with no whitespace
+  offset = 0;
+  EXPECT_EQ(XmlRpcUtil::nextTagData("<tag>", "<tag></tag>", &offset), "");
+  EXPECT_EQ(offset, 11);
+
+  // Test that the offset moves when finding a tag with whitespace
+  offset = 0;
+  EXPECT_EQ(XmlRpcUtil::nextTagData("<tag>", "   <tag></tag>", &offset), "");
+  EXPECT_EQ(offset, 14);
+
+  // Test that the offset moves when finding a tag with whitespace
+  offset = 0;
+  EXPECT_EQ(XmlRpcUtil::nextTagData("<tag>", "   <tag>foo</tag>", &offset), "foo");
+  EXPECT_EQ(offset, 17);
+
+  // Test that the offset doesn't move when missing the tag
+  offset = 0;
+  EXPECT_EQ(XmlRpcUtil::nextTagData("<tag>", "   <foo></foo>", &offset), "");
+  EXPECT_EQ(offset, 0);
+
+  // Test that the offset doesn't move when the close tag is after other tags
+  offset = 0;
+  EXPECT_EQ(XmlRpcUtil::nextTagData("<tag>", "   <tag><foo></tag>", &offset), "");
+  EXPECT_EQ(offset, 0);
+
+  // Test that the offset doesn't move if there is no closing tag
+  offset = 0;
+  EXPECT_EQ(XmlRpcUtil::nextTagData("<tag>", "   <tag>foo", &offset), "");
+  EXPECT_EQ(offset, 0);
 }
 
 TEST(XmlRpc, testDateTime) {
@@ -579,6 +750,507 @@ TEST(XmlRpc, array_errors) {
   // bounds.
   const XmlRpcValue& ref = value;
   EXPECT_THROW(ref[2], XmlRpcException);
+}
+
+TEST(XmlRpc, fromXmlInvalid) {
+  int offset = 0;
+  XmlRpcValue val;
+
+  // Test what happens with a null offset
+  val.fromXml("", NULL);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+
+  // Test what happens with an offset far beyond the xml
+  offset = 20;
+  val.fromXml("", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 20);
+
+  // Test what happens with no <value> tag
+  offset = 0;
+  val.fromXml("<foo>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // Test what happens with <value> tag but nothing else
+  offset = 0;
+  val.fromXml("<value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><invalid></invalid></value> is invalid
+  offset = 0;
+  val.fromXml("<value><invalid></invalid></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value></value> combination is an implicit empty string
+  offset = 0;
+  val.fromXml("<value></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeString);
+  EXPECT_EQ(offset, 15);
+  EXPECT_EQ(static_cast<std::string>(val), "");
+}
+
+TEST(XmlRpc, fromXmlBoolean) {
+  int offset = 0;
+  XmlRpcValue val;
+
+  // A <value><boolean></boolean></value> is invalid
+  offset = 0;
+  val.fromXml("<value><boolean></boolean></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><boolean></value> is invalid
+  offset = 0;
+  val.fromXml("<value><boolean></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><boolean>foo</boolean></value> is invalid
+  offset = 0;
+  val.fromXml("<value><boolean>foo</boolean></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><boolean>25</boolean></value> is invalid
+  offset = 0;
+  val.fromXml("<value><boolean>25</boolean></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><boolean>1foo</boolean></value> is valid
+  offset = 0;
+  // FIXME: this should fail, but currently does not
+  val.fromXml("<value><boolean>1foo</boolean></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeBoolean);
+  EXPECT_EQ(offset, 38);
+  EXPECT_EQ(static_cast<bool>(val), true);
+
+  // A <value><boolean>1</value> is valid
+  offset = 0;
+  // FIXME: this should fail, but currently does not
+  val.fromXml("<value><boolean>1</value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeBoolean);
+  EXPECT_EQ(offset, 25);
+  EXPECT_EQ(static_cast<bool>(val), true);
+
+  // A <value><boolean>0</boolean></value> is valid
+  offset = 0;
+  val.fromXml("<value><boolean>0</boolean></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeBoolean);
+  EXPECT_EQ(offset, 35);
+  EXPECT_EQ(static_cast<bool>(val), false);
+
+  // A <value><boolean>1</boolean></value> is valid
+  offset = 0;
+  val.fromXml("<value><boolean>1</boolean></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeBoolean);
+  EXPECT_EQ(offset, 35);
+  EXPECT_EQ(static_cast<bool>(val), true);
+}
+
+TEST(XmlRpc, fromXmlI4) {
+  int offset = 0;
+  XmlRpcValue val;
+
+  // A <value><i4></i4></value> is invalid
+  offset = 0;
+  val.fromXml("<value><i4></i4></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><i4></value> is invalid
+  offset = 0;
+  val.fromXml("<value><i4></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><i4>foo</i4></value> is invalid
+  offset = 0;
+  val.fromXml("<value><i4>foo</i4></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><i4>25</i4></value> is valid
+  offset = 0;
+  val.fromXml("<value><i4>25</i4></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInt);
+  EXPECT_EQ(offset, 26);
+  EXPECT_EQ(static_cast<int>(val), 25);
+
+  // A <value><i4>1foo</i4></value> is valid
+  offset = 0;
+  // FIXME: this should fail, but currently does not
+  val.fromXml("<value><i4>1foo</i4></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInt);
+  EXPECT_EQ(offset, 28);
+  EXPECT_EQ(static_cast<int>(val), 1);
+
+  // A <value><i4>1</value> is valid
+  offset = 0;
+  // FIXME: this should fail, but currently does not
+  val.fromXml("<value><i4>99</value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInt);
+  EXPECT_EQ(offset, 21);
+  EXPECT_EQ(static_cast<int>(val), 99);
+}
+
+TEST(XmlRpc, fromXmlInt) {
+  int offset = 0;
+  XmlRpcValue val;
+
+  // A <value><int></int></value> is invalid
+  offset = 0;
+  val.fromXml("<value><int></int></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><int></value> is invalid
+  offset = 0;
+  val.fromXml("<value><int></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><int>foo</int></value> is invalid
+  offset = 0;
+  val.fromXml("<value><int>foo</int></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><int>25</int></value> is valid
+  offset = 0;
+  val.fromXml("<value><int>25</int></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInt);
+  EXPECT_EQ(offset, 28);
+  EXPECT_EQ(static_cast<int>(val), 25);
+
+  // A <value><int>1foo</int></value> is valid
+  offset = 0;
+  // FIXME: this should fail, but currently does not
+  val.fromXml("<value><int>1foo</int></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInt);
+  EXPECT_EQ(offset, 30);
+  EXPECT_EQ(static_cast<int>(val), 1);
+
+  // A <value><int>1</value> is valid
+  offset = 0;
+  // FIXME: this should fail, but currently does not
+  val.fromXml("<value><int>99</value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInt);
+  EXPECT_EQ(offset, 22);
+  EXPECT_EQ(static_cast<int>(val), 99);
+}
+
+TEST(XmlRpc, fromXmlDouble) {
+  int offset = 0;
+  XmlRpcValue val;
+
+  // A <value><double></double></value> is invalid
+  offset = 0;
+  val.fromXml("<value><double></double></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><double></value> is invalid
+  offset = 0;
+  val.fromXml("<value><double></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><double>foo</double></value> is invalid
+  offset = 0;
+  val.fromXml("<value><double>foo</double></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><double>25</double></value> is valid
+  offset = 0;
+  val.fromXml("<value><double>25</double></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeDouble);
+  EXPECT_EQ(offset, 34);
+  EXPECT_EQ(static_cast<double>(val), 25.0);
+
+  // A <value><double>25.876</double></value> is valid
+  offset = 0;
+  val.fromXml("<value><double>25.876</double></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeDouble);
+  EXPECT_EQ(offset, 38);
+  EXPECT_NEAR(static_cast<double>(val), 25.876, 0.01);
+
+  // A <value><double>1foo</double></value> is valid
+  offset = 0;
+  // FIXME: this should fail, but currently does not
+  val.fromXml("<value><double>1foo</double></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeDouble);
+  EXPECT_EQ(offset, 36);
+  EXPECT_EQ(static_cast<double>(val), 1);
+}
+
+TEST(XmlRpc, fromXmlImplicitString) {
+  int offset = 0;
+  XmlRpcValue val;
+
+  // A <value><foo></foo></value> is invalid
+  offset = 0;
+  val.fromXml("<value><foo></foo></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value>foo</value> is valid
+  offset = 0;
+  val.fromXml("<value>foo</value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeString);
+  EXPECT_EQ(offset, 18);
+  EXPECT_EQ(static_cast<std::string>(val), "foo");
+  EXPECT_EQ(val.size(), 3);
+}
+
+TEST(XmlRpc, fromXmlExplicitString) {
+  int offset = 0;
+  XmlRpcValue val;
+
+  // A <value><string> is invalid
+  offset = 0;
+  val.fromXml("<value><string>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><string></value> is valid
+  offset = 0;
+  // FIXME: this should fail, but currently does not
+  val.fromXml("<value><string></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeString);
+  EXPECT_EQ(offset, 23);
+  EXPECT_EQ(static_cast<std::string>(val), "");
+  EXPECT_EQ(val.size(), 0);
+
+  // A <value><string>foo</string></value> is valid
+  offset = 0;
+  val.fromXml("<value><string>foo</string></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeString);
+  EXPECT_EQ(offset, 35);
+  EXPECT_EQ(static_cast<std::string>(val), "foo");
+  EXPECT_EQ(val.size(), 3);
+}
+
+TEST(XmlRpc, fromXmlDateTime) {
+  int offset = 0;
+  XmlRpcValue val;
+  struct tm expected{};
+  struct tm returned;
+
+  // A <value><dateTime.iso8601></dateTime.iso8601></value> is invalid
+  offset = 0;
+  val.fromXml("<value><dateTime.iso8601></dateTime.iso8601></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><dateTime.iso8601> is invalid
+  offset = 0;
+  val.fromXml("<value><dateTime.iso8601>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><dateTime.iso8601></value> is invalid
+  offset = 0;
+  val.fromXml("<value><dateTime.iso8601></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><dateTime.iso8601>0000000T00:00<dateTime.iso8601></value> is invalid
+  offset = 0;
+  val.fromXml("<value><dateTime.iso8601>0000000T00:00<dateTime.iso8601></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><dateTime.iso8601>000000T00:00:00<dateTime.iso8601></value> is invalid
+  offset = 0;
+  val.fromXml("<value><dateTime.iso8601>000000T00:00:00<dateTime.iso8601></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><dateTime.iso8601>0000000T00:00:00</value> is valid
+  offset = 0;
+  // FIXME: this should fail, but currently does not
+  // FIXME: this currently leaves the returned struct tm fields 'tm_wday' and 'tm_yday' uninitialized
+  val.fromXml("<value><dateTime.iso8601>0000000T00:00:00</value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeDateTime);
+  EXPECT_EQ(offset, 49);
+  returned = static_cast<struct tm>(val);
+  EXPECT_EQ(returned.tm_sec, expected.tm_sec);
+  EXPECT_EQ(returned.tm_min, expected.tm_min);
+  EXPECT_EQ(returned.tm_hour, expected.tm_hour);
+  EXPECT_EQ(returned.tm_mday, expected.tm_mday);
+  EXPECT_EQ(returned.tm_mon, expected.tm_mon);
+  EXPECT_EQ(returned.tm_year, expected.tm_year);
+  EXPECT_EQ(returned.tm_isdst, -1);
+
+  // A <value><dateTime.iso8601>0000000T00:00:0<dateTime.iso8601></value> is valid
+  offset = 0;
+  // FIXME: this should fail, but currently does not
+  val.fromXml("<value><dateTime.iso8601>0000000T00:00:0<dateTime.iso8601></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeDateTime);
+  EXPECT_EQ(offset, 66);
+  returned = static_cast<struct tm>(val);
+  EXPECT_EQ(returned.tm_sec, expected.tm_sec);
+  EXPECT_EQ(returned.tm_min, expected.tm_min);
+  EXPECT_EQ(returned.tm_hour, expected.tm_hour);
+  EXPECT_EQ(returned.tm_mday, expected.tm_mday);
+  EXPECT_EQ(returned.tm_mon, expected.tm_mon);
+  EXPECT_EQ(returned.tm_year, expected.tm_year);
+  EXPECT_EQ(returned.tm_isdst, -1);
+
+  // A <value><dateTime.iso8601>0000000T00:00:00<dateTime.iso8601></value> is valid
+  offset = 0;
+  // FIXME: this currently leaves the returned struct tm fields 'tm_wday' and 'tm_yday' uninitialized
+  val.fromXml("<value><dateTime.iso8601>0000000T00:00:00<dateTime.iso8601></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeDateTime);
+  EXPECT_EQ(offset, 67);
+  returned = static_cast<struct tm>(val);
+  EXPECT_EQ(returned.tm_sec, expected.tm_sec);
+  EXPECT_EQ(returned.tm_min, expected.tm_min);
+  EXPECT_EQ(returned.tm_hour, expected.tm_hour);
+  EXPECT_EQ(returned.tm_mday, expected.tm_mday);
+  EXPECT_EQ(returned.tm_mon, expected.tm_mon);
+  EXPECT_EQ(returned.tm_year, expected.tm_year);
+  EXPECT_EQ(returned.tm_isdst, -1);
+}
+
+TEST(XmlRpc, fromXmlBase64) {
+  int offset = 0;
+  XmlRpcValue val;
+
+  // A <value><base64> is invalid
+  offset = 0;
+  val.fromXml("<value><base64>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><base64></base64></value> is valid
+  offset = 0;
+  val.fromXml("<value><base64></base64></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeBase64);
+  EXPECT_EQ(offset, 32);
+  EXPECT_EQ(static_cast<const XmlRpc::XmlRpcValue::BinaryData &>(val), XmlRpc::XmlRpcValue::BinaryData());
+  EXPECT_EQ(val.size(), 0);
+
+  // A <value><base64>____</base64></value> is valid
+  offset = 0;
+  // FIXME: the underscore character is illegal in base64, so this should thrown an error
+  val.fromXml("<value><base64>____</base64></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeBase64);
+  EXPECT_EQ(offset, 36);
+  EXPECT_EQ(static_cast<const XmlRpc::XmlRpcValue::BinaryData &>(val), XmlRpc::XmlRpcValue::BinaryData());
+  EXPECT_EQ(val.size(), 0);
+
+  // A <value><base64>aGVsbG8=</base64></value> is valid
+  XmlRpc::XmlRpcValue::BinaryData expected{'h', 'e', 'l', 'l', 'o'};
+  offset = 0;
+  val.fromXml("<value><base64>aGVsbG8=</base64></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeBase64);
+  EXPECT_EQ(offset, 40);
+  EXPECT_EQ(static_cast<const XmlRpc::XmlRpcValue::BinaryData &>(val), expected);
+  EXPECT_EQ(val.size(), 5);
+}
+
+TEST(XmlRpc, fromXmlArray) {
+  int offset = 0;
+  XmlRpcValue val;
+
+  // A <value><array> is invalid
+  offset = 0;
+  val.fromXml("<value><array>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><array></array></value> is invalid (no <data> tag)
+  offset = 0;
+  val.fromXml("<value><array></array></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeInvalid);
+  EXPECT_EQ(offset, 0);
+
+  // A <value><array><data></data></array></value> is valid
+  offset = 0;
+  val.fromXml("<value><array><data></data></array></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeArray);
+  EXPECT_EQ(offset, 43);
+  EXPECT_EQ(val.size(), 0);
+
+  // A <value><array><data><value><boolean>1</boolean></value></data></array></value> is valid
+  offset = 0;
+  val.fromXml("<value><array><data><value><boolean>1</boolean></value></data></array></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeArray);
+  EXPECT_EQ(offset, 78);
+  EXPECT_EQ(val.size(), 1);
+  EXPECT_EQ(static_cast<bool>(val[0]), true);
+
+  // A <value><array><data><value><boolean>1</boolean></value></array></value> is valid
+  offset = 0;
+  // FIXME: this should fail (missing an end </data>), but currently does not
+  val.fromXml("<value><array><data><value><boolean>1</boolean></value></array></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeArray);
+  EXPECT_EQ(offset, 71);
+  EXPECT_EQ(val.size(), 1);
+  EXPECT_EQ(static_cast<bool>(val[0]), true);
+
+  // A <value><array><data><value><boolean>1</boolean></value><value><double>23.4</double></value></data></array></value> is valid
+  offset = 0;
+  val.fromXml("<value><array><data><value><boolean>1</boolean></value><value><double>23.4</double></value></data></array></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeArray);
+  EXPECT_EQ(offset, 114);
+  EXPECT_EQ(val.size(), 2);
+  EXPECT_EQ(static_cast<bool>(val[0]), true);
+  EXPECT_NEAR(static_cast<double>(val[1]), 23.4, 0.01);
+}
+
+TEST(XmlRpc, fromXmlStruct) {
+  int offset = 0;
+  XmlRpcValue val;
+
+  // A <value><struct> is valid
+  offset = 0;
+  // FIXME: this should fail, but currently does not
+  val.fromXml("<value><struct>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeStruct);
+  EXPECT_EQ(offset, 15);
+  EXPECT_EQ(val.size(), 0);
+
+  // A <value><struct><member><value><boolean>1</value> is valid
+  offset = 0;
+  // FIXME: this should fail (it is missing many end tags and a <name> tag), but currently does not
+  val.fromXml("<value><struct><member><value><boolean>1</value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeStruct);
+  EXPECT_EQ(offset, 48);
+  EXPECT_EQ(val.size(), 1);
+  EXPECT_EQ(static_cast<bool>(val[""]), true);
+
+  // A <value><struct><member><value><boolean>1</boolean></value></member></struct></value> is valid
+  offset = 0;
+  // FIXME: this should fail (it is missing a <name> tag), but currently does not
+  val.fromXml("<value><struct><member><value><boolean>1</boolean></value></member></struct></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeStruct);
+  EXPECT_EQ(offset, 84);
+  EXPECT_EQ(val.size(), 1);
+  EXPECT_EQ(static_cast<bool>(val[""]), true);
+
+  // A <value><struct><member><name></name><value><boolean>1</boolean></value></member></struct></value> is valid
+  offset = 0;
+  // FIXME: this should fail (the name tag is empty), but currently does not
+  val.fromXml("<value><struct><member><name></name><value><boolean>1</boolean></value></member></struct></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeStruct);
+  EXPECT_EQ(offset, 97);
+  EXPECT_EQ(val.size(), 1);
+  EXPECT_EQ(static_cast<bool>(val[""]), true);
+
+  // A <value><struct><member><name>foo</name><value><boolean>1</boolean></value></member></struct></value> is valid
+  offset = 0;
+  val.fromXml("<value><struct><member><name>foo</name><value><boolean>1</boolean></value></member></struct></value>", &offset);
+  EXPECT_EQ(val.getType(), XmlRpcValue::Type::TypeStruct);
+  EXPECT_EQ(offset, 100);
+  EXPECT_EQ(val.size(), 1);
+  EXPECT_EQ(static_cast<bool>(val["foo"]), true);
 }
 
 int main(int argc, char **argv)
