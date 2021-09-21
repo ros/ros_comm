@@ -2,6 +2,9 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.12 (2021-09-21)
+--------------------
+
 1.14.11 (2021-04-26)
 --------------------
 * Fix AttributeError isAlive (`#2092 <https://github.com/ros/ros_comm/issues/2092>`_)

@@ -2,6 +2,9 @@
 Changelog for package roswtf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.12 (2021-09-21)
+--------------------
+
 1.14.11 (2021-04-26)
 --------------------
 * Fix /use_sim_time parameter typo in roswtf error (`#2102 <https://github.com/ros/ros_comm/issues/2102>`_)

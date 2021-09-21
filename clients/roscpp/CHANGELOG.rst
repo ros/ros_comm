@@ -2,6 +2,9 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.12 (2021-09-21)
+--------------------
+
 1.14.11 (2021-04-26)
 --------------------
 * Fix for deadlock issue 1980 (`#2121 <https://github.com/ros/ros_comm/issues/2121>`_)

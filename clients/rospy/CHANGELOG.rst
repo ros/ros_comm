@@ -2,6 +2,9 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.12 (2021-09-21)
+--------------------
+
 1.14.11 (2021-04-26)
 --------------------
 * Fix "TypeError: not enough arguments for format string" (`#2127 <https://github.com/ros/ros_comm/issues/2127>`_)
