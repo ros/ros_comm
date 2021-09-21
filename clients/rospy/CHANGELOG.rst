@@ -2,6 +2,13 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.12 (2021-09-21)
+--------------------
+* Document current_real in timer.py (`#2178 <https://github.com/ros/ros_comm/issues/2178>`_)
+* Do not set self.transport unless persistent in ServiceProxy (`#2171 <https://github.com/ros/ros_comm/issues/2171>`_)
+* Fix `#2123 <https://github.com/ros/ros_comm/issues/2123>`_:  Do not raise exception if socket is busy in TCPROSTransport (`#2131 <https://github.com/ros/ros_comm/issues/2131>`_)
+* Contributors: Kevin Chang, Shingo Kitagawa, 金梦磊
+
 1.15.11 (2021-04-06)
 --------------------
 

@@ -2,6 +2,12 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.12 (2021-09-21)
+--------------------
+* Fix XMLRPC endless loop (`#2185 <https://github.com/ros/ros_comm/issues/2185>`_)
+* Fix build when gtest is not available (`#2177 <https://github.com/ros/ros_comm/issues/2177>`_)
+* Contributors: Chris Lalancette, Wolfgang Merkt
+
 1.15.11 (2021-04-06)
 --------------------
 
