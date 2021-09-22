@@ -2,6 +2,12 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.13 (2021-09-22)
+--------------------
+* Revert "Fix warning related to Boost bind placeholders declared in global namespace. (`#2169 <https://github.com/ros/ros_comm/issues/2169>`_)" (`#2187 <https://github.com/ros/ros_comm/issues/2187>`_)
+  This reverts commit 32942993e3f9afc8248be7b1f5944344fa2b4e30.
+* Contributors: Jacob Perron
+
 1.15.12 (2021-09-21)
 --------------------
 * Fix warning related to Boost bind placeholders declared in global namespace (`#2169 <https://github.com/ros/ros_comm/issues/2169>`_)

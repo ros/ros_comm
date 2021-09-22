@@ -2,6 +2,9 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.13 (2021-09-22)
+--------------------
+
 1.15.12 (2021-09-21)
 --------------------
 * Document current_real in timer.py (`#2178 <https://github.com/ros/ros_comm/issues/2178>`_)
