@@ -30,21 +30,16 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#
-# Revision $Id: test_roslaunch_command_line_online.py 6411 2009-10-02 21:32:01Z kwc $
+
+import sys
+import unittest
+from subprocess import CalledProcessError, check_call
+
+import rostest
 
 PKG = 'roslaunch'
 NAME = 'test_roslaunch_exit_code'
 
-# import os
-import sys
-# import time
-import unittest
-# import yaml
-
-import rostest
-
-from subprocess import CalledProcessError, Popen, PIPE, check_call, call
 
 class TestRoslaunchExit(unittest.TestCase):
 
