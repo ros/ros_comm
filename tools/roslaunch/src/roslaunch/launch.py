@@ -619,7 +619,7 @@ class ROSLaunchRunner(object):
         #self.pm.join()
         self.logger.info("process monitor is done spinning, initiating full shutdown")
         self.stop()
-        printlog_bold("roslaunch runner done")
+        printlog_bold("done")
     
     def stop(self):
         """
