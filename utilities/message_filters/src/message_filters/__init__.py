@@ -65,12 +65,22 @@ class Subscriber(SimpleFilter):
     This class acts as a highest-level filter, simply passing messages
     from a ROS subscription through to the filters which have connected
     to it.
+
+    Passing auto_start=False will not immediately start the subscriber,
+    you should use the start function to do so.
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, auto_start=True, **kwargs):
         SimpleFilter.__init__(self)
         self.topic = args[0]
         kwargs['callback'] = self.callback
-        self.sub = rospy.Subscriber(*args, **kwargs)
+        self._create_sub = lambda: rospy.Subscriber(*args, **kwargs)
+        self.sub = None
+        if auto_start:
+            self.sub = self._create_sub()
+
+    def start(self):
+        if not self.sub:
+            self.sub = self._create_sub()
 
     def callback(self, msg):
         self.signalMessage(msg)
