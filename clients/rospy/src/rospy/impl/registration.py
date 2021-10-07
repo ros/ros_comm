@@ -376,11 +376,11 @@ class RegManager(RegistrationListener):
         except socket.error as se:
             (se_errno, msg) = se.args
             if se_errno == errno.ECONNREFUSED or se_errno == errno.ENODATA: #can't talk to master, nothing we can do about it
-                self.logger.warn("cannot unregister with master due to network issues")
+                self.logger.warning("cannot unregister with master due to network issues")
             else:
-                self.logger.warn("unclean shutdown\n%s"%traceback.format_exc())
+                self.logger.warning("unclean shutdown\n%s"%traceback.format_exc())
         except:
-            self.logger.warn("unclean shutdown\n%s"%traceback.format_exc())
+            self.logger.warning("unclean shutdown\n%s"%traceback.format_exc())
 
         self.logger.debug("registration cleanup: master calls complete")            
 
