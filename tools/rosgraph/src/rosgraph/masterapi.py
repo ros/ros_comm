@@ -37,6 +37,8 @@ Master directly using XML-RPC, this API provides a safer abstraction in the even
 the Master API is changed.
 """
 
+import socket
+
 try:
     from xmlrpc.client import ServerProxy  # Python 3.x
 except ImportError:
@@ -71,13 +73,14 @@ ROSMasterException = MasterException
 Error = MasterError
 Failure = MasterFailure
 
-def is_online(master_uri=None):
+def is_online(master_uri=None, timeout=None):
     """
     @param master_uri: (optional) override environment's ROS_MASTER_URI
+    @param timeout: (optional) give up after n seconds
     @type  master_uri: str
     @return: True if Master is available
     """
-    return Master('rosgraph', master_uri=master_uri).is_online()
+    return Master('rosgraph', master_uri=master_uri).is_online(timeout)
 
 class Master(object):
     """
@@ -120,21 +123,26 @@ class Master(object):
         self.master_uri = master_uri
         self.handle = ServerProxy(self.master_uri)
         
-    def is_online(self):
+    def is_online(self, timeout=None):
         """
         Check if Master is online.
 
         NOTE: this is not part of the actual Master API. This is a convenience function.
         
         @param master_uri: (optional) override environment's ROS_MASTER_URI
+        @param timeout: (optional) give up after n seconds
         @type  master_uri: str
         @return: True if Master is available
         """
         try:
+            socket.setdefaulttimeout(timeout)
             self.getPid()
-            return True
+            online = True
         except:
-            return False
+            online = False
+        finally:
+            socket.setdefaulttimeout(None)
+        return online
 
     def _succeed(self, args):
         """
