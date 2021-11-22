@@ -46,7 +46,8 @@ class ParamServerCache(object):
         self.lock = threading.Lock()
         self.d = None
         self.notifier = None
-        
+        self.subscribed_params = set()
+
     ## Delete parameter from cache
     def delete(self, key):
         with self.lock:
@@ -94,13 +95,13 @@ class ParamServerCache(object):
         """
         with self.lock:
             # partially borrowed from rosmaster/paramserver.py
-            namespaces = [x for x in key.split(SEP) if x]
+            path_elems = tuple(x for x in key.split(SEP) if x)
             # - last namespace is the actual key we're storing in
             d = self.d
             if d is None:
                 raise KeyError(key)
-            value_key = namespaces[-1]
-            namespaces = namespaces[:-1]
+            value_key = path_elems[-1]
+            namespaces = path_elems[:-1]
             # - descend tree to the node we're setting
             for ns in namespaces:
                 if ns not in d:
@@ -131,11 +132,12 @@ class ParamServerCache(object):
                     raise TypeError("cannot set root of parameter tree to "
                                     "non-dictionary")
                 self.d = value
+                self.subscribed_params.add(GLOBALNS)
             else:
-                namespaces = [x for x in key.split(SEP) if x]
+                path_elems = tuple(x for x in key.split(SEP) if x)
                 # - last namespace is the actual key we're storing in
-                value_key = namespaces[-1]
-                namespaces = namespaces[:-1]
+                value_key = path_elems[-1]
+                namespaces = path_elems[:-1]
                 if self.d is None:
                     self.d = {}
                 d = self.d
@@ -153,6 +155,7 @@ class ParamServerCache(object):
                         d = val
 
                 d[value_key] = value
+                self.subscribed_params.add(path_elems)
 
     def get(self, key):
         """
@@ -166,13 +169,24 @@ class ParamServerCache(object):
             if self.d is None:
                 raise KeyError(key)
             val = self.d
-            if key != GLOBALNS:
-                # split by the namespace separator, ignoring empty splits
-                namespaces = [x for x in key.split(SEP) if x]
-                for ns in namespaces:
-                    if not type(val) == dict:
-                        raise KeyError(val)
-                    val = val[ns]
+            # split by the namespace separator, ignoring empty splits
+            namespaces = tuple(x for x in key.split(SEP) if x)
+
+            if GLOBALNS not in self.subscribed_params:
+                # Make sure this key or some parent of it was actually set
+                # so that updates are subscribed.
+                is_subscribed = False
+                for i in range(len(namespaces), 0, -1):
+                    if namespaces[:i] in self.subscribed_params:
+                        is_subscribed = True
+                        break
+                if not is_subscribed:
+                    raise KeyError(key)
+
+            for ns in namespaces:
+                if not type(val) == dict:
+                    raise KeyError(val)
+                val = val[ns]
             if isinstance(val, dict) and not val:
                 raise KeyError(key)
             return val
