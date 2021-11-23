@@ -115,7 +115,10 @@ class MasterProxy(object):
         #NOTE: remapping occurs here!
         resolved_key = rospy.names.resolve_name(key)
         try:
-            return rospy.impl.paramserver.get_param_server_cache().get(resolved_key)
+            value = rospy.impl.paramserver.get_param_server_cache().get(resolved_key)
+            if isinstance(value, dict) and not value:
+                raise KeyError(key)
+            return value
         except KeyError:
             pass
         code, msg, value = self.target.getParam(rospy.names.get_caller_id(), resolved_key)
@@ -162,7 +165,7 @@ class MasterProxy(object):
         resolved_key = rospy.names.resolve_name(key)
         try:
             # check for value in the parameter server cache
-            return rospy.impl.paramserver.get_param_server_cache().get(resolved_key)
+            value = rospy.impl.paramserver.get_param_server_cache().get(resolved_key)
         except KeyError:
             # first access, make call to parameter server
             code, msg, value = self.target.subscribeParam(rospy.names.get_caller_id(), rospy.core.get_node_uri(), resolved_key)
@@ -170,9 +173,9 @@ class MasterProxy(object):
                 raise KeyError(key)
             # set the value in the cache so that it's marked as subscribed
             rospy.impl.paramserver.get_param_server_cache().set(resolved_key, value)
-            if isinstance(value, dict) and not value:
-                raise KeyError(key)
-            return value
+        if isinstance(value, dict) and not value:
+            raise KeyError(key)
+        return value
         
     def __delitem__(self, key):
         """
