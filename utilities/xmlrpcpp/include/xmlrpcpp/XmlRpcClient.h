@@ -118,6 +118,9 @@ namespace XmlRpc {
     // each thread should have its own client.
     bool _executing;
 
+    // True if the server supports HTTP1.1
+    bool _server_http_1_1;
+
     // True if the server closed the connection
     bool _eof;
 
