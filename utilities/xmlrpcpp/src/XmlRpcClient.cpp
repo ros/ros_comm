@@ -132,7 +132,7 @@ XmlRpcClient::execute(const char* method, XmlRpcValue const& params, XmlRpcValue
     return false;
   }
 
-  // close() if server not supports HTTP1.1
+  // close() if server does not supports HTTP1.1
   // otherwise, reusing the socket to write leads to a SIGPIPE because
   // the remote server could shut down the corresponding socket.
   if (_header.find("HTTP/1.1 200 OK", 0, 15) != 0) {
