@@ -56,7 +56,6 @@ XmlRpcClient::XmlRpcClient(const char* host, int port, const char* uri/*=0*/)
   _sendAttempts(0),
   _bytesWritten(0),
   _executing(false),
-  _server_http_1_1(false),
   _eof(false),
   _isFault(false),
   _contentLength(0)
@@ -84,7 +83,6 @@ XmlRpcClient::close()
 {
   XmlRpcUtil::log(4, "XmlRpcClient::close: fd %d.", getfd());
   _connectionState = NO_CONNECTION;
-  _server_http_1_1 = false;
   _disp.exit();
   _disp.removeSource(this);
   XmlRpcSource::close();
@@ -131,13 +129,6 @@ XmlRpcClient::execute(const char* method, XmlRpcValue const& params, XmlRpcValue
 
   if (_connectionState != IDLE || ! parseResponse(result))
     return false;
-
-  // close() if server not supports HTTP1.1
-  // otherwise, reusing the socket to write leads to a SIGPIPE because
-  // the remote server could shut down the corresponding socket.
-  if (!_server_http_1_1) {
-    close();
-  }
 
   XmlRpcUtil::log(1, "XmlRpcClient::execute: method %s completed.", method);
   _response = "";
@@ -420,9 +411,7 @@ XmlRpcClient::readHeader()
   char *lp = 0;                       // Start of content-length value
 
   for (char *cp = hp; (bp == 0) && (cp < ep); ++cp) {
-    if ((ep - cp > 15) && (strncmp(cp, "HTTP/1.1 200 OK", 15) == 0))
-      _server_http_1_1 = true;
-    else if ((ep - cp > 16) && (strncasecmp(cp, "Content-length: ", 16) == 0))
+    if ((ep - cp > 16) && (strncasecmp(cp, "Content-length: ", 16) == 0))
       lp = cp + 16;
     else if ((ep - cp > 4) && (strncmp(cp, "\r\n\r\n", 4) == 0))
       bp = cp + 4;
