@@ -2,6 +2,11 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.14 (2022-01-06)
+--------------------
+* Use recursive mutex to fix dead lock (`#2209 <https://github.com/ros/ros_comm/issues/2209>`_)
+* Contributors: Chen Lihui
+
 1.15.13 (2021-09-22)
 --------------------
 * Revert "Fix warning related to Boost bind placeholders declared in global namespace. (`#2169 <https://github.com/ros/ros_comm/issues/2169>`_)" (`#2187 <https://github.com/ros/ros_comm/issues/2187>`_)

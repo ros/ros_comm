@@ -2,6 +2,11 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.14 (2022-01-06)
+--------------------
+* Keep the persistent connection only if rosmaster supports http1.1 (`#2208 <https://github.com/ros/ros_comm/issues/2208>`_)
+* Contributors: Chen Lihui
+
 1.15.13 (2021-09-22)
 --------------------
 
