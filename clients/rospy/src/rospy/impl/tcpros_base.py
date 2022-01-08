@@ -789,6 +789,15 @@ class TCPROSTransport(Transport):
                 
             time.sleep(interval)
 
+    def callback_loop(self, msgs_callback):
+        while not self.done and not is_shutdown():
+            with self.msg_lock:
+                self.msg_is_available.wait()
+                msg = self.msg
+                self.msg_lock.release()
+                msgs_callback(msg, self)
+                self.msg_lock.acquire()
+
     def receive_loop(self, msgs_callback):
         """
         Receive messages until shutdown
@@ -798,12 +807,22 @@ class TCPROSTransport(Transport):
         # - use assert here as this would be an internal error, aka bug
         logger.debug("receive_loop for [%s]", self.name)
         try:
+            self.msg_lock = threading.Lock()
+            self.msg_is_available = threading.Condition(self.msg_lock)
+            self.msg = None
+
+            callback_thread = threading.Thread(
+                    target=self.callback_loop,
+                    args=(msgs_callback,))
+            callback_thread.start()
+
             while not self.done and not is_shutdown():
                 try:
                     if self.socket is not None:
-                        msgs = self.receive_once()
-                        if not self.done and not is_shutdown():
-                            msgs_callback(msgs, self)
+                        msg = self.receive_once()
+                        with self.msg_lock:
+                            self.msg = msg
+                            self.msg_is_available.notify()
                     else:
                         self._reconnect()
 
@@ -839,7 +858,10 @@ class TCPROSTransport(Transport):
                         #the reporting fails
                         rospydebug("exception in receive loop for [%s], may be normal. Exception is %s",self.name, traceback.format_exc())                    
                     except: pass
-                    
+
+            with self.msg_queue_lock:
+                self.msg_queue_condition.notify()
+            callback_thread.join()
             rospydebug("receive_loop[%s]: done condition met, exited loop"%self.name)                    
         finally:
             if not self.done:
