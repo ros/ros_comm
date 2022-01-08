@@ -859,8 +859,8 @@ class TCPROSTransport(Transport):
                         rospydebug("exception in receive loop for [%s], may be normal. Exception is %s",self.name, traceback.format_exc())                    
                     except: pass
 
-            with self.msg_queue_lock:
-                self.msg_queue_condition.notify()
+            with self.msg_lock:
+                self.msg_is_available.notify()
             callback_thread.join()
             rospydebug("receive_loop[%s]: done condition met, exited loop"%self.name)                    
         finally:
