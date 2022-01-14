@@ -806,6 +806,7 @@ class TCPROSTransport(Transport):
         """
         # - use assert here as this would be an internal error, aka bug
         logger.debug("receive_loop for [%s]", self.name)
+        print("receiving data")
         try:
             self.msg_lock = threading.Lock()
             self.msg_is_available = threading.Condition(self.msg_lock)
