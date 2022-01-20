@@ -204,7 +204,7 @@ namespace XmlRpc {
   
   // This prevents GTest to understand all XmlRpcValues as structs and trying to print them as such.
   // That results in assertStruct() being called an exception being thrown in GTest EXPECT* methods.
-  void PrintTo(const XmlRpcValue& value, ::std::ostream* os)
+  inline void PrintTo(const XmlRpcValue& value, ::std::ostream* os)
   {
     if (os)
       *os << value.toXml();
