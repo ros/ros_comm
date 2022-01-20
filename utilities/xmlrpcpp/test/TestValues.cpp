@@ -73,6 +73,9 @@ TEST(XmlRpc, testBoolean) {
   std::stringstream ss2;
   ss2 << booleanTrue;
   EXPECT_EQ("1", ss2.str());
+  
+  // Test that printing the value with GTest printer works
+  EXPECT_EQ(booleanFalse.toXml(), ::testing::PrintToString(booleanFalse));
 }
 
 // Int
@@ -108,6 +111,9 @@ TEST(XmlRpc, testInt) {
   std::stringstream ss;
   ss << int9Xml;
   EXPECT_EQ("9", ss.str());
+  
+  // Test that printing the value with GTest printer works
+  EXPECT_EQ(int0.toXml(), ::testing::PrintToString(int0));
 }
 
 TEST(XmlRpc, testDouble) {
@@ -162,6 +168,9 @@ TEST(XmlRpc, testDouble) {
   ss.str("");
 
   XmlRpc::XmlRpcValue::setDoubleFormat(save_format.c_str());
+  
+  // Test that printing the value with GTest printer works
+  EXPECT_EQ(d.toXml(), ::testing::PrintToString(d));
 }
 
 TEST(XmlRpc, testString) {
@@ -208,6 +217,9 @@ TEST(XmlRpc, testString) {
   std::stringstream ss;
   ss << s;
   EXPECT_EQ("Now is the time <&", ss.str());
+  
+  // Test that printing the value with GTest printer works
+  EXPECT_EQ(s.toXml(), ::testing::PrintToString(s));
 }
 
 //Test decoding of a well-formed but overly large XML input
@@ -542,6 +554,9 @@ TEST(XmlRpc, testArray) {
   std::stringstream ss;
   ss << a;
   EXPECT_EQ("{1,two,43.7,four}", ss.str());
+  
+  // Test that printing the value with GTest printer works
+  EXPECT_EQ(a.toXml(), ::testing::PrintToString(a));
 }
 
 TEST(XmlRpc, testStruct) {
@@ -635,6 +650,8 @@ TEST(XmlRpc, testStruct) {
         EXPECT_EQ(Event[std::string(buf)].size(), NELMTS);
     }
   }
+  // Test that printing the value with GTest printer works
+  EXPECT_EQ(struct1.toXml(), ::testing::PrintToString(struct1));
 }
 
 TEST(XmlRpc, base64) {
@@ -684,6 +701,9 @@ TEST(XmlRpc, base64) {
   d = bin4;
   EXPECT_EQ(d[0], 1);
   EXPECT_EQ(d[1], 2);
+  
+  // Test that printing the value with GTest printer works
+  EXPECT_EQ(bin.toXml(), ::testing::PrintToString(bin));
 }
 
 TEST(XmpRpc, errors) {
