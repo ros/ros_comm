@@ -95,9 +95,15 @@ struct ROSBAG_DECL RecorderOptions
     bool            do_exclude;
     bool            quiet;
     bool            append_date;
+    // We distinguish two writing modes: snapshot-triggered and continuous
+    // snapshot: Messages are buffered in memory (queue_) and only written to file
+    //           when a message was received on the topic 'snapshot_trigger'.
+    //           Message buffering will continue on a new queue_ meanwhile.
+    // continuous: Messages are continously written to file. A new bag file is opened
+    //             when needed, i.e. when max_size or max_duration is exceeded
     bool            snapshot;
     bool            verbose;
-    bool            publish;
+    bool            publish;  //< publish the current bagfile name on topic 'begin_write'
     bool            repeat_latched;
     CompressionType compression;
     std::string     prefix;
@@ -143,7 +149,6 @@ private:
     bool checkDisk();
 
     void snapshotTrigger(std_msgs::Empty::ConstPtr trigger);
-    //    void doQueue(topic_tools::ShapeShifter::ConstPtr msg, std::string const& topic, boost::shared_ptr<ros::Subscriber> subscriber, boost::shared_ptr<int> count);
     void doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>& msg_event, std::string const& topic, boost::shared_ptr<ros::Subscriber> subscriber, boost::shared_ptr<int> count);
     void doRecord();
     void checkNumSplits();
