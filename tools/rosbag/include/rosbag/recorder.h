@@ -54,6 +54,7 @@
 #include <ros/ros.h>
 #include <ros/time.h>
 
+#include <std_msgs/Bool.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/String.h>
 #include <topic_tools/shape_shifter.h>
@@ -102,6 +103,7 @@ struct ROSBAG_DECL RecorderOptions
     // continuous: Messages are continously written to file. A new bag file is opened
     //             when needed, i.e. when max_size or max_duration is exceeded
     bool            snapshot;
+    bool            pause;  //< Allow pausing of message recording, switch via message on topic '~pause'
     bool            verbose;
     bool            publish;  //< publish the current bagfile name on topic 'begin_write'
     bool            repeat_latched;
@@ -137,6 +139,9 @@ public:
 
     int run();
 
+    void pauseTrigger(std_msgs::Bool::ConstPtr trigger);
+    void snapshotTrigger(std_msgs::Empty::ConstPtr trigger);
+
 private:
     void printUsage();
 
@@ -148,7 +153,6 @@ private:
     bool scheduledCheckDisk();
     bool checkDisk();
 
-    void snapshotTrigger(std_msgs::Empty::ConstPtr trigger);
     void doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>& msg_event, std::string const& topic, boost::shared_ptr<ros::Subscriber> subscriber, boost::shared_ptr<int> count);
     void doRecord();
     void checkNumSplits();

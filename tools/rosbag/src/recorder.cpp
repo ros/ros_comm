@@ -95,6 +95,7 @@ RecorderOptions::RecorderOptions() :
     quiet(false),
     append_date(true),
     snapshot(false),
+    pause(false),
     verbose(false),
     publish(false),
     compression(compression::Uncompressed),
@@ -231,6 +232,11 @@ int Recorder::run() {
         });
     }
 
+    ros::Subscriber pause_sub;
+    if (options_.pause) {
+        ros::NodeHandle pnh("~");
+        pause_sub = nh.subscribe<std_msgs::Bool>("pause", 10, boost::bind(&Recorder::pauseTrigger, this, boost::placeholders::_1));
+    }
 
 
     ros::Timer check_master_timer;
@@ -249,6 +255,11 @@ int Recorder::run() {
     delete queue_;
 
     return exit_code_;
+}
+
+void Recorder::pauseTrigger(std_msgs::Bool::ConstPtr trigger)
+{
+    options_.pause = trigger->data;
 }
 
 shared_ptr<ros::Subscriber> Recorder::subscribe(string const& topic) {
@@ -329,6 +340,8 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
     
     if (options_.verbose)
         cout << "Received message on topic " << subscriber->getTopic() << endl;
+    if (options_.pause)
+        return;
 
     OutgoingMessage out(topic, msg_event.getMessage(), msg_event.getConnectionHeaderPtr(), rectime);
     
