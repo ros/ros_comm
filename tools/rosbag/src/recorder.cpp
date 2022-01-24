@@ -177,6 +177,7 @@ int Recorder::run() {
         return 0;
 
     ros::Subscriber trigger_sub;
+    finish_ = false;
 
     // Spin up a thread for writing to the file
     boost::thread record_thread;
@@ -255,6 +256,12 @@ int Recorder::run() {
     delete queue_;
 
     return exit_code_;
+}
+
+void Recorder::finish()
+{
+  finish_ = true;
+  queue_condition_.notify_all();
 }
 
 void Recorder::pauseTrigger(std_msgs::Bool::ConstPtr trigger)
@@ -576,12 +583,12 @@ void Recorder::doRecord() {
     // Except it should only get checked if the node is not ok, and thus
     // it shouldn't be in contention.
     ros::NodeHandle nh;
-    while (nh.ok() || !queue_->empty()) {
+    while ((nh.ok() && !finish_) || !queue_->empty()) {
         boost::unique_lock<boost::mutex> lock(queue_mutex_);
 
         bool finished = false;
         while (queue_->empty()) {
-            if (!nh.ok()) {
+            if (!nh.ok() || finish_) {
                 lock.release()->unlock();
                 finished = true;
                 break;
@@ -630,7 +637,7 @@ void Recorder::doRecord() {
 void Recorder::doRecordSnapshotter() {
     ros::NodeHandle nh;
   
-    while (nh.ok() || !queue_queue_.empty()) {
+    while ((nh.ok() && !finish_) || !queue_queue_.empty()) {
         boost::unique_lock<boost::mutex> lock(queue_mutex_);
         while (queue_queue_.empty()) {
             if (!nh.ok())

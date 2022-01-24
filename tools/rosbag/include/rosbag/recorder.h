@@ -138,6 +138,7 @@ public:
     boost::shared_ptr<ros::Subscriber> subscribe(std::string const& topic);
 
     int run();
+    void finish();
 
     void pauseTrigger(std_msgs::Bool::ConstPtr trigger);
     void snapshotTrigger(std_msgs::Empty::ConstPtr trigger);
@@ -178,6 +179,7 @@ private:
     std::set<std::string>         currently_recording_;  //!< set of currently recording topics
     int                           num_subscribers_;      //!< used for book-keeping of our number of subscribers
 
+    bool                          finish_;               //!< finish recording
     int                           exit_code_;            //!< eventual exit code
 
     std::map<std::pair<std::string, std::string>, OutgoingMessage> latched_msgs_;
