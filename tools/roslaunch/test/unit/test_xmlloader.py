@@ -1080,5 +1080,7 @@ class TestXmlLoader(unittest.TestCase):
         for p in mock.params:
             param_d[p.key] = p.value
 
-        self.assertEquals(param_d['/foo'], self.xml_dir + '/bar')
-        self.assertEquals(param_d['/bar'], self.xml_dir + '/test-dirname/baz')
+        self.assertEqual(param_d['/base'], self.xml_dir)
+        self.assertEqual(param_d['/foo'], self.xml_dir + '/bar')
+        self.assertEqual(param_d['/baz'], self.xml_dir + '/baz')
+        self.assertEqual(param_d['/bar'], self.xml_dir + '/test-dirname/baz')
