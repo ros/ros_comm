@@ -2,6 +2,11 @@
 Changelog for package roscpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.13 (2022-01-25)
+--------------------
+* Use recursive mutex to fix dead lock (`#2209 <https://github.com/ros/ros_comm/issues/2209>`_)
+* Contributors: Chen Lihui, Jacob Perron
+
 1.14.12 (2021-09-21)
 --------------------
 

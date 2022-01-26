@@ -2,6 +2,11 @@
 Changelog for package roslaunch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.13 (2022-01-25)
+--------------------
+* Allow passing _TIMEOUT_SIGINT and _TIMEOUT_SIGTERM as parameters (`#1937 <https://github.com/ros/ros_comm/issues/1937>`_)
+* Contributors: Jacob Perron, Martin Pecka
+
 1.14.12 (2021-09-21)
 --------------------
 

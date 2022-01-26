@@ -2,6 +2,11 @@
 Changelog for package rosgraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.13 (2022-01-25)
+--------------------
+* Fix memory leak in rosgraph for kernel < 4.16 and Python 3 (`#2165 <https://github.com/ros/ros_comm/issues/2165>`_)
+* Contributors: Alexis Schad, Jacob Perron
+
 1.14.12 (2021-09-21)
 --------------------
 

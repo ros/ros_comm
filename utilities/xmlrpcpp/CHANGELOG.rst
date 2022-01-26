@@ -2,6 +2,12 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.13 (2022-01-25)
+--------------------
+* Keep the persistent connection only if rosmaster supports http1.1 (`#2208 <https://github.com/ros/ros_comm/issues/2208>`_)
+* Fix build when gtest is not available (`#2177 <https://github.com/ros/ros_comm/issues/2177>`_)
+* Contributors: Chen Lihui, Jacob Perron, Wolfgang Merkt
+
 1.14.12 (2021-09-21)
 --------------------
 * Fix XMLRPC endless loop (`#2186 <https://github.com/ros/ros_comm/issues/2186>`_)
