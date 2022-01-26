@@ -33,7 +33,7 @@
 
 #include <ros/console.h>
 
-#include <boost/thread/mutex.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <vector>
@@ -47,7 +47,7 @@ namespace param
 
 typedef std::map<std::string, XmlRpc::XmlRpcValue> M_Param;
 M_Param g_params;
-boost::mutex g_params_mutex;
+boost::recursive_mutex g_params_mutex;
 S_string g_subscribed_params;
 
 void invalidateParentParams(const std::string& key)
@@ -76,7 +76,7 @@ void set(const std::string& key, const XmlRpc::XmlRpcValue& v)
   {
     // Lock around the execute to the master in case we get a parameter update on this value between
     // executing on the master and setting the parameter in the g_params list.
-    boost::mutex::scoped_lock lock(g_params_mutex);
+    boost::recursive_mutex::scoped_lock lock(g_params_mutex);
 
     if (master::execute("setParam", params, result, payload, true))
     {
@@ -230,7 +230,7 @@ bool del(const std::string& key)
   std::string mapped_key = ros::names::resolve(key);
 
   {
-    boost::mutex::scoped_lock lock(g_params_mutex);
+    boost::recursive_mutex::scoped_lock lock(g_params_mutex);
 
     if (g_subscribed_params.find(mapped_key) != g_subscribed_params.end())
     {
@@ -261,7 +261,7 @@ bool getImpl(const std::string& key, XmlRpc::XmlRpcValue& v, bool use_cache)
 
   if (use_cache)
   {
-    boost::mutex::scoped_lock lock(g_params_mutex);
+    boost::recursive_mutex::scoped_lock lock(g_params_mutex);
 
     if (g_subscribed_params.find(mapped_key) != g_subscribed_params.end())
     {
@@ -309,7 +309,7 @@ bool getImpl(const std::string& key, XmlRpc::XmlRpcValue& v, bool use_cache)
 
   if (use_cache)
   {
-    boost::mutex::scoped_lock lock(g_params_mutex);
+    boost::recursive_mutex::scoped_lock lock(g_params_mutex);
     g_params[mapped_key] = v;
   }
 
@@ -783,7 +783,7 @@ void update(const std::string& key, const XmlRpc::XmlRpcValue& v)
   std::string clean_key = names::clean(key);
   ROS_DEBUG_NAMED("cached_parameters", "Received parameter update for key [%s]", clean_key.c_str());
 
-  boost::mutex::scoped_lock lock(g_params_mutex);
+  boost::recursive_mutex::scoped_lock lock(g_params_mutex);
 
   if (g_subscribed_params.find(clean_key) != g_subscribed_params.end())
   {
@@ -813,7 +813,7 @@ void unsubscribeCachedParam(const std::string& key)
 void unsubscribeCachedParam(void)
 {
   // lock required, all of the cached parameter will be unsubscribed.
-  boost::mutex::scoped_lock lock(g_params_mutex);
+  boost::recursive_mutex::scoped_lock lock(g_params_mutex);
 
   for(S_string::iterator itr = g_subscribed_params.begin();
     itr != g_subscribed_params.end(); ++itr)

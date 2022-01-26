@@ -114,8 +114,7 @@ class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
     requests via threading. Also makes logging toggleable.
     """
 
-    if _support_http_1_1():
-        daemon_threads = True
+    daemon_threads = True
 
     def __init__(self, addr, log_requests=1):
         """

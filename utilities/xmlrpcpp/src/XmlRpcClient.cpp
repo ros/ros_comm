@@ -127,10 +127,20 @@ XmlRpcClient::execute(const char* method, XmlRpcValue const& params, XmlRpcValue
   double msTime = -1.0;   // Process until exit is called
   _disp.work(msTime);
 
-  if (_connectionState != IDLE || ! parseResponse(result))
+  if (_connectionState != IDLE || ! parseResponse(result)) {
+    _header = "";
     return false;
+  }
+
+  // close() if server does not supports HTTP1.1
+  // otherwise, reusing the socket to write leads to a SIGPIPE because
+  // the remote server could shut down the corresponding socket.
+  if (_header.find("HTTP/1.1 200 OK", 0, 15) != 0) {
+    close();
+  }
 
   XmlRpcUtil::log(1, "XmlRpcClient::execute: method %s completed.", method);
+  _header = "";
   _response = "";
   return true;
 }
@@ -454,7 +464,6 @@ XmlRpcClient::readHeader()
 
   // Otherwise copy non-header data to response buffer and set state to read response.
   _response = bp;
-  _header = "";   // should parse out any interesting bits from the header (connection, etc)...
   _connectionState = READ_RESPONSE;
   return true;    // Continue monitoring this source
 }
