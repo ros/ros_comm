@@ -107,6 +107,71 @@ def convert_value(value, type_):
     else:
         raise ValueError("Unknown type '%s'"%type_)        
 
+def exec_command(recepient, command, verbose=False):
+    try:
+        if type(command) == unicode:
+            command = command.encode('utf-8') #attempt to force to string for shlex/subprocess
+    except NameError:
+        pass
+    if verbose:
+        print("... executing command [%s]" % command)
+    import subprocess, shlex #shlex rocks
+    try:
+        if os.name != 'nt':
+            command = shlex.split(command)
+        else:
+            cl = shlex.split(command, posix=False)  # use non-posix method on Windows
+
+            # On Linux, single quotes are commonly used to enclose a path to escape spaces.
+            # However, on Windows, the single quotes are treated as part of the arguments.
+            # Special handling is required to remove the extra single quotes.
+            if "'" in command:
+                cl = [token[1:-1] if token.startswith("'") and token.endswith("'") else token for token in cl]
+            command = cl
+
+            # Python scripts in ROS tend to omit .py extension since they could become executable with shebang line
+            # special handle the use of Python scripts in Windows environment:
+            # 1. search for a wrapper executable (of the same name) under the same directory with stat.S_IXUSR flag
+            # 2. if no wrapper is present, prepend command with 'python' executable
+            if os.path.isabs(cl[0]):
+                # trying to launch an executable from a specific location(package), e.g. xacro
+                import stat
+                rx_flag = stat.S_IRUSR | stat.S_IXUSR
+                if not os.path.exists(cl[0]) or os.stat(cl[0]).st_mode & rx_flag != rx_flag:
+                    d = os.path.dirname(cl[0])
+                    files_of_same_name = [
+                        os.path.join(d, f) for f in os.listdir(d)
+                        if os.path.splitext(f)[0].lower() == os.path.splitext(os.path.basename(cl[0]))[0].lower()
+                    ] if os.path.exists(d) else []
+                    executable_command = None
+                    for f in files_of_same_name:
+                        if os.stat(f).st_mode & rx_flag == rx_flag:
+                            # found an executable wrapper of the desired Python script
+                            executable_command = f
+
+                    if not executable_command:
+                        for f in files_of_same_name:
+                            mode = os.stat(f).st_mode
+                            if (mode & stat.S_IRUSR == stat.S_IRUSR) and (mode & stat.S_IXUSR != stat.S_IXUSR):
+                                # when there is read permission but not execute permission, this is typically a Python script (in ROS)
+                                if os.path.splitext(f)[1].lower() in ['.py', '']:
+                                    executable_command = ' '.join([sys.executable, f])
+                    if executable_command:
+                        command[0] = executable_command
+        p = subprocess.Popen(command, stdout=subprocess.PIPE)
+        c_value = p.communicate()[0]
+        if not isinstance(c_value, str):
+            c_value = c_value.decode('utf-8')
+        if p.returncode != 0:
+            raise ValueError("Cannot load command for [%s]: command [%s] returned with code [%s]"%(recepient, command, p.returncode))
+    except OSError as e:
+        if e.errno == errno.ENOENT:
+            raise ValueError("Cannot load command for [%s]: no such command [%s]"%(recepient, command))
+        raise
+    if c_value is None:
+        raise ValueError("command: unable to get output of command [%s]"%command)
+    return c_value
+
 def process_include_args(context):
     """
     Processes arg declarations in context and makes sure that they are
@@ -485,69 +550,7 @@ class Loader(object):
             with open(binfile, 'rb') as f:
                 return Binary(f.read())
         elif command is not None:
-            try:
-                if type(command) == unicode:
-                    command = command.encode('utf-8') #attempt to force to string for shlex/subprocess
-            except NameError:
-                pass
-            if verbose:
-                print("... executing command param [%s]" % command)
-            import subprocess, shlex #shlex rocks
-            try:
-                if os.name != 'nt':
-                    command = shlex.split(command)
-                else:
-                    cl = shlex.split(command, posix=False)  # use non-posix method on Windows
-
-                    # On Linux, single quotes are commonly used to enclose a path to escape spaces.
-                    # However, on Windows, the single quotes are treated as part of the arguments.
-                    # Special handling is required to remove the extra single quotes.
-                    if "'" in command:
-                        cl = [token[1:-1] if token.startswith("'") and token.endswith("'") else token for token in cl]
-                    command = cl
-
-                    # Python scripts in ROS tend to omit .py extension since they could become executable with shebang line
-                    # special handle the use of Python scripts in Windows environment:
-                    # 1. search for a wrapper executable (of the same name) under the same directory with stat.S_IXUSR flag
-                    # 2. if no wrapper is present, prepend command with 'python' executable
-                    if os.path.isabs(cl[0]):
-                        # trying to launch an executable from a specific location(package), e.g. xacro
-                        import stat
-                        rx_flag = stat.S_IRUSR | stat.S_IXUSR
-                        if not os.path.exists(cl[0]) or os.stat(cl[0]).st_mode & rx_flag != rx_flag:
-                            d = os.path.dirname(cl[0])
-                            files_of_same_name = [
-                                os.path.join(d, f) for f in os.listdir(d)
-                                if os.path.splitext(f)[0].lower() == os.path.splitext(os.path.basename(cl[0]))[0].lower()
-                            ] if os.path.exists(d) else []
-                            executable_command = None
-                            for f in files_of_same_name:
-                                if os.stat(f).st_mode & rx_flag == rx_flag:
-                                    # found an executable wrapper of the desired Python script
-                                    executable_command = f
-
-                            if not executable_command:
-                                for f in files_of_same_name:
-                                    mode = os.stat(f).st_mode
-                                    if (mode & stat.S_IRUSR == stat.S_IRUSR) and (mode & stat.S_IXUSR != stat.S_IXUSR):
-                                        # when there is read permission but not execute permission, this is typically a Python script (in ROS)
-                                        if os.path.splitext(f)[1].lower() in ['.py', '']:
-                                            executable_command = ' '.join([sys.executable, f])
-                            if executable_command:
-                                command[0] = executable_command
-                p = subprocess.Popen(command, stdout=subprocess.PIPE)
-                c_value = p.communicate()[0]
-                if not isinstance(c_value, str):
-                    c_value = c_value.decode('utf-8')
-                if p.returncode != 0:
-                    raise ValueError("Cannot load command parameter [%s]: command [%s] returned with code [%s]"%(name, command, p.returncode))
-            except OSError as e:
-                if e.errno == errno.ENOENT:
-                    raise ValueError("Cannot load command parameter [%s]: no such command [%s]"%(name, command))
-                raise
-            if c_value is None:
-                raise ValueError("parameter: unable to get output of command [%s]"%command)
-            return convert_value(c_value, ptype)
+            return convert_value(exec_command(name, command, verbose), ptype)
         else: #_param_tag prevalidates, so this should not be reachable
             raise ValueError("unable to determine parameter value")
 

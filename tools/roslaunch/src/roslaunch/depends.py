@@ -45,7 +45,7 @@ from xml.dom import Node as DomNode
 
 import rospkg
 
-from .loader import convert_value, load_mappings
+from .loader import convert_value, load_mappings, exec_command
 from .substitution_args import resolve_args
 
 NAME="roslaunch-deps"
@@ -92,6 +92,8 @@ def _get_arg_value(tag, context):
         return context['arg'][name]
     elif 'default' in tag.attributes.keys():
         return resolve_args(tag.attributes['default'].value, context)
+    elif 'command' in tag.attributes.keys():
+        return exec_command(resolve_args(tag.attributes['command'].value, context))
     else:
         raise RoslaunchDepsException("No value for arg [%s]"%(name))
 
