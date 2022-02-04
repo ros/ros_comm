@@ -262,6 +262,9 @@ void Recorder::finish()
 {
   finish_ = true;
   queue_condition_.notify_all();
+  // unsubscribe from all topics
+  for (const auto& sub : subscribers_)
+    sub->shutdown();
 }
 
 void Recorder::pauseTrigger(std_msgs::Bool::ConstPtr trigger)
@@ -287,6 +290,7 @@ shared_ptr<ros::Subscriber> Recorder::subscribe(string const& topic) {
     ops.transport_hints = options_.transport_hints;
     *sub = nh.subscribe(ops);
 
+    subscribers_.push_back(sub);
     currently_recording_.insert(topic);
     num_subscribers_++;
 

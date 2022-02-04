@@ -53,6 +53,7 @@
 
 #include <ros/ros.h>
 #include <ros/time.h>
+#include <ros/subscriber.h>
 
 #include <std_msgs/Bool.h>
 #include <std_msgs/Empty.h>
@@ -176,8 +177,9 @@ private:
     std::string                   write_filename_;
     std::list<std::string>        current_files_;
 
+    std::list<boost::shared_ptr<ros::Subscriber>> subscribers_;
     std::set<std::string>         currently_recording_;  //!< set of currently recording topics
-    int                           num_subscribers_;      //!< used for book-keeping of our number of subscribers
+    int                           num_subscribers_;      //!< number of active subscribers, used for automatic ros::shutdown
 
     bool                          finish_;               //!< finish recording
     int                           exit_code_;            //!< eventual exit code
