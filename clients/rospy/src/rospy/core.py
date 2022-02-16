@@ -202,13 +202,15 @@ logout = loginfo # alias deprecated name
 
 logerror = logerr # alias logerr
 
-# add exception hook for threads and properly log them on rospyerr
-# docs: https://docs.python.org/3.8/library/threading.html#threading.excepthook
+# add exception hooks and properly log them on rospyerr
+# sys docs: https://docs.python.org/3/library/sys.html#sys.excepthook
+# threading docs: https://docs.python.org/3.8/library/threading.html#threading.excepthook
 
-def threadinghook(*args):
+def exceptionhook(*args):
     logerr(traceback.format_exc())
 
-threading.excepthook = threadinghook
+sys.excepthook = exceptionhook
+threading.excepthook = exceptionhook
 
 
 class LoggingThrottle(object):
