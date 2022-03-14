@@ -944,8 +944,21 @@ def index_file_op(inbag_filenames, force_overwrite):
 
         # index input bag in order to access extended index data records
         print("Start reading bag indices of %s ..." % inbag)
-        input_bag = Bag(inbag, 'r')
-        input_bag.close()
+        try:
+            input_bag = Bag(inbag, 'r')
+            input_bag.close()
+        except (ROSBagEncryptNotSupportedException, ROSBagEncryptException) as ex:
+            print('ERROR: %s' % str(ex), file=sys.stderr)
+            continue
+        except ROSBagUnindexedException as ex:
+            print('ERROR bag unindexed. Run rosbag reindex.', file=sys.stderr)
+            continue
+        except ROSBagException as ex:
+            print('ERROR reading: %s' % str(ex), file=sys.stderr)
+            continue
+        except IOError as ex:
+            print('ERROR reading: %s' % str(ex), file=sys.stderr)
+            continue
 
         # buffer required for writing
         buffer = BytesIO()
