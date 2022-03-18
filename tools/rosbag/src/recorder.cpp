@@ -364,7 +364,7 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
                 ros::M_string::const_iterator it2 = out.connection_header->find("callerid");
                 if (it2 != out.connection_header->end())
                 {
-                    latched_msgs_.insert({{subscriber->getTopic(), it2->second}, out});
+                    latched_msgs_[{subscriber->getTopic(), it2->second}] = out.msg;
                 }
             }
         }
@@ -480,7 +480,7 @@ void Recorder::startWriting() {
         {
             // Overwrite the original receipt time, otherwise the new bag will
             // have a gap before the new messages start.
-            bag_.write(out.second.topic, now, *out.second.msg);
+            bag_.write(out.first.first, now, *out.second);
         }
     }
 

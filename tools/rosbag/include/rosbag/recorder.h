@@ -178,7 +178,7 @@ private:
 
     int                           exit_code_;            //!< eventual exit code
 
-    std::map<std::pair<std::string, std::string>, OutgoingMessage> latched_msgs_;
+    std::map<std::pair<std::string, std::string>, topic_tools::ShapeShifter::ConstPtr> latched_msgs_;
 
     boost::condition_variable_any queue_condition_;      //!< conditional variable for queue
     boost::mutex                  queue_mutex_;          //!< mutex for queue
