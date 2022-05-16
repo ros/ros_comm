@@ -1,0 +1,34 @@
+disable_existing_loggers: False
+
+formatters:
+    default_formatter:
+        format: "[%(levelname)s] [%(asctime)s]: %(message)s"
+        datefmt: "%Y/%m/%d %H:%M:%S"
+
+handlers:
+    handler_streamHandler:
+        class: rosgraph.roslogging.RosStreamHandler
+        formatter: default_formatter
+        level: DEBUG
+    handler_fileHandler:
+        class: logging.handlers.RotatingFileHandler
+        level: INFO
+        formatter: default_formatter
+        filename: os.environ['ROS_LOG_FILENAME']
+        maxBytes: 50000000
+        backupCount: 4
+        encoding: utf8
+
+loggers:
+    __main__:
+        level: DEBUG
+        handlers: [handler_streamHandler]
+        propagate: 1
+    rosout:
+        level: INFO
+        propagate: yes
+        qualname: rosout
+
+root:
+    level: INFO
+    handlers: [handler_streamHandler, handler_fileHandler]
