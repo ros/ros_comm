@@ -1807,7 +1807,7 @@ def _rostopic_cmd_pub(argv):
         # stdin/file input has a rate by default
         if rate is None and not options.latch and not options.once:
             rate = 10.
-        stdin_publish(pub, msg_class, rate, options.once, options.file, options.verbose)
+        stdin_publish(pub, msg_class, rate, options.once, options.file, options.verbose, substitute_keywords=options.substitute_keywords)
     else:
         argv_publish(pub, msg_class, pub_args, rate, options.once, options.verbose, substitute_keywords=options.substitute_keywords)
         
@@ -1939,7 +1939,7 @@ def param_publish(pub, msg_class, param_name, rate, verbose):
         if rospy.is_shutdown():
             break
 
-def stdin_publish(pub, msg_class, rate, once, filename, verbose):
+def stdin_publish(pub, msg_class, rate, once, filename, verbose, substitute_keywords=False):
     """
     :param filename: name of file to read from instead of stdin, or ``None``, ``str``
     """
@@ -1974,7 +1974,7 @@ def stdin_publish(pub, msg_class, rate, once, filename, verbose):
                 # None, repeatedly publish it
                 if exactly_one_message and rate is not None:
                     print("Got one message and a rate, publishing repeatedly")
-                    publish_message(pub, msg_class, pub_args, rate=rate, once=once, verbose=verbose)
+                    publish_message(pub, msg_class, pub_args, rate=rate, once=once, verbose=verbose, substitute_keywords=substitute_keywords)
                 # we use 'bool(r) or once' for the once value, which
                 # controls whether or not publish_message blocks and
                 # latches until exit.  We want to block if the user
