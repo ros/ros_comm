@@ -71,7 +71,7 @@ void StatisticsManager::threadFunc()
       pub_ = n.advertise<rosgraph_msgs::TopicStatistics>("/statistics", 1);
     }
     boost::mutex::scoped_lock lock(statistics_queue_mutex_);
-    while(!statistics_queue_.empty())
+    while(!statistics_queue_.empty() && pub_.getTopic().length())
     {
       auto msg = statistics_queue_.front();
       pub_.publish(msg);
