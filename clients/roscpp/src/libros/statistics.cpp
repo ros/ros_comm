@@ -27,6 +27,7 @@
 
 #include "ros/statistics.h"
 #include "ros/node_handle.h"
+#include "ros/statistics_manager.h"
 #include <rosgraph_msgs/TopicStatistics.h>
 #include "ros/this_node.h"
 #include "ros/message_traits.h"
@@ -227,14 +228,7 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
       msg.period_max = ros::Duration(0);
     }
 
-    if (!pub_.getTopic().length())
-    {
-      ros::NodeHandle n("~");
-      // creating the publisher in the constructor results in a deadlock. so do it here.
-      pub_ = n.advertise<rosgraph_msgs::TopicStatistics>("/statistics", 1);
-    }
-
-    pub_.publish(msg);
+    StatisticsManager::instance()->addToQueue(msg);
 
     // dynamic window resizing
     if (stats.arrival_time_list.size() > static_cast<size_t>(max_elements) && pub_period / 2.0 >= min_window)
@@ -256,6 +250,5 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
   // store the stats for this connection
   map_[callerid] = stats;
 }
-
 
 } // namespace ros

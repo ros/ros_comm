@@ -39,6 +39,7 @@
 #include "ros/connection_manager.h"
 #include "ros/topic_manager.h"
 #include "ros/service_manager.h"
+#include "ros/statistics_manager.h"
 #include "ros/this_node.h"
 #include "ros/network.h"
 #include "ros/file_log.h"
@@ -328,6 +329,7 @@ void start()
   ConnectionManager::instance()->start();
   PollManager::instance()->start();
   XMLRPCManager::instance()->start();
+  StatisticsManager::instance()->start();
 
   if (!(g_init_options & init_options::NoSigintHandler))
   {
