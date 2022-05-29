@@ -39,6 +39,8 @@
 #include <assert.h>
 #include <iomanip>
 
+#include <boost/bind/bind.hpp>
+
 #include "console_bridge/console.h"
 
 using std::map;
