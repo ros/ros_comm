@@ -856,6 +856,13 @@ class TCPROSTransport(Transport):
                         pass
                     finally:
                         self.socket.close()
+            except AttributeError:
+                # this is a workaround to avoid a race condition: thread A
+                # checks the self.socket to be not None (above in
+                # this function), thread B sets it to None (below in this
+                # function) and then thread A executes self.socket.close()
+                # (above in this function)
+                pass
             finally:
                 self.socket = self.read_buff = self.write_buff = self.protocol = None
                 super(TCPROSTransport, self).close()
