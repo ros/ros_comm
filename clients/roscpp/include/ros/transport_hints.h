@@ -93,7 +93,7 @@ public:
     M_string::iterator it = options_.find("tcp_nodelay");
     if (it == options_.end())
     {
-      return false;
+      return true;
     }
 
     const std::string& val = it->second;
