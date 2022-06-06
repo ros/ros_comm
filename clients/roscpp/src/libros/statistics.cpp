@@ -33,6 +33,11 @@
 #include "std_msgs/Header.h"
 #include "ros/param.h"
 
+//! \brief Hysteresis setting for recognition when ROS time has jumped back (in seconds).
+#ifndef ROS_STATISTICS_JUMP_BACK_DELTA
+#define ROS_STATISTICS_JUMP_BACK_DELTA 3
+#endif
+
 namespace ros
 {
 
@@ -85,6 +90,19 @@ void StatisticsLogger::callback(const boost::shared_ptr<M_string>& connection_he
   }
   previous_connection_id = connection_id;
 
+  // Handle ROS time jumping back
+  if (received_time + ros::Duration(ROS_STATISTICS_JUMP_BACK_DELTA) < stats.last_publish)
+  {
+    ROS_DEBUG("ROS time has jumped back, resetting topic statistics.");
+    stats.last_publish = received_time;
+    // clear the window
+    stats.age_list.clear();
+    stats.arrival_time_list.clear();
+    stats.dropped_msgs = 0;
+    stats.stat_bytes_last = 0;
+    map_[callerid] = stats;
+  }
+  
   stats.arrival_time_list.push_back(received_time);
 
   if (dropped)
