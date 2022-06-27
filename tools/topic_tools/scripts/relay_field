@@ -16,7 +16,6 @@ Example:
          frame_id: m.data"
 """
 
-from __future__ import print_function
 import argparse
 import sys
 import copy
