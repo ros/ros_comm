@@ -38,7 +38,7 @@ def _eval_in_dict_impl(dict_, globals_, locals_):
         type_ = type(v)
         if type_ is dict:
             res[k] = _eval_in_dict_impl(v, globals_, locals_)
-        elif (type_ is str) or (type_ is unicode):
+        elif (type_ is str) or (type_ is bytes):
             try:
                 res[k] = eval(v, globals_, locals_)
             except NameError:
