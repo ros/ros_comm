@@ -157,14 +157,23 @@ _names_to_logging_levels = {
       'ERROR':    logging.ERROR,
       'FATAL':    logging.CRITICAL,
       }
+_level_to_change_logs = {
+      "ENABLE":    logging.NOTSET,
+      "DISABLE":   logging.CRITICAL
+}
 
 def _set_logger_level(request):
     """
     ROS service handler to set the logging level for a particular logger
     """
     level = request.level.upper()
-    if level in _names_to_logging_levels:
-        logger = logging.getLogger(request.logger)
+    logger_request = request.logger
+    if logger_request.upper() in _level_to_change_logs:
+        logging.disable(_level_to_change_logs[logger_request.upper()])
+    elif level in _names_to_logging_levels:
+        logger = logging.getLogger(logger_request)
+        if(not logger.isEnabledFor(logging.CRITICAL)):
+            logging.disable(_level_to_change_logs["ENABLE"])
         logger.setLevel(_names_to_logging_levels[level])
     else:
        logging.getLogger('rospy').error("Bad logging level: %s"%level)
