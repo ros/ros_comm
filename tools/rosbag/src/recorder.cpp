@@ -347,7 +347,11 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
                 ros::M_string::const_iterator it2 = out.connection_header->find("callerid");
                 if (it2 != out.connection_header->end())
                 {
-                    latched_msgs_.insert({{subscriber->getTopic(), it2->second}, out});
+                    auto const result = latched_msgs_.insert({{subscriber->getTopic(), it2->second}, out});
+                    if (not result.second)
+                    {
+                        result.first->second = out;
+                    }
                 }
             }
         }
