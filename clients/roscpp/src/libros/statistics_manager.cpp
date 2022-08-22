@@ -77,6 +77,7 @@ void StatisticsManager::threadFunc()
       pub_.publish(msg);
       statistics_queue_.pop_front();
     }
+    boost::this_thread::sleep_for(boost::chrono::milliseconds(1));
   }
 }
 
