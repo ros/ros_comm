@@ -70,12 +70,15 @@ void StatisticsManager::threadFunc()
       // We do not want to advertise in the constructor because that will advertise even if enable_statistics is unset or set to false. 
       pub_ = n.advertise<rosgraph_msgs::TopicStatistics>("/statistics", 1);
     }
-    boost::mutex::scoped_lock lock(statistics_queue_mutex_);
-    while(!statistics_queue_.empty() && pub_.getTopic().length())
     {
-      auto msg = statistics_queue_.front();
-      pub_.publish(msg);
-      statistics_queue_.pop_front();
+      // Put scoped_lock within brackets to leave its scope and unlock mutex prior to sleep
+      boost::mutex::scoped_lock lock(statistics_queue_mutex_);
+      while(!statistics_queue_.empty() && pub_.getTopic().length())
+      {
+        auto msg = statistics_queue_.front();
+        pub_.publish(msg);
+        statistics_queue_.pop_front();
+      }
     }
     boost::this_thread::sleep_for(boost::chrono::milliseconds(1));
   }
