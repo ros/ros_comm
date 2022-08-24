@@ -108,7 +108,7 @@ class MasterApiTestCase(_MasterTestCase):
         parsed = urlparse.urlparse(uri)
         parsed2 = urlparse.urlparse(self.master_uri)        
         
-        self.assertEquals(parsed.port, parsed2.port, "expected ports do not match")
+        self.assertEqual(parsed.port, parsed2.port, "expected ports do not match")
 
     ## validate master.getPid(caller_id)        
     def _testGetPid(self):
@@ -142,9 +142,9 @@ class MasterApiTestCase(_MasterTestCase):
             self.apiSuccess(master.registerService(caller_id, service_name, service_api, caller_api))
             # test master state
             val = self.apiSuccess(master.lookupService(caller_id, service_name))
-            self.assertEquals(service_api, val)
+            self.assertEqual(service_api, val)
             val = self.apiSuccess(master.lookupNode(self.caller_id, caller_id)) 
-            self.assertEquals(caller_api, val)
+            self.assertEqual(caller_api, val)
 
             _, _, srvs = self.apiSuccess(master.getSystemState(self.caller_id))
             for j in range(0, i+1):
@@ -172,14 +172,14 @@ class MasterApiTestCase(_MasterTestCase):
 
             # unregister the service
             code, msg, val = master.unregisterService(caller_id, service_name, service_api)
-            self.assertEquals(code, 1, "code != 1, return message was [%s]"%msg)
+            self.assertEqual(code, 1, "code != 1, return message was [%s]"%msg)
 
             # test the master state
             self.apiError(master.lookupService(self.caller_id, service_name), "master has a reference to unregistered service. message from master for unregister was [%s]"%msg)
 
             if i < 9:
                 val = self.apiSuccess(master.lookupNode(self.caller_id, caller_id))
-                self.assertEquals(caller_api, val, "master prematurely invalidated node entry for [%s] (lookupNode)"%caller_id)
+                self.assertEqual(caller_api, val, "master prematurely invalidated node entry for [%s] (lookupNode)"%caller_id)
             
             _, _, srvs = self.apiSuccess(master.getSystemState(self.caller_id))
             for j in range(0, i+1):
@@ -199,7 +199,7 @@ class MasterApiTestCase(_MasterTestCase):
         self.apiError(master.lookupNode(self.caller_id, caller_id), "master has a stale reference to unregistered service node API")
         _, _, srvs = self.apiSuccess(master.getSystemState(self.caller_id))
         srvs = [s for s in srvs if not s[0].startswith('/rosout/') and not s[0].endswith('/get_loggers') and not s[0].endswith('/set_logger_level')]
-        self.assertEquals(0, len(srvs), "all services should have been unregistered: %s"%srvs)
+        self.assertEqual(0, len(srvs), "all services should have been unregistered: %s"%srvs)
 
     def _testRegisterServiceInvalid(self):
         master = self.master
@@ -311,7 +311,7 @@ class MasterApiTestCase(_MasterTestCase):
             # test master state
             # - master knows caller_id
             val = self.apiSuccess(master.lookupNode(self.caller_id, caller_id))
-            self.assertEquals(caller_api, val)
+            self.assertEqual(caller_api, val)
             # - master knows topic type
             val = self.apiSuccess(master.getPublishedTopics(self.caller_id, '/'))
             self.assert_([topic_name, topic_type] in val, "master does not know topic type: %s"%val)
@@ -336,7 +336,7 @@ class MasterApiTestCase(_MasterTestCase):
 
         # register anytype first
         val = self.apiSuccess(master.registerPublisher(caller_id, topic_name, '*', caller_api))
-        self.assertEquals([], val) # should report no subscribers
+        self.assertEqual([], val) # should report no subscribers
         val = self.apiSuccess(master.getPublishedTopics(self.caller_id, '/'))
         self.assert_([topic_name, '*'] in val, "master is not reporting * as type: %s"%val)
         #  - test new api as well
@@ -346,7 +346,7 @@ class MasterApiTestCase(_MasterTestCase):
         # register a grounded type and make sure that '*' can't overwrite it
         for t in ['test_rosmaster/String', '*']:
             val = self.apiSuccess(master.registerPublisher(caller_id, topic_name, t, caller_api))   
-            self.assertEquals([], val) # should report no subscribers
+            self.assertEqual([], val) # should report no subscribers
             val = self.apiSuccess(master.getPublishedTopics(self.caller_id, '/'))
             self.assert_([topic_name, 'test_rosmaster/String'] in val, "master is not reporting test_rosmaster/String as type: %s"%val)
 
@@ -369,7 +369,7 @@ class MasterApiTestCase(_MasterTestCase):
             subs.append(api)
             self.apiSuccess(master.registerSubscriber('/sub_node-%i'%i, topic, type, api))
             val = self.apiSuccess(master.registerPublisher('/pub_node', topic, type, pub_caller_api))            
-            self.assertEquals(subs, val)
+            self.assertEqual(subs, val)
         
     def _testUnregisterPublisherSuccess(self):
         self._subTestRegisterPublisherSuccess()
@@ -383,12 +383,12 @@ class MasterApiTestCase(_MasterTestCase):
 
             # unregister the topic
             code, msg, val = master.unregisterPublisher(caller_id, topic_name, caller_api)
-            self.assertEquals(code, 1, "code != 1, return message was [%s]"%msg)
+            self.assertEqual(code, 1, "code != 1, return message was [%s]"%msg)
 
             # test the master state
             if i < 9:
                 val = self.apiSuccess(master.lookupNode(self.caller_id, caller_id))
-                self.assertEquals(caller_api, val, "master prematurely invalidated node entry for [%s] (lookupNode)"%caller_id)
+                self.assertEqual(caller_api, val, "master prematurely invalidated node entry for [%s] (lookupNode)"%caller_id)
 
             pubs, _, _ = self.apiSuccess(master.getSystemState(self.caller_id))
             for j in range(0, i+1):
@@ -423,7 +423,7 @@ class MasterApiTestCase(_MasterTestCase):
             # test master state
             # - master knows caller_id
             val = self.apiSuccess(master.lookupNode(self.caller_id, caller_id))
-            self.assertEquals(caller_api, val)
+            self.assertEqual(caller_api, val)
 
             # - master should know topic type
             val = self.apiSuccess(master.getTopicTypes(self.caller_id))
@@ -451,12 +451,12 @@ class MasterApiTestCase(_MasterTestCase):
 
             # unregister the topic
             code, msg, val = master.unregisterSubscriber(caller_id, topic_name, caller_api)
-            self.assertEquals(code, 1, "code != 1, return message was [%s]"%msg)
+            self.assertEqual(code, 1, "code != 1, return message was [%s]"%msg)
 
             # test the master state
             if i < 9:
                 val = self.apiSuccess(master.lookupNode(self.caller_id, caller_id))
-                self.assertEquals(caller_api, val, "master prematurely invalidated node entry for [%s] (lookupNode)"%caller_id)
+                self.assertEqual(caller_api, val, "master prematurely invalidated node entry for [%s] (lookupNode)"%caller_id)
 
             _, subs, _ = self.apiSuccess(master.getSystemState(self.caller_id))
             for j in range(0, i+1):
@@ -470,5 +470,3 @@ class MasterApiTestCase(_MasterTestCase):
 
         #  - #457 make sure that lookupNode isn't returning stale info
         self.apiError(master.lookupNode(self.caller_id, caller_id), "master has a stale reference to unregistered topic node API. subs are %s"%subs)
-
-

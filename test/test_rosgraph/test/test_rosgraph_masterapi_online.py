@@ -57,9 +57,9 @@ class MasterApiOnlineTest(unittest.TestCase):
         uri = 'http://localhost:897'
         rpcuri = 'rosrpc://localhost:9812'
         self.m.registerService('/bar/service', rpcuri, uri)
-        self.assertEquals(rpcuri, self.m.lookupService('/bar/service'))
+        self.assertEqual(rpcuri, self.m.lookupService('/bar/service'))
         try:
-            self.assertEquals(uri, self.m.lookupService('/fake/service'))
+            self.assertEqual(uri, self.m.lookupService('/fake/service'))
             self.fail("should have thrown")
         except rosgraph.masterapi.Error:
             pass
@@ -70,16 +70,16 @@ class MasterApiOnlineTest(unittest.TestCase):
     def test_unregisterService(self):
         self.m.registerService('/unreg_service/service', 'rosrpc://localhost:9812', 'http://localhost:893')
         val = self.m.registerService('/unreg_service/service', 'rosrpc://localhost:9812', 'http://localhost:893')
-        self.assertEquals(1, val)
+        self.assertEqual(1, val)
         
     def test_registerSubscriber(self):
         val = self.m.registerSubscriber('/reg_sub/node', 'std_msgs/String', 'http://localhost:9812')
-        self.assertEquals([], val)
+        self.assertEqual([], val)
 
     def test_unregisterSubscriber(self):
         self.m.registerSubscriber('/reg_unsub/node', 'std_msgs/String', 'http://localhost:9812')
         val = self.m.unregisterSubscriber('/reg_unsub/node', 'http://localhost:9812')
-        self.assertEquals(1, val)
+        self.assertEqual(1, val)
 
     def test_registerPublisher(self):
         val = self.m.registerPublisher('/reg_pub/topic', 'std_msgs/String', 'http://localhost:9812')
@@ -93,7 +93,7 @@ class MasterApiOnlineTest(unittest.TestCase):
         # register and lookup self
         uri = 'http://localhost:12345'
         self.m.registerPublisher('fake_topic', 'std_msgs/String', uri)
-        self.assertEquals(uri, self.m.lookupNode(_ID))
+        self.assertEqual(uri, self.m.lookupNode(_ID))
         
         try:
             self.m.lookupNode('/non/existent')
@@ -129,7 +129,7 @@ class MasterApiOnlineTest(unittest.TestCase):
         self.m.setParam('/foo', 1)
         
     def test_searchParam(self):
-        self.assertEquals("/run_id", self.m.searchParam('run_id'))
+        self.assertEqual("/run_id", self.m.searchParam('run_id'))
 
     def test_getParamNames(self):
         self.assert_(type(self.m.getParamNames()) == list)

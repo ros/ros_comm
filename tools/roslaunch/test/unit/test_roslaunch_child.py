@@ -131,12 +131,12 @@ class TestRoslaunchChild(unittest.TestCase):
         name = 'child-%s'%time.time()
         server_uri = 'http://unroutable:1234'
         c = ROSLaunchChild(self.run_id, name, server_uri)
-        self.assertEquals(self.run_id, c.run_id)
-        self.assertEquals(name, c.name)
-        self.assertEquals(server_uri, c.server_uri)
+        self.assertEqual(self.run_id, c.run_id)
+        self.assertEqual(name, c.name)
+        self.assertEqual(server_uri, c.server_uri)
         # - this check tests our assumption about c's process monitor field
-        self.assertEquals(None, c.pm)
-        self.assertEquals(None, c.child_server)        
+        self.assertEqual(None, c.pm)
+        self.assertEqual(None, c.child_server)        
 
         # should be a noop
         c.shutdown()

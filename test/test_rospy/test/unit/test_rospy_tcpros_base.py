@@ -74,7 +74,7 @@ class MockEmptySock:
 class TestRospyTcprosBase(unittest.TestCase):
 
     def test_constants(self):
-        self.assertEquals("TCPROS", rospy.impl.tcpros_base.TCPROS)
+        self.assertEqual("TCPROS", rospy.impl.tcpros_base.TCPROS)
         self.assert_(type(rospy.impl.tcpros_base.DEFAULT_BUFF_SIZE), int)
 
     def test_recv_buff(self):
@@ -86,14 +86,14 @@ class TestRospyTcprosBase(unittest.TestCase):
             recv_buff(MockEmptySock(), buff, 1)
             self.fail("recv_buff should have raised TransportTerminated")
         except rospy.impl.tcpros_base.TransportTerminated:
-            self.assertEquals('', buff.getvalue())
+            self.assertEqual('', buff.getvalue())
 
-        self.assertEquals(5, recv_buff(MockSock('1234567890'), buff, 5))
-        self.assertEquals('12345', buff.getvalue())
+        self.assertEqual(5, recv_buff(MockSock('1234567890'), buff, 5))
+        self.assertEqual('12345', buff.getvalue())
         buff = StringIO()
         
-        self.assertEquals(10, recv_buff(MockSock('1234567890'), buff, 100))
-        self.assertEquals('1234567890', buff.getvalue())
+        self.assertEqual(10, recv_buff(MockSock('1234567890'), buff, 100))
+        self.assertEqual('1234567890', buff.getvalue())
 
     def test_TCPServer(self):
         from rospy.impl.tcpros_base import TCPServer
@@ -105,7 +105,7 @@ class TestRospyTcprosBase(unittest.TestCase):
             self.assert_(s.port > 0)
             addr, port = s.get_full_addr()
             self.assert_(type(addr) == str)
-            self.assertEquals(handler, s.inbound_handler)        
+            self.assertEqual(handler, s.inbound_handler)        
             self.failIf(s.is_shutdown)
         finally:
             if s is not None:
@@ -120,19 +120,19 @@ class TestRospyTcprosBase(unittest.TestCase):
         from rospy.impl.transport import BIDIRECTIONAL
         
         p = TCPROSTransportProtocol('Bob', rospy.AnyMsg)
-        self.assertEquals('Bob', p.resolved_name)
-        self.assertEquals(rospy.AnyMsg, p.recv_data_class)
-        self.assertEquals(BIDIRECTIONAL, p.direction)
-        self.assertEquals({}, p.get_header_fields())
-        self.assertEquals(rospy.impl.tcpros_base.DEFAULT_BUFF_SIZE, p.buff_size)
+        self.assertEqual('Bob', p.resolved_name)
+        self.assertEqual(rospy.AnyMsg, p.recv_data_class)
+        self.assertEqual(BIDIRECTIONAL, p.direction)
+        self.assertEqual({}, p.get_header_fields())
+        self.assertEqual(rospy.impl.tcpros_base.DEFAULT_BUFF_SIZE, p.buff_size)
 
         v = random.randint(1, 100)
         p = TCPROSTransportProtocol('Bob', rospy.AnyMsg, queue_size=v)
-        self.assertEquals(v, p.queue_size)
+        self.assertEqual(v, p.queue_size)
 
         v = random.randint(1, 100)        
         p = TCPROSTransportProtocol('Bob', rospy.AnyMsg, buff_size=v)
-        self.assertEquals(v, p.buff_size)
+        self.assertEqual(v, p.buff_size)
 
     def test_TCPROSTransport(self):
         import rospy.impl.tcpros_base
@@ -150,17 +150,17 @@ class TestRospyTcprosBase(unittest.TestCase):
         self.assert_(t.socket is None)
         self.assert_(t.md5sum is None)
         self.assert_(t.type is None)         
-        self.assertEquals(p, t.protocol)
-        self.assertEquals('TCPROS', t.transport_type)        
-        self.assertEquals(OUTBOUND, t.direction)        
-        self.assertEquals('unknown', t.endpoint_id)        
-        self.assertEquals(b'', t.read_buff.getvalue())
-        self.assertEquals(b'', t.write_buff.getvalue())
+        self.assertEqual(p, t.protocol)
+        self.assertEqual('TCPROS', t.transport_type)        
+        self.assertEqual(OUTBOUND, t.direction)        
+        self.assertEqual('unknown', t.endpoint_id)        
+        self.assertEqual(b'', t.read_buff.getvalue())
+        self.assertEqual(b'', t.write_buff.getvalue())
 
         s = MockSock('12345')
         t.set_socket(s, 'new_endpoint_id')
-        self.assertEquals('new_endpoint_id', t.endpoint_id)
-        self.assertEquals(s, t.socket)
+        self.assertEqual('new_endpoint_id', t.endpoint_id)
+        self.assertEqual(s, t.socket)
 
         t.close()
         self.assert_(t.socket is None)

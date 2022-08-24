@@ -94,10 +94,10 @@ class TestEmptyServiceClient(unittest.TestCase):
         rospy.wait_for_service(EMPTY_REQ_SERVICE, WAIT_TIMEOUT)        
         s = rospy.ServiceProxy(EMPTY_REQ_SERVICE, EmptyReqSrv)
         resp = s()
-        self.assertEquals(FAKE_SECRET, resp.fake_secret, 
+        self.assertEqual(FAKE_SECRET, resp.fake_secret, 
                           "fake_secret fields is not set as expected")        
         resp = s.call()
-        self.assertEquals(FAKE_SECRET, resp.fake_secret, 
+        self.assertEqual(FAKE_SECRET, resp.fake_secret, 
                           "fake_secret fields is not set as expected")        
         
     def test_empty(self):
@@ -108,7 +108,7 @@ class TestEmptyServiceClient(unittest.TestCase):
     def test_empty_req(self):
         resp = self._test(EMPTY_REQ_SERVICE, EmptyReqSrv,
                           EmptyReqSrvRequest())
-        self.assertEquals(FAKE_SECRET, resp.fake_secret, 
+        self.assertEqual(FAKE_SECRET, resp.fake_secret, 
                           "fake_secret fields is not set as expected")        
     def test_empty_resp(self):
         self._test(EMPTY_RESP_SERVICE, EmptyRespSrv,

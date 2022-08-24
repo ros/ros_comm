@@ -216,7 +216,7 @@ class NodeApiTestCase(_NodeTestCase):
         # test success
         uri = self.apiSuccess(self.node.getMasterUri(self.caller_id))
         self._checkUri(uri)
-        self.assertEquals(rosgraph.get_master_uri(), uri)
+        self.assertEqual(rosgraph.get_master_uri(), uri)
 
     ## validate node.publisherUpdate(caller_id, topic, uris) 
     def testPublisherUpdate(self):
@@ -251,10 +251,10 @@ class NodeApiTestCase(_NodeTestCase):
     def _checkTCPROS(self, protocol_params):
         self.assert_(protocol_params, "no protocol params returned")
         self.assert_(type(protocol_params) == list, "protocol params must be a list: %s"%protocol_params)
-        self.assertEquals(3, len(protocol_params), "TCPROS params should have length 3: %s"%protocol_params)
-        self.assertEquals(protocol_params[0], _TCPROS)
+        self.assertEqual(3, len(protocol_params), "TCPROS params should have length 3: %s"%protocol_params)
+        self.assertEqual(protocol_params[0], _TCPROS)
         # expect ['TCPROS', 1.2.3.4, 1234]
-        self.assertEquals(protocol_params[0], _TCPROS)            
+        self.assertEqual(protocol_params[0], _TCPROS)            
         
     def testRequestTopic(self):
         node = self.node
@@ -308,7 +308,7 @@ class NodeApiTestCase(_NodeTestCase):
         topicTypeMap = self._createTopicTypeMap()
         for topic, type in topics:
             if topic in topicTypeMap:
-                self.assertEquals(type, topicTypeMap[topic], "topic [%s]: type [%s] does not match expected [%s]"%(type, topic, topicTypeMap[topic]))
+                self.assertEqual(type, topicTypeMap[topic], "topic [%s]: type [%s] does not match expected [%s]"%(type, topic, topicTypeMap[topic]))
 
         # now check actual URIs
         node_name = self.test_node
@@ -361,5 +361,3 @@ class NodeIntegrationTestCase(_NodeTestCase):
         #TODO: publish a bunch and check sequencing + caller_id        
         pub.unregister()
         sub.unregister()
-
-

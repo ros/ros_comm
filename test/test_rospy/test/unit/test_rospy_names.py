@@ -53,7 +53,7 @@ class TestRospyNames(unittest.TestCase):
             ]
         for caller_id, name, v in tests:
             val = scoped_name(caller_id, name)
-            self.assertEquals(v, val, "failed on [%s] [%s]: %s"%(caller_id, name, val))
+            self.assertEqual(v, val, "failed on [%s] [%s]: %s"%(caller_id, name, val))
 
         fail = [
             ['name', '/name'],
@@ -71,37 +71,37 @@ class TestRospyNames(unittest.TestCase):
         import rospy.names
         from rospy.names import get_mappings, get_resolved_mappings, initialize_mappings
         # get_mappings is initialized statically, so can't test anything other than it is empty
-        self.assertEquals({}, get_mappings())
+        self.assertEqual({}, get_mappings())
 
         # resolved mappings should be empty with no initialization
-        self.assertEquals({}, get_resolved_mappings())
+        self.assertEqual({}, get_resolved_mappings())
         
         # now, initialize mappings, shouldn't matter as there are no mappings
         initialize_mappings('foo')
         # should be empty now
-        self.assertEquals({}, get_resolved_mappings())
+        self.assertEqual({}, get_resolved_mappings())
 
         # manipulate mappings to test
         rospy.names._mappings = roslib.names.load_mappings(['__name:=newname', '__log:=blah', '_param:=value', 'foo:=bar','/baz:=a/b', '~car:=c/d/e'])
         # - param mapping should be removed
-        self.assertEquals({'__name': 'newname', '__log': 'blah', 
+        self.assertEqual({'__name': 'newname', '__log': 'blah', 
                            'foo': 'bar', '/baz': 'a/b', '~car': 'c/d/e'}, get_mappings())
         # - should be unaltered
-        self.assertEquals({}, get_resolved_mappings())        
+        self.assertEqual({}, get_resolved_mappings())        
         initialize_mappings('/name')
 
         # should be unchanged
-        self.assertEquals({'__name': 'newname', '__log': 'blah', 
+        self.assertEqual({'__name': 'newname', '__log': 'blah', 
                            'foo': 'bar', '/baz': 'a/b', '~car': 'c/d/e'}, get_mappings())
         # should be remapped
-        self.assertEquals({'__name': 'newname', '__log': 'blah', 
+        self.assertEqual({'__name': 'newname', '__log': 'blah', 
                            '/foo': '/bar', '/baz': '/a/b', '/name/car':'/c/d/e'},
                           get_resolved_mappings())
         
         # try with namespaced node
         initialize_mappings('/ns/name')
         # should be remapped
-        self.assertEquals({'__name': 'newname', '__log': 'blah', 
+        self.assertEqual({'__name': 'newname', '__log': 'blah', 
                            '/ns/foo': '/ns/bar', '/baz': '/ns/a/b', '/ns/name/car':'/ns/c/d/e'},
                           get_resolved_mappings())
                                                            
@@ -126,12 +126,12 @@ class TestRospyNames(unittest.TestCase):
             ('/foo/bar', '/foo/bar'),
             ]
         for t, v in tests:
-            self.assertEquals(v, canonicalize_name(t))
+            self.assertEqual(v, canonicalize_name(t))
             
     def test_ANYTYPE(self):
         from rospy.names import TOPIC_ANYTYPE, SERVICE_ANYTYPE
-        self.assertEquals("*", TOPIC_ANYTYPE)
-        self.assertEquals("*", SERVICE_ANYTYPE)
+        self.assertEqual("*", TOPIC_ANYTYPE)
+        self.assertEqual("*", SERVICE_ANYTYPE)
 
     def test_resolve_name(self):
         from rospy.names import resolve_name
@@ -171,7 +171,7 @@ class TestRospyNames(unittest.TestCase):
 
             ]
         for name, node_name, v in tests:
-            self.assertEquals(v, resolve_name(name, node_name))
+            self.assertEqual(v, resolve_name(name, node_name))
 
     def test_valid_name(self):
         # test with resolution
@@ -185,8 +185,8 @@ class TestRospyNames(unittest.TestCase):
             (u'~name', '/node', u'/node/name'),                        
             ]
         for name, caller_id, v in tests:
-            self.assertEquals(v, valid_name_validator_resolved('p', name, caller_id), "failed on %s %s"%(name, caller_id))
-            self.assertEquals(v, validator(name, caller_id))
+            self.assertEqual(v, valid_name_validator_resolved('p', name, caller_id), "failed on %s %s"%(name, caller_id))
+            self.assertEqual(v, validator(name, caller_id))
 
         # kwc: valid_name is currently very soft in the failures it
         # checks as it is targeted at catching parameter
@@ -220,8 +220,8 @@ class TestRospyNames(unittest.TestCase):
             (u'~name', '/node', u'~name'),            
             ]
         for name, caller_id, v in tests:
-            self.assertEquals(v, valid_name_validator_unresolved('p', name, caller_id), "failed on [%s] [%s]"%(name, caller_id))
-            self.assertEquals(v, validator(name, caller_id))
+            self.assertEqual(v, valid_name_validator_unresolved('p', name, caller_id), "failed on [%s] [%s]"%(name, caller_id))
+            self.assertEqual(v, validator(name, caller_id))
             
         for name, caller_id in invalid:
             try:
@@ -243,7 +243,7 @@ class TestRospyNames(unittest.TestCase):
             (u'/name', '/node', u'/name'),            
             ]
         for name, caller_id, v in tests:
-            self.assertEquals(v, validator(name, caller_id))
+            self.assertEqual(v, validator(name, caller_id))
         invalid = [
             (1, '/node'),            
             (None, '/node'),            
@@ -260,26 +260,26 @@ class TestRospyNames(unittest.TestCase):
         from rospy.names import get_caller_id, get_name, _set_caller_id, get_namespace
         # test get_name, get_caller_id, and _set_caller_id
         try:
-            self.assertEquals('/unnamed', get_name())
-            self.assertEquals('/', get_namespace())
+            self.assertEqual('/unnamed', get_name())
+            self.assertEqual('/', get_namespace())
             _set_caller_id('/foo')
-            self.assertEquals('/foo', get_name())
-            self.assertEquals('/', get_namespace())
+            self.assertEqual('/foo', get_name())
+            self.assertEqual('/', get_namespace())
             _set_caller_id('/foo/bar')
-            self.assertEquals('/foo/bar', get_name())
-            self.assertEquals('/foo/', get_namespace())
+            self.assertEqual('/foo/bar', get_name())
+            self.assertEqual('/foo/', get_namespace())
         finally:
             _set_caller_id('/unnamed')
 
         # older get_caller_id usage
         try:
-            self.assertEquals('/unnamed', get_caller_id())
-            self.assertEquals('/', get_namespace())
+            self.assertEqual('/unnamed', get_caller_id())
+            self.assertEqual('/', get_namespace())
             _set_caller_id('/foo')
-            self.assertEquals('/foo', get_caller_id())
-            self.assertEquals('/', get_namespace())
+            self.assertEqual('/foo', get_caller_id())
+            self.assertEqual('/', get_namespace())
             _set_caller_id('/foo/bar')
-            self.assertEquals('/foo/bar', get_caller_id())
-            self.assertEquals('/foo/', get_namespace())
+            self.assertEqual('/foo/bar', get_caller_id())
+            self.assertEqual('/foo/', get_namespace())
         finally:
             _set_caller_id('/unnamed')

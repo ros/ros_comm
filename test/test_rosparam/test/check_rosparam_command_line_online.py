@@ -77,54 +77,54 @@ class TestRosparamOnline(unittest.TestCase):
         # get
         # - strings
         output = Popen([cmd, 'get', "string"], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('foo-value', output.strip())
+        self.assertEqual('foo-value', output.strip())
         # -- pretty
         output = Popen([cmd, 'get', '-p', "string"], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('foo-value', output.strip())
+        self.assertEqual('foo-value', output.strip())
         output = Popen([cmd, 'get', "/string"], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('foo-value', output.strip())
+        self.assertEqual('foo-value', output.strip())
         output = Popen([cmd, 'get', "g1/string"], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('g1-foo-value', output.strip())
+        self.assertEqual('g1-foo-value', output.strip())
         output = Popen([cmd, 'get', "/g1/string"], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('g1-foo-value', output.strip())
+        self.assertEqual('g1-foo-value', output.strip())
         output = Popen([cmd, 'get', "/g2/string"], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('g2-foo-value', output.strip())
+        self.assertEqual('g2-foo-value', output.strip())
         # - ints
         output = Popen([cmd, 'get', "int"], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('1', output.strip())
+        self.assertEqual('1', output.strip())
         # -- pretty
         output = Popen([cmd, 'get', '-p', "int"], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('1', output.strip())
+        self.assertEqual('1', output.strip())
         output = Popen([cmd, 'get', "/int"], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('1', output.strip())
+        self.assertEqual('1', output.strip())
         output = Popen([cmd, 'get', "g1/int"], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('10', output.strip())
+        self.assertEqual('10', output.strip())
         output = Popen([cmd, 'get', "/g1/int"], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('10', output.strip())
+        self.assertEqual('10', output.strip())
         output = Popen([cmd, 'get', "/g2/int"], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('20', output.strip())
+        self.assertEqual('20', output.strip())
         # - floats
         output = Popen([cmd, 'get', "float"], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('1.0', output.strip())
+        self.assertEqual('1.0', output.strip())
         # -- pretty
         output = Popen([cmd, 'get', '-p', "float"], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('1.0', output.strip())
+        self.assertEqual('1.0', output.strip())
         output = Popen([cmd, 'get', "/float"], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('1.0', output.strip())
+        self.assertEqual('1.0', output.strip())
         output = Popen([cmd, 'get', "g1/float"], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('10.0', output.strip())
+        self.assertEqual('10.0', output.strip())
         output = Popen([cmd, 'get', "/g1/float"], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('10.0', output.strip())
+        self.assertEqual('10.0', output.strip())
         output = Popen([cmd, 'get', "/g2/float"], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('20.0', output.strip())
+        self.assertEqual('20.0', output.strip())
         # - dictionary
         output = Popen([cmd, 'get', "g1"], stdout=PIPE).communicate()[0].decode()
         import yaml
         d = yaml.safe_load(output)
-        self.assertEquals(d['float'], 10.0)
-        self.assertEquals(d['int'], 10.0)
-        self.assertEquals(d['string'], "g1-foo-value")
-        self.assertEquals(set(['float', 'int', 'string']), set(d.keys()))
+        self.assertEqual(d['float'], 10.0)
+        self.assertEqual(d['int'], 10.0)
+        self.assertEqual(d['string'], "g1-foo-value")
+        self.assertEqual(set(['float', 'int', 'string']), set(d.keys()))
 
         # -- don't bother parsing pretty output of dictionary, but check for no errors
         check_call([cmd, 'get', '-p', "g1"])
@@ -134,49 +134,49 @@ class TestRosparamOnline(unittest.TestCase):
         # set
         # - integers
         Popen([cmd, 'set', "/set/test1", "1"], stdout=PIPE).communicate()[0]
-        self.assertEquals(1, ps.getParam('/set/test1'))
+        self.assertEqual(1, ps.getParam('/set/test1'))
         # -- verbose
         Popen([cmd, 'set', '-v', "/set/test1", "1"], stdout=PIPE).communicate()[0]
-        self.assertEquals(1, ps.getParam('/set/test1'))
+        self.assertEqual(1, ps.getParam('/set/test1'))
         Popen([cmd, 'set', "set/test1", "2"], stdout=PIPE).communicate()[0]
-        self.assertEquals(2, ps.getParam('/set/test1'))
+        self.assertEqual(2, ps.getParam('/set/test1'))
         # - floats
         Popen([cmd, 'set', "/set/test2", "1.0"], stdout=PIPE).communicate()[0]
-        self.assertEquals(1, ps.getParam('/set/test2'))
+        self.assertEqual(1, ps.getParam('/set/test2'))
         Popen([cmd, 'set', "set/test2", "2.0"], stdout=PIPE).communicate()[0]
-        self.assertEquals(2, ps.getParam('/set/test2'))
+        self.assertEqual(2, ps.getParam('/set/test2'))
         # - booleans
         Popen([cmd, 'set', "/set/testbool", "true"], stdout=PIPE).communicate()[0]
-        self.assertEquals(True, ps.getParam('/set/testbool'))
+        self.assertEqual(True, ps.getParam('/set/testbool'))
         Popen([cmd, 'set', "set/testbool", "false"], stdout=PIPE).communicate()[0]
-        self.assertEquals(False, ps.getParam('/set/testbool'))
+        self.assertEqual(False, ps.getParam('/set/testbool'))
         # - strings
         #   TODO: test more interesting encodings, like multi-line
         Popen([cmd, 'set', "/set/teststr", "hi"], stdout=PIPE).communicate()[0]
-        self.assertEquals("hi", ps.getParam('/set/teststr'))
+        self.assertEqual("hi", ps.getParam('/set/teststr'))
         Popen([cmd, 'set', "set/teststr", "hello world"], stdout=PIPE).communicate()[0]
-        self.assertEquals("hello world", ps.getParam('/set/teststr'))
+        self.assertEqual("hello world", ps.getParam('/set/teststr'))
         Popen([cmd, 'set', "set/teststr", "'true'"], stdout=PIPE).communicate()[0]
-        self.assertEquals("true", ps.getParam('/set/teststr'))
+        self.assertEqual("true", ps.getParam('/set/teststr'))
         # - list
         Popen([cmd, 'set', "set/testlist", "[]"], stdout=PIPE).communicate()[0]
-        self.assertEquals([], ps.getParam('/set/testlist'))
+        self.assertEqual([], ps.getParam('/set/testlist'))
         Popen([cmd, 'set', "/set/testlist", "[1, 2, 3]"], stdout=PIPE).communicate()[0]
-        self.assertEquals([1, 2, 3], ps.getParam('/set/testlist'))
+        self.assertEqual([1, 2, 3], ps.getParam('/set/testlist'))
         # - dictionary
         Popen([cmd, 'set', "/set/testdict", "{a: b, c: d}"], stdout=PIPE).communicate()[0]
-        self.assertEquals('b', ps.getParam('/set/testdict/a'))
-        self.assertEquals('d', ps.getParam('/set/testdict/c'))
+        self.assertEqual('b', ps.getParam('/set/testdict/a'))
+        self.assertEqual('d', ps.getParam('/set/testdict/c'))
         #   - empty dictionary should be a noop
         Popen([cmd, 'set', "set/testdict", "{}"], stdout=PIPE).communicate()[0]
-        self.assertEquals('b', ps.getParam('/set/testdict/a'))
-        self.assertEquals('d', ps.getParam('/set/testdict/c'))
+        self.assertEqual('b', ps.getParam('/set/testdict/a'))
+        self.assertEqual('d', ps.getParam('/set/testdict/c'))
         #   - this should be an update
         Popen([cmd, 'set', "/set/testdict", "{e: f, g: h}"], stdout=PIPE).communicate()[0]
-        self.assertEquals('b', ps.getParam('/set/testdict/a'))
-        self.assertEquals('d', ps.getParam('/set/testdict/c'))
-        self.assertEquals('f', ps.getParam('/set/testdict/e'))
-        self.assertEquals('h', ps.getParam('/set/testdict/g'))
+        self.assertEqual('b', ps.getParam('/set/testdict/a'))
+        self.assertEqual('d', ps.getParam('/set/testdict/c'))
+        self.assertEqual('f', ps.getParam('/set/testdict/e'))
+        self.assertEqual('h', ps.getParam('/set/testdict/g'))
         # -- verbose
         check_call([cmd, 'set', '-v', "/set/testdictverbose", "{e: f, g: h}"])
         

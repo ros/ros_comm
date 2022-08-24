@@ -93,7 +93,7 @@ class TestPubSubOrder(unittest.TestCase):
         # listenerpublisher is supposed to repeat our messages back onto /listenerpublisher,
         # make sure we got it
         self.assert_(self.callback_data is not None, "no callback data from listenerpublisher")
-        self.assertEquals(msg, self.callback_data.data, "callback data from listenerpublisher does not match")
+        self.assertEqual(msg, self.callback_data.data, "callback data from listenerpublisher does not match")
         
 if __name__ == '__main__':
     rospy.init_node(NAME)

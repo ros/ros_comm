@@ -48,11 +48,11 @@ class TestLatch(unittest.TestCase):
             self.callback_invoked[i] = False
         
     def callback_args(self, msg, i):
-        self.assertEquals('foo', msg.data)
+        self.assertEqual('foo', msg.data)
         self.callback_invoked[i] = True
         
     def callback(self, msg):
-        self.assertEquals('foo', msg.data)
+        self.assertEqual('foo', msg.data)
         self.callback_invoked[0] = True
 
     def test_latch(self):

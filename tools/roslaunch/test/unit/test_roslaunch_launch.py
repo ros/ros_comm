@@ -53,9 +53,9 @@ class TestRoslaunchLaunch(unittest.TestCase):
         os.environ['ROS_MASTER_URI'] = 'http://localhost:11311'
         m = Master(uri='http://localhost:11311')
         validate_master_launch(m, True)
-        self.assertEquals(None, self.printerrlog_msg)
+        self.assertEqual(None, self.printerrlog_msg)
         validate_master_launch(m, False)
-        self.assertEquals(None, self.printerrlog_msg)
+        self.assertEqual(None, self.printerrlog_msg)
         
         # roscore with mismatched port in environment
         os.environ['ROS_MASTER_URI'] = 'http://localhost:11312'
@@ -71,7 +71,7 @@ class TestRoslaunchLaunch(unittest.TestCase):
 
         # roslaunch with remote master that cannot be contacted
         os.environ['ROS_MASTER_URI'] = 'http://fake:11311'
-        self.assertEquals(None, self.printerrlog_msg)
+        self.assertEqual(None, self.printerrlog_msg)
 
         # environment doesn't matter for remaining tests
         os.environ['ROS_MASTER_URI'] = 'http://localhost:11311'
@@ -99,28 +99,28 @@ class TestRoslaunchLaunch(unittest.TestCase):
         
     def test__unify_clear_params(self):
         from roslaunch.launch import _unify_clear_params
-        self.assertEquals([], _unify_clear_params([]))
+        self.assertEqual([], _unify_clear_params([]))
         for t in [['/foo'], ['/foo/'], ['/foo/', '/foo'],
                   ['/foo/', '/foo/'], ['/foo/', '/foo/bar', '/foo/'],
                   ['/foo/', '/foo/bar', '/foo/bar/baz']]:
-            self.assertEquals(['/foo/'], _unify_clear_params(t))
+            self.assertEqual(['/foo/'], _unify_clear_params(t))
         for t in [['/'], ['/', '/foo/'], ['/foo/', '/', '/baz', '/car/dog']]:
-            self.assertEquals(['/'], _unify_clear_params(t))
+            self.assertEqual(['/'], _unify_clear_params(t))
             
-        self.assertEquals(['/foo/', '/bar/', '/baz/'], _unify_clear_params(['/foo', '/bar', '/baz']))
-        self.assertEquals(['/foo/', '/bar/', '/baz/'], _unify_clear_params(['/foo', '/bar', '/baz', '/bar/delta', '/baz/foo']))
-        self.assertEquals(['/foo/bar/'], _unify_clear_params(['/foo/bar', '/foo/bar/baz']))
+        self.assertEqual(['/foo/', '/bar/', '/baz/'], _unify_clear_params(['/foo', '/bar', '/baz']))
+        self.assertEqual(['/foo/', '/bar/', '/baz/'], _unify_clear_params(['/foo', '/bar', '/baz', '/bar/delta', '/baz/foo']))
+        self.assertEqual(['/foo/bar/'], _unify_clear_params(['/foo/bar', '/foo/bar/baz']))
         
         
     def test__hostname_to_rosname(self):
         from roslaunch.launch import _hostname_to_rosname
-        self.assertEquals("host_ann", _hostname_to_rosname('ann'))
-        self.assertEquals("host_ann", _hostname_to_rosname('ANN'))
-        self.assertEquals("host_", _hostname_to_rosname(''))
-        self.assertEquals("host_1", _hostname_to_rosname('1'))
-        self.assertEquals("host__", _hostname_to_rosname('_'))
-        self.assertEquals("host__", _hostname_to_rosname('-'))
-        self.assertEquals("host_foo_laptop", _hostname_to_rosname('foo-laptop'))
+        self.assertEqual("host_ann", _hostname_to_rosname('ann'))
+        self.assertEqual("host_ann", _hostname_to_rosname('ANN'))
+        self.assertEqual("host_", _hostname_to_rosname(''))
+        self.assertEqual("host_1", _hostname_to_rosname('1'))
+        self.assertEqual("host__", _hostname_to_rosname('_'))
+        self.assertEqual("host__", _hostname_to_rosname('-'))
+        self.assertEqual("host_foo_laptop", _hostname_to_rosname('foo-laptop'))
 
     def test_roslaunchListeners(self):
         import roslaunch.launch
@@ -142,28 +142,28 @@ class TestRoslaunchLaunch(unittest.TestCase):
         # test with 1 listener
         listeners.add_process_listener(l1)
         listeners.process_died('p1', 1)
-        self.assertEquals(l1.process_name, 'p1')
-        self.assertEquals(l1.exit_code, 1)
+        self.assertEqual(l1.process_name, 'p1')
+        self.assertEqual(l1.exit_code, 1)
 
         # test with 2 listeners        
         listeners.add_process_listener(l2)
         listeners.process_died('p2', 2)
         for l in [l1, l2]:
-            self.assertEquals(l.process_name, 'p2')
-            self.assertEquals(l.exit_code, 2)
+            self.assertEqual(l.process_name, 'p2')
+            self.assertEqual(l.exit_code, 2)
 
         listeners.add_process_listener(lbad)
         # make sure that this catches errors
         listeners.process_died('p3', 3)
         for l in [l1, l2]:
-            self.assertEquals(l.process_name, 'p3')
-            self.assertEquals(l.exit_code, 3)
+            self.assertEqual(l.process_name, 'p3')
+            self.assertEqual(l.exit_code, 3)
         # also add a third listener to make sure that listeners continues after lbad throws
         listeners.add_process_listener(l3)
         listeners.process_died('p4', 4)
         for l in [l1, l2, l3]:
-            self.assertEquals(l.process_name, 'p4')
-            self.assertEquals(l.exit_code, 4)            
+            self.assertEqual(l.process_name, 'p4')
+            self.assertEqual(l.exit_code, 4)            
 
 # this is just to get coverage, it's an empty class
 def test_ROSRemoteRunnerIF():

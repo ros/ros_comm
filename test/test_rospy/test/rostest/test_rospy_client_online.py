@@ -522,18 +522,18 @@ class TestRospyClientOnline(unittest.TestCase):
             rospy.get_param('not_a_param')
             self.fail("should have raised KeyError")
         except KeyError: pass
-        self.assertEquals('default_val', rospy.get_param('not_a_param', 'default_val') )
+        self.assertEqual('default_val', rospy.get_param('not_a_param', 'default_val') )
         
         p = rospy.get_param('/param')
-        self.assertEquals("value", p)
+        self.assertEqual("value", p)
         p = rospy.get_param('param')
-        self.assertEquals("value", p)
+        self.assertEqual("value", p)
         p = rospy.get_param('/group/param')
-        self.assertEquals("group_value", p)
+        self.assertEqual("group_value", p)
         p = rospy.get_param('group/param')
-        self.assertEquals("group_value", p)
+        self.assertEqual("group_value", p)
 
-        self.assertEquals('/param', rospy.search_param('param'))
+        self.assertEqual('/param', rospy.search_param('param'))
         
         names = rospy.get_param_names()
         self.assert_('/param' in names)
@@ -544,7 +544,7 @@ class TestRospyClientOnline(unittest.TestCase):
             
         rospy.set_param('param2', 'value2')
         self.assert_(rospy.has_param('param2'))
-        self.assertEquals('value2', rospy.get_param('param2'))
+        self.assertEqual('value2', rospy.get_param('param2'))
         rospy.delete_param('param2')
         self.failIf(rospy.has_param('param2'))
         try:

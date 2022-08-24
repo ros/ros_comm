@@ -121,24 +121,24 @@ class TestRospyTopics(unittest.TestCase):
 
         # round 1: test basic params
         pub = Publisher(name, data_class)
-        self.assertEquals(rname, pub.resolved_name)
+        self.assertEqual(rname, pub.resolved_name)
         # - pub.name is left in for backwards compatibility, but resolved_name is preferred
-        self.assertEquals(rname, pub.name)        
-        self.assertEquals(data_class, pub.data_class)
-        self.assertEquals('test_rospy/Val', pub.type)
-        self.assertEquals(data_class._md5sum, pub.md5sum)
-        self.assertEquals(Registration.PUB, pub.reg_type)
+        self.assertEqual(rname, pub.name)        
+        self.assertEqual(data_class, pub.data_class)
+        self.assertEqual('test_rospy/Val', pub.type)
+        self.assertEqual(data_class._md5sum, pub.md5sum)
+        self.assertEqual(Registration.PUB, pub.reg_type)
         
         # verify impl as well
         impl = get_topic_manager().get_impl(Registration.PUB, rname)
         self.assert_(impl == pub.impl)
-        self.assertEquals(rname, impl.resolved_name)
-        self.assertEquals(data_class, impl.data_class)                
+        self.assertEqual(rname, impl.resolved_name)
+        self.assertEqual(data_class, impl.data_class)                
         self.failIf(impl.is_latch)
-        self.assertEquals(None, impl.latch)                
-        self.assertEquals(0, impl.seq)
-        self.assertEquals(1, impl.ref_count)
-        self.assertEquals(b'', impl.buff.getvalue())
+        self.assertEqual(None, impl.latch)                
+        self.assertEqual(0, impl.seq)
+        self.assertEqual(1, impl.ref_count)
+        self.assertEqual(b'', impl.buff.getvalue())
         self.failIf(impl.closed)
         self.failIf(impl.has_connections())
         # check publish() fall-through
@@ -146,7 +146,7 @@ class TestRospyTopics(unittest.TestCase):
         impl.publish(Val('hello world-1'))
         
         # check stats
-        self.assertEquals(0, impl.message_data_sent)
+        self.assertEqual(0, impl.message_data_sent)
         # check acquire/release don't bomb
         impl.acquire()
         impl.release()        
@@ -168,17 +168,17 @@ class TestRospyTopics(unittest.TestCase):
         buff = StringIO()
         Val('hello world-1').serialize(buff)
         # - check equals, but strip length field first
-        self.assertEquals(co1.data[4:], buff.getvalue())
-        self.assertEquals(None, impl.latch)
+        self.assertEqual(co1.data[4:], buff.getvalue())
+        self.assertEqual(None, impl.latch)
         
         # Now enable latch
         pub = Publisher(name, data_class, latch=True)
         impl = get_topic_manager().get_impl(Registration.PUB, rname)
         # have to verify latching in pub impl
         self.assert_(impl == pub.impl)
-        self.assertEquals(True, impl.is_latch)
-        self.assertEquals(None, impl.latch)
-        self.assertEquals(2, impl.ref_count)        
+        self.assertEqual(True, impl.is_latch)
+        self.assertEqual(None, impl.latch)
+        self.assertEqual(2, impl.ref_count)        
 
         co2 = ConnectionOverride('co2')
         self.failIf(impl.has_connection('co2'))
@@ -193,7 +193,7 @@ class TestRospyTopics(unittest.TestCase):
         buff = StringIO()
         Val('hello world-2').serialize(buff)
         # - strip length and check value
-        self.assertEquals(co2.data[4:], buff.getvalue())
+        self.assertEqual(co2.data[4:], buff.getvalue())
 
         # test that latched value is sent to connections on connect
         co3 = ConnectionOverride('co3')
@@ -202,7 +202,7 @@ class TestRospyTopics(unittest.TestCase):
         for n in ['co1', 'co2', 'co3']:
             self.assert_(impl.has_connection(n))
         self.assert_(impl.has_connections())
-        self.assertEquals(co3.data[4:], buff.getvalue())        
+        self.assertEqual(co3.data[4:], buff.getvalue())        
         
         # TODO: tcp_nodelay
         # TODO: suscribe listener
@@ -230,7 +230,7 @@ class TestRospyTopics(unittest.TestCase):
         # test connection header
         h = {'foo': 'bar', 'fuga': 'hoge'}
         pub = Publisher('header_test', data_class, headers=h, queue_size=0)
-        self.assertEquals(h, pub.impl.headers)
+        self.assertEqual(h, pub.impl.headers)
         
     def test_Subscriber_unregister(self):
         # regression test for #3029 (unregistering a Subcriber with no
@@ -247,18 +247,18 @@ class TestRospyTopics(unittest.TestCase):
         data_class = test_rospy.msg.Val
 
         sub = Subscriber(name, data_class)
-        self.assertEquals(None, sub.callback)
+        self.assertEqual(None, sub.callback)
 
         # verify impl (test_Subscriber handles more verification, we
         # just care about callbacks and ref_count state here)
         impl = get_topic_manager().get_impl(Registration.SUB, rname)
         self.assert_(impl == sub.impl)
-        self.assertEquals(1, impl.ref_count)
-        self.assertEquals([], impl.callbacks)
+        self.assertEqual(1, impl.ref_count)
+        self.assertEqual([], impl.callbacks)
         
         # unregister should release the underlying impl
         sub.unregister()
-        self.assertEquals(None, get_topic_manager().get_impl(Registration.SUB, rname))
+        self.assertEqual(None, get_topic_manager().get_impl(Registration.SUB, rname))
 
         # create two subs
         sub2 = Subscriber(name, data_class)
@@ -269,17 +269,17 @@ class TestRospyTopics(unittest.TestCase):
         self.assert_(impl == sub2.impl)
         self.assert_(impl == sub3.impl)
         # - test basic impl state
-        self.assertEquals([], impl.callbacks)
-        self.assertEquals(2, impl.ref_count)
+        self.assertEqual([], impl.callbacks)
+        self.assertEqual(2, impl.ref_count)
         sub2.unregister()
-        self.assertEquals(1, impl.ref_count)
+        self.assertEqual(1, impl.ref_count)
         # - make sure double unregister is safe
         sub2.unregister()
-        self.assertEquals(1, impl.ref_count)
+        self.assertEqual(1, impl.ref_count)
         # - clean it up
         sub3.unregister()
-        self.assertEquals(0, impl.ref_count)
-        self.assertEquals(None, get_topic_manager().get_impl(Registration.SUB, rname))
+        self.assertEqual(0, impl.ref_count)
+        self.assertEqual(None, get_topic_manager().get_impl(Registration.SUB, rname))
 
         # CALLBACKS
         cb_args5 = 5
@@ -292,36 +292,36 @@ class TestRospyTopics(unittest.TestCase):
         sub6 = Subscriber(name, data_class, callback2, cb_args6)        
         sub7 = Subscriber(name, data_class, callback2, cb_args7)        
         impl = get_topic_manager().get_impl(Registration.SUB, rname)
-        self.assertEquals(4, impl.ref_count)
+        self.assertEqual(4, impl.ref_count)
         
-        self.assertEquals([(callback1, None), (callback2, cb_args5), (callback2, cb_args6), (callback2, cb_args7)], impl.callbacks)
+        self.assertEqual([(callback1, None), (callback2, cb_args5), (callback2, cb_args6), (callback2, cb_args7)], impl.callbacks)
         # unregister sub6 first to as it is most likely to confuse any callback-finding logic
         sub6.unregister()
-        self.assertEquals([(callback1, None), (callback2, cb_args5), (callback2, cb_args7)], impl.callbacks)
-        self.assertEquals(3, impl.ref_count)
+        self.assertEqual([(callback1, None), (callback2, cb_args5), (callback2, cb_args7)], impl.callbacks)
+        self.assertEqual(3, impl.ref_count)
         sub5.unregister()
-        self.assertEquals([(callback1, None), (callback2, cb_args7)], impl.callbacks)
-        self.assertEquals(2, impl.ref_count)
+        self.assertEqual([(callback1, None), (callback2, cb_args7)], impl.callbacks)
+        self.assertEqual(2, impl.ref_count)
         sub4.unregister()
-        self.assertEquals([(callback2, cb_args7)], impl.callbacks)
-        self.assertEquals(1, impl.ref_count)
+        self.assertEqual([(callback2, cb_args7)], impl.callbacks)
+        self.assertEqual(1, impl.ref_count)
         sub7.unregister()
-        self.assertEquals([], impl.callbacks)
-        self.assertEquals(0, impl.ref_count)
-        self.assertEquals(None, get_topic_manager().get_impl(Registration.SUB, rname))
+        self.assertEqual([], impl.callbacks)
+        self.assertEqual(0, impl.ref_count)
+        self.assertEqual(None, get_topic_manager().get_impl(Registration.SUB, rname))
 
         # one final condition: two identical subscribers
         sub8 = Subscriber(name, data_class, callback1, 'hello')
         sub9 = Subscriber(name, data_class, callback1, 'hello')
         impl = get_topic_manager().get_impl(Registration.SUB, rname)
-        self.assertEquals([(callback1, 'hello'), (callback1, 'hello')], impl.callbacks)
-        self.assertEquals(2, impl.ref_count)
+        self.assertEqual([(callback1, 'hello'), (callback1, 'hello')], impl.callbacks)
+        self.assertEqual(2, impl.ref_count)
         sub8.unregister()
-        self.assertEquals([(callback1, 'hello')], impl.callbacks)
-        self.assertEquals(1, impl.ref_count)
+        self.assertEqual([(callback1, 'hello')], impl.callbacks)
+        self.assertEqual(1, impl.ref_count)
         sub9.unregister()
-        self.assertEquals([], impl.callbacks)
-        self.assertEquals(0, impl.ref_count)
+        self.assertEqual([], impl.callbacks)
+        self.assertEqual(0, impl.ref_count)
 
     def test_Subscriber(self):
         #TODO: test callback args
@@ -355,22 +355,22 @@ class TestRospyTopics(unittest.TestCase):
         except ValueError: pass
         
         sub = Subscriber(name, data_class)
-        self.assertEquals(rname, sub.resolved_name)
-        self.assertEquals(data_class, sub.data_class)
-        self.assertEquals('test_rospy/Val', sub.type)
-        self.assertEquals(data_class._md5sum, sub.md5sum)
-        self.assertEquals(Registration.SUB, sub.reg_type)
+        self.assertEqual(rname, sub.resolved_name)
+        self.assertEqual(data_class, sub.data_class)
+        self.assertEqual('test_rospy/Val', sub.type)
+        self.assertEqual(data_class._md5sum, sub.md5sum)
+        self.assertEqual(Registration.SUB, sub.reg_type)
         
         # verify impl as well
         impl = get_topic_manager().get_impl(Registration.SUB, rname)
         self.assert_(impl == sub.impl)
-        self.assertEquals([], impl.callbacks)
-        self.assertEquals(rname, impl.resolved_name)
-        self.assertEquals(data_class, impl.data_class)                
-        self.assertEquals(None, impl.queue_size)
-        self.assertEquals(DEFAULT_BUFF_SIZE, impl.buff_size)
+        self.assertEqual([], impl.callbacks)
+        self.assertEqual(rname, impl.resolved_name)
+        self.assertEqual(data_class, impl.data_class)                
+        self.assertEqual(None, impl.queue_size)
+        self.assertEqual(DEFAULT_BUFF_SIZE, impl.buff_size)
         self.failIf(impl.tcp_nodelay)
-        self.assertEquals(1, impl.ref_count)
+        self.assertEqual(1, impl.ref_count)
         self.failIf(impl.closed)
         
         # round 2, now start setting options and make sure underlying impl is reconfigured
@@ -380,21 +380,21 @@ class TestRospyTopics(unittest.TestCase):
         buff_size = 1
         sub = Subscriber(name, data_class, callback=callback1,
                          queue_size=queue_size, buff_size=buff_size, tcp_nodelay=True)
-        self.assertEquals(rname, sub.resolved_name)
+        self.assertEqual(rname, sub.resolved_name)
         # - sub.name is a backwards-compat field as it is public API
-        self.assertEquals(rname, sub.name)        
-        self.assertEquals(data_class, sub.data_class)
+        self.assertEqual(rname, sub.name)        
+        self.assertEqual(data_class, sub.data_class)
 
         # verify impl 
         impl2 = get_topic_manager().get_impl(Registration.SUB, rname)
         self.assert_(impl == impl2) # should be same instance
-        self.assertEquals([(callback1, None)], impl.callbacks)
-        self.assertEquals(rname, impl.resolved_name)
-        self.assertEquals(data_class, impl.data_class)                
-        self.assertEquals(queue_size, impl.queue_size)
-        self.assertEquals(buff_size, impl.buff_size)
+        self.assertEqual([(callback1, None)], impl.callbacks)
+        self.assertEqual(rname, impl.resolved_name)
+        self.assertEqual(data_class, impl.data_class)                
+        self.assertEqual(queue_size, impl.queue_size)
+        self.assertEqual(buff_size, impl.buff_size)
         self.assert_(impl.tcp_nodelay)
-        self.assertEquals(2, impl.ref_count)
+        self.assertEqual(2, impl.ref_count)
         self.failIf(impl.closed)
 
         # round 3, make sure that options continue to reconfigure
@@ -411,11 +411,11 @@ class TestRospyTopics(unittest.TestCase):
         # verify impl 
         impl2 = get_topic_manager().get_impl(Registration.SUB, rname)
         self.assert_(impl == impl2) # should be same instance
-        self.assertEquals(set([(callback1, None), (callback2, None)]), set(impl.callbacks))
-        self.assertEquals(queue_size, impl.queue_size)
-        self.assertEquals(buff_size, impl.buff_size)
+        self.assertEqual(set([(callback1, None), (callback2, None)]), set(impl.callbacks))
+        self.assertEqual(queue_size, impl.queue_size)
+        self.assertEqual(buff_size, impl.buff_size)
         self.assert_(impl.tcp_nodelay)
-        self.assertEquals(3, impl.ref_count)
+        self.assertEqual(3, impl.ref_count)
         self.failIf(impl.closed)
 
     def test_Poller(self):

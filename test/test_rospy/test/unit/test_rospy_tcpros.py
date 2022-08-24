@@ -47,5 +47,5 @@ class TestRospyTcpros(unittest.TestCase):
     def test_syms(self):
         import rospy.impl.tcpros
         import rospy.impl.transport
-        self.assertEquals(int, type(rospy.impl.tcpros.DEFAULT_BUFF_SIZE))
+        self.assertEqual(int, type(rospy.impl.tcpros.DEFAULT_BUFF_SIZE))
         self.assert_(isinstance(rospy.impl.tcpros.get_tcpros_handler(), rospy.impl.transport.ProtocolHandler))

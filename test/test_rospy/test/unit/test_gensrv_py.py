@@ -58,7 +58,7 @@ class TestGensrvPy(unittest.TestCase):
         orig.serialize(b)
         blank.deserialize(b.getvalue())
         if not float:
-            self.assertEquals(orig, blank, str(orig)+" != "+str(blank))
+            self.assertEqual(orig, blank, str(orig)+" != "+str(blank))
         else:
             self.assertAlmostEquals(orig.data, blank.data, 5)
 

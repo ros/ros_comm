@@ -91,12 +91,12 @@ class TestRosout(unittest.TestCase):
         self.assertIsNotNone(self.callback_data, 'did not receive expected message')
 
         # checking contents of message
-        self.assertEquals(rospy.DEBUG, self.callback_data.level)
-        self.assertEquals(SUBTOPIC, self.callback_data.name)
-        self.assertEquals(log_msg, self.callback_data.msg)
-        self.assertEquals(NAME+'.py', self.callback_data.file)
-        self.assertEquals('TestRosout.test_rosout_dbg', self.callback_data.function)
-        self.assertEquals([SUBTOPIC], self.callback_data.topics)
+        self.assertEqual(rospy.DEBUG, self.callback_data.level)
+        self.assertEqual(SUBTOPIC, self.callback_data.name)
+        self.assertEqual(log_msg, self.callback_data.msg)
+        self.assertEqual(NAME+'.py', self.callback_data.file)
+        self.assertEqual('TestRosout.test_rosout_dbg', self.callback_data.function)
+        self.assertEqual([SUBTOPIC], self.callback_data.topics)
 
     # Test that rosout is outputting info messages as expected
     def test_rosout_info(self):
@@ -115,12 +115,12 @@ class TestRosout(unittest.TestCase):
         self.assertIsNotNone(self.callback_data, 'did not receive expected message')
 
         # checking contents of message
-        self.assertEquals(rospy.INFO, self.callback_data.level)
-        self.assertEquals(SUBTOPIC, self.callback_data.name)
-        self.assertEquals(log_msg, self.callback_data.msg)
-        self.assertEquals(NAME+'.py', self.callback_data.file)
-        self.assertEquals('TestRosout.test_rosout_info', self.callback_data.function)
-        self.assertEquals([SUBTOPIC], self.callback_data.topics)
+        self.assertEqual(rospy.INFO, self.callback_data.level)
+        self.assertEqual(SUBTOPIC, self.callback_data.name)
+        self.assertEqual(log_msg, self.callback_data.msg)
+        self.assertEqual(NAME+'.py', self.callback_data.file)
+        self.assertEqual('TestRosout.test_rosout_info', self.callback_data.function)
+        self.assertEqual([SUBTOPIC], self.callback_data.topics)
 
     # Test that rosout is outputting warning messages as expected
     def test_rosout_warn(self):
@@ -139,12 +139,12 @@ class TestRosout(unittest.TestCase):
         self.assertIsNotNone(self.callback_data, 'did not receive expected message')
 
         # checking contents of message
-        self.assertEquals(rospy.WARN, self.callback_data.level)
-        self.assertEquals(SUBTOPIC, self.callback_data.name)
-        self.assertEquals(log_msg, self.callback_data.msg)
-        self.assertEquals(NAME+'.py', self.callback_data.file)
-        self.assertEquals('TestRosout.test_rosout_warn', self.callback_data.function)
-        self.assertEquals([SUBTOPIC], self.callback_data.topics)
+        self.assertEqual(rospy.WARN, self.callback_data.level)
+        self.assertEqual(SUBTOPIC, self.callback_data.name)
+        self.assertEqual(log_msg, self.callback_data.msg)
+        self.assertEqual(NAME+'.py', self.callback_data.file)
+        self.assertEqual('TestRosout.test_rosout_warn', self.callback_data.function)
+        self.assertEqual([SUBTOPIC], self.callback_data.topics)
 
     # Test that rosout is outputting error messages as expected
     def test_rosout_err(self):
@@ -163,12 +163,12 @@ class TestRosout(unittest.TestCase):
         self.assertIsNotNone(self.callback_data, 'did not receive expected message')
 
         # checking contents of message
-        self.assertEquals(rospy.ERROR, self.callback_data.level)
-        self.assertEquals(SUBTOPIC, self.callback_data.name)
-        self.assertEquals(log_msg, self.callback_data.msg)
-        self.assertEquals(NAME+'.py', self.callback_data.file)
-        self.assertEquals('TestRosout.test_rosout_err', self.callback_data.function)
-        self.assertEquals([SUBTOPIC], self.callback_data.topics)
+        self.assertEqual(rospy.ERROR, self.callback_data.level)
+        self.assertEqual(SUBTOPIC, self.callback_data.name)
+        self.assertEqual(log_msg, self.callback_data.msg)
+        self.assertEqual(NAME+'.py', self.callback_data.file)
+        self.assertEqual('TestRosout.test_rosout_err', self.callback_data.function)
+        self.assertEqual([SUBTOPIC], self.callback_data.topics)
 
     # Test that rosout is outputting fatal messages as expected
     def test_rosout_fatal(self):
@@ -187,12 +187,12 @@ class TestRosout(unittest.TestCase):
         self.assertIsNotNone(self.callback_data, 'did not receive expected message')
 
         # checking contents of message
-        self.assertEquals(rospy.FATAL, self.callback_data.level)
-        self.assertEquals(SUBTOPIC, self.callback_data.name)
-        self.assertEquals(log_msg, self.callback_data.msg)
-        self.assertEquals(NAME+'.py', self.callback_data.file)
-        self.assertEquals('TestRosout.test_rosout_fatal', self.callback_data.function)
-        self.assertEquals([SUBTOPIC], self.callback_data.topics)
+        self.assertEqual(rospy.FATAL, self.callback_data.level)
+        self.assertEqual(SUBTOPIC, self.callback_data.name)
+        self.assertEqual(log_msg, self.callback_data.msg)
+        self.assertEqual(NAME+'.py', self.callback_data.file)
+        self.assertEqual('TestRosout.test_rosout_fatal', self.callback_data.function)
+        self.assertEqual([SUBTOPIC], self.callback_data.topics)
 
 
 if __name__ == '__main__':

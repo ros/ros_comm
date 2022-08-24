@@ -179,8 +179,8 @@ def rostestRunner(test, test_pkg, results_base_dir=None):
                     printlog("test [%s] results summary: %s errors, %s failures, %s tests",
                              test_name, results.num_errors, results.num_failures, results.num_tests)
 
-                    #self.assertEquals(0, results.num_errors, "unit test reported errors")
-                    #self.assertEquals(0, results.num_failures, "unit test reported failures")
+                    #self.assertEqual(0, results.num_errors, "unit test reported errors")
+                    #self.assertEqual(0, results.num_failures, "unit test reported failures")
             else:
                 if test.retry:
                     printlogerr("retry is disabled in --text mode")
@@ -257,4 +257,3 @@ def createUnitTest(pkg, test_file, reuse_master=False, clear=False, results_base
 
     # instantiate the TestCase instance with our magically-created tests
     return type('RosTest',(unittest.TestCase,),classdict)
-

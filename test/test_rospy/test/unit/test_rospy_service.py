@@ -57,42 +57,42 @@ class TestRospyService(unittest.TestCase):
 
         from rospy.service import ServiceManager
         sm = ServiceManager()
-        self.assertEquals({}, sm.map)
+        self.assertEqual({}, sm.map)
         try:
             sm.lock.acquire()
         finally:
             sm.lock.release()
-        self.assertEquals([], sm.get_services())
+        self.assertEqual([], sm.get_services())
         sm.unregister_all()
-        self.assertEquals([], sm.get_services())
+        self.assertEqual([], sm.get_services())
 
         # test actual registration
         mock = MockService('/serv', MockServiceClass, "rosrpc://uri:1")
         mock2 = MockService('/serv', MockServiceClass, "rosrpc://uri:2")        
 
         sm.register('/serv', mock)
-        self.assertEquals(mock, sm.get_service('/serv'))
-        self.assertEquals([('/serv', mock.uri)], sm.get_services())
+        self.assertEqual(mock, sm.get_service('/serv'))
+        self.assertEqual([('/serv', mock.uri)], sm.get_services())
         try:
             sm.register('/serv', mock2)
             self.fail("duplicate reg should fail")
         except rospy.service.ServiceException: pass
         
         sm.unregister_all()
-        self.assertEquals([], sm.get_services())
+        self.assertEqual([], sm.get_services())
         
         #  - register two services
         sm.register('/serv', mock)
         sm.unregister('/serv', mock2)
-        self.assertEquals(mock, sm.get_service('/serv'))
+        self.assertEqual(mock, sm.get_service('/serv'))
 
         sm.register('/serv2', mock2)
-        self.assertEquals(mock, sm.get_service('/serv'))
-        self.assertEquals(mock2, sm.get_service('/serv2'))
+        self.assertEqual(mock, sm.get_service('/serv'))
+        self.assertEqual(mock2, sm.get_service('/serv2'))
         self.assert_(('/serv', mock.uri) in sm.get_services())
         self.assert_(('/serv2', mock2.uri) in sm.get_services())        
         
         sm.unregister('/serv', mock)
-        self.assertEquals([('/serv2', mock2.uri)], sm.get_services())
+        self.assertEqual([('/serv2', mock2.uri)], sm.get_services())
         sm.unregister('/serv2', mock2)
-        self.assertEquals([], sm.get_services())
+        self.assertEqual([], sm.get_services())

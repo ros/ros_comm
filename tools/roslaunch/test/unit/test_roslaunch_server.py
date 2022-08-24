@@ -149,18 +149,18 @@ class TestRoslaunchServer(unittest.TestCase):
         args = [time.time(), time.time()]
         env = { 'key-%s'%time.time() : str(time.time()) }
         cp = ChildROSLaunchProcess(name, args, env)
-        self.assertEquals(name, cp.name)
-        self.assertEquals(args, cp.args)
-        self.assertEquals(env, cp.env)
-        self.assertEquals(None, cp.uri)
+        self.assertEqual(name, cp.name)
+        self.assertEqual(args, cp.args)
+        self.assertEqual(env, cp.env)
+        self.assertEqual(None, cp.uri)
 
         uri = 'http://foo:1234'
         cp.set_uri(uri)
-        self.assertEquals(uri, cp.uri)
+        self.assertEqual(uri, cp.uri)
 
     def _succeed(self, retval):
         code, msg, val = retval
-        self.assertEquals(1, code)
+        self.assertEqual(1, code)
         self.assert_(type(msg) == str)
         return val
 
@@ -180,49 +180,49 @@ class TestRoslaunchServer(unittest.TestCase):
     def _test_ROSLaunchBaseHandler(self, h):
         pmon = self.pmon
         # - test get pid
-        self.assertEquals(os.getpid(), self._succeed(h.get_pid()))
+        self.assertEqual(os.getpid(), self._succeed(h.get_pid()))
 
         # - test list processes
         process_list = self._succeed(h.list_processes())
-        self.assertEquals([[], []], process_list)
+        self.assertEqual([[], []], process_list)
 
         p = ProcessMock('pack', 'name', [], {})
         p.spawn_count = 1
         pmon.register(p)
         
         process_list = self._succeed(h.list_processes())
-        self.assertEquals([('name', 1),], process_list[0])
-        self.assertEquals([], process_list[1])
+        self.assertEqual([('name', 1),], process_list[0])
+        self.assertEqual([], process_list[1])
 
         p.spawn_count = 2      
         process_list = self._succeed(h.list_processes())
-        self.assertEquals([('name', 2),], process_list[0])
-        self.assertEquals([], process_list[1])
+        self.assertEqual([('name', 2),], process_list[0])
+        self.assertEqual([], process_list[1])
         # - cleanup our work
         pmon.unregister(p)
 
         # - test process_info
         code, msg, val = h.process_info('fubar')
-        self.assertEquals(-1, code)
+        self.assertEqual(-1, code)
         self.assert_(type(msg) == str)
-        self.assertEquals({}, val)
+        self.assertEqual({}, val)
         
         pmon.register(p)
-        self.assertEquals(p.get_info(), self._succeed(h.process_info(p.name)))
+        self.assertEqual(p.get_info(), self._succeed(h.process_info(p.name)))
         pmon.unregister(p)
 
         # - test get_node_names
         #   - reach into instance to get branch-complete
         h.pm = None
         code, msg, val = h.get_node_names()
-        self.assertEquals(0, code)
+        self.assertEqual(0, code)
         self.assert_(type(msg) == str)
-        self.assertEquals([], val)
+        self.assertEqual([], val)
         h.pm = pmon
         
-        self.assertEquals(pmon.get_active_names(), self._succeed(h.get_node_names()))
+        self.assertEqual(pmon.get_active_names(), self._succeed(h.get_node_names()))
         pmon.register(p)
-        self.assertEquals(pmon.get_active_names(), self._succeed(h.get_node_names()))        
+        self.assertEqual(pmon.get_active_names(), self._succeed(h.get_node_names()))        
         pmon.unregister(p)
 
     def test_ROSLaunchParentHandler(self):
@@ -237,8 +237,8 @@ class TestRoslaunchServer(unittest.TestCase):
         child_processes = {}
         listeners = []
         h = ROSLaunchParentHandler(pmon, child_processes, listeners)
-        self.assertEquals(child_processes, h.child_processes)
-        self.assertEquals(listeners, h.listeners)
+        self.assertEqual(child_processes, h.child_processes)
+        self.assertEqual(listeners, h.listeners)
         self._test_ROSLaunchBaseHandler(h)
 
         from rosgraph_msgs.msg import Log
@@ -263,19 +263,19 @@ class TestRoslaunchServer(unittest.TestCase):
         # test register
         
         # - verify clean slate with list_children
-        self.assertEquals([], self._succeed(h.list_children()))
+        self.assertEqual([], self._succeed(h.list_children()))
 
         # - first register with unknown
         code, msg, val = h.register('client-unknown', 'http://unroutable:1234')
-        self.assertEquals(-1, code)
-        self.assertEquals([], self._succeed(h.list_children()))
+        self.assertEqual(-1, code)
+        self.assertEqual([], self._succeed(h.list_children()))
         
         # - now register with known
         uri = 'http://unroutable:1324'
         child_processes['client-1'] = ChildROSLaunchProcess('foo', [], {})
         val = self._succeed(h.register('client-1', uri))
         self.assert_(type(val) == int)
-        self.assertEquals([uri], self._succeed(h.list_children()))        
+        self.assertEqual([uri], self._succeed(h.list_children()))        
         
     def test_ROSLaunchChildHandler(self):
         from roslaunch.server import ROSLaunchChildHandler
@@ -301,9 +301,9 @@ class TestRoslaunchServer(unittest.TestCase):
         except: pass
 
         h = ROSLaunchChildHandler(run_id, name, server_uri, pmon)
-        self.assertEquals(run_id, h.run_id)
-        self.assertEquals(name, h.name)        
-        self.assertEquals(server_uri, h.server_uri)
+        self.assertEqual(run_id, h.run_id)
+        self.assertEqual(name, h.name)        
+        self.assertEqual(server_uri, h.server_uri)
         self._test_ROSLaunchBaseHandler(h)
 
         # test _log()
@@ -317,7 +317,7 @@ class TestRoslaunchServer(unittest.TestCase):
         # - this check is mostly to make sure that the launch() call below will exit
         self.assert_(h.pm is None)
         code, msg, val = h.launch('<launch></launch>')
-        self.assertEquals(0, code)
+        self.assertEqual(0, code)
         
         # TODO: actual launch. more difficult as we need a core
 
@@ -334,8 +334,8 @@ class TestRoslaunchServer(unittest.TestCase):
         # - should run normally
         f.process_died("foo", -1)
         
-        self.assertEquals(l.process_name, 'foo')
-        self.assertEquals(l.exit_code, -1)
+        self.assertEqual(l.process_name, 'foo')
+        self.assertEqual(l.exit_code, -1)
 
     def test_ROSLaunchNode(self):
         #exercise the basic ROSLaunchNode API
@@ -353,13 +353,13 @@ class TestRoslaunchServer(unittest.TestCase):
         s = ServerProxy(node.uri)
         test_val = 'test-%s'%time.time()
         s.ping(test_val)
-        self.assertEquals(handler.pinged, test_val)
+        self.assertEqual(handler.pinged, test_val)
 
         # - call the pid API
         code, msg, pid = s.get_pid()
-        self.assertEquals(1, code)
+        self.assertEqual(1, code)
         self.assert_(type(msg) == str)
-        self.assertEquals(os.getpid(), pid)
+        self.assertEqual(os.getpid(), pid)
         
         # - shut it down
         node.shutdown('test done')
@@ -376,18 +376,18 @@ class TestRoslaunchServer(unittest.TestCase):
         except: pass
         pmon = self.pmon
         n = ROSLaunchParentNode(rosconfig, pmon)
-        self.assertEquals(rosconfig, n.rosconfig)
-        self.assertEquals([], n.listeners)
-        self.assertEquals({}, n.child_processes)
-        self.assertEquals(n.handler.listeners, n.listeners)
-        self.assertEquals(n.handler.child_processes, n.child_processes)
+        self.assertEqual(rosconfig, n.rosconfig)
+        self.assertEqual([], n.listeners)
+        self.assertEqual({}, n.child_processes)
+        self.assertEqual(n.handler.listeners, n.listeners)
+        self.assertEqual(n.handler.child_processes, n.child_processes)
 
         # test add listener
-        self.assertEquals(n.handler.listeners, n.listeners)
+        self.assertEqual(n.handler.listeners, n.listeners)
         l = ProcessListener() 
         n.add_process_listener(l)
-        self.assertEquals([l], n.listeners)
-        self.assertEquals(n.handler.listeners, n.listeners)
+        self.assertEqual([l], n.listeners)
+        self.assertEqual(n.handler.listeners, n.listeners)
 
         # now, lets make some xmlrpc calls against it
         import roslaunch.config
@@ -411,13 +411,13 @@ class TestRoslaunchServer(unittest.TestCase):
             child_uri = 'http://fake-unroutable:1324'
             # - list children should be empty
             val = self._succeed(s.list_children())
-            self.assertEquals([], val)
+            self.assertEqual([], val)
             # - register
             val = self._succeed(s.register(child_name, child_uri))
-            self.assertEquals(1, val)
+            self.assertEqual(1, val)
             # - list children
             val = self._succeed(s.list_children())
-            self.assertEquals([child_uri], val)
+            self.assertEqual([child_uri], val)
         finally:
             server.shutdown('test done')
         
@@ -444,9 +444,9 @@ class TestRoslaunchServer(unittest.TestCase):
         except: pass
 
         n = ROSLaunchChildNode(run_id, name, server_uri, pmon)
-        self.assertEquals(run_id, n.run_id)
-        self.assertEquals(name, n.name)        
-        self.assertEquals(server_uri, n.server_uri)
+        self.assertEqual(run_id, n.run_id)
+        self.assertEqual(name, n.name)        
+        self.assertEqual(server_uri, n.server_uri)
 
         # tests for actual registration with server
         import roslaunch.config
@@ -470,11 +470,11 @@ class TestRoslaunchServer(unittest.TestCase):
 
             # verify registration
             print("VERIFYING REGISTRATION")                        
-            self.assertEquals(child_proc.uri, n.uri)
+            self.assertEqual(child_proc.uri, n.uri)
             child_uri = 'http://fake-unroutable:1324'
             # - list children
             val = self._succeed(s.list_children())
-            self.assertEquals([n.uri], val)
+            self.assertEqual([n.uri], val)
         finally:
             print("SHUTTING DOWN")                                    
             n.shutdown('test done')

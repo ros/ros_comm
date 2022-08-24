@@ -155,7 +155,7 @@ class TestRosnode(unittest.TestCase):
         with fakestdout() as b:
             rosnode._rosnode_cmd_list([cmd, 'list', '-u', '/'])
             l = tolist(b)
-            self.assertEquals(num_nodes, len(l))
+            self.assertEqual(num_nodes, len(l))
             self.failIf([n for n in l if not n.startswith('http://')])
         # test -a all
         with fakestdout() as b:
@@ -164,7 +164,7 @@ class TestRosnode(unittest.TestCase):
             uris = [x.split()[0] for x in l if x]
             names = [x.split()[1] for x in l if x]
             self._check(nodes, names) 
-            self.assertEquals(num_nodes, len(uris))
+            self.assertEqual(num_nodes, len(uris))
             self.failIf([n for n in uris if not n.startswith('http://')])
             
             
@@ -187,7 +187,7 @@ class TestRosnode(unittest.TestCase):
         # test with no match        
         with fakestdout() as b:
             rosnode._rosnode_cmd_list([cmd, 'list', '/not/a/namespace/'])
-            self.assertEquals([], tolist(b))
+            self.assertEqual([], tolist(b))
             
 
     def test_rosnode_usage(self):
@@ -200,7 +200,7 @@ class TestRosnode(unittest.TestCase):
                     self.assert_("usage" in b.getvalue())
                 self.fail("should have exited on usage")
             except SystemExit as e:
-                self.assertEquals(0, e.code)
+                self.assertEqual(0, e.code)
             
     def test_rosnode_ping(self):
         import rosnode
@@ -229,7 +229,7 @@ class TestRosnode(unittest.TestCase):
         with fakestdout() as b:
             rosnode._rosnode_cmd_ping([cmd, 'ping', '-c', '2', 'rosout'])
             s = b.getvalue()
-            self.assertEquals(2, s.count('xmlrpc reply'))
+            self.assertEqual(2, s.count('xmlrpc reply'))
         
     def test_rosnode_ping_all(self):
         import rosnode

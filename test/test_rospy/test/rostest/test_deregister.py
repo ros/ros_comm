@@ -81,7 +81,7 @@ class TestDeregister(unittest.TestCase):
         topic = rospy.resolve_name(PUBTOPIC)
         _, _, pubs = node_proxy.getPublications('/foo')
         pubs = [p for p in pubs if p[0] != '/rosout']
-        self.assertEquals([[topic, String._type]], pubs, "Pubs were %s"%pubs)
+        self.assertEqual([[topic, String._type]], pubs, "Pubs were %s"%pubs)
 
         # publish about 10 messages for fun
         for i in range(0, 10):
@@ -120,7 +120,7 @@ class TestDeregister(unittest.TestCase):
         sub = rospy.Subscriber(SUBTOPIC, String, callback)
         topic = rospy.resolve_name(SUBTOPIC)
         _, _, subscriptions = node_proxy.getSubscriptions('/foo')
-        self.assertEquals([[topic, String._type]], subscriptions, "Subscriptions were %s"%subscriptions)
+        self.assertEqual([[topic, String._type]], subscriptions, "Subscriptions were %s"%subscriptions)
         
         # wait for the first message to be received
         timeout_t = time.time() + TIMEOUT
@@ -166,7 +166,7 @@ class TestDeregister(unittest.TestCase):
         state = master.getSystemState()
         _, _, srv = state
         srv = [s for s in srv if not s[0].startswith('/rosout/') and not s[0].endswith('/get_loggers') and not s[0].endswith('/set_logger_level')]
-        self.assertEquals(srv, [[rospy.resolve_name(SERVICE), [rospy.get_caller_id()]]])
+        self.assertEqual(srv, [[rospy.resolve_name(SERVICE), [rospy.get_caller_id()]]])
         
         # begin actual test by unsubscribing
         service.shutdown()

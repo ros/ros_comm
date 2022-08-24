@@ -88,11 +88,11 @@ class ParamServerTestCase(TestRosClient):
             except:
                 raise Exception("Exception raised while calling master.getParam(%s,%s): %s"%(callerId, k, traceback.format_exc()))
             if isinstance(v2, DateTime):
-                self.assertEquals(DateTime(v), v2, "[%s]: %s != %s, %s"%(k, v, v2, v2.__class__))
+                self.assertEqual(DateTime(v), v2, "[%s]: %s != %s, %s"%(k, v, v2, v2.__class__))
             elif type(v2) == float:
                 self.assertAlmostEqual(v, v2, 3, "[%s]: %s != %s, %s"%(k, v, v2, v2.__class__))
             else:
-                self.assertEquals(v, v2)
+                self.assertEqual(v, v2)
         paramNames = myState.keys()
         remoteParamNames = self.apiSuccess(master.getParamNames(callerId))
         # filter out the roslaunch params like run id and roslaunch/, which are always set
@@ -154,45 +154,45 @@ class ParamServerTestCase(TestRosClient):
         self.failIf(self.apiSuccess(master.hasParam(caller_id, '/param')))
         self.apiSuccess(master.setParam(caller_id, '/param', val1))
         # - test param 
-        self.assertEquals('/param', self.apiSuccess(master.searchParam(caller_id, 'param')))
+        self.assertEqual('/param', self.apiSuccess(master.searchParam(caller_id, 'param')))
 
         self.failIf(self.apiSuccess(master.hasParam(caller_id, '/level1/param')))
         self.apiSuccess(master.setParam(caller_id, '/level1/param', val2))
-        self.assertEquals(val2, self.apiSuccess(master.getParam(caller_id, '/level1/param')))
+        self.assertEqual(val2, self.apiSuccess(master.getParam(caller_id, '/level1/param')))
         # - test search param 
-        self.assertEquals('/param',
+        self.assertEqual('/param',
                           self.apiSuccess(master.searchParam(caller_id, 'param')))
-        self.assertEquals('/level1/param',
+        self.assertEqual('/level1/param',
                           self.apiSuccess(master.searchParam('/level1/node', 'param')))
 
         self.failIf(self.apiSuccess(master.hasParam(caller_id, '/level1/level2/param')))
         self.apiSuccess(master.setParam(caller_id, '/level1/level2/param', val3))
         # - test search param 
-        self.assertEquals('/param',
+        self.assertEqual('/param',
                           self.apiSuccess(master.searchParam(caller_id, 'param')))
-        self.assertEquals('/level1/param',
+        self.assertEqual('/level1/param',
                           self.apiSuccess(master.searchParam('/level1/node', 'param')))
-        self.assertEquals('/level1/level2/param',
+        self.assertEqual('/level1/level2/param',
                           self.apiSuccess(master.searchParam('/level1/level2/node', 'param')))
-        self.assertEquals('/level1/level2/param',
+        self.assertEqual('/level1/level2/param',
                           self.apiSuccess(master.searchParam('/level1/level2/level3/level4/node', 'param')))
         
         self.failIf(self.apiSuccess(master.hasParam(caller_id, '/level1/level2/level3/level4/param')))
         self.apiSuccess(master.setParam(caller_id, '/level1/level2/level3/level4/param', val4))
         # - test search param 
-        self.assertEquals('/param',
+        self.assertEqual('/param',
                           self.apiSuccess(master.searchParam(caller_id, 'param')))
-        self.assertEquals('/level1/param',
+        self.assertEqual('/level1/param',
                           self.apiSuccess(master.searchParam('/level1/node', 'param')))
-        self.assertEquals('/level1/level2/param',
+        self.assertEqual('/level1/level2/param',
                           self.apiSuccess(master.searchParam('/level1/level2/node', 'param')))
-        self.assertEquals('/level1/level2/param',
+        self.assertEqual('/level1/level2/param',
                           self.apiSuccess(master.searchParam('/level1/level2/level3/node', 'param')))
-        self.assertEquals('/level1/level2/level3/level4/param',
+        self.assertEqual('/level1/level2/level3/level4/param',
                           self.apiSuccess(master.searchParam('/level1/level2/level3/level4/node', 'param')))
 
         # test completely different hierarchy, should go to top
-        self.assertEquals('/param', self.apiSuccess(master.searchParam('/not/level1/level2/level3/level4/node', 'param')))
+        self.assertEqual('/param', self.apiSuccess(master.searchParam('/not/level1/level2/level3/level4/node', 'param')))
         # test looking for param/sub_param
         tests = [('/param', '/not/level1/level2/level3/level4/node'),
                  ('/level1/param', '/level1/node'),
@@ -204,21 +204,21 @@ class ParamServerTestCase(TestRosClient):
                  ('/level1/level2/level3/level4/param', '/level1/level2/level3/level4/l5/l6/node'),
                  ]
         for pbase, caller_id in tests:
-            self.assertEquals(pbase + '/level1_p1',
+            self.assertEqual(pbase + '/level1_p1',
                               self.apiSuccess(master.searchParam(caller_id, 'param/level1_p1')))
             key = pbase+'/level1_p2/level2_p2'
-            self.assertEquals(key,
+            self.assertEqual(key,
                               self.apiSuccess(master.searchParam(caller_id, 'param/level1_p2/level2_p2')))
             # delete the sub key and repeat, should get the same result as searchParam does partial matches
             # - we may have already deleted the parameter in a previous iteration, so make sure
             if self.apiSuccess(master.hasParam(caller_id, key)):
                 self.apiSuccess(master.deleteParam(caller_id, key))
-            self.assertEquals(key,
+            self.assertEqual(key,
                               self.apiSuccess(master.searchParam(caller_id, 'param/level1_p2/level2_p2')))
             # to make sure that it didn't work spuriously, search for non-existent key
-            self.assertEquals(pbase + '/non_existent',
+            self.assertEqual(pbase + '/non_existent',
                               self.apiSuccess(master.searchParam(caller_id, 'param/non_existent')))
-            self.assertEquals(pbase + '/level1_p2/non_existent',
+            self.assertEqual(pbase + '/level1_p2/non_existent',
                               self.apiSuccess(master.searchParam(caller_id, 'param/level1_p2/non_existent')))
 
 
@@ -241,31 +241,31 @@ class ParamServerTestCase(TestRosClient):
         self.failIf(self.apiSuccess(master.hasParam(caller_id, '/new_param')))
         self.apiSuccess(master.setParam(caller_id, '/new_param', val))
         full_dict['new_param'] = val
-        self.assertEquals(val, self.apiSuccess(master.getParam(caller_id, '/new_param')))
+        self.assertEqual(val, self.apiSuccess(master.getParam(caller_id, '/new_param')))
         # test with relative-name resolution
-        self.assertEquals(val, self.apiSuccess(master.getParam(caller_id, 'new_param')))
+        self.assertEqual(val, self.apiSuccess(master.getParam(caller_id, 'new_param')))
         # test full get
         ps_full_dict = self.apiSuccess(master.getParam(caller_id, '/'))
         self._filterDict(ps_full_dict)
             
-        self.assertEquals(full_dict, ps_full_dict)
+        self.assertEqual(full_dict, ps_full_dict)
         
         # test with param in sub-namespace
         val = random.randint(0, 10000)        
         self.failIf(self.apiSuccess(master.hasParam(caller_id, '/sub/sub2/new_param2')))
         self.apiSuccess(master.setParam(caller_id, '/sub/sub2/new_param2', val))
         full_dict['sub'] = {'sub2': { 'new_param2': val }}
-        self.assertEquals(val, self.apiSuccess(master.getParam(caller_id, '/sub/sub2/new_param2')))
+        self.assertEqual(val, self.apiSuccess(master.getParam(caller_id, '/sub/sub2/new_param2')))
         # test with relative-name resolution
-        self.assertEquals(val, self.apiSuccess(master.getParam(caller_id, 'sub/sub2/new_param2')))
-        self.assertEquals(val, self.apiSuccess(master.getParam('/sub/node', 'sub2/new_param2')))
-        self.assertEquals(val, self.apiSuccess(master.getParam('/sub/sub2/node', 'new_param2')))
+        self.assertEqual(val, self.apiSuccess(master.getParam(caller_id, 'sub/sub2/new_param2')))
+        self.assertEqual(val, self.apiSuccess(master.getParam('/sub/node', 'sub2/new_param2')))
+        self.assertEqual(val, self.apiSuccess(master.getParam('/sub/sub2/node', 'new_param2')))
         # test that parameter server allows gets across namespaces (#493)
-        self.assertEquals(val, self.apiSuccess(master.getParam('/foo/bar/baz/blah/node', '/sub/sub2/new_param2')))
+        self.assertEqual(val, self.apiSuccess(master.getParam('/foo/bar/baz/blah/node', '/sub/sub2/new_param2')))
         # test full get
         ps_full_dict = self.apiSuccess(master.getParam(caller_id, '/'))
         self._filterDict(ps_full_dict)
-        self.assertEquals(full_dict, ps_full_dict)
+        self.assertEqual(full_dict, ps_full_dict)
 
 
         # test that parameter server namespace-get (#587)
@@ -284,13 +284,13 @@ class ParamServerTestCase(TestRosClient):
 
         pid = {'P': val1, 'I': val2, 'D': val3}
         full_dict['gains'] = pid
-        self.assertEquals(pid,
+        self.assertEqual(pid,
                           self.apiSuccess(master.getParam(caller_id, '/gains')))
-        self.assertEquals(pid,
+        self.assertEqual(pid,
                           self.apiSuccess(master.getParam(caller_id, '/gains/')))
         ps_full_dict = self.apiSuccess(master.getParam(caller_id, '/'))
         self._filterDict(ps_full_dict)
-        self.assertEquals(full_dict, ps_full_dict)
+        self.assertEqual(full_dict, ps_full_dict)
 
         self.failIf(self.apiSuccess(master.hasParam(caller_id, '/ns/gains/P')))
         self.failIf(self.apiSuccess(master.hasParam(caller_id, '/ns/gains/I')))
@@ -302,15 +302,15 @@ class ParamServerTestCase(TestRosClient):
         self.apiSuccess(master.setParam(caller_id, '/ns/gains/D', val3))        
         full_dict['ns'] = {'gains': pid}
         
-        self.assertEquals(pid,
+        self.assertEqual(pid,
                           self.apiSuccess(master.getParam(caller_id, '/ns/gains')))
-        self.assertEquals({'gains': pid},
+        self.assertEqual({'gains': pid},
                           self.apiSuccess(master.getParam(caller_id, '/ns/')))
-        self.assertEquals({'gains': pid},
+        self.assertEqual({'gains': pid},
                           self.apiSuccess(master.getParam(caller_id, '/ns')))
         ps_full_dict = self.apiSuccess(master.getParam(caller_id, '/'))
         self._filterDict(ps_full_dict)
-        self.assertEquals(full_dict, ps_full_dict)
+        self.assertEqual(full_dict, ps_full_dict)
         
         
     # testSetParam: test basic setParam behavior. Value encoding verified separately by testParamValues
@@ -322,25 +322,25 @@ class ParamServerTestCase(TestRosClient):
         # very similar to has param sequence
         self.failIf(self.apiSuccess(master.hasParam(caller_id, '/new_param')))
         self.apiSuccess(master.setParam(caller_id, '/new_param', val))
-        self.assertEquals(val, self.apiSuccess(master.getParam(caller_id, '/new_param')))
+        self.assertEqual(val, self.apiSuccess(master.getParam(caller_id, '/new_param')))
         # test with relative-name resolution
-        self.assertEquals(val, self.apiSuccess(master.getParam(caller_id, 'new_param')))
+        self.assertEqual(val, self.apiSuccess(master.getParam(caller_id, 'new_param')))
 
         # test type mutation, including from dictionary to value and back
         vals = ['a', {'a': 'b'}, 1, 1., 'foo', {'c': 'd'}, 4]
         for v in vals:
             self.apiSuccess(master.setParam(caller_id, '/multi/multi_param', v))
-            self.assertEquals(v, self.apiSuccess(master.getParam(caller_id, 'multi/multi_param')))        
+            self.assertEqual(v, self.apiSuccess(master.getParam(caller_id, 'multi/multi_param')))        
         
         # test with param in sub-namespace
         val = random.randint(0, 10000)        
         self.failIf(self.apiSuccess(master.hasParam(caller_id, '/sub/sub2/new_param2')))
         self.apiSuccess(master.setParam(caller_id, '/sub/sub2/new_param2', val))
-        self.assertEquals(val, self.apiSuccess(master.getParam(caller_id, '/sub/sub2/new_param2')))
+        self.assertEqual(val, self.apiSuccess(master.getParam(caller_id, '/sub/sub2/new_param2')))
         # test with relative-name resolution
-        self.assertEquals(val, self.apiSuccess(master.getParam(caller_id, 'sub/sub2/new_param2')))
-        self.assertEquals(val, self.apiSuccess(master.getParam('/sub/node', 'sub2/new_param2')))
-        self.assertEquals(val, self.apiSuccess(master.getParam('/sub/sub2/node', 'new_param2')))
+        self.assertEqual(val, self.apiSuccess(master.getParam(caller_id, 'sub/sub2/new_param2')))
+        self.assertEqual(val, self.apiSuccess(master.getParam('/sub/node', 'sub2/new_param2')))
+        self.assertEqual(val, self.apiSuccess(master.getParam('/sub/sub2/node', 'new_param2')))
 
         # test that parameter server namespace-set (#587)
         self.failIf(self.apiSuccess(master.hasParam(caller_id, '/gains/P')))
@@ -350,26 +350,26 @@ class ParamServerTestCase(TestRosClient):
 
         pid = {'P': random.randint(0, 10000), 'I': random.randint(0, 10000), 'D': random.randint(0, 10000)}
         self.apiSuccess(master.setParam(caller_id, '/gains', pid))
-        self.assertEquals(pid,  self.apiSuccess(master.getParam(caller_id, '/gains')))
-        self.assertEquals(pid['P'], self.apiSuccess(master.getParam(caller_id, '/gains/P')))
-        self.assertEquals(pid['I'], self.apiSuccess(master.getParam(caller_id, '/gains/I')))
-        self.assertEquals(pid['D'], self.apiSuccess(master.getParam(caller_id, '/gains/D')))
+        self.assertEqual(pid,  self.apiSuccess(master.getParam(caller_id, '/gains')))
+        self.assertEqual(pid['P'], self.apiSuccess(master.getParam(caller_id, '/gains/P')))
+        self.assertEqual(pid['I'], self.apiSuccess(master.getParam(caller_id, '/gains/I')))
+        self.assertEqual(pid['D'], self.apiSuccess(master.getParam(caller_id, '/gains/D')))
 
         subns = {'gains1': pid, 'gains2': pid}
         self.apiSuccess(master.setParam(caller_id, '/ns', subns))
-        self.assertEquals(pid['P'], self.apiSuccess(master.getParam(caller_id, '/ns/gains1/P')))
-        self.assertEquals(pid['I'], self.apiSuccess(master.getParam(caller_id, '/ns/gains1/I')))
-        self.assertEquals(pid['D'], self.apiSuccess(master.getParam(caller_id, '/ns/gains1/D')))
-        self.assertEquals(pid, self.apiSuccess(master.getParam(caller_id, '/ns/gains1')))
-        self.assertEquals(pid, self.apiSuccess(master.getParam(caller_id, '/ns/gains2')))
-        self.assertEquals(subns, self.apiSuccess(master.getParam(caller_id, '/ns/')))
+        self.assertEqual(pid['P'], self.apiSuccess(master.getParam(caller_id, '/ns/gains1/P')))
+        self.assertEqual(pid['I'], self.apiSuccess(master.getParam(caller_id, '/ns/gains1/I')))
+        self.assertEqual(pid['D'], self.apiSuccess(master.getParam(caller_id, '/ns/gains1/D')))
+        self.assertEqual(pid, self.apiSuccess(master.getParam(caller_id, '/ns/gains1')))
+        self.assertEqual(pid, self.apiSuccess(master.getParam(caller_id, '/ns/gains2')))
+        self.assertEqual(subns, self.apiSuccess(master.getParam(caller_id, '/ns/')))
 
         # test empty dictionary set
         self.apiSuccess(master.setParam(caller_id, '/ns', {}))
         # - param should still exist
         self.assert_(self.apiSuccess(master.hasParam(caller_id, '/ns/')))
         # - value should remain dictionary
-        self.assertEquals({}, self.apiSuccess(master.getParam(caller_id, '/ns/')))
+        self.assertEqual({}, self.apiSuccess(master.getParam(caller_id, '/ns/')))
         # - value2 below /ns/ should be erased
         self.failIf(self.apiSuccess(master.hasParam(caller_id, '/ns/gains1')))
         self.failIf(self.apiSuccess(master.hasParam(caller_id, '/ns/gains1/P')))
@@ -585,4 +585,3 @@ class ParamServerTestCase(TestRosClient):
         self.apiSuccess(master.deleteParam('/', 'down4/sub/dparam4C'))
         assert not self.apiSuccess(master.hasParam('/down4/sub/node', 'dparam4C'))
         self._checkParamState(myState)
-

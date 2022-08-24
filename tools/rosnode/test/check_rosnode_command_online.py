@@ -74,7 +74,7 @@ class TestRosnodeOnline(unittest.TestCase):
         timeout_t = time.time() + 10.
         while time.time() < timeout_t and self.vals != all:
             time.sleep(0.1)
-        self.assertEquals(self.vals, all, "failed to initialize graph correctly")
+        self.assertEqual(self.vals, all, "failed to initialize graph correctly")
             
 
         # network is initialized

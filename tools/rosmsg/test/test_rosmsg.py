@@ -79,8 +79,8 @@ class TestRosmsg(unittest.TestCase):
             text_raw = f.read()
 
         type_ = test_message_package+'/'+t
-        self.assertEquals(text, rosmsg.get_msg_text(type_, raw=False))
-        self.assertEquals(text_raw, rosmsg.get_msg_text(type_, raw=True))
+        self.assertEqual(text, rosmsg.get_msg_text(type_, raw=False))
+        self.assertEqual(text_raw, rosmsg.get_msg_text(type_, raw=True))
             
         # test recursive types
         t = 'DiagnosticStatus'
@@ -90,8 +90,8 @@ class TestRosmsg(unittest.TestCase):
             text_raw = f.read()
         type_ = test_message_package+'/'+t
         
-        self.assertEquals(text, rosmsg.get_msg_text(type_, raw=False))
-        self.assertEquals(text_raw, rosmsg.get_msg_text(type_, raw=True))
+        self.assertEqual(text, rosmsg.get_msg_text(type_, raw=False))
+        self.assertEqual(text_raw, rosmsg.get_msg_text(type_, raw=True))
 
     def test_iterate_packages(self):
         from rosmsg import iterate_packages, MODE_MSG, MODE_SRV
@@ -119,7 +119,7 @@ class TestRosmsg(unittest.TestCase):
 
         # test msgs
         l = rosmsg.list_types('rospy', mode='.msg')
-        self.assertEquals([], l)
+        self.assertEqual([], l)
         l = rosmsg.list_types('diagnostic_msgs', mode='.msg')
         for t in ['diagnostic_msgs/DiagnosticArray',
                   'diagnostic_msgs/DiagnosticStatus',
@@ -127,7 +127,7 @@ class TestRosmsg(unittest.TestCase):
             assert t in l
         
         l = rosmsg.list_types('rospy', mode='.srv')
-        self.assertEquals([], l)        
+        self.assertEqual([], l)        
         l = rosmsg.list_types('diagnostic_msgs', mode='.srv')
         for t in ['diagnostic_msgs/AddDiagnostics', 'diagnostic_msgs/SelfTest']:
             assert t in l
@@ -146,8 +146,8 @@ class TestRosmsg(unittest.TestCase):
                 text_raw = f.read()
                 
             type_ = test_srv_package+'/'+t
-            self.assertEquals(text, rosmsg.get_srv_text(type_, raw=False))
-            self.assertEquals(text_raw, rosmsg.get_srv_text(type_, raw=True))
+            self.assertEqual(text, rosmsg.get_srv_text(type_, raw=False))
+            self.assertEqual(text_raw, rosmsg.get_srv_text(type_, raw=True))
 
     def test_rosmsg_cmd_packages(self):
         from rosmsg import rosmsg_cmd_packages, MODE_MSG, MODE_SRV

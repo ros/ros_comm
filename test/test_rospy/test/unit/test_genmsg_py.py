@@ -59,7 +59,7 @@ class TestGenmsgPy(unittest.TestCase):
         # test here is that the Python msg generator didn't
         # accidentally mutate a md5sum based on a message that has its
         # fieldname remapped.
-        self.assertEquals(PythonKeyword._md5sum, "1330d6bbfad8e75334346fec949d5133")
+        self.assertEqual(PythonKeyword._md5sum, "1330d6bbfad8e75334346fec949d5133")
                           
     ## Utility for testing roundtrip serialization
     ## @param orig Message to test roundtrip serialization of
@@ -72,7 +72,7 @@ class TestGenmsgPy(unittest.TestCase):
         orig.serialize(b)
         blank.deserialize(b.getvalue())
         if not float:
-            self.assertEquals(orig, blank, str(orig)+" != "+str(blank))
+            self.assertEqual(orig, blank, str(orig)+" != "+str(blank))
         else:
             self.assertAlmostEquals(orig.data, blank.data, 5)
 
@@ -89,121 +89,121 @@ class TestGenmsgPy(unittest.TestCase):
     def test_test_rospy_TestFixedArray(self):
         from test_rospy.msg import TestFixedArray
         m = TestFixedArray()
-        self.assertEquals([0.], m.f32_1)
-        self.assertEquals([0., 0., 0.], m.f32_3)        
-        self.assertEquals([0.], m.f64_1)
-        self.assertEquals([0., 0., 0.], m.f64_3)        
-        self.assertEquals([0], m.i8_1)
-        self.assertEquals([0, 0, 0], m.i8_3)        
-        self.assertEquals(chr(0).encode(), m.u8_1)
-        self.assertEquals((chr(0)*3).encode(), m.u8_3)
-        self.assertEquals([0], m.i32_1)
-        self.assertEquals([0, 0, 0], m.i32_3)        
-        self.assertEquals([0], m.u32_1)
-        self.assertEquals([0, 0, 0], m.u32_3)
-        self.assertEquals([''], m.s_1)
-        self.assertEquals(['', '', ''], m.s_3)
+        self.assertEqual([0.], m.f32_1)
+        self.assertEqual([0., 0., 0.], m.f32_3)        
+        self.assertEqual([0.], m.f64_1)
+        self.assertEqual([0., 0., 0.], m.f64_3)        
+        self.assertEqual([0], m.i8_1)
+        self.assertEqual([0, 0, 0], m.i8_3)        
+        self.assertEqual(chr(0).encode(), m.u8_1)
+        self.assertEqual((chr(0)*3).encode(), m.u8_3)
+        self.assertEqual([0], m.i32_1)
+        self.assertEqual([0, 0, 0], m.i32_3)        
+        self.assertEqual([0], m.u32_1)
+        self.assertEqual([0, 0, 0], m.u32_3)
+        self.assertEqual([''], m.s_1)
+        self.assertEqual(['', '', ''], m.s_3)
 
         self._test_ser_deser(m, TestFixedArray())
 
         m = TestFixedArray(i32_1 = [1])
         c = TestFixedArray()
         self._test_ser_deser(m, c)
-        self.assertEquals((1,), c.i32_1)
+        self.assertEqual((1,), c.i32_1)
 
         m = TestFixedArray(i32_3 = [-3, 2, 10])
         c = TestFixedArray()
         self._test_ser_deser(m, c)
-        self.assertEquals((-3, 2, 10), c.i32_3)
+        self.assertEqual((-3, 2, 10), c.i32_3)
         
         m = TestFixedArray(u32_1 = [1234])
         c = TestFixedArray()
         self._test_ser_deser(m, c)
-        self.assertEquals((1234,), c.u32_1)
+        self.assertEqual((1234,), c.u32_1)
         
         m = TestFixedArray(u32_3 = [3, 2, 10])
         c = TestFixedArray()
         self._test_ser_deser(m, c)
-        self.assertEquals((3, 2, 10), c.u32_3)
+        self.assertEqual((3, 2, 10), c.u32_3)
         
         # this could potentially fail due to floating point lossiness
         m,c = TestFixedArray(f32_1 = [2.]), TestFixedArray()
         self._test_ser_deser(m, c)
-        self.assertEquals((2.,), c.f32_1)
+        self.assertEqual((2.,), c.f32_1)
         
         m,c = TestFixedArray(f32_3 = [1., 2., 3.]), TestFixedArray()
         self._test_ser_deser(m, c)
-        self.assertEquals((1., 2., 3.), c.f32_3)
+        self.assertEqual((1., 2., 3.), c.f32_3)
         
         m,c = TestFixedArray(u8_1 = b'x'), TestFixedArray()
         self._test_ser_deser(m, c)
-        self.assertEquals(b'x', c.u8_1)
+        self.assertEqual(b'x', c.u8_1)
 
         m,c = TestFixedArray(u8_3 = b'xyz'), TestFixedArray()
         self._test_ser_deser(m, c)
-        self.assertEquals(b'xyz', c.u8_3)
+        self.assertEqual(b'xyz', c.u8_3)
 
         m,c = TestFixedArray(s_1 = ['']), TestFixedArray()
         self._test_ser_deser(m, c)
-        self.assertEquals([''], c.s_1)
+        self.assertEqual([''], c.s_1)
 
         m,c = TestFixedArray(s_1 = ['blah blah blah']), TestFixedArray()
         self._test_ser_deser(m, c)
-        self.assertEquals(['blah blah blah',], c.s_1)
+        self.assertEqual(['blah blah blah',], c.s_1)
 
         m = TestFixedArray(s_3 = ['', 'x', 'xyz'])
         c = TestFixedArray()
         self._test_ser_deser(m, c)
-        self.assertEquals(['', 'x', 'xyz'], c.s_3)
+        self.assertEqual(['', 'x', 'xyz'], c.s_3)
 
         for v in [True, False]:
             m = TestFixedArray(b_1 = [v])
             c = TestFixedArray()
             self._test_ser_deser(m, c)
-            self.assertEquals([v], c.b_1)
+            self.assertEqual([v], c.b_1)
 
         m = TestFixedArray(b_3 = [True, False, True])
         c = TestFixedArray()
         self._test_ser_deser(m, c)
-        self.assertEquals([True, False, True], c.b_3)
+        self.assertEqual([True, False, True], c.b_3)
         
         #TODO: enable tests for auto-convert of uint8[] to string
         
     def test_test_rospy_TestConstants(self):
         from test_rospy.msg import TestConstants
-        self.assertEquals(-123.0, TestConstants.A)
-        self.assertEquals(124.0, TestConstants.B)
-        self.assertEquals(125.0, TestConstants.C)
-        self.assertEquals(123, TestConstants.X)
-        self.assertEquals(-123, TestConstants.Y)
-        self.assertEquals(124, TestConstants.Z)
-        self.assertEquals("'hi", TestConstants.SINGLEQUOTE)
-        self.assertEquals('"hello" there', TestConstants.DOUBLEQUOTE)
-        self.assertEquals('"hello" \'goodbye\'', TestConstants.MULTIQUOTE)
-        self.assertEquals('foo', TestConstants.FOO) 
-        self.assertEquals('"#comments" are ignored, and leading and trailing whitespace removed',TestConstants.EXAMPLE)
-        self.assertEquals('strip', TestConstants.WHITESPACE)
-        self.assertEquals('', TestConstants.EMPTY)
+        self.assertEqual(-123.0, TestConstants.A)
+        self.assertEqual(124.0, TestConstants.B)
+        self.assertEqual(125.0, TestConstants.C)
+        self.assertEqual(123, TestConstants.X)
+        self.assertEqual(-123, TestConstants.Y)
+        self.assertEqual(124, TestConstants.Z)
+        self.assertEqual("'hi", TestConstants.SINGLEQUOTE)
+        self.assertEqual('"hello" there', TestConstants.DOUBLEQUOTE)
+        self.assertEqual('"hello" \'goodbye\'', TestConstants.MULTIQUOTE)
+        self.assertEqual('foo', TestConstants.FOO) 
+        self.assertEqual('"#comments" are ignored, and leading and trailing whitespace removed',TestConstants.EXAMPLE)
+        self.assertEqual('strip', TestConstants.WHITESPACE)
+        self.assertEqual('', TestConstants.EMPTY)
 
-        self.assertEquals(True, TestConstants.TRUE)
-        self.assertEquals(False, TestConstants.FALSE)        
+        self.assertEqual(True, TestConstants.TRUE)
+        self.assertEqual(False, TestConstants.FALSE)        
         
     def test_std_msgs_empty(self):
         from std_msgs.msg import Empty
-        self.assertEquals(Empty(), Empty())
+        self.assertEqual(Empty(), Empty())
         self._test_ser_deser(Empty(), Empty())
 
     def test_std_msgs_Bool(self):
         from std_msgs.msg import Bool
-        self.assertEquals(Bool(), Bool())
+        self.assertEqual(Bool(), Bool())
         self._test_ser_deser(Bool(), Bool())
         # default value should be False
-        self.assertEquals(False, Bool().data)
+        self.assertEqual(False, Bool().data)
         # test various constructor permutations
         for v in [True, False]:
-            self.assertEquals(Bool(v), Bool(v))
-            self.assertEquals(Bool(v), Bool(data=v))
-            self.assertEquals(Bool(data=v), Bool(data=v))
+            self.assertEqual(Bool(v), Bool(v))
+            self.assertEqual(Bool(v), Bool(data=v))
+            self.assertEqual(Bool(data=v), Bool(data=v))
         self.assertNotEquals(Bool(True), Bool(False))            
 
         self._test_ser_deser(Bool(True), Bool())
@@ -226,14 +226,14 @@ class TestGenmsgPy(unittest.TestCase):
         
     def test_std_msgs_String(self):
         from std_msgs.msg import String
-        self.assertEquals(String(), String())
-        self.assertEquals('', String().data)
+        self.assertEqual(String(), String())
+        self.assertEqual('', String().data)
         # default value should be empty string
-        self.assertEquals(String(''), String())
-        self.assertEquals(String(''), String(''))
-        self.assertEquals(String('foo'), String('foo'))
-        self.assertEquals(String('foo'), String(data='foo'))
-        self.assertEquals(String(data='foo'), String(data='foo'))
+        self.assertEqual(String(''), String())
+        self.assertEqual(String(''), String(''))
+        self.assertEqual(String('foo'), String('foo'))
+        self.assertEqual(String('foo'), String(data='foo'))
+        self.assertEqual(String(data='foo'), String(data='foo'))
         
         self.assertNotEquals(String('foo'), String('bar'))
         self.assertNotEquals(String('foo'), String(data='bar'))
@@ -246,14 +246,14 @@ class TestGenmsgPy(unittest.TestCase):
         from std_msgs.msg import Int8, Int16, Int32, Int64
         for cls in [Int8, Int16, Int32, Int64]:
             v = random.randint(1, 127)
-            self.assertEquals(cls(), cls())
-            self.assertEquals(0, cls().data)
-            self.assertEquals(cls(), cls(0))
-            self.assertEquals(cls(0), cls(0))        
-            self.assertEquals(cls(v), cls(v))
-            self.assertEquals(cls(-v), cls(-v))
-            self.assertEquals(cls(v), cls(data=v))        
-            self.assertEquals(cls(data=v), cls(data=v))
+            self.assertEqual(cls(), cls())
+            self.assertEqual(0, cls().data)
+            self.assertEqual(cls(), cls(0))
+            self.assertEqual(cls(0), cls(0))        
+            self.assertEqual(cls(v), cls(v))
+            self.assertEqual(cls(-v), cls(-v))
+            self.assertEqual(cls(v), cls(data=v))        
+            self.assertEqual(cls(data=v), cls(data=v))
         
             self.assertNotEquals(cls(v), cls())
             self.assertNotEquals(cls(data=v), cls(data=-v))
@@ -286,13 +286,13 @@ class TestGenmsgPy(unittest.TestCase):
         from std_msgs.msg import UInt8, UInt16, UInt32, UInt64
         for cls in [UInt8, UInt16, UInt32, UInt64]:
             v = random.randint(1, 127)
-            self.assertEquals(cls(), cls())
-            self.assertEquals(0, cls().data)
-            self.assertEquals(cls(), cls(0))
-            self.assertEquals(cls(0), cls(0))        
-            self.assertEquals(cls(v), cls(v))
-            self.assertEquals(cls(v), cls(data=v))        
-            self.assertEquals(cls(data=v), cls(data=v))
+            self.assertEqual(cls(), cls())
+            self.assertEqual(0, cls().data)
+            self.assertEqual(cls(), cls(0))
+            self.assertEqual(cls(0), cls(0))        
+            self.assertEqual(cls(v), cls(v))
+            self.assertEqual(cls(v), cls(data=v))        
+            self.assertEqual(cls(data=v), cls(data=v))
         
             self.assertNotEquals(cls(v), cls())
             self.assertNotEquals(cls(data=v), cls(data=-v))
@@ -322,16 +322,16 @@ class TestGenmsgPy(unittest.TestCase):
     def test_std_msgs_Float(self):
         from std_msgs.msg import Float32, Float64
         for cls in [Float32, Float64]:
-            self.assertEquals(cls(), cls())
-            self.assertEquals(0., cls().data)
-            self.assertEquals(cls(), cls(0.))
-            self.assertEquals(cls(0.), cls(0.))        
-            self.assertEquals(cls(1.), cls(1.))
-            self.assertEquals(cls(1.), cls(data=1.))        
-            self.assertEquals(cls(data=1.), cls(data=1.))
-            self.assertEquals(cls(math.pi), cls(math.pi))
-            self.assertEquals(cls(math.pi), cls(data=math.pi))        
-            self.assertEquals(cls(data=math.pi), cls(data=math.pi))
+            self.assertEqual(cls(), cls())
+            self.assertEqual(0., cls().data)
+            self.assertEqual(cls(), cls(0.))
+            self.assertEqual(cls(0.), cls(0.))        
+            self.assertEqual(cls(1.), cls(1.))
+            self.assertEqual(cls(1.), cls(data=1.))        
+            self.assertEqual(cls(data=1.), cls(data=1.))
+            self.assertEqual(cls(math.pi), cls(math.pi))
+            self.assertEqual(cls(math.pi), cls(data=math.pi))        
+            self.assertEqual(cls(data=math.pi), cls(data=math.pi))
         
             self.assertNotEquals(cls(1.), cls())
             self.assertNotEquals(cls(math.pi), cls())
@@ -352,34 +352,34 @@ class TestGenmsgPy(unittest.TestCase):
         dims = [MultiArrayDimension('foo', 1, 2), MultiArrayDimension('bar', 3, 4),\
                     MultiArrayDimension('foo2', 5, 6), MultiArrayDimension('bar2', 7, 8)]
         for d in dims:
-            self.assertEquals(d, d)
+            self.assertEqual(d, d)
 
         # there was a bug with UInt8 arrays, so this is a regression
         # test. the buff was with the uint8[] type consistency
         buff = StringIO()
-        self.assertEquals(UInt8MultiArray(),UInt8MultiArray())
-        self.assertEquals(b'', UInt8MultiArray().data)
+        self.assertEqual(UInt8MultiArray(),UInt8MultiArray())
+        self.assertEqual(b'', UInt8MultiArray().data)
         UInt8MultiArray().serialize(buff)
-        self.assertEquals(UInt8MultiArray(layout=MultiArrayLayout()),UInt8MultiArray())
+        self.assertEqual(UInt8MultiArray(layout=MultiArrayLayout()),UInt8MultiArray())
         UInt8MultiArray(layout=MultiArrayLayout()).serialize(buff)
         data = ''.join([chr(i) for i in range(0, 100)])
         v = UInt8MultiArray(data=data)
         self._test_ser_deser(UInt8MultiArray(data=data.encode()),UInt8MultiArray())
         
-        self.assertEquals(Int32MultiArray(),Int32MultiArray())
-        self.assertEquals(Int32MultiArray(layout=MultiArrayLayout()),Int32MultiArray())
-        self.assertEquals(Int32MultiArray(layout=MultiArrayLayout(), data=[1, 2, 3]),Int32MultiArray(data=[1, 2, 3]))
-        self.assertEquals(Int32MultiArray(layout=MultiArrayLayout(), data=[1, 2, 3]),\
+        self.assertEqual(Int32MultiArray(),Int32MultiArray())
+        self.assertEqual(Int32MultiArray(layout=MultiArrayLayout()),Int32MultiArray())
+        self.assertEqual(Int32MultiArray(layout=MultiArrayLayout(), data=[1, 2, 3]),Int32MultiArray(data=[1, 2, 3]))
+        self.assertEqual(Int32MultiArray(layout=MultiArrayLayout(), data=[1, 2, 3]),\
                               Int32MultiArray(layout=MultiArrayLayout(),data=[1, 2, 3]))
-        self.assertEquals(Int32MultiArray(layout=MultiArrayLayout(dim=[]), data=[1, 2, 3]),\
+        self.assertEqual(Int32MultiArray(layout=MultiArrayLayout(dim=[]), data=[1, 2, 3]),\
                               Int32MultiArray(layout=MultiArrayLayout(),data=[1, 2, 3]))
-        self.assertEquals(Int32MultiArray(layout=MultiArrayLayout([], 0), data=[1, 2, 3]),\
+        self.assertEqual(Int32MultiArray(layout=MultiArrayLayout([], 0), data=[1, 2, 3]),\
                               Int32MultiArray(layout=MultiArrayLayout(),data=[1, 2, 3]))
-        self.assertEquals(Int32MultiArray(layout=MultiArrayLayout(dim=[], data_offset=0), data=[1, 2, 3]),\
+        self.assertEqual(Int32MultiArray(layout=MultiArrayLayout(dim=[], data_offset=0), data=[1, 2, 3]),\
                               Int32MultiArray(layout=MultiArrayLayout(),data=[1, 2, 3]))
-        self.assertEquals(Int32MultiArray(layout=MultiArrayLayout(dim=dims, data_offset=0), data=[1, 2, 3]),\
+        self.assertEqual(Int32MultiArray(layout=MultiArrayLayout(dim=dims, data_offset=0), data=[1, 2, 3]),\
                               Int32MultiArray(layout=MultiArrayLayout(dim=dims),data=[1, 2, 3]))
-        self.assertEquals(Int32MultiArray(layout=MultiArrayLayout(dims, 10), data=[1, 2, 3]),\
+        self.assertEqual(Int32MultiArray(layout=MultiArrayLayout(dims, 10), data=[1, 2, 3]),\
                               Int32MultiArray(layout=MultiArrayLayout(dim=dims,data_offset=10),data=[1, 2, 3]))
 
 

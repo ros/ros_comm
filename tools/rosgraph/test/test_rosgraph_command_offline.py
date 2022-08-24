@@ -60,4 +60,4 @@ class TestRosgraphOffline(unittest.TestCase):
         msg = "ERROR: Unable to communicate with master!" + os.linesep
 
         output = Popen([cmd], **kwds).communicate()
-        self.assertEquals(msg, output[1].decode())
+        self.assertEqual(msg, output[1].decode())

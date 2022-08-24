@@ -203,7 +203,7 @@ class TestSlaveApi(unittest.TestCase):
         val = self.apiSuccess(self.node.getPublications(self.caller_id))
         pubs_d = TopicDescriptionList(val).as_dict()
         self.assertTrue('/rosout' in pubs_d, "node is not publishing to rosout")
-        self.assertEquals('rosgraph_msgs/Log', pubs_d['/rosout'], "/rosout is not correct type")
+        self.assertEqual('rosgraph_msgs/Log', pubs_d['/rosout'], "/rosout is not correct type")
         
     def test_simtime(self):
         """
@@ -220,7 +220,7 @@ class TestSlaveApi(unittest.TestCase):
         subs_d = TopicDescriptionList(val).as_dict()
         if use_sim_time:
             self.assertTrue('/clock' in subs_d, "node is not subscribing to clock")
-            self.assertEquals('rosgraph_msgs/Clock', subs_d['/clock'], "/clock is not correct type")
+            self.assertEqual('rosgraph_msgs/Clock', subs_d['/clock'], "/clock is not correct type")
         else:
             self.assertFalse('/clock' in subs_d, "node is subscribed to /clock even though /use_sim_time is false")
 
@@ -236,7 +236,7 @@ class TestSlaveApi(unittest.TestCase):
         # this is separately tested by test_rosout
         if '/rosout' in pubs_dict:
             del pubs_dict['/rosout']
-        self.assertEquals(self.required_pubs, pubs_dict)
+        self.assertEqual(self.required_pubs, pubs_dict)
         
         # test with bad arity: accept error or fault
         try:
@@ -258,7 +258,7 @@ class TestSlaveApi(unittest.TestCase):
         subs = TopicDescriptionList(value)
 
         subs_dict = subs.as_dict()
-        self.assertEquals(self.required_subs, subs_dict)
+        self.assertEqual(self.required_subs, subs_dict)
 
         # test with bad arity: accept error or fault
         try:
@@ -333,7 +333,7 @@ class TestSlaveApi(unittest.TestCase):
         master_env = rosgraph.get_master_uri()
         if not master_env.endswith('/'):
             master_env = master_env + '/'
-        self.assertEquals(urlparse.urlparse(master_env), urlparse.urlparse(uri))
+        self.assertEqual(urlparse.urlparse(master_env), urlparse.urlparse(uri))
 
         # test bad arity
         try:
@@ -403,10 +403,10 @@ class TestSlaveApi(unittest.TestCase):
     def check_TCPROS(self, protocol_params):
         self.assert_(protocol_params, "no protocol params returned")
         self.assert_(type(protocol_params) == list, "protocol params must be a list: %s"%protocol_params)
-        self.assertEquals(3, len(protocol_params), "TCPROS params should have length 3: %s"%protocol_params)
-        self.assertEquals(protocol_params[0], TCPROS)
+        self.assertEqual(3, len(protocol_params), "TCPROS params should have length 3: %s"%protocol_params)
+        self.assertEqual(protocol_params[0], TCPROS)
         # expect ['TCPROS', 1.2.3.4, 1234]
-        self.assertEquals(protocol_params[0], TCPROS)            
+        self.assertEqual(protocol_params[0], TCPROS)            
         
     def testRequestTopic(self):
         node = self.node

@@ -164,8 +164,8 @@ class MasterApiOfflineTest(unittest.TestCase):
     def test_Master(self):
         # test constructor args
         m = rosgraph.masterapi.Master(_ID, master_uri = 'http://localhost:12345')
-        self.assertEquals(_ID, m.caller_id)
-        self.assertEquals(_MASTER_URI, m.master_uri)        
+        self.assertEqual(_ID, m.caller_id)
+        self.assertEqual(_MASTER_URI, m.master_uri)        
 
         reset_uri = False
         if 'ROS_MASTER_URI' not in os.environ:
@@ -173,11 +173,11 @@ class MasterApiOfflineTest(unittest.TestCase):
 
         try:
             m = rosgraph.masterapi.Master(_ID)
-            self.assertEquals(os.environ['ROS_MASTER_URI'], m.master_uri)
+            self.assertEqual(os.environ['ROS_MASTER_URI'], m.master_uri)
 
             id = '/some/other/id'
             m = rosgraph.masterapi.Master(id)
-            self.assertEquals(id, m.caller_id)
+            self.assertEqual(id, m.caller_id)
         finally:
             if reset_uri:
                 del os.environ['ROS_MASTER_URI']
@@ -186,8 +186,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         h = self.m.handle
         r = 1235
         h.return_val = (1, '', r)
-        self.assertEquals(r, self.m.getPid())
-        self.assertEquals(('getPid',_ID), h.call)
+        self.assertEqual(r, self.m.getPid())
+        self.assertEqual(('getPid',_ID), h.call)
         self.throw_failure('getPid', (), (0, '', r))
         self.throw_error('getPid', (), (-1, '', r))
 
@@ -195,8 +195,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         h = self.m.handle
         r = 'http://foo:1234'
         h.return_val = (1, '', r)
-        self.assertEquals(r, self.m.getUri())
-        self.assertEquals(('getUri',_ID), h.call)
+        self.assertEqual(r, self.m.getUri())
+        self.assertEqual(('getUri',_ID), h.call)
         self.throw_failure('getUri', (), (0, '', r))
         self.throw_error('getUri', (), (-1, '', r))
 
@@ -204,8 +204,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         h = self.m.handle
         r = 'rosrpc://localhost:12345'
         h.return_val = (1, '', r)
-        self.assertEquals(r, self.m.lookupService('/bar/service'))
-        self.assertEquals(('lookupService',_ID, '/bar/service'), h.call)
+        self.assertEqual(r, self.m.lookupService('/bar/service'))
+        self.assertEqual(('lookupService',_ID, '/bar/service'), h.call)
         self.throw_failure('lookupService', ('/bar/service',), (0, '', r))
         self.throw_error('lookupService', ('/bar/service',), (-1, '', r))
 
@@ -213,8 +213,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         h = self.m.handle
         r = 11
         h.return_val = (1, '', r)
-        self.assertEquals(r, self.m.registerService('/bar/service', 'rosrpc://localhost:9812', 'http://localhost:893'))
-        self.assertEquals(('registerService',_ID, '/bar/service', 'rosrpc://localhost:9812', 'http://localhost:893'), h.call)
+        self.assertEqual(r, self.m.registerService('/bar/service', 'rosrpc://localhost:9812', 'http://localhost:893'))
+        self.assertEqual(('registerService',_ID, '/bar/service', 'rosrpc://localhost:9812', 'http://localhost:893'), h.call)
         args = ('/bar/service', 'rosrpc://localhost:9812', 'http://localhost:893')
         self.throw_failure('registerService', args, (0, '', r))
         self.throw_error('registerService', args, (-1, '', r))
@@ -223,8 +223,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         h = self.m.handle
         r = 1
         h.return_val = (1, '', r)
-        self.assertEquals(r, self.m.unregisterService('/bar/service', 'rosrpc://localhost:9812'))
-        self.assertEquals(('unregisterService',_ID, '/bar/service', 'rosrpc://localhost:9812'), h.call)
+        self.assertEqual(r, self.m.unregisterService('/bar/service', 'rosrpc://localhost:9812'))
+        self.assertEqual(('unregisterService',_ID, '/bar/service', 'rosrpc://localhost:9812'), h.call)
         args = ('/bar/service', 'rosrpc://localhost:9812')
         self.throw_failure('unregisterService', args, (0, '', r))
         self.throw_error('unregisterService', args, (-1, '', r))
@@ -233,8 +233,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         h = self.m.handle
         r = ['http://localhost:1234', 'http://localhost:98127']
         h.return_val = (1, '', r)
-        self.assertEquals(r, self.m.registerSubscriber('/foo/node', 'std_msgs/String', 'http://localhost:9812'))
-        self.assertEquals(('registerSubscriber',_ID, '/foo/node', 'std_msgs/String', 'http://localhost:9812'), h.call)
+        self.assertEqual(r, self.m.registerSubscriber('/foo/node', 'std_msgs/String', 'http://localhost:9812'))
+        self.assertEqual(('registerSubscriber',_ID, '/foo/node', 'std_msgs/String', 'http://localhost:9812'), h.call)
         args = ('/foo/node', 'std_msgs/String', 'http://localhost:9812')
         self.throw_failure('registerSubscriber', args, (0, '', r))
         self.throw_error('registerSubscriber', args, (-1, '', r))
@@ -243,8 +243,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         h = self.m.handle
         r = 1
         h.return_val = (1, '', r)
-        self.assertEquals(r, self.m.unregisterSubscriber('/foo/node', 'http://localhost:9812'))
-        self.assertEquals(('unregisterSubscriber',_ID, '/foo/node', 'http://localhost:9812'), h.call)
+        self.assertEqual(r, self.m.unregisterSubscriber('/foo/node', 'http://localhost:9812'))
+        self.assertEqual(('unregisterSubscriber',_ID, '/foo/node', 'http://localhost:9812'), h.call)
         args = ('/foo/node', 'http://localhost:9812')
         self.throw_failure('unregisterSubscriber', args, (0, '', r))
         self.throw_error('unregisterSubscriber', args, (-1, '', r))
@@ -253,8 +253,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         h = self.m.handle
         r = 5
         h.return_val = (1, '', r)
-        self.assertEquals(r, self.m.registerPublisher('/foo/node', 'std_msgs/String', 'http://localhost:9812'))
-        self.assertEquals(('registerPublisher',_ID, '/foo/node', 'std_msgs/String', 'http://localhost:9812'), h.call)
+        self.assertEqual(r, self.m.registerPublisher('/foo/node', 'std_msgs/String', 'http://localhost:9812'))
+        self.assertEqual(('registerPublisher',_ID, '/foo/node', 'std_msgs/String', 'http://localhost:9812'), h.call)
         args = ('/foo/node', 'std_msgs/String', 'http://localhost:9812')
         self.throw_failure('registerPublisher', args, (0, '', r))
         self.throw_error('registerPublisher', args, (-1, '', r))
@@ -263,8 +263,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         h = self.m.handle
         r = 10
         h.return_val = (1, '', r)
-        self.assertEquals(r, self.m.unregisterPublisher('/foo/node', 'http://localhost:9812'))
-        self.assertEquals(('unregisterPublisher',_ID, '/foo/node', 'http://localhost:9812'), h.call)
+        self.assertEqual(r, self.m.unregisterPublisher('/foo/node', 'http://localhost:9812'))
+        self.assertEqual(('unregisterPublisher',_ID, '/foo/node', 'http://localhost:9812'), h.call)
         args = ('/foo/node', 'http://localhost:9812')
         self.throw_failure('unregisterPublisher', args, (0, '', r))
         self.throw_error('unregisterPublisher', args, (-1, '', r))
@@ -273,8 +273,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         h = self.m.handle
         r = 'http://localhost:123'
         h.return_val = (1, '', r)
-        self.assertEquals(r, self.m.lookupNode('/foo/node'))
-        self.assertEquals(('lookupNode',_ID, '/foo/node'), h.call)
+        self.assertEqual(r, self.m.lookupNode('/foo/node'))
+        self.assertEqual(('lookupNode',_ID, '/foo/node'), h.call)
         args = ('/foo/node',)
         self.throw_failure('lookupNode', args, (0, '', r))
         self.throw_error('lookupNode', args, (-1, '', r))
@@ -283,8 +283,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         h = self.m.handle
         r = [ ['foo', 'bar'], ['baz', 'blah'] ]
         h.return_val = (1, '', r)
-        self.assertEquals(r, self.m.getPublishedTopics('/foo'))
-        self.assertEquals(('getPublishedTopics',_ID, '/foo'), h.call)
+        self.assertEqual(r, self.m.getPublishedTopics('/foo'))
+        self.assertEqual(('getPublishedTopics',_ID, '/foo'), h.call)
         args = ('/baz',)
         self.throw_failure('getPublishedTopics', args, (0, '', r))
         self.throw_error('getPublishedTopics', args, (-1, '', r))
@@ -293,8 +293,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         h = self.m.handle
         r = [ ['/foo', 'std_msgs/String'], ['/baz', 'std_msgs/Int32'] ]
         h.return_val = (1, '', r)
-        self.assertEquals(r, self.m.getTopicTypes())
-        self.assertEquals(('getTopicTypes',_ID), h.call)
+        self.assertEqual(r, self.m.getTopicTypes())
+        self.assertEqual(('getTopicTypes',_ID), h.call)
         self.throw_failure('getTopicTypes', (), (0, '', r))
         self.throw_error('getTopicTypes', (), (-1, '', r))
         
@@ -303,8 +303,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         h = self.m.handle
         r = [ [], [], [] ]
         h.return_val = (1, '', r)
-        self.assertEquals(r, self.m.getSystemState())
-        self.assertEquals(('getSystemState', _ID), h.call)        
+        self.assertEqual(r, self.m.getSystemState())
+        self.assertEqual(('getSystemState', _ID), h.call)        
         self.throw_failure('getSystemState', (), (0, '', r))
         self.throw_error('getSystemState', (), (-1, '', r))
 
@@ -316,8 +316,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         r = 1
         h.return_val = (1, '', r)
         p = '/test_param'
-        self.assertEquals(r, self.m.getParam(p))
-        self.assertEquals(('getParam', _ID, p), h.call)
+        self.assertEqual(r, self.m.getParam(p))
+        self.assertEqual(('getParam', _ID, p), h.call)
         args = (p,)
         self.throw_failure('getParam', args, (0, '', r))
         self.throw_error('getParam', args, (-1, '', r))
@@ -326,8 +326,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         h = self.m.handle
         r = [ '/foo' ]
         h.return_val = (1, '', r)
-        self.assertEquals(r, self.m.getParamNames())
-        self.assertEquals(('getParamNames', _ID), h.call)        
+        self.assertEqual(r, self.m.getParamNames())
+        self.assertEqual(('getParamNames', _ID), h.call)        
         self.throw_failure('getParamNames', (), (0, '', r))
         self.throw_error('getParamNames', (), (-1, '', r))
         
@@ -336,8 +336,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         r = True
         h.return_val = (1, '', r)
         p = '/test_param'
-        self.assertEquals(r, self.m.hasParam(p))
-        self.assertEquals(('hasParam', _ID, p), h.call)
+        self.assertEqual(r, self.m.hasParam(p))
+        self.assertEqual(('hasParam', _ID, p), h.call)
         self.throw_failure('hasParam', (p,), (0, '', r))
         self.throw_error('hasParam', (p,), (-1, '', r))
 
@@ -346,8 +346,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         r = '/foo'
         h.return_val = (1, '', r)
         p = '/test_param'
-        self.assertEquals(r, self.m.searchParam(p))
-        self.assertEquals(('searchParam', _ID, p), h.call)
+        self.assertEqual(r, self.m.searchParam(p))
+        self.assertEqual(('searchParam', _ID, p), h.call)
         self.throw_failure('searchParam', (p,), (0, '', r))
         self.throw_error('searchParam', (p,), (-1, '', r))
 
@@ -356,8 +356,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         r = '/foo'
         h.return_val = (1, '', r)
         p = '/test_param'
-        self.assertEquals(r, self.m.deleteParam(p))
-        self.assertEquals(('deleteParam', _ID, p), h.call)        
+        self.assertEqual(r, self.m.deleteParam(p))
+        self.assertEqual(('deleteParam', _ID, p), h.call)        
         self.throw_failure('deleteParam', (p,), (0, '', r))
         self.throw_error('deleteParam', (p,), (-1, '', r))
 
@@ -372,8 +372,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         r = 1
         h.return_val = (1, '', r)
         args = ('http://bar:12345', '/test_param')
-        self.assertEquals(r, self.m.subscribeParam(*args))
-        self.assertEquals(('subscribeParam', _ID, args[0], args[1]), h.call)
+        self.assertEqual(r, self.m.subscribeParam(*args))
+        self.assertEqual(('subscribeParam', _ID, args[0], args[1]), h.call)
         self.throw_failure('subscribeParam', args, (0, '', r))
         self.throw_error('subscribeParam', args, (-1, '', r))
 
@@ -382,8 +382,8 @@ class MasterApiOfflineTest(unittest.TestCase):
         r = 1
         h.return_val = (1, '', r)
         args = ('http://bar:12345', '/test_param')
-        self.assertEquals(r, self.m.unsubscribeParam(*args))
-        self.assertEquals(('unsubscribeParam', _ID, args[0], args[1]), h.call)
+        self.assertEqual(r, self.m.unsubscribeParam(*args))
+        self.assertEqual(('unsubscribeParam', _ID, args[0], args[1]), h.call)
         self.throw_failure('unsubscribeParam', args, (0, '', r))
         self.throw_error('unsubscribeParam', args, (-1, '', r))
 
@@ -392,7 +392,7 @@ class MasterApiOfflineTest(unittest.TestCase):
         r = 1
         h.return_val = (1, '', r)
         args = ('/test_set_param', 'foo')
-        self.assertEquals(r, self.m.setParam(*args))
-        self.assertEquals(('setParam', _ID, args[0], args[1]), h.call)
+        self.assertEqual(r, self.m.setParam(*args))
+        self.assertEqual(('setParam', _ID, args[0], args[1]), h.call)
         self.throw_failure('setParam', args, (0, '', r))
         self.throw_error('setParam', args, (-1, '', r))

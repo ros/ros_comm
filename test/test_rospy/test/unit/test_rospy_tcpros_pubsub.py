@@ -75,32 +75,32 @@ class TestRospyTcprosPubsub(unittest.TestCase):
         name = 'name-%s'%time.time()
         recv_data_class = test_rospy.msg.Val
         s = TCPROSSub(name, recv_data_class)
-        self.assertEquals(name, s.resolved_name)
-        self.assertEquals(rospy.impl.transport.INBOUND, s.direction)
-        self.assertEquals(recv_data_class, s.recv_data_class)
+        self.assertEqual(name, s.resolved_name)
+        self.assertEqual(rospy.impl.transport.INBOUND, s.direction)
+        self.assertEqual(recv_data_class, s.recv_data_class)
         self.assert_(s.buff_size > -1)
         self.failIf(s.tcp_nodelay)
-        self.assertEquals(None, s.queue_size)
+        self.assertEqual(None, s.queue_size)
 
         fields = s.get_header_fields()
-        self.assertEquals(name, fields['topic'])
-        self.assertEquals(recv_data_class._md5sum, fields['md5sum'])
-        self.assertEquals(recv_data_class._full_text, fields['message_definition'])
-        self.assertEquals('test_rospy/Val', fields['type'])
+        self.assertEqual(name, fields['topic'])
+        self.assertEqual(recv_data_class._md5sum, fields['md5sum'])
+        self.assertEqual(recv_data_class._full_text, fields['message_definition'])
+        self.assertEqual('test_rospy/Val', fields['type'])
         self.assert_(callerid, fields['callerid'])
         if 'tcp_nodelay' in fields:
-            self.assertEquals('0', fields['tcp_nodelay'])
+            self.assertEqual('0', fields['tcp_nodelay'])
         
         v = int(time.time())
         s = TCPROSSub(name, recv_data_class, queue_size=v)
-        self.assertEquals(v, s.queue_size)        
+        self.assertEqual(v, s.queue_size)        
 
         s = TCPROSSub(name, recv_data_class, buff_size=v)
-        self.assertEquals(v, s.buff_size)
+        self.assertEqual(v, s.buff_size)
 
         s = TCPROSSub(name, recv_data_class, tcp_nodelay=True)
         self.assert_(s.tcp_nodelay)
-        self.assertEquals('1', s.get_header_fields()['tcp_nodelay'])
+        self.assertEqual('1', s.get_header_fields()['tcp_nodelay'])
         
     def test_TCPROSPub(self):
         import rospy.impl.transport
@@ -115,31 +115,31 @@ class TestRospyTcprosPubsub(unittest.TestCase):
         name = 'name-%s'%time.time()
         pub_data_class = test_rospy.msg.Val
         p = TCPROSPub(name, pub_data_class)
-        self.assertEquals(name, p.resolved_name)
-        self.assertEquals(rospy.impl.transport.OUTBOUND, p.direction)
-        self.assertEquals(pub_data_class, p.pub_data_class)
+        self.assertEqual(name, p.resolved_name)
+        self.assertEqual(rospy.impl.transport.OUTBOUND, p.direction)
+        self.assertEqual(pub_data_class, p.pub_data_class)
         self.assert_(p.buff_size > -1)
         self.failIf(p.is_latch)
 
         fields = p.get_header_fields()
-        self.assertEquals(name, fields['topic'])
-        self.assertEquals(pub_data_class._md5sum, fields['md5sum'])
-        self.assertEquals(pub_data_class._full_text, fields['message_definition'])
-        self.assertEquals('test_rospy/Val', fields['type'])
+        self.assertEqual(name, fields['topic'])
+        self.assertEqual(pub_data_class._md5sum, fields['md5sum'])
+        self.assertEqual(pub_data_class._full_text, fields['message_definition'])
+        self.assertEqual('test_rospy/Val', fields['type'])
         self.assert_(callerid, fields['callerid'])
         if 'latching' in fields:
-            self.assertEquals('0', fields['latching'])
+            self.assertEqual('0', fields['latching'])
 
         p = TCPROSPub(name, pub_data_class, is_latch=True)
         self.assert_(p.is_latch)
-        self.assertEquals('1', p.get_header_fields()['latching'])
+        self.assertEqual('1', p.get_header_fields()['latching'])
 
         # test additional header fields
         p = TCPROSPub(name, pub_data_class, headers={'foo': 'bar', 'hoge': 'fuga'})
         fields = p.get_header_fields()        
-        self.assertEquals(name, fields['topic'])
-        self.assertEquals('fuga', fields['hoge'])
-        self.assertEquals('bar', fields['foo'])        
+        self.assertEqual(name, fields['topic'])
+        self.assertEqual('fuga', fields['hoge'])
+        self.assertEqual('bar', fields['foo'])        
         
     def test_configure_pub_socket(self):
         # #1241 regression test to make sure that imports don't get messed up again
@@ -196,7 +196,7 @@ class TestRospyTcprosPubsub(unittest.TestCase):
         # now test with correct params
         err = tch(sock, client_addr, headers)        
         self.failIf(err)
-        self.assertEquals(None, sock.sockopt)
+        self.assertEqual(None, sock.sockopt)
 
         # test with mismatched type
         # - if md5sums match, this should not error
@@ -217,13 +217,13 @@ class TestRospyTcprosPubsub(unittest.TestCase):
         headers['tcp_nodelay'] = '0'
         err = tch(sock, client_addr, headers)        
         self.failIf(err)
-        self.assertEquals(None, sock.sockopt)        
+        self.assertEqual(None, sock.sockopt)        
         
         # - now test actual sock opt
         headers['tcp_nodelay'] = '1'        
         err = tch(sock, client_addr, headers)        
         self.failIf(err)
-        self.assertEquals((socket.IPPROTO_TCP, socket.TCP_NODELAY, 1), sock.sockopt)
+        self.assertEqual((socket.IPPROTO_TCP, socket.TCP_NODELAY, 1), sock.sockopt)
         # test connection headers
         impl.headers = {'foo': 'baz', 'hoge': 'fuga'}        
         headers['tcp_nodelay'] = '0'
@@ -231,7 +231,7 @@ class TestRospyTcprosPubsub(unittest.TestCase):
         self.failIf(err)
         connection = impl.connections[-1]
         fields = connection.protocol.get_header_fields()
-        self.assertEquals(impl.resolved_name, fields['topic'])
-        self.assertEquals('fuga', fields['hoge'])
-        self.assertEquals('baz', fields['foo'])        
+        self.assertEqual(impl.resolved_name, fields['topic'])
+        self.assertEqual('fuga', fields['hoge'])
+        self.assertEqual('baz', fields['foo'])        
             

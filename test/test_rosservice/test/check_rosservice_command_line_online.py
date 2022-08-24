@@ -88,16 +88,16 @@ class TestRosserviceOnline(unittest.TestCase):
         for name in names:
             # args
             output = Popen([cmd, 'args', name], stdout=PIPE).communicate()[0]
-            self.assertEquals(b'a b', output.strip())
+            self.assertEqual(b'a b', output.strip())
 
             # type
             output = Popen([cmd, 'type', name], stdout=PIPE).communicate()[0]
-            self.assertEquals(b'test_rosmaster/AddTwoInts', output.strip())
+            self.assertEqual(b'test_rosmaster/AddTwoInts', output.strip())
 
             # find
             output = Popen([cmd, 'find', 'test_rosmaster/AddTwoInts'], stdout=PIPE).communicate()[0]
             values = [v.strip() for v in output.decode().split('\n') if v.strip()]
-            self.assertEquals(set(values), set(services))
+            self.assertEqual(set(values), set(services))
 
             # uri
             output = Popen([cmd, 'uri', name], stdout=PIPE).communicate()[0]
@@ -106,10 +106,10 @@ class TestRosserviceOnline(unittest.TestCase):
 
             # call
             output = Popen([cmd, 'call', '--wait', name, '1', '2'], stdout=PIPE).communicate()[0]
-            self.assertEquals(b'sum: 3', output.strip())
+            self.assertEqual(b'sum: 3', output.strip())
 
             output = Popen([cmd, 'call', name, '1', '2'], stdout=PIPE).communicate()[0]
-            self.assertEquals(b'sum: 3', output.strip())
+            self.assertEqual(b'sum: 3', output.strip())
 
         name = 'header_echo'
         # test with a Header so we can validate keyword args
@@ -123,16 +123,16 @@ class TestRosserviceOnline(unittest.TestCase):
             output = output.strip()
             self.assert_(output, output)
             val = yaml.safe_load(output)['header']
-            self.assertEquals('', val['frame_id'])
+            self.assertEqual('', val['frame_id'])
             self.assert_(val['seq'] >= 0)
-            self.assertEquals(0, val['stamp']['secs'])
-            self.assertEquals(0, val['stamp']['nsecs'])
+            self.assertEqual(0, val['stamp']['secs'])
+            self.assertEqual(0, val['stamp']['nsecs'])
 
         # test with auto headers
         for v in ['{header: auto}', '{header: {stamp: now}}']:
             output = Popen([cmd, 'call', name, v], stdout=PIPE).communicate()[0]
             val = yaml.safe_load(output.strip())['header']
-            self.assertEquals('', val['frame_id'])
+            self.assertEqual('', val['frame_id'])
             self.assert_(val['seq'] >= 0)
             self.assert_(val['stamp']['secs'] >= int(t))
         
@@ -149,7 +149,7 @@ class TestRosserviceOnline(unittest.TestCase):
         # test_call_wait
         def task1():
             output = Popen([cmd, 'call', '--wait', 'wait_two_ints', '1', '2'], stdout=PIPE).communicate()[0]
-            self.assertEquals(b'sum: 3', output.strip())
+            self.assertEqual(b'sum: 3', output.strip())
         timeout_t = time.time() + 5.
         t1 = TestTask(task1)
         t1.start()

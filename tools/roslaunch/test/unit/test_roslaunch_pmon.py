@@ -165,42 +165,42 @@ class TestRoslaunchPmon(unittest.TestCase):
 
     ## test all apis of Process instance. part coverage/sanity test
     def _test_Process(self, p, package, name, args, env, respawn, respawn_delay):
-        self.assertEquals(package, p.package)
-        self.assertEquals(name, p.name)
-        self.assertEquals(args, p.args)        
-        self.assertEquals(env, p.env)  
-        self.assertEquals(respawn, p.respawn)
-        self.assertEquals(respawn_delay, p.respawn_delay)
-        self.assertEquals(0, p.spawn_count)        
-        self.assertEquals(None, p.exit_code)
+        self.assertEqual(package, p.package)
+        self.assertEqual(name, p.name)
+        self.assertEqual(args, p.args)        
+        self.assertEqual(env, p.env)  
+        self.assertEqual(respawn, p.respawn)
+        self.assertEqual(respawn_delay, p.respawn_delay)
+        self.assertEqual(0, p.spawn_count)        
+        self.assertEqual(None, p.exit_code)
         self.assert_(p.get_exit_description())
         self.failIf(p.is_alive())
 
         info = p.get_info()
-        self.assertEquals(package, info['package'])
-        self.assertEquals(name, info['name'])
-        self.assertEquals(args, info['args'])        
-        self.assertEquals(env, info['env'])  
-        self.assertEquals(respawn, info['respawn'])
-        self.assertEquals(respawn_delay, info['respawn_delay'])
-        self.assertEquals(0, info['spawn_count'])        
+        self.assertEqual(package, info['package'])
+        self.assertEqual(name, info['name'])
+        self.assertEqual(args, info['args'])        
+        self.assertEqual(env, info['env'])  
+        self.assertEqual(respawn, info['respawn'])
+        self.assertEqual(respawn_delay, info['respawn_delay'])
+        self.assertEqual(0, info['spawn_count'])        
         self.failIf('exit_code' in info)
 
         p.start()
-        self.assertEquals(1, p.spawn_count)
-        self.assertEquals(1, p.get_info()['spawn_count']) 
+        self.assertEqual(1, p.spawn_count)
+        self.assertEqual(1, p.get_info()['spawn_count']) 
         p.start()        
-        self.assertEquals(2, p.spawn_count)
-        self.assertEquals(2, p.get_info()['spawn_count'])
+        self.assertEqual(2, p.spawn_count)
+        self.assertEqual(2, p.get_info()['spawn_count'])
 
         # noop
         p.stop()
 
         p.exit_code = 0
-        self.assertEquals(0, p.get_info()['exit_code'])
+        self.assertEqual(0, p.get_info()['exit_code'])
         self.assert_('cleanly' in p.get_exit_description())
         p.exit_code = 1
-        self.assertEquals(1, p.get_info()['exit_code'])                        
+        self.assertEqual(1, p.get_info()['exit_code'])                        
         self.assert_('[exit code 1]' in p.get_exit_description())
 
     ## tests to make sure that our Process base class has 100% coverage
@@ -227,25 +227,25 @@ class TestRoslaunchPmon(unittest.TestCase):
         from roslaunch.pmon import DeadProcess
         p0.exit_code = -1
         dp = DeadProcess(p0)
-        self.assertEquals(package, dp.package)
-        self.assertEquals(name, dp.name)
-        self.assertEquals(args, dp.args)        
-        self.assertEquals(env, dp.env)  
-        self.assertEquals(respawn, dp.respawn)
-        self.assertEquals(respawn_delay, dp.respawn_delay)
-        self.assertEquals(0, dp.spawn_count)        
-        self.assertEquals(-1, dp.exit_code)
+        self.assertEqual(package, dp.package)
+        self.assertEqual(name, dp.name)
+        self.assertEqual(args, dp.args)        
+        self.assertEqual(env, dp.env)  
+        self.assertEqual(respawn, dp.respawn)
+        self.assertEqual(respawn_delay, dp.respawn_delay)
+        self.assertEqual(0, dp.spawn_count)        
+        self.assertEqual(-1, dp.exit_code)
         self.failIf(dp.is_alive())
 
         info = dp.get_info()
         info0 = p0.get_info()
-        self.assertEquals(info0['package'], info['package'])
-        self.assertEquals(info0['name'], info['name'])
-        self.assertEquals(info0['args'], info['args'])        
-        self.assertEquals(info0['env'], info['env'])  
-        self.assertEquals(info0['respawn'], info['respawn'])
-        self.assertEquals(info0['respawn_delay'], info['respawn_delay'])
-        self.assertEquals(0, info['spawn_count'])        
+        self.assertEqual(info0['package'], info['package'])
+        self.assertEqual(info0['name'], info['name'])
+        self.assertEqual(info0['args'], info['args'])        
+        self.assertEqual(info0['env'], info['env'])  
+        self.assertEqual(info0['respawn'], info['respawn'])
+        self.assertEqual(info0['respawn_delay'], info['respawn_delay'])
+        self.assertEqual(0, info['spawn_count'])        
 
         try:
             dp.start()
@@ -256,15 +256,15 @@ class TestRoslaunchPmon(unittest.TestCase):
         p0.package = 'dead package'
         p0.name = 'dead name'        
         p0.spawn_count = 1
-        self.assertEquals(package, dp.package)
-        self.assertEquals(name, dp.name)
-        self.assertEquals(0, dp.spawn_count)                
-        self.assertEquals(package, dp.get_info()['package']) 
-        self.assertEquals(name, dp.get_info()['name']) 
-        self.assertEquals(0, dp.get_info()['spawn_count']) 
+        self.assertEqual(package, dp.package)
+        self.assertEqual(name, dp.name)
+        self.assertEqual(0, dp.spawn_count)                
+        self.assertEqual(package, dp.get_info()['package']) 
+        self.assertEqual(name, dp.get_info()['name']) 
+        self.assertEqual(0, dp.get_info()['spawn_count']) 
         p0.start()        
-        self.assertEquals(0, dp.spawn_count)
-        self.assertEquals(0, dp.get_info()['spawn_count'])
+        self.assertEqual(0, dp.spawn_count)
+        self.assertEqual(0, dp.get_info()['spawn_count'])
 
         # noop
         p0.stop()
@@ -396,7 +396,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         # to run through the ProcessMonitor run loop and it should
         # exit.  But first, important that we check that pmon has no
         # other extra state in it
-        self.assertEquals(3, len(pmon.get_active_names()))
+        self.assertEqual(3, len(pmon.get_active_names()))
 
         # put pmon into exitable state
         pmon.registrations_complete()
@@ -484,12 +484,12 @@ class TestRoslaunchPmon(unittest.TestCase):
         p2 = ProcessMock('bar', 'name2', [], {})
 
         pmon = self.pmon
-        self.assertEquals([[], []], pmon.get_process_names_with_spawn_count())
+        self.assertEqual([[], []], pmon.get_process_names_with_spawn_count())
         pmon.register(p1)
-        self.assertEquals([[('name1', 0),], []], pmon.get_process_names_with_spawn_count())        
+        self.assertEqual([[('name1', 0),], []], pmon.get_process_names_with_spawn_count())        
         pmon.register(p2)
         alive, dead = pmon.get_process_names_with_spawn_count()
-        self.assertEquals([], dead)
+        self.assertEqual([], dead)
         self.assert_(('name1', 0) in alive)
         self.assert_(('name2', 0) in alive)        
         
@@ -498,7 +498,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         p2.spawn_count = random.randint(1, 10000)
         
         alive, dead = pmon.get_process_names_with_spawn_count()
-        self.assertEquals([], dead)
+        self.assertEqual([], dead)
         self.assert_((p1.name, p1.spawn_count) in alive)
         self.assert_((p2.name, p2.spawn_count) in alive)
 
@@ -518,9 +518,9 @@ class TestRoslaunchPmon(unittest.TestCase):
 
         pmon.register(p1)
         self.assert_(pmon.has_process('name1'))
-        self.assertEquals(p1, pmon.get_process('name1'))
+        self.assertEqual(p1, pmon.get_process('name1'))
         self.failIf(pmon.has_process('name2'))
-        self.assertEquals(['name1'], pmon.get_active_names())
+        self.assertEqual(['name1'], pmon.get_active_names())
         try:
             pmon.register(Process('foo', p1.name, [], {}))
             self.fail("should not allow duplicate process name")
@@ -528,18 +528,18 @@ class TestRoslaunchPmon(unittest.TestCase):
         
         pmon.register(p2)
         self.assert_(pmon.has_process('name2'))
-        self.assertEquals(p2, pmon.get_process('name2'))
-        self.assertEquals(set(['name1', 'name2']), set(pmon.get_active_names()))
+        self.assertEqual(p2, pmon.get_process('name2'))
+        self.assertEqual(set(['name1', 'name2']), set(pmon.get_active_names()))
         
         pmon.register_core_proc(corep1)
         self.assert_(pmon.has_process('core1'))
-        self.assertEquals(corep1, pmon.get_process('core1'))
-        self.assertEquals(set(['name1', 'name2', 'core1']), set(pmon.get_active_names()))        
+        self.assertEqual(corep1, pmon.get_process('core1'))
+        self.assertEqual(set(['name1', 'name2', 'core1']), set(pmon.get_active_names()))        
 
         pmon.register_core_proc(corep2)
         self.assert_(pmon.has_process('core2'))
-        self.assertEquals(corep2, pmon.get_process('core2'))
-        self.assertEquals(set(['name1', 'name2', 'core1', 'core2']), set(pmon.get_active_names()))                
+        self.assertEqual(corep2, pmon.get_process('core2'))
+        self.assertEqual(set(['name1', 'name2', 'core1', 'core2']), set(pmon.get_active_names()))                
 
 
         pmon.unregister(p2)

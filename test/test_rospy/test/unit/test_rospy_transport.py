@@ -44,20 +44,20 @@ class TestRospyTransport(unittest.TestCase):
         ids = []
         for d in [INBOUND, OUTBOUND, BIDIRECTIONAL]:
             t = Transport(d)
-            self.assertEquals(d, t.direction)
-            self.assertEquals("UNKNOWN", t.transport_type)            
+            self.assertEqual(d, t.direction)
+            self.assertEqual("UNKNOWN", t.transport_type)            
             self.failIf(t.done)
-            self.assertEquals(None, t.cleanup_cb)
-            self.assertEquals('', t.endpoint_id)            
-            self.assertEquals('unnamed', t.name)
-            self.assertEquals(0, t.stat_bytes)            
-            self.assertEquals(0, t.stat_num_msg)            
+            self.assertEqual(None, t.cleanup_cb)
+            self.assertEqual('', t.endpoint_id)            
+            self.assertEqual('unnamed', t.name)
+            self.assertEqual(0, t.stat_bytes)            
+            self.assertEqual(0, t.stat_num_msg)            
             self.failIf(t.id in ids)
             ids.append(t.id)
 
             t = Transport(d, 'a name')
-            self.assertEquals(d, t.direction)
-            self.assertEquals('a name', t.name)
+            self.assertEqual(d, t.direction)
+            self.assertEqual('a name', t.name)
 
         # test cleanup with and without a callback
         t = Transport(INBOUND)
@@ -70,10 +70,10 @@ class TestRospyTransport(unittest.TestCase):
             self.cleanup_obj = obj
 
         t.set_cleanup_callback(cleanup)
-        self.assertEquals(t.cleanup_cb, cleanup)
+        self.assertEqual(t.cleanup_cb, cleanup)
         t.close()
         self.assert_(t.done)
-        self.assertEquals(self.cleanup_obj, t)
+        self.assertEqual(self.cleanup_obj, t)
 
         t = Transport(OUTBOUND)
         import traceback
@@ -102,28 +102,28 @@ class TestRospyTransport(unittest.TestCase):
         t.stat_bytes = 1234
         t.stat_num_msg = 5678
         dead = DeadTransport(t)
-        self.assertEquals(INBOUND, dead.direction)
-        self.assertEquals('foo', dead.name)
-        self.assertEquals(1234, dead.stat_bytes)
-        self.assertEquals(5678, dead.stat_num_msg)        
-        self.assertEquals(True, dead.done)
-        self.assertEquals('', dead.endpoint_id)
+        self.assertEqual(INBOUND, dead.direction)
+        self.assertEqual('foo', dead.name)
+        self.assertEqual(1234, dead.stat_bytes)
+        self.assertEqual(5678, dead.stat_num_msg)        
+        self.assertEqual(True, dead.done)
+        self.assertEqual('', dead.endpoint_id)
 
         t = Transport(OUTBOUND, 'bar')
         t.endpoint_id = 'blah blah'
         t.close()
         dead = DeadTransport(t)
-        self.assertEquals(OUTBOUND, dead.direction)
-        self.assertEquals('bar', dead.name)
-        self.assertEquals(True, dead.done)
-        self.assertEquals(t.endpoint_id, dead.endpoint_id)
+        self.assertEqual(OUTBOUND, dead.direction)
+        self.assertEqual('bar', dead.name)
+        self.assertEqual(True, dead.done)
+        self.assertEqual(t.endpoint_id, dead.endpoint_id)
         
     def test_ProtocolHandler(self):
         # tripwire tests
         from rospy.impl.transport import ProtocolHandler
         h = ProtocolHandler()
         self.failIf(h.supports('TCPROS'))
-        self.assertEquals([], h.get_supported())
+        self.assertEqual([], h.get_supported())
         try:
             h.create_connection("/topic", 'http://localhost:1234', ['TCPROS'])
             self.fail("create_connection should raise an exception")

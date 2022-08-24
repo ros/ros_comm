@@ -50,15 +50,15 @@ def printlog_cb_exception(msg):
 class TestCore(unittest.TestCase):
     def test_xml_escape(self):
         from roslaunch.core import _xml_escape
-        self.assertEquals('', _xml_escape(''))
-        self.assertEquals(' ', _xml_escape(' '))        
-        self.assertEquals('&quot;', _xml_escape('"'))
-        self.assertEquals('&quot;hello world&quot;', _xml_escape('"hello world"'))
-        self.assertEquals('&gt;', _xml_escape('>'))
-        self.assertEquals('&lt;', _xml_escape('<'))
-        self.assertEquals('&amp;', _xml_escape('&'))
-        self.assertEquals('&amp;amp;', _xml_escape('&amp;'))        
-        self.assertEquals('&amp;&quot;&gt;&lt;&quot;', _xml_escape('&"><"'))
+        self.assertEqual('', _xml_escape(''))
+        self.assertEqual(' ', _xml_escape(' '))        
+        self.assertEqual('&quot;', _xml_escape('"'))
+        self.assertEqual('&quot;hello world&quot;', _xml_escape('"hello world"'))
+        self.assertEqual('&gt;', _xml_escape('>'))
+        self.assertEqual('&lt;', _xml_escape('<'))
+        self.assertEqual('&amp;', _xml_escape('&'))
+        self.assertEqual('&amp;amp;', _xml_escape('&amp;'))        
+        self.assertEqual('&amp;&quot;&gt;&lt;&quot;', _xml_escape('&"><"'))
         
         
     def test_child_mode(self):
@@ -81,11 +81,11 @@ class TestCore(unittest.TestCase):
         global _lastmsg
         _lastmsg = None
         printlog('foo')
-        self.assertEquals('foo', _lastmsg)
+        self.assertEqual('foo', _lastmsg)
         printlog_bold('bar')
-        self.assertEquals('bar', _lastmsg)        
+        self.assertEqual('bar', _lastmsg)        
         printerrlog('baz')
-        self.assertEquals('baz', _lastmsg)        
+        self.assertEqual('baz', _lastmsg)        
         
     def test_setup_env(self):
         from roslaunch.core import setup_env, Node, Machine
@@ -94,25 +94,25 @@ class TestCore(unittest.TestCase):
         n = Node('nodepkg','nodetype')
         m = Machine('name1', '1.2.3.4')
         d = setup_env(n, m, master_uri)
-        self.assertEquals(d['ROS_MASTER_URI'], master_uri)
+        self.assertEqual(d['ROS_MASTER_URI'], master_uri)
 
         m = Machine('name1', '1.2.3.4')
         d = setup_env(n, m, master_uri)
         val = os.environ['ROS_ROOT']
-        self.assertEquals(d['ROS_ROOT'], val)
+        self.assertEqual(d['ROS_ROOT'], val)
 
         # test ROS_NAMESPACE
         # test stripping
         n = Node('nodepkg','nodetype', namespace="/ns2/")
         d = setup_env(n, m, master_uri)
-        self.assertEquals(d['ROS_NAMESPACE'], "/ns2")
+        self.assertEqual(d['ROS_NAMESPACE'], "/ns2")
 
         # test node.env_args
         n = Node('nodepkg','nodetype', env_args=[('NENV1', 'val1'), ('NENV2', 'val2'), ('ROS_ROOT', '/new/root')])        
         d = setup_env(n, m, master_uri)
-        self.assertEquals(d['ROS_ROOT'], "/new/root")
-        self.assertEquals(d['NENV1'], "val1")
-        self.assertEquals(d['NENV2'], "val2")
+        self.assertEqual(d['ROS_ROOT'], "/new/root")
+        self.assertEqual(d['NENV1'], "val1")
+        self.assertEqual(d['NENV2'], "val2")
 
         
     def test_local_machine(self):
@@ -125,11 +125,11 @@ class TestCore(unittest.TestCase):
             #singleton
             self.assert_(lm == local_machine())
 
-            self.assertEquals(lm.name, '')
-            self.assertEquals(lm.assignable, True)
-            self.assertEquals(lm.env_loader, None)        
-            self.assertEquals(lm.user, None)
-            self.assertEquals(lm.password, None)
+            self.assertEqual(lm.name, '')
+            self.assertEqual(lm.assignable, True)
+            self.assertEqual(lm.env_loader, None)        
+            self.assertEqual(lm.user, None)
+            self.assertEqual(lm.password, None)
         finally:
             os.environ = env_copy
 
@@ -140,16 +140,16 @@ class TestCore(unittest.TestCase):
         try:
             os.environ['ROS_MASTER_URI'] = 'http://foo:789'
             m = Master()
-            self.assertEquals(m.type, Master.ROSMASTER)
-            self.assertEquals(m.uri, 'http://foo:789')
-            self.assertEquals(m, m)
-            self.assertEquals(m, Master())
+            self.assertEqual(m.type, Master.ROSMASTER)
+            self.assertEqual(m.uri, 'http://foo:789')
+            self.assertEqual(m, m)
+            self.assertEqual(m, Master())
             
             m = Master(Master.ROSMASTER, 'http://foo:1234')
-            self.assertEquals(m.type, Master.ROSMASTER)
-            self.assertEquals(m.uri, 'http://foo:1234')
-            self.assertEquals(m, m)
-            self.assertEquals(m, Master(Master.ROSMASTER, 'http://foo:1234'))
+            self.assertEqual(m.type, Master.ROSMASTER)
+            self.assertEqual(m.uri, 'http://foo:1234')
+            self.assertEqual(m, m)
+            self.assertEqual(m, Master(Master.ROSMASTER, 'http://foo:1234'))
 
             try:
                 from xmlrpc.client import ServerProxy
@@ -157,7 +157,7 @@ class TestCore(unittest.TestCase):
                 from xmlrpclib import ServerProxy
             self.assert_(isinstance(m.get(), ServerProxy))
             m.uri = 'http://foo:567'
-            self.assertEquals(567, m.get_port())
+            self.assertEqual(567, m.get_port())
             self.failIf(m.is_running())
 
         finally:
@@ -170,32 +170,32 @@ class TestCore(unittest.TestCase):
         from roslaunch.core import Executable, PHASE_SETUP, PHASE_RUN, PHASE_TEARDOWN
 
         e = Executable('ls', ['-alF'])
-        self.assertEquals('ls', e.command)
-        self.assertEquals(['-alF'], e.args)
-        self.assertEquals(PHASE_RUN, e.phase)
-        self.assertEquals('ls -alF', str(e))
-        self.assertEquals('ls -alF', repr(e))        
+        self.assertEqual('ls', e.command)
+        self.assertEqual(['-alF'], e.args)
+        self.assertEqual(PHASE_RUN, e.phase)
+        self.assertEqual('ls -alF', str(e))
+        self.assertEqual('ls -alF', repr(e))        
 
         e = Executable('ls', ['-alF', 'b*'], PHASE_TEARDOWN)
-        self.assertEquals('ls', e.command)
-        self.assertEquals(['-alF', 'b*'], e.args)
-        self.assertEquals(PHASE_TEARDOWN, e.phase)
-        self.assertEquals('ls -alF b*', str(e))
-        self.assertEquals('ls -alF b*', repr(e))        
+        self.assertEqual('ls', e.command)
+        self.assertEqual(['-alF', 'b*'], e.args)
+        self.assertEqual(PHASE_TEARDOWN, e.phase)
+        self.assertEqual('ls -alF b*', str(e))
+        self.assertEqual('ls -alF b*', repr(e))        
 
     def test_RosbinExecutable(self):
         from roslaunch.core import RosbinExecutable, PHASE_SETUP, PHASE_RUN, PHASE_TEARDOWN
 
         e = RosbinExecutable('ls', ['-alF'])
-        self.assertEquals('ls', e.command)
-        self.assertEquals(['-alF'], e.args)
-        self.assertEquals(PHASE_RUN, e.phase)
-        self.assertEquals('ros/bin/ls -alF', str(e))
-        self.assertEquals('ros/bin/ls -alF', repr(e))        
+        self.assertEqual('ls', e.command)
+        self.assertEqual(['-alF'], e.args)
+        self.assertEqual(PHASE_RUN, e.phase)
+        self.assertEqual('ros/bin/ls -alF', str(e))
+        self.assertEqual('ros/bin/ls -alF', repr(e))        
 
         e = RosbinExecutable('ls', ['-alF', 'b*'], PHASE_TEARDOWN)
-        self.assertEquals('ls', e.command)
-        self.assertEquals(['-alF', 'b*'], e.args)
-        self.assertEquals(PHASE_TEARDOWN, e.phase)
-        self.assertEquals('ros/bin/ls -alF b*', str(e))
-        self.assertEquals('ros/bin/ls -alF b*', repr(e))        
+        self.assertEqual('ls', e.command)
+        self.assertEqual(['-alF', 'b*'], e.args)
+        self.assertEqual(PHASE_TEARDOWN, e.phase)
+        self.assertEqual('ros/bin/ls -alF b*', str(e))
+        self.assertEqual('ros/bin/ls -alF b*', repr(e))        

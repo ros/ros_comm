@@ -81,12 +81,12 @@ class TestRospyClient(unittest.TestCase):
         try:
             from rospy.client import myargv
             args = myargv()
-            self.assertEquals(args, sys.argv)
-            self.assertEquals(['foo', 'bar', 'baz'], myargv(['foo','bar', 'baz']))
-            self.assertEquals(['-foo', 'bar', '-baz'], myargv(['-foo','bar', '-baz']))
+            self.assertEqual(args, sys.argv)
+            self.assertEqual(['foo', 'bar', 'baz'], myargv(['foo','bar', 'baz']))
+            self.assertEqual(['-foo', 'bar', '-baz'], myargv(['-foo','bar', '-baz']))
             
-            self.assertEquals(['foo'], myargv(['foo','bar:=baz']))
-            self.assertEquals(['foo','-bar:=baz'], myargv(['foo','-bar:=baz']))
+            self.assertEqual(['foo'], myargv(['foo','bar:=baz']))
+            self.assertEqual(['foo','-bar:=baz'], myargv(['foo','-bar:=baz']))
         finally:
             sys.argv = orig_argv
     

@@ -79,7 +79,7 @@ class TestRosnodeOffline(unittest.TestCase):
         output = Popen([cmd, 'list',], **kwds).communicate()
         self.assert_(msg in output[1])
         output = Popen([cmd, 'ping', 'talker'], **kwds).communicate()
-        self.assertEquals(msg, output[1])
+        self.assertEqual(msg, output[1])
         output = Popen([cmd, 'info', 'talker'], **kwds).communicate()
         self.assert_(msg in output[1])
 

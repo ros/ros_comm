@@ -56,12 +56,12 @@ class RoslibSrvTest(unittest.TestCase):
 
         text = msg_a.text + '\n---\n' + msg_b.text
         spec = SrvSpec(msg_a, msg_b, text)
-        self.assertEquals(msg_a, spec.request)
-        self.assertEquals(msg_b, spec.response)
-        self.assertEquals(text, spec.text)
-        self.assertEquals('', spec.full_name)
-        self.assertEquals('', spec.short_name)
-        self.assertEquals('',spec.package)
+        self.assertEqual(msg_a, spec.request)
+        self.assertEqual(msg_b, spec.response)
+        self.assertEqual(text, spec.text)
+        self.assertEqual('', spec.full_name)
+        self.assertEqual('', spec.short_name)
+        self.assertEqual('',spec.package)
         
         # tripwire
         self.assert_(repr(spec))
@@ -72,24 +72,24 @@ class RoslibSrvTest(unittest.TestCase):
         self.assert_(spec != 'spec')
         
         spec2 = SrvSpec(msg_a, msg_b, text)
-        self.assertEquals(spec, spec2)
+        self.assertEqual(spec, spec2)
         self.failIf(spec != spec2)
         
         # - full_name
         spec2.full_name = 'something'
         self.assertNotEquals(spec, spec2)        
         spec2.full_name = ''        
-        self.assertEquals(spec, spec2)
+        self.assertEqual(spec, spec2)
         # - short_name
         spec2.short_name = 'something'
         self.assertNotEquals(spec, spec2)        
         spec2.short_name = ''        
-        self.assertEquals(spec, spec2)
+        self.assertEqual(spec, spec2)
         # - package
         spec2.package = 'something'
         self.assertNotEquals(spec, spec2)        
         spec2.package = ''        
-        self.assertEquals(spec, spec2)
+        self.assertEqual(spec, spec2)
         
     def test_srv_file(self):
         from roslib.srvs import srv_file
@@ -99,7 +99,7 @@ class RoslibSrvTest(unittest.TestCase):
         with open(filename, 'r') as f:
             text = f.read()
 
-        self.assertEquals(filename, srv_file('test_roslib_comm', 'AddTwoInts'))
+        self.assertEqual(filename, srv_file('test_roslib_comm', 'AddTwoInts'))
         
     def test_load_from_file(self):
         from roslib.srvs import load_from_file, set_verbose
@@ -110,21 +110,20 @@ class RoslibSrvTest(unittest.TestCase):
             text = f.read()
         
         name, spec = load_from_file(filename)
-        self.assertEquals('AddTwoInts', name)
-        self.assertEquals(['int64', 'int64'], spec.request.types)
-        self.assertEquals(['a', 'b'], spec.request.names)
-        self.assertEquals(text, spec.text)
+        self.assertEqual('AddTwoInts', name)
+        self.assertEqual(['int64', 'int64'], spec.request.types)
+        self.assertEqual(['a', 'b'], spec.request.names)
+        self.assertEqual(text, spec.text)
         
         name2, spec2 = load_from_file(filename, package_context='foo')
-        self.assertEquals('foo/AddTwoInts', name2)
+        self.assertEqual('foo/AddTwoInts', name2)
         name2, spec2 = load_from_file(filename, package_context='foo/')
-        self.assertEquals('foo/AddTwoInts', name2)
+        self.assertEqual('foo/AddTwoInts', name2)
         name2, spec2 = load_from_file(filename, package_context='foo//')
-        self.assertEquals('foo/AddTwoInts', name2)
+        self.assertEqual('foo/AddTwoInts', name2)
 
         # test with verbose on
         set_verbose(True)
         name3, spec3 = load_from_file(filename)
-        self.assertEquals(name, name3)
-        self.assertEquals(spec, spec3)        
-
+        self.assertEqual(name, name3)
+        self.assertEqual(spec, spec3)        

@@ -92,9 +92,9 @@ class TestGentools(unittest.TestCase):
         rg_msg_dir = os.path.join(roslib.packages.get_pkg_dir(TEST_CTX), 'msg')
         clock_msg = os.path.join(rg_msg_dir, 'Clock.msg')
         # a bit gory, but go ahead and regression test these important messages
-        self.assertEquals("time clock", self._compute_md5_text(clock_msg))
+        self.assertEqual("time clock", self._compute_md5_text(clock_msg))
         log_msg = os.path.join(rg_msg_dir, 'Log.msg')
-        self.assertEquals("byte DEBUG=1\nbyte INFO=2\nbyte WARN=4\nbyte ERROR=8\nbyte FATAL=16\n%s header\nbyte level\nstring name\nstring msg\nstring file\nstring function\nuint32 line\nstring[] topics"%Header_md5, self._compute_md5_text(log_msg))
+        self.assertEqual("byte DEBUG=1\nbyte INFO=2\nbyte WARN=4\nbyte ERROR=8\nbyte FATAL=16\n%s header\nbyte level\nstring name\nstring msg\nstring file\nstring function\nuint32 line\nstring[] topics"%Header_md5, self._compute_md5_text(log_msg))
 
         tests = self._load_md5_tests('md5text')
         # text file #1 is the reference
@@ -109,7 +109,7 @@ class TestGentools(unittest.TestCase):
             files = [f for f in files if not f.endswith('%s1.txt'%k)]
             for f in files[1:]:
                 f_text = self._compute_md5_text(f)
-                self.assertEquals(ref_text, f_text, "failed on %s\n%s\n%s: \n[%s]\nvs.\n[%s]\n"%(k, ref_file, f, ref_text, f_text))
+                self.assertEqual(ref_text, f_text, "failed on %s\n%s\n%s: \n[%s]\nvs.\n[%s]\n"%(k, ref_file, f, ref_text, f_text))
         
     def test_md5_equals(self):
         tests = self._load_md5_tests('same')
@@ -117,7 +117,7 @@ class TestGentools(unittest.TestCase):
             print("running tests", k)
             md5sum = self._compute_md5(files[0])
             for f in files[1:]:
-                self.assertEquals(md5sum, self._compute_md5(f), "failed on %s: \n[%s]\nvs.\n[%s]\n"%(k, self._compute_md5_text(files[0]), self._compute_md5_text(f)))
+                self.assertEqual(md5sum, self._compute_md5(f), "failed on %s: \n[%s]\nvs.\n[%s]\n"%(k, self._compute_md5_text(files[0]), self._compute_md5_text(f)))
     
     def test_md5_not_equals(self):
         tests = self._load_md5_tests('different')
@@ -128,4 +128,4 @@ class TestGentools(unittest.TestCase):
             for f in files:
                 md5s.add(self._compute_md5(f))
             # each md5 should be unique
-            self.assertEquals(len(md5s), len(files))
+            self.assertEqual(len(md5s), len(files))

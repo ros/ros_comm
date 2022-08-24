@@ -44,7 +44,7 @@ class VersionTest(unittest.TestCase):
     def test_distro_version(self):
         val = (subprocess.Popen(['rosversion', '-d'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0] or b'').decode().strip()
         param = rospy.get_param('rosdistro').strip()
-        self.assertEquals(val, param, "rosversion -d [%s] and roscore [%s] do not match"%(val, param))
+        self.assertEqual(val, param, "rosversion -d [%s] and roscore [%s] do not match"%(val, param))
 
 if __name__ == '__main__':
     rostest.unitrun('test_rostest', 'test_distro_version', VersionTest, coverage_packages=[])

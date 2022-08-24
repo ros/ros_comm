@@ -130,11 +130,11 @@ class TestRostopic(unittest.TestCase):
             with fakestdout() as b:
                 rostopic.rostopicmain([cmd, 'type', s])
                 v = b.getvalue().strip()
-                self.assertEquals('std_msgs/String', v)
+                self.assertEqual('std_msgs/String', v)
                 # check type of topic field
                 rostopic.rostopicmain([cmd, 'type', s + '/data'])
                 v = b.getvalue().strip()
-                self.assertEquals('std_msgs/String data string', v)
+                self.assertEqual('std_msgs/String data string', v)
 
     def test_main(self):
         import rostopic
@@ -184,36 +184,36 @@ class TestRostopic(unittest.TestCase):
     def test_get_topic_type(self):
         import rostopic
         
-        self.assertEquals((None, None, None), rostopic.get_topic_type('/fake', blocking=False))
+        self.assertEqual((None, None, None), rostopic.get_topic_type('/fake', blocking=False))
         
         t, n, f = rostopic.get_topic_type('/rosout', blocking=False)
-        self.assertEquals('rosgraph_msgs/Log', t)
-        self.assertEquals('/rosout', n)
+        self.assertEqual('rosgraph_msgs/Log', t)
+        self.assertEqual('/rosout', n)
         self.assert_(f is None)
 
         t, n, f = rostopic.get_topic_type('/rosout/name', blocking=False)
-        self.assertEquals('rosgraph_msgs/Log', t)
-        self.assertEquals('/rosout', n)
+        self.assertEqual('rosgraph_msgs/Log', t)
+        self.assertEqual('/rosout', n)
         self.failIf(f is None)
         from rosgraph_msgs.msg import Log
-        self.assertEquals("bob", f(Log(name="bob")))
+        self.assertEqual("bob", f(Log(name="bob")))
         
     def test_get_topic_class(self):
         import rostopic
         
-        self.assertEquals((None, None, None), rostopic.get_topic_class('/fake'))
+        self.assertEqual((None, None, None), rostopic.get_topic_class('/fake'))
 
         from rosgraph_msgs.msg import Log
         c, n, f = rostopic.get_topic_class('/rosout')
-        self.assertEquals(Log, c)
-        self.assertEquals('/rosout', n)
+        self.assertEqual(Log, c)
+        self.assertEqual('/rosout', n)
         self.assert_(f is None)
 
         c, n, f = rostopic.get_topic_class('/rosout/name')
-        self.assertEquals(c, Log)
-        self.assertEquals('/rosout', n)
+        self.assertEqual(c, Log)
+        self.assertEqual('/rosout', n)
         self.failIf(f is None)
-        self.assertEquals("bob", f(Log(name="bob")))
+        self.assertEqual("bob", f(Log(name="bob")))
         
     def test_cmd_info(self):
         import rostopic
@@ -261,7 +261,7 @@ class TestRostopic(unittest.TestCase):
             rostopic.rostopicmain([cmd, 'find', 'std_msgs/String'])
             d = [x for x in b.getvalue().split('\n') if x.strip()]
             v = ['/foo/chatter', '/bar/chatter', '/chatter']
-            self.assertEquals(set(v), set(d))
+            self.assertEqual(set(v), set(d))
 
     def callback(self, msg, val):
         self.vals.add(val)
@@ -341,20 +341,20 @@ class TestRostopic(unittest.TestCase):
         for n in topics:
             with fakestdout() as b:
                 rostopic.rostopicmain([cmd, 'list', n])
-                self.assertEquals(n, b.getvalue().strip())
+                self.assertEqual(n, b.getvalue().strip())
 
         # test with relative names
         with fakestdout() as b:
             rostopic.rostopicmain([cmd, 'list', 'rosout'])
-            self.assertEquals('/rosout', b.getvalue().strip())
+            self.assertEqual('/rosout', b.getvalue().strip())
             
         # test with namespaces
         with fakestdout() as b:        
             rostopic.rostopicmain([cmd, 'list', '/foo'])
-            self.assertEquals('/foo/chatter', b.getvalue().strip())
+            self.assertEqual('/foo/chatter', b.getvalue().strip())
         with fakestdout() as b:        
             rostopic.rostopicmain([cmd, 'list', 'bar'])
-            self.assertEquals('/bar/chatter', b.getvalue().strip())
+            self.assertEqual('/bar/chatter', b.getvalue().strip())
 
 NAME = 'test_rostopic'
 if __name__ == '__main__':

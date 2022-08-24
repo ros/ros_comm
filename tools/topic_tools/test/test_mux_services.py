@@ -65,11 +65,11 @@ class MuxServiceTestCase(unittest.TestCase):
         add_srv, delete_srv, list_srv, select_srv = self.make_srv_proxies()
         # Check initial condition
         topics = list_srv().topics
-        self.assertEquals(set(topics), set(['/input']))
+        self.assertEqual(set(topics), set(['/input']))
         # Add a topic and make sure it's there
         add_srv('/new_input')
         topics = list_srv().topics
-        self.assertEquals(set(topics), set(['/input', '/new_input']))
+        self.assertEqual(set(topics), set(['/input', '/new_input']))
         # Try to add the same topic again, make sure it fails, and that
         # nothing changes.
         try:
@@ -79,7 +79,7 @@ class MuxServiceTestCase(unittest.TestCase):
         else:
             self.fail('service call should have thrown an exception')
         topics = list_srv().topics
-        self.assertEquals(set(topics), set(['/input', '/new_input']))
+        self.assertEqual(set(topics), set(['/input', '/new_input']))
         # Select a topic, then try to delete it, make sure it fails, and
         # that nothing changes.
         select_srv('/input')
@@ -90,18 +90,17 @@ class MuxServiceTestCase(unittest.TestCase):
         else:
             self.fail('service call should have thrown an exception')
         topics = list_srv().topics
-        self.assertEquals(set(topics), set(['/input', '/new_input']))
+        self.assertEqual(set(topics), set(['/input', '/new_input']))
         # Select nothing, to allow deletion
         select_srv('__none')
         # Delete topics
         delete_srv('/input')
         topics = list_srv().topics
-        self.assertEquals(set(topics), set(['/new_input']))
+        self.assertEqual(set(topics), set(['/new_input']))
         delete_srv('/new_input')
         topics = list_srv().topics
-        self.assertEquals(set(topics), set([]))
+        self.assertEqual(set(topics), set([]))
 
 if __name__ == "__main__":
     import rostest
     rostest.unitrun(PKG, 'mux_services', MuxServiceTestCase)
-

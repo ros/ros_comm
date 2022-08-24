@@ -61,10 +61,10 @@ class TestRospyCore(unittest.TestCase):
                  ('rosrpc://foo.com:1/', 'foo.com', 1)]
         for t, addr, port in valid:
             paddr, pport = rospy.core.parse_rosrpc_uri(t)
-            self.assertEquals(addr, paddr)
-            self.assertEquals(port, pport)
+            self.assertEqual(addr, paddr)
+            self.assertEqual(port, pport)
             # validate that it's a top-level API method
-            self.assertEquals(rospy.core.parse_rosrpc_uri(t), rospy.parse_rosrpc_uri(t))
+            self.assertEqual(rospy.core.parse_rosrpc_uri(t), rospy.parse_rosrpc_uri(t))
         invalid = ['rosrpc://:1234/', 'rosrpc://localhost', 'http://localhost:1234/']
         for i in invalid:
             try:
@@ -252,17 +252,17 @@ class TestRospyCore(unittest.TestCase):
             rospy.core.get_ros_root(env={}, required=True)
         except:
             pass
-        self.assertEquals(None, rospy.core.get_ros_root(env={}, required=False))
+        self.assertEqual(None, rospy.core.get_ros_root(env={}, required=False))
         rr = "%s"%time.time()
-        self.assertEquals(rr, rospy.core.get_ros_root(env={'ROS_ROOT': rr}, required=False))
-        self.assertEquals(rr, rospy.core.get_ros_root(env={'ROS_ROOT': rr}, required=True))        
+        self.assertEqual(rr, rospy.core.get_ros_root(env={'ROS_ROOT': rr}, required=False))
+        self.assertEqual(rr, rospy.core.get_ros_root(env={'ROS_ROOT': rr}, required=True))        
 
-        self.assertEquals(os.path.normpath(os.environ['ROS_ROOT']), rospy.core.get_ros_root(required=False))
+        self.assertEqual(os.path.normpath(os.environ['ROS_ROOT']), rospy.core.get_ros_root(required=False))
     def test_node_uri(self):
         uri = "http://localhost-%s:1234"%random.randint(1, 1000)
-        self.assertEquals(None, rospy.core.get_node_uri())
+        self.assertEqual(None, rospy.core.get_node_uri())
         rospy.core.set_node_uri(uri)
-        self.assertEquals(uri, rospy.core.get_node_uri())
+        self.assertEqual(uri, rospy.core.get_node_uri())
         
     def test_initialized(self):
         self.failIf(rospy.core.is_initialized())
@@ -288,7 +288,7 @@ class TestRospyCore(unittest.TestCase):
         rospy.core.add_shutdown_hook(shutdown_hook1)
         reason = "reason %s"%time.time()
         rospy.core.signal_shutdown(reason)
-        self.assertEquals(reason, called)
+        self.assertEqual(reason, called)
         self.assert_(rospy.core.is_shutdown())
 
         # verify that shutdown hook is called immediately on add if already shutdown
@@ -325,7 +325,7 @@ class TestRospyCore(unittest.TestCase):
             ]
 
         for t, caller_id, v in tests:
-            self.assertEquals(v, rospy.core.is_topic('p')(t, caller_id))
+            self.assertEqual(v, rospy.core.is_topic('p')(t, caller_id))
         failures = ['/', 'ftp://foo', '', None, 1, True, 'http:', ' spaced ', ' ']
         for f in failures:
             try:

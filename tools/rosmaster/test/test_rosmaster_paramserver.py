@@ -89,7 +89,7 @@ class TestRospyParamServer(unittest.TestCase):
             param_val = args[2]
 
             val = compute_param_updates(reg, param_key, param_val)
-            self.assertEquals(len(correct), len(val), "Failed: \n%s \nreturned \n%s\nvs correct\n%s"%(str(args), str(val), str(correct)))
+            self.assertEqual(len(correct), len(val), "Failed: \n%s \nreturned \n%s\nvs correct\n%s"%(str(args), str(val), str(correct)))
             for c in correct:
                 self.assert_(c in val, "Failed: \n%s \ndid not include \n%s. \nIt returned \n%s"%(str(args), c, val))
 
@@ -107,31 +107,31 @@ class TestRospyParamServer(unittest.TestCase):
 
         # subscribe to parameter that has not been set yet
         self.last_update = None
-        self.assertEquals({}, param_server.subscribe_param('/foo', ('node1', 'http://node1:1')))
+        self.assertEqual({}, param_server.subscribe_param('/foo', ('node1', 'http://node1:1')))
         param_server.set_param('/foo', 1, notify_task=self.notify_task)
-        self.assertEquals([([('node1', 'http://node1:1')], '/foo/', 1), ], self.last_update)
+        self.assertEqual([([('node1', 'http://node1:1')], '/foo/', 1), ], self.last_update)
         
         # resubscribe
-        self.assertEquals(1, param_server.subscribe_param('/foo', ('node1', 'http://node1:1')))
+        self.assertEqual(1, param_server.subscribe_param('/foo', ('node1', 'http://node1:1')))
         param_server.set_param('/foo', 2, notify_task=self.notify_task)
-        self.assertEquals([([('node1', 'http://node1:1')], '/foo/', 2), ], self.last_update)
+        self.assertEqual([([('node1', 'http://node1:1')], '/foo/', 2), ], self.last_update)
 
         # resubscribe (test canonicalization of parameter name)
-        self.assertEquals(2, param_server.subscribe_param('/foo/', ('node1', 'http://node1:1')))
+        self.assertEqual(2, param_server.subscribe_param('/foo/', ('node1', 'http://node1:1')))
         param_server.set_param('/foo', 'resub2', notify_task=self.notify_task)
-        self.assertEquals([([('node1', 'http://node1:1')], '/foo/', 'resub2'), ], self.last_update)
+        self.assertEqual([([('node1', 'http://node1:1')], '/foo/', 'resub2'), ], self.last_update)
         
         # change the URI
-        self.assertEquals('resub2', param_server.subscribe_param('/foo', ('node1', 'http://node1b:1')))
-        self.assertEquals('http://node1b:1', reg_manager.get_node('node1').api)
+        self.assertEqual('resub2', param_server.subscribe_param('/foo', ('node1', 'http://node1b:1')))
+        self.assertEqual('http://node1b:1', reg_manager.get_node('node1').api)
         param_server.set_param('/foo', 3, notify_task=self.notify_task)
-        self.assertEquals([([('node1', 'http://node1b:1')], '/foo/', 3), ], self.last_update)
+        self.assertEqual([([('node1', 'http://node1b:1')], '/foo/', 3), ], self.last_update)
         
         # multiple subscriptions to same param
-        self.assertEquals(3, param_server.subscribe_param('/foo', ('node2', 'http://node2:2')))
-        self.assertEquals('http://node2:2', reg_manager.get_node('node2').api)
+        self.assertEqual(3, param_server.subscribe_param('/foo', ('node2', 'http://node2:2')))
+        self.assertEqual('http://node2:2', reg_manager.get_node('node2').api)
         param_server.set_param('/foo', 4, notify_task=self.notify_task)
-        self.assertEquals([([('node1', 'http://node1b:1'), ('node2', 'http://node2:2')], '/foo/', 4), ], self.last_update)
+        self.assertEqual([([('node1', 'http://node1b:1'), ('node2', 'http://node2:2')], '/foo/', 4), ], self.last_update)
 
     def test_subscribe_param_tree(self):
         from rosmaster.registrations import RegistrationManager
@@ -145,30 +145,30 @@ class TestRospyParamServer(unittest.TestCase):
 
         # simple case - subscribe and set whole tree
         gains = {'p': 'P', 'i': 'I', 'd' : 'D'}
-        self.assertEquals({}, param_server.subscribe_param('/gains', ('ptnode', 'http://ptnode:1')))
+        self.assertEqual({}, param_server.subscribe_param('/gains', ('ptnode', 'http://ptnode:1')))
         param_server.set_param('/gains', gains.copy(), notify_task=self.notify_task)
-        self.assertEquals([([('ptnode', 'http://ptnode:1')], '/gains/', gains), ], self.last_update)
+        self.assertEqual([([('ptnode', 'http://ptnode:1')], '/gains/', gains), ], self.last_update)
         # - test with trailing slash
         param_server.set_param('/gains/', gains.copy(), notify_task=self.notify_task)
-        self.assertEquals([([('ptnode', 'http://ptnode:1')], '/gains/', gains), ], self.last_update)
+        self.assertEqual([([('ptnode', 'http://ptnode:1')], '/gains/', gains), ], self.last_update)
 
         # change params within tree
         param_server.set_param('/gains/p', 'P2', notify_task=self.notify_task)
-        self.assertEquals([([('ptnode', 'http://ptnode:1')], '/gains/p/', 'P2'), ], self.last_update)
+        self.assertEqual([([('ptnode', 'http://ptnode:1')], '/gains/p/', 'P2'), ], self.last_update)
         param_server.set_param('/gains/i', 'I2', notify_task=self.notify_task)
-        self.assertEquals([([('ptnode', 'http://ptnode:1')], '/gains/i/', 'I2'), ], self.last_update)
+        self.assertEqual([([('ptnode', 'http://ptnode:1')], '/gains/i/', 'I2'), ], self.last_update)
 
         # test overlapping subscriptions
-        self.assertEquals('P2', param_server.subscribe_param('/gains/p', ('ptnode2', 'http://ptnode2:2')))
+        self.assertEqual('P2', param_server.subscribe_param('/gains/p', ('ptnode2', 'http://ptnode2:2')))
         param_server.set_param('/gains', gains.copy(), notify_task=self.notify_task)
-        self.assertEquals([([('ptnode', 'http://ptnode:1')], '/gains/', gains), \
+        self.assertEqual([([('ptnode', 'http://ptnode:1')], '/gains/', gains), \
                            ([('ptnode2', 'http://ptnode2:2')], '/gains/p/', 'P'), \
                            ], self.last_update)
         # - retest with trailing slash on subscribe
         self.last_update = None
-        self.assertEquals('P', param_server.subscribe_param('/gains/p/', ('ptnode2', 'http://ptnode2:2')))
+        self.assertEqual('P', param_server.subscribe_param('/gains/p/', ('ptnode2', 'http://ptnode2:2')))
         param_server.set_param('/gains', gains.copy(), notify_task=self.notify_task)
-        self.assertEquals([([('ptnode', 'http://ptnode:1')], '/gains/', gains), \
+        self.assertEqual([([('ptnode', 'http://ptnode:1')], '/gains/', gains), \
                            ([('ptnode2', 'http://ptnode2:2')], '/gains/p/', 'P'), \
                            ], self.last_update)
         # test with overlapping (change to sub param)
@@ -183,23 +183,23 @@ class TestRospyParamServer(unittest.TestCase):
         # virtual deletion: subscribe to subparam, parameter tree reset
         self.last_update = None
         param_server.set_param('/gains2', gains.copy(), notify_task=self.notify_task)
-        self.assertEquals('P', param_server.subscribe_param('/gains2/p/', ('ptnode3', 'http://ptnode3:3')))
+        self.assertEqual('P', param_server.subscribe_param('/gains2/p/', ('ptnode3', 'http://ptnode3:3')))
         # - erase the sub parameters
         param_server.set_param('/gains2', {}, notify_task=self.notify_task)        
-        self.assertEquals([([('ptnode3', 'http://ptnode3:3')], '/gains2/p/', {}), ], self.last_update)        
+        self.assertEqual([([('ptnode3', 'http://ptnode3:3')], '/gains2/p/', {}), ], self.last_update)        
 
         #Final test: test subscription to entire tree
         self.last_update = None
         param_server.delete_param('/gains')
         param_server.delete_param('/gains2')        
-        self.assertEquals({}, param_server.get_param('/'))
-        self.assertEquals({}, param_server.subscribe_param('/', ('allnode', 'http://allnode:1')))
+        self.assertEqual({}, param_server.get_param('/'))
+        self.assertEqual({}, param_server.subscribe_param('/', ('allnode', 'http://allnode:1')))
         param_server.set_param('/one', 1, notify_task=self.notify_task)
-        self.assertEquals([([('allnode', 'http://allnode:1')], '/one/', 1), ], self.last_update)
+        self.assertEqual([([('allnode', 'http://allnode:1')], '/one/', 1), ], self.last_update)
         param_server.set_param('/two', 2, notify_task=self.notify_task)
-        self.assertEquals([([('allnode', 'http://allnode:1')], '/two/', 2), ], self.last_update)
+        self.assertEqual([([('allnode', 'http://allnode:1')], '/two/', 2), ], self.last_update)
         param_server.set_param('/foo/bar', 'bar', notify_task=self.notify_task)
-        self.assertEquals([([('allnode', 'http://allnode:1')], '/foo/bar/', 'bar'), ], self.last_update)
+        self.assertEqual([([('allnode', 'http://allnode:1')], '/foo/bar/', 'bar'), ], self.last_update)
         
 
     # verify that subscribe_param works with parameter deletion
@@ -212,34 +212,34 @@ class TestRospyParamServer(unittest.TestCase):
         param_server = ParamDictionary(reg_manager)
 
         # subscription to then delete parameter
-        self.assertEquals({}, param_server.subscribe_param('/foo', ('node1', 'http://node1:1')))
+        self.assertEqual({}, param_server.subscribe_param('/foo', ('node1', 'http://node1:1')))
         param_server.set_param('/foo', 1, notify_task=self.notify_task)
         param_server.delete_param('/foo', notify_task=self.notify_task)
-        self.assertEquals([([('node1', 'http://node1:1')], '/foo/', {}), ], self.last_update)
+        self.assertEqual([([('node1', 'http://node1:1')], '/foo/', {}), ], self.last_update)
         
         # subscribe to and delete whole tree
         gains = {'p': 'P', 'i': 'I', 'd' : 'D'}
-        self.assertEquals({}, param_server.subscribe_param('/gains', ('deltree', 'http://deltree:1')))
+        self.assertEqual({}, param_server.subscribe_param('/gains', ('deltree', 'http://deltree:1')))
         param_server.set_param('/gains', gains.copy(), notify_task=self.notify_task)
         param_server.delete_param('/gains', notify_task=self.notify_task)
-        self.assertEquals([([('deltree', 'http://deltree:1')], '/gains/', {}), ], self.last_update)
+        self.assertEqual([([('deltree', 'http://deltree:1')], '/gains/', {}), ], self.last_update)
 
         # subscribe to and delete params within subtree
-        self.assertEquals({}, param_server.subscribe_param('/gains2', ('deltree2', 'http://deltree2:2')))
+        self.assertEqual({}, param_server.subscribe_param('/gains2', ('deltree2', 'http://deltree2:2')))
         param_server.set_param('/gains2', gains.copy(), notify_task=self.notify_task)
         param_server.delete_param('/gains2/p', notify_task=self.notify_task)
-        self.assertEquals([([('deltree2', 'http://deltree2:2')], '/gains2/p/', {}), ], self.last_update)
+        self.assertEqual([([('deltree2', 'http://deltree2:2')], '/gains2/p/', {}), ], self.last_update)
         param_server.delete_param('/gains2/i', notify_task=self.notify_task)
-        self.assertEquals([([('deltree2', 'http://deltree2:2')], '/gains2/i/', {}), ], self.last_update)        
+        self.assertEqual([([('deltree2', 'http://deltree2:2')], '/gains2/i/', {}), ], self.last_update)        
         param_server.delete_param('/gains2', notify_task=self.notify_task)
-        self.assertEquals([([('deltree2', 'http://deltree2:2')], '/gains2/', {}), ], self.last_update)
+        self.assertEqual([([('deltree2', 'http://deltree2:2')], '/gains2/', {}), ], self.last_update)
         
         # delete parent tree
         k = '/ns1/ns2/ns3/key'
-        self.assertEquals({}, param_server.subscribe_param(k, ('del_parent', 'http://del_parent:1')))
+        self.assertEqual({}, param_server.subscribe_param(k, ('del_parent', 'http://del_parent:1')))
         param_server.set_param(k, 1, notify_task=self.notify_task)
         param_server.delete_param('/ns1/ns2', notify_task=self.notify_task)
-        self.assertEquals([([('del_parent', 'http://del_parent:1')], '/ns1/ns2/ns3/key/', {}), ], self.last_update)
+        self.assertEqual([([('del_parent', 'http://del_parent:1')], '/ns1/ns2/ns3/key/', {}), ], self.last_update)
     
     def test_unsubscribe_param(self):
         from rosmaster.registrations import RegistrationManager
@@ -251,34 +251,34 @@ class TestRospyParamServer(unittest.TestCase):
 
         # basic test
         self.last_update = None
-        self.assertEquals({}, param_server.subscribe_param('/foo', ('node1', 'http://node1:1')))
+        self.assertEqual({}, param_server.subscribe_param('/foo', ('node1', 'http://node1:1')))
         param_server.set_param('/foo', 1, notify_task=self.notify_task)
-        self.assertEquals([([('node1', 'http://node1:1')], '/foo/', 1), ], self.last_update)
+        self.assertEqual([([('node1', 'http://node1:1')], '/foo/', 1), ], self.last_update)
         # - return value is actually generated by Registrations
         code, msg, val = param_server.unsubscribe_param('/foo', ('node1', 'http://node1:1'))
-        self.assertEquals(1, code)
-        self.assertEquals(1, val)
+        self.assertEqual(1, code)
+        self.assertEqual(1, val)
         self.last_update = None
         param_server.set_param('/foo', 2, notify_task=self.notify_task)
-        self.assertEquals(None, self.last_update)
+        self.assertEqual(None, self.last_update)
         # - repeat the unsubscribe
         code, msg, val = param_server.unsubscribe_param('/foo', ('node1', 'http://node1:1'))
-        self.assertEquals(1, code)
-        self.assertEquals(0, val)
+        self.assertEqual(1, code)
+        self.assertEqual(0, val)
         self.last_update = None
         param_server.set_param('/foo', 2, notify_task=self.notify_task)
-        self.assertEquals(None, self.last_update)
+        self.assertEqual(None, self.last_update)
 
         # verify that stale unsubscribe has no effect on active subscription
         self.last_update = None
-        self.assertEquals({}, param_server.subscribe_param('/bar', ('barnode', 'http://barnode:1')))
+        self.assertEqual({}, param_server.subscribe_param('/bar', ('barnode', 'http://barnode:1')))
         param_server.set_param('/bar', 3, notify_task=self.notify_task)
-        self.assertEquals([([('barnode', 'http://barnode:1')], '/bar/', 3), ], self.last_update)
+        self.assertEqual([([('barnode', 'http://barnode:1')], '/bar/', 3), ], self.last_update)
         code, msg, val = param_server.unsubscribe_param('/foo', ('barnode', 'http://notbarnode:1'))
-        self.assertEquals(1, code)
-        self.assertEquals(0, val)
+        self.assertEqual(1, code)
+        self.assertEqual(0, val)
         param_server.set_param('/bar', 4, notify_task=self.notify_task)
-        self.assertEquals([([('barnode', 'http://barnode:1')], '/bar/', 4), ], self.last_update)
+        self.assertEqual([([('barnode', 'http://barnode:1')], '/bar/', 4), ], self.last_update)
         
     
     def _set_param(self, ctx, my_state, test_vals, param_server):
@@ -307,7 +307,7 @@ class TestRospyParamServer(unittest.TestCase):
             except:
                 raise Exception("Exception raised while calling param_server.get_param(%s): %s"%(k, traceback.format_exc()))
             
-            self.assertEquals(v, v2)
+            self.assertEqual(v, v2)
         param_names = my_state.keys()
         ps_param_names = param_server.get_param_names()
         assert not set(param_names) ^ set(ps_param_names), "parameter server keys do not match local: %s"%(set(param_names)^set(ps_param_names))
@@ -374,12 +374,12 @@ class TestRospyParamServer(unittest.TestCase):
         
         # - test param on val1
         for ns in ['/level1/node', '/level1/level2/node', '/level1/level2/level3/node']:
-            self.assertEquals('/level1/param', param_server.search_param(ns, 'param'), "failed with ns[%s]"%ns)
-            self.assertEquals('/level1/param/', param_server.search_param(ns, 'param/'))
-            self.assertEquals('/level1/param/level1_p1', param_server.search_param(ns, 'param/level1_p1'))
-            self.assertEquals('/level1/param/level1_p2/level2_p2', param_server.search_param(ns, 'param/level1_p2/level2_p2'))
-        self.assertEquals(None, param_server.search_param('/root', 'param'))
-        self.assertEquals(None, param_server.search_param('/root', 'param/'))        
+            self.assertEqual('/level1/param', param_server.search_param(ns, 'param'), "failed with ns[%s]"%ns)
+            self.assertEqual('/level1/param/', param_server.search_param(ns, 'param/'))
+            self.assertEqual('/level1/param/level1_p1', param_server.search_param(ns, 'param/level1_p1'))
+            self.assertEqual('/level1/param/level1_p2/level2_p2', param_server.search_param(ns, 'param/level1_p2/level2_p2'))
+        self.assertEqual(None, param_server.search_param('/root', 'param'))
+        self.assertEqual(None, param_server.search_param('/root', 'param/'))        
 
         # - set val2
         self.failIf(param_server.has_param('/level1/level2/param'))
@@ -387,11 +387,11 @@ class TestRospyParamServer(unittest.TestCase):
 
         # - test param on val2
         for ns in ['/level1/level2/node', '/level1/level2/level3/node', '/level1/level2/level3/level4/node']:
-            self.assertEquals('/level1/level2/param', param_server.search_param(ns, 'param'))
-            self.assertEquals('/level1/level2/param/', param_server.search_param(ns, 'param/'))
-        self.assertEquals('/level1/param', param_server.search_param('/level1/node', 'param'))
-        self.assertEquals('/level1/param/', param_server.search_param('/level1/node', 'param/'))        
-        self.assertEquals(None, param_server.search_param('/root', 'param'))
+            self.assertEqual('/level1/level2/param', param_server.search_param(ns, 'param'))
+            self.assertEqual('/level1/level2/param/', param_server.search_param(ns, 'param/'))
+        self.assertEqual('/level1/param', param_server.search_param('/level1/node', 'param'))
+        self.assertEqual('/level1/param/', param_server.search_param('/level1/node', 'param/'))        
+        self.assertEqual(None, param_server.search_param('/root', 'param'))
         
         # - set val3
         self.failIf(param_server.has_param('/level1/level2/level3/param'))
@@ -399,16 +399,16 @@ class TestRospyParamServer(unittest.TestCase):
 
         # - test param on val3
         for ns in ['/level1/level2/level3/node', '/level1/level2/level3/level4/node']:
-            self.assertEquals('/level1/level2/level3/param', param_server.search_param(ns, 'param'))
-        self.assertEquals('/level1/level2/param', param_server.search_param('/level1/level2/node', 'param'))
-        self.assertEquals('/level1/param', param_server.search_param('/level1/node', 'param'))
+            self.assertEqual('/level1/level2/level3/param', param_server.search_param(ns, 'param'))
+        self.assertEqual('/level1/level2/param', param_server.search_param('/level1/level2/node', 'param'))
+        self.assertEqual('/level1/param', param_server.search_param('/level1/node', 'param'))
 
         # test subparams before we set val4 on the root
         #  - test looking for param/sub_param
 
-        self.assertEquals(None, param_server.search_param('/root', 'param'))
-        self.assertEquals(None, param_server.search_param('/root', 'param/level1_p1'))
-        self.assertEquals(None, param_server.search_param('/not/level1/level2/level3/level4/node', 'param/level1_p1'))
+        self.assertEqual(None, param_server.search_param('/root', 'param'))
+        self.assertEqual(None, param_server.search_param('/root', 'param/level1_p1'))
+        self.assertEqual(None, param_server.search_param('/not/level1/level2/level3/level4/node', 'param/level1_p1'))
         tests = [
             ('/level1/node', '/level1/param/'),
             ('/level1/level2/', '/level1/level2/param/'),
@@ -422,20 +422,20 @@ class TestRospyParamServer(unittest.TestCase):
             
             ]
         for ns, pbase in tests:
-            self.assertEquals(pbase+'level1_p1',
+            self.assertEqual(pbase+'level1_p1',
                               param_server.search_param(ns, 'param/level1_p1'))
             retval = param_server.search_param(ns, 'param/level1_p2/level2_p2')
-            self.assertEquals(pbase+'level1_p2/level2_p2', retval,
+            self.assertEqual(pbase+'level1_p2/level2_p2', retval,
                               "failed with ns[%s] pbase[%s]: %s"%(ns, pbase, retval))
 
         # - set val4 on the root
         self.failIf(param_server.has_param('/param'))
         param_server.set_param('/param', val4)
-        self.assertEquals('/param', param_server.search_param('/root', 'param'))
-        self.assertEquals('/param', param_server.search_param('/notlevel1/node', 'param'))
-        self.assertEquals('/level1/param', param_server.search_param('/level1/node', 'param'))
-        self.assertEquals('/level1/param', param_server.search_param('/level1', 'param'))
-        self.assertEquals('/level1/param', param_server.search_param('/level1/', 'param'))
+        self.assertEqual('/param', param_server.search_param('/root', 'param'))
+        self.assertEqual('/param', param_server.search_param('/notlevel1/node', 'param'))
+        self.assertEqual('/level1/param', param_server.search_param('/level1/node', 'param'))
+        self.assertEqual('/level1/param', param_server.search_param('/level1', 'param'))
+        self.assertEqual('/level1/param', param_server.search_param('/level1/', 'param'))
 
         # make sure that partial match works
         val5 = { 'level1_p1': random.randint(0, 10000),
@@ -443,13 +443,13 @@ class TestRospyParamServer(unittest.TestCase):
         
         self.failIf(param_server.has_param('/partial1/param'))
         param_server.set_param('/partial1/param', val5)
-        self.assertEquals('/partial1/param', param_server.search_param('/partial1', 'param'))
-        self.assertEquals('/partial1/param/level1_p1',
+        self.assertEqual('/partial1/param', param_server.search_param('/partial1', 'param'))
+        self.assertEqual('/partial1/param/level1_p1',
                           param_server.search_param('/partial1', 'param/level1_p1'))
         # - this is the important check, should return key even if it doesn't exist yet based on stem match
-        self.assertEquals('/partial1/param/non_existent',
+        self.assertEqual('/partial1/param/non_existent',
                           param_server.search_param('/partial1', 'param/non_existent'))
-        self.assertEquals('/partial1/param/level1_p2/non_existent',
+        self.assertEqual('/partial1/param/level1_p2/non_existent',
                           param_server.search_param('/partial1', 'param/level1_p2/non_existent'))
 
 
@@ -468,13 +468,13 @@ class TestRospyParamServer(unittest.TestCase):
         self.assertGetParamFail(param_server, '/new_param')
         param_server.set_param('/new_param', val)
         full_dict['new_param'] = val
-        self.assertEquals(val, param_server.get_param('/new_param'))
-        self.assertEquals(val, param_server.get_param('/new_param/'))
+        self.assertEqual(val, param_server.get_param('/new_param'))
+        self.assertEqual(val, param_server.get_param('/new_param/'))
         # - test homonym
-        self.assertEquals(val, param_server.get_param('/new_param//'))
+        self.assertEqual(val, param_server.get_param('/new_param//'))
         
         # test full get
-        self.assertEquals(full_dict, param_server.get_param('/'))
+        self.assertEqual(full_dict, param_server.get_param('/'))
         
         # test with param in sub-namespace
         val = random.randint(0, 10000)        
@@ -482,12 +482,12 @@ class TestRospyParamServer(unittest.TestCase):
         self.assertGetParamFail(param_server, '/sub/sub2/new_param2')
         param_server.set_param('/sub/sub2/new_param2', val)
         full_dict['sub'] = {'sub2': { 'new_param2': val }}
-        self.assertEquals(val, param_server.get_param('/sub/sub2/new_param2'))
+        self.assertEqual(val, param_server.get_param('/sub/sub2/new_param2'))
         # - test homonym
-        self.assertEquals(val, param_server.get_param('/sub///sub2/new_param2/'))
+        self.assertEqual(val, param_server.get_param('/sub///sub2/new_param2/'))
         
         # test full get
-        self.assertEquals(full_dict, param_server.get_param('/'))
+        self.assertEqual(full_dict, param_server.get_param('/'))
 
         # test that parameter server namespace-get (#587)
         val1 = random.randint(0, 10000)
@@ -504,11 +504,11 @@ class TestRospyParamServer(unittest.TestCase):
 
         pid = {'P': val1, 'I': val2, 'D': val3}
         full_dict['gains'] = pid
-        self.assertEquals(pid,
+        self.assertEqual(pid,
                           param_server.get_param('/gains'))
-        self.assertEquals(pid,
+        self.assertEqual(pid,
                           param_server.get_param('/gains/'))
-        self.assertEquals(full_dict,
+        self.assertEqual(full_dict,
                           param_server.get_param('/'))
 
         self.failIf(param_server.has_param('/ns/gains/P'))
@@ -521,13 +521,13 @@ class TestRospyParamServer(unittest.TestCase):
         param_server.set_param('/ns/gains/D', val3)
         full_dict['ns'] = {'gains': pid}
         
-        self.assertEquals(pid,
+        self.assertEqual(pid,
                           param_server.get_param('/ns/gains'))
-        self.assertEquals({'gains': pid},
+        self.assertEqual({'gains': pid},
                           param_server.get_param('/ns/'))
-        self.assertEquals({'gains': pid},
+        self.assertEqual({'gains': pid},
                           param_server.get_param('/ns'))
-        self.assertEquals(full_dict,
+        self.assertEqual(full_dict,
                           param_server.get_param('/'))
         
         
@@ -610,33 +610,33 @@ class TestRospyParamServer(unittest.TestCase):
         # very similar to has param sequence
         self.failIf(param_server.has_param('/new_param'))
         param_server.set_param('/new_param', val)
-        self.assertEquals(val, param_server.get_param('/new_param'))
-        self.assertEquals(val, param_server.get_param('/new_param/'))
+        self.assertEqual(val, param_server.get_param('/new_param'))
+        self.assertEqual(val, param_server.get_param('/new_param/'))
         self.assert_(param_server.has_param('/new_param'))
 
         # test with param in sub-namespace
         val = random.randint(0, 10000)        
         self.failIf(param_server.has_param('/sub/sub2/new_param2'))
         param_server.set_param('/sub/sub2/new_param2', val)
-        self.assertEquals(val, param_server.get_param('/sub/sub2/new_param2'))
+        self.assertEqual(val, param_server.get_param('/sub/sub2/new_param2'))
 
         # test with param type mutation
         vals = ['a', {'a': 'b'}, 1, 1., 'foo', {'c': 'd'}, 4, {'a': {'b': 'c'}}, 3]
         for v in vals:
             param_server.set_param('/multi/multi_param', v)
-            self.assertEquals(v, param_server.get_param('/multi/multi_param'))
+            self.assertEqual(v, param_server.get_param('/multi/multi_param'))
 
         # - set value within subtree that mutates higher level value
         param_server.set_param('/multi2/multi_param', 1)
-        self.assertEquals(1, param_server.get_param('/multi2/multi_param'))
+        self.assertEqual(1, param_server.get_param('/multi2/multi_param'))
 
         param_server.set_param('/multi2/multi_param/a', 2)
-        self.assertEquals(2, param_server.get_param('/multi2/multi_param/a'))
-        self.assertEquals({'a': 2}, param_server.get_param('/multi2/multi_param/'))        
+        self.assertEqual(2, param_server.get_param('/multi2/multi_param/a'))
+        self.assertEqual({'a': 2}, param_server.get_param('/multi2/multi_param/'))        
         param_server.set_param('/multi2/multi_param/a/b', 3)
-        self.assertEquals(3, param_server.get_param('/multi2/multi_param/a/b'))
-        self.assertEquals({'b': 3}, param_server.get_param('/multi2/multi_param/a/'))
-        self.assertEquals({'a': {'b': 3}}, param_server.get_param('/multi2/multi_param/'))        
+        self.assertEqual(3, param_server.get_param('/multi2/multi_param/a/b'))
+        self.assertEqual({'b': 3}, param_server.get_param('/multi2/multi_param/a/'))
+        self.assertEqual({'a': {'b': 3}}, param_server.get_param('/multi2/multi_param/'))        
 
         
         # test that parameter server namespace-set (#587)
@@ -647,26 +647,26 @@ class TestRospyParamServer(unittest.TestCase):
 
         pid = {'P': random.randint(0, 10000), 'I': random.randint(0, 10000), 'D': random.randint(0, 10000)}
         param_server.set_param('/gains', pid)
-        self.assertEquals(pid,  param_server.get_param('/gains'))
-        self.assertEquals(pid['P'], param_server.get_param('/gains/P'))
-        self.assertEquals(pid['I'], param_server.get_param('/gains/I'))
-        self.assertEquals(pid['D'], param_server.get_param('/gains/D'))
+        self.assertEqual(pid,  param_server.get_param('/gains'))
+        self.assertEqual(pid['P'], param_server.get_param('/gains/P'))
+        self.assertEqual(pid['I'], param_server.get_param('/gains/I'))
+        self.assertEqual(pid['D'], param_server.get_param('/gains/D'))
 
         subns = {'gains1': pid, 'gains2': pid}
         param_server.set_param('/ns', subns)
-        self.assertEquals(pid['P'], param_server.get_param('/ns/gains1/P'))
-        self.assertEquals(pid['I'], param_server.get_param('/ns/gains1/I'))
-        self.assertEquals(pid['D'], param_server.get_param('/ns/gains1/D'))
-        self.assertEquals(pid, param_server.get_param('/ns/gains1'))
-        self.assertEquals(pid, param_server.get_param('/ns/gains2'))
-        self.assertEquals(subns, param_server.get_param('/ns/'))
+        self.assertEqual(pid['P'], param_server.get_param('/ns/gains1/P'))
+        self.assertEqual(pid['I'], param_server.get_param('/ns/gains1/I'))
+        self.assertEqual(pid['D'], param_server.get_param('/ns/gains1/D'))
+        self.assertEqual(pid, param_server.get_param('/ns/gains1'))
+        self.assertEqual(pid, param_server.get_param('/ns/gains2'))
+        self.assertEqual(subns, param_server.get_param('/ns/'))
 
         # test empty dictionary set
         param_server.set_param('/ns', {})
         # - param should still exist
         self.assert_(param_server.has_param('/ns/'))
         # - value should remain dictionary
-        self.assertEquals({}, param_server.get_param('/ns/'))
+        self.assertEqual({}, param_server.get_param('/ns/'))
         # - value2 below /ns/ should be erased
         self.failIf(param_server.has_param('/ns/gains1'))
         self.failIf(param_server.has_param('/ns/gains1/P'))
@@ -675,12 +675,12 @@ class TestRospyParamServer(unittest.TestCase):
         param_server.set_param('/', {})
         self.failIf(param_server.has_param('/new_param'))
         param_server.set_param('/', {'foo': 1, 'bar': 2, 'baz': {'a': 'a'}})
-        self.assertEquals(1, param_server.get_param('/foo'))
-        self.assertEquals(1, param_server.get_param('/foo/'))        
-        self.assertEquals(2, param_server.get_param('/bar'))
-        self.assertEquals(2, param_server.get_param('/bar/'))
-        self.assertEquals('a', param_server.get_param('/baz/a'))
-        self.assertEquals('a', param_server.get_param('/baz/a/'))
+        self.assertEqual(1, param_server.get_param('/foo'))
+        self.assertEqual(1, param_server.get_param('/foo/'))        
+        self.assertEqual(2, param_server.get_param('/bar'))
+        self.assertEqual(2, param_server.get_param('/bar/'))
+        self.assertEqual('a', param_server.get_param('/baz/a'))
+        self.assertEqual('a', param_server.get_param('/baz/a/'))
 
     # test_param_values: test storage of all XML-RPC compatible types"""
     def test_param_values(self):
@@ -733,4 +733,3 @@ class TestRospyParamServer(unittest.TestCase):
             param_server.get_param(param)
             self.fail("get_param[%s] did not raise KeyError"%(param))
         except KeyError: pass
-

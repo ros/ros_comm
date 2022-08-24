@@ -74,7 +74,7 @@ class TestRosmsg(unittest.TestCase):
         output2 = Popen(['rosmsg', 'packages'], stdout=PIPE).communicate()[0].decode()
         l1 = [x for x in output1.split() if x]
         l2 = [x.strip() for x in output2.split('\n') if x.strip()]
-        self.assertEquals(l1, l2)
+        self.assertEqual(l1, l2)
         for p in ['std_msgs', 'diagnostic_msgs']:
             self.assert_(p in l1)
         for p in ['std_srvs', 'rosmsg']:
@@ -84,7 +84,7 @@ class TestRosmsg(unittest.TestCase):
         output2 = Popen(['rossrv', 'packages'], stdout=PIPE).communicate()[0].decode()
         l1 = [x for x in output1.split() if x]
         l2 = [x.strip() for x in output2.split('\n') if x.strip()]
-        self.assertEquals(l1, l2)
+        self.assertEqual(l1, l2)
         for p in ['std_srvs', 'diagnostic_msgs']:
             self.assert_(p in l1)
         for p in ['std_msgs', 'rospy']:
@@ -114,7 +114,7 @@ class TestRosmsg(unittest.TestCase):
         output2 = Popen(['rosmsg', 'package', 'diagnostic_msgs'], stdout=PIPE).communicate()[0].decode()
         l = set([x for x in output1.split() if x])        
         l2 = set([x.strip() for x in output2.split('\n') if x.strip()])
-        self.assertEquals(l, l2)
+        self.assertEqual(l, l2)
         
         for m in ['diagnostic_msgs/DiagnosticArray',
                   'diagnostic_msgs/DiagnosticStatus',
@@ -125,7 +125,7 @@ class TestRosmsg(unittest.TestCase):
         output2 = Popen(['rossrv', 'package','diagnostic_msgs'], stdout=PIPE).communicate()[0].decode()
         l = set([x for x in output.split() if x])
         l2 = set([x.strip() for x in output2.split('\n') if x.strip()])
-        self.assertEquals(l, l2)
+        self.assertEqual(l, l2)
         
         for m in ['diagnostic_msgs/AddDiagnostics', 'diagnostic_msgs/SelfTest']:
             self.assertTrue(m in l, l)
@@ -133,14 +133,14 @@ class TestRosmsg(unittest.TestCase):
     ## test that the rosmsg/rossrv show command works
     def test_cmd_show(self):
         output = Popen(['rosmsg', 'show', 'std_msgs/String'], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('string data', output.strip())
+        self.assertEqual('string data', output.strip())
 
         output = Popen(['rossrv', 'show', 'std_srvs/Empty'], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('---', output.strip())
+        self.assertEqual('---', output.strip())
         output = Popen(['rossrv', 'show', 'std_srvs/Empty'], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('---', output.strip())
+        self.assertEqual('---', output.strip())
         output = Popen(['rossrv', 'show', 'diagnostic_msgs/AddDiagnostics'], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals('string load_namespace\n---\nbool success\nstring message', output.strip())
+        self.assertEqual('string load_namespace\n---\nbool success\nstring message', output.strip())
 
         # test against test_rosmsg package
         d = os.path.abspath(os.path.dirname(__file__))
@@ -160,11 +160,11 @@ class TestRosmsg(unittest.TestCase):
         text_raw = text_raw.strip()
         type_ =test_message_package+'/'+t
         output = Popen(['rosmsg', 'show', type_], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals(text, output.strip())
+        self.assertEqual(text, output.strip())
         output = Popen(['rosmsg', 'show', '-r',type_], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals(text_raw, output.strip())
+        self.assertEqual(text_raw, output.strip())
         output = Popen(['rosmsg', 'show', '--raw', type_], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals(text_raw, output.strip())
+        self.assertEqual(text_raw, output.strip())
 
         # test as search
         type_ = t
@@ -172,8 +172,8 @@ class TestRosmsg(unittest.TestCase):
         text = os.linesep.join([text_prefix, text])
         text_raw = os.linesep.join([text_prefix, text_raw])
         output = Popen(['rosmsg', 'show', type_], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals(text, output.strip())
+        self.assertEqual(text, output.strip())
         output = Popen(['rosmsg', 'show', '-r',type_], stdout=PIPE, stderr=PIPE).communicate()
-        self.assertEquals(text_raw, output[0].decode().strip(), "Failed: %s"%(str(output)))
+        self.assertEqual(text_raw, output[0].decode().strip(), "Failed: %s"%(str(output)))
         output = Popen(['rosmsg', 'show', '--raw', type_], stdout=PIPE).communicate()[0].decode()
-        self.assertEquals(text_raw, output.strip())
+        self.assertEqual(text_raw, output.strip())

@@ -169,7 +169,7 @@ Test Duration: %s"""%(hz, hzerror, topic, test_duration))
         if hz > 0:
             self.assert_(self.msg_count > 0, "no messages received")
         else:
-            self.assertEquals(0, self.msg_count)
+            self.assertEqual(0, self.msg_count)
         # Check whether inter-message intervals were violated (if we were
         # checking them)
         self.assert_(not self.errors, '\n'.join(self.errors))

@@ -75,12 +75,12 @@ class TestServiceOrder(unittest.TestCase):
     def test_before(self):
         resp = self._test(SERVICE_BEFORE, EmptyReqSrv,
                           EmptyReqSrvRequest())
-        self.assertEquals(FAKE_SECRET, resp.fake_secret, 
+        self.assertEqual(FAKE_SECRET, resp.fake_secret, 
                           "fake_secret fields is not set as expected")        
     def test_after(self):
         resp = self._test(SERVICE_AFTER, EmptyReqSrv,
                           EmptyReqSrvRequest())
-        self.assertEquals(FAKE_SECRET, resp.fake_secret, 
+        self.assertEqual(FAKE_SECRET, resp.fake_secret, 
                           "fake_secret fields is not set as expected")        
         
 if __name__ == '__main__':

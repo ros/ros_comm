@@ -199,7 +199,7 @@ class TestBasicServicesClient(unittest.TestCase):
             resp_req_naked = self._test_req_naked(name, Cls, (1, 2))
             resp_req_kwds = self._test_req_kwds(name, Cls, {'a': 3})
             for resp in [resp_req, resp_req_naked, resp_req_kwds]:
-                self.assertEquals(3, resp.sum)
+                self.assertEqual(3, resp.sum)
 
     def test_String_String(self):
         from std_msgs.msg import String
@@ -213,7 +213,7 @@ class TestBasicServicesClient(unittest.TestCase):
             resp_req_naked = self._test_req_naked(name, Cls, (String('FOO'), Val('bar'),))
             resp_req_kwds = self._test_req_kwds(name, Cls, {'str': String('FOO'), 'str2': Val('bar')})
             for resp in [resp_req, resp_req_naked, resp_req_kwds]:
-                self.assertEquals('FOObar', resp.str.data)
+                self.assertEqual('FOObar', resp.str.data)
 
     def test_String_String_unicode(self):
         from std_msgs.msg import String
@@ -227,7 +227,7 @@ class TestBasicServicesClient(unittest.TestCase):
             resp_req_naked = self._test_req_naked(name, Cls, (String(u'ロボット'), Val(u'机器人'),))
             resp_req_kwds = self._test_req_kwds(name, Cls, {'str': String(u'ロボット'), 'str2': Val(u'机器人')})
             for resp in [resp_req, resp_req_naked, resp_req_kwds]:
-                self.assertEquals('ロボット机器人', resp.str.data)  # if you send in unicode, you'll receive in str
+                self.assertEqual('ロボット机器人', resp.str.data)  # if you send in unicode, you'll receive in str
 
     def test_constants(self):
         Cls = ConstantsMultiplex
@@ -240,29 +240,29 @@ class TestBasicServicesClient(unittest.TestCase):
             resp_req_kwds = self._test_req_kwds(name, Cls, {'selection': Req.SELECT_X})
 
             for resp in [resp_req, resp_req_naked, resp_req_kwds]:
-                self.assertEquals(ConstantsMultiplexResponse.CONFIRM_X,
+                self.assertEqual(ConstantsMultiplexResponse.CONFIRM_X,
                                   resp.select_confirm)
-                self.assertEquals(Req.BYTE_X, resp.ret_byte)
-                self.assertEquals(Req.INT32_X, resp.ret_int32)
-                self.assertEquals(Req.UINT32_X, resp.ret_uint32)
+                self.assertEqual(Req.BYTE_X, resp.ret_byte)
+                self.assertEqual(Req.INT32_X, resp.ret_int32)
+                self.assertEqual(Req.UINT32_X, resp.ret_uint32)
                 self.assert_(math.fabs(Req.FLOAT32_X - resp.ret_float32) < 0.001)
 
             resp = self._test(name, Cls,
                               ConstantsMultiplexRequest(Req.SELECT_Y))
-            self.assertEquals(ConstantsMultiplexResponse.CONFIRM_Y,
+            self.assertEqual(ConstantsMultiplexResponse.CONFIRM_Y,
                               resp.select_confirm)
-            self.assertEquals(Req.BYTE_Y, resp.ret_byte)
-            self.assertEquals(Req.INT32_Y, resp.ret_int32)
-            self.assertEquals(Req.UINT32_Y, resp.ret_uint32)
+            self.assertEqual(Req.BYTE_Y, resp.ret_byte)
+            self.assertEqual(Req.INT32_Y, resp.ret_int32)
+            self.assertEqual(Req.UINT32_Y, resp.ret_uint32)
             self.assert_(math.fabs(Req.FLOAT32_Y - resp.ret_float32) < 0.001)
 
             resp = self._test(name, Cls,
                               ConstantsMultiplexRequest(Req.SELECT_Z))
-            self.assertEquals(ConstantsMultiplexResponse.CONFIRM_Z,
+            self.assertEqual(ConstantsMultiplexResponse.CONFIRM_Z,
                               resp.select_confirm)
-            self.assertEquals(Req.BYTE_Z, resp.ret_byte)
-            self.assertEquals(Req.INT32_Z, resp.ret_int32)
-            self.assertEquals(Req.UINT32_Z, resp.ret_uint32)
+            self.assertEqual(Req.BYTE_Z, resp.ret_byte)
+            self.assertEqual(Req.INT32_Z, resp.ret_int32)
+            self.assertEqual(Req.UINT32_Z, resp.ret_uint32)
             self.assert_(math.fabs(Req.FLOAT32_Z - resp.ret_float32) < 0.001)
 
     def test_faulty_service(self):
@@ -273,14 +273,14 @@ class TestBasicServicesClient(unittest.TestCase):
         sproxy_result = rospy.ServiceProxy(FAULTY_SERVICE_RESULT, EmptyReqSrv)
 
         resp = sproxy_result.call(EmptyReqSrvRequest())
-        self.assertEquals(resp.fake_secret, 0)
+        self.assertEqual(resp.fake_secret, 0)
         try:
             resp = sproxy.call(EmptySrvRequest())
             self.assert_(False)
         except rospy.ServiceException:
             pass
         resp = sproxy_result.call(EmptyReqSrvRequest())
-        self.assertEquals(resp.fake_secret, 1)
+        self.assertEqual(resp.fake_secret, 1)
 
 if __name__ == '__main__':
     if '--service' in sys.argv:

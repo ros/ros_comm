@@ -52,22 +52,22 @@ class MsgSpecTest(unittest.TestCase):
              ('String[10]', 'String'), ('string[10]', 'string'), ('std_msgs/String[10]', 'std_msgs/String'),
              ]
     for val, res in tests:
-      self.assertEquals(res, roslib.msgs.base_msg_type(val))
+      self.assertEqual(res, roslib.msgs.base_msg_type(val))
 
   def test_resolve_type(self):
     from roslib.msgs import resolve_type
     for t in ['string', 'string[]', 'string[14]', 'int32', 'int32[]']:
       bt = roslib.msgs.base_msg_type(t)
-      self.assertEquals(t, resolve_type(t, PKG))
+      self.assertEqual(t, resolve_type(t, PKG))
       
-    self.assertEquals('foo/string', resolve_type('foo/string', PKG))
-    self.assertEquals('std_msgs/Header', resolve_type('Header', 'roslib'))
-    self.assertEquals('std_msgs/Header', resolve_type('std_msgs/Header', 'roslib'))
-    self.assertEquals('std_msgs/Header', resolve_type('Header', 'stereo_msgs'))
-    self.assertEquals('std_msgs/String', resolve_type('String', 'std_msgs'))    
-    self.assertEquals('std_msgs/String', resolve_type('std_msgs/String', 'std_msgs'))
-    self.assertEquals('std_msgs/String', resolve_type('std_msgs/String', PKG))    
-    self.assertEquals('std_msgs/String[]', resolve_type('std_msgs/String[]', PKG))
+    self.assertEqual('foo/string', resolve_type('foo/string', PKG))
+    self.assertEqual('std_msgs/Header', resolve_type('Header', 'roslib'))
+    self.assertEqual('std_msgs/Header', resolve_type('std_msgs/Header', 'roslib'))
+    self.assertEqual('std_msgs/Header', resolve_type('Header', 'stereo_msgs'))
+    self.assertEqual('std_msgs/String', resolve_type('String', 'std_msgs'))    
+    self.assertEqual('std_msgs/String', resolve_type('std_msgs/String', 'std_msgs'))
+    self.assertEqual('std_msgs/String', resolve_type('std_msgs/String', PKG))    
+    self.assertEqual('std_msgs/String[]', resolve_type('std_msgs/String[]', PKG))
     
   def test_parse_type(self):
     tests = [
@@ -85,7 +85,7 @@ class MsgSpecTest(unittest.TestCase):
       ('std_msgs/String[11]', ('std_msgs/String', True, 11)),
       ]
     for val, res in tests:
-      self.assertEquals(res, roslib.msgs.parse_type(val))
+      self.assertEqual(res, roslib.msgs.parse_type(val))
     
     fail = ['a[1][2]', 'a[][]', '', None, 'a[', 'a[[1]', 'a[1]]']
     for f in fail:
@@ -100,10 +100,10 @@ class MsgSpecTest(unittest.TestCase):
     vals = [random.randint(0, 1000) for i in range(0, 3)]
     type_, name, val = [str(x) for x in vals]
     x = roslib.msgs.Constant(type_, name, val, str(val))
-    self.assertEquals(type_, x.type)
-    self.assertEquals(name, x.name)
-    self.assertEquals(val, x.val)
-    self.assertEquals(roslib.msgs.Constant(type_, name, val, str(val)), x)
+    self.assertEqual(type_, x.type)
+    self.assertEqual(name, x.name)
+    self.assertEqual(val, x.val)
+    self.assertEqual(roslib.msgs.Constant(type_, name, val, str(val)), x)
 
     self.assertNotEquals(1, x)
     self.assertNotEquals(roslib.msgs.Constant('baz', name, val, str(val)), x)
@@ -135,31 +135,31 @@ class MsgSpecTest(unittest.TestCase):
   def test_MsgSpec(self):
     def sub_test_MsgSpec(types, names, constants, text, has_header):
       m = MsgSpec(types, names, constants, text)
-      self.assertEquals(m.types, types)
-      self.assertEquals(m.names, names)
-      self.assertEquals(m.text, text)
-      self.assertEquals(has_header, m.has_header())
-      self.assertEquals(m.constants, constants)
-      self.assertEquals(list(zip(types, names)), m.fields())
-      self.assertEquals(m, MsgSpec(types, names, constants, text))
+      self.assertEqual(m.types, types)
+      self.assertEqual(m.names, names)
+      self.assertEqual(m.text, text)
+      self.assertEqual(has_header, m.has_header())
+      self.assertEqual(m.constants, constants)
+      self.assertEqual(list(zip(types, names)), m.fields())
+      self.assertEqual(m, MsgSpec(types, names, constants, text))
       return m
     
     from roslib.msgs import MsgSpec
     # allow empty msg
     empty = sub_test_MsgSpec([], [], [], '', False)
-    self.assertEquals([], empty.fields())    
+    self.assertEqual([], empty.fields())    
 
     # one-field
     one_field = sub_test_MsgSpec(['int32'], ['x'], [], 'int32 x', False)
     # make sure that equals tests every declared field
-    self.assertEquals(one_field, MsgSpec(['int32'], ['x'], [], 'int32 x'))
+    self.assertEqual(one_field, MsgSpec(['int32'], ['x'], [], 'int32 x'))
     self.assertNotEquals(one_field, MsgSpec(['uint32'], ['x'], [], 'int32 x'))
     self.assertNotEquals(one_field, MsgSpec(['int32'], ['y'], [], 'int32 x'))
     self.assertNotEquals(one_field, MsgSpec(['int32'], ['x'], [], 'uint32 x'))
     # test against __ne__ as well
     self.assert_(one_field != MsgSpec(['int32'], ['x'], [], 'uint32 x'))
     #test strify
-    self.assertEquals("int32 x", str(one_field).strip())
+    self.assertEqual("int32 x", str(one_field).strip())
     
     # test variations of multiple fields and headers
     two_fields = sub_test_MsgSpec(['int32', 'string'], ['x', 'str'], [], 'int32 x\nstring str', False)
@@ -167,7 +167,7 @@ class MsgSpecTest(unittest.TestCase):
     header_and_fields = sub_test_MsgSpec(['Header', 'int32', 'string'], ['header', 'x', 'str'], [], 'Header header\nint32 x\nstring str', True)
     embed_types = sub_test_MsgSpec(['Header', 'std_msgs/Int32', 'string'], ['header', 'x', 'str'], [], 'Header header\nstd_msgs/Int32 x\nstring str', True)
     #test strify
-    self.assertEquals("int32 x\nstring str", str(two_fields).strip())
+    self.assertEqual("int32 x\nstring str", str(two_fields).strip())
 
     # types and names mismatch
     try:
@@ -193,21 +193,21 @@ class MsgSpecTest(unittest.TestCase):
 
   def test___convert_val(self):
     from roslib.msgs import _convert_val, MsgSpecException
-    self.assertEquals(0., _convert_val('float32', '0.0'))
-    self.assertEquals(0., _convert_val('float64', '0.0'))
+    self.assertEqual(0., _convert_val('float32', '0.0'))
+    self.assertEqual(0., _convert_val('float64', '0.0'))
     
-    self.assertEquals('fo o', _convert_val('string', '   fo o '))
+    self.assertEqual('fo o', _convert_val('string', '   fo o '))
 
-    self.assertEquals(1, _convert_val('byte', '1'))
-    self.assertEquals(1, _convert_val('char', '1'))
-    self.assertEquals(1, _convert_val('int8', '1'))
-    self.assertEquals(12, _convert_val('int16', '12'))
-    self.assertEquals(-13, _convert_val('int32', '-13'))
-    self.assertEquals(14, _convert_val('int64', '14'))
-    self.assertEquals(0, _convert_val('uint8', '0'))
-    self.assertEquals(18, _convert_val('uint16', '18'))
-    self.assertEquals(19, _convert_val('uint32', '19'))    
-    self.assertEquals(20, _convert_val('uint64', '20'))
+    self.assertEqual(1, _convert_val('byte', '1'))
+    self.assertEqual(1, _convert_val('char', '1'))
+    self.assertEqual(1, _convert_val('int8', '1'))
+    self.assertEqual(12, _convert_val('int16', '12'))
+    self.assertEqual(-13, _convert_val('int32', '-13'))
+    self.assertEqual(14, _convert_val('int64', '14'))
+    self.assertEqual(0, _convert_val('uint8', '0'))
+    self.assertEqual(18, _convert_val('uint16', '18'))
+    self.assertEqual(19, _convert_val('uint32', '19'))    
+    self.assertEqual(20, _convert_val('uint64', '20'))
 
     width_fail = [('int8', '129'), ('uint8', '256'),
                   ('int16', '35536'), ('uint16', '-1'),('uint16', '65536'),

@@ -104,17 +104,17 @@ class TestClientParamServer(unittest.TestCase):
 
             rospy.names._set_caller_id('/global_node')
             
-            self.assertEquals(None, rospy.search_param('search_param'))
+            self.assertEqual(None, rospy.search_param('search_param'))
             rospy.set_param('/search_param', 1)
-            self.assertEquals('/search_param', rospy.search_param('search_param'))
+            self.assertEqual('/search_param', rospy.search_param('search_param'))
 
             rospy.names._set_caller_id('/level1/level2/relative_node')
-            self.assertEquals('/search_param', rospy.search_param('search_param'))
+            self.assertEqual('/search_param', rospy.search_param('search_param'))
             rospy.set_param('/level1/search_param', 2)
-            self.assertEquals('/level1/search_param', rospy.search_param('search_param'))
+            self.assertEqual('/level1/search_param', rospy.search_param('search_param'))
             rospy.set_param('~search_param', 3)
             # make sure that search starts in our private namespace first
-            self.assertEquals('/level1/level2/relative_node/search_param', rospy.search_param('search_param')) 
+            self.assertEqual('/level1/level2/relative_node/search_param', rospy.search_param('search_param')) 
             
         finally:
             rospy.names._set_caller_id(orig_caller_id)
@@ -175,8 +175,8 @@ class TestClientParamServer(unittest.TestCase):
             rospy.set_param(k, v)
             self.assert_(rospy.has_param(k))
             self.assert_(rospy.has_param(rospy.resolve_name(k)))
-            self.assertEquals(v, rospy.get_param(k))            
-            self.assertEquals(v, rospy.get_param(rospy.resolve_name(k)))
+            self.assertEqual(v, rospy.get_param(k))            
+            self.assertEqual(v, rospy.get_param(rospy.resolve_name(k)))
         correct_state = set(initial_param_names + param_names)
         self.failIf(correct_state ^ set(rospy.get_param_names()))
         

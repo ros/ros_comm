@@ -50,7 +50,7 @@ class TestRospyRegistration(unittest.TestCase):
             x = TopicManager()
         # currently untyped
             set_topic_manager(x)
-            self.assertEquals(x, get_topic_manager())
+            self.assertEqual(x, get_topic_manager())
             set_topic_manager(None)
             self.assert_(get_topic_manager() is None)
         finally:
@@ -67,7 +67,7 @@ class TestRospyRegistration(unittest.TestCase):
             x = ServiceManager()
             # currently untyped
             set_service_manager(x)
-            self.assertEquals(x, get_service_manager())
+            self.assertEqual(x, get_service_manager())
             set_service_manager(None)
             self.assert_(get_service_manager() is None)
         finally:
@@ -76,13 +76,13 @@ class TestRospyRegistration(unittest.TestCase):
     def test_Registration(self):
         # nothing to test here really
         from rospy.impl.registration import Registration
-        self.assertEquals('pub', Registration.PUB)
-        self.assertEquals('sub', Registration.SUB)
-        self.assertEquals('srv', Registration.SRV)        
+        self.assertEqual('pub', Registration.PUB)
+        self.assertEqual('sub', Registration.SUB)
+        self.assertEqual('srv', Registration.SRV)        
         r = Registration()
-        self.assertEquals('pub', r.PUB)
-        self.assertEquals('sub', r.SUB)
-        self.assertEquals('srv', r.SRV)        
+        self.assertEqual('pub', r.PUB)
+        self.assertEqual('sub', r.SUB)
+        self.assertEqual('srv', r.SRV)        
     def test_RegistrationListener(self):
         from rospy.impl.registration import RegistrationListener
         #RegistrationListener is just an API, nothing to test here
@@ -107,7 +107,7 @@ class TestRospyRegistration(unittest.TestCase):
                 raise Exception("haha!")                
 
         r = RegistrationListeners()
-        self.assertEquals([], r.listeners)
+        self.assertEqual([], r.listeners)
 
         try:
             r.lock.acquire()
@@ -120,26 +120,26 @@ class TestRospyRegistration(unittest.TestCase):
         l2 = Mock()
         
         r.add_listener(l1)
-        self.assertEquals([l1], r.listeners)
+        self.assertEqual([l1], r.listeners)
 
-        self.assertEquals([], l1.args)
+        self.assertEqual([], l1.args)
         r.notify_added('n2', 'dtype2', 'rtype2')
-        self.assertEquals(['added', 'n2', 'dtype2', 'rtype2'], l1.args)
+        self.assertEqual(['added', 'n2', 'dtype2', 'rtype2'], l1.args)
         r.notify_removed('n2', 'dtype2', 'rtype2')
-        self.assertEquals(['removed', 'n2', 'dtype2', 'rtype2'], l1.args)
+        self.assertEqual(['removed', 'n2', 'dtype2', 'rtype2'], l1.args)
 
         r.add_listener(l2)
         self.assert_(l2 in r.listeners)
         self.assert_(l1 in r.listeners)
-        self.assertEquals(2, len(r.listeners))
+        self.assertEqual(2, len(r.listeners))
 
-        self.assertEquals([], l2.args)
+        self.assertEqual([], l2.args)
         r.notify_added('n3', 'dtype3', 'rtype3')
-        self.assertEquals(['added', 'n3', 'dtype3', 'rtype3'], l2.args)        
-        self.assertEquals(['added', 'n3', 'dtype3', 'rtype3'], l1.args)
+        self.assertEqual(['added', 'n3', 'dtype3', 'rtype3'], l2.args)        
+        self.assertEqual(['added', 'n3', 'dtype3', 'rtype3'], l1.args)
         r.notify_removed('n3', 'dtype3', 'rtype3')
-        self.assertEquals(['removed', 'n3', 'dtype3', 'rtype3'], l2.args)
-        self.assertEquals(['removed', 'n3', 'dtype3', 'rtype3'], l1.args)
+        self.assertEqual(['removed', 'n3', 'dtype3', 'rtype3'], l2.args)
+        self.assertEqual(['removed', 'n3', 'dtype3', 'rtype3'], l1.args)
 
         # l3 raises exceptions, make sure they don't break anything
         l3 = BadMock()
@@ -147,14 +147,14 @@ class TestRospyRegistration(unittest.TestCase):
         self.assert_(l3 in r.listeners)
         self.assert_(l2 in r.listeners)
         self.assert_(l1 in r.listeners)
-        self.assertEquals(3, len(r.listeners))
+        self.assertEqual(3, len(r.listeners))
 
         r.notify_added('n4', 'dtype4', 'rtype4')
-        self.assertEquals(['added', 'n4', 'dtype4', 'rtype4'], l2.args)        
-        self.assertEquals(['added', 'n4', 'dtype4', 'rtype4'], l1.args)
+        self.assertEqual(['added', 'n4', 'dtype4', 'rtype4'], l2.args)        
+        self.assertEqual(['added', 'n4', 'dtype4', 'rtype4'], l1.args)
         r.notify_removed('n4', 'dtype4', 'rtype4')
-        self.assertEquals(['removed', 'n4', 'dtype4', 'rtype4'], l2.args)
-        self.assertEquals(['removed', 'n4', 'dtype4', 'rtype4'], l1.args)
+        self.assertEqual(['removed', 'n4', 'dtype4', 'rtype4'], l2.args)
+        self.assertEqual(['removed', 'n4', 'dtype4', 'rtype4'], l1.args)
         
     def test_get_registration_listeners(self):
         from rospy.impl.registration import RegistrationListeners, get_registration_listeners
@@ -189,11 +189,11 @@ class TestRospyRegistration(unittest.TestCase):
 
         handler = MockHandler()
         m = RegManager(handler)
-        self.assertEquals(handler, m.handler)
+        self.assertEqual(handler, m.handler)
         self.assert_(m.logger is not None)
-        self.assertEquals(m.master_uri, None)
-        self.assertEquals(m.uri, None)
-        self.assertEquals([], m.updates)
+        self.assertEqual(m.master_uri, None)
+        self.assertEqual(m.uri, None)
+        self.assertEqual([], m.updates)
         try:
             m.cond.acquire()
         finally:
@@ -205,7 +205,7 @@ class TestRospyRegistration(unittest.TestCase):
         m.publisher_update('topic2', ['http://old:2', 'http://old:2b'])
         m.publisher_update('topic1b', ['http://foo:1', 'http://foo:1b'])
         m.publisher_update('topic2', ['http://uri:2', 'http://uri:2b'])
-        self.assertEquals([('topic1', ['http://uri:1', 'http://uri:1b']),
+        self.assertEqual([('topic1', ['http://uri:1', 'http://uri:1b']),
                            ('topic2', ['http://old:2', 'http://old:2b']),
                            ('topic1b', ['http://foo:1', 'http://foo:1b']),
                            ('topic2', ['http://uri:2', 'http://uri:2b'])], m.updates)
@@ -233,7 +233,7 @@ class TestRospyRegistration(unittest.TestCase):
             m.run()
         
         # m.start should return immediately as m.master_uri is not set
-        self.assertEquals(m.master_uri, None)
+        self.assertEqual(m.master_uri, None)
         m.start(None, None)
         # test that it returns if URIs are equal
         m.start('http://localhost:1234', 'http://localhost:1234')
@@ -252,4 +252,3 @@ class TestRospyRegistration(unittest.TestCase):
         m.reg_added('n1', 'type1', 'rtype1')
         m.reg_removed('n1', 'type1', 'rtype1')
         m.cleanup('reason')
-
