@@ -40,11 +40,11 @@ class MsgSpecTest(unittest.TestCase):
 
   def test_verbose(self):
     import roslib.msgs
-    self.failIf(roslib.msgs.is_verbose())
+    self.assertFalse(roslib.msgs.is_verbose())
     roslib.msgs.set_verbose(True)
     self.assertTrue(roslib.msgs.is_verbose())
     roslib.msgs.set_verbose(False)    
-    self.failIf(roslib.msgs.is_verbose())
+    self.assertFalse(roslib.msgs.is_verbose())
     
   def test_base_msg_type(self):
     import roslib.msgs    
@@ -176,7 +176,7 @@ class MsgSpecTest(unittest.TestCase):
     except: pass
 
     # test (not) equals against non msgspec
-    self.failIf(one_field == 1)
+    self.assertFalse(one_field == 1)
     self.assertTrue(one_field != 1)    
     #TODO: test flatten
 
@@ -238,7 +238,7 @@ class MsgSpecTest(unittest.TestCase):
 
     # msg_file should return paths even for non-existent resources
     f = os.path.normcase(roslib.msgs.msg_file('roslib', 'Fake'))
-    self.failIf(os.path.isfile(f))
+    self.assertFalse(os.path.isfile(f))
     self.assertTrue(f.endswith(os.path.normcase('roslib/msg/Fake.msg')))
 
   def test_is_valid_msg_type(self):
@@ -258,7 +258,7 @@ class MsgSpecTest(unittest.TestCase):
             '/', '/String', 
             'Foo[f]', 'Foo[1d]', 'Foo[-1]', 'Foo[1:10]', 'Foo[', 'Foo]', 'Foo[]Bar']
     for v in vals:
-      self.failIf(roslib.msgs.is_valid_msg_type(v), "roslib.msgs.is_valid_msg_type should have returned False for '%s'"%v)
+      self.assertFalse(roslib.msgs.is_valid_msg_type(v), "roslib.msgs.is_valid_msg_type should have returned False for '%s'"%v)
       
   def test_is_valid_constant_type(self):
     import roslib.msgs
@@ -271,5 +271,5 @@ class MsgSpecTest(unittest.TestCase):
     for v in valid:
       self.assertTrue(roslib.msgs.is_valid_constant_type(v), "roslib.msgs.is_valid_constant_type should have returned True for '%s'"%v)
     for v in invalid:
-      self.failIf(roslib.msgs.is_valid_constant_type(v), "roslib.msgs.is_valid_constant_type should have returned False for '%s'"%v)
+      self.assertFalse(roslib.msgs.is_valid_constant_type(v), "roslib.msgs.is_valid_constant_type should have returned False for '%s'"%v)
     

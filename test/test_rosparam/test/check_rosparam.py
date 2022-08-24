@@ -87,7 +87,7 @@ class TestRosparam(unittest.TestCase):
         Make sure all elements of not_expected are not present in actual
         """
         for t in not_expected:
-            self.failIf(t in actual)
+            self.assertFalse(t in actual)
         
     def test_rosparam_list(self):
         cmd = 'rosparam'
@@ -314,12 +314,12 @@ class TestRosparam(unittest.TestCase):
         ps.setParam('/delete/me', True)
         self.assertTrue(ps.hasParam('/delete/me'))
         rosparam.yamlmain([cmd, 'delete', "/delete/me"])
-        self.failIf(ps.hasParam('/delete/me'))
+        self.assertFalse(ps.hasParam('/delete/me'))
 
         ps.setParam('/delete/me2', True)
         self.assertTrue(ps.hasParam('/delete/me2'))
         rosparam.yamlmain([cmd, 'delete', '-v', "/delete/me2"])
-        self.failIf(ps.hasParam('/delete/me2'))
+        self.assertFalse(ps.hasParam('/delete/me2'))
 
     def test_rosparam_dump(self):
         import rosparam

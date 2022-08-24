@@ -193,7 +193,7 @@ class TestRospyMsg(unittest.TestCase):
         b.truncate(0)
         b.write(valids[0][:-1])        
         rospy.msg.deserialize_messages(b, msg_queue, data_class)        
-        self.failIf(msg_queue, "deserialize of an incomplete buffer returned %s"%msg_queue)
+        self.assertFalse(msg_queue, "deserialize of an incomplete buffer returned %s"%msg_queue)
         
         del msg_queue[:]
         

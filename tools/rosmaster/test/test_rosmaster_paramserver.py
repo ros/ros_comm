@@ -318,15 +318,15 @@ class TestRospyParamServer(unittest.TestCase):
         from rosmaster.paramserver import ParamDictionary
         param_server = ParamDictionary(None)
 
-        self.failIf(param_server.has_param('/new_param'))
+        self.assertFalse(param_server.has_param('/new_param'))
         param_server.set_param('/new_param', 1)
         self.assertTrue(param_server.has_param('/new_param'))
 
         # test with param in sub-namespace
-        self.failIf(param_server.has_param('/sub/sub2/new_param2'))
+        self.assertFalse(param_server.has_param('/sub/sub2/new_param2'))
         # - verify that parameter tree does not exist yet (#587)
         for k in ['/sub/sub2/', '/sub/sub2', '/sub/', '/sub']:
-            self.failIf(param_server.has_param(k))
+            self.assertFalse(param_server.has_param(k))
         param_server.set_param('/sub/sub2/new_param2', 1)
         self.assertTrue(param_server.has_param('/sub/sub2/new_param2'))
         # - verify that parameter tree now exists (#587)
@@ -368,8 +368,8 @@ class TestRospyParamServer(unittest.TestCase):
         # set the val parameter at four levels so we can validate search
         
         # - set val1
-        self.failIf(param_server.has_param('/level1/param'))
-        self.failIf(param_server.search_param('/level1/node', 'param')) 
+        self.assertFalse(param_server.has_param('/level1/param'))
+        self.assertFalse(param_server.search_param('/level1/node', 'param')) 
         param_server.set_param('/level1/param', val1)
         
         # - test param on val1
@@ -382,7 +382,7 @@ class TestRospyParamServer(unittest.TestCase):
         self.assertEqual(None, param_server.search_param('/root', 'param/'))        
 
         # - set val2
-        self.failIf(param_server.has_param('/level1/level2/param'))
+        self.assertFalse(param_server.has_param('/level1/level2/param'))
         param_server.set_param('/level1/level2/param', val2)
 
         # - test param on val2
@@ -394,7 +394,7 @@ class TestRospyParamServer(unittest.TestCase):
         self.assertEqual(None, param_server.search_param('/root', 'param'))
         
         # - set val3
-        self.failIf(param_server.has_param('/level1/level2/level3/param'))
+        self.assertFalse(param_server.has_param('/level1/level2/level3/param'))
         param_server.set_param('/level1/level2/level3/param', val3)
 
         # - test param on val3
@@ -429,7 +429,7 @@ class TestRospyParamServer(unittest.TestCase):
                               "failed with ns[%s] pbase[%s]: %s"%(ns, pbase, retval))
 
         # - set val4 on the root
-        self.failIf(param_server.has_param('/param'))
+        self.assertFalse(param_server.has_param('/param'))
         param_server.set_param('/param', val4)
         self.assertEqual('/param', param_server.search_param('/root', 'param'))
         self.assertEqual('/param', param_server.search_param('/notlevel1/node', 'param'))
@@ -441,7 +441,7 @@ class TestRospyParamServer(unittest.TestCase):
         val5 = { 'level1_p1': random.randint(0, 10000),
                  'level1_p2' : { }}
         
-        self.failIf(param_server.has_param('/partial1/param'))
+        self.assertFalse(param_server.has_param('/partial1/param'))
         param_server.set_param('/partial1/param', val5)
         self.assertEqual('/partial1/param', param_server.search_param('/partial1', 'param'))
         self.assertEqual('/partial1/param/level1_p1',
@@ -463,8 +463,8 @@ class TestRospyParamServer(unittest.TestCase):
         full_dict = {}
         
         # very similar to has param sequence
-        self.failIf(param_server.has_param('/new_param'))
-        self.failIf(param_server.has_param('/new_param/'))        
+        self.assertFalse(param_server.has_param('/new_param'))
+        self.assertFalse(param_server.has_param('/new_param/'))        
         self.assertGetParamFail(param_server, '/new_param')
         param_server.set_param('/new_param', val)
         full_dict['new_param'] = val
@@ -478,7 +478,7 @@ class TestRospyParamServer(unittest.TestCase):
         
         # test with param in sub-namespace
         val = random.randint(0, 10000)        
-        self.failIf(param_server.has_param('/sub/sub2/new_param2'))
+        self.assertFalse(param_server.has_param('/sub/sub2/new_param2'))
         self.assertGetParamFail(param_server, '/sub/sub2/new_param2')
         param_server.set_param('/sub/sub2/new_param2', val)
         full_dict['sub'] = {'sub2': { 'new_param2': val }}
@@ -496,7 +496,7 @@ class TestRospyParamServer(unittest.TestCase):
         
         for k in ['/gains/P', '/gains/I', '/gains/D', '/gains']:
             self.assertGetParamFail(param_server, k)
-            self.failIf(param_server.has_param(k))
+            self.assertFalse(param_server.has_param(k))
 
         param_server.set_param('/gains/P', val1)
         param_server.set_param('/gains/I', val2)
@@ -511,10 +511,10 @@ class TestRospyParamServer(unittest.TestCase):
         self.assertEqual(full_dict,
                           param_server.get_param('/'))
 
-        self.failIf(param_server.has_param('/ns/gains/P'))
-        self.failIf(param_server.has_param('/ns/gains/I'))
-        self.failIf(param_server.has_param('/ns/gains/D'))
-        self.failIf(param_server.has_param('/ns/gains'))
+        self.assertFalse(param_server.has_param('/ns/gains/P'))
+        self.assertFalse(param_server.has_param('/ns/gains/I'))
+        self.assertFalse(param_server.has_param('/ns/gains/D'))
+        self.assertFalse(param_server.has_param('/ns/gains'))
         
         param_server.set_param('/ns/gains/P', val1)
         param_server.set_param('/ns/gains/I', val2)
@@ -548,10 +548,10 @@ class TestRospyParamServer(unittest.TestCase):
         self.assertTrue(param_server.has_param('/foo'))
         self.assertTrue(param_server.has_param('/bar'))        
         param_server.delete_param('/foo')
-        self.failIf(param_server.has_param('/foo'))
+        self.assertFalse(param_server.has_param('/foo'))
         # - test with trailing slash
         param_server.delete_param('/bar/')
-        self.failIf(param_server.has_param('/bar'))
+        self.assertFalse(param_server.has_param('/bar'))
 
         # test with namespaces
         param_server.set_param("/sub/key/x", 1)
@@ -569,9 +569,9 @@ class TestRospyParamServer(unittest.TestCase):
         self.assertTrue(param_server.has_param('/sub/key/y'))
         self.assertTrue(param_server.has_param('/sub/key'))                  
         param_server.delete_param('/sub/key')
-        self.failIf(param_server.has_param('/sub/key'))      
-        self.failIf(param_server.has_param('/sub/key/x'))
-        self.failIf(param_server.has_param('/sub/key/y'))
+        self.assertFalse(param_server.has_param('/sub/key'))      
+        self.assertFalse(param_server.has_param('/sub/key/x'))
+        self.assertFalse(param_server.has_param('/sub/key/y'))
 
         # test with namespaces (dictionary vals)
         param_server.set_param('/sub2', {'key': { 'x' : 1, 'y' : 2}})
@@ -579,9 +579,9 @@ class TestRospyParamServer(unittest.TestCase):
         self.assertTrue(param_server.has_param('/sub2/key/y'))
         self.assertTrue(param_server.has_param('/sub2/key'))                  
         param_server.delete_param('/sub2/key')
-        self.failIf(param_server.has_param('/sub2/key'))      
-        self.failIf(param_server.has_param('/sub2/key/x'))
-        self.failIf(param_server.has_param('/sub2/key/y'))
+        self.assertFalse(param_server.has_param('/sub2/key'))      
+        self.assertFalse(param_server.has_param('/sub2/key/x'))
+        self.assertFalse(param_server.has_param('/sub2/key/y'))
 
         # test with namespaces: treat value as if its a namespace
         # - try to get the dictionary-of-dictionary code to fail
@@ -608,7 +608,7 @@ class TestRospyParamServer(unittest.TestCase):
         except: pass
 
         # very similar to has param sequence
-        self.failIf(param_server.has_param('/new_param'))
+        self.assertFalse(param_server.has_param('/new_param'))
         param_server.set_param('/new_param', val)
         self.assertEqual(val, param_server.get_param('/new_param'))
         self.assertEqual(val, param_server.get_param('/new_param/'))
@@ -616,7 +616,7 @@ class TestRospyParamServer(unittest.TestCase):
 
         # test with param in sub-namespace
         val = random.randint(0, 10000)        
-        self.failIf(param_server.has_param('/sub/sub2/new_param2'))
+        self.assertFalse(param_server.has_param('/sub/sub2/new_param2'))
         param_server.set_param('/sub/sub2/new_param2', val)
         self.assertEqual(val, param_server.get_param('/sub/sub2/new_param2'))
 
@@ -640,10 +640,10 @@ class TestRospyParamServer(unittest.TestCase):
 
         
         # test that parameter server namespace-set (#587)
-        self.failIf(param_server.has_param('/gains/P'))
-        self.failIf(param_server.has_param('/gains/I'))
-        self.failIf(param_server.has_param('/gains/D'))                        
-        self.failIf(param_server.has_param('/gains'))
+        self.assertFalse(param_server.has_param('/gains/P'))
+        self.assertFalse(param_server.has_param('/gains/I'))
+        self.assertFalse(param_server.has_param('/gains/D'))                        
+        self.assertFalse(param_server.has_param('/gains'))
 
         pid = {'P': random.randint(0, 10000), 'I': random.randint(0, 10000), 'D': random.randint(0, 10000)}
         param_server.set_param('/gains', pid)
@@ -668,12 +668,12 @@ class TestRospyParamServer(unittest.TestCase):
         # - value should remain dictionary
         self.assertEqual({}, param_server.get_param('/ns/'))
         # - value2 below /ns/ should be erased
-        self.failIf(param_server.has_param('/ns/gains1'))
-        self.failIf(param_server.has_param('/ns/gains1/P'))
+        self.assertFalse(param_server.has_param('/ns/gains1'))
+        self.assertFalse(param_server.has_param('/ns/gains1/P'))
         
         # verify that root can be set and that it erases all values
         param_server.set_param('/', {})
-        self.failIf(param_server.has_param('/new_param'))
+        self.assertFalse(param_server.has_param('/new_param'))
         param_server.set_param('/', {'foo': 1, 'bar': 2, 'baz': {'a': 'a'}})
         self.assertEqual(1, param_server.get_param('/foo'))
         self.assertEqual(1, param_server.get_param('/foo/'))        

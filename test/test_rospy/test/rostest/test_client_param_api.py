@@ -89,7 +89,7 @@ class TestClientParamApi(unittest.TestCase):
         # test set/get roundtrips
         vals = [ '1', 1, 1., [1, 2, 3, 4], {'a': 1, 'b': 2}]
         for v in vals:
-            self.failIf(rospy.has_param("cp_param"))
+            self.assertFalse(rospy.has_param("cp_param"))
             try:
                 rospy.get_param('cp_param1')
                 self.fail("should have thrown KeyError")
@@ -102,7 +102,7 @@ class TestClientParamApi(unittest.TestCase):
             self.assertEqual(rospy.resolve_name('cp_param'), rospy.search_param('cp_param'))
             # erase the param and recheck state
             rospy.delete_param('cp_param')
-            self.failIf(rospy.has_param("cp_param"))
+            self.assertFalse(rospy.has_param("cp_param"))
             self.assertEqual(None, rospy.get_param('cp_param', None))
             self.assertEqual("default", rospy.get_param('cp_param', "default"))
             self.assertEqual(None, rospy.search_param('cp_param'))

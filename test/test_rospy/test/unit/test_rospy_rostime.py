@@ -104,24 +104,24 @@ class TestRospyTime(unittest.TestCase):
             v = Duration.from_sec(0.1) > Time.from_sec(0.5)
             failed = True
         except: pass
-        self.failIf(failed, "should have failed to compare")
+        self.assertFalse(failed, "should have failed to compare")
         try:
             v = Time.from_sec(0.4) > Duration.from_sec(0.1)
             failed = True        
         except: pass
-        self.failIf(failed, "should have failed to compare")
+        self.assertFalse(failed, "should have failed to compare")
 
 
         try: # neg time fails
             Time(-1)
             failed = True
         except: pass
-        self.failIf(failed, "negative time not allowed")
+        self.assertFalse(failed, "negative time not allowed")
         try:
             Time(1, -1000000001)
             failed = True
         except: pass
-        self.failIf(failed, "negative time not allowed")
+        self.assertFalse(failed, "negative time not allowed")
 
         # test Time.now() is within 10 seconds of actual time (really generous)
         import time
@@ -143,7 +143,7 @@ class TestRospyTime(unittest.TestCase):
             v = Time(1,0) + Time(1, 0)
             failed = True
         except: pass
-        self.failIf(failed, "Time + Time must fail")
+        self.assertFalse(failed, "Time + Time must fail")
 
         # - time + duration
         v = Time(1,0) + Duration(1, 0)
@@ -180,13 +180,13 @@ class TestRospyTime(unittest.TestCase):
             v = Time(1,0) - 1
             failed = True
         except: pass
-        self.failIf(failed, "Time - non Duration must fail")
+        self.assertFalse(failed, "Time - non Duration must fail")
         class Foob(object): pass      
         try:
             v = Time(1,0) - Foob()
             failed = True          
         except: pass
-        self.failIf(failed, "Time - non TVal must fail")
+        self.assertFalse(failed, "Time - non TVal must fail")
 
         # - Time - Duration
         v = Time(1,0) - Duration(1, 0)
@@ -239,12 +239,12 @@ class TestRospyTime(unittest.TestCase):
             v = Duration(1,0) + Time(1, 0)
             failed = True
         except: pass
-        self.failIf(failed, "Duration + Time must fail")
+        self.assertFalse(failed, "Duration + Time must fail")
         try:
             v = Duration(1,0) + 1
             failed = True
         except: pass
-        self.failIf(failed, "Duration + int must fail")
+        self.assertFalse(failed, "Duration + int must fail")
           
         v = Duration(1,0) + Duration(1, 0)
         self.assertEqual(2, v.secs)
@@ -270,12 +270,12 @@ class TestRospyTime(unittest.TestCase):
             v = Duration(1,0) - 1
             failed = True
         except: pass
-        self.failIf(failed, "Duration - non duration must fail")
+        self.assertFalse(failed, "Duration - non duration must fail")
         try:
             v = Duration(1, 0) - Time(1,0)
             failed = True          
         except: pass
-        self.failIf(failed, "Duration - Time must fail")
+        self.assertFalse(failed, "Duration - Time must fail")
         
         v = Duration(1,0) - Duration(1, 0)
         self.assertEqual(Duration(), v)
@@ -331,12 +331,12 @@ class TestRospyTime(unittest.TestCase):
         import threading
 
         #start sleeper
-        self.failIf(test_sleep_done)
+        self.assertFalse(test_sleep_done)
         sleepthread = threading.Thread(target=sleeper, args=())
         sleepthread.daemon = True
         sleepthread.start()
         time.sleep(1.0) #make sure thread is spun up
-        self.failIf(test_sleep_done)
+        self.assertFalse(test_sleep_done)
 
         t = Time.from_sec(1000000.0)
         _set_rostime(t)
@@ -344,12 +344,12 @@ class TestRospyTime(unittest.TestCase):
         self.assertTrue(test_sleep_done, "sleeper did not wake up")
 
         #start duration sleeper
-        self.failIf(test_duration_sleep_done)      
+        self.assertFalse(test_duration_sleep_done)      
         dursleepthread = threading.Thread(target=duration_sleeper, args=())
         dursleepthread.daemon = True
         dursleepthread.start()
         time.sleep(1.0) #make sure thread is spun up
-        self.failIf(test_duration_sleep_done)
+        self.assertFalse(test_duration_sleep_done)
 
         t = Time.from_sec(2000000.0)
         _set_rostime(t)
@@ -357,12 +357,12 @@ class TestRospyTime(unittest.TestCase):
         self.assertTrue(test_sleep_done, "sleeper did not wake up")
 
         #start backwards sleeper
-        self.failIf(test_backwards_sleep_done)
+        self.assertFalse(test_backwards_sleep_done)
         backsleepthread = threading.Thread(target=backwards_sleeper, args=())
         backsleepthread.daemon = True
         backsleepthread.start()
         time.sleep(1.0) #make sure thread is spun up
-        self.failIf(test_backwards_sleep_done)
+        self.assertFalse(test_backwards_sleep_done)
 
         t = Time.from_sec(1.0)
         _set_rostime(t)

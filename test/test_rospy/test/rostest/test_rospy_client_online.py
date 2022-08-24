@@ -362,7 +362,7 @@ class TestRospyClientOnline(unittest.TestCase):
         while not t3.done and time.time() < timeout_t:
             time.sleep(0.5)
         self.assertTrue(t3.done)
-        self.failIf(t3.success)
+        self.assertFalse(t3.success)
 
     def test_wait_for_service_duration(self):
         # lazy-import for coverage
@@ -391,7 +391,7 @@ class TestRospyClientOnline(unittest.TestCase):
         while not t3.done and time.time() < timeout_t:
             time.sleep(0.5)
         self.assertTrue(t3.done)
-        self.failIf(t3.success)
+        self.assertFalse(t3.success)
     
     def test_ServiceProxy_wait_for_service(self):
         """
@@ -436,7 +436,7 @@ class TestRospyClientOnline(unittest.TestCase):
         while not t3.done and time.time() < timeout_t:
             time.sleep(0.5)
         self.assertTrue(t3.done)
-        self.failIf(t3.success)
+        self.assertFalse(t3.success)
 
     def test_ServiceProxy_wait_for_service_duration(self):
         """
@@ -475,7 +475,7 @@ class TestRospyClientOnline(unittest.TestCase):
         while not t3.done and time.time() < timeout_t:
             time.sleep(0.5)
         self.assertTrue(t3.done)
-        self.failIf(t3.success)
+        self.assertFalse(t3.success)
 
     def test_sleep(self):
         import rospy
@@ -546,7 +546,7 @@ class TestRospyClientOnline(unittest.TestCase):
         self.assertTrue(rospy.has_param('param2'))
         self.assertEqual('value2', rospy.get_param('param2'))
         rospy.delete_param('param2')
-        self.failIf(rospy.has_param('param2'))
+        self.assertFalse(rospy.has_param('param2'))
         try:
             rospy.get_param('param2')
             self.fail("should have raised KeyError")
@@ -589,7 +589,7 @@ class TestRospyClientOnline(unittest.TestCase):
         t3.start()
         while not t3.done and time.time() < timeout_t:
             time.sleep(0.5)
-        self.failIf(t3.success)
+        self.assertFalse(t3.success)
         self.assertTrue(t3.done)
         self.assertTrue(t3.value is None)
 
@@ -621,7 +621,7 @@ class TestRospyClientOnline(unittest.TestCase):
         t3.start()
         while not t3.done and time.time() < timeout_t:
             time.sleep(0.5)
-        self.failIf(t3.success)
+        self.assertFalse(t3.success)
         self.assertTrue(t3.done)
         self.assertTrue(t3.value is None)
     

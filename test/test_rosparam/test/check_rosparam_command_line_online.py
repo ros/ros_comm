@@ -184,7 +184,7 @@ class TestRosparamOnline(unittest.TestCase):
         ps.setParam('/delete/me', True)
         self.assertTrue(ps.hasParam('/delete/me'))
         Popen([cmd, 'delete', "/delete/me"], stdout=PIPE).communicate()[0]
-        self.failIf(ps.hasParam('/delete/me'))
+        self.assertFalse(ps.hasParam('/delete/me'))
 
         # TODO: dump
         # TODO: load

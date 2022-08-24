@@ -150,7 +150,7 @@ class NodeApiTestCase(_NodeTestCase):
     def _checkTopics(self, required, actual):
         actual = [t for t, _ in actual]
         missing = set(required) - set(actual)
-        self.failIf(len(missing), 'missing required topics: %s'%(','.join(missing)))
+        self.assertFalse(len(missing), 'missing required topics: %s'%(','.join(missing)))
 
     ## validate node.getPublications(caller_id)
     def testGetPublications(self):

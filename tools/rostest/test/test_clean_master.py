@@ -41,7 +41,7 @@ import rosunit
 class CleanMasterTest(unittest.TestCase):
   
     def test_clean_master(self):
-        self.failIf(rospy.has_param('dirty'))
+        self.assertFalse(rospy.has_param('dirty'))
         rospy.set_param('dirty', True)
 
 if __name__ == '__main__':

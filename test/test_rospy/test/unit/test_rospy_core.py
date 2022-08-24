@@ -265,7 +265,7 @@ class TestRospyCore(unittest.TestCase):
         self.assertEqual(uri, rospy.core.get_node_uri())
         
     def test_initialized(self):
-        self.failIf(rospy.core.is_initialized())
+        self.assertFalse(rospy.core.is_initialized())
         rospy.core.set_initialized(True)
         self.assertTrue(rospy.core.is_initialized())
 
@@ -284,7 +284,7 @@ class TestRospyCore(unittest.TestCase):
         del rospy.core._shutdown_hooks[:]        
         global called, called2
         called = called2 = None
-        self.failIf(rospy.core.is_shutdown())        
+        self.assertFalse(rospy.core.is_shutdown())        
         rospy.core.add_shutdown_hook(shutdown_hook1)
         reason = "reason %s"%time.time()
         rospy.core.signal_shutdown(reason)

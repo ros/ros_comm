@@ -92,7 +92,7 @@ class TestRosnode(unittest.TestCase):
         Make sure all elements of not_expected are not present in actual
         """
         for t in not_expected:
-            self.failIf(t in actual)
+            self.assertFalse(t in actual)
         
 
     def test_rosnode_info(self):
@@ -156,7 +156,7 @@ class TestRosnode(unittest.TestCase):
             rosnode._rosnode_cmd_list([cmd, 'list', '-u', '/'])
             l = tolist(b)
             self.assertEqual(num_nodes, len(l))
-            self.failIf([n for n in l if not n.startswith('http://')])
+            self.assertFalse([n for n in l if not n.startswith('http://')])
         # test -a all
         with fakestdout() as b:
             rosnode._rosnode_cmd_list([cmd, 'list', '-a', '/'])
@@ -165,7 +165,7 @@ class TestRosnode(unittest.TestCase):
             names = [x.split()[1] for x in l if x]
             self._check(nodes, names) 
             self.assertEqual(num_nodes, len(uris))
-            self.failIf([n for n in uris if not n.startswith('http://')])
+            self.assertFalse([n for n in uris if not n.startswith('http://')])
             
             
         # test with namespace
@@ -206,7 +206,7 @@ class TestRosnode(unittest.TestCase):
         import rosnode
         cmd = 'rosnode'
         
-        self.failIf(rosnode.rosnode_ping('/fake_node', max_count=1))
+        self.assertFalse(rosnode.rosnode_ping('/fake_node', max_count=1))
         self.assertTrue(rosnode.rosnode_ping('/rosout', max_count=1))
         self.assertTrue(rosnode.rosnode_ping('/rosout', max_count=2))        
 
@@ -248,7 +248,7 @@ class TestRosnode(unittest.TestCase):
         for n in ['to_kill/kill1', '/to_kill/kill2']:
             self.assertTrue(rosnode.rosnode_ping(n, max_count=1))
             rosnode._rosnode_cmd_kill([cmd, 'kill', n])
-            self.failIf(rosnode.rosnode_ping(n, max_count=1))
+            self.assertFalse(rosnode.rosnode_ping(n, max_count=1))
         
     def test_fullusage(self):
         import rosnode

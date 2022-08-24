@@ -73,7 +73,7 @@ class RoslibSrvTest(unittest.TestCase):
         
         spec2 = SrvSpec(msg_a, msg_b, text)
         self.assertEqual(spec, spec2)
-        self.failIf(spec != spec2)
+        self.assertFalse(spec != spec2)
         
         # - full_name
         spec2.full_name = 'something'

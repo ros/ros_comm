@@ -84,7 +84,7 @@ class SlaveTestCase(TestRosClient):
         self.assertTrue(publications is not None)
         expected = [rospy.resolve_name(t) for t in _required_publications]
         missing = set(expected) - set(publications) 
-        self.failIf(len(missing), 'missing required topics: %s'%(','.join(missing)))
+        self.assertFalse(len(missing), 'missing required topics: %s'%(','.join(missing)))
 
     def _subTestSourceRequestFlow(self, testName, protocols, testEval):
         master = self.master

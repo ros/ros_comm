@@ -46,13 +46,13 @@ class TestRospyTransport(unittest.TestCase):
             t = Transport(d)
             self.assertEqual(d, t.direction)
             self.assertEqual("UNKNOWN", t.transport_type)            
-            self.failIf(t.done)
+            self.assertFalse(t.done)
             self.assertEqual(None, t.cleanup_cb)
             self.assertEqual('', t.endpoint_id)            
             self.assertEqual('unnamed', t.name)
             self.assertEqual(0, t.stat_bytes)            
             self.assertEqual(0, t.stat_num_msg)            
-            self.failIf(t.id in ids)
+            self.assertFalse(t.id in ids)
             ids.append(t.id)
 
             t = Transport(d, 'a name')
@@ -122,7 +122,7 @@ class TestRospyTransport(unittest.TestCase):
         # tripwire tests
         from rospy.impl.transport import ProtocolHandler
         h = ProtocolHandler()
-        self.failIf(h.supports('TCPROS'))
+        self.assertFalse(h.supports('TCPROS'))
         self.assertEqual([], h.get_supported())
         try:
             h.create_connection("/topic", 'http://localhost:1234', ['TCPROS'])

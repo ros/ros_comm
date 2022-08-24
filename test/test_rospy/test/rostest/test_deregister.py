@@ -156,7 +156,7 @@ class TestDeregister(unittest.TestCase):
         # filter out rosout services
         #[['/rosout/set_logger_level', ['/rosout']], ['/rosout/get_loggers', ['/rosout']]]
         srv = [s for s in srv if not s[0].startswith('/rosout/') and not s[0].endswith('/get_loggers') and not s[0].endswith('/set_logger_level')]
-        self.failIf(srv, srv)
+        self.assertFalse(srv, srv)
 
         print("Creating service ", SERVICE)
         service = rospy.Service(SERVICE, EmptySrv, callback)
@@ -176,7 +176,7 @@ class TestDeregister(unittest.TestCase):
         state = master.getSystemState()
         _, _, srv = state
         srv = [s for s in srv if not s[0].startswith('/rosout/') and not s[0].endswith('/get_loggers') and not s[0].endswith('/set_logger_level')]
-        self.failIf(srv, srv)
+        self.assertFalse(srv, srv)
 
         
 if __name__ == '__main__':

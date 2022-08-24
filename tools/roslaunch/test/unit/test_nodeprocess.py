@@ -71,7 +71,7 @@ class TestNodeprocess(unittest.TestCase):
         self.assertTrue(isinstance(p, LocalProcess))
         self.assertEqual(p.args[0], 'rosmaster')
         idx = p.args.index('-p')
-        self.failIf(idx < 1)
+        self.assertFalse(idx < 1)
         self.assertEqual(p.args[idx+1], str(port))
         self.assertTrue('--core' in p.args)
 
@@ -156,13 +156,13 @@ class TestNodeprocess(unittest.TestCase):
         n.output = 'log'
         self.assertTrue(create_node_process(run_id, n, master_uri).log_output)
         n.output = 'screen'
-        self.failIf(create_node_process(run_id, n, master_uri).log_output)
+        self.assertFalse(create_node_process(run_id, n, master_uri).log_output)
 
         # test respawn
         n.respawn = True
         self.assertTrue(create_node_process(run_id, n, master_uri).respawn)
         n.respawn = False
-        self.failIf(create_node_process(run_id, n, master_uri).respawn)        
+        self.assertFalse(create_node_process(run_id, n, master_uri).respawn)        
 
         # test cwd
         n.cwd = None
@@ -216,7 +216,7 @@ class TestNodeprocess(unittest.TestCase):
         os.environ['SUB_TEST2'] = 'subtest2'
         n.args = 'foo $(env SUB_TEST) $(env SUB_TEST2)'
         p = create_node_process(run_id, n, master_uri)        
-        self.failIf('SUB_TEST' in p.args)
+        self.assertFalse('SUB_TEST' in p.args)
         self.assertTrue('foo' in p.args)
         self.assertTrue('subtest' in p.args)
         self.assertTrue('subtest2' in p.args)
@@ -330,13 +330,13 @@ class TestNodeprocess(unittest.TestCase):
             create_master_process('runid-unittest', Master.ROSMASTER, rospkg.get_ros_root(), 0)
             failed = True
         except RLException: pass
-        self.failIf(failed, "invalid port should have triggered error")
+        self.assertFalse(failed, "invalid port should have triggered error")
 
         # test success with ROSMASTER
         m1 = create_master_process('runid-unittest', Master.ROSMASTER, ros_root, 1234)
         self.assertEqual('runid-unittest', m1.run_id)
-        self.failIf(m1.started)
-        self.failIf(m1.stopped)
+        self.assertFalse(m1.started)
+        self.assertFalse(m1.stopped)
         self.assertEqual(None, m1.cwd)
         self.assertEqual('master', m1.name)
         master_p = 'rosmaster'

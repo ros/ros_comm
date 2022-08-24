@@ -122,7 +122,7 @@ class MasterApiOnlineTest(unittest.TestCase):
             pass
 
     def test_hasParam(self):
-        self.failIf(self.m.hasParam('fake_param'), "should have failed to lookup fake parameter")
+        self.assertFalse(self.m.hasParam('fake_param'), "should have failed to lookup fake parameter")
         self.assertTrue(self.m.hasParam('/run_id'), "should have failed to lookup fake parameter")
 
     def test_setParam(self):

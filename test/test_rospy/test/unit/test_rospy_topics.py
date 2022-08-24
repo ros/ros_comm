@@ -134,13 +134,13 @@ class TestRospyTopics(unittest.TestCase):
         self.assertTrue(impl == pub.impl)
         self.assertEqual(rname, impl.resolved_name)
         self.assertEqual(data_class, impl.data_class)                
-        self.failIf(impl.is_latch)
+        self.assertFalse(impl.is_latch)
         self.assertEqual(None, impl.latch)                
         self.assertEqual(0, impl.seq)
         self.assertEqual(1, impl.ref_count)
         self.assertEqual(b'', impl.buff.getvalue())
-        self.failIf(impl.closed)
-        self.failIf(impl.has_connections())
+        self.assertFalse(impl.closed)
+        self.assertFalse(impl.has_connections())
         # check publish() fall-through
         from test_rospy.msg import Val
         impl.publish(Val('hello world-1'))
@@ -155,7 +155,7 @@ class TestRospyTopics(unittest.TestCase):
         # override is a major cheat as the object isn't even an actual
         # connection. I will need to add more integrated tests later
         co1 = ConnectionOverride('co1')
-        self.failIf(impl.has_connection('co1'))
+        self.assertFalse(impl.has_connection('co1'))
         impl.add_connection(co1)
         self.assertTrue(impl.has_connection('co1'))
         self.assertTrue(impl.has_connections())        
@@ -181,7 +181,7 @@ class TestRospyTopics(unittest.TestCase):
         self.assertEqual(2, impl.ref_count)        
 
         co2 = ConnectionOverride('co2')
-        self.failIf(impl.has_connection('co2'))
+        self.assertFalse(impl.has_connection('co2'))
         impl.add_connection(co2)
         for n in ['co1', 'co2']:
             self.assertTrue(impl.has_connection(n))
@@ -197,7 +197,7 @@ class TestRospyTopics(unittest.TestCase):
 
         # test that latched value is sent to connections on connect
         co3 = ConnectionOverride('co3')
-        self.failIf(impl.has_connection('co3'))
+        self.assertFalse(impl.has_connection('co3'))
         impl.add_connection(co3)
         for n in ['co1', 'co2', 'co3']:
             self.assertTrue(impl.has_connection(n))
@@ -208,18 +208,18 @@ class TestRospyTopics(unittest.TestCase):
         # TODO: suscribe listener
         self.assertTrue(impl.has_connection('co1'))
         impl.remove_connection(co1)
-        self.failIf(impl.has_connection('co1'))
+        self.assertFalse(impl.has_connection('co1'))
         self.assertTrue(impl.has_connections())
         
         self.assertTrue(impl.has_connection('co3'))
         impl.remove_connection(co3)        
-        self.failIf(impl.has_connection('co3'))
+        self.assertFalse(impl.has_connection('co3'))
         self.assertTrue(impl.has_connections())
         
         self.assertTrue(impl.has_connection('co2'))
         impl.remove_connection(co2)        
-        self.failIf(impl.has_connection('co2'))
-        self.failIf(impl.has_connections())
+        self.assertFalse(impl.has_connection('co2'))
+        self.assertFalse(impl.has_connections())
 
         # test publish() latch on a new Publisher object (this was encountered in testing, so I want a test case for it)
         pub = Publisher('bar', data_class, latch=True, queue_size=0)
@@ -369,9 +369,9 @@ class TestRospyTopics(unittest.TestCase):
         self.assertEqual(data_class, impl.data_class)                
         self.assertEqual(None, impl.queue_size)
         self.assertEqual(DEFAULT_BUFF_SIZE, impl.buff_size)
-        self.failIf(impl.tcp_nodelay)
+        self.assertFalse(impl.tcp_nodelay)
         self.assertEqual(1, impl.ref_count)
-        self.failIf(impl.closed)
+        self.assertFalse(impl.closed)
         
         # round 2, now start setting options and make sure underlying impl is reconfigured
         name = 'foo'
@@ -395,7 +395,7 @@ class TestRospyTopics(unittest.TestCase):
         self.assertEqual(buff_size, impl.buff_size)
         self.assertTrue(impl.tcp_nodelay)
         self.assertEqual(2, impl.ref_count)
-        self.failIf(impl.closed)
+        self.assertFalse(impl.closed)
 
         # round 3, make sure that options continue to reconfigure
         # underlying impl also test that tcp_nodelay is sticky. this
@@ -416,7 +416,7 @@ class TestRospyTopics(unittest.TestCase):
         self.assertEqual(buff_size, impl.buff_size)
         self.assertTrue(impl.tcp_nodelay)
         self.assertEqual(3, impl.ref_count)
-        self.failIf(impl.closed)
+        self.assertFalse(impl.closed)
 
     def test_Poller(self):
         # no real test as this goes down to kqueue/select, just make sure that it behaves

@@ -79,7 +79,7 @@ class TestRospyTcprosPubsub(unittest.TestCase):
         self.assertEqual(rospy.impl.transport.INBOUND, s.direction)
         self.assertEqual(recv_data_class, s.recv_data_class)
         self.assertTrue(s.buff_size > -1)
-        self.failIf(s.tcp_nodelay)
+        self.assertFalse(s.tcp_nodelay)
         self.assertEqual(None, s.queue_size)
 
         fields = s.get_header_fields()
@@ -119,7 +119,7 @@ class TestRospyTcprosPubsub(unittest.TestCase):
         self.assertEqual(rospy.impl.transport.OUTBOUND, p.direction)
         self.assertEqual(pub_data_class, p.pub_data_class)
         self.assertTrue(p.buff_size > -1)
-        self.failIf(p.is_latch)
+        self.assertFalse(p.is_latch)
 
         fields = p.get_header_fields()
         self.assertEqual(name, fields['topic'])
@@ -195,7 +195,7 @@ class TestRospyTcprosPubsub(unittest.TestCase):
 
         # now test with correct params
         err = tch(sock, client_addr, headers)        
-        self.failIf(err)
+        self.assertFalse(err)
         self.assertEqual(None, sock.sockopt)
 
         # test with mismatched type
@@ -203,7 +203,7 @@ class TestRospyTcprosPubsub(unittest.TestCase):
         header_copy = headers.copy()
         header_copy['type'] = 'bad_type/Bad'
         err = tch(sock, client_addr, header_copy)        
-        self.failIf(err)
+        self.assertFalse(err)
         # - now give mismatched md5sum, this will test different error message
         header_copy['md5sum'] = 'bad'
         type_md5_err = tch(sock, client_addr, header_copy)
@@ -216,19 +216,19 @@ class TestRospyTcprosPubsub(unittest.TestCase):
         # - should be equivalent to above
         headers['tcp_nodelay'] = '0'
         err = tch(sock, client_addr, headers)        
-        self.failIf(err)
+        self.assertFalse(err)
         self.assertEqual(None, sock.sockopt)        
         
         # - now test actual sock opt
         headers['tcp_nodelay'] = '1'        
         err = tch(sock, client_addr, headers)        
-        self.failIf(err)
+        self.assertFalse(err)
         self.assertEqual((socket.IPPROTO_TCP, socket.TCP_NODELAY, 1), sock.sockopt)
         # test connection headers
         impl.headers = {'foo': 'baz', 'hoge': 'fuga'}        
         headers['tcp_nodelay'] = '0'
         err = tch(sock, client_addr, headers)        
-        self.failIf(err)
+        self.assertFalse(err)
         connection = impl.connections[-1]
         fields = connection.protocol.get_header_fields()
         self.assertEqual(impl.resolved_name, fields['topic'])

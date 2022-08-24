@@ -194,7 +194,7 @@ class TestRostopic(unittest.TestCase):
         t, n, f = rostopic.get_topic_type('/rosout/name', blocking=False)
         self.assertEqual('rosgraph_msgs/Log', t)
         self.assertEqual('/rosout', n)
-        self.failIf(f is None)
+        self.assertFalse(f is None)
         from rosgraph_msgs.msg import Log
         self.assertEqual("bob", f(Log(name="bob")))
         
@@ -212,7 +212,7 @@ class TestRostopic(unittest.TestCase):
         c, n, f = rostopic.get_topic_class('/rosout/name')
         self.assertEqual(c, Log)
         self.assertEqual('/rosout', n)
-        self.failIf(f is None)
+        self.assertFalse(f is None)
         self.assertEqual("bob", f(Log(name="bob")))
         
     def test_cmd_info(self):
@@ -287,29 +287,29 @@ class TestRostopic(unittest.TestCase):
         with fakestdout() as b:
             rostopic.rostopicmain([cmd, 'list'])
             v = [x.strip() for x in b.getvalue().split('\n') if x.strip()]
-            self.failIf(set(topics)-set(v))
+            self.assertFalse(set(topics)-set(v))
 
         # test through public function
         topics = ['/chatter', '/foo/chatter', '/bar/chatter', '/rosout', '/rosout_agg'] 
 
         v = rostopic.get_topic_list()
-        self.failIf(set(topics)-set(v))
+        self.assertFalse(set(topics)-set(v))
 
         # publishers-only
         topics = ['/chatter', '/foo/chatter', '/bar/chatter', '/rosout', '/rosout_agg'] 
         with fakestdout() as b:
             rostopic.rostopicmain([cmd, 'list', '-p'])
             v = [x.strip() for x in b.getvalue().split('\n') if x.strip()]
-            self.failIf(set(topics)-set(v))
-            self.failIf('/clock' in v)
+            self.assertFalse(set(topics)-set(v))
+            self.assertFalse('/clock' in v)
             
         # subscribers-only
         topics = ['/rosout'] 
         with fakestdout() as b:
             rostopic.rostopicmain([cmd, 'list', '-s'])
             v = [x.strip() for x in b.getvalue().split('\n') if x.strip()]
-            self.failIf(set(topics)-set(v), "%s vs. %s"%(topics, v))
-            self.failIf('/chatter' in v)
+            self.assertFalse(set(topics)-set(v), "%s vs. %s"%(topics, v))
+            self.assertFalse('/chatter' in v)
 
         # turn on verbosity, not checking output as it's not as stable
         with fakestdout() as b:            
@@ -321,14 +321,14 @@ class TestRostopic(unittest.TestCase):
         with fakestdout() as b:            
             rostopic.rostopicmain([cmd, 'list', '-vs'])
             v = b.getvalue()
-            self.failIf("Published topics:" in v)        
+            self.assertFalse("Published topics:" in v)        
             self.assertTrue("Subscribed topics:" in v)
 
         with fakestdout() as b:            
             rostopic.rostopicmain([cmd, 'list', '-vp'])
             v = b.getvalue()
             self.assertTrue("Published topics:" in v)        
-            self.failIf("Subscribed topics:" in v)
+            self.assertFalse("Subscribed topics:" in v)
             
         # test with multiple topic names
         try:

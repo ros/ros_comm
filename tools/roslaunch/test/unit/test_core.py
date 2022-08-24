@@ -64,11 +64,11 @@ class TestCore(unittest.TestCase):
     def test_child_mode(self):
         from roslaunch.core import is_child_mode, set_child_mode
         set_child_mode(False)
-        self.failIf(is_child_mode())
+        self.assertFalse(is_child_mode())
         set_child_mode(True)
         self.assertTrue(is_child_mode())        
         set_child_mode(False)
-        self.failIf(is_child_mode())
+        self.assertFalse(is_child_mode())
 
     def test_printlog(self):
         from roslaunch.core import add_printlog_handler, add_printerrlog_handler, printlog, printlog_bold, printerrlog
@@ -121,7 +121,7 @@ class TestCore(unittest.TestCase):
 
             from roslaunch.core import local_machine
             lm = local_machine()
-            self.failIf(lm is None)
+            self.assertFalse(lm is None)
             #singleton
             self.assertTrue(lm == local_machine())
 
@@ -158,7 +158,7 @@ class TestCore(unittest.TestCase):
             self.assertTrue(isinstance(m.get(), ServerProxy))
             m.uri = 'http://foo:567'
             self.assertEqual(567, m.get_port())
-            self.failIf(m.is_running())
+            self.assertFalse(m.is_running())
 
         finally:
             if old_env is None:

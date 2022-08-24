@@ -151,7 +151,7 @@ Test Duration: %s"""%(hz, hzerror, topic, test_duration))
         if hz > 0.:
             self.assertTrue(self.message_received, "no messages before timeout")
         else:
-            self.failIf(self.message_received, "message received")
+            self.assertFalse(self.message_received, "message received")
             
         print("Starting rate measurement")
         if self.wall_clock:

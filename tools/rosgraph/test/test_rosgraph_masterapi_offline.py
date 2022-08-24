@@ -362,7 +362,7 @@ class MasterApiOfflineTest(unittest.TestCase):
         self.throw_error('deleteParam', (p,), (-1, '', r))
 
     def test_is_online(self):
-        self.failIf(rosgraph.masterapi.is_online(master_uri="http://fake:12345"))
+        self.assertFalse(rosgraph.masterapi.is_online(master_uri="http://fake:12345"))
 
         self.m.handle.return_val = (1, '', 1235)
         self.assertTrue(self.m.is_online())

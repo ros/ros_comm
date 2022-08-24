@@ -70,7 +70,7 @@ class TestClientParamServer(unittest.TestCase):
         try: rospy.has_param(''); self.fail("has_param('') succeeded")
         except: pass
 
-        self.failIf(rospy.has_param('non-existent'), "has_param('non-existent') succeeded")
+        self.assertFalse(rospy.has_param('non-existent'), "has_param('non-existent') succeeded")
             
         #validate get_param against values on the param server
         rostest_tests = {
@@ -85,7 +85,7 @@ class TestClientParamServer(unittest.TestCase):
         
         # test get parameter names
         diff = set(param_names) ^ set(test_param_filter(rospy.get_param_names()))
-        self.failIf(diff, diff)
+        self.assertFalse(diff, diff)
         
         # test for existing and value
         for k, v in rostest_tests.items():
@@ -142,15 +142,15 @@ class TestClientParamServer(unittest.TestCase):
         for k, v in rostest_tests.items():
             self.assertTrue(rospy.has_param(k))
             rospy.delete_param(k)
-            self.failIf(rospy.has_param(k))
-            self.failIf(rospy.has_param(rospy.resolve_name(k)))
+            self.assertFalse(rospy.has_param(k))
+            self.assertFalse(rospy.has_param(rospy.resolve_name(k)))
             try:
                 rospy.get_param(k)
                 self.fail("get_param should fail on deleted key")
             except KeyError: pass
             
         # make sure no new state
-        self.failIf(set(initial_params) ^ set(rospy.get_param_names()))
+        self.assertFalse(set(initial_params) ^ set(rospy.get_param_names()))
         
     ## test set_param separately
     def test_set_param(self):
@@ -170,15 +170,15 @@ class TestClientParamServer(unittest.TestCase):
         initial_param_names = rospy.get_param_names()
         param_names = [rospy.resolve_name(k) for k in rostest_tests.keys()]
         for k, v in rostest_tests.items():
-            self.failIf(rospy.has_param(k))
-            self.failIf(rospy.has_param(rospy.resolve_name(k)))
+            self.assertFalse(rospy.has_param(k))
+            self.assertFalse(rospy.has_param(rospy.resolve_name(k)))
             rospy.set_param(k, v)
             self.assertTrue(rospy.has_param(k))
             self.assertTrue(rospy.has_param(rospy.resolve_name(k)))
             self.assertEqual(v, rospy.get_param(k))            
             self.assertEqual(v, rospy.get_param(rospy.resolve_name(k)))
         correct_state = set(initial_param_names + param_names)
-        self.failIf(correct_state ^ set(rospy.get_param_names()))
+        self.assertFalse(correct_state ^ set(rospy.get_param_names()))
         
 if __name__ == '__main__':
     rospy.init_node(NAME)

@@ -251,7 +251,7 @@ class TestXmlLoader(unittest.TestCase):
             args = e.args
             self.assertEqual(3, len(args), "expected 3 args, got %s"%str(args))
             rp_cmd, rp_file, rp_ctx = args
-            self.failIf('$(find' in rp_file, "file attribute was not evaluated")
+            self.assertFalse('$(find' in rp_file, "file attribute was not evaluated")
             self.assertEqual('dump', rp_cmd)
                 
             # verify that the context is passed in correctly
@@ -674,7 +674,7 @@ class TestXmlLoader(unittest.TestCase):
         if respawn == 'true':
             self.assertTrue(n.respawn)
         else:
-            self.failIf(n.respawn)            
+            self.assertFalse(n.respawn)            
 
     def test_machine_subst(self):
         test_file = os.path.join(self.xml_dir, 'test-machine-substitution.xml')
@@ -818,18 +818,18 @@ class TestXmlLoader(unittest.TestCase):
         keys = ['group_if', 'group_unless', 'param_if', 'param_unless']
         for k in keys:
             self.assertTrue('/'+k+'_pass' in param_d, param_d)
-            self.failIf('/'+k+'_fail' in param_d, k)
+            self.assertFalse('/'+k+'_fail' in param_d, k)
             # Also check the result of Python-parsed expressions
             self.assertTrue('/py_'+k+'_pass' in param_d, param_d)
-            self.failIf('/py_'+k+'_fail' in param_d, k)
+            self.assertFalse('/py_'+k+'_fail' in param_d, k)
 
         n = mock.nodes[0]
         for k in ['if', 'unless']:
             self.assertTrue(['from_%s_pass'%k, 'to_%s_pass'%k] in n.remap_args)
-            self.failIf(['from_%s_fail'%k, 'to_%s_fail'%k] in n.remap_args)            
+            self.assertFalse(['from_%s_fail'%k, 'to_%s_fail'%k] in n.remap_args)            
             # Also check the result of Python-parsed expressions
             self.assertTrue(['py_from_%s_pass'%k, 'py_to_%s_pass'%k] in n.remap_args)
-            self.failIf(['py_from_%s_fail'%k, 'py_to_%s_fail'%k] in n.remap_args)
+            self.assertFalse(['py_from_%s_fail'%k, 'py_to_%s_fail'%k] in n.remap_args)
         
     def test_if_unless_invalid(self):
         mock = RosLaunchMock()
@@ -893,8 +893,8 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEqual(param_d['/py_if_param'], False)
         self.assertEqual(param_d['/int_param'], 1234)   
         self.assertAlmostEqual(param_d['/float_param'], 3.)   
-        self.failIf('/fail' in param_d)
-        self.failIf('/py_fail' in param_d)
+        self.assertFalse('/fail' in param_d)
+        self.assertFalse('/py_fail' in param_d)
 
         # context tests
         #  - args are scoped to their context, and thus can be rebound in a sibling context
@@ -936,8 +936,8 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEqual(param_d['/py_if_test'], 'ran')
         self.assertEqual(param_d['/if_param'], True)   
         self.assertEqual(param_d['/py_if_param'], True)
-        self.failIf('/fail' in param_d)
-        self.failIf('/py_fail' in param_d)
+        self.assertFalse('/fail' in param_d)
+        self.assertFalse('/py_fail' in param_d)
 
         # include tests
         self.assertEqual(param_d['/include_test/p1_test'], 'required1')

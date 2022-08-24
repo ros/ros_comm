@@ -106,7 +106,7 @@ class TestRospyTcprosBase(unittest.TestCase):
             addr, port = s.get_full_addr()
             self.assertTrue(type(addr) == str)
             self.assertEqual(handler, s.inbound_handler)        
-            self.failIf(s.is_shutdown)
+            self.assertFalse(s.is_shutdown)
         finally:
             if s is not None:
                 s.shutdown()

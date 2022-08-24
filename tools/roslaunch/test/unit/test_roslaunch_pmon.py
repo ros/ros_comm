@@ -174,7 +174,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         self.assertEqual(0, p.spawn_count)        
         self.assertEqual(None, p.exit_code)
         self.assertTrue(p.get_exit_description())
-        self.failIf(p.is_alive())
+        self.assertFalse(p.is_alive())
 
         info = p.get_info()
         self.assertEqual(package, info['package'])
@@ -184,7 +184,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         self.assertEqual(respawn, info['respawn'])
         self.assertEqual(respawn_delay, info['respawn_delay'])
         self.assertEqual(0, info['spawn_count'])        
-        self.failIf('exit_code' in info)
+        self.assertFalse('exit_code' in info)
 
         p.start()
         self.assertEqual(1, p.spawn_count)
@@ -235,7 +235,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         self.assertEqual(respawn_delay, dp.respawn_delay)
         self.assertEqual(0, dp.spawn_count)        
         self.assertEqual(-1, dp.exit_code)
-        self.failIf(dp.is_alive())
+        self.assertFalse(dp.is_alive())
 
         info = dp.get_info()
         info0 = p0.get_info()
@@ -292,30 +292,30 @@ class TestRoslaunchPmon(unittest.TestCase):
         def failer():
             raise Exception("oops")
         # noop
-        self.failIf(roslaunch.pmon.shutdown_process_monitor(None))
+        self.assertFalse(roslaunch.pmon.shutdown_process_monitor(None))
 
         # test with fake pmon so we can get branch-complete
         pmon = ProcessMonitorMock()
         # - by setting alive to true, shutdown fails, though it can't really do anything about it
         pmon.alive = True
-        self.failIf(roslaunch.pmon.shutdown_process_monitor(pmon))
+        self.assertFalse(roslaunch.pmon.shutdown_process_monitor(pmon))
         
         # make sure that exceptions get trapped        
         pmon.shutdown = failer
         # should cause an exception during execution, but should get caught 
-        self.failIf(roslaunch.pmon.shutdown_process_monitor(pmon))
+        self.assertFalse(roslaunch.pmon.shutdown_process_monitor(pmon))
         
         # Test with a real process monitor
         pmon = roslaunch.pmon.start_process_monitor()
         self.assertTrue(pmon.is_alive())
         self.assertTrue(roslaunch.pmon.shutdown_process_monitor(pmon))
-        self.failIf(pmon.is_alive())
+        self.assertFalse(pmon.is_alive())
 
         # fiddle around with some state that would shouldn't be
         roslaunch.pmon._shutting_down = True
         pmon = roslaunch.pmon.start_process_monitor()
         if pmon != None:
-            self.failIf(roslaunch.pmon.shutdown_process_monitor(pmon))
+            self.assertFalse(roslaunch.pmon.shutdown_process_monitor(pmon))
             self.fail("start_process_monitor should fail if during shutdown sequence")
             
     def test_pmon_shutdown(self):
@@ -331,8 +331,8 @@ class TestRoslaunchPmon(unittest.TestCase):
 
         roslaunch.pmon.pmon_shutdown()
         
-        self.failIf(pmon1.is_alive())
-        self.failIf(pmon2.is_alive())
+        self.assertFalse(pmon1.is_alive())
+        self.assertFalse(pmon2.is_alive())
         
     def test_add_process_listener(self):
         # coverage test, not a functionality test as that would be much more difficult to simulate
@@ -345,14 +345,14 @@ class TestRoslaunchPmon(unittest.TestCase):
         pmon = self.pmon
 
         # should return False
-        self.failIf(pmon.kill_process('foo'))
+        self.assertFalse(pmon.kill_process('foo'))
         
         p1 = ProcessMock('foo', 'name1', [], {})
         p2 = ProcessMock('bar', 'name2', [], {})
         pmon.register(p1)
         pmon.register(p2)        
-        self.failIf(p1.stopped)
-        self.failIf(p2.stopped)
+        self.assertFalse(p1.stopped)
+        self.assertFalse(p2.stopped)
         self.assertTrue(p1.name in pmon.get_active_names())
         self.assertTrue(p2.name in pmon.get_active_names())
 
@@ -369,7 +369,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         self.assertTrue(pmon.has_process(p1.name))
         self.assertTrue(p1.name in pmon.get_active_names())
         
-        self.failIf(p2.stopped)        
+        self.assertFalse(p2.stopped)        
         self.assertTrue(p2.name in pmon.get_active_names())       
         pmon.kill_process(p2.name)
         self.assertTrue(p2.stopped)
@@ -409,14 +409,14 @@ class TestRoslaunchPmon(unittest.TestCase):
         
         pmon.run()
         
-        self.failIf(marker.marked, "pmon had to be externally killed")
+        self.assertFalse(marker.marked, "pmon had to be externally killed")
 
         
         self.assertTrue(pmon.done)
-        self.failIf(pmon.has_process(p1.name))
-        self.failIf(pmon.has_process(p2.name))
+        self.assertFalse(pmon.has_process(p1.name))
+        self.assertFalse(pmon.has_process(p2.name))
         alive, dead = pmon.get_process_names_with_spawn_count()
-        self.failIf(alive)
+        self.assertFalse(alive)
         self.assertTrue((p1.name, p1.spawn_count) in dead)
         self.assertTrue((p2.name, p2.spawn_count) in dead)
 
@@ -455,7 +455,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         # before we begin test
         self.assertTrue(p1 in pmon.procs)
         self.assertTrue(pmon._registrations_complete)
-        self.failIf(pmon.is_shutdown)
+        self.assertFalse(pmon.is_shutdown)
         
         # and run it -- but setup a safety timer to kill it if it doesn't exit
         marker = Marker()
@@ -465,16 +465,16 @@ class TestRoslaunchPmon(unittest.TestCase):
         
         pmon.run()
         
-        self.failIf(marker.marked, "pmon had to be externally killed")        
+        self.assertFalse(marker.marked, "pmon had to be externally killed")        
 
-        self.failIf(p3.spawn_count < 2, "process did not respawn")
+        self.assertFalse(p3.spawn_count < 2, "process did not respawn")
 
-        self.failIf(p4.respawn_interval < p4.respawn_delay,
+        self.assertFalse(p4.respawn_interval < p4.respawn_delay,
                 "Respawn delay not respected: %s %s" % (p4.respawn_interval,
                                                         p4.respawn_delay))
 
         # retest assumptions
-        self.failIf(pmon.procs)
+        self.assertFalse(pmon.procs)
         self.assertTrue(pmon.is_shutdown)        
 
         pmon.is_shutdown = False
@@ -519,7 +519,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         pmon.register(p1)
         self.assertTrue(pmon.has_process('name1'))
         self.assertEqual(p1, pmon.get_process('name1'))
-        self.failIf(pmon.has_process('name2'))
+        self.assertFalse(pmon.has_process('name2'))
         self.assertEqual(['name1'], pmon.get_active_names())
         try:
             pmon.register(Process('foo', p1.name, [], {}))
@@ -543,13 +543,13 @@ class TestRoslaunchPmon(unittest.TestCase):
 
 
         pmon.unregister(p2)
-        self.failIf(pmon.has_process('name2'))                
+        self.assertFalse(pmon.has_process('name2'))                
         pmon.unregister(p1)
-        self.failIf(pmon.has_process('name1'))        
+        self.assertFalse(pmon.has_process('name1'))        
         pmon.unregister(corep1)
-        self.failIf(pmon.has_process('core1'))                
+        self.assertFalse(pmon.has_process('core1'))                
         pmon.unregister(corep2)
-        self.failIf(pmon.has_process('core2'))
+        self.assertFalse(pmon.has_process('core2'))
 
         pmon.shutdown()
         try:
