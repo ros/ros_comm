@@ -153,6 +153,8 @@ def test_resolve_args():
         ('$(eval cos(0))', '1.0'),
         # str, map
         ("$(eval ''.join(map(str, [4,2])))", '42'),
+        # global symbols in range context
+        ("$(eval [arg(var) for var in ['fuga', 'arg']])", "['hoge', 'foo']")
     ]
     for arg, val in tests:
         assert val == resolve_args(arg, context=context), arg
