@@ -38,6 +38,7 @@ by roslaunch and xacro, but it is not yet a top-level ROS feature.
 """
 
 import os
+import math
 
 try:
     from cStringIO import StringIO # Python 2.x
@@ -47,7 +48,6 @@ except ImportError:
 import rosgraph.names
 import rospkg
 from roslaunch.loader import convert_value
-import math
 
 _rospack = None
 
@@ -302,7 +302,7 @@ def _arg(resolved, a, args, context):
 _eval_dict={
     'true': True, 'false': False,
     'True': True, 'False': False,
-    '__builtins__': {k: __builtins__[k] for k in ['list', 'dict', 'map', 'str', 'float', 'int']},
+    '__builtins__': __builtins__,
     'env': _eval_env,
     'optenv': _eval_optenv,
     'find': _eval_find
@@ -310,14 +310,15 @@ _eval_dict={
 # also define all math symbols and functions
 _eval_dict.update(math.__dict__)
 
-class _DictWrapper(object):
+class _DictWrapper(dict):
     def __init__(self, args, functions):
+        super().__init__()
+        super().update(functions)
         self._args = args
-        self._functions = functions
 
     def __getitem__(self, key):
         try:
-            return self._functions[key]
+            return super().__getitem__(key)
         except KeyError:
             return convert_value(self._args[key], 'auto')
 
@@ -344,7 +345,7 @@ def _eval(s, context):
     # http://nedbatchelder.com/blog/201206/eval_really_is_dangerous.html
     if s.find('__') >= 0:
         raise SubstitutionException("$(eval ...) may not contain double underscore expressions")
-    return str(eval(s, {}, _DictWrapper(context['arg'], functions)))
+    return str(eval(s, _DictWrapper(context['arg'], functions)))
 
 def resolve_args(arg_str, context=None, resolve_anon=True, filename=None):
     """
