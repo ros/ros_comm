@@ -200,8 +200,8 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEqual('10', param_d['/somestring2'])
         self.assertEqual(1, param_d['/someinteger1'])
         self.assertEqual(2, param_d['/someinteger2'])
-        self.assertAlmostEquals(3.14159, param_d['/somefloat1'], 2)
-        self.assertAlmostEquals(5.0, param_d['/somefloat2'], 1)
+        self.assertAlmostEqual(3.14159, param_d['/somefloat1'], 2)
+        self.assertAlmostEqual(5.0, param_d['/somefloat2'], 1)
         self.assertEqual("a child namespace parameter 1", param_d['/wg/wgchildparam'], p.value)
         self.assertEqual("a child namespace parameter 2", param_d['/wg2/wg2childparam1'], p.value)
         self.assertEqual("a child namespace parameter 3", param_d['/wg2/wg2childparam2'], p.value)
@@ -296,32 +296,32 @@ class TestXmlLoader(unittest.TestCase):
         # #3580: test degree/rad conversions
         import math
         p = [p for p in mock.params if p.key == '/inline_degrees0'][0]
-        self.assertAlmostEquals(0, p.value)
+        self.assertAlmostEqual(0, p.value)
         p = [p for p in mock.params if p.key == '/inline_degrees180'][0]
-        self.assertAlmostEquals(p.value, math.pi)
+        self.assertAlmostEqual(p.value, math.pi)
         p = [p for p in mock.params if p.key == '/inline_degrees360'][0]
-        self.assertAlmostEquals(p.value, 2 * math.pi)
+        self.assertAlmostEqual(p.value, 2 * math.pi)
 
         p = [p for p in mock.params if p.key == '/dict_degrees/deg0'][0]
-        self.assertAlmostEquals(0, p.value)
+        self.assertAlmostEqual(0, p.value)
         p = [p for p in mock.params if p.key == '/dict_degrees/deg180'][0]
-        self.assertAlmostEquals(p.value, math.pi)
+        self.assertAlmostEqual(p.value, math.pi)
         p = [p for p in mock.params if p.key == '/dict_degrees/deg360'][0]
-        self.assertAlmostEquals(p.value, 2 * math.pi)
+        self.assertAlmostEqual(p.value, 2 * math.pi)
 
         p = [p for p in mock.params if p.key == '/inline_rad0'][0]
-        self.assertAlmostEquals(0, p.value)
+        self.assertAlmostEqual(0, p.value)
         p = [p for p in mock.params if p.key == '/inline_radpi'][0]
-        self.assertAlmostEquals(p.value, math.pi)
+        self.assertAlmostEqual(p.value, math.pi)
         p = [p for p in mock.params if p.key == '/inline_rad2pi'][0]
-        self.assertAlmostEquals(p.value, 2 * math.pi)
+        self.assertAlmostEqual(p.value, 2 * math.pi)
 
         p = [p for p in mock.params if p.key == '/dict_rad/rad0'][0]
-        self.assertAlmostEquals(0, p.value)
+        self.assertAlmostEqual(0, p.value)
         p = [p for p in mock.params if p.key == '/dict_rad/radpi'][0]
-        self.assertAlmostEquals(p.value, math.pi)
+        self.assertAlmostEqual(p.value, math.pi)
         p = [p for p in mock.params if p.key == '/dict_rad/rad2pi'][0]
-        self.assertAlmostEquals(p.value, 2 * math.pi)
+        self.assertAlmostEqual(p.value, 2 * math.pi)
                     
         # rosparam file also contains empty params
         mock = self._load(os.path.join(self.xml_dir, 'test-rosparam-empty.xml'))
@@ -553,9 +553,9 @@ class TestXmlLoader(unittest.TestCase):
         tests = self._load_valid_rostests(['test_time_limit_int_1', 'test_time_limit_float_10_1'])
         for n in tests:
             if n.type == 'test_time_limit_int_1':
-                self.assertAlmostEquals(1.0, n.time_limit, 3)
+                self.assertAlmostEqual(1.0, n.time_limit, 3)
             elif n.type == 'test_time_limit_float_10_1':
-                self.assertAlmostEquals(10.1, n.time_limit, 3)
+                self.assertAlmostEqual(10.1, n.time_limit, 3)
 
     def test_rostest_retry(self):
         n = self._load_valid_rostests(['test_retry'])[0]
@@ -892,7 +892,7 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEqual(param_d['/if_param'], False)   
         self.assertEqual(param_d['/py_if_param'], False)
         self.assertEqual(param_d['/int_param'], 1234)   
-        self.assertAlmostEquals(param_d['/float_param'], 3.)   
+        self.assertAlmostEqual(param_d['/float_param'], 3.)   
         self.failIf('/fail' in param_d)
         self.failIf('/py_fail' in param_d)
 

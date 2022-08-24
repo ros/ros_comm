@@ -67,7 +67,7 @@ class TestRospyNumpy(unittest.TestCase):
         self.assertTrue(type(f2.data) == list)
         f2.deserialize(b.getvalue())
         for x, y in zip(f2.data, vals):
-            self.assertAlmostEquals(x, y, 2)
+            self.assertAlmostEqual(x, y, 2)
 
         from rospy.numpy_msg import numpy_msg
         f3 = numpy_msg(Floats)()

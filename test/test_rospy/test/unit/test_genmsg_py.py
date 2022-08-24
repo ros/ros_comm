@@ -74,7 +74,7 @@ class TestGenmsgPy(unittest.TestCase):
         if not float:
             self.assertEqual(orig, blank, str(orig)+" != "+str(blank))
         else:
-            self.assertAlmostEquals(orig.data, blank.data, 5)
+            self.assertAlmostEqual(orig.data, blank.data, 5)
 
     ## #2133/2152
     def test_test_rospy_TransitiveImport(self):

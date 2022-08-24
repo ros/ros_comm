@@ -70,7 +70,7 @@ class TestClientParamApi(unittest.TestCase):
         self.assertEqual('private_param1', rospy.get_param('~param1'))
         # - type tests
         self.assertEqual(1, rospy.get_param('param_int'))
-        self.assertAlmostEquals(2., rospy.get_param('param_float'))        
+        self.assertAlmostEqual(2., rospy.get_param('param_float'))        
         self.assertEqual(True, rospy.get_param('param_bool'))
         self.assertEqual("hello world", rospy.get_param('param_str'))
         
