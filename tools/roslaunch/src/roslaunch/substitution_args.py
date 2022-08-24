@@ -343,7 +343,9 @@ def _eval(s, context):
 
     # ignore values containing double underscores (for safety)
     # http://nedbatchelder.com/blog/201206/eval_really_is_dangerous.html
-    if s.find('__') >= 0:
+    code = compile(s.strip(), "<expression>", "eval")
+    invalid_names = [n for n in code.co_names if n.startswith("__")]
+    if invalid_names:
         raise SubstitutionException("$(eval ...) may not contain double underscore expressions")
     return str(eval(s, _DictWrapper(context['arg'], functions)))
 

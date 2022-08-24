@@ -95,7 +95,7 @@ def test_resolve_args():
     assert roslaunch_dir
 
     anon_context = {'foo': 'bar'}
-    arg_context = {'fuga': 'hoge', 'car': 'cdr', 'arg': 'foo', 'True': 'False'}
+    arg_context = {'fuga': 'hoge', 'car': 'cdr', 'arg': 'foo', 'True': 'False', 'dou__ble': '3.14'}
     context = {'anon': anon_context, 'arg': arg_context, 'filename': '/path/to/file.launch'}
         
     tests = [
@@ -145,6 +145,8 @@ def test_resolve_args():
         ('$(eval arg("True"))', 'False'),
         ('$(eval 1==1)', 'True'),
         ('$(eval [0,1,2][1])', '1'),
+        ('$(eval dou__ble)', '3.14'),
+        ('$(eval "dou__ble")', 'dou__ble'),
         # test implicit arg access
         ('$(eval fuga)', 'hoge'),
         ('$(eval True)', 'True'),
@@ -181,7 +183,8 @@ def test_resolve_args():
         '$(anon)',
         '$(anon foo bar)',            
         # Should fail without the supplied context.
-        '$(dirname)'
+        '$(dirname)',
+        '$(eval __import__("os"))',
         ]
     for f in failures:
         try:
