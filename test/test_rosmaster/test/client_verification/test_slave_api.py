@@ -125,7 +125,7 @@ class TestSlaveApi(unittest.TestCase):
         if not self.node_api:
             self.fail("master did not return XML-RPC API for [%s, %s]"%(self.caller_id, self.test_node))
         print("[%s] API  = %s"%(self.test_node, self.node_api))
-        self.assert_(self.node_api.startswith('http'))
+        self.assertTrue(self.node_api.startswith('http'))
         self.node = ServerProxy(self.node_api)
 
         # hack: sleep for a couple seconds just in case the node is
@@ -139,7 +139,7 @@ class TestSlaveApi(unittest.TestCase):
         @type  args: [int, str, val]
         @return: value parameter from args (arg[2] for master/slave API)
         """
-        self.assert_(len(args) == 3, "invalid API return value triplet: %s"%str(args))
+        self.assertTrue(len(args) == 3, "invalid API return value triplet: %s"%str(args))
         self.last_code, self.last_msg, self.last_val = args
         assert self.last_code == 1, "status code is not 1: %s"%self.last_msg
         return self.last_val
@@ -151,7 +151,7 @@ class TestSlaveApi(unittest.TestCase):
         @type  args: [int, str, val]
         @return: True if status code is 0
         """
-        self.assert_(len(args) == 3, "invalid API return value triplet: %s"%str(args))
+        self.assertTrue(len(args) == 3, "invalid API return value triplet: %s"%str(args))
         self.last_code, self.last_msg, self.last_val = args
         assert self.last_code == 0, "Call should have failed with status code 0: %s"%self.last_msg
 
@@ -162,7 +162,7 @@ class TestSlaveApi(unittest.TestCase):
         @type  args: [int, str, val]
         @return: True if status code is -1
         """
-        self.assert_(len(args) == 3, "invalid API return value triplet: %s"%str(args))
+        self.assertTrue(len(args) == 3, "invalid API return value triplet: %s"%str(args))
         self.last_code, self.last_msg, self.last_val = args
         if msg:
             assert self.last_code == -1, "%s (return msg was %s)"%(msg, self.last_msg)
@@ -178,9 +178,9 @@ class TestSlaveApi(unittest.TestCase):
         except ImportError:
             import urlparse
         parsed = urlparse.urlparse(uri)
-        self.assert_(parsed[0] in ['http', 'https'], 'protocol [%s] is [%s] invalid'%(parsed[0], uri))
-        self.assert_(parsed[1], 'host missing [%s]'%uri)
-        self.assert_(parsed.port, 'port missing/invalid [%s]'%uri)        
+        self.assertTrue(parsed[0] in ['http', 'https'], 'protocol [%s] is [%s] invalid'%(parsed[0], uri))
+        self.assertTrue(parsed[1], 'host missing [%s]'%uri)
+        self.assertTrue(parsed.port, 'port missing/invalid [%s]'%uri)        
 
     def test_getPid(self):
         """
@@ -188,7 +188,7 @@ class TestSlaveApi(unittest.TestCase):
         """
         # test success        
         pid = self.apiSuccess(self.node.getPid(self.caller_id))
-        self.assert_(pid > 0)
+        self.assertTrue(pid > 0)
 
         # test with bad arity: accept error or fault
         try:
@@ -401,8 +401,8 @@ class TestSlaveApi(unittest.TestCase):
             pass
 
     def check_TCPROS(self, protocol_params):
-        self.assert_(protocol_params, "no protocol params returned")
-        self.assert_(type(protocol_params) == list, "protocol params must be a list: %s"%protocol_params)
+        self.assertTrue(protocol_params, "no protocol params returned")
+        self.assertTrue(type(protocol_params) == list, "protocol params must be a list: %s"%protocol_params)
         self.assertEqual(3, len(protocol_params), "TCPROS params should have length 3: %s"%protocol_params)
         self.assertEqual(protocol_params[0], TCPROS)
         # expect ['TCPROS', 1.2.3.4, 1234]
@@ -492,17 +492,17 @@ class TestSlaveApi(unittest.TestCase):
         
         # make sure all required topics are registered
         for t in self.required_pubs:
-            self.assert_(t in pub_topics, "node did not register publication %s on master"%(t))
+            self.assertTrue(t in pub_topics, "node did not register publication %s on master"%(t))
         for t in self.required_subs:
-            self.assert_(t in sub_topics, "node did not register subscription %s on master"%(t))
+            self.assertTrue(t in sub_topics, "node did not register subscription %s on master"%(t))
         
         # check for node URI on master
         for topic, node_list in pubs:
             if topic in self.required_pubs:
-                self.assert_(node_name in node_list, "%s not in %s"%(self.node_api, node_list))
+                self.assertTrue(node_name in node_list, "%s not in %s"%(self.node_api, node_list))
         for topic, node_list in subs:
             if topic in self.required_subs:
-                self.assert_(node_name in node_list, "%s not in %s"%(self.node_api, node_list))
+                self.assertTrue(node_name in node_list, "%s not in %s"%(self.node_api, node_list))
         for service, srv_list in srvs:
             #TODO: no service tests yet
             pass

@@ -40,7 +40,7 @@ class TestRosmasterValidators(unittest.TestCase):
     def test_ParameterInvalid(self):
         # not really testing anything here other than typos
         from rosmaster.validators import ParameterInvalid
-        self.assert_(isinstance(ParameterInvalid('param'), Exception))
+        self.assertTrue(isinstance(ParameterInvalid('param'), Exception))
         
     def test_validators(self):
         from rosmaster.validators import ParameterInvalid
@@ -55,7 +55,7 @@ class TestRosmasterValidators(unittest.TestCase):
                 try:
                     non_empty('param-name-foo')(i, context)
                 except ParameterInvalid as e:
-                    self.assert_('param-name-foo' in str(e))
+                    self.assertTrue('param-name-foo' in str(e))
 
             from rosmaster.validators import non_empty_str
             valid = ['foo', 'f', u'f']
@@ -66,7 +66,7 @@ class TestRosmasterValidators(unittest.TestCase):
                 try:
                     non_empty_str('param-name-bar')(i, context)
                 except ParameterInvalid as e:
-                    self.assert_('param-name-bar' in str(e))
+                    self.assertTrue('param-name-bar' in str(e))
                     
             from rosmaster.validators import not_none
 
@@ -78,5 +78,5 @@ class TestRosmasterValidators(unittest.TestCase):
                 try:
                     not_none('param-name-charlie')(i, context)
                 except ParameterInvalid as e:
-                    self.assert_('param-name-charlie' in str(e))
+                    self.assertTrue('param-name-charlie' in str(e))
                 

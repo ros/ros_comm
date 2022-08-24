@@ -55,17 +55,17 @@ class TestRosmsg(unittest.TestCase):
         for cmd in ['rosmsg', 'rossrv']:
             glob_cmd=[sys.executable, os.path.join(_SCRIPT_FOLDER, cmd)]
             output = Popen(glob_cmd, stdout=PIPE, env=self.new_environ).communicate()[0].decode()
-            self.assert_('Commands' in output)
+            self.assertTrue('Commands' in output)
             output = Popen(glob_cmd+['-h'], stdout=PIPE, env=self.new_environ).communicate()[0].decode()
-            self.assert_('Commands' in output)
-            self.assert_('Traceback' not in output)
+            self.assertTrue('Commands' in output)
+            self.assertTrue('Traceback' not in output)
             for c in sub:
-                self.assert_("%s %s"%(cmd, c) in output, "%s %s"%(cmd, c) + " not in "+ output + " of " + str(glob_cmd))
+                self.assertTrue("%s %s"%(cmd, c) in output, "%s %s"%(cmd, c) + " not in "+ output + " of " + str(glob_cmd))
                 
             for c in sub:
                 output = Popen(glob_cmd + [c, '-h'], stdout=PIPE, env=self.new_environ).communicate()[0].decode()
-                self.assert_('Usage' in output)
-                self.assert_("%s %s"%(cmd, c) in output, output)
+                self.assertTrue('Usage' in output)
+                self.assertTrue("%s %s"%(cmd, c) in output, output)
             
     def test_cmd_packages(self):
         # - single line
@@ -76,9 +76,9 @@ class TestRosmsg(unittest.TestCase):
         l2 = [x.strip() for x in output2.split('\n') if x.strip()]
         self.assertEqual(l1, l2)
         for p in ['std_msgs', 'diagnostic_msgs']:
-            self.assert_(p in l1)
+            self.assertTrue(p in l1)
         for p in ['std_srvs', 'rosmsg']:
-            self.assert_(p not in l1)
+            self.assertTrue(p not in l1)
 
         output1 = Popen(['rossrv', 'packages', '-s'], stdout=PIPE).communicate()[0].decode()
         output2 = Popen(['rossrv', 'packages'], stdout=PIPE).communicate()[0].decode()
@@ -86,25 +86,25 @@ class TestRosmsg(unittest.TestCase):
         l2 = [x.strip() for x in output2.split('\n') if x.strip()]
         self.assertEqual(l1, l2)
         for p in ['std_srvs', 'diagnostic_msgs']:
-            self.assert_(p in l1)
+            self.assertTrue(p in l1)
         for p in ['std_msgs', 'rospy']:
-            self.assert_(p not in l1)
+            self.assertTrue(p not in l1)
 
     def test_cmd_list(self):
         # - multi-line
         output1 = Popen([sys.executable, os.path.join(_SCRIPT_FOLDER,'rosmsg'), 'list'], stdout=PIPE).communicate()[0].decode()
         l1 = [x.strip() for x in output1.split('\n') if x.strip()]
         for p in ['std_msgs/String', 'diagnostic_msgs/DiagnosticArray']:
-            self.assert_(p in l1)
+            self.assertTrue(p in l1)
         for p in ['std_srvs/Empty', 'roscpp/Empty']:
-            self.assert_(p not in l1)
+            self.assertTrue(p not in l1)
 
         output1 = Popen([sys.executable, os.path.join(_SCRIPT_FOLDER,'rossrv'), 'list'], stdout=PIPE).communicate()[0].decode()
         l1 = [x.strip() for x in output1.split('\n') if x.strip()]
         for p in ['std_srvs/Empty', 'roscpp/Empty']:
-            self.assert_(p in l1)
+            self.assertTrue(p in l1)
         for p in ['std_msgs/String', 'diagnostic_msgs/DiagnosticStatus']:
-            self.assert_(p not in l1)
+            self.assertTrue(p not in l1)
         
     def test_cmd_package(self):
         # this test is obviously very brittle, but should stabilize as the tests stabilize

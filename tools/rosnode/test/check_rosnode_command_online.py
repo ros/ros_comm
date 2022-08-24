@@ -86,7 +86,7 @@ class TestRosnodeOnline(unittest.TestCase):
         output = output.decode()
         l = set(output.split())
         for t in nodes:
-            self.assert_(t in l, "%s not in %s"%(t, l))
+            self.assertTrue(t in l, "%s not in %s"%(t, l))
 
         output = Popen([cmd, 'list', '-a'], stdout=PIPE).communicate()[0]
         output = output.decode()
@@ -101,19 +101,19 @@ class TestRosnodeOnline(unittest.TestCase):
         output = Popen([cmd, 'list', '-u'], stdout=PIPE).communicate()[0]
         output = output.decode() 
         l = set(output.split())
-        self.assert_(len(l), "list -u is empty")
+        self.assertTrue(len(l), "list -u is empty")
         for e in l:
-            self.assert_(e.startswith('http://'))
+            self.assertTrue(e.startswith('http://'))
 
         for name in nodes:
             # type
             output = Popen([cmd, 'info', name], stdout=PIPE).communicate()[0]
             output = output.decode()
             # not really validating output as much as making sure it's not broken
-            self.assert_(name in output)
-            self.assert_('chatter' in output)
-            self.assert_('Publications' in output)
-            self.assert_('Subscriptions' in output)                        
+            self.assertTrue(name in output)
+            self.assertTrue('chatter' in output)
+            self.assertTrue('Publications' in output)
+            self.assertTrue('Subscriptions' in output)                        
 
             if 0:
                 #ping

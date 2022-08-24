@@ -53,7 +53,7 @@ class TestRospyMsg(unittest.TestCase):
         
         v = Val('hello world-1')
         d = args_kwds_to_message(Val, (v,), None)
-        self.assert_(d == v)
+        self.assertTrue(d == v)
         d = args_kwds_to_message(Val, ('hello world-2',), None)
         self.assertEqual(d.val, 'hello world-2')
         d = args_kwds_to_message(Val, (), {'val':'hello world-3'})
@@ -147,7 +147,7 @@ class TestRospyMsg(unittest.TestCase):
 
         def validate_vals(vals, teststrs=teststrs):
             for i, v in zip(range(0, len(vals)), vals):
-                self.assert_(isinstance(v, Val))
+                self.assertTrue(isinstance(v, Val))
                 self.assertEqual(teststrs[i], v.val)        
         
         b = StringIO()

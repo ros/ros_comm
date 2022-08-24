@@ -117,10 +117,10 @@ Test Duration: %s"""%(hz, hzerror, topic, test_duration))
         self._test_hz(hz, hzerror, topic, test_duration, wait_time)        
             
     def _test_hz(self, hz, hzerror, topic, test_duration, wait_time): 
-        self.assert_(hz >= 0.0, "bad parameter (hz)")
-        self.assert_(hzerror >= 0.0, "bad parameter (hzerror)")
-        self.assert_(test_duration > 0.0, "bad parameter (test_duration)")
-        self.assert_(len(topic), "bad parameter (topic)")
+        self.assertTrue(hz >= 0.0, "bad parameter (hz)")
+        self.assertTrue(hzerror >= 0.0, "bad parameter (hzerror)")
+        self.assertTrue(test_duration > 0.0, "bad parameter (test_duration)")
+        self.assertTrue(len(topic), "bad parameter (topic)")
 
         if hz == 0:
             self.min_rate = 0.0
@@ -138,7 +138,7 @@ Test Duration: %s"""%(hz, hzerror, topic, test_duration))
 
         # Start actual test
         sub = rospy.Subscriber(topic, rospy.AnyMsg, self.callback)
-        self.assert_(not self.errors, "bad initialization state (errors)")
+        self.assertTrue(not self.errors, "bad initialization state (errors)")
         
         print("Waiting for messages")
         # we have to wait until the first message is received before measuring the rate
@@ -149,7 +149,7 @@ Test Duration: %s"""%(hz, hzerror, topic, test_duration))
         while not self.message_received and time.time() < wallclock_timeout_t:
             time.sleep(0.1)
         if hz > 0.:
-            self.assert_(self.message_received, "no messages before timeout")
+            self.assertTrue(self.message_received, "no messages before timeout")
         else:
             self.failIf(self.message_received, "message received")
             
@@ -167,25 +167,25 @@ Test Duration: %s"""%(hz, hzerror, topic, test_duration))
 
         # Check that we got at least one message
         if hz > 0:
-            self.assert_(self.msg_count > 0, "no messages received")
+            self.assertTrue(self.msg_count > 0, "no messages received")
         else:
             self.assertEqual(0, self.msg_count)
         # Check whether inter-message intervals were violated (if we were
         # checking them)
-        self.assert_(not self.errors, '\n'.join(self.errors))
+        self.assertTrue(not self.errors, '\n'.join(self.errors))
 
         # If we have a non-zero rate target, make sure that we hit it on
         # average
         if hz > 0.0:
-          self.assert_(self.msg_t0 >= 0.0, "no first message received")
-          self.assert_(self.msg_tn >= 0.0, "no last message received")
+          self.assertTrue(self.msg_t0 >= 0.0, "no first message received")
+          self.assertTrue(self.msg_tn >= 0.0, "no last message received")
           dt = self.msg_tn - self.msg_t0
-          self.assert_(dt > 0.0, "only one message received")
+          self.assertTrue(dt > 0.0, "only one message received")
           rate = ( self.msg_count - 1) / dt
-          self.assert_(rate >= self.min_rate, 
+          self.assertTrue(rate >= self.min_rate, 
                        "average rate (%.3fHz) exceeded minimum (%.3fHz)" %
                        (rate, self.min_rate))
-          self.assert_(rate <= self.max_rate, 
+          self.assertTrue(rate <= self.max_rate, 
                        "average rate (%.3fHz) exceeded maximum (%.3fHz)" %
                        (rate, self.max_rate))
         

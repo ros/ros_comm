@@ -51,13 +51,13 @@ class TestDumpParams(unittest.TestCase):
         # Smoke test for testing parameters
         p = Popen([cmd, '--dump-params', 'roslaunch', 'noop.launch'], stdout = PIPE)
         o, e = p.communicate()
-        self.assert_(p.returncode == 0, "Return code nonzero for param dump! Code: %d" % (p.returncode))
+        self.assertTrue(p.returncode == 0, "Return code nonzero for param dump! Code: %d" % (p.returncode))
 
         self.assertEqual({'/noop': 'noop'}, yaml.safe_load(o))
 
         p = Popen([cmd, '--dump-params', 'roslaunch', 'test-dump-rosparam.launch'], stdout = PIPE)
         o, e = p.communicate()
-        self.assert_(p.returncode == 0, "Return code nonzero for param dump! Code: %d" % (p.returncode))
+        self.assertTrue(p.returncode == 0, "Return code nonzero for param dump! Code: %d" % (p.returncode))
 
         val = {
             '/string1': 'bar',

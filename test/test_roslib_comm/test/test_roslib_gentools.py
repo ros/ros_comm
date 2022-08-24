@@ -61,7 +61,7 @@ class TestGentools(unittest.TestCase):
             name = f[:-4]
             while name and name[-1].isdigit():
                 name = name[:-1]
-            self.assert_(name)
+            self.assertTrue(name)
             if name in tests:
                 tests[name].append(path)
             else:

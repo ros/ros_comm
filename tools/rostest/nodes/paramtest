@@ -83,8 +83,8 @@ class ParamTest(unittest.TestCase):
         self._test_param(testattr_paramname_target, testattr_duration, wait_time, paramvalue_expected)
 
     def _test_param(self, testattr_paramname_target, testattr_duration, wait_time, paramvalue_expected=None):
-        self.assert_(testattr_duration > 0.0, "bad parameter (test_duration)")
-        self.assert_(len(testattr_paramname_target), "bad parameter (testattr_paramname_target)")
+        self.assertTrue(testattr_duration > 0.0, "bad parameter (test_duration)")
+        self.assertTrue(len(testattr_paramname_target), "bad parameter (testattr_paramname_target)")
 
         print("Waiting for parameters")
 

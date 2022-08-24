@@ -75,7 +75,7 @@ class TestRospyTcprosBase(unittest.TestCase):
 
     def test_constants(self):
         self.assertEqual("TCPROS", rospy.impl.tcpros_base.TCPROS)
-        self.assert_(type(rospy.impl.tcpros_base.DEFAULT_BUFF_SIZE), int)
+        self.assertTrue(type(rospy.impl.tcpros_base.DEFAULT_BUFF_SIZE), int)
 
     def test_recv_buff(self):
         from rospy.impl.tcpros_base import recv_buff
@@ -102,15 +102,15 @@ class TestRospyTcprosBase(unittest.TestCase):
         s = None
         try:
             s = TCPServer(handler)
-            self.assert_(s.port > 0)
+            self.assertTrue(s.port > 0)
             addr, port = s.get_full_addr()
-            self.assert_(type(addr) == str)
+            self.assertTrue(type(addr) == str)
             self.assertEqual(handler, s.inbound_handler)        
             self.failIf(s.is_shutdown)
         finally:
             if s is not None:
                 s.shutdown()
-                self.assert_(s.is_shutdown)
+                self.assertTrue(s.is_shutdown)
 
     def test_TCPROSTransportProtocol(self):
         import rospy
@@ -147,9 +147,9 @@ class TestRospyTcprosBase(unittest.TestCase):
         except rospy.impl.tcpros_base.TransportInitError: pass
         
         t = TCPROSTransport(p, 'transport-name')
-        self.assert_(t.socket is None)
-        self.assert_(t.md5sum is None)
-        self.assert_(t.type is None)         
+        self.assertTrue(t.socket is None)
+        self.assertTrue(t.md5sum is None)
+        self.assertTrue(t.type is None)         
         self.assertEqual(p, t.protocol)
         self.assertEqual('TCPROS', t.transport_type)        
         self.assertEqual(OUTBOUND, t.direction)        
@@ -163,7 +163,7 @@ class TestRospyTcprosBase(unittest.TestCase):
         self.assertEqual(s, t.socket)
 
         t.close()
-        self.assert_(t.socket is None)
-        self.assert_(t.read_buff is None)
-        self.assert_(t.write_buff is None)
-        self.assert_(t.protocol is None)
+        self.assertTrue(t.socket is None)
+        self.assertTrue(t.read_buff is None)
+        self.assertTrue(t.write_buff is None)
+        self.assertTrue(t.protocol is None)

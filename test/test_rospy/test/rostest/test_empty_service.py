@@ -86,7 +86,7 @@ class TestEmptyServiceClient(unittest.TestCase):
         rospy.wait_for_service(name, WAIT_TIMEOUT)        
         s = rospy.ServiceProxy(name, srv)
         resp = s.call(req)
-        self.assert_(resp is not None)
+        self.assertTrue(resp is not None)
         return resp
 
     # test that __call__ and s.call() work with no-args on an empty request

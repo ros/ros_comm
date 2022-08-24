@@ -65,7 +65,7 @@ class TestRosbag(unittest.TestCase):
         
         f = open('/tmp/test_opening_stream_works.bag', 'rb')
         b = rosbag.Bag(f, 'r')
-        self.assert_(len(list(b.read_messages())) == 10)
+        self.assertTrue(len(list(b.read_messages())) == 10)
         b.close()
 
     def test_invalid_bag_arguments_fails(self):
@@ -104,10 +104,10 @@ class TestRosbag(unittest.TestCase):
 
         msgs = list(rosbag.Bag('/tmp/test_simple_write_uncompressed_works.bag').read_messages())
         
-        self.assert_(len(msgs) == msg_count, 'not all messages written: expected %d, got %d' % (msg_count, len(msgs)))
+        self.assertTrue(len(msgs) == msg_count, 'not all messages written: expected %d, got %d' % (msg_count, len(msgs)))
 
         for (_, _, t1), (_, _, t2) in zip(msgs, msgs[1:]):
-            self.assert_(t1 < t2, 'messages returned unordered: got timestamp %s before %s' % (str(t1), str(t2)))
+            self.assertTrue(t1 < t2, 'messages returned unordered: got timestamp %s before %s' % (str(t1), str(t2)))
 
     def test_writing_nonchronological_works(self):
         with rosbag.Bag('/tmp/test_writing_nonchronological_works.bag', 'w') as b:
@@ -121,10 +121,10 @@ class TestRosbag(unittest.TestCase):
 
         msgs = list(rosbag.Bag('/tmp/test_writing_nonchronological_works.bag').read_messages())
         
-        self.assert_(len(msgs) == msg_count, 'not all messages written: expected %d, got %d' % (msg_count, len(msgs)))
+        self.assertTrue(len(msgs) == msg_count, 'not all messages written: expected %d, got %d' % (msg_count, len(msgs)))
 
         for (_, _, t1), (_, _, t2) in zip(msgs, msgs[1:]):
-            self.assert_(t1 < t2, 'messages returned unordered: got timestamp %s before %s' % (str(t1), str(t2)))
+            self.assertTrue(t1 < t2, 'messages returned unordered: got timestamp %s before %s' % (str(t1), str(t2)))
 
     def test_large_write_works(self):
         for compression in [rosbag.Compression.NONE, rosbag.Compression.BZ2]:
@@ -142,7 +142,7 @@ class TestRosbag(unittest.TestCase):
             self.assertEqual(len(msgs), msg_count, 'not all messages written: expected %d, got %d' % (msg_count, len(msgs)))
 
             for (_, _, t1), (_, _, t2) in zip(msgs, msgs[1:]):
-                self.assert_(t1 < t2, 'messages returned unordered: got timestamp %s before %s' % (str(t1), str(t2)))
+                self.assertTrue(t1 < t2, 'messages returned unordered: got timestamp %s before %s' % (str(t1), str(t2)))
 
     def test_get_messages_time_range_works(self):
         with rosbag.Bag('/tmp/test_get_messages_time_range_works.bag', 'w') as b:

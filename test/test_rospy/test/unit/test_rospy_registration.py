@@ -45,14 +45,14 @@ class TestRospyRegistration(unittest.TestCase):
         # rospy.impl.registrations to test its value
         orig = get_topic_manager()
         try:
-            self.assert_(orig is not None)
+            self.assertTrue(orig is not None)
             class TopicManager(object): pass
             x = TopicManager()
         # currently untyped
             set_topic_manager(x)
             self.assertEqual(x, get_topic_manager())
             set_topic_manager(None)
-            self.assert_(get_topic_manager() is None)
+            self.assertTrue(get_topic_manager() is None)
         finally:
             set_topic_manager(orig)            
 
@@ -62,14 +62,14 @@ class TestRospyRegistration(unittest.TestCase):
         # rospy.impl.registrations to test its value
         try:
             orig = get_service_manager()
-            self.assert_(orig is not None)
+            self.assertTrue(orig is not None)
             class ServiceManager(object): pass
             x = ServiceManager()
             # currently untyped
             set_service_manager(x)
             self.assertEqual(x, get_service_manager())
             set_service_manager(None)
-            self.assert_(get_service_manager() is None)
+            self.assertTrue(get_service_manager() is None)
         finally:
             set_service_manager(orig)            
         
@@ -129,8 +129,8 @@ class TestRospyRegistration(unittest.TestCase):
         self.assertEqual(['removed', 'n2', 'dtype2', 'rtype2'], l1.args)
 
         r.add_listener(l2)
-        self.assert_(l2 in r.listeners)
-        self.assert_(l1 in r.listeners)
+        self.assertTrue(l2 in r.listeners)
+        self.assertTrue(l1 in r.listeners)
         self.assertEqual(2, len(r.listeners))
 
         self.assertEqual([], l2.args)
@@ -144,9 +144,9 @@ class TestRospyRegistration(unittest.TestCase):
         # l3 raises exceptions, make sure they don't break anything
         l3 = BadMock()
         r.add_listener(l3)
-        self.assert_(l3 in r.listeners)
-        self.assert_(l2 in r.listeners)
-        self.assert_(l1 in r.listeners)
+        self.assertTrue(l3 in r.listeners)
+        self.assertTrue(l2 in r.listeners)
+        self.assertTrue(l1 in r.listeners)
         self.assertEqual(3, len(r.listeners))
 
         r.notify_added('n4', 'dtype4', 'rtype4')
@@ -159,7 +159,7 @@ class TestRospyRegistration(unittest.TestCase):
     def test_get_registration_listeners(self):
         from rospy.impl.registration import RegistrationListeners, get_registration_listeners
         r = get_registration_listeners()
-        self.assert_(isinstance(r, RegistrationListeners))
+        self.assertTrue(isinstance(r, RegistrationListeners))
 
     def test_RegManager(self):
         from rospy.impl.registration import RegManager
@@ -190,7 +190,7 @@ class TestRospyRegistration(unittest.TestCase):
         handler = MockHandler()
         m = RegManager(handler)
         self.assertEqual(handler, m.handler)
-        self.assert_(m.logger is not None)
+        self.assertTrue(m.logger is not None)
         self.assertEqual(m.master_uri, None)
         self.assertEqual(m.uri, None)
         self.assertEqual([], m.updates)

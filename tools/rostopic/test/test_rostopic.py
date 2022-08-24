@@ -170,7 +170,7 @@ class TestRostopic(unittest.TestCase):
                 rostopic.rostopicmain([cmd, 'pub'] + i)
                 self.fail("should have exited with error"+str(i))
             except SystemExit as e:
-                self.assert_(e.code != 0)
+                self.assertTrue(e.code != 0)
         
 
                 
@@ -189,7 +189,7 @@ class TestRostopic(unittest.TestCase):
         t, n, f = rostopic.get_topic_type('/rosout', blocking=False)
         self.assertEqual('rosgraph_msgs/Log', t)
         self.assertEqual('/rosout', n)
-        self.assert_(f is None)
+        self.assertTrue(f is None)
 
         t, n, f = rostopic.get_topic_type('/rosout/name', blocking=False)
         self.assertEqual('rosgraph_msgs/Log', t)
@@ -207,7 +207,7 @@ class TestRostopic(unittest.TestCase):
         c, n, f = rostopic.get_topic_class('/rosout')
         self.assertEqual(Log, c)
         self.assertEqual('/rosout', n)
-        self.assert_(f is None)
+        self.assertTrue(f is None)
 
         c, n, f = rostopic.get_topic_class('/rosout/name')
         self.assertEqual(c, Log)
@@ -236,12 +236,12 @@ class TestRostopic(unittest.TestCase):
             rostopic.rostopicmain([cmd, 'info', 'rosout'])
             v = b.getvalue()
             for s in ["Publishers:", "Subscribers", "Type: rosgraph_msgs/Log", " * /rosout"]:
-                self.assert_(s in v, "failed on %s: %s"%(s, v))
+                self.assertTrue(s in v, "failed on %s: %s"%(s, v))
         with fakestdout() as b:            
             rostopic.rostopicmain([cmd, 'info', '/chatter'])
             v = b.getvalue()
             for s in ["Publishers:", "Subscribers", "Type: std_msgs/String", " * /talker"]:
-                self.assert_(s in v, "failed on %s: %s"%(s, v))
+                self.assertTrue(s in v, "failed on %s: %s"%(s, v))
 
     def test_cmd_find(self):
         import rostopic
@@ -315,19 +315,19 @@ class TestRostopic(unittest.TestCase):
         with fakestdout() as b:            
             rostopic.rostopicmain([cmd, 'list', '-v'])
             v = b.getvalue()
-            self.assert_("Published topics:" in v)
-            self.assert_("Subscribed topics:" in v)
+            self.assertTrue("Published topics:" in v)
+            self.assertTrue("Subscribed topics:" in v)
             
         with fakestdout() as b:            
             rostopic.rostopicmain([cmd, 'list', '-vs'])
             v = b.getvalue()
             self.failIf("Published topics:" in v)        
-            self.assert_("Subscribed topics:" in v)
+            self.assertTrue("Subscribed topics:" in v)
 
         with fakestdout() as b:            
             rostopic.rostopicmain([cmd, 'list', '-vp'])
             v = b.getvalue()
-            self.assert_("Published topics:" in v)        
+            self.assertTrue("Published topics:" in v)        
             self.failIf("Subscribed topics:" in v)
             
         # test with multiple topic names

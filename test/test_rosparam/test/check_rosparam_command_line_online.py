@@ -72,7 +72,7 @@ class TestRosparamOnline(unittest.TestCase):
         output = Popen([cmd, 'list'], stdout=PIPE).communicate()[0].decode()
         l = set(output.split())
         for t in params:
-            self.assert_(t in l)
+            self.assertTrue(t in l)
 
         # get
         # - strings
@@ -182,7 +182,7 @@ class TestRosparamOnline(unittest.TestCase):
         
         # delete
         ps.setParam('/delete/me', True)
-        self.assert_(ps.hasParam('/delete/me'))
+        self.assertTrue(ps.hasParam('/delete/me'))
         Popen([cmd, 'delete', "/delete/me"], stdout=PIPE).communicate()[0]
         self.failIf(ps.hasParam('/delete/me'))
 

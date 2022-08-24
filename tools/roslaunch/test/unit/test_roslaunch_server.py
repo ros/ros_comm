@@ -161,7 +161,7 @@ class TestRoslaunchServer(unittest.TestCase):
     def _succeed(self, retval):
         code, msg, val = retval
         self.assertEqual(1, code)
-        self.assert_(type(msg) == str)
+        self.assertTrue(type(msg) == str)
         return val
 
     def test_ROSLaunchBaseHandler(self):
@@ -204,7 +204,7 @@ class TestRoslaunchServer(unittest.TestCase):
         # - test process_info
         code, msg, val = h.process_info('fubar')
         self.assertEqual(-1, code)
-        self.assert_(type(msg) == str)
+        self.assertTrue(type(msg) == str)
         self.assertEqual({}, val)
         
         pmon.register(p)
@@ -216,7 +216,7 @@ class TestRoslaunchServer(unittest.TestCase):
         h.pm = None
         code, msg, val = h.get_node_names()
         self.assertEqual(0, code)
-        self.assert_(type(msg) == str)
+        self.assertTrue(type(msg) == str)
         self.assertEqual([], val)
         h.pm = pmon
         
@@ -274,7 +274,7 @@ class TestRoslaunchServer(unittest.TestCase):
         uri = 'http://unroutable:1324'
         child_processes['client-1'] = ChildROSLaunchProcess('foo', [], {})
         val = self._succeed(h.register('client-1', uri))
-        self.assert_(type(val) == int)
+        self.assertTrue(type(val) == int)
         self.assertEqual([uri], self._succeed(h.list_children()))        
         
     def test_ROSLaunchChildHandler(self):
@@ -313,9 +313,9 @@ class TestRoslaunchServer(unittest.TestCase):
         # test shutdown()
         # should uninitialize pm
         h.shutdown()
-        self.assert_(pmon.is_shutdown)
+        self.assertTrue(pmon.is_shutdown)
         # - this check is mostly to make sure that the launch() call below will exit
-        self.assert_(h.pm is None)
+        self.assertTrue(h.pm is None)
         code, msg, val = h.launch('<launch></launch>')
         self.assertEqual(0, code)
         
@@ -347,7 +347,7 @@ class TestRoslaunchServer(unittest.TestCase):
 
         # - start the node
         node.start()
-        self.assert_(node.uri)
+        self.assertTrue(node.uri)
 
         # - call the ping API that we added
         s = ServerProxy(node.uri)
@@ -358,7 +358,7 @@ class TestRoslaunchServer(unittest.TestCase):
         # - call the pid API
         code, msg, pid = s.get_pid()
         self.assertEqual(1, code)
-        self.assert_(type(msg) == str)
+        self.assertTrue(type(msg) == str)
         self.assertEqual(os.getpid(), pid)
         
         # - shut it down
@@ -406,7 +406,7 @@ class TestRoslaunchServer(unittest.TestCase):
         
         try:
             server.start()
-            self.assert_(server.uri, "server URI did not initialize")
+            self.assertTrue(server.uri, "server URI did not initialize")
             s = ServerProxy(server.uri)
             child_uri = 'http://fake-unroutable:1324'
             # - list children should be empty
@@ -457,7 +457,7 @@ class TestRoslaunchServer(unittest.TestCase):
         
         try:
             server.start()
-            self.assert_(server.uri, "server URI did not initialize")
+            self.assertTrue(server.uri, "server URI did not initialize")
             s = ServerProxy(server.uri)
 
             print("SERVER STARTED")
@@ -466,7 +466,7 @@ class TestRoslaunchServer(unittest.TestCase):
             n = ROSLaunchChildNode(run_id, name, server.uri, pmon)            
             n.start()
             print("CHILD STARTED")            
-            self.assert_(n.uri, "child URI did not initialize")            
+            self.assertTrue(n.uri, "child URI did not initialize")            
 
             # verify registration
             print("VERIFYING REGISTRATION")                        

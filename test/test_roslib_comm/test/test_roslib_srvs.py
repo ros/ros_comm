@@ -64,12 +64,12 @@ class RoslibSrvTest(unittest.TestCase):
         self.assertEqual('',spec.package)
         
         # tripwire
-        self.assert_(repr(spec))
-        self.assert_(str(spec))
+        self.assertTrue(repr(spec))
+        self.assertTrue(str(spec))
 
         # exercise eq
         self.assertNotEquals(spec, 'spec')
-        self.assert_(spec != 'spec')
+        self.assertTrue(spec != 'spec')
         
         spec2 = SrvSpec(msg_a, msg_b, text)
         self.assertEqual(spec, spec2)

@@ -39,7 +39,7 @@ except ImportError:
 import sys
 
 import re
-from nose.tools import assert_regexp_matches
+from nose.tools import assertTrueregexp_matches
 import rosgraph.roslogging
 
 
@@ -124,7 +124,7 @@ try:
                 r'[0-9]*\.[0-9]*',
                 r'[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}',
             ])
-            assert_regexp_matches(lout.getvalue().splitlines()[i], log_out)
+            assertTrueregexp_matches(lout.getvalue().splitlines()[i], log_out)
 
 finally:
 
@@ -132,4 +132,3 @@ finally:
     rosout_logger.removeHandler(test_ros_handler)
     rosout_logger.addHandler(default_ros_handler)
     # lout and lerr need to stay open while test is running
-

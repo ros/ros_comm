@@ -96,7 +96,7 @@ class TestXmlLoader(unittest.TestCase):
     def _load(self, test_file):
         loader = roslaunch.xmlloader.XmlLoader()
         mock = RosLaunchMock()
-        self.assert_(os.path.exists(test_file), "cannot locate test file %s"%test_file)
+        self.assertTrue(os.path.exists(test_file), "cannot locate test file %s"%test_file)
         loader.load(test_file, mock)
         return mock
         
@@ -138,8 +138,8 @@ class TestXmlLoader(unittest.TestCase):
             f.close()
         loader.load_string(s, mock)
         # sanity check
-        self.assert_(mock.nodes)
-        self.assert_([n for n in mock.nodes if n.type == 'test_base'])
+        self.assertTrue(mock.nodes)
+        self.assertTrue([n for n in mock.nodes if n.type == 'test_base'])
 
         # check exception case
         f = open(os.path.join(self.xml_dir, 'invalid-xml.xml'), 'r')
@@ -164,8 +164,8 @@ class TestXmlLoader(unittest.TestCase):
         mock = RosLaunchMock()
 
         loader.load(os.path.join(self.xml_dir, 'test-node-valid.xml'), mock)
-        self.assert_(mock.nodes)
-        self.assert_([n for n in mock.nodes if n.type == 'test_base'])
+        self.assertTrue(mock.nodes)
+        self.assertTrue([n for n in mock.nodes if n.type == 'test_base'])
 
         # check exception case
         try:
@@ -180,7 +180,7 @@ class TestXmlLoader(unittest.TestCase):
         for filename in tests:
             filename = os.path.join(self.xml_dir, filename)
             try:
-                self.assert_(os.path.exists(filename))
+                self.assertTrue(os.path.exists(filename))
                 loader.load(filename, RosLaunchMock())
                 self.fail("xmlloader did not throw an xmlparseexception for [%s]"%filename)
             except roslaunch.xmlloader.XmlParseException:
@@ -333,7 +333,7 @@ class TestXmlLoader(unittest.TestCase):
         for filename in tests:
             filename = os.path.join(self.xml_dir, filename)
             try:
-                self.assert_(os.path.exists(filename))
+                self.assertTrue(os.path.exists(filename))
                 loader.load(filename, RosLaunchMock())
                 self.fail("xmlloader did not throw an xmlloadexception for [%s]"%filename)
             except roslaunch.loader.LoadException:
@@ -351,7 +351,7 @@ class TestXmlLoader(unittest.TestCase):
         for filename in tests:
             filename = os.path.join(self.xml_dir, filename)
             try:
-                self.assert_(os.path.exists(filename))
+                self.assertTrue(os.path.exists(filename))
                 loader.load(filename, RosLaunchMock())
                 self.fail("xmlloader did not throw an xmlparseexception for [%s]"%filename)
             except roslaunch.xmlloader.XmlParseException:
@@ -383,7 +383,7 @@ class TestXmlLoader(unittest.TestCase):
                 self.assertEqual('a child namespace parameter', p.value)
             elif n.type == "test_node_rosparam_delete":
                 self.assertEqual(1, len(exes))
-                self.assert_(len(exes[0].args) == 2, "invalid arg: %s"%(str(exes[0].args)))
+                self.assertTrue(len(exes[0].args) == 2, "invalid arg: %s"%(str(exes[0].args)))
                 rp_cmd, rp_param = exes[0].args   
                 self.assertEqual("delete", rp_cmd)
                 self.assertEqual("/ns1/rosparam_delete/ns2/param", rp_param)
@@ -485,16 +485,16 @@ class TestXmlLoader(unittest.TestCase):
             elif n.type == 'test_one':
                 self.assertEqual([("ONE", "one")], n.env_args)
             elif n.type == 'test_one_two':
-                self.assert_(("ONE", "one") in n.env_args)
-                self.assert_(("TWO", "two") in n.env_args)
+                self.assertTrue(("ONE", "one") in n.env_args)
+                self.assertTrue(("TWO", "two") in n.env_args)
             elif n.type == 'test_one_two_priv':
-                self.assert_(("ONE", "one") in n.env_args)
-                self.assert_(("TWO", "two") in n.env_args)
-                self.assert_(("PRIVATE_TWO", "private_two") in n.env_args)
+                self.assertTrue(("ONE", "one") in n.env_args)
+                self.assertTrue(("TWO", "two") in n.env_args)
+                self.assertTrue(("PRIVATE_TWO", "private_two") in n.env_args)
             elif n.type == 'test_one_two_include':
-                self.assert_(("ONE", "one") in n.env_args)
-                self.assert_(("TWO", "two") in n.env_args)
-                self.assert_(("INCLUDE", "include") in n.env_args)
+                self.assertTrue(("ONE", "one") in n.env_args)
+                self.assertTrue(("TWO", "two") in n.env_args)
+                self.assertTrue(("INCLUDE", "include") in n.env_args)
                 
     def test_clear_params(self):
         true_tests = ["/test_clear_params1/","/test_clear_params2/",
@@ -505,7 +505,7 @@ class TestXmlLoader(unittest.TestCase):
         mock = self._load(os.path.join(self.xml_dir, 'test-clear-params.xml'))
         self.assertEqual(len(true_tests), len(mock.clear_params), "clear params did not match expected true: %s"%(str(mock.clear_params)))
         for t in true_tests:
-            self.assert_(t in mock.clear_params, "%s was not marked for clear: %s"%(t, mock.clear_params))
+            self.assertTrue(t in mock.clear_params, "%s was not marked for clear: %s"%(t, mock.clear_params))
                 
     def test_clear_params_invalid(self):
         tests = ['test-clear-params-invalid-1.xml', 'test-clear-params-invalid-2.xml',
@@ -514,7 +514,7 @@ class TestXmlLoader(unittest.TestCase):
         for filename in tests:
             filename = os.path.join(self.xml_dir, filename)
             try:
-                self.assert_(os.path.exists(filename))
+                self.assertTrue(os.path.exists(filename))
                 loader.load(filename, RosLaunchMock())
                 self.fail("xmlloader did not throw an xmlparseexception for [%s]"%filename)
             except roslaunch.xmlloader.XmlParseException:
@@ -619,7 +619,7 @@ class TestXmlLoader(unittest.TestCase):
         for filename in tests:
             filename = os.path.join(self.xml_dir, filename)
             try:
-                self.assert_(os.path.exists(filename))
+                self.assertTrue(os.path.exists(filename))
                 loader.load(filename, RosLaunchMock())
                 self.fail("xmlloader did not throw an xmlparseexception for [%s]"%filename)
             except roslaunch.xmlloader.XmlParseException:
@@ -672,7 +672,7 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEqual(n.type, 'type-%s'%r)
         self.assertEqual(n.output, output)
         if respawn == 'true':
-            self.assert_(n.respawn)
+            self.assertTrue(n.respawn)
         else:
             self.failIf(n.respawn)            
 
@@ -706,11 +706,11 @@ class TestXmlLoader(unittest.TestCase):
         nodes = self._load_valid_nodes(['test_env', 'test_env_empty'])
         for n in nodes:
             if n.type == 'test_env':
-                self.assert_(("env1", "env1 value1") in n.env_args)
-                self.assert_(("env2", "env2 value2") in n.env_args)
+                self.assertTrue(("env1", "env1 value1") in n.env_args)
+                self.assertTrue(("env2", "env2 value2") in n.env_args)
                 self.assertEqual(2, len(n.env_args))
             elif n.type == 'test_env_empty':
-                self.assert_(("env1", "") in n.env_args)
+                self.assertTrue(("env1", "") in n.env_args)
 
     def test_remap(self):
         loader = roslaunch.xmlloader.XmlLoader()
@@ -736,19 +736,19 @@ class TestXmlLoader(unittest.TestCase):
         mock = self._load(os.path.join(self.xml_dir, 'test-substitution.xml'))
         # for now this is mostly a trip wire test due to #1776 
         for p in mock.params:
-            self.assert_('$' not in p.key)
-            self.assert_('$' not in p.value)            
+            self.assertTrue('$' not in p.key)
+            self.assertTrue('$' not in p.value)            
         for n in mock.nodes:
-            self.assert_('$' not in n.package)
-            self.assert_('$' not in n.type)
+            self.assertTrue('$' not in n.package)
+            self.assertTrue('$' not in n.type)
             for e in n.env_args:
-                self.assert_('$' not in e[0])
-                self.assert_('$' not in e[1])
+                self.assertTrue('$' not in e[0])
+                self.assertTrue('$' not in e[1])
             for r in n.remap_args:
-                self.assert_('$' not in r[0])
-                self.assert_('$' not in r[1])
+                self.assertTrue('$' not in r[0])
+                self.assertTrue('$' not in r[1])
             for a in n.args:
-                self.assert_('$' not in a)                        
+                self.assertTrue('$' not in a)                        
     
     def test_node_invalid(self):
         tests = ['test-node-invalid-type.xml','test-node-invalid-type-2.xml',
@@ -781,7 +781,7 @@ class TestXmlLoader(unittest.TestCase):
         for filename in tests:
             filename = os.path.join(self.xml_dir, filename)
             try:
-                self.assert_(os.path.exists(filename))
+                self.assertTrue(os.path.exists(filename))
                 loader.load(filename, RosLaunchMock())
                 self.fail("xmlloader did not throw an xmlparseexception for [%s]"%filename)
             except roslaunch.xmlloader.XmlParseException:
@@ -799,7 +799,7 @@ class TestXmlLoader(unittest.TestCase):
         for filename in tests:
             filename = os.path.join(self.xml_dir, filename)
             try:
-                self.assert_(os.path.exists(filename))
+                self.assertTrue(os.path.exists(filename))
                 loader.load(filename, RosLaunchMock())
                 self.fail("xmlloader did not throw an xmlparseexception for [%s]"%filename)
             except roslaunch.xmlloader.XmlParseException:
@@ -817,18 +817,18 @@ class TestXmlLoader(unittest.TestCase):
 
         keys = ['group_if', 'group_unless', 'param_if', 'param_unless']
         for k in keys:
-            self.assert_('/'+k+'_pass' in param_d, param_d)
+            self.assertTrue('/'+k+'_pass' in param_d, param_d)
             self.failIf('/'+k+'_fail' in param_d, k)
             # Also check the result of Python-parsed expressions
-            self.assert_('/py_'+k+'_pass' in param_d, param_d)
+            self.assertTrue('/py_'+k+'_pass' in param_d, param_d)
             self.failIf('/py_'+k+'_fail' in param_d, k)
 
         n = mock.nodes[0]
         for k in ['if', 'unless']:
-            self.assert_(['from_%s_pass'%k, 'to_%s_pass'%k] in n.remap_args)
+            self.assertTrue(['from_%s_pass'%k, 'to_%s_pass'%k] in n.remap_args)
             self.failIf(['from_%s_fail'%k, 'to_%s_fail'%k] in n.remap_args)            
             # Also check the result of Python-parsed expressions
-            self.assert_(['py_from_%s_pass'%k, 'py_to_%s_pass'%k] in n.remap_args)
+            self.assertTrue(['py_from_%s_pass'%k, 'py_to_%s_pass'%k] in n.remap_args)
             self.failIf(['py_from_%s_fail'%k, 'py_to_%s_fail'%k] in n.remap_args)
         
     def test_if_unless_invalid(self):
@@ -840,8 +840,8 @@ class TestXmlLoader(unittest.TestCase):
             loader.load(filename, mock, argv=[])
             self.fail("should have raised with invalid if and unless spec")
         except roslaunch.xmlloader.XmlParseException as e:
-            self.assert_('unless' in str(e))
-            self.assert_('if' in str(e))
+            self.assertTrue('unless' in str(e))
+            self.assertTrue('if' in str(e))
 
     def test_arg_invalid(self):
         mock = RosLaunchMock()
@@ -852,7 +852,7 @@ class TestXmlLoader(unittest.TestCase):
             loader.load(filename, mock, argv=[])
             self.fail("should have raised with missing arg")
         except roslaunch.xmlloader.XmlParseException as e:
-            self.assert_('required' in str(e))
+            self.assertTrue('required' in str(e))
 
         # test with invalid $(arg unknown)
         filename = os.path.join(self.xml_dir, 'test-arg-invalid-sub.xml')
@@ -860,7 +860,7 @@ class TestXmlLoader(unittest.TestCase):
             loader.load(filename, mock, argv=[])
             self.fail("should have raised with unknown arg")
         except roslaunch.xmlloader.XmlParseException as e:
-            self.assert_('missing' in str(e))
+            self.assertTrue('missing' in str(e))
 
         # test with invalid $(arg unknown)
         filename = os.path.join(self.xml_dir, 'test-arg-invalid-redecl.xml')
@@ -868,7 +868,7 @@ class TestXmlLoader(unittest.TestCase):
             loader.load(filename, mock, argv=[])
             self.fail("should have raised with multiple decl")
         except roslaunch.xmlloader.XmlParseException as e:
-            self.assert_('grounded' in str(e))
+            self.assertTrue('grounded' in str(e))
             
                     
     def test_arg(self):
@@ -912,10 +912,10 @@ class TestXmlLoader(unittest.TestCase):
         self.assertEqual(param_d['/include2/include_test/p3_test'], 'set')
         self.assertEqual(param_d['/include2/include_test/p4_test'], 'new2')
             
-        self.assert_('/include3/include_test/p1_test' not in param_d)
-        self.assert_('/include3/include_test/p2_test' not in param_d)
-        self.assert_('/include3/include_test/p3_test' not in param_d)
-        self.assert_('/include3/include_test/p4_test' not in param_d)
+        self.assertTrue('/include3/include_test/p1_test' not in param_d)
+        self.assertTrue('/include3/include_test/p2_test' not in param_d)
+        self.assertTrue('/include3/include_test/p3_test' not in param_d)
+        self.assertTrue('/include3/include_test/p4_test' not in param_d)
 
         # test again with optional value set
         mock = RosLaunchMock()

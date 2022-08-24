@@ -110,7 +110,7 @@ def rostestRunner(test, test_pkg, results_base_dir=None):
     def fn(self):
         done = False
         while not done:
-            self.assert_(self.test_parent is not None, "ROSTestParent initialization failed")
+            self.assertTrue(self.test_parent is not None, "ROSTestParent initialization failed")
 
             test_name = test.test_name
 
@@ -118,7 +118,7 @@ def rostestRunner(test, test_pkg, results_base_dir=None):
 
             #launch the other nodes
             succeeded, failed = self.test_parent.launch()
-            self.assert_(not failed, "Test Fixture Nodes %s failed to launch"%failed)
+            self.assertTrue(not failed, "Test Fixture Nodes %s failed to launch"%failed)
 
             #setup the test
             # - we pass in the output test_file name so we can scrape it
@@ -161,7 +161,7 @@ def rostestRunner(test, test_pkg, results_base_dir=None):
             if not _textMode or timeout_failure:
                 
                 if not timeout_failure:
-                    self.assert_(os.path.isfile(test_file), "test [%s] did not generate test results"%test_name)
+                    self.assertTrue(os.path.isfile(test_file), "test [%s] did not generate test results"%test_name)
                     printlog("test [%s] results are in [%s]", test_name, test_file)
                     results = rosunit.junitxml.read(test_file, test_name)
                     test_fail = results.num_errors or results.num_failures

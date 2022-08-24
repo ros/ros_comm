@@ -365,7 +365,7 @@ class MasterApiOfflineTest(unittest.TestCase):
         self.failIf(rosgraph.masterapi.is_online(master_uri="http://fake:12345"))
 
         self.m.handle.return_val = (1, '', 1235)
-        self.assert_(self.m.is_online())
+        self.assertTrue(self.m.is_online())
         
     def test_subscribeParam(self):
         h = self.m.handle

@@ -65,7 +65,7 @@ class TestPubSubOrder(unittest.TestCase):
     ## Test subscriber first makes sure that if a subscriber is up first
     ## that it is able to successfully receive messages from a new publisher
     def test_subscriber_first(self):
-        self.assert_(self.callback_data is None, "invalid test fixture")
+        self.assertTrue(self.callback_data is None, "invalid test fixture")
 
         # wait at most 5 seconds for listenerpublisher to be registered
         timeout_t = time.time() + 5.0
@@ -74,7 +74,7 @@ class TestPubSubOrder(unittest.TestCase):
             rospy.resolve_name(LPNODE)) and time.time() < timeout_t:
             time.sleep(0.1)
 
-        self.assert_(rostest.is_subscriber(
+        self.assertTrue(rostest.is_subscriber(
             rospy.resolve_name(PUBTOPIC),
             rospy.resolve_name(LPNODE)), "%s is not up"%LPNODE)
         
@@ -92,7 +92,7 @@ class TestPubSubOrder(unittest.TestCase):
 
         # listenerpublisher is supposed to repeat our messages back onto /listenerpublisher,
         # make sure we got it
-        self.assert_(self.callback_data is not None, "no callback data from listenerpublisher")
+        self.assertTrue(self.callback_data is not None, "no callback data from listenerpublisher")
         self.assertEqual(msg, self.callback_data.data, "callback data from listenerpublisher does not match")
         
 if __name__ == '__main__':

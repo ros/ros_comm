@@ -47,7 +47,7 @@ class MockServiceClass(object):
 class TestRospyService(unittest.TestCase):
 
     def test_ServiceException(self):
-        self.assert_(isinstance(rospy.service.ServiceException(), Exception))
+        self.assertTrue(isinstance(rospy.service.ServiceException(), Exception))
         
     def test_ServiceManager(self):
         class MockService(rospy.service._Service):
@@ -89,8 +89,8 @@ class TestRospyService(unittest.TestCase):
         sm.register('/serv2', mock2)
         self.assertEqual(mock, sm.get_service('/serv'))
         self.assertEqual(mock2, sm.get_service('/serv2'))
-        self.assert_(('/serv', mock.uri) in sm.get_services())
-        self.assert_(('/serv2', mock2.uri) in sm.get_services())        
+        self.assertTrue(('/serv', mock.uri) in sm.get_services())
+        self.assertTrue(('/serv2', mock2.uri) in sm.get_services())        
         
         sm.unregister('/serv', mock)
         self.assertEqual([('/serv2', mock2.uri)], sm.get_services())

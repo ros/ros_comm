@@ -153,7 +153,7 @@ class TestBasicServicesClient(unittest.TestCase):
         rospy.wait_for_service(name, WAIT_TIMEOUT)        
         s = rospy.ServiceProxy(name, srv)
         resp = s.call(req)
-        self.assert_(resp is not None)
+        self.assertTrue(resp is not None)
         return resp
 
     # call with args style    
@@ -161,7 +161,7 @@ class TestBasicServicesClient(unittest.TestCase):
         rospy.wait_for_service(name, WAIT_TIMEOUT)        
         s = rospy.ServiceProxy(name, srv)
         resp = s.call(*args)
-        self.assert_(resp is not None)
+        self.assertTrue(resp is not None)
         return resp
 
     # call with keyword style
@@ -169,7 +169,7 @@ class TestBasicServicesClient(unittest.TestCase):
         rospy.wait_for_service(name, WAIT_TIMEOUT)        
         s = rospy.ServiceProxy(name, srv)
         resp = s.call(**kwds)
-        self.assert_(resp is not None)
+        self.assertTrue(resp is not None)
         return resp
     
     def test_calltype_mismatch(self):
@@ -245,7 +245,7 @@ class TestBasicServicesClient(unittest.TestCase):
                 self.assertEqual(Req.BYTE_X, resp.ret_byte)
                 self.assertEqual(Req.INT32_X, resp.ret_int32)
                 self.assertEqual(Req.UINT32_X, resp.ret_uint32)
-                self.assert_(math.fabs(Req.FLOAT32_X - resp.ret_float32) < 0.001)
+                self.assertTrue(math.fabs(Req.FLOAT32_X - resp.ret_float32) < 0.001)
 
             resp = self._test(name, Cls,
                               ConstantsMultiplexRequest(Req.SELECT_Y))
@@ -254,7 +254,7 @@ class TestBasicServicesClient(unittest.TestCase):
             self.assertEqual(Req.BYTE_Y, resp.ret_byte)
             self.assertEqual(Req.INT32_Y, resp.ret_int32)
             self.assertEqual(Req.UINT32_Y, resp.ret_uint32)
-            self.assert_(math.fabs(Req.FLOAT32_Y - resp.ret_float32) < 0.001)
+            self.assertTrue(math.fabs(Req.FLOAT32_Y - resp.ret_float32) < 0.001)
 
             resp = self._test(name, Cls,
                               ConstantsMultiplexRequest(Req.SELECT_Z))
@@ -263,7 +263,7 @@ class TestBasicServicesClient(unittest.TestCase):
             self.assertEqual(Req.BYTE_Z, resp.ret_byte)
             self.assertEqual(Req.INT32_Z, resp.ret_int32)
             self.assertEqual(Req.UINT32_Z, resp.ret_uint32)
-            self.assert_(math.fabs(Req.FLOAT32_Z - resp.ret_float32) < 0.001)
+            self.assertTrue(math.fabs(Req.FLOAT32_Z - resp.ret_float32) < 0.001)
 
     def test_faulty_service(self):
         rospy.wait_for_service(FAULTY_SERVICE, WAIT_TIMEOUT)
@@ -276,7 +276,7 @@ class TestBasicServicesClient(unittest.TestCase):
         self.assertEqual(resp.fake_secret, 0)
         try:
             resp = sproxy.call(EmptySrvRequest())
-            self.assert_(False)
+            self.assertTrue(False)
         except rospy.ServiceException:
             pass
         resp = sproxy_result.call(EmptyReqSrvRequest())

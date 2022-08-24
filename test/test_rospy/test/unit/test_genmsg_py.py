@@ -214,14 +214,14 @@ class TestGenmsgPy(unittest.TestCase):
         b = StringIO()
         Bool(True).serialize(b)
         blank.deserialize(b.getvalue())
-        self.assert_(blank.data)
-        self.assert_(type(blank.data) == bool)        
+        self.assertTrue(blank.data)
+        self.assertTrue(type(blank.data) == bool)        
 
         b = StringIO()
         Bool(True).serialize(b)
         blank.deserialize(b.getvalue())
-        self.assert_(blank.data)
-        self.assert_(type(blank.data) == bool)
+        self.assertTrue(blank.data)
+        self.assertTrue(type(blank.data) == bool)
         
         
     def test_std_msgs_String(self):

@@ -51,7 +51,7 @@ class MasterApiOnlineTest(unittest.TestCase):
 
     def test_getUri(self):
         val = self.m.getUri()
-        self.assert_(val.startswith('http://'))
+        self.assertTrue(val.startswith('http://'))
         
     def test_lookupService(self):
         uri = 'http://localhost:897'
@@ -111,8 +111,8 @@ class MasterApiOnlineTest(unittest.TestCase):
         pub, sub, srvs = self.m.getSystemState()
 
     def test_is_online(self):
-        self.assert_(rosgraph.masterapi.is_online())
-        self.assert_(self.m.is_online())        
+        self.assertTrue(rosgraph.masterapi.is_online())
+        self.assertTrue(self.m.is_online())        
 
     def test_getParam(self):
         try:
@@ -123,7 +123,7 @@ class MasterApiOnlineTest(unittest.TestCase):
 
     def test_hasParam(self):
         self.failIf(self.m.hasParam('fake_param'), "should have failed to lookup fake parameter")
-        self.assert_(self.m.hasParam('/run_id'), "should have failed to lookup fake parameter")
+        self.assertTrue(self.m.hasParam('/run_id'), "should have failed to lookup fake parameter")
 
     def test_setParam(self):
         self.m.setParam('/foo', 1)
@@ -132,7 +132,7 @@ class MasterApiOnlineTest(unittest.TestCase):
         self.assertEqual("/run_id", self.m.searchParam('run_id'))
 
     def test_getParamNames(self):
-        self.assert_(type(self.m.getParamNames()) == list)
+        self.assertTrue(type(self.m.getParamNames()) == list)
         
 if __name__ == '__main__':
     rostest.rosrun('test_rosgrap', 'test_rosgraph_masterapi_online', MasterApiOnlineTest)

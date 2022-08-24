@@ -113,7 +113,7 @@ class _NodeTestCase(TestRosClient):
         if not self.node_api:
             self.fail("master did not return XML-RPC API for [%s, %s]"%(self.caller_id, self.test_node))
         print("[%s] API  = %s" %(self.test_node, self.node_api))
-        self.assert_(self.node_api.startswith('http'))
+        self.assertTrue(self.node_api.startswith('http'))
         self.node = ServerProxy(self.node_api)
 
     ## validates a URI as being http(s)
@@ -123,10 +123,10 @@ class _NodeTestCase(TestRosClient):
         except ImportError:
             from urlparse import urlparse
         parsed = urlparse(uri)
-        self.assert_(parsed[0] in ['http', 'https'], 'protocol [%s] in [%s] invalid'%(parsed[0], uri))
-        self.assert_(parsed[1], 'host missing [%s]'%uri)
+        self.assertTrue(parsed[0] in ['http', 'https'], 'protocol [%s] in [%s] invalid'%(parsed[0], uri))
+        self.assertTrue(parsed[1], 'host missing [%s]'%uri)
         if not sys.version.startswith('2.4'): #check not available on py24
-            self.assert_(parsed.port, 'port missing/invalid [%s]'%uri)        
+            self.assertTrue(parsed.port, 'port missing/invalid [%s]'%uri)        
 
     ## dynamically create the expected topic->type map based on the current name resolution context
     def _createTopicTypeMap(self):
@@ -144,7 +144,7 @@ class NodeApiTestCase(_NodeTestCase):
         self.apiError(self.node.getPid())
         # test success        
         pid = self.apiSuccess(self.node.getPid(self.caller_id))
-        self.assert_(pid > 0)
+        self.assertTrue(pid > 0)
 
     ## subroutine for testGetSubscriptions/testGetPublications
     def _checkTopics(self, required, actual):
@@ -206,7 +206,7 @@ class NodeApiTestCase(_NodeTestCase):
         self.apiError(self.node.getName())
         # test success
         val = self.apiSuccess(self.node.getName(self.caller_id))
-        self.assert_(len(val), "empty name")
+        self.assertTrue(len(val), "empty name")
 
     ## validate node.getMasterUri(caller_id)                
     def testGetMasterUri(self):
@@ -249,8 +249,8 @@ class NodeApiTestCase(_NodeTestCase):
                                                   []))
 
     def _checkTCPROS(self, protocol_params):
-        self.assert_(protocol_params, "no protocol params returned")
-        self.assert_(type(protocol_params) == list, "protocol params must be a list: %s"%protocol_params)
+        self.assertTrue(protocol_params, "no protocol params returned")
+        self.assertTrue(type(protocol_params) == list, "protocol params must be a list: %s"%protocol_params)
         self.assertEqual(3, len(protocol_params), "TCPROS params should have length 3: %s"%protocol_params)
         self.assertEqual(protocol_params[0], _TCPROS)
         # expect ['TCPROS', 1.2.3.4, 1234]
@@ -316,10 +316,10 @@ class NodeApiTestCase(_NodeTestCase):
         pubs, subs, srvs = systemState
         for topic, list in pubs:
             if topic in required_topic_pubs:
-                self.assert_(node_name in list, "%s not in %s"%(self.node_api, list))
+                self.assertTrue(node_name in list, "%s not in %s"%(self.node_api, list))
         for topic, list in subs:
             if topic in required_topic_subs:
-                self.assert_(node_name in list, "%s not in %s"%(self.node_api, list))
+                self.assertTrue(node_name in list, "%s not in %s"%(self.node_api, list))
         for service, list in srvs:
             #TODO: no service tests yet
             pass

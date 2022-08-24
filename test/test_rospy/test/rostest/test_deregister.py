@@ -73,7 +73,7 @@ class TestDeregister(unittest.TestCase):
         
         _, _, pubs = node_proxy.getPublications('/foo')
         pubs = [p for p in pubs if p[0] != '/rosout']
-        self.assert_(not pubs, pubs)
+        self.assertTrue(not pubs, pubs)
         
         print("Publishing ", PUBTOPIC)
         pub = rospy.Publisher(PUBTOPIC, String, queue_size=1)
@@ -95,14 +95,14 @@ class TestDeregister(unittest.TestCase):
         timeout_t = time.time() + 2.0
         while timeout_t < time.time():
             time.sleep(1.0)
-        self.assert_(_last_callback is None)
+        self.assertTrue(_last_callback is None)
 
         # verify that close cleaned up master and node state
         _, _, pubs = node_proxy.getPublications('/foo')
         pubs = [p for p in pubs if p[0] != '/rosout']
-        self.assert_(not pubs, "Node still has pubs: %s"%pubs)
+        self.assertTrue(not pubs, "Node still has pubs: %s"%pubs)
         n = rospy.get_caller_id()
-        self.assert_(not rostest.is_publisher(topic, n), "publication is still active on master")
+        self.assertTrue(not rostest.is_publisher(topic, n), "publication is still active on master")
 
         # verify that the impl was cleaned up
         gc.collect()
@@ -114,7 +114,7 @@ class TestDeregister(unittest.TestCase):
         uri = rospy.get_node_uri()
         node_proxy = ServerProxy(uri)
         _, _, subscriptions = node_proxy.getSubscriptions('/foo')
-        self.assert_(not subscriptions, 'subscriptions present: %s'%str(subscriptions))
+        self.assertTrue(not subscriptions, 'subscriptions present: %s'%str(subscriptions))
         
         print("Subscribing to ", SUBTOPIC)
         sub = rospy.Subscriber(SUBTOPIC, String, callback)
@@ -126,7 +126,7 @@ class TestDeregister(unittest.TestCase):
         timeout_t = time.time() + TIMEOUT
         while _last_callback is None and time.time() < timeout_t:
             time.sleep(0.1)
-        self.assert_(_last_callback is not None, "No messages received from talker")
+        self.assertTrue(_last_callback is not None, "No messages received from talker")
         
         # begin actual test by unsubscribing
         sub.unregister()
@@ -138,14 +138,14 @@ class TestDeregister(unittest.TestCase):
         # make sure no new messages are received in the next 2 seconds
         while timeout_t < time.time():
             time.sleep(1.0)
-        self.assert_(_last_callback is None)
+        self.assertTrue(_last_callback is None)
 
         # verify that close cleaned up master and node state
         _, _, subscriptions = node_proxy.getSubscriptions('/foo')
 
-        self.assert_(not subscriptions, "Node still has subscriptions: %s"%subscriptions)
+        self.assertTrue(not subscriptions, "Node still has subscriptions: %s"%subscriptions)
         n = rospy.get_caller_id()
-        self.assert_(not rostest.is_subscriber(topic, n), "subscription is still active on master")
+        self.assertTrue(not rostest.is_subscriber(topic, n), "subscription is still active on master")
 
     def test_unservice(self):
         import rosgraph

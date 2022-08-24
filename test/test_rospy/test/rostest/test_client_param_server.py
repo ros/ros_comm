@@ -89,8 +89,8 @@ class TestClientParamServer(unittest.TestCase):
         
         # test for existing and value
         for k, v in rostest_tests.items():
-            self.assert_(rospy.has_param(k))
-            self.assert_(rospy.has_param(rospy.resolve_name(k)))            
+            self.assertTrue(rospy.has_param(k))
+            self.assertTrue(rospy.has_param(rospy.resolve_name(k)))            
             if not type(v) == float:
                 self.assertEqual(v, rospy.get_param(k))
                 self.assertEqual(v, rospy.get_param(rospy.resolve_name(k)))                
@@ -140,7 +140,7 @@ class TestClientParamServer(unittest.TestCase):
         
         # test delete
         for k, v in rostest_tests.items():
-            self.assert_(rospy.has_param(k))
+            self.assertTrue(rospy.has_param(k))
             rospy.delete_param(k)
             self.failIf(rospy.has_param(k))
             self.failIf(rospy.has_param(rospy.resolve_name(k)))
@@ -173,8 +173,8 @@ class TestClientParamServer(unittest.TestCase):
             self.failIf(rospy.has_param(k))
             self.failIf(rospy.has_param(rospy.resolve_name(k)))
             rospy.set_param(k, v)
-            self.assert_(rospy.has_param(k))
-            self.assert_(rospy.has_param(rospy.resolve_name(k)))
+            self.assertTrue(rospy.has_param(k))
+            self.assertTrue(rospy.has_param(rospy.resolve_name(k)))
             self.assertEqual(v, rospy.get_param(k))            
             self.assertEqual(v, rospy.get_param(rospy.resolve_name(k)))
         correct_state = set(initial_param_names + param_names)

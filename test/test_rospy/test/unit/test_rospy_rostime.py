@@ -341,7 +341,7 @@ class TestRospyTime(unittest.TestCase):
         t = Time.from_sec(1000000.0)
         _set_rostime(t)
         time.sleep(0.5) #give sleeper time to wakeup
-        self.assert_(test_sleep_done, "sleeper did not wake up")
+        self.assertTrue(test_sleep_done, "sleeper did not wake up")
 
         #start duration sleeper
         self.failIf(test_duration_sleep_done)      
@@ -354,7 +354,7 @@ class TestRospyTime(unittest.TestCase):
         t = Time.from_sec(2000000.0)
         _set_rostime(t)
         time.sleep(0.5) #give sleeper time to wakeup
-        self.assert_(test_sleep_done, "sleeper did not wake up")
+        self.assertTrue(test_sleep_done, "sleeper did not wake up")
 
         #start backwards sleeper
         self.failIf(test_backwards_sleep_done)
@@ -367,7 +367,7 @@ class TestRospyTime(unittest.TestCase):
         t = Time.from_sec(1.0)
         _set_rostime(t)
         time.sleep(0.5) #give sleeper time to wakeup
-        self.assert_(test_backwards_sleep_done, "backwards sleeper was not given an exception")
+        self.assertTrue(test_backwards_sleep_done, "backwards sleeper was not given an exception")
     
 test_duration_sleep_done = False
 def duration_sleeper():

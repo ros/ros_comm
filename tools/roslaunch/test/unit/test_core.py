@@ -66,7 +66,7 @@ class TestCore(unittest.TestCase):
         set_child_mode(False)
         self.failIf(is_child_mode())
         set_child_mode(True)
-        self.assert_(is_child_mode())        
+        self.assertTrue(is_child_mode())        
         set_child_mode(False)
         self.failIf(is_child_mode())
 
@@ -123,7 +123,7 @@ class TestCore(unittest.TestCase):
             lm = local_machine()
             self.failIf(lm is None)
             #singleton
-            self.assert_(lm == local_machine())
+            self.assertTrue(lm == local_machine())
 
             self.assertEqual(lm.name, '')
             self.assertEqual(lm.assignable, True)
@@ -155,7 +155,7 @@ class TestCore(unittest.TestCase):
                 from xmlrpc.client import ServerProxy
             except ImportError:
                 from xmlrpclib import ServerProxy
-            self.assert_(isinstance(m.get(), ServerProxy))
+            self.assertTrue(isinstance(m.get(), ServerProxy))
             m.uri = 'http://foo:567'
             self.assertEqual(567, m.get_port())
             self.failIf(m.is_running())

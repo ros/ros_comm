@@ -60,20 +60,20 @@ class TestRospyTimerOnline(unittest.TestCase):
         # #2842 raising bounds from .01 to .03 for amazon VM 
 
         # make sure sleep is approximately right
-        self.assert_(abs(dur - 0.1) < 0.03, dur)
+        self.assertTrue(abs(dur - 0.1) < 0.03, dur)
 
         t = time.time()
         rospy.sleep(rospy.Duration.from_sec(0.1))
         dur = time.time() - t
         # make sure sleep is approximately right
-        self.assert_(abs(dur - 0.1) < 0.03, dur)
+        self.assertTrue(abs(dur - 0.1) < 0.03, dur)
 
         # sleep for neg duration
         t = time.time()
         rospy.sleep(rospy.Duration.from_sec(-10.))
         dur = time.time() - t
         # make sure returned immediately
-        self.assert_(abs(dur) < 0.1, dur)
+        self.assertTrue(abs(dur) < 0.1, dur)
 
     def test_Rate(self):
         import rospy
@@ -85,7 +85,7 @@ class TestRospyTimerOnline(unittest.TestCase):
             r.sleep()
         dur = time.time() - t
         # make sure sleep is approximately right
-        self.assert_(abs(dur - 1.0) < 0.5, dur)
+        self.assertTrue(abs(dur - 1.0) < 0.5, dur)
         
     def _Timer_callback(self, event):
         self.timer_callbacks += 1
@@ -108,12 +108,12 @@ class TestRospyTimerOnline(unittest.TestCase):
         timer.shutdown()
         
         # make sure we got an approximately correct number of callbacks
-        self.assert_(abs(self.timer_callbacks - 10) < 2)
+        self.assertTrue(abs(self.timer_callbacks - 10) < 2)
         # make sure error is approximately correct.  the Timer
         # implementation tracks error in accumulated real time.
         ev = self.timer_event
-        self.assert_(ev is not None)
-        self.assert_(abs((ev.current_real - ev.current_expected).to_sec()) < 2.)
+        self.assertTrue(ev is not None)
+        self.assertTrue(abs((ev.current_real - ev.current_expected).to_sec()) < 2.)
         
 if __name__ == '__main__':
     rosunit.unitrun('test_rospy', sys.argv[0], TestRospyTimerOnline, coverage_packages=['rospy.timer'])

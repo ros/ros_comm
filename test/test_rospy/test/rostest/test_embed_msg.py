@@ -65,7 +65,7 @@ class TestEmbedMsg(unittest.TestCase):
         self.callback_data = data
     
     def test_embed_msg(self):
-        self.assert_(self.callback_data is None, "invalid test fixture")
+        self.assertTrue(self.callback_data is None, "invalid test fixture")
 
         # wait at most 5 seconds for listenerpublisher to be registered
         timeout_t = time.time() + 5.0
@@ -74,7 +74,7 @@ class TestEmbedMsg(unittest.TestCase):
             rospy.resolve_name(LPNODE)) and time.time() < timeout_t:
             time.sleep(0.1)
 
-        self.assert_(rostest.is_subscriber(
+        self.assertTrue(rostest.is_subscriber(
             rospy.resolve_name(PUBTOPIC),
             rospy.resolve_name(LPNODE)), "%s is not up"%LPNODE)
         
@@ -104,7 +104,7 @@ class TestEmbedMsg(unittest.TestCase):
 
         # listenerpublisher is supposed to repeat our messages back onto /listenerpublisher,
         # make sure we got it
-        self.assert_(self.callback_data is not None, "no callback data from listenerpublisher")
+        self.assertTrue(self.callback_data is not None, "no callback data from listenerpublisher")
         print("Got ", self.callback_data.str1.data, self.callback_data.int1.data)
         errorstr = "callback msg field [%s] from listenerpublisher does not match"
         self.assertEqual(msg, self.callback_data.str1.data,

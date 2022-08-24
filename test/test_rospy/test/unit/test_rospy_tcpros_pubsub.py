@@ -78,7 +78,7 @@ class TestRospyTcprosPubsub(unittest.TestCase):
         self.assertEqual(name, s.resolved_name)
         self.assertEqual(rospy.impl.transport.INBOUND, s.direction)
         self.assertEqual(recv_data_class, s.recv_data_class)
-        self.assert_(s.buff_size > -1)
+        self.assertTrue(s.buff_size > -1)
         self.failIf(s.tcp_nodelay)
         self.assertEqual(None, s.queue_size)
 
@@ -87,7 +87,7 @@ class TestRospyTcprosPubsub(unittest.TestCase):
         self.assertEqual(recv_data_class._md5sum, fields['md5sum'])
         self.assertEqual(recv_data_class._full_text, fields['message_definition'])
         self.assertEqual('test_rospy/Val', fields['type'])
-        self.assert_(callerid, fields['callerid'])
+        self.assertTrue(callerid, fields['callerid'])
         if 'tcp_nodelay' in fields:
             self.assertEqual('0', fields['tcp_nodelay'])
         
@@ -99,7 +99,7 @@ class TestRospyTcprosPubsub(unittest.TestCase):
         self.assertEqual(v, s.buff_size)
 
         s = TCPROSSub(name, recv_data_class, tcp_nodelay=True)
-        self.assert_(s.tcp_nodelay)
+        self.assertTrue(s.tcp_nodelay)
         self.assertEqual('1', s.get_header_fields()['tcp_nodelay'])
         
     def test_TCPROSPub(self):
@@ -118,7 +118,7 @@ class TestRospyTcprosPubsub(unittest.TestCase):
         self.assertEqual(name, p.resolved_name)
         self.assertEqual(rospy.impl.transport.OUTBOUND, p.direction)
         self.assertEqual(pub_data_class, p.pub_data_class)
-        self.assert_(p.buff_size > -1)
+        self.assertTrue(p.buff_size > -1)
         self.failIf(p.is_latch)
 
         fields = p.get_header_fields()
@@ -126,12 +126,12 @@ class TestRospyTcprosPubsub(unittest.TestCase):
         self.assertEqual(pub_data_class._md5sum, fields['md5sum'])
         self.assertEqual(pub_data_class._full_text, fields['message_definition'])
         self.assertEqual('test_rospy/Val', fields['type'])
-        self.assert_(callerid, fields['callerid'])
+        self.assertTrue(callerid, fields['callerid'])
         if 'latching' in fields:
             self.assertEqual('0', fields['latching'])
 
         p = TCPROSPub(name, pub_data_class, is_latch=True)
-        self.assert_(p.is_latch)
+        self.assertTrue(p.is_latch)
         self.assertEqual('1', p.get_header_fields()['latching'])
 
         # test additional header fields
@@ -180,18 +180,18 @@ class TestRospyTcprosPubsub(unittest.TestCase):
 
         # '/foo-tch' is not registered, so this should error
         err = tch(sock, client_addr, headers)
-        self.assert_(err)
+        self.assertTrue(err)
 
         # register '/foo-tch'
         tm = rospy.impl.registration.get_topic_manager()
         impl = tm.acquire_impl(Registration.PUB, topic_name, data_class)
-        self.assert_(impl is not None)
+        self.assertTrue(impl is not None)
 
         # test with mismatched md5sum
         header_copy = headers.copy()
         header_copy['md5sum'] = 'bad'
         md5_err = tch(sock, client_addr, header_copy)
-        self.assert_("md5sum" in md5_err, md5_err) 
+        self.assertTrue("md5sum" in md5_err, md5_err) 
 
         # now test with correct params
         err = tch(sock, client_addr, headers)        
@@ -207,7 +207,7 @@ class TestRospyTcprosPubsub(unittest.TestCase):
         # - now give mismatched md5sum, this will test different error message
         header_copy['md5sum'] = 'bad'
         type_md5_err = tch(sock, client_addr, header_copy)
-        self.assert_("types" in type_md5_err, type_md5_err)
+        self.assertTrue("types" in type_md5_err, type_md5_err)
         
         # - these error messages should be different
         self.assertNotEquals(md5_err, type_md5_err)

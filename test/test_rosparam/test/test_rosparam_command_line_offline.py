@@ -56,24 +56,24 @@ class TestRosparamOffline(unittest.TestCase):
         sub = ['set', 'get', 'load', 'dump', 'delete', 'list']
             
         output = Popen([cmd], stdout=PIPE).communicate()[0]
-        self.assert_('Commands' in output.decode(), output)
+        self.assertTrue('Commands' in output.decode(), output)
         output = Popen([cmd, '-h'], stdout=PIPE).communicate()[0]
-        self.assert_('Commands' in output.decode())
+        self.assertTrue('Commands' in output.decode())
 
         for c in sub:
             # make sure command is in usage statement
-            self.assert_("%s %s"%(cmd, c) in output.decode())
+            self.assertTrue("%s %s"%(cmd, c) in output.decode())
         
         for c in sub:
             output = Popen([cmd, c, '-h'], stdout=PIPE, stderr=PIPE).communicate()
-            self.assert_("Usage:" in output[0].decode(), "%s\n%s" % (output, c))
-            self.assert_("%s %s"%(cmd, c) in output[0].decode(), "%s: %s" % (c, output[0].decode()))
+            self.assertTrue("Usage:" in output[0].decode(), "%s\n%s" % (output, c))
+            self.assertTrue("%s %s"%(cmd, c) in output[0].decode(), "%s: %s" % (c, output[0].decode()))
             
         # test no args on commands that require args
         for c in ['set', 'get', 'load', 'delete']:
             output = Popen([cmd, c], stdout=PIPE, stderr=PIPE).communicate()
-            self.assert_("Usage:" in output[0].decode() or "Usage:" in output[1].decode(), "%s\n%s"%(output, c))
-            self.assert_("%s %s"%(cmd, c) in output[1].decode())
+            self.assertTrue("Usage:" in output[0].decode() or "Usage:" in output[1].decode(), "%s\n%s"%(output, c))
+            self.assertTrue("%s %s"%(cmd, c) in output[1].decode())
             
     def test_offline(self):
         cmd = 'rosparam'
@@ -86,22 +86,22 @@ class TestRosparamOffline(unittest.TestCase):
         msg = "ERROR: Unable to communicate with master!" + os.linesep
 
         output = Popen([cmd, 'list'], **kwds).communicate()
-        self.assert_(output[1].decode().endswith(msg))
+        self.assertTrue(output[1].decode().endswith(msg))
         output = Popen([cmd, 'set', 'foo', '1.0'], **kwds).communicate()
-        self.assert_(output[1].decode().endswith(msg))
+        self.assertTrue(output[1].decode().endswith(msg))
         output = Popen([cmd, 'get', 'foo'], **kwds).communicate()
-        self.assert_(output[1].decode().endswith(msg))
+        self.assertTrue(output[1].decode().endswith(msg))
         # have to test with actual file to avoid error
         path = os.path.join(get_test_path(), 'test.yaml')
         output = Popen([cmd, 'load', path], **kwds).communicate()
-        self.assert_(output[1].decode().endswith(msg))
+        self.assertTrue(output[1].decode().endswith(msg))
 
         # test with file that does not exist
         output = Popen([cmd, 'load', 'fake.yaml'], **kwds).communicate()
         self.assertEqual('ERROR: file [fake.yaml] does not exist' + os.linesep, output[1].decode())
         
         output = Popen([cmd, 'dump', 'foo.yaml'], **kwds).communicate()
-        self.assert_(output[1].decode().endswith(msg))
+        self.assertTrue(output[1].decode().endswith(msg))
         output = Popen([cmd, 'delete', 'foo'], **kwds).communicate()
-        self.assert_(output[1].decode().endswith(msg))
+        self.assertTrue(output[1].decode().endswith(msg))
         

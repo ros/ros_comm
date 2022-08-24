@@ -81,7 +81,7 @@ class TestRosparam(unittest.TestCase):
         Make sure all elements of expected are present in actual
         """
         for t in expected:
-            self.assert_(t in actual)
+            self.assertTrue(t in actual)
     def _notcheck(self, not_expected, actual):
         """
         Make sure all elements of not_expected are not present in actual
@@ -98,7 +98,7 @@ class TestRosparam(unittest.TestCase):
                   ]
         l = rosparam.list_params('')
         for t in params:
-            self.assert_(t in l)
+            self.assertTrue(t in l)
 
         with fakestdout() as b:
             rosparam.yamlmain([cmd, 'list'])
@@ -312,12 +312,12 @@ class TestRosparam(unittest.TestCase):
 
         # delete
         ps.setParam('/delete/me', True)
-        self.assert_(ps.hasParam('/delete/me'))
+        self.assertTrue(ps.hasParam('/delete/me'))
         rosparam.yamlmain([cmd, 'delete', "/delete/me"])
         self.failIf(ps.hasParam('/delete/me'))
 
         ps.setParam('/delete/me2', True)
-        self.assert_(ps.hasParam('/delete/me2'))
+        self.assertTrue(ps.hasParam('/delete/me2'))
         rosparam.yamlmain([cmd, 'delete', '-v', "/delete/me2"])
         self.failIf(ps.hasParam('/delete/me2'))
 

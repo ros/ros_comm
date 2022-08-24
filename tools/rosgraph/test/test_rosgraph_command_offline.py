@@ -47,7 +47,7 @@ class TestRosgraphOffline(unittest.TestCase):
     def test_cmd_help(self):
         cmd = 'rosgraph'
         output = Popen([cmd, '-h'], stdout=PIPE).communicate()[0]
-        self.assert_('Usage' in output.decode())
+        self.assertTrue('Usage' in output.decode())
             
     def test_offline(self):
         cmd = 'rosgraph'

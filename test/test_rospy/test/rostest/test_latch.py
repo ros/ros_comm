@@ -73,7 +73,7 @@ class TestLatch(unittest.TestCase):
 
         self.failIf(timeout_t < time.time(), "timeout exceeded")
         self.failIf(rospy.is_shutdown(), "node shutdown")            
-        self.assert_(self.callback_invoked[0], "callback not invoked")
+        self.assertTrue(self.callback_invoked[0], "callback not invoked")
         
         # register three more callbacks, make sure they get invoked with message
         # - callbacks are actually called inline, but in spirit of test, async callback is allowed
@@ -85,7 +85,7 @@ class TestLatch(unittest.TestCase):
                     not rospy.is_shutdown() and \
                     timeout_t > time.time():
                 time.sleep(0.1)
-            self.assert_(self.callback_invoked[i])
+            self.assertTrue(self.callback_invoked[i])
         
 if __name__ == '__main__':
     import rostest

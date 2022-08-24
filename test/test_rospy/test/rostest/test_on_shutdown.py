@@ -64,7 +64,7 @@ class TestOnShutdown(unittest.TestCase):
         timeout_t = time.time() + 10.0*1000 #10 seconds
         while not rospy.is_shutdown() and not self.success and time.time() < timeout_t:
             time.sleep(0.1)
-        self.assert_(self.success, str(self.success))
+        self.assertTrue(self.success, str(self.success))
         
 if __name__ == '__main__':
     rostest.rosrun(PKG, NAME, TestOnShutdown, sys.argv)

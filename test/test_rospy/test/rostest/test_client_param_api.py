@@ -50,13 +50,13 @@ class TestClientParamApi(unittest.TestCase):
         # test get_param_names
         param_names = rospy.get_param_names()
         for n in ['/param1', 'param1', '~param1', 'param_int', 'param_float']:
-            self.assert_(rospy.resolve_name(n) in param_names)
+            self.assertTrue(rospy.resolve_name(n) in param_names)
         
         # test has_param
-        self.assert_(rospy.has_param('/run_id'))
-        self.assert_(rospy.has_param('/param1'))
-        self.assert_(rospy.has_param('param1'))
-        self.assert_(rospy.has_param('~param1'))
+        self.assertTrue(rospy.has_param('/run_id'))
+        self.assertTrue(rospy.has_param('/param1'))
+        self.assertTrue(rospy.has_param('param1'))
+        self.assertTrue(rospy.has_param('~param1'))
 
         # test search_param
         self.assertEqual(None, rospy.search_param('not_param1'))
@@ -97,7 +97,7 @@ class TestClientParamApi(unittest.TestCase):
             self.assertEqual(None, rospy.get_param('cp_param', None))
             self.assertEqual("default", rospy.get_param('cp_param', "default"))
             rospy.set_param("cp_param", v)
-            self.assert_(rospy.has_param("cp_param"))
+            self.assertTrue(rospy.has_param("cp_param"))
             self.assertEqual(v, rospy.get_param("cp_param"))
             self.assertEqual(rospy.resolve_name('cp_param'), rospy.search_param('cp_param'))
             # erase the param and recheck state

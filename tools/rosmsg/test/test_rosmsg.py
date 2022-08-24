@@ -60,10 +60,10 @@ class TestRosmsg(unittest.TestCase):
     def test_fullusage(self):
         from rosmsg import MODE_MSG
         text = rosmsg.fullusage(MODE_MSG)
-        self.assert_("Commands" in text)
+        self.assertTrue("Commands" in text)
         cmds = ['show', 'md5', 'package', 'packages']
         for c in cmds:
-            self.assert_(c in text)
+            self.assertTrue(c in text)
 
     def test_get_msg_text(self):
         d = get_test_path()

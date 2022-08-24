@@ -70,7 +70,7 @@ class TestServiceOrder(unittest.TestCase):
         rospy.wait_for_service(name, WAIT_TIMEOUT)        
         s = rospy.ServiceProxy(name, srv)
         resp = s.call(req)
-        self.assert_(resp is not None)
+        self.assertTrue(resp is not None)
         return resp
     def test_before(self):
         resp = self._test(SERVICE_BEFORE, EmptyReqSrv,

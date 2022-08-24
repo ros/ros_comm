@@ -72,16 +72,16 @@ class SlaveTestCase(TestRosClient):
         # retrieve handle on node
         self.caller_id = rospy.get_caller_id()
         self.node_api = self.apiSuccess(self.master.lookupNode(self.caller_id, 'test_node'))
-        self.assert_(self.node_api.startswith('http'))
+        self.assertTrue(self.node_api.startswith('http'))
         self.node = ServerProxy(self.node_api)
         
     def testGetPid(self):
         pid = self.apiSuccess(self.node.getPid(self.caller_id))
-        self.assert_(pid > 0)
+        self.assertTrue(pid > 0)
         
     def testGetPublications(self):
         publications = self.apiSuccess(self.node.getPublications(self.caller_id))
-        self.assert_(publications is not None)
+        self.assertTrue(publications is not None)
         expected = [rospy.resolve_name(t) for t in _required_publications]
         missing = set(expected) - set(publications) 
         self.failIf(len(missing), 'missing required topics: %s'%(','.join(missing)))

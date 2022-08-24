@@ -131,7 +131,7 @@ class TestRospyTopics(unittest.TestCase):
         
         # verify impl as well
         impl = get_topic_manager().get_impl(Registration.PUB, rname)
-        self.assert_(impl == pub.impl)
+        self.assertTrue(impl == pub.impl)
         self.assertEqual(rname, impl.resolved_name)
         self.assertEqual(data_class, impl.data_class)                
         self.failIf(impl.is_latch)
@@ -157,8 +157,8 @@ class TestRospyTopics(unittest.TestCase):
         co1 = ConnectionOverride('co1')
         self.failIf(impl.has_connection('co1'))
         impl.add_connection(co1)
-        self.assert_(impl.has_connection('co1'))
-        self.assert_(impl.has_connections())        
+        self.assertTrue(impl.has_connection('co1'))
+        self.assertTrue(impl.has_connections())        
         impl.publish(Val('hello world-1'), connection_override=co1)
 
         try:
@@ -175,7 +175,7 @@ class TestRospyTopics(unittest.TestCase):
         pub = Publisher(name, data_class, latch=True)
         impl = get_topic_manager().get_impl(Registration.PUB, rname)
         # have to verify latching in pub impl
-        self.assert_(impl == pub.impl)
+        self.assertTrue(impl == pub.impl)
         self.assertEqual(True, impl.is_latch)
         self.assertEqual(None, impl.latch)
         self.assertEqual(2, impl.ref_count)        
@@ -184,11 +184,11 @@ class TestRospyTopics(unittest.TestCase):
         self.failIf(impl.has_connection('co2'))
         impl.add_connection(co2)
         for n in ['co1', 'co2']:
-            self.assert_(impl.has_connection(n))
-        self.assert_(impl.has_connections())        
+            self.assertTrue(impl.has_connection(n))
+        self.assertTrue(impl.has_connections())        
         v = Val('hello world-2')
         impl.publish(v, connection_override=co2)
-        self.assert_(v == impl.latch)
+        self.assertTrue(v == impl.latch)
 
         buff = StringIO()
         Val('hello world-2').serialize(buff)
@@ -200,23 +200,23 @@ class TestRospyTopics(unittest.TestCase):
         self.failIf(impl.has_connection('co3'))
         impl.add_connection(co3)
         for n in ['co1', 'co2', 'co3']:
-            self.assert_(impl.has_connection(n))
-        self.assert_(impl.has_connections())
+            self.assertTrue(impl.has_connection(n))
+        self.assertTrue(impl.has_connections())
         self.assertEqual(co3.data[4:], buff.getvalue())        
         
         # TODO: tcp_nodelay
         # TODO: suscribe listener
-        self.assert_(impl.has_connection('co1'))
+        self.assertTrue(impl.has_connection('co1'))
         impl.remove_connection(co1)
         self.failIf(impl.has_connection('co1'))
-        self.assert_(impl.has_connections())
+        self.assertTrue(impl.has_connections())
         
-        self.assert_(impl.has_connection('co3'))
+        self.assertTrue(impl.has_connection('co3'))
         impl.remove_connection(co3)        
         self.failIf(impl.has_connection('co3'))
-        self.assert_(impl.has_connections())
+        self.assertTrue(impl.has_connections())
         
-        self.assert_(impl.has_connection('co2'))
+        self.assertTrue(impl.has_connection('co2'))
         impl.remove_connection(co2)        
         self.failIf(impl.has_connection('co2'))
         self.failIf(impl.has_connections())
@@ -225,7 +225,7 @@ class TestRospyTopics(unittest.TestCase):
         pub = Publisher('bar', data_class, latch=True, queue_size=0)
         v = Val('no connection test')
         pub.impl.publish(v)
-        self.assert_(v == pub.impl.latch)
+        self.assertTrue(v == pub.impl.latch)
 
         # test connection header
         h = {'foo': 'bar', 'fuga': 'hoge'}
@@ -252,7 +252,7 @@ class TestRospyTopics(unittest.TestCase):
         # verify impl (test_Subscriber handles more verification, we
         # just care about callbacks and ref_count state here)
         impl = get_topic_manager().get_impl(Registration.SUB, rname)
-        self.assert_(impl == sub.impl)
+        self.assertTrue(impl == sub.impl)
         self.assertEqual(1, impl.ref_count)
         self.assertEqual([], impl.callbacks)
         
@@ -266,8 +266,8 @@ class TestRospyTopics(unittest.TestCase):
 
         impl = get_topic_manager().get_impl(Registration.SUB, rname)
         # - test that they share the same impl
-        self.assert_(impl == sub2.impl)
-        self.assert_(impl == sub3.impl)
+        self.assertTrue(impl == sub2.impl)
+        self.assertTrue(impl == sub3.impl)
         # - test basic impl state
         self.assertEqual([], impl.callbacks)
         self.assertEqual(2, impl.ref_count)
@@ -363,7 +363,7 @@ class TestRospyTopics(unittest.TestCase):
         
         # verify impl as well
         impl = get_topic_manager().get_impl(Registration.SUB, rname)
-        self.assert_(impl == sub.impl)
+        self.assertTrue(impl == sub.impl)
         self.assertEqual([], impl.callbacks)
         self.assertEqual(rname, impl.resolved_name)
         self.assertEqual(data_class, impl.data_class)                
@@ -387,13 +387,13 @@ class TestRospyTopics(unittest.TestCase):
 
         # verify impl 
         impl2 = get_topic_manager().get_impl(Registration.SUB, rname)
-        self.assert_(impl == impl2) # should be same instance
+        self.assertTrue(impl == impl2) # should be same instance
         self.assertEqual([(callback1, None)], impl.callbacks)
         self.assertEqual(rname, impl.resolved_name)
         self.assertEqual(data_class, impl.data_class)                
         self.assertEqual(queue_size, impl.queue_size)
         self.assertEqual(buff_size, impl.buff_size)
-        self.assert_(impl.tcp_nodelay)
+        self.assertTrue(impl.tcp_nodelay)
         self.assertEqual(2, impl.ref_count)
         self.failIf(impl.closed)
 
@@ -410,11 +410,11 @@ class TestRospyTopics(unittest.TestCase):
 
         # verify impl 
         impl2 = get_topic_manager().get_impl(Registration.SUB, rname)
-        self.assert_(impl == impl2) # should be same instance
+        self.assertTrue(impl == impl2) # should be same instance
         self.assertEqual(set([(callback1, None), (callback2, None)]), set(impl.callbacks))
         self.assertEqual(queue_size, impl.queue_size)
         self.assertEqual(buff_size, impl.buff_size)
-        self.assert_(impl.tcp_nodelay)
+        self.assertTrue(impl.tcp_nodelay)
         self.assertEqual(3, impl.ref_count)
         self.failIf(impl.closed)
 

@@ -84,10 +84,10 @@ class _MasterTestCase(TestRosClient):
         except ImportError:
             import urlparse
         parsed = urlparse.urlparse(uri)
-        self.assert_(parsed[0] in ['http', 'https'], 'protocol [%s] in [%s] invalid'%(parsed[0], uri))
-        self.assert_(parsed[1], 'host missing [%s]'%uri)
+        self.assertTrue(parsed[0] in ['http', 'https'], 'protocol [%s] in [%s] invalid'%(parsed[0], uri))
+        self.assertTrue(parsed[1], 'host missing [%s]'%uri)
         if not sys.version.startswith('2.4'): #check not available on py24
-            self.assert_(parsed.port, 'port missing/invalid [%s]'%uri)        
+            self.assertTrue(parsed.port, 'port missing/invalid [%s]'%uri)        
     
 ## Expects a single test node to be running with name 'test_node' and subscribed to 'test_string'
 class MasterApiTestCase(_MasterTestCase):
@@ -116,7 +116,7 @@ class MasterApiTestCase(_MasterTestCase):
         self.apiError(self.master.getPid())
         # test success        
         pid = self.apiSuccess(self.master.getPid(self.caller_id))
-        self.assert_(pid > 0)
+        self.assertTrue(pid > 0)
 
     ## validate master.getUri(caller_id)        
     def _testGetUri(self):
@@ -124,7 +124,7 @@ class MasterApiTestCase(_MasterTestCase):
         self.apiError(self.master.getUri())
         # test success        
         uri = self.apiSuccess(self.master.getUri(self.caller_id))
-        self.assert_(type(uri) == str)
+        self.assertTrue(type(uri) == str)
         
     ## common test subroutine of both register and unregister tests. registers the common test cases
     def _subTestRegisterServiceSuccess(self):
@@ -150,7 +150,7 @@ class MasterApiTestCase(_MasterTestCase):
             for j in range(0, i+1):
                 jservice_name = "%s-%s"%(service_base, j)
                 jentry = [jservice_name, [caller_id]]
-                self.assert_(jentry in srvs, "master service list %s is missing %s"%(srvs, jentry))
+                self.assertTrue(jentry in srvs, "master service list %s is missing %s"%(srvs, jentry))
 
         # TODO: have to test subscriber callback
         # TODO: validate with getSystemState()
@@ -185,11 +185,11 @@ class MasterApiTestCase(_MasterTestCase):
             for j in range(0, i+1):
                 jservice_name = "%s-%s"%(service_base, j)
                 jentry = [jservice_name, [caller_id]]
-                self.assert_(jentry not in srvs, "master service list %s should not have %s"%(srvs, jentry))
+                self.assertTrue(jentry not in srvs, "master service list %s should not have %s"%(srvs, jentry))
             for j in range(i+1, 10):
                 jservice_name = "%s-%s"%(service_base, j)
                 jentry = [jservice_name, [caller_id]]
-                self.assert_(jentry in srvs, "master service list %s is missing %s"%(srvs, jentry))
+                self.assertTrue(jentry in srvs, "master service list %s is missing %s"%(srvs, jentry))
 
             # TODO: have to test subscriber callback
             
@@ -314,16 +314,16 @@ class MasterApiTestCase(_MasterTestCase):
             self.assertEqual(caller_api, val)
             # - master knows topic type
             val = self.apiSuccess(master.getPublishedTopics(self.caller_id, '/'))
-            self.assert_([topic_name, topic_type] in val, "master does not know topic type: %s"%val)
+            self.assertTrue([topic_name, topic_type] in val, "master does not know topic type: %s"%val)
             #   - test new api as well
             val = self.apiSuccess(master.getTopicTypes(self.caller_id))
-            self.assert_([topic_name, topic_type] in val, "master does not know topic type: %s"%val)
+            self.assertTrue([topic_name, topic_type] in val, "master does not know topic type: %s"%val)
 
             pubs, _, _ = self.apiSuccess(master.getSystemState(self.caller_id))
             for j in range(0, i+1):
                 jtopic_name = "%s-%s"%(topic_base, j)
                 jentry = [jtopic_name, [caller_id]]
-                self.assert_(jentry in pubs, "master pub/sub list %s is missing %s"%(pubs, jentry))
+                self.assertTrue(jentry in pubs, "master pub/sub list %s is missing %s"%(pubs, jentry))
             
         # TODO: have to test subscriber callback
 
@@ -338,20 +338,20 @@ class MasterApiTestCase(_MasterTestCase):
         val = self.apiSuccess(master.registerPublisher(caller_id, topic_name, '*', caller_api))
         self.assertEqual([], val) # should report no subscribers
         val = self.apiSuccess(master.getPublishedTopics(self.caller_id, '/'))
-        self.assert_([topic_name, '*'] in val, "master is not reporting * as type: %s"%val)
+        self.assertTrue([topic_name, '*'] in val, "master is not reporting * as type: %s"%val)
         #  - test new api as well
         val = self.apiSuccess(master.getTopicTypes(self.caller_id))
-        self.assert_([topic_name, '*'] in val, "master is not reporting * as type: %s"%val)
+        self.assertTrue([topic_name, '*'] in val, "master is not reporting * as type: %s"%val)
         
         # register a grounded type and make sure that '*' can't overwrite it
         for t in ['test_rosmaster/String', '*']:
             val = self.apiSuccess(master.registerPublisher(caller_id, topic_name, t, caller_api))   
             self.assertEqual([], val) # should report no subscribers
             val = self.apiSuccess(master.getPublishedTopics(self.caller_id, '/'))
-            self.assert_([topic_name, 'test_rosmaster/String'] in val, "master is not reporting test_rosmaster/String as type: %s"%val)
+            self.assertTrue([topic_name, 'test_rosmaster/String'] in val, "master is not reporting test_rosmaster/String as type: %s"%val)
 
             val = self.apiSuccess(master.getTopicTypes(self.caller_id))
-            self.assert_([topic_name, 'test_rosmaster/String'] in val, "master is not reporting test_rosmaster/String as type: %s"%val)
+            self.assertTrue([topic_name, 'test_rosmaster/String'] in val, "master is not reporting test_rosmaster/String as type: %s"%val)
         
     ## validate master.registerPublisher(caller_id, topic, topic_api, caller_api) 
     def _testRegisterPublisherSuccess(self):
@@ -394,11 +394,11 @@ class MasterApiTestCase(_MasterTestCase):
             for j in range(0, i+1):
                 jtopic_name = "%s-%s"%(topic_base, j)
                 jentry = [jtopic_name, [caller_id]]
-                self.assert_(jentry not in pubs, "master pub/sub list %s should not have %s"%(pubs, jentry))
+                self.assertTrue(jentry not in pubs, "master pub/sub list %s should not have %s"%(pubs, jentry))
             for j in range(i+1, 10):
                 jtopic_name = "%s-%s"%(topic_base, j)
                 jentry = [jtopic_name, [caller_id]]
-                self.assert_(jentry in pubs, "master pub/sub list %s is missing %s"%(pubs, jentry))
+                self.assertTrue(jentry in pubs, "master pub/sub list %s is missing %s"%(pubs, jentry))
 
             # TODO: have to test subscriber callback
             
@@ -427,13 +427,13 @@ class MasterApiTestCase(_MasterTestCase):
 
             # - master should know topic type
             val = self.apiSuccess(master.getTopicTypes(self.caller_id))
-            self.assert_([topic_name, topic_type] in val, "master does not know topic type: %s"%val)
+            self.assertTrue([topic_name, topic_type] in val, "master does not know topic type: %s"%val)
             
             _, subs, _ = self.apiSuccess(master.getSystemState(self.caller_id))
             for j in range(0, i+1):
                 jtopic_name = "%s-%s"%(topic_base, j)
                 jentry = [jtopic_name, [caller_id]]
-                self.assert_(jentry in subs, "master pub/sub list %s is missing %s"%(subs, jentry))
+                self.assertTrue(jentry in subs, "master pub/sub list %s is missing %s"%(subs, jentry))
             
     ## validate master.registerSubscriber(caller_id, topic, topic_api, caller_api) 
     def _testRegisterSubscriberSimpleSuccess(self):
@@ -462,11 +462,11 @@ class MasterApiTestCase(_MasterTestCase):
             for j in range(0, i+1):
                 jtopic_name = "%s-%s"%(topic_base, j)
                 jentry = [jtopic_name, [caller_id]]
-                self.assert_(jentry not in subs, "master pub/sub list %s should not have %s"%(subs, jentry))
+                self.assertTrue(jentry not in subs, "master pub/sub list %s should not have %s"%(subs, jentry))
             for j in range(i+1, 10):
                 jtopic_name = "%s-%s"%(topic_base, j)
                 jentry = [jtopic_name, [caller_id]]
-                self.assert_(jentry in subs, "master pub/sub list %s is missing %s"%(subs, jentry))
+                self.assertTrue(jentry in subs, "master pub/sub list %s is missing %s"%(subs, jentry))
 
         #  - #457 make sure that lookupNode isn't returning stale info
         self.apiError(master.lookupNode(self.caller_id, caller_id), "master has a stale reference to unregistered topic node API. subs are %s"%subs)

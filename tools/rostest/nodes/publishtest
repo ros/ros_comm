@@ -75,7 +75,7 @@ class PublishChecker(object):
     def _callback(self, msg):
         self.msg = msg
 
-    def assert_published(self):
+    def assertTruepublished(self):
         if self.msg:
             return not self.negative
         if rospy.Time.now() > self.deadline:
@@ -131,7 +131,7 @@ class PublishTest(unittest.TestCase):
             for checker in checkers:
                 if checker.topic_name in finished_topics:
                     continue  # skip topic testing has finished
-                ret = checker.assert_published()
+                ret = checker.assertTruepublished()
                 if ret is None:
                     continue  # skip if there is no test result
                 finished_topics.append(checker.topic_name)

@@ -46,11 +46,11 @@ class TestRospyExceptions(unittest.TestCase):
         
         for e in [ROSException, ROSInitException, ROSSerializationException]:
             exc = e('foo')
-            self.assert_(isinstance(exc, ROSException))
+            self.assertTrue(isinstance(exc, ROSException))
         for e in [ROSInternalException, 
                   TransportException, TransportTerminated, TransportInitError]:
             exc = e('foo')
-            self.assert_(isinstance(exc, ROSInternalException))
+            self.assertTrue(isinstance(exc, ROSInternalException))
 
     def test_ROSInterruptException(self):
         from rospy.exceptions import ROSInterruptException, ROSException

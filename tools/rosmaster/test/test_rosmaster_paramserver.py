@@ -91,7 +91,7 @@ class TestRospyParamServer(unittest.TestCase):
             val = compute_param_updates(reg, param_key, param_val)
             self.assertEqual(len(correct), len(val), "Failed: \n%s \nreturned \n%s\nvs correct\n%s"%(str(args), str(val), str(correct)))
             for c in correct:
-                self.assert_(c in val, "Failed: \n%s \ndid not include \n%s. \nIt returned \n%s"%(str(args), c, val))
+                self.assertTrue(c in val, "Failed: \n%s \ndid not include \n%s. \nIt returned \n%s"%(str(args), c, val))
 
 
     def notify_task(self, updates):
@@ -290,7 +290,7 @@ class TestRospyParamServer(unittest.TestCase):
                 for val in vals:
                     key = ns_join(caller_id, "%s-%s"%(type,count))
                     param_server.set_param(key, val)
-                    self.assert_(param_server.has_param(key))
+                    self.assertTrue(param_server.has_param(key))
                     true_key = ns_join(ctx, key)
                     my_state[true_key] = val
                     count += 1
@@ -320,7 +320,7 @@ class TestRospyParamServer(unittest.TestCase):
 
         self.failIf(param_server.has_param('/new_param'))
         param_server.set_param('/new_param', 1)
-        self.assert_(param_server.has_param('/new_param'))
+        self.assertTrue(param_server.has_param('/new_param'))
 
         # test with param in sub-namespace
         self.failIf(param_server.has_param('/sub/sub2/new_param2'))
@@ -328,10 +328,10 @@ class TestRospyParamServer(unittest.TestCase):
         for k in ['/sub/sub2/', '/sub/sub2', '/sub/', '/sub']:
             self.failIf(param_server.has_param(k))
         param_server.set_param('/sub/sub2/new_param2', 1)
-        self.assert_(param_server.has_param('/sub/sub2/new_param2'))
+        self.assertTrue(param_server.has_param('/sub/sub2/new_param2'))
         # - verify that parameter tree now exists (#587)
         for k in ['/sub/sub2/', '/sub/sub2', '/sub/', '/sub']:
-            self.assert_(param_server.has_param(k))
+            self.assertTrue(param_server.has_param(k))
 
     
     ## test ^param naming, i.e. upwards-looking get access
@@ -545,8 +545,8 @@ class TestRospyParamServer(unittest.TestCase):
 
         param_server.set_param('/foo', 'foo')
         param_server.set_param('/bar', 'bar')        
-        self.assert_(param_server.has_param('/foo'))
-        self.assert_(param_server.has_param('/bar'))        
+        self.assertTrue(param_server.has_param('/foo'))
+        self.assertTrue(param_server.has_param('/bar'))        
         param_server.delete_param('/foo')
         self.failIf(param_server.has_param('/foo'))
         # - test with trailing slash
@@ -565,9 +565,9 @@ class TestRospyParamServer(unittest.TestCase):
             self.fail("delete_param of non-existent should have failed")
         except: pass
 
-        self.assert_(param_server.has_param('/sub/key/x'))
-        self.assert_(param_server.has_param('/sub/key/y'))
-        self.assert_(param_server.has_param('/sub/key'))                  
+        self.assertTrue(param_server.has_param('/sub/key/x'))
+        self.assertTrue(param_server.has_param('/sub/key/y'))
+        self.assertTrue(param_server.has_param('/sub/key'))                  
         param_server.delete_param('/sub/key')
         self.failIf(param_server.has_param('/sub/key'))      
         self.failIf(param_server.has_param('/sub/key/x'))
@@ -575,9 +575,9 @@ class TestRospyParamServer(unittest.TestCase):
 
         # test with namespaces (dictionary vals)
         param_server.set_param('/sub2', {'key': { 'x' : 1, 'y' : 2}})
-        self.assert_(param_server.has_param('/sub2/key/x'))
-        self.assert_(param_server.has_param('/sub2/key/y'))
-        self.assert_(param_server.has_param('/sub2/key'))                  
+        self.assertTrue(param_server.has_param('/sub2/key/x'))
+        self.assertTrue(param_server.has_param('/sub2/key/y'))
+        self.assertTrue(param_server.has_param('/sub2/key'))                  
         param_server.delete_param('/sub2/key')
         self.failIf(param_server.has_param('/sub2/key'))      
         self.failIf(param_server.has_param('/sub2/key/x'))
@@ -587,7 +587,7 @@ class TestRospyParamServer(unittest.TestCase):
         # - try to get the dictionary-of-dictionary code to fail
         #   by descending a value key as if it is a namespace
         param_server.set_param('/a', 'b')
-        self.assert_(param_server.has_param('/a'))
+        self.assertTrue(param_server.has_param('/a'))
         try:
             param_server.delete_param('/a/b/c')
             self.fail_("should have raised key error")
@@ -612,7 +612,7 @@ class TestRospyParamServer(unittest.TestCase):
         param_server.set_param('/new_param', val)
         self.assertEqual(val, param_server.get_param('/new_param'))
         self.assertEqual(val, param_server.get_param('/new_param/'))
-        self.assert_(param_server.has_param('/new_param'))
+        self.assertTrue(param_server.has_param('/new_param'))
 
         # test with param in sub-namespace
         val = random.randint(0, 10000)        
@@ -664,7 +664,7 @@ class TestRospyParamServer(unittest.TestCase):
         # test empty dictionary set
         param_server.set_param('/ns', {})
         # - param should still exist
-        self.assert_(param_server.has_param('/ns/'))
+        self.assertTrue(param_server.has_param('/ns/'))
         # - value should remain dictionary
         self.assertEqual({}, param_server.get_param('/ns/'))
         # - value2 below /ns/ should be erased

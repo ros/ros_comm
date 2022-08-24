@@ -64,7 +64,7 @@ class TestRospyNumpy(unittest.TestCase):
 
         # deserialize twice, once with numpy wrappers, once without
         f2 = Floats()
-        self.assert_(type(f2.data) == list)
+        self.assertTrue(type(f2.data) == list)
         f2.deserialize(b.getvalue())
         for x, y in zip(f2.data, vals):
             self.assertAlmostEquals(x, y, 2)
@@ -73,17 +73,17 @@ class TestRospyNumpy(unittest.TestCase):
         f3 = numpy_msg(Floats)()
         if 0:
             # future
-            self.assert_(isinstance(f3.data, numpy.ndarray), type(f3.data))
+            self.assertTrue(isinstance(f3.data, numpy.ndarray), type(f3.data))
         f3.deserialize(b.getvalue())
-        self.assert_(isinstance(f3.data, numpy.ndarray), type(f3.data))
+        self.assertTrue(isinstance(f3.data, numpy.ndarray), type(f3.data))
         v = numpy.equal(f3.data, numpy.array([1.0, 2.1, 3.2, 4.3, 5.4, 6.5], dtype=numpy.float32))
-        self.assert_(v.all())
+        self.assertTrue(v.all())
 
     def test_class_identity(self):
         from rospy.numpy_msg import numpy_msg
-        self.assert_(isinstance(numpy_msg(Floats)(), numpy_msg(Floats)))
+        self.assertTrue(isinstance(numpy_msg(Floats)(), numpy_msg(Floats)))
 
         FloatsNP = numpy_msg(Floats)
         FloatsNP2 = numpy_msg(Floats)
 
-        self.assert_(FloatsNP is FloatsNP2)
+        self.assertTrue(FloatsNP is FloatsNP2)

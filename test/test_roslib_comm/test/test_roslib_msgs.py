@@ -42,7 +42,7 @@ class MsgSpecTest(unittest.TestCase):
     import roslib.msgs
     self.failIf(roslib.msgs.is_verbose())
     roslib.msgs.set_verbose(True)
-    self.assert_(roslib.msgs.is_verbose())
+    self.assertTrue(roslib.msgs.is_verbose())
     roslib.msgs.set_verbose(False)    
     self.failIf(roslib.msgs.is_verbose())
     
@@ -111,8 +111,8 @@ class MsgSpecTest(unittest.TestCase):
     self.assertNotEquals(roslib.msgs.Constant(type_, name, 'foo', 'foo'), x)
 
     # tripwire
-    self.assert_(repr(x))
-    self.assert_(str(x))    
+    self.assertTrue(repr(x))
+    self.assertTrue(str(x))    
     
     try:
       roslib.msgs.Constant(None, name, val, str(val))
@@ -157,7 +157,7 @@ class MsgSpecTest(unittest.TestCase):
     self.assertNotEquals(one_field, MsgSpec(['int32'], ['y'], [], 'int32 x'))
     self.assertNotEquals(one_field, MsgSpec(['int32'], ['x'], [], 'uint32 x'))
     # test against __ne__ as well
-    self.assert_(one_field != MsgSpec(['int32'], ['x'], [], 'uint32 x'))
+    self.assertTrue(one_field != MsgSpec(['int32'], ['x'], [], 'uint32 x'))
     #test strify
     self.assertEqual("int32 x", str(one_field).strip())
     
@@ -177,7 +177,7 @@ class MsgSpecTest(unittest.TestCase):
 
     # test (not) equals against non msgspec
     self.failIf(one_field == 1)
-    self.assert_(one_field != 1)    
+    self.assertTrue(one_field != 1)    
     #TODO: test flatten
 
     # test that repr doesn't throw an error
@@ -187,7 +187,7 @@ class MsgSpecTest(unittest.TestCase):
     import roslib.msgs    
     roslib.msgs._initialized = False
     roslib.msgs._init()
-    self.assert_(roslib.msgs._initialized)
+    self.assertTrue(roslib.msgs._initialized)
     # test repeated initialization
     roslib.msgs._init()    
 
@@ -233,13 +233,13 @@ class MsgSpecTest(unittest.TestCase):
   def test_msg_file(self):
     import roslib.msgs    
     f = os.path.normcase(roslib.msgs.msg_file('rosgraph_msgs', 'Log'))
-    self.assert_(os.path.isfile(f))
-    self.assert_(f.endswith(os.path.normcase('rosgraph_msgs/msg/Log.msg')))
+    self.assertTrue(os.path.isfile(f))
+    self.assertTrue(f.endswith(os.path.normcase('rosgraph_msgs/msg/Log.msg')))
 
     # msg_file should return paths even for non-existent resources
     f = os.path.normcase(roslib.msgs.msg_file('roslib', 'Fake'))
     self.failIf(os.path.isfile(f))
-    self.assert_(f.endswith(os.path.normcase('roslib/msg/Fake.msg')))
+    self.assertTrue(f.endswith(os.path.normcase('roslib/msg/Fake.msg')))
 
   def test_is_valid_msg_type(self):
     import roslib.msgs
@@ -251,7 +251,7 @@ class MsgSpecTest(unittest.TestCase):
       'Foo[]', 'Foo[1]', 'Foo[10]',
       ]
     for v in vals:
-      self.assert_(roslib.msgs.is_valid_msg_type(v), "roslib.msgs.is_valid_msg_type should have returned True for '%s'"%v)
+      self.assertTrue(roslib.msgs.is_valid_msg_type(v), "roslib.msgs.is_valid_msg_type should have returned True for '%s'"%v)
  
     # bad cases
     vals = [None, '', '#', '%', 'Foo%', 'Woo Woo',
@@ -269,7 +269,7 @@ class MsgSpecTest(unittest.TestCase):
       'time', 'duration','header',
     ]
     for v in valid:
-      self.assert_(roslib.msgs.is_valid_constant_type(v), "roslib.msgs.is_valid_constant_type should have returned True for '%s'"%v)
+      self.assertTrue(roslib.msgs.is_valid_constant_type(v), "roslib.msgs.is_valid_constant_type should have returned True for '%s'"%v)
     for v in invalid:
       self.failIf(roslib.msgs.is_valid_constant_type(v), "roslib.msgs.is_valid_constant_type should have returned False for '%s'"%v)
     

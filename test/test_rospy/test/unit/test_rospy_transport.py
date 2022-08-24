@@ -62,7 +62,7 @@ class TestRospyTransport(unittest.TestCase):
         # test cleanup with and without a callback
         t = Transport(INBOUND)
         t.close()
-        self.assert_(t.done)
+        self.assertTrue(t.done)
         t = Transport(INBOUND)
 
         self.cleanup_obj = None
@@ -72,7 +72,7 @@ class TestRospyTransport(unittest.TestCase):
         t.set_cleanup_callback(cleanup)
         self.assertEqual(t.cleanup_cb, cleanup)
         t.close()
-        self.assert_(t.done)
+        self.assertTrue(t.done)
         self.assertEqual(self.cleanup_obj, t)
 
         t = Transport(OUTBOUND)

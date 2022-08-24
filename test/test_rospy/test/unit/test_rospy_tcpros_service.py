@@ -143,19 +143,19 @@ class TestRospyTcprosService(unittest.TestCase):
         client_addr = '10.0.0.1'
 
         # check error conditions on missing headers
-        self.assert_("Missing" in service_connection_handler(sock, client_addr, {}))
+        self.assertTrue("Missing" in service_connection_handler(sock, client_addr, {}))
         header = { 'service' : '/service', 'md5sum': '*', 'callerid': '/bob' }
         for k in header:
             c = header.copy()
             del c[k]
             msg = service_connection_handler(sock, client_addr, c)
-            self.assert_("Missing" in msg, str(c) + msg)
-            self.assert_(k in msg, msg)
+            self.assertTrue("Missing" in msg, str(c) + msg)
+            self.assertTrue(k in msg, msg)
 
         # check error condition on invalid service
         header['service'] = '/doesnotexist'
         msg = service_connection_handler(sock, client_addr, header)
-        self.assert_('is not a provider' in msg, msg)
+        self.assertTrue('is not a provider' in msg, msg)
 
         # check invalid md5sums
 
@@ -169,7 +169,7 @@ class TestRospyTcprosService(unittest.TestCase):
         header['md5sum'] = 'X'
 
         msg = service_connection_handler(sock, client_addr, header)
-        self.assert_('md5sums do not match' in msg, msg)
+        self.assertTrue('md5sums do not match' in msg, msg)
         
         
     def test_TCPROSServiceClient(self):
@@ -188,10 +188,10 @@ class TestRospyTcprosService(unittest.TestCase):
         self.assertEqual(name, p.resolved_name)
         self.assertEqual(rospy.impl.transport.BIDIRECTIONAL, p.direction)
         self.assertEqual(srv_data_class, p.service_class)
-        self.assert_(p.buff_size > -1)
+        self.assertTrue(p.buff_size > -1)
 
         p = TCPROSServiceClient(name, srv_data_class, buff_size=1)
-        self.assert_(1, p.buff_size)
+        self.assertTrue(1, p.buff_size)
 
         fields = p.get_header_fields()
         self.assertEqual(name, fields['service'])
@@ -223,10 +223,10 @@ class TestRospyTcprosService(unittest.TestCase):
         self.assertEqual(name, p.resolved_name)
         self.assertEqual(rospy.impl.transport.BIDIRECTIONAL, p.direction)
         self.assertEqual(srv_data_class, p.service_class)
-        self.assert_(p.buff_size > -1)
+        self.assertTrue(p.buff_size > -1)
 
         p = TCPService(name, srv_data_class, buff_size=1)
-        self.assert_(1, p.buff_size)
+        self.assertTrue(1, p.buff_size)
 
         fields = p.get_header_fields()
         self.assertEqual(name, fields['service'])

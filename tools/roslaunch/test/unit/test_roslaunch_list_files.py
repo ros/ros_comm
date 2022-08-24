@@ -54,14 +54,14 @@ class TestListFiles(unittest.TestCase):
         # check error behavior
         p = Popen([cmd, '--files'], stdout = PIPE)
         p.communicate()
-        self.assert_(p.returncode != 0, "Should have failed w/o file argument. Code: %d" % (p.returncode))
+        self.assertTrue(p.returncode != 0, "Should have failed w/o file argument. Code: %d" % (p.returncode))
 
         d = get_test_path()
         
         p = Popen([cmd, '--files', 'roslaunch', 'test-valid.xml'], stdout = PIPE)
         o = p.communicate()[0]
         o = o.decode()
-        self.assert_(p.returncode == 0, "Return code nonzero for list files! Code: %d" % (p.returncode))
+        self.assertTrue(p.returncode == 0, "Return code nonzero for list files! Code: %d" % (p.returncode))
         self.assertEqual(os.path.realpath(os.path.join(d, 'test-valid.xml')), os.path.realpath(o.strip()))
 
         print("check 1", o)
@@ -69,7 +69,7 @@ class TestListFiles(unittest.TestCase):
         p = Popen([cmd, '--files', 'roslaunch', 'test-env.xml'], stdout = PIPE)
         o = p.communicate()[0]
         o = o.decode()
-        self.assert_(p.returncode == 0, "Return code nonzero for list files! Code: %d" % (p.returncode))
+        self.assertTrue(p.returncode == 0, "Return code nonzero for list files! Code: %d" % (p.returncode))
         self.assertEqual(set([os.path.realpath(os.path.join(d, 'test-env.xml')), os.path.realpath(os.path.join(d, 'test-env-include.xml'))]),
                           set([os.path.realpath(x.strip()) for x in o.split() if x.strip()]))
 

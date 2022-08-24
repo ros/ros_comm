@@ -47,7 +47,7 @@ class TestRospyParamServer(unittest.TestCase):
     def test_param_server_cache(self):
         from rospy.impl.paramserver import get_param_server_cache
         ps = get_param_server_cache()
-        self.assert_(ps is not None)
+        self.assertTrue(ps is not None)
         try:
             ps.get('foo')
             self.fail("get should fail on non-existent key")

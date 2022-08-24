@@ -84,7 +84,7 @@ class TestRostopicOnline(unittest.TestCase):
         output = output.decode()
         l = set(output.split())
         for t in topics:
-            self.assert_(t in l)
+            self.assertTrue(t in l)
 
         for name in names:
             # type
@@ -111,20 +111,20 @@ class TestRostopicOnline(unittest.TestCase):
             values = [n for n in values if n != '---']
             self.assertEqual(count, len(values), "wrong number of echos in output:\n"+str(values))
             for n in values:
-                self.assert_('data: "hello world ' in n, n)
+                self.assertTrue('data: "hello world ' in n, n)
 
             if 0:
                 #bw
                 stdout, stderr = run_for([cmd, 'bw', name], 3.)
-                self.assert_('average:' in stdout, "OUTPUT: %s\n%s"%(stdout,stderr))
+                self.assertTrue('average:' in stdout, "OUTPUT: %s\n%s"%(stdout,stderr))
 
                 # hz
                 stdout, stderr = run_for([cmd, 'hz', name], 2.)
-                self.assert_('average rate:' in stdout)
+                self.assertTrue('average rate:' in stdout)
 
                 # delay
                 stdout, stderr = run_for([cmd, 'delay', name], 2.)
-                self.assert_('average rate:' in stdout)
+                self.assertTrue('average rate:' in stdout)
             
         # pub
         #  - pub wait until ctrl-C, so we have to wait then kill it

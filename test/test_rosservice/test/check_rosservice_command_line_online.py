@@ -83,7 +83,7 @@ class TestRosserviceOnline(unittest.TestCase):
         output = output.decode()
         l = set(output.split())
         for s in services:
-            self.assert_(s in l)
+            self.assertTrue(s in l)
 
         for name in names:
             # args
@@ -102,7 +102,7 @@ class TestRosserviceOnline(unittest.TestCase):
             # uri
             output = Popen([cmd, 'uri', name], stdout=PIPE).communicate()[0]
             # - no exact answer
-            self.assert_(output.decode().startswith('rosrpc://'), output)
+            self.assertTrue(output.decode().startswith('rosrpc://'), output)
 
             # call
             output = Popen([cmd, 'call', '--wait', name, '1', '2'], stdout=PIPE).communicate()[0]
@@ -121,10 +121,10 @@ class TestRosserviceOnline(unittest.TestCase):
         for v in ['{}', '{header: {}}', '{header: {seq: 0}}']:
             output = Popen([cmd, 'call', name, v], stdout=PIPE).communicate()[0]
             output = output.strip()
-            self.assert_(output, output)
+            self.assertTrue(output, output)
             val = yaml.safe_load(output)['header']
             self.assertEqual('', val['frame_id'])
-            self.assert_(val['seq'] >= 0)
+            self.assertTrue(val['seq'] >= 0)
             self.assertEqual(0, val['stamp']['secs'])
             self.assertEqual(0, val['stamp']['nsecs'])
 
@@ -133,8 +133,8 @@ class TestRosserviceOnline(unittest.TestCase):
             output = Popen([cmd, 'call', name, v], stdout=PIPE).communicate()[0]
             val = yaml.safe_load(output.strip())['header']
             self.assertEqual('', val['frame_id'])
-            self.assert_(val['seq'] >= 0)
-            self.assert_(val['stamp']['secs'] >= int(t))
+            self.assertTrue(val['seq'] >= 0)
+            self.assertTrue(val['stamp']['secs'] >= int(t))
         
 
         # verify that it respects ROS_NS
@@ -143,7 +143,7 @@ class TestRosserviceOnline(unittest.TestCase):
         env['ROS_NAMESPACE'] = 'foo'
         uri1 = Popen([cmd, 'uri', 'add_two_ints'], stdout=PIPE).communicate()[0]
         uri2 = Popen([cmd, 'uri', 'add_two_ints'], env=env, stdout=PIPE).communicate()[0]
-        self.assert_(uri2.decode().startswith('rosrpc://'))
+        self.assertTrue(uri2.decode().startswith('rosrpc://'))
         self.assertNotEquals(uri1, uri2)
 
         # test_call_wait
@@ -158,7 +158,7 @@ class TestRosserviceOnline(unittest.TestCase):
         rospy.Service("wait_two_ints", test_rosmaster.srv.AddTwoInts, lambda x: x.a + x.b)
         while not t1.done and time.time() < timeout_t:
             time.sleep(0.5)
-        self.assert_(t1.success)
+        self.assertTrue(t1.success)
         
 
 PKG = 'test_rosservice'

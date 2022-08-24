@@ -60,13 +60,13 @@ class TestRoslaunchLaunch(unittest.TestCase):
         # roscore with mismatched port in environment
         os.environ['ROS_MASTER_URI'] = 'http://localhost:11312'
         validate_master_launch(m, True)
-        self.assert_('port' in self.printerrlog_msg)
+        self.assertTrue('port' in self.printerrlog_msg)
         self.printerrlog_msg = None
 
         # roscore with mismatched hostname in environment
         os.environ['ROS_MASTER_URI'] = 'http://fake:11311'
         validate_master_launch(m, True)
-        self.assert_('host' in self.printerrlog_msg)
+        self.assertTrue('host' in self.printerrlog_msg)
         self.printerrlog_msg = None
 
         # roslaunch with remote master that cannot be contacted
@@ -81,13 +81,13 @@ class TestRoslaunchLaunch(unittest.TestCase):
         # generally could only happen if the user has a bad local host
         # config.
         validate_master_launch(m, True)
-        self.assert_("WARNING" in self.printerrlog_msg)
+        self.assertTrue("WARNING" in self.printerrlog_msg)
         self.printerrlog_msg = None
 
         # roscore with host that is not ours
         m = Master(uri="http://willowgarage.com:11311")
         validate_master_launch(m, True)
-        self.assert_("WARNING" in self.printerrlog_msg)
+        self.assertTrue("WARNING" in self.printerrlog_msg)
         self.printerrlog_msg = None
         
         # roslaunch with remote master that is out of contact, fail

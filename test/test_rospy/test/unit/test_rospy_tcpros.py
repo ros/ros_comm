@@ -48,4 +48,4 @@ class TestRospyTcpros(unittest.TestCase):
         import rospy.impl.tcpros
         import rospy.impl.transport
         self.assertEqual(int, type(rospy.impl.tcpros.DEFAULT_BUFF_SIZE))
-        self.assert_(isinstance(rospy.impl.tcpros.get_tcpros_handler(), rospy.impl.transport.ProtocolHandler))
+        self.assertTrue(isinstance(rospy.impl.tcpros.get_tcpros_handler(), rospy.impl.transport.ProtocolHandler))

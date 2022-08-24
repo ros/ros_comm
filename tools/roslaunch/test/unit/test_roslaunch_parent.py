@@ -146,7 +146,7 @@ class TestRoslaunchParent(unittest.TestCase):
 
         rl_dir = rospkg.RosPack().get_path('roslaunch')
         rl_file = os.path.join(rl_dir, 'resources', 'example.launch')
-        self.assert_(os.path.isfile(rl_file))
+        self.assertTrue(os.path.isfile(rl_file))
         
         # validate load_config logic
         p = ROSLaunchParent(run_id, [rl_file], is_core = False, port=None, local_only=True)
@@ -154,15 +154,15 @@ class TestRoslaunchParent(unittest.TestCase):
         self.assertEqual(False, p.is_core)
         self.assertEqual(True, p.local_only)
 
-        self.assert_(p.config is None)
+        self.assertTrue(p.config is None)
         p._load_config()
-        self.assert_(p.config is not None)
-        self.assert_(p.config.nodes)
+        self.assertTrue(p.config is not None)
+        self.assertTrue(p.config.nodes)
 
         # try again with port override
         p = ROSLaunchParent(run_id, [rl_file], is_core = False, port=11312, local_only=True)
         self.assertEqual(11312, p.port)
-        self.assert_(p.config is None)
+        self.assertTrue(p.config is None)
         p._load_config()
         # - make sure port got passed into master
         _, port = rosgraph.network.parse_http_host_and_port(p.config.master.uri)
@@ -170,7 +170,7 @@ class TestRoslaunchParent(unittest.TestCase):
 
         # try again with bad file
         p = ROSLaunchParent(run_id, ['non-existent-fake.launch'])
-        self.assert_(p.config is None)
+        self.assertTrue(p.config is None)
         try:
             p._load_config()
             self.fail("load config should have failed due to bad rl file")
@@ -179,9 +179,9 @@ class TestRoslaunchParent(unittest.TestCase):
         # try again with bad xml
         rl_dir = rospkg.RosPack().get_path('roslaunch')
         rl_file = os.path.join(rl_dir, 'test', 'xml', 'test-params-invalid-1.xml')
-        self.assert_(os.path.isfile(rl_file))
+        self.assertTrue(os.path.isfile(rl_file))
         p = ROSLaunchParent(run_id, [rl_file])
-        self.assert_(p.config is None)
+        self.assertTrue(p.config is None)
         try:
             p._load_config()
             self.fail("load config should have failed due to bad rl file")
@@ -219,7 +219,7 @@ class TestRoslaunchParent(unittest.TestCase):
         p.server = ROSLaunchParentNode(p.config, pmon)
         p._init_runner()
         # roslaunch runner should be initialized
-        self.assert_(p.runner is not None)
+        self.assertTrue(p.runner is not None)
 
         # test _init_remote
         p.local_only = True
@@ -230,11 +230,11 @@ class TestRoslaunchParent(unittest.TestCase):
             return True
         p.config.has_remote_nodes = ftrue
         p._init_remote()
-        self.assert_(p.remote_runner is not None)
+        self.assertTrue(p.remote_runner is not None)
 
         self.failIf(pmon.is_shutdown)
         p.shutdown()
-        self.assert_(pmon.is_shutdown)        
+        self.assertTrue(pmon.is_shutdown)        
 
 
 ## Test sigint_timeout and sigterm_timeout

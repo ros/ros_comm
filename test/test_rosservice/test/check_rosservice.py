@@ -170,7 +170,7 @@ class TestRosservice(unittest.TestCase):
             with fakestdout() as b:
                 rosservice.rosservicemain([cmd, 'uri', s])
                 v = b.getvalue().strip()
-                self.assert_(v.startswith('rosrpc://'), v)
+                self.assertTrue(v.startswith('rosrpc://'), v)
                 
 
     def test_cmd_node(self):
@@ -223,7 +223,7 @@ class TestRosservice(unittest.TestCase):
                     self.assertEqual('/a2iserver', d['Node'], repr(d['Node']))
                 self.assertEqual('test_rosmaster/AddTwoInts', d['Type'])
                 self.assertEqual('a b', d['Args'])
-                self.assert_('URI' in d)
+                self.assertTrue('URI' in d)
 
     def test_cmd_find(self):
         import rosservice

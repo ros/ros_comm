@@ -173,7 +173,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         self.assertEqual(respawn_delay, p.respawn_delay)
         self.assertEqual(0, p.spawn_count)        
         self.assertEqual(None, p.exit_code)
-        self.assert_(p.get_exit_description())
+        self.assertTrue(p.get_exit_description())
         self.failIf(p.is_alive())
 
         info = p.get_info()
@@ -198,10 +198,10 @@ class TestRoslaunchPmon(unittest.TestCase):
 
         p.exit_code = 0
         self.assertEqual(0, p.get_info()['exit_code'])
-        self.assert_('cleanly' in p.get_exit_description())
+        self.assertTrue('cleanly' in p.get_exit_description())
         p.exit_code = 1
         self.assertEqual(1, p.get_info()['exit_code'])                        
-        self.assert_('[exit code 1]' in p.get_exit_description())
+        self.assertTrue('[exit code 1]' in p.get_exit_description())
 
     ## tests to make sure that our Process base class has 100% coverage
     def test_Process(self):
@@ -307,8 +307,8 @@ class TestRoslaunchPmon(unittest.TestCase):
         
         # Test with a real process monitor
         pmon = roslaunch.pmon.start_process_monitor()
-        self.assert_(pmon.is_alive())
-        self.assert_(roslaunch.pmon.shutdown_process_monitor(pmon))
+        self.assertTrue(pmon.is_alive())
+        self.assertTrue(roslaunch.pmon.shutdown_process_monitor(pmon))
         self.failIf(pmon.is_alive())
 
         # fiddle around with some state that would shouldn't be
@@ -326,8 +326,8 @@ class TestRoslaunchPmon(unittest.TestCase):
         # pmon_shutdown
         pmon1 = roslaunch.pmon.start_process_monitor()
         pmon2 = roslaunch.pmon.start_process_monitor()
-        self.assert_(pmon1.is_alive())
-        self.assert_(pmon2.is_alive())
+        self.assertTrue(pmon1.is_alive())
+        self.assertTrue(pmon2.is_alive())
 
         roslaunch.pmon.pmon_shutdown()
         
@@ -353,30 +353,30 @@ class TestRoslaunchPmon(unittest.TestCase):
         pmon.register(p2)        
         self.failIf(p1.stopped)
         self.failIf(p2.stopped)
-        self.assert_(p1.name in pmon.get_active_names())
-        self.assert_(p2.name in pmon.get_active_names())
+        self.assertTrue(p1.name in pmon.get_active_names())
+        self.assertTrue(p2.name in pmon.get_active_names())
 
         # should fail as pmon API is string-based
         try:
-            self.assert_(pmon.kill_process(p1))
+            self.assertTrue(pmon.kill_process(p1))
             self.fail("kill_process should have thrown RLException")
         except RLException: pass
         
-        self.assert_(pmon.kill_process(p1.name))
-        self.assert_(p1.stopped)
+        self.assertTrue(pmon.kill_process(p1.name))
+        self.assertTrue(p1.stopped)
         
         # - pmon should not have removed yet as the pmon thread cannot catch the death
-        self.assert_(pmon.has_process(p1.name))
-        self.assert_(p1.name in pmon.get_active_names())
+        self.assertTrue(pmon.has_process(p1.name))
+        self.assertTrue(p1.name in pmon.get_active_names())
         
         self.failIf(p2.stopped)        
-        self.assert_(p2.name in pmon.get_active_names())       
+        self.assertTrue(p2.name in pmon.get_active_names())       
         pmon.kill_process(p2.name)
-        self.assert_(p2.stopped)
+        self.assertTrue(p2.stopped)
         
         # - pmon should not have removed yet as the pmon thread cannot catch the death
-        self.assert_(pmon.has_process(p2.name))
-        self.assert_(p2.name in pmon.get_active_names())
+        self.assertTrue(pmon.has_process(p2.name))
+        self.assertTrue(p2.name in pmon.get_active_names())
 
         p3 = ProcessMock('bar', 'name3', [], {})
         def bad(x):
@@ -412,13 +412,13 @@ class TestRoslaunchPmon(unittest.TestCase):
         self.failIf(marker.marked, "pmon had to be externally killed")
 
         
-        self.assert_(pmon.done)
+        self.assertTrue(pmon.done)
         self.failIf(pmon.has_process(p1.name))
         self.failIf(pmon.has_process(p2.name))
         alive, dead = pmon.get_process_names_with_spawn_count()
         self.failIf(alive)
-        self.assert_((p1.name, p1.spawn_count) in dead)
-        self.assert_((p2.name, p2.spawn_count) in dead)
+        self.assertTrue((p1.name, p1.spawn_count) in dead)
+        self.assertTrue((p2.name, p2.spawn_count) in dead)
 
 
     def test_run(self):
@@ -453,8 +453,8 @@ class TestRoslaunchPmon(unittest.TestCase):
 
         # test assumptions about pmon's internal data structures
         # before we begin test
-        self.assert_(p1 in pmon.procs)
-        self.assert_(pmon._registrations_complete)
+        self.assertTrue(p1 in pmon.procs)
+        self.assertTrue(pmon._registrations_complete)
         self.failIf(pmon.is_shutdown)
         
         # and run it -- but setup a safety timer to kill it if it doesn't exit
@@ -475,7 +475,7 @@ class TestRoslaunchPmon(unittest.TestCase):
 
         # retest assumptions
         self.failIf(pmon.procs)
-        self.assert_(pmon.is_shutdown)        
+        self.assertTrue(pmon.is_shutdown)        
 
         pmon.is_shutdown = False
                 
@@ -490,8 +490,8 @@ class TestRoslaunchPmon(unittest.TestCase):
         pmon.register(p2)
         alive, dead = pmon.get_process_names_with_spawn_count()
         self.assertEqual([], dead)
-        self.assert_(('name1', 0) in alive)
-        self.assert_(('name2', 0) in alive)        
+        self.assertTrue(('name1', 0) in alive)
+        self.assertTrue(('name2', 0) in alive)        
         
         import random
         p1.spawn_count = random.randint(1, 10000)
@@ -499,8 +499,8 @@ class TestRoslaunchPmon(unittest.TestCase):
         
         alive, dead = pmon.get_process_names_with_spawn_count()
         self.assertEqual([], dead)
-        self.assert_((p1.name, p1.spawn_count) in alive)
-        self.assert_((p2.name, p2.spawn_count) in alive)
+        self.assertTrue((p1.name, p1.spawn_count) in alive)
+        self.assertTrue((p2.name, p2.spawn_count) in alive)
 
         #TODO figure out how to test dead_list
 
@@ -517,7 +517,7 @@ class TestRoslaunchPmon(unittest.TestCase):
         corep2 = Process('core', 'core2', [], {})        
 
         pmon.register(p1)
-        self.assert_(pmon.has_process('name1'))
+        self.assertTrue(pmon.has_process('name1'))
         self.assertEqual(p1, pmon.get_process('name1'))
         self.failIf(pmon.has_process('name2'))
         self.assertEqual(['name1'], pmon.get_active_names())
@@ -527,17 +527,17 @@ class TestRoslaunchPmon(unittest.TestCase):
         except RLException: pass
         
         pmon.register(p2)
-        self.assert_(pmon.has_process('name2'))
+        self.assertTrue(pmon.has_process('name2'))
         self.assertEqual(p2, pmon.get_process('name2'))
         self.assertEqual(set(['name1', 'name2']), set(pmon.get_active_names()))
         
         pmon.register_core_proc(corep1)
-        self.assert_(pmon.has_process('core1'))
+        self.assertTrue(pmon.has_process('core1'))
         self.assertEqual(corep1, pmon.get_process('core1'))
         self.assertEqual(set(['name1', 'name2', 'core1']), set(pmon.get_active_names()))        
 
         pmon.register_core_proc(corep2)
-        self.assert_(pmon.has_process('core2'))
+        self.assertTrue(pmon.has_process('core2'))
         self.assertEqual(corep2, pmon.get_process('core2'))
         self.assertEqual(set(['name1', 'name2', 'core1', 'core2']), set(pmon.get_active_names()))                
 

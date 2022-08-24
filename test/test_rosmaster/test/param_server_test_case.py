@@ -69,7 +69,7 @@ class ParamServerTestCase(TestRosClient):
                     key = "%s-%s"%(type,count)
                     #print("master.setParam(%s,%s)"%(callerId, key))
                     master.setParam(callerId, key, val)
-                    self.assert_(self.apiSuccess(master.hasParam(callerId, key)))
+                    self.assertTrue(self.apiSuccess(master.hasParam(callerId, key)))
                     trueKey = ns_join(ctx, key)
                     myState[trueKey] = val
                     count += 1
@@ -108,9 +108,9 @@ class ParamServerTestCase(TestRosClient):
         caller_id = '/node'
         self.failIf(self.apiSuccess(master.hasParam(caller_id, '/new_param')))
         self.apiSuccess(master.setParam(caller_id, '/new_param', 1))
-        self.assert_(self.apiSuccess(master.hasParam(caller_id, '/new_param')))
+        self.assertTrue(self.apiSuccess(master.hasParam(caller_id, '/new_param')))
         # test with relative-name resolution
-        self.assert_(self.apiSuccess(master.hasParam(caller_id, 'new_param')))
+        self.assertTrue(self.apiSuccess(master.hasParam(caller_id, 'new_param')))
 
         # test with param in sub-namespace
         self.failIf(self.apiSuccess(master.hasParam(caller_id, '/sub/sub2/new_param2')))
@@ -120,18 +120,18 @@ class ParamServerTestCase(TestRosClient):
         self.failIf(self.apiSuccess(master.hasParam(caller_id, '/sub/')))
         self.failIf(self.apiSuccess(master.hasParam(caller_id, '/sub')))                        
         self.apiSuccess(master.setParam(caller_id, '/sub/sub2/new_param2', 1))
-        self.assert_(self.apiSuccess(master.hasParam(caller_id, '/sub/sub2/new_param2')))
+        self.assertTrue(self.apiSuccess(master.hasParam(caller_id, '/sub/sub2/new_param2')))
         # - verify that parameter tree now exists (#587)
-        self.assert_(self.apiSuccess(master.hasParam(caller_id, '/sub/sub2/')))
-        self.assert_(self.apiSuccess(master.hasParam(caller_id, '/sub/sub2')))        
-        self.assert_(self.apiSuccess(master.hasParam(caller_id, '/sub/')))
-        self.assert_(self.apiSuccess(master.hasParam(caller_id, '/sub')))                
+        self.assertTrue(self.apiSuccess(master.hasParam(caller_id, '/sub/sub2/')))
+        self.assertTrue(self.apiSuccess(master.hasParam(caller_id, '/sub/sub2')))        
+        self.assertTrue(self.apiSuccess(master.hasParam(caller_id, '/sub/')))
+        self.assertTrue(self.apiSuccess(master.hasParam(caller_id, '/sub')))                
         # test with relative-name resolution
-        self.assert_(self.apiSuccess(master.hasParam(caller_id, 'sub/sub2/new_param2')))
-        self.assert_(self.apiSuccess(master.hasParam('/sub/node', 'sub2/new_param2')))
-        self.assert_(self.apiSuccess(master.hasParam('/sub/sub2/node', 'new_param2')))
-        self.assert_(self.apiSuccess(master.hasParam('/sub/node', 'sub2')))
-        self.assert_(self.apiSuccess(master.hasParam('/node', 'sub')))           
+        self.assertTrue(self.apiSuccess(master.hasParam(caller_id, 'sub/sub2/new_param2')))
+        self.assertTrue(self.apiSuccess(master.hasParam('/sub/node', 'sub2/new_param2')))
+        self.assertTrue(self.apiSuccess(master.hasParam('/sub/sub2/node', 'new_param2')))
+        self.assertTrue(self.apiSuccess(master.hasParam('/sub/node', 'sub2')))
+        self.assertTrue(self.apiSuccess(master.hasParam('/node', 'sub')))           
 
     # testSearchParam: test upwards-looking parameter search
     def _testSearchParam(self):
@@ -367,7 +367,7 @@ class ParamServerTestCase(TestRosClient):
         # test empty dictionary set
         self.apiSuccess(master.setParam(caller_id, '/ns', {}))
         # - param should still exist
-        self.assert_(self.apiSuccess(master.hasParam(caller_id, '/ns/')))
+        self.assertTrue(self.apiSuccess(master.hasParam(caller_id, '/ns/')))
         # - value should remain dictionary
         self.assertEqual({}, self.apiSuccess(master.getParam(caller_id, '/ns/')))
         # - value2 below /ns/ should be erased

@@ -146,7 +146,7 @@ class TestRoslaunchChild(unittest.TestCase):
         
         # - test _start_pm and shutdown logic
         c._start_pm()
-        self.assert_(c.pm is not None)
+        self.assertTrue(c.pm is not None)
         c.shutdown()
 
         # create a new child to test run() with a fake process
@@ -158,7 +158,7 @@ class TestRoslaunchChild(unittest.TestCase):
         server.add_child(name, ChildProcessMock('foo'))
         try:
             server.start()
-            self.assert_(server.uri, "server URI did not initialize")
+            self.assertTrue(server.uri, "server URI did not initialize")
             
             c = ROSLaunchChild(self.run_id, name, server.uri)
             c.pm = self.pmon

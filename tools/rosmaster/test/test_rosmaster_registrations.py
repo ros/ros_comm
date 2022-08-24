@@ -47,16 +47,16 @@ class TestRosmasterRegistrations(unittest.TestCase):
         # test services
         n.add(Registrations.SERVICE, 'add_two_ints')
         self.failIf(n.is_empty())
-        self.assert_('add_two_ints' in n.services)
+        self.assertTrue('add_two_ints' in n.services)
         self.assertEqual(['add_two_ints'], n.services)
         
         n.add(Registrations.SERVICE, 'add_three_ints')
         self.failIf(n.is_empty())
-        self.assert_('add_three_ints' in n.services)
-        self.assert_('add_two_ints' in n.services)
+        self.assertTrue('add_three_ints' in n.services)
+        self.assertTrue('add_two_ints' in n.services)
 
         n.remove(Registrations.SERVICE, 'add_two_ints')
-        self.assert_('add_three_ints' in n.services)
+        self.assertTrue('add_three_ints' in n.services)
         self.assertEqual(['add_three_ints'], n.services)
         self.failIf('add_two_ints' in n.services)
         self.failIf(n.is_empty())
@@ -65,7 +65,7 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.failIf('add_three_ints' in n.services)
         self.failIf('add_two_ints' in n.services)
         self.assertEqual([], n.services)
-        self.assert_(n.is_empty())
+        self.assertTrue(n.is_empty())
 
     def test_NodeRef_subs(self):
         from rosmaster.registrations import NodeRef, Registrations
@@ -73,16 +73,16 @@ class TestRosmasterRegistrations(unittest.TestCase):
         # test topic suscriptions
         n.add(Registrations.TOPIC_SUBSCRIPTIONS, 'topic1')
         self.failIf(n.is_empty())
-        self.assert_('topic1' in n.topic_subscriptions)
+        self.assertTrue('topic1' in n.topic_subscriptions)
         self.assertEqual(['topic1'], n.topic_subscriptions)
         
         n.add(Registrations.TOPIC_SUBSCRIPTIONS, 'topic2')
         self.failIf(n.is_empty())
-        self.assert_('topic2' in n.topic_subscriptions)
-        self.assert_('topic1' in n.topic_subscriptions)
+        self.assertTrue('topic2' in n.topic_subscriptions)
+        self.assertTrue('topic1' in n.topic_subscriptions)
 
         n.remove(Registrations.TOPIC_SUBSCRIPTIONS, 'topic1')
-        self.assert_('topic2' in n.topic_subscriptions)
+        self.assertTrue('topic2' in n.topic_subscriptions)
         self.assertEqual(['topic2'], n.topic_subscriptions)
         self.failIf('topic1' in n.topic_subscriptions)
         self.failIf(n.is_empty())
@@ -91,7 +91,7 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.failIf('topic2' in n.topic_subscriptions)
         self.failIf('topic1' in n.topic_subscriptions)
         self.assertEqual([], n.topic_subscriptions)
-        self.assert_(n.is_empty())
+        self.assertTrue(n.is_empty())
 
     def test_NodeRef_pubs(self):
         from rosmaster.registrations import NodeRef, Registrations
@@ -99,16 +99,16 @@ class TestRosmasterRegistrations(unittest.TestCase):
         # test topic publications
         n.add(Registrations.TOPIC_PUBLICATIONS, 'topic1')
         self.failIf(n.is_empty())
-        self.assert_('topic1' in n.topic_publications)
+        self.assertTrue('topic1' in n.topic_publications)
         self.assertEqual(['topic1'], n.topic_publications)
         
         n.add(Registrations.TOPIC_PUBLICATIONS, 'topic2')
         self.failIf(n.is_empty())
-        self.assert_('topic2' in n.topic_publications)
-        self.assert_('topic1' in n.topic_publications)
+        self.assertTrue('topic2' in n.topic_publications)
+        self.assertTrue('topic1' in n.topic_publications)
 
         n.remove(Registrations.TOPIC_PUBLICATIONS, 'topic1')
-        self.assert_('topic2' in n.topic_publications)
+        self.assertTrue('topic2' in n.topic_publications)
         self.assertEqual(['topic2'], n.topic_publications)
         self.failIf('topic1' in n.topic_publications)
         self.failIf(n.is_empty())
@@ -117,7 +117,7 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.failIf('topic2' in n.topic_publications)
         self.failIf('topic1' in n.topic_publications)
         self.assertEqual([], n.topic_publications)
-        self.assert_(n.is_empty())
+        self.assertTrue(n.is_empty())
 
     def test_NodeRef_base(self):
         import rosmaster.exceptions
@@ -128,7 +128,7 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.assertEqual([], n.topic_subscriptions)
         self.assertEqual([], n.topic_publications)
         self.assertEqual([], n.services)
-        self.assert_(n.is_empty())
+        self.assertTrue(n.is_empty())
 
         try:
             n.add(12345, 'topic')
@@ -148,7 +148,7 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.failIf(n.is_empty())
 
         n.clear()
-        self.assert_(n.is_empty())        
+        self.assertTrue(n.is_empty())        
 
     def test_NodeRef_param_subs(self):
         from rosmaster.registrations import NodeRef, Registrations
@@ -156,16 +156,16 @@ class TestRosmasterRegistrations(unittest.TestCase):
         # test param suscriptions
         n.add(Registrations.PARAM_SUBSCRIPTIONS, 'param1')
         self.failIf(n.is_empty())
-        self.assert_('param1' in n.param_subscriptions)
+        self.assertTrue('param1' in n.param_subscriptions)
         self.assertEqual(['param1'], n.param_subscriptions)
         
         n.add(Registrations.PARAM_SUBSCRIPTIONS, 'param2')
         self.failIf(n.is_empty())
-        self.assert_('param2' in n.param_subscriptions)
-        self.assert_('param1' in n.param_subscriptions)
+        self.assertTrue('param2' in n.param_subscriptions)
+        self.assertTrue('param1' in n.param_subscriptions)
 
         n.remove(Registrations.PARAM_SUBSCRIPTIONS, 'param1')
-        self.assert_('param2' in n.param_subscriptions)
+        self.assertTrue('param2' in n.param_subscriptions)
         self.assertEqual(['param2'], n.param_subscriptions)
         self.failIf('param1' in n.param_subscriptions)
         self.failIf(n.is_empty())
@@ -174,7 +174,7 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.failIf('param2' in n.param_subscriptions)
         self.failIf('param1' in n.param_subscriptions)
         self.assertEqual([], n.param_subscriptions)
-        self.assert_(n.is_empty())
+        self.assertTrue(n.is_empty())
 
     ## subroutine of registration tests that test topic/param type Reg objects
     ## @param r Registrations: initialized registrations object to test
@@ -183,8 +183,8 @@ class TestRosmasterRegistrations(unittest.TestCase):
 
         # - note that we've updated node1's API
         r.register('topic1', 'node1', 'http://node1:5678')
-        self.assert_('topic1' in r) # test contains
-        self.assert_(r.has_key('topic1')) # test contains
+        self.assertTrue('topic1' in r) # test contains
+        self.assertTrue(r.has_key('topic1')) # test contains
         self.assertEqual(['topic1'], [k for k in r.iterkeys()])
         self.assertEqual(['http://node1:5678'], r.get_apis('topic1'))
         self.assertEqual([('node1', 'http://node1:5678')], r['topic1'])
@@ -196,24 +196,24 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.assertEqual(['topic1'], [k for k in r.iterkeys()])        
         self.assertEqual(['topic1'], [k for k in r.iterkeys()])
         self.assertEqual(2, len(r.get_apis('topic1')))
-        self.assert_('http://node1:5678' in r.get_apis('topic1'))
-        self.assert_('http://node2:5678' in r.get_apis('topic1'))
+        self.assertTrue('http://node1:5678' in r.get_apis('topic1'))
+        self.assertTrue('http://node2:5678' in r.get_apis('topic1'))
         self.assertEqual(2, len(r['topic1']))
-        self.assert_(('node1', 'http://node1:5678') in r['topic1'], r['topic1'])
-        self.assert_(('node2', 'http://node2:5678') in r['topic1'])                
+        self.assertTrue(('node1', 'http://node1:5678') in r['topic1'], r['topic1'])
+        self.assertTrue(('node2', 'http://node2:5678') in r['topic1'])                
         self.assertEqual([['topic1', ['node1', 'node2']]], r.get_state())
 
         # TODO: register second topic
         r.register('topic2', 'node3', 'http://node3:5678')
-        self.assert_('topic2' in r) # test contains
-        self.assert_(r.has_key('topic2')) # test contains
-        self.assert_('topic1' in [k for k in r.iterkeys()])
-        self.assert_('topic2' in [k for k in r.iterkeys()])
+        self.assertTrue('topic2' in r) # test contains
+        self.assertTrue(r.has_key('topic2')) # test contains
+        self.assertTrue('topic1' in [k for k in r.iterkeys()])
+        self.assertTrue('topic2' in [k for k in r.iterkeys()])
         self.assertEqual(['http://node3:5678'], r.get_apis('topic2'))
         self.assertEqual([('node3', 'http://node3:5678')], r['topic2'])
         self.failIf(not r) #test nonzero
-        self.assert_(['topic1', ['node1', 'node2']] in r.get_state(), r.get_state())
-        self.assert_(['topic2', ['node3']] in r.get_state(), r.get_state())
+        self.assertTrue(['topic1', ['node1', 'node2']] in r.get_state(), r.get_state())
+        self.assertTrue(['topic2', ['node3']] in r.get_state(), r.get_state())
         
         # Unregister
 
@@ -231,15 +231,15 @@ class TestRosmasterRegistrations(unittest.TestCase):
         code, _, val = r.unregister('topic1', 'node1', 'http://node1:5678')
         self.assertEqual(1, code)
         self.assertEqual(1, val)
-        self.assert_('topic1' in r) # test contains
-        self.assert_(r.has_key('topic1')) 
-        self.assert_('topic1' in [k for k in r.iterkeys()])
-        self.assert_('topic2' in [k for k in r.iterkeys()])
+        self.assertTrue('topic1' in r) # test contains
+        self.assertTrue(r.has_key('topic1')) 
+        self.assertTrue('topic1' in [k for k in r.iterkeys()])
+        self.assertTrue('topic2' in [k for k in r.iterkeys()])
         self.assertEqual(['http://node2:5678'], r.get_apis('topic1'))
         self.assertEqual([('node2', 'http://node2:5678')], r['topic1'])
         self.failIf(not r) #test nonzero
-        self.assert_(['topic1', ['node2']] in r.get_state())
-        self.assert_(['topic2', ['node3']] in r.get_state())        
+        self.assertTrue(['topic1', ['node2']] in r.get_state())
+        self.assertTrue(['topic2', ['node3']] in r.get_state())        
 
         code, _, val = r.unregister('topic1', 'node2', 'http://node2:5678')
         self.assertEqual(1, code)
@@ -257,7 +257,7 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.assertEqual(1, code)
         self.assertEqual(1, val)
         self.failIf('topic2' in r) # test contains
-        self.assert_(not r)
+        self.assertTrue(not r)
         self.assertEqual([], r.get_state())        
         
     def test_Registrations(self):
@@ -277,7 +277,7 @@ class TestRosmasterRegistrations(unittest.TestCase):
         for t in types:
             r = Registrations(t)
             self.assertEqual(t, r.type)
-            self.assert_(not r) #test nonzero
+            self.assertTrue(not r) #test nonzero
             self.failIf('topic1' in r) #test contains            
             self.failIf(r.has_key('topic1')) #test has_key
             self.failIf([k for k in r.iterkeys()]) #no keys
@@ -306,21 +306,21 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.assertEqual(0, val)        
         
         rm.register_service('s1', 'caller1', 'http://one:1234', 'rosrpc://one:1234')
-        self.assert_(rm.services.has_key('s1'))
+        self.assertTrue(rm.services.has_key('s1'))
         self.assertEqual('rosrpc://one:1234', rm.services.get_service_api('s1')) 
         self.assertEqual('http://one:1234', rm.get_node('caller1').api)
         self.assertEqual([['s1', ['caller1']]], rm.services.get_state())
         
         # - verify that changed caller_api updates ref
         rm.register_service('s1', 'caller1', 'http://oneB:1234', 'rosrpc://one:1234')
-        self.assert_(rm.services.has_key('s1'))
+        self.assertTrue(rm.services.has_key('s1'))
         self.assertEqual('rosrpc://one:1234', rm.services.get_service_api('s1'))        
         self.assertEqual('http://oneB:1234', rm.get_node('caller1').api)
         self.assertEqual([['s1', ['caller1']]], rm.services.get_state())
         
         # - verify that changed service_api updates ref
         rm.register_service('s1', 'caller1', 'http://oneB:1234', 'rosrpc://oneB:1234')
-        self.assert_(rm.services.has_key('s1'))
+        self.assertTrue(rm.services.has_key('s1'))
         self.assertEqual('rosrpc://oneB:1234', rm.services.get_service_api('s1'))        
         self.assertEqual('http://oneB:1234', rm.get_node('caller1').api)
         self.assertEqual([['s1', ['caller1']]], rm.services.get_state())
@@ -332,7 +332,7 @@ class TestRosmasterRegistrations(unittest.TestCase):
         code, msg, val = rm.unregister_service('s2', 'caller2', 'rosrpc://b:1234')
         self.assertEqual(1, code)
         self.assertEqual(0, val)        
-        self.assert_(rm.services.has_key('s2'))
+        self.assertTrue(rm.services.has_key('s2'))
         self.assertEqual('http://two:1234', rm.get_node('caller2').api)        
         self.assertEqual('rosrpc://two:1234', rm.services.get_service_api('s2'))
         
@@ -340,7 +340,7 @@ class TestRosmasterRegistrations(unittest.TestCase):
         code, msg, val = rm.unregister_service('unknown', 'caller2', 'rosrpc://two:1234')
         self.assertEqual(1, code)
         self.assertEqual(0, val)        
-        self.assert_(rm.services.has_key('s2'))
+        self.assertTrue(rm.services.has_key('s2'))
         self.assertEqual('http://two:1234', rm.get_node('caller2').api)        
         self.assertEqual('rosrpc://two:1234', rm.services.get_service_api('s2'))
 
@@ -348,14 +348,14 @@ class TestRosmasterRegistrations(unittest.TestCase):
         code,msg, val = rm.unregister_service('s2', 'caller2', 'rosrpc://two:1234')
         self.assertEqual(1, code)
         self.assertEqual(1, val)        
-        self.assert_(rm.services.has_key('s1')) 
+        self.assertTrue(rm.services.has_key('s1')) 
         self.failIf(rm.services.has_key('s2'))        
         self.assertEqual(None, rm.get_node('caller2'))
 
         code, msg, val = rm.unregister_service('s1', 'caller1', 'rosrpc://oneB:1234')
         self.assertEqual(1, code)        
         self.assertEqual(1, val)        
-        self.assert_(not rm.services.__nonzero__())
+        self.assertTrue(not rm.services.__nonzero__())
         self.failIf(rm.services.has_key('s1'))        
         self.assertEqual(None, rm.get_node('caller1'))        
 
@@ -377,13 +377,13 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.assertEqual(None, rm.get_node('caller1'))
 
         register('key1', 'caller1', 'http://one:1234')
-        self.assert_(r.has_key('key1'))
+        self.assertTrue(r.has_key('key1'))
         self.assertEqual('http://one:1234', rm.get_node('caller1').api)
         self.assertEqual([['key1', ['caller1']]], r.get_state())
         
         # - verify that changed caller_api updates ref
         register('key1', 'caller1', 'http://oneB:1234')
-        self.assert_(r.has_key('key1'))
+        self.assertTrue(r.has_key('key1'))
         self.assertEqual('http://oneB:1234', rm.get_node('caller1').api)
         self.assertEqual([['key1', ['caller1']]], r.get_state())
         
@@ -400,27 +400,27 @@ class TestRosmasterRegistrations(unittest.TestCase):
         code, msg, val = unregister('unknown', 'caller2', 'http://two:1234')
         self.assertEqual(1, code)
         self.assertEqual(0, val)        
-        self.assert_(r.has_key('key2'))
+        self.assertTrue(r.has_key('key2'))
         self.assertEqual('http://two:1234', rm.get_node('caller2').api)        
 
         # - unregister should be noop if unknown node
         code, msg, val = rm.unregister_publisher('key2', 'unknown', 'http://unknown:1')
         self.assertEqual(1, code)
         self.assertEqual(0, val)        
-        self.assert_(r.has_key('key2'))
+        self.assertTrue(r.has_key('key2'))
 
         # - unregister should clear all knowledge of caller2
         code,msg, val = unregister('key2', 'caller2', 'http://two:1234')
         self.assertEqual(1, code)
         self.assertEqual(1, val)        
-        self.assert_(r.has_key('key1')) 
+        self.assertTrue(r.has_key('key1')) 
         self.failIf(r.has_key('key2'))        
         self.assertEqual(None, rm.get_node('caller2'))
 
         code, msg, val = unregister('key1', 'caller1', 'http://oneB:1234')
         self.assertEqual(1, code)        
         self.assertEqual(1, val)        
-        self.assert_(not r.__nonzero__())
+        self.assertTrue(not r.__nonzero__())
         self.failIf(r.has_key('key1'))        
         self.assertEqual(None, rm.get_node('caller1'))        
 
@@ -430,15 +430,15 @@ class TestRosmasterRegistrations(unittest.TestCase):
         threadpool = ThreadPoolMock()
 
         rm = RegistrationManager(threadpool)
-        self.assert_(isinstance(rm.services, Registrations))
+        self.assertTrue(isinstance(rm.services, Registrations))
         self.assertEqual(Registrations.SERVICE, rm.services.type)
-        self.assert_(isinstance(rm.param_subscribers, Registrations))
+        self.assertTrue(isinstance(rm.param_subscribers, Registrations))
         self.assertEqual(Registrations.PARAM_SUBSCRIPTIONS, rm.param_subscribers.type)
-        self.assert_(isinstance(rm.subscribers, Registrations))
+        self.assertTrue(isinstance(rm.subscribers, Registrations))
         self.assertEqual(Registrations.TOPIC_SUBSCRIPTIONS, rm.subscribers.type)
-        self.assert_(isinstance(rm.subscribers, Registrations))
+        self.assertTrue(isinstance(rm.subscribers, Registrations))
         self.assertEqual(Registrations.TOPIC_PUBLICATIONS, rm.publishers.type)
-        self.assert_(isinstance(rm.publishers, Registrations))
+        self.assertTrue(isinstance(rm.publishers, Registrations))
 
         #test auto-clearing of registrations if node API changes
         rm.register_publisher('pub1', 'caller1', 'http://one:1')
@@ -462,20 +462,20 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.assertEqual(['sub1'], n.topic_subscriptions)
         self.assertEqual(['p1'], n.param_subscriptions)                
         self.assertEqual(['s1'], n.services)
-        self.assert_('http://one:1' in rm.publishers.get_apis('pub1'))
-        self.assert_('http://one:1' in rm.subscribers.get_apis('sub1'))
-        self.assert_('http://one:1' in rm.param_subscribers.get_apis('p1'))
-        self.assert_('http://one:1' in rm.services.get_apis('s1'))
+        self.assertTrue('http://one:1' in rm.publishers.get_apis('pub1'))
+        self.assertTrue('http://one:1' in rm.subscribers.get_apis('sub1'))
+        self.assertTrue('http://one:1' in rm.param_subscribers.get_apis('p1'))
+        self.assertTrue('http://one:1' in rm.services.get_apis('s1'))
 
         # - also, make sure unregister does not erase state if API changed
         rm.unregister_publisher('pub1', 'caller1', 'http://not:1')
-        self.assert_('http://one:1' in rm.publishers.get_apis('pub1'))
+        self.assertTrue('http://one:1' in rm.publishers.get_apis('pub1'))
         rm.unregister_subscriber('sub1', 'caller1', 'http://not:1')
-        self.assert_('http://one:1' in rm.subscribers.get_apis('sub1'))
+        self.assertTrue('http://one:1' in rm.subscribers.get_apis('sub1'))
         rm.unregister_param_subscriber('p1', 'caller1', 'http://not:1')
-        self.assert_('http://one:1' in rm.param_subscribers.get_apis('p1'))
+        self.assertTrue('http://one:1' in rm.param_subscribers.get_apis('p1'))
         rm.unregister_service('sub1', 'caller1', 'rosrpc://not:1')
-        self.assert_('http://one:1' in rm.services.get_apis('s1'))
+        self.assertTrue('http://one:1' in rm.services.get_apis('s1'))
         
         
         # erase caller1 sub/srvs/params via register_publisher
@@ -488,25 +488,25 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.assertEqual([], n.topic_subscriptions)
         self.assertEqual([], n.param_subscriptions)
         # - checks publishers
-        self.assert_('http://newone:1' in rm.publishers.get_apis('pub1'))
+        self.assertTrue('http://newone:1' in rm.publishers.get_apis('pub1'))
         # - checks subscribers
-        self.assert_(rm.subscribers.has_key('sub1'))
+        self.assertTrue(rm.subscribers.has_key('sub1'))
         self.failIf('http://one:1' in rm.subscribers.get_apis('sub1'))
         # - checks param subscribers
-        self.assert_(rm.param_subscribers.has_key('p1'))
+        self.assertTrue(rm.param_subscribers.has_key('p1'))
         self.failIf('http://one:1' in rm.param_subscribers.get_apis('p1'))
 
         # erase caller2 pub/sub/params via register_service
         # - initial state
-        self.assert_('http://two:1' in rm.publishers.get_apis('pub1'))
-        self.assert_('http://two:1' in rm.subscribers.get_apis('sub1'))
-        self.assert_('http://two:1' in rm.param_subscribers.get_apis('p1'))
+        self.assertTrue('http://two:1' in rm.publishers.get_apis('pub1'))
+        self.assertTrue('http://two:1' in rm.subscribers.get_apis('sub1'))
+        self.assertTrue('http://two:1' in rm.param_subscribers.get_apis('p1'))
         # - change ownership of s1 to caller2
         rm.register_service('s1', 'caller2', 'http://two:1', 'rosrpc://two:1')
-        self.assert_('http://two:1' in rm.services.get_apis('s1'))
-        self.assert_('http://two:1' in rm.publishers.get_apis('pub1'))
-        self.assert_('http://two:1' in rm.subscribers.get_apis('sub1'))
-        self.assert_('http://two:1' in rm.param_subscribers.get_apis('p1'))
+        self.assertTrue('http://two:1' in rm.services.get_apis('s1'))
+        self.assertTrue('http://two:1' in rm.publishers.get_apis('pub1'))
+        self.assertTrue('http://two:1' in rm.subscribers.get_apis('sub1'))
+        self.assertTrue('http://two:1' in rm.param_subscribers.get_apis('p1'))
         
         rm.register_service('s1', 'caller2', 'http://newtwo:1', 'rosrpc://newtwo:1')
         self.assertEqual('http://newone:1', rm.get_node('caller1').api)        
@@ -517,14 +517,14 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.assertEqual([], n.topic_subscriptions)
         self.assertEqual([], n.param_subscriptions)
         # - checks publishers
-        self.assert_(rm.publishers.has_key('pub1'))
+        self.assertTrue(rm.publishers.has_key('pub1'))
         self.failIf('http://two:1' in rm.publishers.get_apis('pub1'))
         # - checks subscribers
-        self.assert_(rm.subscribers.has_key('sub1'))
+        self.assertTrue(rm.subscribers.has_key('sub1'))
         self.failIf('http://two:1' in rm.subscribers.get_apis('sub1'))
         self.assertEqual([['sub1', ['caller3']]], rm.subscribers.get_state())
         # - checks param subscribers
-        self.assert_(rm.param_subscribers.has_key('p1'))
+        self.assertTrue(rm.param_subscribers.has_key('p1'))
         self.failIf('http://two:1' in rm.param_subscribers.get_apis('p1'))
         self.assertEqual([['p1', ['caller3']]], rm.param_subscribers.get_state())
 
@@ -594,8 +594,8 @@ class TestRosmasterRegistrations(unittest.TestCase):
         
         r.register('service1', 'node1', 'http://node1:5678', 'rosrpc://node1:1234')
         
-        self.assert_('service1' in r) # test contains
-        self.assert_(r.has_key('service1')) # test contains
+        self.assertTrue('service1' in r) # test contains
+        self.assertTrue(r.has_key('service1')) # test contains
         self.assertEqual(['service1'], [k for k in r.iterkeys()])
         self.assertEqual(['http://node1:5678'], r.get_apis('service1'))
         self.assertEqual('rosrpc://node1:1234', r.get_service_api('service1'))
@@ -614,15 +614,15 @@ class TestRosmasterRegistrations(unittest.TestCase):
         r.register('service2', 'node3', 'http://node3:5678', 'rosrpc://node3:1234')
         self.assertEqual('rosrpc://node3:1234', r.get_service_api('service2'))
         self.assertEqual(2, len(r.get_state()))
-        self.assert_(['service2', ['node3']] in r.get_state(), r.get_state())
-        self.assert_(['service1', ['node2']] in r.get_state())
+        self.assertTrue(['service2', ['node3']] in r.get_state(), r.get_state())
+        self.assertTrue(['service1', ['node2']] in r.get_state())
         
         # register a third service, second service for node2
         r.register('service1b', 'node2', 'http://node2:5678', 'rosrpc://node2:1234')
         self.assertEqual(3, len(r.get_state()))
-        self.assert_(['service2', ['node3']] in r.get_state())
-        self.assert_(['service1b', ['node2']] in r.get_state())
-        self.assert_(['service1', ['node2']] in r.get_state())
+        self.assertTrue(['service2', ['node3']] in r.get_state())
+        self.assertTrue(['service1b', ['node2']] in r.get_state())
+        self.assertTrue(['service1', ['node2']] in r.get_state())
         
         # Unregister
         try:
@@ -646,8 +646,8 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.assertEqual(1, val)
         self.failIf('service2' in r) # test contains
         self.failIf(r.has_key('service2')) 
-        self.assert_('service1' in [k for k in r.iterkeys()])
-        self.assert_('service1b' in [k for k in r.iterkeys()])
+        self.assertTrue('service1' in [k for k in r.iterkeys()])
+        self.assertTrue('service1b' in [k for k in r.iterkeys()])
         self.assertEqual([], r.get_apis('service2'))
         self.assertEqual([], r['service2'])
         self.failIf(not r) #test nonzero
@@ -674,6 +674,6 @@ class TestRosmasterRegistrations(unittest.TestCase):
         self.assertEqual([], [k for k in r.iterkeys()])
         self.assertEqual([], r.get_apis('service1'))
         self.assertEqual([], r['service1'])
-        self.assert_(not r) #test nonzero
+        self.assertTrue(not r) #test nonzero
         self.assertEqual([], r.get_state())
         

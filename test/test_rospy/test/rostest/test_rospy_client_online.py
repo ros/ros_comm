@@ -97,22 +97,22 @@ class TestRospyClientOnline(unittest.TestCase):
             import rospy
             rospy.loginfo("test 1")
             lout_last = lout.getvalue().splitlines()[-1]
-            self.assert_("test 1" in lout_last)
+            self.assertTrue("test 1" in lout_last)
             
             rospy.logwarn("test 2")
             lerr_last = lerr.getvalue().splitlines()[-1]
-            self.assert_("[WARN]" in lerr_last)
-            self.assert_("test 2" in lerr_last)
+            self.assertTrue("[WARN]" in lerr_last)
+            self.assertTrue("test 2" in lerr_last)
 
             rospy.logerr("test 3")
             lerr_last = lerr.getvalue().splitlines()[-1]
-            self.assert_("[ERROR]" in lerr_last)
-            self.assert_("test 3" in lerr_last)
+            self.assertTrue("[ERROR]" in lerr_last)
+            self.assertTrue("test 3" in lerr_last)
 
             rospy.logfatal("test 4")
             lerr_last = lerr.getvalue().splitlines()[-1]
-            self.assert_("[FATAL]" in lerr_last)
-            self.assert_("test 4" in lerr_last)
+            self.assertTrue("[FATAL]" in lerr_last)
+            self.assertTrue("test 4" in lerr_last)
 
             # logXXX_once
             lout_len = -1
@@ -120,40 +120,40 @@ class TestRospyClientOnline(unittest.TestCase):
                 rospy.loginfo_once("test 1")
                 lout_last = lout.getvalue().splitlines()[-1]
                 if i == 0:
-                    self.assert_("test 1" in lout_last)
+                    self.assertTrue("test 1" in lout_last)
                     lout_len = len(lout.getvalue())
                 else:  # making sure the length of lout doesnt change
-                    self.assert_(lout_len == len(lout.getvalue()))
+                    self.assertTrue(lout_len == len(lout.getvalue()))
 
             lerr_len = -1
             for i in range(3):
                 rospy.logwarn_once("test 2")
                 lerr_last = lerr.getvalue().splitlines()[-1]
                 if i == 0:
-                    self.assert_("test 2" in lerr_last)
+                    self.assertTrue("test 2" in lerr_last)
                     lerr_len = len(lerr.getvalue())
                 else:  # making sure the length of lerr doesnt change
-                    self.assert_(lerr_len == len(lerr.getvalue()))
+                    self.assertTrue(lerr_len == len(lerr.getvalue()))
 
             lerr_len = -1
             for i in range(3):
                 rospy.logerr_once("test 3")
                 lerr_last = lerr.getvalue().splitlines()[-1]
                 if i == 0:
-                    self.assert_("test 3" in lerr_last)
+                    self.assertTrue("test 3" in lerr_last)
                     lerr_len = len(lerr.getvalue())
                 else:  # making sure the length of lerr doesnt change
-                    self.assert_(lerr_len == len(lerr.getvalue()))
+                    self.assertTrue(lerr_len == len(lerr.getvalue()))
 
             lerr_len = -1
             for i in range(3):
                 rospy.logfatal_once("test 4")
                 lerr_last = lerr.getvalue().splitlines()[-1]
                 if i == 0:
-                    self.assert_("test 4" in lerr_last)
+                    self.assertTrue("test 4" in lerr_last)
                     lerr_len = len(lerr.getvalue())
                 else:  # making sure the length of lerr doesnt change
-                    self.assert_(lerr_len == len(lerr.getvalue()))
+                    self.assertTrue(lerr_len == len(lerr.getvalue()))
 
             # logXXX_throttle
             lout_len = -1
@@ -161,56 +161,56 @@ class TestRospyClientOnline(unittest.TestCase):
                 rospy.loginfo_throttle(3, "test 1")
                 lout_last = lout.getvalue().splitlines()[-1]
                 if i == 0:
-                    self.assert_("test 1" in lout_last)
+                    self.assertTrue("test 1" in lout_last)
                     lout_len = len(lout.getvalue())
                     rospy.sleep(rospy.Duration(1))
                 elif i == 1:  # making sure the length of lout doesnt change
-                    self.assert_(lout_len == len(lout.getvalue()))
+                    self.assertTrue(lout_len == len(lout.getvalue()))
                     rospy.sleep(rospy.Duration(2))
                 else:
-                    self.assert_("test 1" in lout_last)
+                    self.assertTrue("test 1" in lout_last)
 
             lerr_len = -1
             for i in range(3):
                 rospy.logwarn_throttle(3, "test 2")
                 lerr_last = lerr.getvalue().splitlines()[-1]
                 if i == 0:
-                    self.assert_("test 2" in lerr_last)
+                    self.assertTrue("test 2" in lerr_last)
                     lerr_len = len(lerr.getvalue())
                     rospy.sleep(rospy.Duration(1))
                 elif i == 1:  # making sure the length of lerr doesnt change
-                    self.assert_(lerr_len == len(lerr.getvalue()))
+                    self.assertTrue(lerr_len == len(lerr.getvalue()))
                     rospy.sleep(rospy.Duration(2))
                 else:
-                    self.assert_("test 2" in lerr_last)
+                    self.assertTrue("test 2" in lerr_last)
 
             lerr_len = -1
             for i in range(3):
                 rospy.logerr_throttle(3, "test 3")
                 lerr_last = lerr.getvalue().splitlines()[-1]
                 if i == 0:
-                    self.assert_("test 3" in lerr_last)
+                    self.assertTrue("test 3" in lerr_last)
                     lerr_len = len(lerr.getvalue())
                     rospy.sleep(rospy.Duration(1))
                 elif i == 1:  # making sure the length of lerr doesnt change
-                    self.assert_(lerr_len == len(lerr.getvalue()))
+                    self.assertTrue(lerr_len == len(lerr.getvalue()))
                     rospy.sleep(rospy.Duration(2))
                 else:
-                    self.assert_("test 3" in lerr_last)
+                    self.assertTrue("test 3" in lerr_last)
 
             lerr_len = -1
             for i in range(3):
                 rospy.logfatal_throttle(3, "test 4")
                 lerr_last = lerr.getvalue().splitlines()[-1]
                 if i == 0:
-                    self.assert_("test 4" in lerr_last)
+                    self.assertTrue("test 4" in lerr_last)
                     lerr_len = len(lerr.getvalue())
                     rospy.sleep(rospy.Duration(1))
                 elif i == 1:  # making sure the length of lerr doesnt change
-                    self.assert_(lerr_len == len(lerr.getvalue()))
+                    self.assertTrue(lerr_len == len(lerr.getvalue()))
                     rospy.sleep(rospy.Duration(2))
                 else:
-                    self.assert_("test 4" in lerr_last)
+                    self.assertTrue("test 4" in lerr_last)
 
             # logXXX_throttle_identical
             lout_len = -1
@@ -222,18 +222,18 @@ class TestRospyClientOnline(unittest.TestCase):
                 rospy.loginfo_throttle_identical(2, test_text)
                 lout_last = lout.getvalue().splitlines()[-1]
                 if i == 0:  # Confirm test text was logged
-                    self.assert_(test_text in lout_last)
+                    self.assertTrue(test_text in lout_last)
                     lout_len = len(lout.getvalue())
                 elif i == 1:  # Confirm the length of lout hasn't changed
-                    self.assert_(lout_len == len(lout.getvalue()))
+                    self.assertTrue(lout_len == len(lout.getvalue()))
                 elif i == 2:  # Confirm the new message was logged correctly
-                    self.assert_(test_text in lout_last)
+                    self.assertTrue(test_text in lout_last)
                     lout_len = len(lout.getvalue())
                     rospy.sleep(rospy.Duration(2))
                 elif i == 3:  # Confirm the length of lout has changed
-                    self.assert_(lout_len != len(lout.getvalue()))
+                    self.assertTrue(lout_len != len(lout.getvalue()))
                 else:  # Confirm new test text is in last log
-                    self.assert_(test_text in lout_last)
+                    self.assertTrue(test_text in lout_last)
 
             lerr_len = -1
             for i in range(5):
@@ -244,18 +244,18 @@ class TestRospyClientOnline(unittest.TestCase):
                 rospy.logwarn_throttle_identical(2, test_text)
                 lerr_last = lerr.getvalue().splitlines()[-1]
                 if i == 0:  # Confirm test text was logged
-                    self.assert_(test_text in lerr_last)
+                    self.assertTrue(test_text in lerr_last)
                     lerr_len = len(lerr.getvalue())
                 elif i == 1:  # Confirm the length of lerr hasn't changed
-                    self.assert_(lerr_len == len(lerr.getvalue()))
+                    self.assertTrue(lerr_len == len(lerr.getvalue()))
                 elif i == 2:  # Confirm the new message was logged correctly
-                    self.assert_(test_text in lerr_last)
+                    self.assertTrue(test_text in lerr_last)
                     lerr_len = len(lerr.getvalue())
                     rospy.sleep(rospy.Duration(2))
                 elif i == 3:  # Confirm the length of lerr has incremented
-                    self.assert_(lerr_len != len(lerr.getvalue()))
+                    self.assertTrue(lerr_len != len(lerr.getvalue()))
                 else:  # Confirm new test text is in last log
-                    self.assert_(test_text in lerr_last)
+                    self.assertTrue(test_text in lerr_last)
 
             lerr_len = -1
             for i in range(5):
@@ -266,18 +266,18 @@ class TestRospyClientOnline(unittest.TestCase):
                 rospy.logerr_throttle_identical(2, test_text)
                 lerr_last = lerr.getvalue().splitlines()[-1]
                 if i == 0:  # Confirm test text was logged
-                    self.assert_(test_text in lerr_last)
+                    self.assertTrue(test_text in lerr_last)
                     lerr_len = len(lerr.getvalue())
                 elif i == 1:  # Confirm the length of lerr hasn't changed
-                    self.assert_(lerr_len == len(lerr.getvalue()))
+                    self.assertTrue(lerr_len == len(lerr.getvalue()))
                 elif i == 2:  # Confirm the new message was logged correctly
-                    self.assert_(test_text in lerr_last)
+                    self.assertTrue(test_text in lerr_last)
                     lerr_len = len(lerr.getvalue())
                     rospy.sleep(rospy.Duration(2))
                 elif i == 3:  # Confirm the length of lerr has incremented
-                    self.assert_(lerr_len != len(lerr.getvalue()))
+                    self.assertTrue(lerr_len != len(lerr.getvalue()))
                 else:  # Confirm new test text is in last log
-                    self.assert_(test_text in lerr_last)
+                    self.assertTrue(test_text in lerr_last)
 
             lerr_len = -1
             for i in range(5):
@@ -288,37 +288,37 @@ class TestRospyClientOnline(unittest.TestCase):
                 rospy.logfatal_throttle_identical(2, test_text)
                 lerr_last = lerr.getvalue().splitlines()[-1]
                 if i == 0:  # Confirm test text was logged
-                    self.assert_(test_text in lerr_last)
+                    self.assertTrue(test_text in lerr_last)
                     lerr_len = len(lerr.getvalue())
                 elif i == 1:  # Confirm the length of lerr hasn't changed
-                    self.assert_(lerr_len == len(lerr.getvalue()))
+                    self.assertTrue(lerr_len == len(lerr.getvalue()))
                 elif i == 2:  # Confirm the new message was logged correctly
-                    self.assert_(test_text in lerr_last)
+                    self.assertTrue(test_text in lerr_last)
                     lerr_len = len(lerr.getvalue())
                     rospy.sleep(rospy.Duration(2))
                 elif i == 3:  # Confirm the length of lerr has incremented
-                    self.assert_(lerr_len != len(lerr.getvalue()))
+                    self.assertTrue(lerr_len != len(lerr.getvalue()))
                 else:  # Confirm new test text is in last log
-                    self.assert_(test_text in lerr_last)
+                    self.assertTrue(test_text in lerr_last)
 
             rospy.loginfo("test child logger 1", logger_name="log1")
             lout_last = lout.getvalue().splitlines()[-1]
-            self.assert_("test child logger 1" in lout_last)
+            self.assertTrue("test child logger 1" in lout_last)
             
             rospy.logwarn("test child logger 2", logger_name="log2")
             lerr_last = lerr.getvalue().splitlines()[-1]
-            self.assert_("[WARN]" in lerr_last)
-            self.assert_("test child logger 2" in lerr_last)
+            self.assertTrue("[WARN]" in lerr_last)
+            self.assertTrue("test child logger 2" in lerr_last)
 
             rospy.logerr("test child logger 3", logger_name="log3")
             lerr_last = lerr.getvalue().splitlines()[-1]
-            self.assert_("[ERROR]" in lerr_last)
-            self.assert_("test child logger 3" in lerr_last)
+            self.assertTrue("[ERROR]" in lerr_last)
+            self.assertTrue("test child logger 3" in lerr_last)
 
             rospy.logfatal("test child logger 4", logger_name="log4")
             lerr_last = lerr.getvalue().splitlines()[-1]
-            self.assert_("[FATAL]" in lerr_last)
-            self.assert_("test child logger 4" in lerr_last)
+            self.assertTrue("[FATAL]" in lerr_last)
+            self.assertTrue("test child logger 4" in lerr_last)
 
         finally:
             # restoring default ros handler
@@ -340,7 +340,7 @@ class TestRospyClientOnline(unittest.TestCase):
         t1.start()
         while not t1.done and time.time() < timeout_t:
             time.sleep(0.5)
-        self.assert_(t1.success)
+        self.assertTrue(t1.success)
         
         # test wait for service with timeout in success case
         def task2():
@@ -350,7 +350,7 @@ class TestRospyClientOnline(unittest.TestCase):
         t2.start()
         while not t2.done and time.time() < timeout_t:
             time.sleep(0.5)
-        self.assert_(t2.success)
+        self.assertTrue(t2.success)
 
         # test wait for service in failure case
         def task3():
@@ -361,7 +361,7 @@ class TestRospyClientOnline(unittest.TestCase):
         t3.start()
         while not t3.done and time.time() < timeout_t:
             time.sleep(0.5)
-        self.assert_(t3.done)
+        self.assertTrue(t3.done)
         self.failIf(t3.success)
 
     def test_wait_for_service_duration(self):
@@ -378,7 +378,7 @@ class TestRospyClientOnline(unittest.TestCase):
         t2.start()
         while not t2.done and time.time() < timeout_t:
             time.sleep(0.5)
-        self.assert_(t2.success)
+        self.assertTrue(t2.success)
 
         # test wait for service in failure case
         def task3():
@@ -390,7 +390,7 @@ class TestRospyClientOnline(unittest.TestCase):
         t3.start()
         while not t3.done and time.time() < timeout_t:
             time.sleep(0.5)
-        self.assert_(t3.done)
+        self.assertTrue(t3.done)
         self.failIf(t3.success)
     
     def test_ServiceProxy_wait_for_service(self):
@@ -418,7 +418,7 @@ class TestRospyClientOnline(unittest.TestCase):
         t1.start()
         while not t1.done and time.time() < timeout_t:
             time.sleep(0.5)
-        self.assert_(t1.success)
+        self.assertTrue(t1.success)
         
         # test wait for service with timeout in success case
         timeout_t = time.time() + 5.        
@@ -426,7 +426,7 @@ class TestRospyClientOnline(unittest.TestCase):
         t2.start()
         while not t2.done and time.time() < timeout_t:
             time.sleep(0.5)
-        self.assert_(t2.success)
+        self.assertTrue(t2.success)
 
         # test wait for service in failure case
         fake_proxy = rospy.ServiceProxy('fake_service', test_rosmaster.srv.AddTwoInts)
@@ -435,7 +435,7 @@ class TestRospyClientOnline(unittest.TestCase):
         t3.start()
         while not t3.done and time.time() < timeout_t:
             time.sleep(0.5)
-        self.assert_(t3.done)
+        self.assertTrue(t3.done)
         self.failIf(t3.success)
 
     def test_ServiceProxy_wait_for_service_duration(self):
@@ -465,7 +465,7 @@ class TestRospyClientOnline(unittest.TestCase):
         t2.start()
         while not t2.done and time.time() < timeout_t:
             time.sleep(0.5)
-        self.assert_(t2.success)
+        self.assertTrue(t2.success)
 
         # test wait for service in failure case
         fake_proxy = rospy.ServiceProxy('fake_service', test_rosmaster.srv.AddTwoInts)
@@ -474,7 +474,7 @@ class TestRospyClientOnline(unittest.TestCase):
         t3.start()
         while not t3.done and time.time() < timeout_t:
             time.sleep(0.5)
-        self.assert_(t3.done)
+        self.assertTrue(t3.done)
         self.failIf(t3.success)
 
     def test_sleep(self):
@@ -486,20 +486,20 @@ class TestRospyClientOnline(unittest.TestCase):
         # #2842 raising bounds from .01 to .03 for amazon VM 
 
         # make sure sleep is approximately right
-        self.assert_(abs(dur - 0.1) < 0.03, dur)
+        self.assertTrue(abs(dur - 0.1) < 0.03, dur)
 
         t = time.time()
         rospy.sleep(rospy.Duration.from_sec(0.1))
         dur = time.time() - t
         # make sure sleep is approximately right
-        self.assert_(abs(dur - 0.1) < 0.03, dur)
+        self.assertTrue(abs(dur - 0.1) < 0.03, dur)
 
         # sleep for neg duration
         t = time.time()
         rospy.sleep(rospy.Duration.from_sec(-10.))
         dur = time.time() - t
         # make sure returned immediately
-        self.assert_(abs(dur) < 0.1, dur)
+        self.assertTrue(abs(dur) < 0.1, dur)
 
     def test_Rate(self):
         import rospy
@@ -511,7 +511,7 @@ class TestRospyClientOnline(unittest.TestCase):
             r.sleep()
         dur = time.time() - t
         # make sure sleep is approximately right
-        self.assert_(abs(dur - 1.0) < 0.5, dur)
+        self.assertTrue(abs(dur - 1.0) < 0.5, dur)
         
 
     def test_param_server(self):
@@ -536,14 +536,14 @@ class TestRospyClientOnline(unittest.TestCase):
         self.assertEqual('/param', rospy.search_param('param'))
         
         names = rospy.get_param_names()
-        self.assert_('/param' in names)
-        self.assert_('/group/param' in names)        
+        self.assertTrue('/param' in names)
+        self.assertTrue('/group/param' in names)        
 
         for p in ['/param', 'param', 'group/param', '/group/param']:
-            self.assert_(rospy.has_param(p))
+            self.assertTrue(rospy.has_param(p))
             
         rospy.set_param('param2', 'value2')
-        self.assert_(rospy.has_param('param2'))
+        self.assertTrue(rospy.has_param('param2'))
         self.assertEqual('value2', rospy.get_param('param2'))
         rospy.delete_param('param2')
         self.failIf(rospy.has_param('param2'))
@@ -566,8 +566,8 @@ class TestRospyClientOnline(unittest.TestCase):
         t1.start()
         while not t1.done and time.time() < timeout_t:
             time.sleep(0.5)
-        self.assert_(t1.success)
-        self.assert_('hello' in t1.value.data)
+        self.assertTrue(t1.success)
+        self.assertTrue('hello' in t1.value.data)
 
         # test wait for message with timeout
         def task2():
@@ -577,8 +577,8 @@ class TestRospyClientOnline(unittest.TestCase):
         t2.start()
         while not t2.done and time.time() < timeout_t:
             time.sleep(0.5)
-        self.assert_(t2.success)
-        self.assert_('hello' in t2.value.data)
+        self.assertTrue(t2.success)
+        self.assertTrue('hello' in t2.value.data)
         
         # test wait for message with timeout FAILURE
         def task3():
@@ -590,8 +590,8 @@ class TestRospyClientOnline(unittest.TestCase):
         while not t3.done and time.time() < timeout_t:
             time.sleep(0.5)
         self.failIf(t3.success)
-        self.assert_(t3.done)
-        self.assert_(t3.value is None)
+        self.assertTrue(t3.done)
+        self.assertTrue(t3.value is None)
 
     def test_wait_for_message_duration(self):
         # lazy-import for coverage
@@ -608,8 +608,8 @@ class TestRospyClientOnline(unittest.TestCase):
         t2.start()
         while not t2.done and time.time() < timeout_t:
             time.sleep(0.5)
-        self.assert_(t2.success)
-        self.assert_('hello' in t2.value.data)
+        self.assertTrue(t2.success)
+        self.assertTrue('hello' in t2.value.data)
 
         # test wait for message with timeout FAILURE
         def task3():
@@ -622,8 +622,8 @@ class TestRospyClientOnline(unittest.TestCase):
         while not t3.done and time.time() < timeout_t:
             time.sleep(0.5)
         self.failIf(t3.success)
-        self.assert_(t3.done)
-        self.assert_(t3.value is None)
+        self.assertTrue(t3.done)
+        self.assertTrue(t3.value is None)
     
 if __name__ == '__main__':
     rosunit.unitrun('test_rospy', sys.argv[0], TestRospyClientOnline, coverage_packages=['rospy.client', 'rospy.msproxy'])
