@@ -87,7 +87,7 @@ def print_node_list(roslaunch_files):
         loader = roslaunch.xmlloader.XmlLoader(resolve_anon=False)
         config = load_config_default(roslaunch_files, None, loader=loader, verbose=False, assign_machines=False)
         node_list = get_node_list(config)
-        print('\n'.join(node_list))
+        print('\n'.join(sorted(node_list)))
     except RLException as e:
         print(str(e), file=sys.stderr)
         sys.exit(1)
