@@ -562,6 +562,8 @@ class Subscriber(Topic):
 
         # last person to set these to non-defaults wins, not much way
         # around this
+        if queue_size is None:
+            queue_size = 100
         if queue_size is not None:
             self.impl.set_queue_size(queue_size)
         if buff_size != DEFAULT_BUFF_SIZE:
@@ -645,7 +647,11 @@ class _SubscriberImpl(_TopicImpl):
         @type  queue_size: int
         """
         if queue_size == -1:
-            self.queue_size = None
+            queue_size = 100
+            self.queue_size = queue_size
+        elif queue_size is None:
+            queue_size = 100
+            self.queue_size = queue_size
         elif queue_size == 0:
             raise ROSException("queue size may not be set to zero")
         elif queue_size is not None and type(queue_size) != int:
