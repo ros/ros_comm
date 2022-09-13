@@ -176,12 +176,16 @@ XmlRpcDispatch::work(double timeout)
     {
 #if defined(_WINDOWS)
       XmlRpcUtil::error("Error in XmlRpcDispatch::work: error in poll (%d).", WSAGetLastError());
-#else
-      if(errno != EINTR)
-        XmlRpcUtil::error("Error in XmlRpcDispatch::work: error in poll (%d).", nEvents);
-#endif
       _inWork = false;
       return;
+#else
+      if(errno != EINTR)
+      {
+        XmlRpcUtil::error("Error in XmlRpcDispatch::work: error in poll (%d).", nEvents);
+        _inWork = false;
+        return;
+      }
+#endif
     }
 
     // Process events
