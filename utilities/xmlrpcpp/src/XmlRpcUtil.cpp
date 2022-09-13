@@ -53,7 +53,7 @@ public:
   void error(const char* msg) {
     OutputDebugString(msg); OutputDebugString("\n");
 #else
-  void error(const char*) {
+  void error(const char* msg) {
 #endif  
     // As far as I can tell, throwing an exception here is a bug, unless
     // the intention is that the program should exit.  Throughout the code,
@@ -64,6 +64,7 @@ public:
     // So I'm commenting out the throw.  - BPG
     //
     //throw std::runtime_error(msg);
+    defaultLogHandler.log(0, msg);
   }
 } defaultErrorHandler;
 
