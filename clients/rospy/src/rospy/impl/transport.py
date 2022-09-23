@@ -40,20 +40,11 @@ TCP/IP connections, etc...
 For topic implementations, see L{topics}
 """
 
-import threading
+import itertools
 
 # we need ids for the transports so we can send the IDs instead of
 # full connection details
-_transport_id = 0
-_id_lock = threading.Lock()
-def _nextId():
-    global _transport_id
-    try:
-        _id_lock.acquire()
-        _transport_id += 1
-        return _transport_id
-    finally:
-        _id_lock.release()
+_nextId = itertools.count().__next__
 
 INBOUND = 'i'
 OUTBOUND = 'o'
