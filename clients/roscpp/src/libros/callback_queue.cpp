@@ -166,9 +166,10 @@ void CallbackQueue::removeByID(uint64_t removal_id)
     }
 
     {
-      boost::unique_lock<boost::shared_mutex> rw_lock(id_info->calling_rw_mutex, boost::defer_lock);
-      if (rw_lock.try_lock())
+      // Unless we're removing from callback, we lock the calling mutex to ensure callback is not being executed.
+      if (tls_->calling_in_this_thread != id_info->id)
       {
+        boost::unique_lock<boost::shared_mutex> rw_lock(id_info->calling_rw_mutex);
         boost::mutex::scoped_lock lock(mutex_);
         D_CallbackInfo::iterator it = callbacks_.begin();
         for (; it != callbacks_.end();)
@@ -186,8 +187,8 @@ void CallbackQueue::removeByID(uint64_t removal_id)
       }
       else
       {
-        // We failed to acquire the lock, it can be that we are trying to remove something from the callback queue
-        // while it is being executed. Mark it for removal and let it be cleaned up later.
+        // Since we're removing from callback, locking twice would deadlock.
+        // Instead, mark callback for removal and let it be cleaned up later.
         boost::mutex::scoped_lock lock(mutex_);
         for (D_CallbackInfo::iterator it = callbacks_.begin(); it != callbacks_.end(); it++)
         {
