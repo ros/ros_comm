@@ -177,7 +177,7 @@ TEST(CallbackQueue, removeSelf)
   queue.callOne();
 
   queue.addCallback(cb2, 1);
-  
+
   queue.callAvailable();
 
   EXPECT_EQ(cb1->count, 1U);
@@ -549,6 +549,3 @@ int main(int argc, char** argv)
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
-
-
-
