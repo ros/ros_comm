@@ -253,6 +253,37 @@ TEST(CallbackQueue, selfRemoveCallbackWhileExecuting)
   EXPECT_EQ(cb3->count, 0U);
 }
 
+// This test checks whether non-spinner thread blocks on removeByID until currently executing callback finishes
+TEST(CallbackQueue, removeCallbackWhileExecuting)
+{
+  const uint64_t cb_id = 1;
+  boost::barrier barrier(2);
+
+  CallbackQueue queue;
+  CustomCallbackPtr cb(boost::make_shared<CustomCallback>([&]() {
+    barrier.wait();
+    barrier.wait();
+  }));
+  queue.addCallback(cb, cb_id);
+
+  // Let's ensure spinner thread executes callback now
+  bool done = false;
+  boost::thread t1([&]() { callAvailableThread(&queue, done); });
+  barrier.wait();
+
+  // External removing thread blocks on removeByID
+  boost::thread t2([&]() { queue.removeByID(cb_id); });
+  EXPECT_FALSE(t2.try_join_for(boost::chrono::milliseconds(200)));  // removebyID blocks until cb finishes
+
+  // When callback finishes, external thread proceeds
+  barrier.wait();
+  t2.join();
+  EXPECT_EQ(cb->count, 1U);
+
+  done = true;
+  t1.join();
+}
+
 class RecursiveCallback : public CallbackInterface
 {
 public:
