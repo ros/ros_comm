@@ -89,7 +89,7 @@ def _support_http_1_1():
     if platform.system() != 'Linux':
         return True
     minimum_supported_major, minimum_supported_minor = (4, 16)
-    release = platform.release().split('.')
+    release = platform.release().split('-')[0].split('.')
     platform_major = int(release[0])
     platform_minor = int(release[1])
     if platform_major < minimum_supported_major:
