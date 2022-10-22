@@ -64,7 +64,7 @@ endfunction()
 # The remaining arguments are the same as for add_rostest_gtest
 # and add_rostest_gmock
 #
-function(_add_rostest_google_test type target launch_file)
+function(_add_rostest_google_test type target launch_file working_directory args)
   if (NOT "${type}" STREQUAL "gtest" AND NOT "${type}" STREQUAL "gmock")
     message(FATAL_ERROR
       "Invalid use of _add_rostest_google_test function, "
@@ -82,7 +82,7 @@ function(_add_rostest_google_test type target launch_file)
     if(TARGET tests)
       add_dependencies(tests ${target})
     endif()
-    add_rostest(${launch_file} DEPENDENCIES ${target})
+    add_rostest(${launch_file} DEPENDENCIES ${target} WORKING_DIRECTORY ${working_directory} ARGS ${args})
   endif()
 endfunction()
 
@@ -102,7 +102,8 @@ endfunction()
 # :type ARGN: list of files
 #
 function(add_rostest_gtest target launch_file)
-  _add_rostest_google_test("gtest" ${target} ${launch_file} ${ARGN})
+  cmake_parse_arguments(_rostest_gtest "" "WORKING_DIRECTORY" "ARGS" ${ARGN})
+  _add_rostest_google_test("gtest" ${target} ${launch_file} ${_rostest_gtest_WORKING_DIRECTORY} ${_rostest_gtest_ARGS})
 endfunction()
 
 #
