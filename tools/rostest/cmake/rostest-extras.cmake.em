@@ -64,7 +64,7 @@ endfunction()
 # The remaining arguments are the same as for add_rostest_gtest
 # and add_rostest_gmock
 #
-function(_add_rostest_google_test type target launch_file working_directory)
+function(_add_rostest_google_test type target launch_file)
   if (NOT "${type}" STREQUAL "gtest" AND NOT "${type}" STREQUAL "gmock")
     message(FATAL_ERROR
       "Invalid use of _add_rostest_google_test function, "
@@ -76,13 +76,27 @@ function(_add_rostest_google_test type target launch_file working_directory)
     message(FATAL_ERROR "add_rostest_${type}() needs at least one file argument to compile a ${type_upper} executable")
   endif()
   if(${type_upper}_FOUND)
+    set(single_value_args "WORKING_DIRECTORY")
+    set(multi_value_args "ARGS")
+    
+    cmake_parse_arguments(_arg "" "${single_value_args}" "${multi_value_args}" ${ARGN})
+    
+    set(extra_args "")
+    set(sources "${ARGN}")
+    foreach(arg IN ITEMS ${single_value_args} ${multi_value_args})
+        if(DEFINED _arg_${arg})
+          string(REPLACE "${arg};${_arg_${arg}}" "" sources "${sources}")
+          string(APPEND extra_args "${arg};${_arg_${arg}};")
+        endif(DEFINED _arg_${arg})
+    endforeach()
+
     include_directories(${${type_upper}_INCLUDE_DIRS})
-    add_executable(${target} EXCLUDE_FROM_ALL ${ARGN})
+    add_executable(${target} EXCLUDE_FROM_ALL ${sources})
     target_link_libraries(${target} ${${type_upper}_LIBRARIES})
     if(TARGET tests)
       add_dependencies(tests ${target})
     endif()
-    add_rostest(${launch_file} DEPENDENCIES ${target} WORKING_DIRECTORY ${working_directory})
+    add_rostest(${launch_file} DEPENDENCIES ${target} ${extra_args})
   endif()
 endfunction()
 
@@ -102,8 +116,7 @@ endfunction()
 # :type ARGN: list of files
 #
 function(add_rostest_gtest target launch_file)
-  cmake_parse_arguments(_rostest_gtest "" "WORKING_DIRECTORY" "" ${ARGN})
-  _add_rostest_google_test("gtest" ${target} ${launch_file} {_rostest_gtest_WORKING_DIRECTORY} ${ARGN})
+  _add_rostest_google_test("gtest" ${target} ${launch_file} ${ARGN})
 endfunction()
 
 #
