@@ -510,11 +510,11 @@ class ProcessMonitor(Thread):
                 # it has a handler. We can either use win32api.Sleep OR....catch
                 # the exception
                 try:
-                     time.sleep(0.1)
+                     time.sleep(1.0)
                 except IOError:
                     pass
             else:
-                 time.sleep(0.1)
+                 time.sleep(1.0)
                     
             if self.has_main_thread_jobs():
                 self.do_main_thread_jobs()
