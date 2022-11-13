@@ -63,12 +63,18 @@ class RospyLogger(logging.getLoggerClass()):
             f = f.f_back
         while hasattr(f, "f_code"):
             # Search for the right frame using the data already found by parent class.
-            co = f.f_code
-            filename = os.path.normcase(co.co_filename)
-            if filename == file_name and f.f_lineno == lineno and co.co_name == func_name:
-                break
+            if sys.version_info.major > 3 or (sys.version_info.major == 3 and sys.version_info.minor >= 11):
+                if f.f_code.co_name == '_base_logger':
+                    break
+            else:
+                co = f.f_code
+                filename = os.path.normcase(co.co_filename)
+                if filename == file_name and f.f_lineno == lineno and co.co_name == func_name:
+                    break
             if f.f_back:
                 f = f.f_back
+            elif sys.version_info.major > 3 or (sys.version_info.major == 3 and sys.version_info.minor >= 11):
+                break
 
         # Jump up two more frames, as the logger methods have been double wrapped.
         if f is not None and f.f_back and f.f_code and f.f_code.co_name == '_base_logger':
