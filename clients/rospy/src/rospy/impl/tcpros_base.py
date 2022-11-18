@@ -322,17 +322,21 @@ class TCPROSServer(object):
                 header = read_ros_handshake_header(sock, StringIO(), buff_size)
             else:
                 header = read_ros_handshake_header(sock, BytesIO(), buff_size)
-            
+
             if 'topic' in header:
                 err_msg = self.topic_connection_handler(sock, client_addr, header)
             elif 'service' in header:
                 err_msg = self.service_connection_handler(sock, client_addr, header)
             else:
                 err_msg = 'no topic or service name detected'
+
+            if isinstance(err_msg, dict):
+                err_msg = err_msg.get('error', 'unhandled connection')
+
             if err_msg:
                 # shutdown race condition: nodes that come up and down
                 # quickly can receive connections during teardown.
-                
+
                 # We use is_shutdown_requested() because we can get
                 # into bad connection states during client shutdown
                 # hooks.
