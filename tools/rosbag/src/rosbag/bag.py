@@ -2472,6 +2472,7 @@ class _BagReader200(_BagReader):
 
         if trunc_pos and trunc_pos < total_bytes:
             f.truncate(trunc_pos)
+            f.seek(trunc_pos)
 
     def _reindex_read_chunk(self, f, chunk_pos, total_bytes):
         # Read the chunk header
