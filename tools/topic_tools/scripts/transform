@@ -63,6 +63,10 @@ class TopicOp:
             '--latch', action='store_true',
             help='Set publisher to latched.'
         )
+        parser.add_argument(
+            '--tcpnodelay', dest='tcp_nodelay', action='store_true',
+            help='Set TCP_NODELAY transport hint when subscribing to topics.'
+        )
 
         # get and strip out ros args first
         argv = rospy.myargv()
@@ -92,7 +96,7 @@ class TopicOp:
         self.output_class = roslib.message.get_message_class(args.output_type)
 
         self.pub = rospy.Publisher(args.output_topic, self.output_class, queue_size=1, latch=args.latch)
-        self.sub = rospy.Subscriber(input_topic, input_class, self.callback)
+        self.sub = rospy.Subscriber(input_topic, input_class, self.callback, tcp_nodelay=args.tcp_nodelay)
 
     def callback(self, m):
         if self.input_fn is not None:
