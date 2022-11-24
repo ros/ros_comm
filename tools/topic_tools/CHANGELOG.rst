@@ -2,6 +2,12 @@
 Changelog for package topic_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.15 (2022-11-23)
+--------------------
+* Move @jacobperron from maintainer to author (`#2302 <https://github.com/ros/ros_comm/issues/2302>`_)
+* Set TCP_NODELAY. (`#2293 <https://github.com/ros/ros_comm/issues/2293>`_)
+* Contributors: Rik Baehnemann, Shane Loretz
+
 1.15.14 (2022-01-06)
 --------------------
 

@@ -2,6 +2,12 @@
 Changelog for package rospy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.15 (2022-11-23)
+--------------------
+* Move @jacobperron from maintainer to author (`#2302 <https://github.com/ros/ros_comm/issues/2302>`_)
+* Add a workaround for a race condition while closing the socket (`#2212 <https://github.com/ros/ros_comm/issues/2212>`_) (`#2233 <https://github.com/ros/ros_comm/issues/2233>`_)
+* Contributors: Shane Loretz, Daniele Calisi, madmage
+
 1.15.14 (2022-01-06)
 --------------------
 

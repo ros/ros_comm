@@ -2,6 +2,11 @@
 Changelog for package xmlrpcpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.15.15 (2022-11-23)
+--------------------
+* Move @jacobperron from maintainer to author (`#2302 <https://github.com/ros/ros_comm/issues/2302>`_)
+* Contributors: Shane Loretz
+
 1.15.14 (2022-01-06)
 --------------------
 * Keep the persistent connection only if rosmaster supports http1.1 (`#2208 <https://github.com/ros/ros_comm/issues/2208>`_)
