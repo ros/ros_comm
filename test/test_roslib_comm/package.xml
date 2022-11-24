@@ -4,7 +4,6 @@
   <description>
     Unit tests verifying that roslib is operating as expected.
   </description>
-  <maintainer email="jacob@openrobotics.org">Jacob Perron</maintainer>
   <maintainer email="michael@openrobotics.org">Michael Carroll</maintainer>
   <maintainer email="sloretz@openrobotics.org">Shane Loretz</maintainer>
   <license>BSD</license>
@@ -13,6 +12,7 @@
   <author>Jeremy Leibs</author>
   <author>Ken Conley</author>
   <author email="dthomas@osrfoundation.org">Dirk Thomas</author>
+  <author email="jacob@openrobotics.org">Jacob Perron</author>
 
   <buildtool_depend version_gte="0.5.68">catkin</buildtool_depend>
 

@@ -7,11 +7,11 @@
     streams are split into blocks which are compressed using the very fast LZ4
     compression algorithm.
   </description>
-  <maintainer email="jacob@openrobotics.org">Jacob Perron</maintainer>
   <maintainer email="michael@openrobotics.org">Michael Carroll</maintainer>
   <maintainer email="sloretz@openrobotics.org">Shane Loretz</maintainer>
   <license>BSD</license>
   <author email="bcharrow@seas.upenn.edu">Ben Charrow</author>
+  <author email="jacob@openrobotics.org">Jacob Perron</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 

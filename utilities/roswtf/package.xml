@@ -8,7 +8,6 @@
   <description>
      roswtf is a tool for diagnosing issues with a running ROS system. Think of it as a FAQ implemented in code.
   </description>
-  <maintainer email="jacob@openrobotics.org">Jacob Perron</maintainer>
   <maintainer email="michael@openrobotics.org">Michael Carroll</maintainer>
   <maintainer email="sloretz@openrobotics.org">Shane Loretz</maintainer>
   <license>BSD</license>
@@ -18,6 +17,7 @@
   <url type="repository">https://github.com/ros/ros_comm</url>
   <author>Ken Conley</author>
   <author email="dthomas@osrfoundation.org">Dirk Thomas</author>
+  <author email="jacob@openrobotics.org">Jacob Perron</author>
 
   <buildtool_depend version_gte="0.5.68">catkin</buildtool_depend>
 
