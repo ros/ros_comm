@@ -439,7 +439,8 @@ def call_service(service_name, service_args, service_class=None):
         raise ROSServiceException("Unable to send request. One of the fields has an incorrect type:\n"+\
                                       "  %s\n\nsrv file:\n%s"%(e, rosmsg.get_srv_text(service_class._type)))
 
-def _rosservice_call(service_name, service_args, verbose=False, service_class=None):
+def _rosservice_call(service_name, service_args, verbose=False, service_class=None,
+                     value_transform_fn=None):
     """
     Implements 'rosservice call'
     @param service_name: name of service to call
@@ -451,6 +452,7 @@ def _rosservice_call(service_name, service_args, verbose=False, service_class=No
     @param service_class Message class: (optional) service type
     class. If this argument is provided, it saves a probe call against
     the service
+    @param value_transform_fn: transform the values of Messages, ``fn(Message)->Message``
     @type  service_class: Message class
     @raise ROSServiceException: if call command cannot be executed
     """
@@ -459,6 +461,8 @@ def _rosservice_call(service_name, service_args, verbose=False, service_class=No
     if verbose:
         print(str(request))
         print('---')
+    if value_transform_fn is not None:
+        response = value_transform_fn(response)
     print(str(response))
 
 def has_service_args(service_name, service_class=None):
@@ -577,6 +581,14 @@ def _rosservice_cmd_call(argv):
     parser.add_option("-v", dest="verbose", default=False,
                       action="store_true",
                       help="print verbose output")
+    parser.add_option("--nostr",
+                      dest="nostr", default=False,
+                      action="store_true",
+                      help="exclude string fields")
+    parser.add_option("--noarr",
+                      dest="noarr", default=False,
+                      action="store_true",
+                      help="exclude arrays")
     parser.add_option("--wait", dest="wait", default=False,
                       action="store_true",
                       help="wait for service to be advertised")
@@ -600,7 +612,13 @@ def _rosservice_cmd_call(argv):
     # optimization: in order to prevent multiple probe calls against a service, lookup the service_class
     service_name = rosgraph.names.script_resolve_name('rosservice', args[0])
     service_class = get_service_class_by_name(service_name)
-    
+
+    if options.nostr or options.noarr:
+        import rostopic
+        value_transform_fn = rostopic.create_value_transform(options.nostr, options.noarr)
+    else:
+        value_transform_fn = None
+ 
     # type-case using YAML 
     service_args = []
     for arg in args[1:]:
@@ -618,12 +636,12 @@ def _rosservice_cmd_call(argv):
                 if type(service_args) != list:
                     service_args = [service_args]
                 try:
-                    _rosservice_call(service_name, service_args, verbose=options.verbose, service_class=service_class)
+                    _rosservice_call(service_name, service_args, verbose=options.verbose, service_class=service_class, value_transform_fn=value_transform_fn)
                 except ValueError as e:
                     print(str(e), file=sys.stderr)
                     break
     else:
-        _rosservice_call(service_name, service_args, verbose=options.verbose, service_class=service_class)
+        _rosservice_call(service_name, service_args, verbose=options.verbose, service_class=service_class, value_transform_fn=value_transform_fn)
 
 def _stdin_yaml_arg():
     """
