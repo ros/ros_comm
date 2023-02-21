@@ -105,9 +105,9 @@ namespace XmlRpc {
     XmlRpcValue const& operator[](int i) const { assertArray(i+1); return _value.asArray->at(i); }
     XmlRpcValue& operator[](int i)             { assertArray(i+1); return _value.asArray->at(i); }
 
-    XmlRpcValue& operator[](std::string const& k) const { assertStruct(); return (*_value.asStruct)[k]; }
+    XmlRpcValue const& operator[](std::string const& k) const { assertStruct(); return _value.asStruct->at(k); }
     XmlRpcValue& operator[](std::string const& k) { assertStruct(); return (*_value.asStruct)[k]; }
-    XmlRpcValue& operator[](const char* k) const { assertStruct(); std::string s(k); return (*_value.asStruct)[s]; }
+    XmlRpcValue const& operator[](const char* k) const { assertStruct(); std::string s(k); return _value.asStruct->at(s); }
     XmlRpcValue& operator[](const char* k) { assertStruct(); std::string s(k); return (*_value.asStruct)[s]; }
 
     iterator begin() {assertStruct(); return (*_value.asStruct).begin(); }
