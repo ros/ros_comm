@@ -167,6 +167,22 @@ void ThisNode::init(const std::string& name, const M_string& remappings, uint32_
     char buf[200];
     std::snprintf(buf, sizeof(buf), "_%llu", (unsigned long long)WallTime::now().toNSec());
     name_ += buf;
+    
+    // names::init() above did not yet know the full name of the node, so the
+    // remappings for private names it set are wrong. This second call fixes
+    // that. However, the old remappings (without the anonymizing part) still
+    // remain set. There is no easy way to remove them, so we keep them there.
+    M_string privateRemappings;
+    for (const auto& leftRight : remappings)
+    {
+      const auto& left = leftRight.first;
+      if (!left.empty() && left[0] == '~')
+      {
+        privateRemappings[left] = leftRight.second;
+      }
+    }
+    
+    names::init(privateRemappings);
   }
 
   ros::console::setFixedFilterToken("node", name_);
