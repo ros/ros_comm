@@ -1236,7 +1236,7 @@ class _TopicManager(object):
         elif reg_type == Registration.SUB:
             rmap = self.subs
         else:
-            raise TypeError("invalid reg_type: %s"%s)
+            raise TypeError("invalid reg_type: %s"%reg_type)
         return rmap.get(resolved_name, None)
         
     def acquire_impl(self, reg_type, resolved_name, data_class):
