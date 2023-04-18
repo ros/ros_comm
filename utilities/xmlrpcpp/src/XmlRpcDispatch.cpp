@@ -185,6 +185,8 @@ XmlRpcDispatch::work(double timeout)
         _inWork = false;
         return;
       }
+      // If we receive EINTR, the revents will be empty and no handleEvents will be called.
+      // It will loop back to the poll unless the timeout is reached.
 #endif
     }
 
