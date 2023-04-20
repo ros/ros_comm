@@ -52,6 +52,8 @@ static ros::NodeHandle *g_node = NULL;
 static bool g_lazy = false;
 static bool g_latch = false;
 static bool g_advertised = false;
+static bool g_wait_pub_init = false;
+static double g_wait_second = 0.1;
 static string g_output_topic;
 static ros::Publisher g_pub;
 static ros::Publisher g_pub_selected;
@@ -152,6 +154,11 @@ void in_cb(const boost::shared_ptr<ShapeShifter const>& msg,
   {
     ROS_INFO("advertising");
     g_pub = msg->advertise(*g_node, g_output_topic, 10, g_latch, conn_cb);
+    // we need sleep for publisher initialization
+    // otherwise the first topic will drop.
+    if (g_wait_pub_init) {
+      usleep(g_wait_second * 1000000);
+    }
     g_advertised = true;
     
     // If lazy, unregister from all but the selected topic
@@ -357,6 +364,11 @@ int main(int argc, char **argv)
       t.data = g_none_topic;
     }
   }
+
+  // Wait publisher initialization for few second (default: 0.1s)
+  // This option is to avoid dropping the first topic publishing.
+  pnh.getParam("wait_publisher_initialization", g_wait_pub_init);
+  pnh.getParam("wait_publisher_second", g_wait_second);
   g_pub_selected.publish(t);
 
   // Backward compatibility
