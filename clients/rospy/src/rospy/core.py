@@ -157,6 +157,28 @@ def _frame_to_caller_id(frame):
 
 def _base_logger(msg, args, kwargs, throttle=None,
                  throttle_identical=False, level=None, once=False):
+    """
+    Base logger function that handles logging of normal, throttled, 
+    identical, or once type calls. Also passes user args, kwargs to logging
+    module to be formatted into msg.
+
+    @param msg: message string to be logged.
+    @type  msg: str
+    @param args: (optional) args to format into msg
+    @type  args: tuple
+    @param kwargs: (optional) kwargs to format into msg
+    @type  kwargs: dict
+    @param throttle: (optional) Period to do logging in second unit.
+    @type throttle: float
+    @param throttle_identical: (optional) Whether to only throttle identical messages. (Default: False)
+    @type  throttle_identical: bool
+    @param level: (optional) Python logging level ('info', 'debug', etc...). (Default: None)
+    @type  level: str
+    @param once: (optional) Whether to only log once. (Default: False)
+    @type  once: bool
+    @return: True if local node initialized and message passed throttle
+    @rtype: bool
+    """
 
     rospy_logger = logging.getLogger('rosout')
     name = kwargs.pop('logger_name', None)
@@ -168,6 +190,7 @@ def _base_logger(msg, args, kwargs, throttle=None,
         caller_id = _frame_to_caller_id(inspect.currentframe().f_back.f_back)
         if _logging_once(caller_id):
             logfunc(msg, *args, **kwargs)
+            return is_initialized()
     elif throttle_identical:
         caller_id = _frame_to_caller_id(inspect.currentframe().f_back.f_back)
         throttle_elapsed = False
@@ -175,28 +198,32 @@ def _base_logger(msg, args, kwargs, throttle=None,
             throttle_elapsed = _logging_throttle(caller_id, throttle)
         if _logging_identical(caller_id, msg) or throttle_elapsed:
             logfunc(msg, *args, **kwargs)
+            return is_initialized()
     elif throttle:
         caller_id = _frame_to_caller_id(inspect.currentframe().f_back.f_back)
         if _logging_throttle(caller_id, throttle):
             logfunc(msg, *args, **kwargs)
+            return is_initialized()
     else:
         logfunc(msg, *args, **kwargs)
+        return is_initialized()
+    return False
 
 
 def logdebug(msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, level='debug')
+    return _base_logger(msg, args, kwargs, level='debug')
 
 def loginfo(msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, level='info')
+    return _base_logger(msg, args, kwargs, level='info')
 
 def logwarn(msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, level='warning')
+    return _base_logger(msg, args, kwargs, level='warning')
 
 def logerr(msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, level='error')
+    return _base_logger(msg, args, kwargs, level='error')
 
 def logfatal(msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, level='critical')
+    return _base_logger(msg, args, kwargs, level='critical')
 
 logout = loginfo # alias deprecated name
 
@@ -234,19 +261,19 @@ _logging_throttle = LoggingThrottle()
 
 
 def logdebug_throttle(period, msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, throttle=period, level='debug')
+    return _base_logger(msg, args, kwargs, throttle=period, level='debug')
 
 def loginfo_throttle(period, msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, throttle=period, level='info')
+    return _base_logger(msg, args, kwargs, throttle=period, level='info')
 
 def logwarn_throttle(period, msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, throttle=period, level='warn')
+    return _base_logger(msg, args, kwargs, throttle=period, level='warn')
 
 def logerr_throttle(period, msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, throttle=period, level='error')
+    return _base_logger(msg, args, kwargs, throttle=period, level='error')
 
 def logfatal_throttle(period, msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, throttle=period, level='critical')
+    return _base_logger(msg, args, kwargs, throttle=period, level='critical')
 
 
 class LoggingIdentical(object):
@@ -271,24 +298,24 @@ _logging_identical = LoggingIdentical()
 
 
 def logdebug_throttle_identical(period, msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, throttle=period, throttle_identical=True,
-                 level='debug')
+    return _base_logger(msg, args, kwargs, throttle=period, 
+                 throttle_identical=True, level='debug')
 
 def loginfo_throttle_identical(period, msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, throttle=period, throttle_identical=True,
-                 level='info')
+    return _base_logger(msg, args, kwargs, throttle=period, 
+                 throttle_identical=True, level='info')
 
 def logwarn_throttle_identical(period, msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, throttle=period, throttle_identical=True,
-                 level='warn')
+    return _base_logger(msg, args, kwargs, throttle=period, 
+                 throttle_identical=True, level='warn')
 
 def logerr_throttle_identical(period, msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, throttle=period, throttle_identical=True,
-                 level='error')
+    return _base_logger(msg, args, kwargs, throttle=period, 
+                 throttle_identical=True, level='error')
 
 def logfatal_throttle_identical(period, msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, throttle=period, throttle_identical=True,
-                 level='critical')
+    return _base_logger(msg, args, kwargs, throttle=period, 
+                 throttle_identical=True, level='critical')
 
 
 class LoggingOnce(object):
@@ -305,19 +332,19 @@ _logging_once = LoggingOnce()
 
 
 def logdebug_once(msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, once=True, level='debug')
+    return _base_logger(msg, args, kwargs, once=True, level='debug')
 
 def loginfo_once(msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, once=True, level='info')
+    return _base_logger(msg, args, kwargs, once=True, level='info')
 
 def logwarn_once(msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, once=True, level='warn')
+    return _base_logger(msg, args, kwargs, once=True, level='warn')
 
 def logerr_once(msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, once=True, level='error')
+    return _base_logger(msg, args, kwargs, once=True, level='error')
 
 def logfatal_once(msg, *args, **kwargs):
-    _base_logger(msg, args, kwargs, once=True, level='critical')
+    return _base_logger(msg, args, kwargs, once=True, level='critical')
 
 
 #########################################################
