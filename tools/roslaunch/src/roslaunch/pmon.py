@@ -312,6 +312,7 @@ class ProcessMonitor(Thread):
         self.procs = []
         self.plock = RLock()
         self.is_shutdown = False
+        self.exit_code = 0
         self.done = False        
         self.daemon = True
         self.reacquire_signals = set()
@@ -564,7 +565,12 @@ class ProcessMonitor(Thread):
                                 p.required, p.exit_code)
                         exit_code_str = p.get_exit_description()
                         if p.required:
-                            printerrlog('='*80+"REQUIRED process [%s] has died!\n%s\nInitiating shutdown!\n"%(p.name, exit_code_str)+'='*80)
+                            msg = (f"{'=' * 80}REQUIRED process [{p.name}] has died!\n"
+                                   f"{exit_code_str}\n")
+                            if p.exit_code != 0:
+                                self.exit_code = p.exit_code
+                                msg += f"Non-zero exit code: ({p.exit_code})\n"
+                            printerrlog(f"{msg}Initiating shutdown!\n{'=' * 80}")
                             self.is_shutdown = True
                         elif not p in respawn:
                             if p.exit_code:

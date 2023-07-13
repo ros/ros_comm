@@ -250,6 +250,7 @@ def handle_exception(roslaunch_core, logger, msg, e):
 def main(argv=sys.argv):
     options = None
     logger = None
+    exit_code = 0
     try:
         from . import rlutil
         parser = _get_optparse()
@@ -313,6 +314,7 @@ def main(argv=sys.argv):
                                                sigint_timeout=options.sigint_timeout,
                                                sigterm_timeout=options.sigterm_timeout)
             c.run()
+            exit_code = c.exit_code
         else:
             logger.info('starting in server mode')
 
@@ -346,6 +348,7 @@ def main(argv=sys.argv):
                     sigterm_timeout=options.sigterm_timeout)
             p.start()
             p.spin()
+            exit_code = p.exit_code
 
     except RLException as e:
         handle_exception(roslaunch_core, logger, "RLException: ", e)
@@ -363,6 +366,7 @@ def main(argv=sys.argv):
             try: os.unlink(options.pid_fn)
             except os.error: pass
 
+    sys.exit(exit_code)
 
 if __name__ == '__main__':
     main()
