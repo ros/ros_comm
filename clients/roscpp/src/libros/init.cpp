@@ -387,7 +387,10 @@ void start()
 
   {
     bool use_sim_time = false;
-    param::param("/use_sim_time", use_sim_time, use_sim_time);
+    if (!(g_init_options & init_options::NoSimTime))
+    {
+      param::param("/use_sim_time", use_sim_time, use_sim_time);
+    }
 
     if (use_sim_time)
     {
