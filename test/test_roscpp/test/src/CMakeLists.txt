@@ -61,6 +61,9 @@ add_executable(${PROJECT_NAME}-sim_time_test EXCLUDE_FROM_ALL sim_time_test.cpp)
 target_link_libraries(${PROJECT_NAME}-sim_time_test ${GTEST_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME}-sim_time_test ${rosgraph_msgs_EXPORTED_TARGETS})
 
+add_executable(${PROJECT_NAME}-init_no_sim_time_test EXCLUDE_FROM_ALL init_no_sim_time_test.cpp)
+target_link_libraries(${PROJECT_NAME}-init_no_sim_time_test ${GTEST_LIBRARIES} ${catkin_LIBRARIES})
+
 # Call a service
 add_executable(${PROJECT_NAME}-service_adv EXCLUDE_FROM_ALL service_adv.cpp)
 target_link_libraries(${PROJECT_NAME}-service_adv ${catkin_LIBRARIES})
