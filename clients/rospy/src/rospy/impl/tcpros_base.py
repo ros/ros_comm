@@ -810,56 +810,58 @@ class TCPROSTransport(Transport):
         callback_thread = threading.Thread(target=self.callback_loop, args=(msgs_callback,))
         callback_thread.start()
 
-        while not self.done and not is_shutdown():
-            try:
-                if self.socket is not None:
-                    msg = self.receive_once()
-                    with self.msg_lock:
-                        self.msg = msg
-                        self.msg_is_available.notify()
-                else:
-                    self._reconnect()
-
-            except TransportTerminated as e:
-                logdebug("[%s] failed to receive incoming message : %s" % (self.name, str(e)))
-                rospydebug("[%s] failed to receive incoming message: %s" % (self.name, traceback.format_exc()))
-                break
-
-            except TransportException as e:
-                # set socket to None so we reconnect
+        try:
+            while not self.done and not is_shutdown():
                 try:
                     if self.socket is not None:
-                        try:
-                            self.socket.shutdown()
-                        except:
-                            pass
-                        finally:
-                            self.socket.close()
+                        msg = self.receive_once()
+                        with self.msg_lock:
+                            self.msg = msg
+                            self.msg_is_available.notify()
+                    else:
+                        self._reconnect()
+
+                except TransportTerminated as e:
+                    logdebug("[%s] failed to receive incoming message : %s" % (self.name, str(e)))
+                    rospydebug("[%s] failed to receive incoming message: %s" % (self.name, traceback.format_exc()))
+                    break
+
+                except TransportException as e:
+                    # set socket to None so we reconnect
+                    try:
+                        if self.socket is not None:
+                            try:
+                                self.socket.shutdown()
+                            except:
+                                pass
+                            finally:
+                                self.socket.close()
+                    except:
+                        pass
+                    self.socket = None
+
+                except DeserializationError as e:
+                    #TODO: how should we handle reconnect in this case?
+                    
+                    logerr("[%s] error deserializing incoming request: %s"%(self.name, str(e)))
+                    rospyerr("[%s] error deserializing incoming request: %s"%(self.name, traceback.format_exc()))
                 except:
-                    pass
-                self.socket = None
+                    # in many cases this will be a normal hangup, but log internally
+                    try:
+                        #1467 sometimes we get exceptions due to
+                        #interpreter shutdown, so blanket ignore those if
+                        #the reporting fails
+                        rospydebug("exception in receive loop for [%s], may be normal. Exception is %s",self.name, traceback.format_exc())                    
+                    except: pass
 
-            except DeserializationError as e:
-                #TODO: how should we handle reconnect in this case?
-                
-                logerr("[%s] error deserializing incoming request: %s"%(self.name, str(e)))
-                rospyerr("[%s] error deserializing incoming request: %s"%(self.name, traceback.format_exc()))
-            except:
-                # in many cases this will be a normal hangup, but log internally
-                try:
-                    #1467 sometimes we get exceptions due to
-                    #interpreter shutdown, so blanket ignore those if
-                    #the reporting fails
-                    rospydebug("exception in receive loop for [%s], may be normal. Exception is %s",self.name, traceback.format_exc())                    
-                except: pass
+            with self.msg_lock:
+                self.msg_is_available.notify()
+            rospydebug("receive_loop[%s]: done condition met, exited loop"%self.name)                    
+        finally:
+            callback_thread.join()
+            if not self.done:
+                self.close()
 
-        with self.msg_lock:
-            self.msg_is_available.notify()
-        callback_thread.join()
-        rospydebug("receive_loop[%s]: done condition met, exited loop"%self.name)                    
-    finally:
-        if not self.done:
-            self.close()
 
     def close(self):
         """close i/o and release resources"""
