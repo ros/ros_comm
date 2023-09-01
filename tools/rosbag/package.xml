@@ -4,13 +4,12 @@
   schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>rosbag</name>
-  <version>1.15.14</version>
+  <version>1.16.0</version>
   <description>
     This is a set of tools for recording from and playing back to ROS
     topics.  It is intended to be high performance and avoids
     deserialization and reserialization of the messages. 
   </description>
-  <maintainer email="jacob@openrobotics.org">Jacob Perron</maintainer>
   <maintainer email="michael@openrobotics.org">Michael Carroll</maintainer>
   <maintainer email="sloretz@openrobotics.org">Shane Loretz</maintainer>
   <license>BSD</license>
@@ -22,6 +21,7 @@
   <author>Jeremy Leibs</author>
   <author>James Bowman</author>
   <author email="dthomas@osrfoundation.org">Dirk Thomas</author>
+  <author email="jacob@openrobotics.org">Jacob Perron</author>
 
   <depend>libboost-date-time-dev</depend>
   <depend>libboost-filesystem-dev</depend>

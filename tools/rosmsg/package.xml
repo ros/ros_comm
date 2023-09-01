@@ -4,7 +4,7 @@
   schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>rosmsg</name>
-  <version>1.15.14</version>
+  <version>1.16.0</version>
   <description>
     rosmsg contains two command-line tools: <tt>rosmsg</tt> and
     <tt>rossrv</tt>. <tt>rosmsg</tt> is a command-line tool for
@@ -14,7 +14,6 @@
     information about <a href="http://wiki.ros.org/srv">ROS
     Service types</a>.
   </description>
-  <maintainer email="jacob@openrobotics.org">Jacob Perron</maintainer>
   <maintainer email="michael@openrobotics.org">Michael Carroll</maintainer>
   <maintainer email="sloretz@openrobotics.org">Shane Loretz</maintainer>
   <license>BSD</license>
@@ -25,6 +24,7 @@
   <author>Ken Conley</author>
   <author>Tully Foote</author>
   <author email="dthomas@osrfoundation.org">Dirk Thomas</author>
+  <author email="jacob@openrobotics.org">Jacob Perron</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 

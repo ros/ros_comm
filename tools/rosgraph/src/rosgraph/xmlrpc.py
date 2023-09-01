@@ -45,6 +45,7 @@ The common entry point for most libraries is the L{XmlRpcNode} class.
 import errno
 import logging
 import platform
+import re
 import select
 import socket
 
@@ -91,9 +92,11 @@ def _support_http_1_1():
     minimum_supported_major, minimum_supported_minor = (4, 16)
     release = platform.release().split('.')
     platform_major = int(release[0])
-    platform_minor = int(release[1])
+    platform_minor = int(re.sub('[^0-9].*$', '', release[1]))
     if platform_major < minimum_supported_major:
         return False
+    if platform_major > minimum_supported_major:
+        return True
     if (platform_major == minimum_supported_major and
         platform_minor < minimum_supported_minor):
         return False

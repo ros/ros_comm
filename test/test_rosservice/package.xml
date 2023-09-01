@@ -1,10 +1,9 @@
 <package>
   <name>test_rosservice</name>
-  <version>1.15.14</version>
+  <version>1.16.0</version>
   <description>
     Tests for the rosservice tool.
   </description>
-  <maintainer email="jacob@openrobotics.org">Jacob Perron</maintainer>
   <maintainer email="michael@openrobotics.org">Michael Carroll</maintainer>
   <maintainer email="sloretz@openrobotics.org">Shane Loretz</maintainer>
   <license>BSD</license>
@@ -12,6 +11,7 @@
   <url>http://ros.org/wiki/rosservice</url>
   <author>Ken Conley</author>
   <author email="dthomas@osrfoundation.org">Dirk Thomas</author>
+  <author email="jacob@openrobotics.org">Jacob Perron</author>
 
   <buildtool_depend version_gte="0.5.68">catkin</buildtool_depend>
 

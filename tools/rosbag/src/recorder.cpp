@@ -97,6 +97,7 @@ RecorderOptions::RecorderOptions() :
     snapshot(false),
     verbose(false),
     publish(false),
+    repeat_latched(false),
     compression(compression::Uncompressed),
     prefix(""),
     name(""),

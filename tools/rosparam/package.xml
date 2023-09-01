@@ -4,7 +4,7 @@
   schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>rosparam</name>
-  <version>1.15.14</version>
+  <version>1.16.0</version>
   <description>
     rosparam contains the rosparam command-line tool for getting and
     setting ROS Parameters on the <a
@@ -15,7 +15,6 @@
 
     rosparam can be invoked within a <a href="http://wiki.ros.org/roslaunch">roslaunch</a> file.
   </description>
-  <maintainer email="jacob@openrobotics.org">Jacob Perron</maintainer>
   <maintainer email="michael@openrobotics.org">Michael Carroll</maintainer>
   <maintainer email="sloretz@openrobotics.org">Shane Loretz</maintainer>
   <license>BSD</license>
@@ -25,6 +24,7 @@
   <url type="repository">https://github.com/ros/ros_comm</url>
   <author>Ken Conley</author>
   <author email="dthomas@osrfoundation.org">Dirk Thomas</author>
+  <author email="jacob@openrobotics.org">Jacob Perron</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 

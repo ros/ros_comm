@@ -261,6 +261,57 @@ class TestRosbag(unittest.TestCase):
 
             msgs = list(rosbag.Bag(reindex_filename, 'r'))
 
+    def _read_all_records(self, bag_path):
+        """
+        Throw exception if malformed records found, otherwise return number of records in file.
+        """
+        with rosbag.Bag(bag_path, 'r') as b:
+            file_header_pos = b._file_header_pos
+
+        total_records_read = 0
+        with open(bag_path, 'r+b') as f:
+            f.seek(0, os.SEEK_END)
+            total_bytes = f.tell()
+            f.seek(file_header_pos)
+            while f.tell() < total_bytes:
+                bag._read_sized(f)
+                total_records_read += 1
+
+        return total_records_read
+
+    def test_reindex_leaves_valid_file(self):
+        orig_filename = '/tmp/test_reindex_leaves_valid_file.bag'
+        chunk_threshold = 1024
+        with rosbag.Bag(orig_filename, 'w', chunk_threshold=chunk_threshold) as b:
+            for i in range(100):
+                for j in range(5):
+                    msg = Int32()
+                    msg.data = i
+                    b.write('/topic%d' % j, msg)
+            file_header_pos = b._file_header_pos
+
+        trunc_filename = '%s.trunc%s' % os.path.splitext(orig_filename)
+        reindex_filename = '%s.reindex%s' % os.path.splitext(orig_filename)
+
+        num_original_records = self._read_all_records(orig_filename)
+
+        shutil.copy(orig_filename, trunc_filename)
+        with open(trunc_filename, 'r+b') as f:
+            # truncating to arbitrary length that is in the middle of a record
+            f.seek(0, os.SEEK_END)
+            total_bytes = f.tell()
+            f.seek(0)
+            f.truncate(int(total_bytes / 2))
+        with self.assertRaises(rosbag.ROSBagException):
+            self._read_all_records(trunc_filename)
+
+        shutil.copy(trunc_filename, reindex_filename)
+        with rosbag.Bag(reindex_filename, 'a', allow_unindexed=True) as b:
+            for _ in b.reindex():
+                pass
+        num_reindexed_records = self._read_all_records(reindex_filename)
+
+
     def test_future_version_works(self):
         fn = '/tmp/test_future_version_2.1.bag'
 

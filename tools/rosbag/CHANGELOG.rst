@@ -2,6 +2,17 @@
 Changelog for package rosbag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.16.0 (2023-02-15)
+-------------------
+* add missing repeat_latched initialization (`#2314 <https://github.com/ros/ros_comm/issues/2314>`_)
+* Contributors: Robin Vanhove
+
+1.15.15 (2022-11-23)
+--------------------
+* Move @jacobperron from maintainer to author (`#2302 <https://github.com/ros/ros_comm/issues/2302>`_)
+* Fix rosbag reindex not seeking to truncated position after broken chunk (`#2286 <https://github.com/ros/ros_comm/issues/2286>`_)
+* Contributors: Emerson Knapp, Shane Loretz
+
 1.15.14 (2022-01-06)
 --------------------
 

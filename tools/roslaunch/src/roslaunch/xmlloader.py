@@ -613,6 +613,7 @@ class XmlLoader(loader.Loader):
             # error on) attempts to set the same arg twice.
             child_ns.pass_all_args = True
 
+        child_ns.filename = context.filename  # evaluate substitutions w.r.t. parent filename
         for t in [c for c in tag.childNodes if c.nodeType == DomNode.ELEMENT_NODE]:
             tag_name = t.tagName.lower()
             if tag_name == 'env':
@@ -621,6 +622,7 @@ class XmlLoader(loader.Loader):
                 self._arg_tag(t, child_ns, ros_config, verbose=verbose)
             else:
                 print("WARN: unrecognized '%s' tag in <%s> tag"%(t.tagName, tag.tagName), file=sys.stderr)
+        child_ns.filename = inc_filename  # restore filename
 
         # setup arg passing
         loader.process_include_args(child_ns)

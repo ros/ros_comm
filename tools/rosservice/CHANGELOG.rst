@@ -2,6 +2,16 @@
 Changelog for package rosservice
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.16.0 (2023-02-15)
+-------------------
+* --noarr and --nostr option in rosservice call (`#2307 <https://github.com/ros/ros_comm/issues/2307>`_)
+* Contributors: Shingo Kitagawa
+
+1.15.15 (2022-11-23)
+--------------------
+* Move @jacobperron from maintainer to author (`#2302 <https://github.com/ros/ros_comm/issues/2302>`_)
+* Contributors: Shane Loretz
+
 1.15.14 (2022-01-06)
 --------------------
 

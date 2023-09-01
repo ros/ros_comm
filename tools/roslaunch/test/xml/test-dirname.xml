@@ -1,4 +1,7 @@
 <launch>
+  <arg name="base" value="$(dirname)" />
   <param name="foo" value="$(dirname)/bar" />
-  <include file="$(dirname)/test-dirname/included.xml" />
+  <include file="$(dirname)/test-dirname/included.xml" pass_all_args="True">
+    <arg name="baz" value="$(dirname)/baz" />
+  </include>
 </launch>
