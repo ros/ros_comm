@@ -36,7 +36,7 @@
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/program_options.hpp>
-#include <boost/progress.hpp>
+#include <boost/timer/progress_display.hpp>
 #include <boost/regex.hpp>
 
 #include <ros/ros.h>
