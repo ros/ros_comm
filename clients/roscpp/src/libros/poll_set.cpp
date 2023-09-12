@@ -39,7 +39,7 @@
 
 #include <ros/assert.h>
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <fcntl.h>
 

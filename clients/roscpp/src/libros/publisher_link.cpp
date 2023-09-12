@@ -41,7 +41,7 @@
 #include "ros/connection_manager.h"
 #include "ros/file_log.h"
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <sstream>
 
@@ -111,4 +111,3 @@ const std::string& PublisherLink::getMD5Sum()
 }
 
 } // namespace ros
-

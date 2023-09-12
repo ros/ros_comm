@@ -32,7 +32,7 @@
 #include "ros/common.h"
 #include "ros/message.h"
 #include "ros/serialization.h"
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/thread/mutex.hpp>
 
 namespace ros
@@ -216,4 +216,3 @@ namespace ros
 }
 
 #endif // ROSCPP_PUBLISHER_HANDLE_H
-

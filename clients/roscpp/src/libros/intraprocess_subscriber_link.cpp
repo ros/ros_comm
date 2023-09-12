@@ -37,7 +37,7 @@
 #include "ros/topic_manager.h"
 #include "ros/file_log.h"
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 namespace ros
 {
