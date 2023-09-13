@@ -35,6 +35,9 @@
 #include <boost/bind/bind.hpp>
 #include <boost/thread/mutex.hpp>
 
+// For backward compatibility, pull placeholders into global namespace
+using namespace boost::placeholders;
+
 namespace ros
 {
   /**
