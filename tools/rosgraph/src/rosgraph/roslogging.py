@@ -69,6 +69,8 @@ class RospyLogger(logging.getLoggerClass()):
                 break
             if f.f_back:
                 f = f.f_back
+            else: # Reached the last stack frame and found no matching one.
+                raise ValueError("Could not find function [%s] on the framestack"%func_name)
 
         # Jump up two more frames, as the logger methods have been double wrapped.
         if f is not None and f.f_back and f.f_code and f.f_code.co_name == '_base_logger':
