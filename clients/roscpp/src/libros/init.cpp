@@ -285,6 +285,32 @@ void internalCallbackQueueThreadFunc()
   }
 }
 
+struct InternalQueueJoiningThread
+{
+  InternalQueueJoiningThread()
+  {
+      g_internal_queue_thread = boost::thread(internalCallbackQueueThreadFunc);
+  }
+
+  ~InternalQueueJoiningThread()
+  {
+    if (g_internal_queue_thread.joinable())
+    {
+      g_shutting_down = true;
+      g_internal_queue_thread.join();
+    }
+  }
+};
+
+void initInternalQueueJoiningThread()
+{
+  // Constructs the thread on first use, and joins it on shutdown.
+  // This is used to avoid the situation where the thread continues to run
+  // after singletons have been destroyed.
+  static InternalQueueJoiningThread internal_queue_joining_thread;
+}
+
+
 bool isStarted()
 {
   return g_started;
@@ -407,7 +433,8 @@ void start()
 
   if (g_shutting_down) goto end;
 
-  g_internal_queue_thread = boost::thread(internalCallbackQueueThreadFunc);
+  initInternalQueueJoiningThread();
+
   getGlobalCallbackQueue()->enable();
 
   ROSCPP_LOG_DEBUG("Started node [%s], pid [%d], bound on [%s], xmlrpc port [%d], tcpros port [%d], using [%s] time", 
