@@ -307,6 +307,7 @@ void initInternalQueueJoiningThread()
   // Constructs the thread on first use, and joins it on shutdown.
   // This is used to avoid the situation where the thread continues to run
   // after singletons have been destroyed.
+  // For more details, see: https://github.com/ros/ros_comm/pull/2355
   static InternalQueueJoiningThread internal_queue_joining_thread;
 }
 
