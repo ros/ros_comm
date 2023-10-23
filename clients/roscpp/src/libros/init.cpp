@@ -98,7 +98,6 @@ static CallbackQueuePtr g_internal_callback_queue;
 
 static bool g_initialized = false;
 static bool g_started = false;
-static bool g_atexit_registered = false;
 static boost::mutex g_start_mutex;
 static bool g_ok = false;
 static uint32_t g_init_options = 0;
@@ -143,14 +142,17 @@ void requestShutdown()
   g_shutdown_requested = true;
 }
 
-void atexitCallback()
+struct ShutdownCaller
 {
-  if (ok() && !isShuttingDown())
+  ~ShutdownCaller()
   {
-    ROSCPP_LOG_DEBUG("shutting down due to exit() or end of main() without cleanup of all NodeHandles");
-    g_started = false; // don't shutdown singletons, because they are already destroyed
     shutdown();
   }
+};
+
+void initShutdownCaller()
+{
+  static ShutdownCaller shutdown_caller;
 }
 
 void shutdownCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
@@ -285,33 +287,6 @@ void internalCallbackQueueThreadFunc()
   }
 }
 
-struct InternalQueueJoiningThread
-{
-  InternalQueueJoiningThread()
-  {
-      g_internal_queue_thread = boost::thread(internalCallbackQueueThreadFunc);
-  }
-
-  ~InternalQueueJoiningThread()
-  {
-    if (g_internal_queue_thread.joinable())
-    {
-      g_shutting_down = true;
-      g_internal_queue_thread.join();
-    }
-  }
-};
-
-void initInternalQueueJoiningThread()
-{
-  // This function must be called after the ROS singletons have been created
-  // via their respective getInstance() functions in order to ensure that
-  // the thread stops before the singletons are destroyed.
-  // For more details, see: https://github.com/ros/ros_comm/pull/2355
-  static InternalQueueJoiningThread internal_queue_joining_thread;
-}
-
-
 bool isStarted()
 {
   return g_started;
@@ -434,7 +409,9 @@ void start()
 
   if (g_shutting_down) goto end;
 
-  initInternalQueueJoiningThread();
+  g_internal_queue_thread = boost::thread(internalCallbackQueueThreadFunc);
+
+  initShutdownCaller();
 
   getGlobalCallbackQueue()->enable();
 
@@ -475,12 +452,6 @@ void check_ipv6_environment() {
 
 void init(const M_string& remappings, const std::string& name, uint32_t options)
 {
-  if (!g_atexit_registered)
-  {
-    g_atexit_registered = true;
-    atexit(atexitCallback);
-  }
-
   if (!g_global_queue)
   {
     g_global_queue.reset(new CallbackQueue);
