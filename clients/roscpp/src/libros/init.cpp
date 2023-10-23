@@ -608,10 +608,11 @@ bool ok()
 
 void deInit()
 {
-  boost::recursive_mutex::scoped_lock lock(g_shutting_down_mutex);
-  if (g_shutting_down)
+  static bool deinitialized = false;
+  if (deinitialized)
     return;
-
+  deinitialized = true;
+  
   ros::console::shutdown();
 
   g_global_queue->disable();
