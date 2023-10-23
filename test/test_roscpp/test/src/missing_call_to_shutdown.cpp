@@ -60,42 +60,20 @@ void atexitCallback()
 {
   bool hasError = false;
 
-  switch (test_id)
+  if (ros::ok())
   {
-    case InitOnly:
-      if (!ros::ok())
-      {
-        std::cerr << "ERROR: ros::ok() returned false, although ros::shutdown has not been called!" << std::endl;
-        hasError = true;
-      }
-      if (ros::isShuttingDown())
-      {
-        std::cerr << "ERROR: ros::isShuttingDown() returned true, although ros::shutdown has not been called!" << std::endl;
-        hasError = true;
-      }
-      if (ros::isStarted())
-      {
-        std::cerr << "ERROR: ros::isStarted() returned true, although ros::start has not been called!" << std::endl;
-        hasError = true;
-      }
-      break;
-    case InitAndStart:
-      if (ros::ok())
-      {
-        std::cerr << "ERROR: ros::ok() returned true after ros::shutdown should have been automatically called!" << std::endl;
-        hasError = true;
-      }
-      if (!ros::isShuttingDown())
-      {
-        std::cerr << "ERROR: ros::isShuttingDown() returned false after ros::shutdown should have been automatically called!" << std::endl;
-        hasError = true;
-      }
-      if (ros::isStarted())
-      {
-        std::cerr << "ERROR: ros::isStarted() returned true after ros::shutdown should have been automatically called!" << std::endl;
-        hasError = true;
-      }
-      break;
+    std::cerr << "ERROR: ros::ok() returned true!" << std::endl;
+    hasError = true;
+  }
+  if (!ros::isShuttingDown())
+  {
+    std::cerr << "ERROR: ros::isShuttingDown() returned false!" << std::endl;
+    hasError = true;
+  }
+  if (ros::isStarted())
+  {
+    std::cerr << "ERROR: ros::isStarted() returned true!" << std::endl;
+    hasError = true;
   }
 
   if (!ros::isInitialized())
