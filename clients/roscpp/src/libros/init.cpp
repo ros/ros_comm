@@ -608,6 +608,10 @@ bool ok()
 
 void deInit()
 {
+  boost::recursive_mutex::scoped_lock lock(g_shutting_down_mutex);
+  if (g_shutting_down)
+    return;
+
   ros::console::shutdown();
 
   g_global_queue->disable();
@@ -626,12 +630,13 @@ void shutdown()
   else
     g_shutting_down = true;
 
+  if (g_internal_queue_thread.get_id() != boost::this_thread::get_id())
+  {
+    g_internal_queue_thread.join();
+  }
+
   if (g_started)
   {
-    if (g_internal_queue_thread.get_id() != boost::this_thread::get_id())
-    {
-      g_internal_queue_thread.join();
-    }
 
     TopicManager::instance()->shutdown();
     ServiceManager::instance()->shutdown();
