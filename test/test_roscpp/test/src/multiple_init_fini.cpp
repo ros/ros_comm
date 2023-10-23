@@ -41,13 +41,18 @@
 #include <stdlib.h>
 
 #include "ros/ros.h"
+#include "ros/callback_queue.h"
+
 #include <test_roscpp/TestArray.h>
 
 int g_argc;
 char** g_argv;
 
+bool g_got_callback = false;
+
 void callback(const test_roscpp::TestArrayConstPtr&)
 {
+  g_got_callback = true;
 }
 
 TEST(roscpp, multipleInitAndFini)
@@ -60,14 +65,21 @@ TEST(roscpp, multipleInitAndFini)
 
   for ( int i = 0; i < try_count; ++i )
   {
+    g_got_callback = false;
+
     ros::init( g_argc, g_argv, "multiple_init_fini" );
     ros::NodeHandle nh;
 
     ros::Subscriber sub = nh.subscribe("test", 1, callback);
     ASSERT_TRUE(sub);
 
-    ros::Publisher pub = nh.advertise<test_roscpp::TestArray>( "test2", 1 );
+    ros::Publisher pub = nh.advertise<test_roscpp::TestArray>( "test", 1 );
     ASSERT_TRUE(pub);
+
+    pub.publish(test_roscpp::TestArray());
+    ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(1));
+
+    ASSERT_TRUE(g_got_callback) << "did not receive a message in iteration " << i;
 
     ros::shutdown();
   }
