@@ -98,8 +98,8 @@ static CallbackQueuePtr g_internal_callback_queue;
 
 static bool g_initialized = false;
 static bool g_started = false;
-static bool g_deinit_atexit_registered = false;
-static bool g_shutdown_atexit_registered = false;
+static bool g_atexit_registered = false;
+static bool g_shutdown_registered = false;
 static boost::mutex g_start_mutex;
 static bool g_ok = false;
 static uint32_t g_init_options = 0;
@@ -144,15 +144,13 @@ void requestShutdown()
   g_shutdown_requested = true;
 }
 
-void deInit();
-
-void deinitAtexitCallback()
+void atexitCallback()
 {
-  // Only call deInit if ros::shutdown has not been called, otherwise
-  // we'd call it twice.
-  if (!isShuttingDown())
+  if (ok() && !isShuttingDown())
   {
-    deInit();
+    ROSCPP_LOG_DEBUG("shutting down due to exit() or end of main() without cleanup of all NodeHandles");
+    g_started = false; // don't shutdown singletons, because they are already destroyed
+    shutdown();
   }
 }
 
@@ -412,9 +410,9 @@ void start()
 
   g_internal_queue_thread = boost::thread(internalCallbackQueueThreadFunc);
 
-  if (!g_shutdown_atexit_registered)
+  if (!g_shutdown_registered)
   {
-    g_shutdown_atexit_registered = true;
+    g_shutdown_registered = true;
     atexit(shutdown);
   }
 
@@ -457,12 +455,12 @@ void check_ipv6_environment() {
 
 void init(const M_string& remappings, const std::string& name, uint32_t options)
 {
-  if (!g_deinit_atexit_registered)
+  if (!g_atexit_registered)
   {
-    g_deinit_atexit_registered = true;
-    atexit(deinitAtexitCallback);
+    g_atexit_registered = true;
+    atexit(atexitCallback);
   }
-  
+
   if (!g_global_queue)
   {
     g_global_queue.reset(new CallbackQueue);
@@ -601,22 +599,6 @@ bool ok()
   return g_ok;
 }
 
-void deInit()
-{
-  ros::console::shutdown();
-
-  g_global_queue->disable();
-  g_global_queue->clear();
-
-  //ros::console::deregister_appender(g_rosout_appender);
-  delete g_rosout_appender;
-  g_rosout_appender = 0;
-
-  // preserve legacy behavior
-  g_shutting_down = true;
-  g_ok = false;
-}
-
 void shutdown()
 {
   boost::recursive_mutex::scoped_lock lock(g_shutting_down_mutex);
@@ -625,14 +607,21 @@ void shutdown()
   else
     g_shutting_down = true;
 
+  ros::console::shutdown();
+
+  g_global_queue->disable();
+  g_global_queue->clear();
+
   if (g_internal_queue_thread.get_id() != boost::this_thread::get_id())
   {
     g_internal_queue_thread.join();
   }
+  //ros::console::deregister_appender(g_rosout_appender);
+  delete g_rosout_appender;
+  g_rosout_appender = 0;
 
   if (g_started)
   {
-
     TopicManager::instance()->shutdown();
     ServiceManager::instance()->shutdown();
     PollManager::instance()->shutdown();
@@ -643,8 +632,6 @@ void shutdown()
   g_started = false;
   g_ok = false;
   Time::shutdown();
-
-  deInit();
 }
 
 const std::string& getDefaultMasterURI() {
