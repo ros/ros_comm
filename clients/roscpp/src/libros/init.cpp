@@ -98,6 +98,8 @@ static CallbackQueuePtr g_internal_callback_queue;
 
 static bool g_initialized = false;
 static bool g_started = false;
+static bool g_deinit_atexit_registered = false;
+static bool g_shutdown_atexit_registered = false;
 static boost::mutex g_start_mutex;
 static bool g_ok = false;
 static uint32_t g_init_options = 0;
@@ -142,37 +144,16 @@ void requestShutdown()
   g_shutdown_requested = true;
 }
 
-struct ShutdownCaller
-{
-  ~ShutdownCaller()
-  {
-    shutdown();
-  }
-};
-
-void installShutdownCaller()
-{
-  static ShutdownCaller shutdown_caller;
-}
-
 void deInit();
-struct DeinitCaller
+
+void deinitAtexitCallback()
 {
-  ~DeinitCaller()
-  {
-  boost::recursive_mutex::scoped_lock lock(g_shutting_down_mutex);
   // Only call deInit if ros::shutdown has not been called, otherwise
   // we'd call it twice.
-  if (!g_shutting_down)
+  if (!isShuttingDown())
   {
     deInit();
   }
-  }
-};
-
-void installDeinitCaller()
-{
-  static DeinitCaller deinit_caller;
 }
 
 void shutdownCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
@@ -431,7 +412,11 @@ void start()
 
   g_internal_queue_thread = boost::thread(internalCallbackQueueThreadFunc);
 
-  installShutdownCaller();
+  if (!g_shutdown_atexit_registered)
+  {
+    g_shutdown_atexit_registered = true;
+    atexit(shutdown);
+  }
 
   getGlobalCallbackQueue()->enable();
 
@@ -472,6 +457,12 @@ void check_ipv6_environment() {
 
 void init(const M_string& remappings, const std::string& name, uint32_t options)
 {
+  if (!g_deinit_atexit_registered)
+  {
+    g_deinit_atexit_registered = true;
+    atexit(deinitAtexitCallback);
+  }
+  
   if (!g_global_queue)
   {
     g_global_queue.reset(new CallbackQueue);
@@ -500,8 +491,6 @@ void init(const M_string& remappings, const std::string& name, uint32_t options)
 
     g_initialized = true;
   }
-
-  installDeinitCaller();
 }
 
 void init(int& argc, char** argv, const std::string& name, uint32_t options)
