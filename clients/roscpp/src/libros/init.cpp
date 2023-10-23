@@ -160,7 +160,13 @@ struct DeinitCaller
 {
   ~DeinitCaller()
   {
+  boost::recursive_mutex::scoped_lock lock(g_shutting_down_mutex);
+  // Only call deInit if ros::shutdown has not been called, otherwise
+  // we'd call it twice.
+  if (!g_shutting_down)
+  {
     deInit();
+  }
   }
 };
 
@@ -608,11 +614,6 @@ bool ok()
 
 void deInit()
 {
-  static bool deinitialized = false;
-  if (deinitialized)
-    return;
-  deinitialized = true;
-  
   ros::console::shutdown();
 
   g_global_queue->disable();
@@ -646,14 +647,11 @@ void shutdown()
     XMLRPCManager::instance()->shutdown();
   }
 
-  if (g_initialized)
-  {
-    deInit();
-  }
-
   g_started = false;
   g_ok = false;
   Time::shutdown();
+
+  deInit();
 }
 
 const std::string& getDefaultMasterURI() {
