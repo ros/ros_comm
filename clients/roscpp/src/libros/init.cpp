@@ -410,6 +410,8 @@ void start()
 
   g_internal_queue_thread = boost::thread(internalCallbackQueueThreadFunc);
 
+  // Call shutdown() when the program exits, before singletons get destroyed,
+  // so that the internal queue thread is joined first.
   if (!g_shutdown_registered)
   {
     g_shutdown_registered = true;
