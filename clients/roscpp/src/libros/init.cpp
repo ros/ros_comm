@@ -150,9 +150,23 @@ struct ShutdownCaller
   }
 };
 
-void initShutdownCaller()
+void installShutdownCaller()
 {
   static ShutdownCaller shutdown_caller;
+}
+
+void deInit();
+struct DeinitCaller
+{
+  ~DeinitCaller()
+  {
+    deInit();
+  }
+};
+
+void installDeinitCaller()
+{
+  static DeinitCaller deinit_caller;
 }
 
 void shutdownCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
@@ -411,7 +425,7 @@ void start()
 
   g_internal_queue_thread = boost::thread(internalCallbackQueueThreadFunc);
 
-  initShutdownCaller();
+  installShutdownCaller();
 
   getGlobalCallbackQueue()->enable();
 
@@ -480,6 +494,8 @@ void init(const M_string& remappings, const std::string& name, uint32_t options)
 
     g_initialized = true;
   }
+
+  installDeinitCaller();
 }
 
 void init(int& argc, char** argv, const std::string& name, uint32_t options)
@@ -590,6 +606,18 @@ bool ok()
   return g_ok;
 }
 
+void deInit()
+{
+  ros::console::shutdown();
+
+  g_global_queue->disable();
+  g_global_queue->clear();
+
+  //ros::console::deregister_appender(g_rosout_appender);
+  delete g_rosout_appender;
+  g_rosout_appender = 0;
+}
+
 void shutdown()
 {
   boost::recursive_mutex::scoped_lock lock(g_shutting_down_mutex);
@@ -598,26 +626,23 @@ void shutdown()
   else
     g_shutting_down = true;
 
-  ros::console::shutdown();
-
-  g_global_queue->disable();
-  g_global_queue->clear();
-
-  if (g_internal_queue_thread.get_id() != boost::this_thread::get_id())
-  {
-    g_internal_queue_thread.join();
-  }
-  //ros::console::deregister_appender(g_rosout_appender);
-  delete g_rosout_appender;
-  g_rosout_appender = 0;
-
   if (g_started)
   {
+    if (g_internal_queue_thread.get_id() != boost::this_thread::get_id())
+    {
+      g_internal_queue_thread.join();
+    }
+
     TopicManager::instance()->shutdown();
     ServiceManager::instance()->shutdown();
     PollManager::instance()->shutdown();
     ConnectionManager::instance()->shutdown();
     XMLRPCManager::instance()->shutdown();
+  }
+
+  if (g_initialized)
+  {
+    deInit();
   }
 
   g_started = false;
