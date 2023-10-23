@@ -622,6 +622,10 @@ void deInit()
   //ros::console::deregister_appender(g_rosout_appender);
   delete g_rosout_appender;
   g_rosout_appender = 0;
+
+  // preserve legacy behavior
+  g_shutting_down = true;
+  g_ok = false;
 }
 
 void shutdown()
