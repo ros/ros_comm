@@ -37,25 +37,77 @@
 #include <cstdlib>
 #include <ros/ros.h>
 
+namespace ros
+{
+namespace console
+{
+extern bool g_shutting_down;
+}
+}
+
 namespace
 {
+
+enum TestId
+{
+  InitOnly = 0,
+  InitAndStart = 1
+};
+
+TestId test_id = InitOnly;
 
 void atexitCallback()
 {
   bool hasError = false;
-  if (ros::ok())
+
+  switch (test_id)
   {
-    std::cerr << "ERROR: ros::ok() returned true after ROS has been de-initialized!" << std::endl;
+    case InitOnly:
+      if (!ros::ok())
+      {
+        std::cerr << "ERROR: ros::ok() returned false, although ros::shutdown has not been called!" << std::endl;
+        hasError = true;
+      }
+      if (ros::isShuttingDown())
+      {
+        std::cerr << "ERROR: ros::isShuttingDown() returned true, although ros::shutdown has not been called!" << std::endl;
+        hasError = true;
+      }
+      if (ros::isStarted())
+      {
+        std::cerr << "ERROR: ros::isStarted() returned true, although ros::start has not been called!" << std::endl;
+        hasError = true;
+      }
+      break;
+    case InitAndStart:
+      if (ros::ok())
+      {
+        std::cerr << "ERROR: ros::ok() returned true after ros::shutdown should have been automatically called!" << std::endl;
+        hasError = true;
+      }
+      if (!ros::isShuttingDown())
+      {
+        std::cerr << "ERROR: ros::isShuttingDown() returned false after ros::shutdown should have been automatically called!" << std::endl;
+        hasError = true;
+      }
+      if (ros::isStarted())
+      {
+        std::cerr << "ERROR: ros::isStarted() returned true after ros::shutdown should have been automatically called!" << std::endl;
+        hasError = true;
+      }
+      break;
+  }
+
+  if (!ros::isInitialized())
+  {
+    std::cerr << "ERROR: ros::isInitialized() returned false, although ros::init was called!" << std::endl;
+    std::cerr << "Due to legacy reasons, it should return true, even after ROS has been de-initialized." << std::endl;
     hasError = true;
   }
-  if (ros::isStarted())
+
+  if (!ros::console::g_shutting_down)
   {
-    std::cerr << "ERROR: ros::isStarted() returned true after ROS has been de-initialized!" << std::endl;
-    hasError = true;
-  }
-  if (!ros::isShuttingDown())
-  {
-    std::cerr << "ERROR: ros::isShuttingDown() returned false after ROS has been de-initialized!" << std::endl;
+    std::cerr << "ERROR: ros::console::g_shutting_down returned false, but it should have been automatically shut down." << std::endl;
     hasError = true;
   }
 
@@ -69,6 +121,11 @@ void atexitCallback()
 int
 main(int argc, char** argv)
 {
+  if ( argc > 1 )
+  {
+    test_id = static_cast<TestId>(atoi(argv[1]));
+  }
+
   // Register atexit callbak which will be executed after ROS has been de-initialized.
   if (atexit(atexitCallback) != 0)
   {
@@ -76,12 +133,30 @@ main(int argc, char** argv)
     return 1;
   }
 
-  ros::init(argc, argv, "missing_call_to_shutdown" );
-  ros::start();
+  switch (test_id)
+  {
+    case InitOnly:
+      // Test case 0: Call ros::init() explicitly, but never call ros::shutdown().
+      // ros::deInit should be called automatically in this case.
+      ros::init(argc, argv, "missing_call_to_shutdown" );
+      break;
+    case InitAndStart:
+      // Test case 1: Call ros::init() and ros::start() explicitly, but never call ros::shutdown().
+      // ros::shutdown should be called automatically in this case.
+      ros::init(argc, argv, "missing_call_to_shutdown" );
+      ros::start();
+      break;
+    default:
+      std::cerr << "Invalid test id: " << test_id << std::endl;
+      return 1;
+      break;
+  }
 
   if (!ros::ok())
   {
     std::cerr << "Failed to start ROS." << std::endl;
     return 1;
   }
+  
+  return 0;
 }
