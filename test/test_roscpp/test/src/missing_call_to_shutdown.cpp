@@ -46,14 +46,17 @@ void atexitCallback()
   if (ros::ok())
   {
     std::cerr << "ERROR: ros::ok() returned true after ROS has been de-initialized!" << std::endl;
+    hasError = true;
   }
   if (ros::isStarted())
   {
     std::cerr << "ERROR: ros::isStarted() returned true after ROS has been de-initialized!" << std::endl;
+    hasError = true;
   }
   if (!ros::isShuttingDown())
   {
     std::cerr << "ERROR: ros::isShuttingDown() returned false after ROS has been de-initialized!" << std::endl;
+    hasError = true;
   }
 
   if (hasError)
