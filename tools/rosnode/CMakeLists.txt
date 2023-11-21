@@ -9,3 +9,6 @@ if(CATKIN_ENABLE_TESTING)
   find_package(rostest)
   add_rostest(test/rosnode.test)
 endif()
+
+catkin_install_python(PROGRAMS scripts/rosnode
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
