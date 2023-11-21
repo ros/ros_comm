@@ -1,0 +1,4 @@
+<launch>
+  <param name="/enable_statistics" value="true" />
+  <test test-name="roscpp_test_topic_statistics" pkg="test_roscpp" type="test_roscpp-topic_statistics" />
+</launch>

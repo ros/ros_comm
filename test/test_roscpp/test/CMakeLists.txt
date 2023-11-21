@@ -154,6 +154,7 @@ add_rostest(launch/search_param.xml)
 
 add_rostest(launch/stamped_topic_statistics_with_empty_timestamp.xml)
 add_rostest(launch/topic_statistic_frequency.xml DEPENDENCIES ${PROJECT_NAME}-publisher_rate ${PROJECT_NAME}-subscriber ${PROJECT_NAME}-topic_statistic_frequency)
+add_rostest(launch/topic_statistics.xml DEPENDENCIES ${PROJECT_NAME}-topic_statistics)
 
 # Test multiple latched publishers within the same process
 add_rostest(launch/multiple_latched_publishers.xml)

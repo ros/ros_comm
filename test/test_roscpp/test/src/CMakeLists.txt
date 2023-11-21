@@ -218,6 +218,9 @@ add_executable(${PROJECT_NAME}-multiple_latched_publishers EXCLUDE_FROM_ALL mult
 target_link_libraries(${PROJECT_NAME}-multiple_latched_publishers ${GTEST_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME}-multiple_latched_publishers ${std_msgs_EXPORTED_TARGETS})
 
+add_executable(${PROJECT_NAME}-topic_statistics EXCLUDE_FROM_ALL topic_statistics.cpp)
+target_link_libraries(${PROJECT_NAME}-topic_statistics ${GTEST_LIBRARIES} ${catkin_LIBRARIES})
+
 # The publishers and subscriber are compiled but not registered as a unit test
 # since the test execution requires a network connection which drops packages.
 # Call scripts/test_udp_with_dropped_packets.sh to run the test.
@@ -302,6 +305,7 @@ if(TARGET tests)
     ${PROJECT_NAME}-stamped_topic_statistics_empty_timestamp
     ${PROJECT_NAME}-topic_statistic_frequency
     ${PROJECT_NAME}-multiple_latched_publishers
+    ${PROJECT_NAME}-topic_statistics
   )
 endif()
 
@@ -371,3 +375,4 @@ add_dependencies(${PROJECT_NAME}-stamped_topic_statistics_empty_timestamp
  ${${PROJECT_NAME}_EXPORTED_TARGETS})
 add_dependencies(${PROJECT_NAME}-topic_statistic_frequency ${${PROJECT_NAME}_EXPORTED_TARGETS})
 add_dependencies(${PROJECT_NAME}-multiple_latched_publishers ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}-topic_statistics ${${PROJECT_NAME}_EXPORTED_TARGETS})
