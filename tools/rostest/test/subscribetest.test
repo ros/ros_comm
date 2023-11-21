@@ -1,0 +1,14 @@
+<launch>
+  <node pkg="rostest" type="listener.py" name="topic_sub"/>
+
+  <test test-name="subscribetest_test" pkg="rostest" type="subscribetest" time-limit="7.0" retry="3">
+    <rosparam>
+      topics:
+      - name: /chatter
+        timeout: 2.
+      - name: /subscribed_topic
+        timeout: 2.
+        negative: true
+    </rosparam>
+  </test>
+</launch>
