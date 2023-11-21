@@ -222,12 +222,8 @@ void ShapeShifter::write(Stream& stream) const {
 template<typename Stream>
 void ShapeShifter::read(Stream& stream)
 {
-  stream.getLength();
-  stream.getData();
-
   // stash this message in our buffer
-  msgBuf.resize(stream.getLength());
-  memcpy(msgBuf.data(), stream.getData(), stream.getLength());
+  msgBuf.insert(msgBuf.end(), stream.getData(), stream.getData() + stream.getLength());
 }
 
 } // namespace topic_tools
