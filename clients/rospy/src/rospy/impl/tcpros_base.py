@@ -789,6 +789,31 @@ class TCPROSTransport(Transport):
                 
             time.sleep(interval)
 
+    def callback_loop(self, msgs_callback):
+        while not self.done and not is_shutdown():
+            try:
+                with self.msg_queue_lock:
+                    # Data that was leftover from reading header may have made
+                    # messages immediately available (such as from a latched
+                    # topic). Go ahead and process anything we already have before
+                    # waiting.
+                    while self.msg_queue:
+                        msg = self.msg_queue.pop(0)
+                        # Be sure to not hold the message queue lock while calling
+                        # the callback, it may take a while.
+                        self.msg_queue_lock.release()
+                        msgs_callback([msg], self)
+                        self.msg_queue_lock.acquire()
+                    self.msg_queue_condition.wait()
+            except:
+                # in many cases this will be a normal hangup, but log internally
+                try:
+                    #1467 sometimes we get exceptions due to
+                    #interpreter shutdown, so blanket ignore those if
+                    #the reporting fails
+                    rospydebug("exception in callback loop for [%s], may be normal. Exception is %s",self.name, traceback.format_exc())
+                except: pass
+
     def receive_loop(self, msgs_callback):
         """
         Receive messages until shutdown
@@ -797,13 +822,27 @@ class TCPROSTransport(Transport):
         """
         # - use assert here as this would be an internal error, aka bug
         logger.debug("receive_loop for [%s]", self.name)
+        # Start a callback thread to process the callbacks. This way the
+        # receive loop can continue calling recv() while a long-running
+        # callback is running.
         try:
+            self.msg_queue = []
+            self.msg_queue_lock = threading.Lock()
+            self.msg_queue_condition = threading.Condition(self.msg_queue_lock)
+            callback_thread = threading.Thread(
+                    target=self.callback_loop,
+                    args=(msgs_callback,))
+            callback_thread.start()
             while not self.done and not is_shutdown():
                 try:
                     if self.socket is not None:
                         msgs = self.receive_once()
                         if not self.done and not is_shutdown():
-                            msgs_callback(msgs, self)
+                            with self.msg_queue_lock:
+                                self.msg_queue += msgs
+                                if self.protocol.queue_size is not None:
+                                    self.msg_queue = self.msg_queue[-self.protocol.queue_size:]
+                                self.msg_queue_condition.notify()
                     else:
                         self._reconnect()
 
@@ -839,7 +878,9 @@ class TCPROSTransport(Transport):
                         #the reporting fails
                         rospydebug("exception in receive loop for [%s], may be normal. Exception is %s",self.name, traceback.format_exc())                    
                     except: pass
-                    
+            with self.msg_queue_lock:
+                self.msg_queue_condition.notify()
+            callback_thread.join()
             rospydebug("receive_loop[%s]: done condition met, exited loop"%self.name)                    
         finally:
             if not self.done:
