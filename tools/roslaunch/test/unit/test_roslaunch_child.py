@@ -53,6 +53,7 @@ class ProcessMonitorMock(object):
         self.core_procs = []
         self.procs = []
         self.listeners = []
+        self.exit_code = 0
         
     def join(self, timeout=0):
         pass

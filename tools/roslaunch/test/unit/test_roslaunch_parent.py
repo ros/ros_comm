@@ -59,6 +59,7 @@ class ProcessMonitorMock(object):
         self.procs = []
         self.listeners = []
         self.is_shutdown = False
+        self.exit_code = 0
         
     def join(self, timeout=0):
         pass
