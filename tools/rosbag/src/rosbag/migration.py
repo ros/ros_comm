@@ -169,9 +169,16 @@ def fixbag2(migrator, inbag, outbag, force=False):
         for topic, msg, t, conn_header in bag.read_messages(raw=True, return_connection_header=True):
             new_msg_type = migrator.find_target(msg[4])
             if new_msg_type != None:
-                mig_msg = migrator.migrate_raw(msg, (new_msg_type._type, None, new_msg_type._md5sum, None, new_msg_type))
-                new_conn_header = _migrate_connection_header(conn_header, new_msg_type)
-                rebag.write(topic, mig_msg, t, connection_header=new_conn_header, raw=True)
+                try:
+                    mig_msg = migrator.migrate_raw(msg, (new_msg_type._type, None, new_msg_type._md5sum, None, new_msg_type))
+                    new_conn_header = _migrate_connection_header(conn_header, new_msg_type)
+                    rebag.write(topic, mig_msg, t, connection_header=new_conn_header, raw=True)
+                except BagMigrationException:
+                    if force:
+                        # migration failed, copy original message
+                        rebag.write(topic, msg, t, connection_header=conn_header, raw=True)
+                    else:
+                        raise
             else:
                 rebag.write(topic, msg, t, connection_header=conn_header, raw=True)
         rebag.close()
