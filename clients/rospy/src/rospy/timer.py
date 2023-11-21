@@ -146,6 +146,7 @@ def sleep(duration):
                       not rospy.core.is_shutdown():
                 with rostime_cond:
                     rostime_cond.wait(0.3)
+                rospy.core.logwarn("ROS Time clock is not set.")
                 initial_rostime = rospy.rostime.get_rostime()
 
         sleep_t = initial_rostime + duration
