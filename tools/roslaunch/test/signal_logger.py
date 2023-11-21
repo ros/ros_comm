@@ -12,9 +12,14 @@ if __name__ == '__main__':
 
     def handler(signum, _):
         log_stream.write("%i %s\n" % (signum, str(time.time())))
-        log_stream.flush()
 
         if signum == signal.SIGTERM:
+            # note: Python's IO stack is not reentrant.
+            #       Writing to a file in signal handling is unsafe and raises
+            #       RuntimeError on Python 3 when flush() is called during flush().
+            #       Call flush() only on SIGTERM to reduce a chance of reentrance.
+            #       See https://bugs.python.org/issue24283
+            log_stream.flush()
             log_stream.close()
 
 
