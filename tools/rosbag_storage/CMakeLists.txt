@@ -22,21 +22,29 @@ catkin_package(
 # Support large bags (>2GB) on 32-bit systems
 add_definitions(-D_FILE_OFFSET_BITS=64)
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${console_bridge_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${BZIP2_INCLUDE_DIR})
-add_definitions(${BZIP2_DEFINITIONS})
-
 set(AES_ENCRYPT_SOURCE "")
 set(AES_ENCRYPT_LIBRARIES "")
+set(AES_ENCRYPT_INCLUDES "")
 if(NOT WIN32)
   set(AES_ENCRYPT_SOURCE "src/aes_encryptor.cpp" "src/gpgme_utils.cpp")
   find_library(GPGME_LIBRARY
     NAMES "gpgme"
     PATHS /usr/local/lib)
-  find_library(CRYPTO_LIBRARY
-    NAMES "crypto"
-    PATHS /usr/local/lib)
+
+  if(APPLE)
+    find_package(OpenSSL REQUIRED)
+    set(CRYPTO_LIBRARY ${OPENSSL_CRYPTO_LIBRARY})
+    set(AES_ENCRYPT_INCLUDES ${OPENSSL_INCLUDE_DIR})
+  else()
+    find_library(CRYPTO_LIBRARY
+      NAMES "crypto"
+      PATHS /usr/local/lib)
+  endif()
   set(AES_ENCRYPT_LIBRARIES ${GPGME_LIBRARY} ${CRYPTO_LIBRARY})
 endif()
+
+include_directories(include ${catkin_INCLUDE_DIRS} ${console_bridge_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${BZIP2_INCLUDE_DIR} ${AES_ENCRYPT_INCLUDES})
+add_definitions(${BZIP2_DEFINITIONS})
 
 add_library(rosbag_storage
   src/bag.cpp
