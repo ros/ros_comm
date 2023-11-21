@@ -99,6 +99,7 @@ static CallbackQueuePtr g_internal_callback_queue;
 static bool g_initialized = false;
 static bool g_started = false;
 static bool g_atexit_registered = false;
+static bool g_shutdown_registered = false;
 static boost::mutex g_start_mutex;
 static bool g_ok = false;
 static uint32_t g_init_options = 0;
@@ -408,6 +409,16 @@ void start()
   if (g_shutting_down) goto end;
 
   g_internal_queue_thread = boost::thread(internalCallbackQueueThreadFunc);
+
+  // Ensure that shutdown() is always called when the program exits, 
+  // but before singletons get destroyed, so that the internal queue thread is joined first
+  // and cannot access destroyed singletons.
+  if (!g_shutdown_registered)
+  {
+    g_shutdown_registered = true;
+    atexit(shutdown);
+  }
+
   getGlobalCallbackQueue()->enable();
 
   ROSCPP_LOG_DEBUG("Started node [%s], pid [%d], bound on [%s], xmlrpc port [%d], tcpros port [%d], using [%s] time", 

@@ -27,69 +27,26 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* Author: Josh Faust */
-
-/*
- * Repeatedly create and destroy a node.  Do some stuff in between to be sure things are working
- */
-
-#include <string>
+/* Author: David Gossow */
 
 #include <gtest/gtest.h>
+#include <cstdlib>
 
-#include <time.h>
-#include <stdlib.h>
-
-#include "ros/ros.h"
-#include "ros/callback_queue.h"
-
-#include <test_roscpp/TestArray.h>
-
-int g_argc;
-char** g_argv;
-
-bool g_got_callback = false;
-
-void callback(const test_roscpp::TestArrayConstPtr&)
+TEST(roscpp, missingCallToShutdownInitOnly)
 {
-  g_got_callback = true;
+  int exit_code = system("rosrun test_roscpp test_roscpp-missing_call_to_shutdown_impl 0");
+  EXPECT_EQ(0, exit_code);
 }
 
-TEST(roscpp, multipleInitAndFini)
+TEST(roscpp, missingCallToShutdownInitAndStart)
 {
-  int try_count = 10;
-  if ( g_argc > 1 )
-  {
-    try_count = atoi(g_argv[1]);
-  }
-
-  for ( int i = 0; i < try_count; ++i )
-  {
-    g_got_callback = false;
-
-    ros::init( g_argc, g_argv, "multiple_init_fini" );
-    ros::NodeHandle nh;
-
-    ros::Subscriber sub = nh.subscribe("test", 1, callback);
-    ASSERT_TRUE(sub);
-
-    ros::Publisher pub = nh.advertise<test_roscpp::TestArray>( "test", 1 );
-    ASSERT_TRUE(pub);
-
-    pub.publish(test_roscpp::TestArray());
-    ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(1));
-
-    ASSERT_TRUE(g_got_callback) << "did not receive a message in iteration " << i;
-
-    ros::shutdown();
-  }
+  int exit_code = system("rosrun test_roscpp test_roscpp-missing_call_to_shutdown_impl 1");
+  EXPECT_EQ(0, exit_code);
 }
 
 int
 main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
-  g_argc = argc;
-  g_argv = argv;
   return RUN_ALL_TESTS();
 }
