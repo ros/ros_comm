@@ -192,7 +192,7 @@ class SSHChildROSLaunchProcess(roslaunch.server.ChildROSLaunchProcess):
                 if password is None: #use SSH agent
                     ssh.connect(address, port, username, timeout=TIMEOUT_SSH_CONNECT, key_filename=identity_file)
                 else: #use SSH with login/pass
-                    ssh.connect(address, port, username, password, timeout=TIMEOUT_SSH_CONNECT)
+                    ssh.connect(address, port, username, password, timeout=TIMEOUT_SSH_CONNECT, allow_agent=False)
             except paramiko.BadHostKeyException:
                 _logger.error(traceback.format_exc())
                 err_msg =  "Unable to verify host key for remote computer[%s:%s]"%(address, port)
