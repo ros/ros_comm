@@ -61,6 +61,11 @@ enum InitOption
    * \brief Don't broadcast rosconsole output to the /rosout topic
    */
   NoRosout = 1 << 2,
+  /**
+   * \brief Don't consider /use_sim_time parameter and always use system time.
+   * Don't create the /clock subscriber.
+   */
+  NoSimTime = 1 << 3,
 };
 }
 typedef init_options::InitOption InitOption;

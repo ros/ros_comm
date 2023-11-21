@@ -47,6 +47,7 @@ endif()
 
 add_rostest(launch/real_time_test.xml)
 add_rostest(launch/sim_time_test.xml)
+add_rostest(launch/init_no_sim_time.xml DEPENDENCIES ${PROJECT_NAME}-init_no_sim_time_test)
 
 # Publish one message
 add_rostest(launch/pubsub_once.xml)
