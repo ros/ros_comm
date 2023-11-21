@@ -383,16 +383,16 @@ void Player::printTime()
 
         if (paused_)
         {
-            printf("\r [PAUSED ]  Bag Time: %13.6f   Duration: %.6f / %.6f               \r", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
+            printf("\r [PAUSED ]  Bag Time: %13.6f   Duration: %.6f / %.6f               \n", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
         }
         else if (delayed_)
         {
             ros::Duration time_since_rate = std::max(ros::Time::now() - last_rate_control_, ros::Duration(0));
-            printf("\r [DELAYED]  Bag Time: %13.6f   Duration: %.6f / %.6f   Delay: %.2f \r", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec(), time_since_rate.toSec());
+            printf("\r [DELAYED]  Bag Time: %13.6f   Duration: %.6f / %.6f   Delay: %.2f \n", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec(), time_since_rate.toSec());
         }
         else
         {
-            printf("\r [RUNNING]  Bag Time: %13.6f   Duration: %.6f / %.6f               \r", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
+            printf("\r [RUNNING]  Bag Time: %13.6f   Duration: %.6f / %.6f               \n", time_publisher_.getTime().toSec(), d.toSec(), bag_length_.toSec());
         }
         fflush(stdout);
     }
