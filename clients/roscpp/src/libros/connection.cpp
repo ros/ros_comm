@@ -50,11 +50,11 @@ Connection::Connection()
 , read_filled_(0)
 , read_size_(0)
 , reading_(false)
-, has_read_callback_(0)
+, has_read_callback_(false)
 , write_sent_(0)
 , write_size_(0)
 , writing_(false)
-, has_write_callback_(0)
+, has_write_callback_(false)
 , sending_header_error_(false)
 {
 }
@@ -137,7 +137,7 @@ void Connection::readTransport()
         uint32_t size = read_size_;
         read_size_ = 0;
         read_filled_ = 0;
-        has_read_callback_ = 0;
+        has_read_callback_ = false;
 
         if (callback)
         {
@@ -170,7 +170,7 @@ void Connection::readTransport()
       read_buffer_.reset();
       read_size_ = 0;
       read_filled_ = 0;
-      has_read_callback_ = 0;
+      has_read_callback_ = false;
 
       ROS_DEBUG_NAMED("superdebug", "Calling read callback");
       callback(shared_from_this(), buffer, size, true);
@@ -234,7 +234,7 @@ void Connection::writeTransport()
         write_buffer_ = boost::shared_array<uint8_t>();
         write_sent_ = 0;
         write_size_ = 0;
-        has_write_callback_ = 0;
+        has_write_callback_ = false;
       }
 
       ROS_DEBUG_NAMED("superdebug", "Calling write callback");
@@ -277,7 +277,7 @@ void Connection::read(uint32_t size, const ReadFinishedFunc& callback)
     read_buffer_ = boost::shared_array<uint8_t>(new uint8_t[size]);
     read_size_ = size;
     read_filled_ = 0;
-    has_read_callback_ = 1;
+    has_read_callback_ = true;
   }
 
   transport_->enableRead();
@@ -302,7 +302,7 @@ void Connection::write(const boost::shared_array<uint8_t>& buffer, uint32_t size
     write_buffer_ = buffer;
     write_size_ = size;
     write_sent_ = 0;
-    has_write_callback_ = 1;
+    has_write_callback_ = true;
   }
 
   transport_->enableWrite();

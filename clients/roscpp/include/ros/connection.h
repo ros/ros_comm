@@ -40,10 +40,11 @@
 
 #include <boost/signals2.hpp>
 
-#include <boost/function.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/shared_array.hpp>
+#include <boost/atomic.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/function.hpp>
+#include <boost/shared_array.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 
@@ -230,9 +231,7 @@ private:
   /// Flag telling us if we're in the middle of a read (mostly to avoid recursive deadlocking)
   bool reading_;
   /// flag telling us if there is a read callback
-  /// 32-bit loads and stores are atomic on x86 and PPC... TODO: use a cross-platform atomic operations library
-  /// to ensure this is done atomically
-  volatile uint32_t has_read_callback_;
+  boost::atomic<bool> has_read_callback_;
 
   /// Buffer to write from
   boost::shared_array<uint8_t> write_buffer_;
@@ -248,9 +247,7 @@ private:
   /// Flag telling us if we're in the middle of a write (mostly used to avoid recursive deadlocking)
   bool writing_;
   /// flag telling us if there is a write callback
-  /// 32-bit loads and stores are atomic on x86 and PPC... TODO: use a cross-platform atomic operations library
-  /// to ensure this is done atomically
-  volatile uint32_t has_write_callback_;
+  boost::atomic<bool> has_write_callback_;
 
   /// Function to call when the outgoing header has finished writing
   WriteFinishedFunc header_written_callback_;
