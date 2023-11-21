@@ -2138,6 +2138,8 @@ class _BagReader102_Unindexed(_BagReader):
             
             offset = f.tell()
 
+        self.bag._connection_indexes_read = True
+
     def read_messages(self, topics, start_time, end_time, topic_filter, raw, return_connection_header=False):
         f = self.bag._file
 
@@ -2301,6 +2303,8 @@ class _BagReader102_Indexed(_BagReader102_Unindexed):
 
             offset = f.tell()
 
+        self.bag._connection_indexes_read = True
+
     def start_reading(self):
         try:
             # Read the file header
@@ -2424,6 +2428,7 @@ class _BagReader102_Indexed(_BagReader102_Unindexed):
             return BagMessageWithConnectionHeader(topic, msg, t, header)
         else:
             return BagMessage(topic, msg, t)
+
 
 class _BagReader200(_BagReader):
     """
@@ -2567,6 +2572,7 @@ class _BagReader200(_BagReader):
 
             offset = chunk_file.tell()
 
+        self.bag._connection_indexes_read = True
         # Skip over index records, connection records and chunk info records
         next_op = _peek_next_header_op(f)
         
