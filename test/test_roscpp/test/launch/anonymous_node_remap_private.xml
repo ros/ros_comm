@@ -1,0 +1,23 @@
+<!-- SPDX-License-Identifier: BSD-3-Clause -->
+<!-- SPDX-FileCopyrightText: Open Source Robotics Foundation -->
+<launch>
+  <!-- Test that the private remap works in case no __name:= arg is passed to ros::init() -->
+  <!-- This simulates manually running the node via rosrun -->
+  <test test-name="anonymous_node_remap_private_noname" pkg="test_roscpp"
+        type="test_roscpp-anonymous_node_remap_private" args="noname">
+    <remap from="~topic" to="/remapped" />
+  </test>
+
+  <!-- Test that the private remap works in case an explicit name for the node is set -->
+  <test test-name="anonymous_node_remap_private_name" pkg="test_roscpp"
+        type="test_roscpp-anonymous_node_remap_private" args="test_node" name="test_node">
+    <remap from="~topic" to="/remapped" />
+  </test>
+
+  <!-- Test that the private remap works in case an explicit anonymous name for the node is set -->
+  <test test-name="anonymous_node_remap_private_anonname" pkg="test_roscpp"
+        type="test_roscpp-anonymous_node_remap_private"
+        args="$(anon test_node)" name="$(anon test_node)">
+    <remap from="~topic" to="/remapped" />
+  </test>
+</launch>

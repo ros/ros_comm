@@ -160,3 +160,5 @@ add_rostest(launch/multiple_latched_publishers.xml)
 
 # Test spinners
 add_rostest(launch/spinners.xml)
+
+add_rostest(launch/anonymous_node_remap_private.xml DEPENDENCIES ${PROJECT_NAME}-anonymous_node_remap_private)
