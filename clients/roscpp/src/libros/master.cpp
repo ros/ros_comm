@@ -114,9 +114,14 @@ void setRetryTimeout(ros::WallDuration timeout)
 
 bool check()
 {
-  XmlRpc::XmlRpcValue args, result, payload;
-  args[0] = this_node::getName();
-  return execute("getPid", args, result, payload, false);
+  return check(XmlRpc::XmlRpcClient::getExecuteTimeout());
+}
+
+bool check(const double timeout)
+{
+    XmlRpc::XmlRpcValue args, result, payload;
+    args[0] = this_node::getName();
+    return execute("getPid", args, result, payload, false, timeout);
 }
 
 bool getTopics(V_TopicInfo& topics)
@@ -168,11 +173,17 @@ bool getNodes(V_string& nodes)
   return true;
 }
 
+
+bool execute(const std::string& method, const XmlRpc::XmlRpcValue& request, XmlRpc::XmlRpcValue& response, XmlRpc::XmlRpcValue& payload, bool wait_for_master)
+{
+    return execute(method, request, response, payload, wait_for_master, XmlRpc::XmlRpcClient::getExecuteTimeout());
+}
+
 #if defined(__APPLE__)
 boost::mutex g_xmlrpc_call_mutex;
 #endif
 
-bool execute(const std::string& method, const XmlRpc::XmlRpcValue& request, XmlRpc::XmlRpcValue& response, XmlRpc::XmlRpcValue& payload, bool wait_for_master)
+bool execute(const std::string& method, const XmlRpc::XmlRpcValue& request, XmlRpc::XmlRpcValue& response, XmlRpc::XmlRpcValue& payload, bool wait_for_master, const double timeout)
 {
   ros::SteadyTime start_time = ros::SteadyTime::now();
 
@@ -190,7 +201,7 @@ bool execute(const std::string& method, const XmlRpc::XmlRpcValue& request, XmlR
       boost::mutex::scoped_lock lock(g_xmlrpc_call_mutex);
 #endif
 
-      b = c->execute(method.c_str(), request, response);
+      b = c->execute(method.c_str(), request, response, timeout);
     }
 
     ok = !ros::isShuttingDown() && !XMLRPCManager::instance()->isShuttingDown();

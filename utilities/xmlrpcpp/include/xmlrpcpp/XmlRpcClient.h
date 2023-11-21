@@ -50,13 +50,28 @@ namespace XmlRpc {
     //!  @param method The name of the remote procedure to execute
     //!  @param params An array of the arguments for the method
     //!  @param result The result value to be returned to the client
-    //!  @return true if the request was sent and a result received 
+    //!  @return true if the request was sent and a result received
     //!   (although the result might be a fault).
     //!
     //! Currently this is a synchronous (blocking) implementation (execute
     //! does not return until it receives a response or an error). Use isFault()
     //! to determine whether the result is a fault response.
+    //!
+    //! This will call the method using the value of executeTimeout as the timeout parameter value
     bool execute(const char* method, XmlRpcValue const& params, XmlRpcValue& result);
+
+    //! Execute the named procedure on the remote server.
+    //!  @param method The name of the remote procedure to execute
+    //!  @param params An array of the arguments for the method
+    //!  @param result The result value to be returned to the client
+    //!  @param timeout The timeout that the poll implementation will use
+    //!  @return true if the request was sent and a result received
+    //!   (although the result might be a fault).
+    //!
+    //! Currently this is a synchronous (blocking) implementation (execute
+    //! does not return until it receives a response or an error, or the socket connection timed out).
+    //! Use isFault() to determine whether the result is a fault response.
+    bool execute(const char* method, XmlRpcValue const& params, XmlRpcValue& result, const double timeout);
 
     bool executeNonBlock(const char* method, XmlRpcValue const& params);
     bool executeCheckDone(XmlRpcValue& result);
@@ -70,7 +85,7 @@ namespace XmlRpc {
     virtual void close();
 
     //! Handle server responses. Called by the event dispatcher during execute.
-    //!  @param eventType The type of event that occurred. 
+    //!  @param eventType The type of event that occurred.
     //!  @see XmlRpcDispatch::EventType
     virtual unsigned handleEvent(unsigned eventType);
 
@@ -100,7 +115,7 @@ namespace XmlRpc {
     const std::string &getHost() { return _host; }
     const std::string &getUri()  { return _uri; }
     int getPort() const { return _port; }
-    
+
     // The xml-encoded request, http header of response, and response xml
     std::string _request;
     std::string _header;
@@ -129,6 +144,14 @@ namespace XmlRpc {
 
     // Event dispatcher
     XmlRpcDispatch _disp;
+
+  protected:
+    //! general timeout passed to the work method of the dispatcher, to allow avoiding calls blocking forever
+    static double executeTimeout; // s, -1 means infinite wait
+
+  public:
+    static double getExecuteTimeout() { return executeTimeout; }
+    static void setExecuteTimeout(const double timeout) { executeTimeout = timeout; }
 
   };	// class XmlRpcClient
 
