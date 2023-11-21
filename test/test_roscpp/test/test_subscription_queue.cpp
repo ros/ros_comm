@@ -41,7 +41,7 @@
 #include "ros/init.h"
 
 #include <boost/shared_array.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/thread.hpp>
 
 using namespace ros;
@@ -287,5 +287,3 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "blah");
   return RUN_ALL_TESTS();
 }
-
-

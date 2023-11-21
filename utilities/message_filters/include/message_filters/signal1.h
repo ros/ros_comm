@@ -41,7 +41,7 @@
 #include <ros/message_event.h>
 #include <ros/parameter_adapter.h>
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/thread/mutex.hpp>
 
 namespace message_filters
@@ -128,5 +128,3 @@ private:
 } // message_filters
 
 #endif // MESSAGE_FILTERS_SIGNAL1_H
-
-

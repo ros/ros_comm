@@ -40,7 +40,7 @@
 #include "ros/this_node.h"
 #include "ros/file_log.h"
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <sstream>
 
@@ -388,4 +388,3 @@ bool ServiceServerLink::isValid() const
 }
 
 } // namespace ros
-

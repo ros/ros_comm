@@ -41,7 +41,7 @@
 
 #include <fcntl.h>
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/thread.hpp>
 
 using namespace ros;
@@ -529,4 +529,3 @@ int main(int argc, char** argv)
 
   return RUN_ALL_TESTS();
 }
-

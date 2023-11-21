@@ -46,7 +46,7 @@
 #include <rosgraph_msgs/Clock.h>
 
 #include <boost/thread.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 int g_argc;
 char** g_argv;
@@ -168,4 +168,3 @@ int main(int argc, char** argv)
   g_argv = argv;
   return RUN_ALL_TESTS();
 }
-

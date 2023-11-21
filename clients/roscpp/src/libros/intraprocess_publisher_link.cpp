@@ -42,7 +42,7 @@
 #include "ros/connection_manager.h"
 #include "ros/file_log.h"
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <sstream>
 
@@ -156,4 +156,3 @@ void IntraProcessPublisherLink::getPublishTypes(bool& ser, bool& nocopy, const s
 }
 
 } // namespace ros
-

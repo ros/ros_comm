@@ -32,8 +32,11 @@
 #include "ros/common.h"
 #include "ros/message.h"
 #include "ros/serialization.h"
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/thread/mutex.hpp>
+
+// For backward compatibility, pull placeholders into global namespace
+using namespace boost::placeholders;
 
 namespace ros
 {
@@ -216,4 +219,3 @@ namespace ros
 }
 
 #endif // ROSCPP_PUBLISHER_HANDLE_H
-

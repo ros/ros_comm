@@ -48,7 +48,7 @@
 #include "ros/callback_queue.h"
 #include "ros/internal_timer_manager.h"
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <sstream>
 
@@ -321,4 +321,3 @@ std::string TransportPublisherLink::getTransportInfo()
 }
 
 } // namespace ros
-
