@@ -264,7 +264,7 @@ def print_file_list(roslaunch_files):
         loader = roslaunch.xmlloader.XmlLoader(resolve_anon=True)
         config = load_config_default(roslaunch_files, None, loader=loader, verbose=False, assign_machines=False)
         files = [os.path.abspath(x) for x in set(config.roslaunch_files) - set([get_roscore_filename()])]
-        print('\n'.join(files))
+        print('\n'.join(sorted(files)))
     except roslaunch.core.RLException as e:
         print(str(e), file=sys.stderr)
         sys.exit(1)
