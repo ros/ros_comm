@@ -37,6 +37,7 @@
   <!-- base test of private parameter -->
   <node name="test_private_param1" pkg="package" type="test_param">
     <param name="foo1" value="bar1" />
+    <param name="foo2" type="yaml" value="{baz: quz}"/>
   </node>
 
   <!-- test ns attribute -->

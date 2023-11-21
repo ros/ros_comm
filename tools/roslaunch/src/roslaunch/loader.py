@@ -188,17 +188,23 @@ class LoaderContext(object):
     def add_param(self, p):
         """
         Add a ~param to the context. ~params are evaluated by any node
-        declarations that occur later in the same context.
+        declarations that occur later in the same context. Dictionary values
+        are unrolled into individual parameters.
 
         @param p: parameter
         @type  p: L{Param}
         """
-        
-        # override any params already set
-        matches = [m for m in self.params if m.key == p.key]
-        for m in matches:
-            self.params.remove(m)
-        self.params.append(p)
+
+        if isinstance(p.value, dict):
+            # unroll params
+            for sub_key, sub_value in p.value.items():
+                self.add_param(Param(ns_join(p.key, sub_key), sub_value))
+        else:
+            # override any params already set
+            matches = [m for m in self.params if m.key == p.key]
+            for m in matches:
+                self.params.remove(m)
+            self.params.append(p)
         
     def add_remap(self, remap):
         """
@@ -337,7 +343,7 @@ class Loader(object):
     validation of the property values.
     """
 
-    def add_param(self, ros_config, param_name, param_value, verbose=True):
+    def add_param(self, ros_config, param_name, param_value, verbose=True, filename=None):
         """
         Add L{Param} instances to launch config. Dictionary values are
         unrolled into individual parameters.
@@ -364,9 +370,9 @@ class Loader(object):
         if type(param_value) == dict:
             # unroll params
             for k, v in param_value.items():
-                self.add_param(ros_config, ns_join(param_name, k), v, verbose=verbose)
+                self.add_param(ros_config, ns_join(param_name, k), v, verbose=verbose, filename=filename)
         else:
-            ros_config.add_param(Param(param_name, param_value), verbose=verbose)
+            ros_config.add_param(Param(param_name, param_value), verbose=verbose, filename=filename)
         
     def load_rosparam(self, context, ros_config, cmd, param, file_, text, verbose=True, subst_function=None):
         """
