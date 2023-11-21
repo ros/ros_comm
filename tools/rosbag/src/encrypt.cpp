@@ -36,7 +36,7 @@
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/program_options.hpp>
-#include <boost/progress.hpp>
+#include <boost/timer/progress_display.hpp>
 #include <boost/regex.hpp>
 
 #include <ros/ros.h>
@@ -161,9 +161,9 @@ int encrypt(EncryptorOptions const& options)
     outbag.setEncryptorPlugin(options.plugin, options.param);
     outbag.setCompression(options.compression);
     rosbag::View view(inbag);
-    boost::scoped_ptr<boost::progress_display> progress;
+    boost::scoped_ptr<boost::timer::progress_display> progress;
     if (!options.quiet)
-        progress.reset(new boost::progress_display(view.size(), std::cout, "Progress:\n  ", "  ", "  "));
+        progress.reset(new boost::timer::progress_display(view.size(), std::cout, "Progress:\n  ", "  ", "  "));
     for (rosbag::View::const_iterator it = view.begin(); it != view.end(); ++it)
     {
         outbag.write(it->getTopic(), it->getTime(), *it, it->getConnectionHeader());
