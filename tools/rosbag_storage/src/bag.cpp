@@ -104,6 +104,7 @@ void Bag::init() {
 
 void Bag::open(string const& filename, uint32_t mode) {
     mode_ = (BagMode) mode;
+    file_name_ = filename;
 
     if (mode_ & bagmode::Append)
         openAppend(filename);
@@ -122,13 +123,25 @@ void Bag::open(string const& filename, uint32_t mode) {
 }
 
 void Bag::openRead(string const& filename) {
-    file_.openRead(filename);
+
+    bool use_index_file = false;
+    try {
+      string filename_idx_file = filename;
+      if (filename_idx_file.compare(filename_idx_file.length() - 4, 4, ".bag") == 0)
+        filename_idx_file.replace(filename_idx_file.length() - 4, 4, ".idx");
+      CONSOLE_BRIDGE_logDebug("Try to open index file: %s", filename_idx_file.c_str());
+      file_.openRead(filename_idx_file);
+      use_index_file = true;
+    } catch (BagIOException& e) {
+      CONSOLE_BRIDGE_logDebug("No index file found. Open bag normally.");
+      file_.openRead(filename);
+    }
 
     readVersion();
 
     switch (version_) {
     case 102: startReadingVersion102(); break;
-    case 200: startReadingVersion200(); break;
+    case 200: startReadingVersion200(use_index_file); break;
     default:
         throw BagException((format("Unsupported bag file version: %1%.%2%") % getMajorVersion() % getMinorVersion()).str());
     }
@@ -280,7 +293,7 @@ void Bag::stopWriting() {
     writeFileHeaderRecord();
 }
 
-void Bag::startReadingVersion200() {
+void Bag::startReadingVersion200(bool is_index_file) {
     // Read the file header record, which points to the end of the chunks
     readFileHeaderRecord();
 
@@ -295,8 +308,10 @@ void Bag::startReadingVersion200() {
     for (uint32_t i = 0; i < chunk_count_; i++)
         readChunkInfoRecord();
 
-    // Read the connection indexes for each chunk
-    for (ChunkInfo const& chunk_info : chunks_) {
+    if (!is_index_file)
+    {
+      // Read the connection indexes for each chunk
+      for (ChunkInfo const& chunk_info : chunks_) {
         curr_chunk_info_ = chunk_info;
 
         seek(curr_chunk_info_.pos);
@@ -308,7 +323,23 @@ void Bag::startReadingVersion200() {
 
         // Read the index records after the chunk
         for (unsigned int i = 0; i < chunk_info.connection_counts.size(); i++)
-            readConnectionIndexRecord200();
+          readConnectionIndexRecord200();
+      }
+    }
+    else
+    {
+      // Read the extended connection indexes for each chunk
+      while (true)
+      {
+        try {
+          readConnectionIndexRecord200(true);
+        } catch (BagIOException& e) {
+          // end of file reached
+          break;
+        }
+      }
+      file_.close();
+      file_.openRead(file_name_);
     }
 
     // At this point we don't have a curr_chunk_info anymore so we reset it
@@ -608,7 +639,7 @@ void Bag::readTopicIndexRecord102() {
     }
 }
 
-void Bag::readConnectionIndexRecord200() {
+void Bag::readConnectionIndexRecord200(bool extended) {
     ros::Header header;
     uint32_t data_size;
     if (!readHeader(header) || !readDataLength(data_size))
@@ -641,6 +672,8 @@ void Bag::readConnectionIndexRecord200() {
         uint32_t nsec;
         read((char*) &sec,                4);
         read((char*) &nsec,               4);
+        if (extended)
+            read((char *)&index_entry.chunk_pos, 8);
         read((char*) &index_entry.offset, 4);
         index_entry.time = Time(sec, nsec);
 
@@ -1160,6 +1193,7 @@ void Bag::swap(Bag& other) {
     swap(index_data_pos_, other.index_data_pos_);
     swap(connection_count_, other.connection_count_);
     swap(chunk_count_, other.chunk_count_);
+    swap(file_name_, other.file_name_);
     swap(chunk_open_, other.chunk_open_);
     swap(curr_chunk_info_, other.curr_chunk_info_);
     swap(curr_chunk_data_pos_, other.curr_chunk_data_pos_);

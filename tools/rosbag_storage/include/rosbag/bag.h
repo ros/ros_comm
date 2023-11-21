@@ -231,7 +231,7 @@ private:
     void stopWriting();
 
     void startReadingVersion102();
-    void startReadingVersion200();
+    void startReadingVersion200(bool is_index_file=false);
 
     // Writing
     
@@ -255,7 +255,7 @@ private:
     void readConnectionRecord();
     void readChunkHeader(ChunkHeader& chunk_header) const;
     void readChunkInfoRecord();
-    void readConnectionIndexRecord200();
+    void readConnectionIndexRecord200(bool extended = false);
 
     void readTopicIndexRecord102();
     void readMessageDefinitionRecord102();
@@ -324,6 +324,8 @@ private:
     uint64_t index_data_pos_;
     uint32_t connection_count_;
     uint32_t chunk_count_;
+
+    std::string file_name_;
     
     // Current chunk
     bool      chunk_open_;

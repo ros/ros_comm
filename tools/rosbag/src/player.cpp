@@ -535,7 +535,16 @@ void Player::doPublish(MessageInstance const& m) {
         }
     }
 
-    while ((paused_ || delayed_ || !time_publisher_.horizonReached()) && node_handle_.ok())
+    // In rare cases it is possible to reach the time horizon immediately. This
+    // typically happens when a bag is played from a very slow disk or a mounted
+    // network drive. Then the 'publish' (at this point the message is actually
+    // fully read from the file) of the previous message took longer than the
+    // time horizon of the current message. In this case we want to read once
+    // from stdin to be able to pause, step, etc. Furthermore, we want to update
+    // the time and to print it.
+    bool check_stdin_once_ = time_publisher_.horizonReached();
+
+    while ((paused_ || delayed_ || !time_publisher_.horizonReached() || check_stdin_once_) && node_handle_.ok())
     {
         bool charsleftorpaused = true;
         while (charsleftorpaused && node_handle_.ok())
@@ -601,6 +610,12 @@ void Player::doPublish(MessageInstance const& m) {
                 else
                     charsleftorpaused = false;
             }
+        }
+
+        if (check_stdin_once_) {
+            time_publisher_.stepClock();
+            printTime();
+            break;
         }
 
         printTime();
