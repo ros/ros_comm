@@ -226,6 +226,9 @@ class Timer(threading.Thread):
         while not rospy.core.is_shutdown() and not self._shutdown:
             try:
                 r.sleep()
+            except rospy.exceptions.ROSTimeMovedBackwardsException:
+                # avoid killing the timer just because a rosbag looped
+                pass
             except rospy.exceptions.ROSInterruptException as e:
                 if rospy.core.is_shutdown():
                     break
