@@ -68,13 +68,13 @@ def handle_split(option, opt_str, value, parser):
 
 def _stop_process(signum, frame, old_handler, process):
     process.terminate()
-    if old_handler:
+    if callable(old_handler):
         old_handler(signum, frame)
 
 
 def _send_process_sigint(signum, frame, old_handler, process):
     process.send_signal(signal.SIGINT)
-    if old_handler:
+    if callable(old_handler):
         old_handler(signum, frame)
 
 
