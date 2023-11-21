@@ -279,7 +279,12 @@ class ROSLaunchParent(object):
         
         if self.server:
             try:
-                self.server.shutdown("roslaunch parent complete")
+                import sys
+                if sys.version_info >= (3, 0):
+                    # https://github.com/ros/ros_comm/issues/2238
+                    self.server.shutdown()
+                else:
+                    self.server.shutdown("roslaunch parent complete")
             except:
                 # don't let exceptions halt the rest of the shutdown
                 pass
