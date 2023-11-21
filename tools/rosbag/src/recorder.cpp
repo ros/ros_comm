@@ -313,10 +313,8 @@ bool Recorder::shouldSubscribeToTopic(std::string const& topic, bool from_node) 
 template<class T>
 std::string Recorder::timeToStr(T ros_t)
 {
-    (void)ros_t;
     std::stringstream msg;
-    const boost::posix_time::ptime now=
-        boost::posix_time::second_clock::local_time();
+    const boost::posix_time::ptime now = ros_t.toBoost();
     boost::posix_time::time_facet *const f=
         new boost::posix_time::time_facet("%Y-%m-%d-%H-%M-%S");
     msg.imbue(std::locale(msg.getloc(),f));
@@ -400,7 +398,7 @@ void Recorder::updateFilenames() {
     if (prefix.length() > 0)
         parts.push_back(prefix);
     if (options_.append_date)
-        parts.push_back(timeToStr(ros::WallTime::now()));
+        parts.push_back(timeToStr(ros::Time::now()));
     if (options_.split)
         parts.push_back(boost::lexical_cast<string>(split_count_));
 
