@@ -252,7 +252,7 @@ def _stop_coverage(packages, html=None):
             # iterate over packages to generate per-package console reports
             for package in packages:
                 pkg = __import__(package)
-                m = [v for v in sys.modules.values() if v and v.__name__.startswith(package)]
+                m = [v for v in sys.modules.values() if v and not isinstance(v, tuple) and v.__name__.startswith(package)]
                 all_mods.extend(m)
 
                 # generate overall report and per module analysis
