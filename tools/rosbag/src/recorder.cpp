@@ -95,6 +95,7 @@ RecorderOptions::RecorderOptions() :
     quiet(false),
     append_date(true),
     snapshot(false),
+    pause(false),
     verbose(false),
     publish(false),
     repeat_latched(false),
@@ -177,6 +178,7 @@ int Recorder::run() {
         return 0;
 
     ros::Subscriber trigger_sub;
+    finish_ = false;
 
     // Spin up a thread for writing to the file
     boost::thread record_thread;
@@ -232,6 +234,11 @@ int Recorder::run() {
         });
     }
 
+    ros::Subscriber pause_sub;
+    if (options_.pause) {
+        ros::NodeHandle pnh("~");
+        pause_sub = nh.subscribe<std_msgs::Bool>("pause", 10, boost::bind(&Recorder::pauseTrigger, this, boost::placeholders::_1));
+    }
 
 
     ros::Timer check_master_timer;
@@ -252,6 +259,20 @@ int Recorder::run() {
     return exit_code_;
 }
 
+void Recorder::finish()
+{
+  finish_ = true;
+  queue_condition_.notify_all();
+  // unsubscribe from all topics
+  for (const auto& sub : subscribers_)
+    sub->shutdown();
+}
+
+void Recorder::pauseTrigger(std_msgs::Bool::ConstPtr trigger)
+{
+    options_.pause = trigger->data;
+}
+
 shared_ptr<ros::Subscriber> Recorder::subscribe(string const& topic) {
     ROS_INFO("Subscribing to %s", topic.c_str());
 
@@ -270,6 +291,7 @@ shared_ptr<ros::Subscriber> Recorder::subscribe(string const& topic) {
     ops.transport_hints = options_.transport_hints;
     *sub = nh.subscribe(ops);
 
+    subscribers_.push_back(sub);
     currently_recording_.insert(topic);
     num_subscribers_++;
 
@@ -326,11 +348,12 @@ std::string Recorder::timeToStr(T ros_t)
 
 //! Callback to be invoked to save messages into a queue
 void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>& msg_event, string const& topic, shared_ptr<ros::Subscriber> subscriber, shared_ptr<int> count) {
-    //void Recorder::doQueue(topic_tools::ShapeShifter::ConstPtr msg, string const& topic, shared_ptr<ros::Subscriber> subscriber, shared_ptr<int> count) {
     Time rectime = Time::now();
     
     if (options_.verbose)
         cout << "Received message on topic " << subscriber->getTopic() << endl;
+    if (options_.pause)
+        return;
 
     OutgoingMessage out(topic, msg_event.getMessage(), msg_event.getConnectionHeaderPtr(), rectime);
     
@@ -565,12 +588,12 @@ void Recorder::doRecord() {
     // Except it should only get checked if the node is not ok, and thus
     // it shouldn't be in contention.
     ros::NodeHandle nh;
-    while (nh.ok() || !queue_->empty()) {
+    while ((nh.ok() && !finish_) || !queue_->empty()) {
         boost::unique_lock<boost::mutex> lock(queue_mutex_);
 
         bool finished = false;
         while (queue_->empty()) {
-            if (!nh.ok()) {
+            if (!nh.ok() || finish_) {
                 lock.release()->unlock();
                 finished = true;
                 break;
@@ -619,7 +642,7 @@ void Recorder::doRecord() {
 void Recorder::doRecordSnapshotter() {
     ros::NodeHandle nh;
   
-    while (nh.ok() || !queue_queue_.empty()) {
+    while ((nh.ok() && !finish_) || !queue_queue_.empty()) {
         boost::unique_lock<boost::mutex> lock(queue_mutex_);
         while (queue_queue_.empty()) {
             if (!nh.ok())
