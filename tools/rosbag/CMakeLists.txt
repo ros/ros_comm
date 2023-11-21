@@ -26,7 +26,8 @@ catkin_package(
 add_library(rosbag
   src/player.cpp
   src/recorder.cpp
-  src/time_translator.cpp)
+  src/time_translator.cpp
+  src/transformer.cpp)
 
 target_link_libraries(rosbag ${catkin_LIBRARIES} ${Boost_LIBRARIES}
   ${BZIP2_LIBRARIES}
@@ -37,6 +38,9 @@ target_link_libraries(record rosbag)
 
 add_executable(play src/play.cpp)
 target_link_libraries(play rosbag)
+
+add_executable(transform src/transform.cpp)
+target_link_libraries(transform rosbag)
 
 if(NOT WIN32)
   add_executable(encrypt src/encrypt.cpp)
@@ -50,7 +54,7 @@ install(TARGETS rosbag
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
-install(TARGETS record play
+install(TARGETS record play transform
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
