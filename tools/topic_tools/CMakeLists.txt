@@ -98,6 +98,7 @@ if(CATKIN_ENABLE_TESTING)
 
   add_rostest(test/shapeshifter.test)
   add_rostest(test/throttle.test)
+  add_rostest(test/throttle_first.test)
   add_rostest(test/throttle_simtime.test)
   add_rostest(test/throttle_simtime_loop.test)
   add_rostest(test/drop.test)
