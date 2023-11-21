@@ -176,12 +176,18 @@ XmlRpcDispatch::work(double timeout)
     {
 #if defined(_WINDOWS)
       XmlRpcUtil::error("Error in XmlRpcDispatch::work: error in poll (%d).", WSAGetLastError());
-#else
-      if(errno != EINTR)
-        XmlRpcUtil::error("Error in XmlRpcDispatch::work: error in poll (%d).", nEvents);
-#endif
       _inWork = false;
       return;
+#else
+      if(errno != EINTR)
+      {
+        XmlRpcUtil::error("Error in XmlRpcDispatch::work: error in poll (%d).", nEvents);
+        _inWork = false;
+        return;
+      }
+      // If we receive EINTR, the revents will be empty and no handleEvents will be called.
+      // It will loop back to the poll unless the timeout is reached.
+#endif
     }
 
     // Process events
