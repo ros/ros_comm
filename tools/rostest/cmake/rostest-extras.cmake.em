@@ -33,8 +33,8 @@ function(add_rostest file)
 
   # strip PROJECT_SOURCE_DIR and PROJECT_BINARY_DIR from absolute filename to get unique test name (as rostest does it internally)
   set(_testname ${_file_name})
-  rostest__strip_prefix(_testname "${PROJECT_SOURCE_DIR}/")
   rostest__strip_prefix(_testname "${PROJECT_BINARY_DIR}/")
+  rostest__strip_prefix(_testname "${PROJECT_SOURCE_DIR}/")
 
   # to support registering the same test with different ARGS
   # append the args to the test name
