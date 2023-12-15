@@ -229,8 +229,8 @@ class XmlRpcNode(object):
             if handler:
                 handler._shutdown(reason)
             if server:
-                server.socket.close()
                 server.server_close()
+                server.shutdown()
                 
     def start(self):
         """
