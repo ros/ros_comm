@@ -498,7 +498,7 @@ def get_node_info_description(node_name):
     # go through the master system state first
     try:
         state = master.getSystemState()
-        pub_topics = master.getPublishedTopics('/')
+        topic_types = master.getTopicTypes()
     except socket.error:
         raise ROSNodeIOException("Unable to communicate with master!")
     pubs = sorted([t for t, l in state[0] if node_name in l])
@@ -508,12 +508,12 @@ def get_node_info_description(node_name):
     buff = "Node [%s]"%node_name
     if pubs:
         buff += "\nPublications: \n"
-        buff += '\n'.join([" * %s [%s]"%(l, topic_type(l, pub_topics)) for l in pubs]) + '\n'
+        buff += '\n'.join([" * %s [%s]"%(l, topic_type(l, topic_types)) for l in pubs]) + '\n'
     else:
         buff += "\nPublications: None\n"
     if subs:
         buff += "\nSubscriptions: \n"
-        buff += '\n'.join([" * %s [%s]"%(l, topic_type(l, pub_topics)) for l in subs]) + '\n'
+        buff += '\n'.join([" * %s [%s]"%(l, topic_type(l, topic_types)) for l in subs]) + '\n'
     else:
         buff += "\nSubscriptions: None\n"        
     if srvs:
