@@ -284,6 +284,8 @@ class RosStreamHandler(logging.Handler):
             if self._get_time is not None and not self._is_wallclock():
                 time_str += ', %f' % self._get_time()
 
+            time_str = time_str.replace('%f', str(int(time.time() * 1000000) % 1000000).zfill(6))
+
             msg = msg.replace('${time:' + time_format + '}', time_str)
 
         msg += '\n'
