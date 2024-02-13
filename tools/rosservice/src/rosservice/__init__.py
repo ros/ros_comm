@@ -607,6 +607,8 @@ def _rosservice_cmd_call(argv):
             service_uri = master.getPid()
         except socket.error:
             raise ROSServiceIOException("Unable to communicate with master!")
+        # initialize rospy time due to potential throttled printing
+        rospy.rostime.set_rostime_initialized(True)
         rospy.wait_for_service(service_name)
 
     # optimization: in order to prevent multiple probe calls against a service, lookup the service_class
