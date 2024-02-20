@@ -255,7 +255,7 @@ class RosStreamHandler(logging.Handler):
         while '${walltime:' in msg:
             tag_end_index = msg.index('${walltime:') + len('${walltime:')
             time_format = msg[tag_end_index: msg.index('}', tag_end_index)]
-            time_str = time.strftime(time_format)
+            time_str = datetime.datetime.now().strftime(time_format)
             msg = msg.replace('${walltime:' + time_format + '}', time_str)
 
         msg = msg.replace('${thread}', str(record.thread))
@@ -279,7 +279,7 @@ class RosStreamHandler(logging.Handler):
         while '${time:' in msg:
             tag_end_index = msg.index('${time:') + len('${time:')
             time_format = msg[tag_end_index: msg.index('}', tag_end_index)]
-            time_str = time.strftime(time_format)
+            time_str = datetime.datetime.now().strftime(time_format)
 
             if self._get_time is not None and not self._is_wallclock():
                 time_str += ', %f' % self._get_time()

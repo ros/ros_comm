@@ -47,7 +47,7 @@ os.environ['ROSCONSOLE_FORMAT'] = ' '.join([
     '${severity}',
     '${message}',
     '${walltime}',
-    '${walltime:%Y-%m-%d %H:%M:%S}',
+    '${walltime:%Y-%m-%d %H:%M:%S.%f}',
     '${thread}',
     '${logger}',
     '${file}',
@@ -55,7 +55,7 @@ os.environ['ROSCONSOLE_FORMAT'] = ' '.join([
     '${function}',
     '${node}',
     '${time}',
-    '${time:%Y-%m-%d %H:%M:%S}',
+    '${time:%Y-%m-%d %H:%M:%S.%f}',
 ])
 rosgraph.roslogging.configure_logging('test_rosgraph', logging.INFO)
 loginfo = logging.getLogger('rosout').info
@@ -113,7 +113,7 @@ try:
                 'INFO',
                 'on ' + loc,
                 r'[0-9]*\.[0-9]*',
-                r'[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}',
+                r'[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{6}',
                 '[0-9]*',
                 'rosout',
                 re.escape(this_file),
@@ -122,7 +122,7 @@ try:
                 # depending if rospy.get_name() is available
                 '(/unnamed|<unknown_node_name>)',
                 r'[0-9]*\.[0-9]*',
-                r'[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}',
+                r'[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{6}',
             ])
             assert_regexp_matches(lout.getvalue().splitlines()[i], log_out)
 
