@@ -43,14 +43,14 @@ import rospkg
 class TestEnv(unittest.TestCase):
     def test_env(self):
         if '--noenv' in sys.argv:
-            self.assertEquals(None, os.environ.get('TEST_ENV', None))
-            self.assertEquals(None, os.environ.get('TEST_ENV_SUBSTITUTION', None))
+            self.assertEqual(None, os.environ.get('TEST_ENV', None))
+            self.assertEqual(None, os.environ.get('TEST_ENV_SUBSTITUTION', None))
         else:
-            self.assertEquals('test env', os.environ.get('TEST_ENV', None))
+            self.assertEqual('test env', os.environ.get('TEST_ENV', None))
             rospack = rospkg.RosPack()
             path1 = os.path.join(rospack.get_path('roslaunch'), 'src')
             path2 = os.environ.get('TEST_ENV_SUBSTITUTION', None)
-            self.assertEquals(os.path.abspath(path1), os.path.abspath(path2))
+            self.assertEqual(os.path.abspath(path1), os.path.abspath(path2))
         
 if __name__ == '__main__':
     rostest.rosrun(PKG, NAME, TestEnv)

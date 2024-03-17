@@ -65,7 +65,7 @@ class TestEmbedMsg(unittest.TestCase):
         self.callback_data = data
     
     def test_embed_msg(self):
-        self.assert_(self.callback_data is None, "invalid test fixture")
+        self.assertTrue(self.callback_data is None, "invalid test fixture")
 
         # wait at most 5 seconds for listenerpublisher to be registered
         timeout_t = time.time() + 5.0
@@ -74,7 +74,7 @@ class TestEmbedMsg(unittest.TestCase):
             rospy.resolve_name(LPNODE)) and time.time() < timeout_t:
             time.sleep(0.1)
 
-        self.assert_(rostest.is_subscriber(
+        self.assertTrue(rostest.is_subscriber(
             rospy.resolve_name(PUBTOPIC),
             rospy.resolve_name(LPNODE)), "%s is not up"%LPNODE)
         
@@ -104,32 +104,32 @@ class TestEmbedMsg(unittest.TestCase):
 
         # listenerpublisher is supposed to repeat our messages back onto /listenerpublisher,
         # make sure we got it
-        self.assert_(self.callback_data is not None, "no callback data from listenerpublisher")
+        self.assertTrue(self.callback_data is not None, "no callback data from listenerpublisher")
         print("Got ", self.callback_data.str1.data, self.callback_data.int1.data)
         errorstr = "callback msg field [%s] from listenerpublisher does not match"
-        self.assertEquals(msg, self.callback_data.str1.data,
+        self.assertEqual(msg, self.callback_data.str1.data,
                           errorstr%"str1.data")
-        self.assertEquals(val, self.callback_data.int1.data,
+        self.assertEqual(val, self.callback_data.int1.data,
                           errorstr%"int1.data")
         for i in range(1, 4):
-            self.assertEquals(val+i, self.callback_data.ints[i-1].data,
+            self.assertEqual(val+i, self.callback_data.ints[i-1].data,
                               errorstr%"ints[i-1].data")
-        self.assertEquals(msg+msg, self.callback_data.val.val,
+        self.assertEqual(msg+msg, self.callback_data.val.val,
                           errorstr%"val.val")
-        self.assertEquals(msg, self.callback_data.vals[0].val,
+        self.assertEqual(msg, self.callback_data.vals[0].val,
                           errorstr%"vals[0].val")
-        self.assertEquals("two", self.callback_data.vals[1].val,
+        self.assertEqual("two", self.callback_data.vals[1].val,
                           errorstr%"vals[1].val")
         # #435: test array of arrays
-        self.assertEquals(2, len(self.callback_data.arrayval),
+        self.assertEqual(2, len(self.callback_data.arrayval),
                           errorstr%"len arrayval")
-        self.assertEquals(2, len(self.callback_data.arrayval[0].vals),
+        self.assertEqual(2, len(self.callback_data.arrayval[0].vals),
                           errorstr%"len arrayval[0].vals")
-        self.assertEquals("av1", self.callback_data.arrayval[0].vals[0].val,
+        self.assertEqual("av1", self.callback_data.arrayval[0].vals[0].val,
                           errorstr%"arrayval[0].vals[0].val")
-        self.assertEquals("av2", self.callback_data.arrayval[0].vals[1].val,
+        self.assertEqual("av2", self.callback_data.arrayval[0].vals[1].val,
                           errorstr%"arrayval[0].vals[1].val")
-        self.assertEquals(0, len(self.callback_data.arrayval[1].vals),
+        self.assertEqual(0, len(self.callback_data.arrayval[1].vals),
                           errorstr%"len arrayval[1].vals")
 
         

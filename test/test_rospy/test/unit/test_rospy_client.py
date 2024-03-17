@@ -52,21 +52,21 @@ class TestRospyClient(unittest.TestCase):
             rospy.init_node('ns/node')
         except ValueError:
             failed = False
-        self.failIf(failed, "init_node allowed '/' in name")
+        self.assertFalse(failed, "init_node allowed '/' in name")
 
         failed = True
         try:
             rospy.init_node(name=None)
         except ValueError:
             failed = False
-        self.failIf(failed, "init_node allowed None as name")
+        self.assertFalse(failed, "init_node allowed None as name")
 
         failed = True
         try:
             rospy.init_node("")
         except ValueError:
             failed = False
-        self.failIf(failed, "init_node allowed empty string as name")
+        self.assertFalse(failed, "init_node allowed empty string as name")
 
     def test_spin(self):
         failed = True
@@ -74,19 +74,19 @@ class TestRospyClient(unittest.TestCase):
             rospy.spin()
         except rospy.ROSInitException:
             failed = False
-        self.failIf(failed, "spin() should failed if not initialized")
+        self.assertFalse(failed, "spin() should failed if not initialized")
         
     def test_myargv(self):
         orig_argv = sys.argv
         try:
             from rospy.client import myargv
             args = myargv()
-            self.assertEquals(args, sys.argv)
-            self.assertEquals(['foo', 'bar', 'baz'], myargv(['foo','bar', 'baz']))
-            self.assertEquals(['-foo', 'bar', '-baz'], myargv(['-foo','bar', '-baz']))
+            self.assertEqual(args, sys.argv)
+            self.assertEqual(['foo', 'bar', 'baz'], myargv(['foo','bar', 'baz']))
+            self.assertEqual(['-foo', 'bar', '-baz'], myargv(['-foo','bar', '-baz']))
             
-            self.assertEquals(['foo'], myargv(['foo','bar:=baz']))
-            self.assertEquals(['foo','-bar:=baz'], myargv(['foo','-bar:=baz']))
+            self.assertEqual(['foo'], myargv(['foo','bar:=baz']))
+            self.assertEqual(['foo','-bar:=baz'], myargv(['foo','-bar:=baz']))
         finally:
             sys.argv = orig_argv
     

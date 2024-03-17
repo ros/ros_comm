@@ -56,7 +56,7 @@ class TestRosClient(unittest.TestCase):
     ## @param args [int, str, val]: returnv value from ROS API call
     ## @return val value parameter from args (arg[2] for master/slave API)
     def apiSuccess(self, args):
-        self.assert_(len(args) == 3, "invalid API return value triplet: %s"%str(args))
+        self.assertTrue(len(args) == 3, "invalid API return value triplet: %s"%str(args))
         self.last_code, self.last_msg, self.last_val = args
         assert self.last_code == 1, "status code is not 1: %s"%self.last_msg
         return self.last_val
@@ -65,14 +65,14 @@ class TestRosClient(unittest.TestCase):
     ## @param args [int, str, val]: returnv value from ROS API call
     ## @return True if status code is 0
     def apiFail(self, args):
-        self.assert_(len(args) == 3, "invalid API return value triplet: %s"%str(args))
+        self.assertTrue(len(args) == 3, "invalid API return value triplet: %s"%str(args))
         self.last_code, self.last_msg, self.last_val = args
         assert self.last_code == 0, "Call should have failed with status code 0: %s"%self.last_msg
 
     ## unit test assertion that fails if status code is not -1 and otherwise returns true
     ## @return True if status code is -1
     def apiError(self, args, msg=None):
-        self.assert_(len(args) == 3, "invalid API return value triplet: %s"%str(args))
+        self.assertTrue(len(args) == 3, "invalid API return value triplet: %s"%str(args))
         self.last_code, self.last_msg, self.last_val = args
         if msg:
             assert self.last_code == -1, "%s (return msg was %s)"%(msg, self.last_msg)

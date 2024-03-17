@@ -55,7 +55,7 @@ class TestRoswtfOffline(unittest.TestCase):
         cmd = 'roswtf'
         output = Popen([cmd, '-h'], stdout=PIPE).communicate()[0]
         output = output.decode()
-        self.assert_('Options' in output)
+        self.assertTrue('Options' in output)
             
     def test_offline(self):
         cmd = 'roswtf'
@@ -114,13 +114,13 @@ class TestRoswtfOffline(unittest.TestCase):
 
     def _check_output(self, output):
         # do both a positive and negative test
-        self.assert_(
+        self.assertTrue(
             'No errors or warnings' in output or 'Found 1 error' in output,
             'OUTPUT[%s]' % output)
         if 'No errors or warnings' in output:
-            self.assert_('ERROR' not in output, 'OUTPUT[%s]' % output)
+            self.assertTrue('ERROR' not in output, 'OUTPUT[%s]' % output)
         if 'Found 1 error' in output:
-            self.assert_(output.count('ERROR') == 1, 'OUTPUT[%s]' % output)
-            self.assert_(
+            self.assertTrue(output.count('ERROR') == 1, 'OUTPUT[%s]' % output)
+            self.assertTrue(
                 'Error: the rosdep view is empty' not in output,
                 'OUTPUT[%s]' % output)

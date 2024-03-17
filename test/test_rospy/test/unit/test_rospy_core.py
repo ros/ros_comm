@@ -61,10 +61,10 @@ class TestRospyCore(unittest.TestCase):
                  ('rosrpc://foo.com:1/', 'foo.com', 1)]
         for t, addr, port in valid:
             paddr, pport = rospy.core.parse_rosrpc_uri(t)
-            self.assertEquals(addr, paddr)
-            self.assertEquals(port, pport)
+            self.assertEqual(addr, paddr)
+            self.assertEqual(port, pport)
             # validate that it's a top-level API method
-            self.assertEquals(rospy.core.parse_rosrpc_uri(t), rospy.parse_rosrpc_uri(t))
+            self.assertEqual(rospy.core.parse_rosrpc_uri(t), rospy.parse_rosrpc_uri(t))
         invalid = ['rosrpc://:1234/', 'rosrpc://localhost', 'http://localhost:1234/']
         for i in invalid:
             try:
@@ -235,9 +235,9 @@ class TestRospyCore(unittest.TestCase):
         rospy.core.add_shutdown_hook(handle1)
         rospy.core.add_shutdown_hook(handle2)
         rospy.core.add_preshutdown_hook(handle3)
-        self.assert_(handle3 in rospy.core._preshutdown_hooks)
-        self.assert_(handle2 in rospy.core._shutdown_hooks)        
-        self.assert_(handle1 in rospy.core._shutdown_hooks)        
+        self.assertTrue(handle3 in rospy.core._preshutdown_hooks)
+        self.assertTrue(handle2 in rospy.core._shutdown_hooks)        
+        self.assertTrue(handle1 in rospy.core._shutdown_hooks)        
         try:
             rospy.core.add_preshutdown_hook(1)
             self.fail_("add_preshutdown_hook is not protected against invalid args")
@@ -252,22 +252,22 @@ class TestRospyCore(unittest.TestCase):
             rospy.core.get_ros_root(env={}, required=True)
         except:
             pass
-        self.assertEquals(None, rospy.core.get_ros_root(env={}, required=False))
+        self.assertEqual(None, rospy.core.get_ros_root(env={}, required=False))
         rr = "%s"%time.time()
-        self.assertEquals(rr, rospy.core.get_ros_root(env={'ROS_ROOT': rr}, required=False))
-        self.assertEquals(rr, rospy.core.get_ros_root(env={'ROS_ROOT': rr}, required=True))        
+        self.assertEqual(rr, rospy.core.get_ros_root(env={'ROS_ROOT': rr}, required=False))
+        self.assertEqual(rr, rospy.core.get_ros_root(env={'ROS_ROOT': rr}, required=True))        
 
-        self.assertEquals(os.path.normpath(os.environ['ROS_ROOT']), rospy.core.get_ros_root(required=False))
+        self.assertEqual(os.path.normpath(os.environ['ROS_ROOT']), rospy.core.get_ros_root(required=False))
     def test_node_uri(self):
         uri = "http://localhost-%s:1234"%random.randint(1, 1000)
-        self.assertEquals(None, rospy.core.get_node_uri())
+        self.assertEqual(None, rospy.core.get_node_uri())
         rospy.core.set_node_uri(uri)
-        self.assertEquals(uri, rospy.core.get_node_uri())
+        self.assertEqual(uri, rospy.core.get_node_uri())
         
     def test_initialized(self):
-        self.failIf(rospy.core.is_initialized())
+        self.assertFalse(rospy.core.is_initialized())
         rospy.core.set_initialized(True)
-        self.assert_(rospy.core.is_initialized())
+        self.assertTrue(rospy.core.is_initialized())
 
     def test_shutdown_hook_exception(self):
         rospy.core._shutdown_flag = False
@@ -284,16 +284,16 @@ class TestRospyCore(unittest.TestCase):
         del rospy.core._shutdown_hooks[:]        
         global called, called2
         called = called2 = None
-        self.failIf(rospy.core.is_shutdown())        
+        self.assertFalse(rospy.core.is_shutdown())        
         rospy.core.add_shutdown_hook(shutdown_hook1)
         reason = "reason %s"%time.time()
         rospy.core.signal_shutdown(reason)
-        self.assertEquals(reason, called)
-        self.assert_(rospy.core.is_shutdown())
+        self.assertEqual(reason, called)
+        self.assertTrue(rospy.core.is_shutdown())
 
         # verify that shutdown hook is called immediately on add if already shutdown
         rospy.core.add_shutdown_hook(shutdown_hook2)
-        self.assert_(called2 is not None)
+        self.assertTrue(called2 is not None)
         rospy.core._shutdown_flag = False
 
     #TODO: move to teset_rospy_names
@@ -302,7 +302,7 @@ class TestRospyCore(unittest.TestCase):
         tests = ['/', 'srv', '/service', '/service1', 'serv/subserv']
         caller_id = '/me'
         for t in tests:
-            self.assert_(rospy.core.valid_name('p')(t, caller_id))
+            self.assertTrue(rospy.core.valid_name('p')(t, caller_id))
         failures = ['ftp://foo', '', None, 1, True, 'http:', ' spaced ', ' ']
         for f in failures:
             try:
@@ -325,7 +325,7 @@ class TestRospyCore(unittest.TestCase):
             ]
 
         for t, caller_id, v in tests:
-            self.assertEquals(v, rospy.core.is_topic('p')(t, caller_id))
+            self.assertEqual(v, rospy.core.is_topic('p')(t, caller_id))
         failures = ['/', 'ftp://foo', '', None, 1, True, 'http:', ' spaced ', ' ']
         for f in failures:
             try:
@@ -336,16 +336,16 @@ class TestRospyCore(unittest.TestCase):
 
     def test_xmlrpcapi(self):
         # have to use 'is' so we don't accidentally invoke XMLRPC
-        self.assert_(rospy.core.xmlrpcapi(None) is None)
-        self.assert_(rospy.core.xmlrpcapi('localhost:1234') is None)
-        self.assert_(rospy.core.xmlrpcapi('http://') is None)
+        self.assertTrue(rospy.core.xmlrpcapi(None) is None)
+        self.assertTrue(rospy.core.xmlrpcapi('localhost:1234') is None)
+        self.assertTrue(rospy.core.xmlrpcapi('http://') is None)
         api = rospy.core.xmlrpcapi('http://localhost:1234')
-        self.assert_(api is not None)
+        self.assertTrue(api is not None)
         try:
             from xmlrpc.client import ServerProxy
         except ImportError:
             from xmlrpclib import ServerProxy
-        self.assert_(isinstance(api, ServerProxy))
+        self.assertTrue(isinstance(api, ServerProxy))
     
 called = None
 called2 = None

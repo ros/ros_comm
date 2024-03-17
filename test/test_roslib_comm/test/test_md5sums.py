@@ -38,14 +38,14 @@ from test_roslib_comm.msg import *
 class TestMd5sums(unittest.TestCase):
     
     def test_field_name_change(self):
-        self.assertNotEquals(FieldNameChange1._md5sum, FieldNameChange2._md5sum)
+        self.assertNotEqual(FieldNameChange1._md5sum, FieldNameChange2._md5sum)
 
     def test_type_name_change(self):
-        self.assertEquals(TypeNameChange1._md5sum, TypeNameChange2._md5sum)
+        self.assertEqual(TypeNameChange1._md5sum, TypeNameChange2._md5sum)
 
     def test_type_name_change_array(self):
-        self.assertEquals(TypeNameChangeArray1._md5sum, TypeNameChangeArray2._md5sum)
+        self.assertEqual(TypeNameChangeArray1._md5sum, TypeNameChangeArray2._md5sum)
 
     def test_type_name_change_complex(self):
-        self.assertEquals(TypeNameChangeComplex1._md5sum, TypeNameChangeComplex2._md5sum)
+        self.assertEqual(TypeNameChangeComplex1._md5sum, TypeNameChangeComplex2._md5sum)
 

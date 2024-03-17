@@ -65,7 +65,7 @@ class TestRostopicOnline(unittest.TestCase):
     def test_cmd_help(self):
         cmd = 'roswtf'
         output = Popen([cmd, '-h'], stdout=PIPE).communicate()[0].decode()
-        self.assert_('Options' in output)
+        self.assertTrue('Options' in output)
             
     def test_offline(self):
         # this test is disabled for now; now that test_roswtf is part
@@ -127,19 +127,19 @@ class TestRostopicOnline(unittest.TestCase):
 
     def _check_output(self, cmd, output, error=None):
         # do both a positive and negative test
-        self.assert_(
+        self.assertTrue(
             'No errors or warnings' in output or 'Found 1 error' in output,
             'CMD[%s] OUTPUT[%s]%s' %
             (' '.join(cmd), output, '\nstderr[%s]' % error if error else ''))
         allowed_errors = 0
         if 'Found 1 error' in output:
-            self.assert_(output.count('ERROR') == 1, 'OUTPUT[%s]' % output)
-            self.assert_(
+            self.assertTrue(output.count('ERROR') == 1, 'OUTPUT[%s]' % output)
+            self.assertTrue(
                 'ROS Dep database not updated' in output,
                 'OUTPUT[%s]' % output)
             allowed_errors += 1
         if 'No errors or warnings' in output:
-            self.assert_(output.count('ERROR') <= allowed_errors, 'OUTPUT[%s]' % output)
+            self.assertTrue(output.count('ERROR') <= allowed_errors, 'OUTPUT[%s]' % output)
 
 if __name__ == '__main__':
     rostest.run(PKG, NAME, TestRostopicOnline, sys.argv)

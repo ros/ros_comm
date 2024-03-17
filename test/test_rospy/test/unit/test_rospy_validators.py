@@ -42,7 +42,7 @@ class TestRospyValidators(unittest.TestCase):
     def test_ParameterInvalid(self):
         # not really testing anything here other than typos
         from rospy.impl.validators import ParameterInvalid
-        self.assert_(isinstance(ParameterInvalid('param'), Exception))
+        self.assertTrue(isinstance(ParameterInvalid('param'), Exception))
         
     def test_validators(self):
         from rospy.impl.validators import ParameterInvalid
@@ -57,4 +57,4 @@ class TestRospyValidators(unittest.TestCase):
                 try:
                     non_empty('param-name-foo')(i, context)
                 except ParameterInvalid as e:
-                    self.assert_('param-name-foo' in str(e))
+                    self.assertTrue('param-name-foo' in str(e))

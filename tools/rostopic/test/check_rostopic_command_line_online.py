@@ -84,23 +84,23 @@ class TestRostopicOnline(unittest.TestCase):
         output = output.decode()
         l = set(output.split())
         for t in topics:
-            self.assert_(t in l)
+            self.assertTrue(t in l)
 
         for name in names:
             # type
             output = Popen([cmd, 'type', name], stdout=PIPE).communicate()[0]
             output = output.decode()
-            self.assertEquals('std_msgs/String', output.strip())
+            self.assertEqual('std_msgs/String', output.strip())
             # check type of topic field
             output = Popen([cmd, 'type', name + '/data'], stdout=PIPE).communicate()[0]
             output = output.decode()
-            self.assertEquals('std_msgs/String data string', output.strip())
+            self.assertEqual('std_msgs/String data string', output.strip())
 
             # find
             output = Popen([cmd, 'find', 'std_msgs/String'], stdout=PIPE).communicate()[0]
             output = output.decode()
             values = [n.strip() for n in output.split('\n') if n.strip()]
-            self.assertEquals(set(values), set(topics))
+            self.assertEqual(set(values), set(topics))
 
             #echo
             # test with -c option to get command to terminate
@@ -109,22 +109,22 @@ class TestRostopicOnline(unittest.TestCase):
             output = output.decode()
             values = [n.strip() for n in output.split('\n') if n.strip()]
             values = [n for n in values if n != '---']
-            self.assertEquals(count, len(values), "wrong number of echos in output:\n"+str(values))
+            self.assertEqual(count, len(values), "wrong number of echos in output:\n"+str(values))
             for n in values:
-                self.assert_('data: "hello world ' in n, n)
+                self.assertTrue('data: "hello world ' in n, n)
 
             if 0:
                 #bw
                 stdout, stderr = run_for([cmd, 'bw', name], 3.)
-                self.assert_('average:' in stdout, "OUTPUT: %s\n%s"%(stdout,stderr))
+                self.assertTrue('average:' in stdout, "OUTPUT: %s\n%s"%(stdout,stderr))
 
                 # hz
                 stdout, stderr = run_for([cmd, 'hz', name], 2.)
-                self.assert_('average rate:' in stdout)
+                self.assertTrue('average rate:' in stdout)
 
                 # delay
                 stdout, stderr = run_for([cmd, 'delay', name], 2.)
-                self.assert_('average rate:' in stdout)
+                self.assertTrue('average rate:' in stdout)
             
         # pub
         #  - pub wait until ctrl-C, so we have to wait then kill it
@@ -145,7 +145,7 @@ class TestRostopicOnline(unittest.TestCase):
                 time.sleep(0.1)
             # - check published value
             msg = self.msgs[key]
-            self.assertEquals(s, msg.data)
+            self.assertEqual(s, msg.data)
             
             os.kill(popen.pid, signal.SIGKILL)
 
@@ -168,7 +168,7 @@ class TestRostopicOnline(unittest.TestCase):
                 msg = self.msgs[key]
             except KeyError:
                 self.fail("no message received on "+str(key))
-            self.assertEquals(s, msg.data)
+            self.assertEqual(s, msg.data)
             
             os.kill(popen.pid, signal.SIGKILL)
             

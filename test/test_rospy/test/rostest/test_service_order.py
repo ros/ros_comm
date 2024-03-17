@@ -70,17 +70,17 @@ class TestServiceOrder(unittest.TestCase):
         rospy.wait_for_service(name, WAIT_TIMEOUT)        
         s = rospy.ServiceProxy(name, srv)
         resp = s.call(req)
-        self.assert_(resp is not None)
+        self.assertTrue(resp is not None)
         return resp
     def test_before(self):
         resp = self._test(SERVICE_BEFORE, EmptyReqSrv,
                           EmptyReqSrvRequest())
-        self.assertEquals(FAKE_SECRET, resp.fake_secret, 
+        self.assertEqual(FAKE_SECRET, resp.fake_secret, 
                           "fake_secret fields is not set as expected")        
     def test_after(self):
         resp = self._test(SERVICE_AFTER, EmptyReqSrv,
                           EmptyReqSrvRequest())
-        self.assertEquals(FAKE_SECRET, resp.fake_secret, 
+        self.assertEqual(FAKE_SECRET, resp.fake_secret, 
                           "fake_secret fields is not set as expected")        
         
 if __name__ == '__main__':

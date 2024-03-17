@@ -53,7 +53,7 @@ class TestRospyApi(unittest.TestCase):
             from io import StringIO
         buff = StringIO()
         m.serialize(buff)
-        self.assertEquals(0, buff.tell())
+        self.assertEqual(0, buff.tell())
         m.deserialize('')
         
     def test_anymsg(self):
@@ -77,7 +77,7 @@ class TestRospyApi(unittest.TestCase):
 
         teststr = 'foostr-%s'%time.time()
         m.deserialize(teststr)
-        self.assertEquals(teststr, m._buff)
+        self.assertEqual(teststr, m._buff)
 
         #test AnyMsg ctor error checking
         try:

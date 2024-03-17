@@ -85,14 +85,14 @@ class TestRosnode(unittest.TestCase):
         Make sure all elements of expected are present in actual
         """
         for t in expected:
-            self.assert_(t in actual)
+            self.assertTrue(t in actual)
             
     def _notcheck(self, not_expected, actual):
         """
         Make sure all elements of not_expected are not present in actual
         """
         for t in not_expected:
-            self.failIf(t in actual)
+            self.assertFalse(t in actual)
         
 
     def test_rosnode_info(self):
@@ -112,14 +112,14 @@ class TestRosnode(unittest.TestCase):
             rosnode._rosnode_cmd_info([cmd, 'info'])
             self.fail("should have failed")
         except SystemExit as e:
-            self.assertNotEquals(0, e.code)
+            self.assertNotEqual(0, e.code)
             
         for n in nodes:
             with fakestdout() as b:
                 rosnode._rosnode_cmd_info([cmd, 'info', n])
                 s = b.getvalue()
-                self.assert_("Node [%s]"%n in s)
-                self.assert_("Pid: " in s, s)
+                self.assertTrue("Node [%s]"%n in s)
+                self.assertTrue("Pid: " in s, s)
         
     def test_rosnode_list(self):
         import rosnode
@@ -135,13 +135,13 @@ class TestRosnode(unittest.TestCase):
                  ]
         l = rosnode.get_node_names()
         for t in nodes:
-            self.assert_(t in l)
+            self.assertTrue(t in l)
             
         try:
             rosnode._rosnode_cmd_list([cmd, 'list', 'one', 'two'])
             self.fail("should have failed")
         except SystemExit as e:
-            self.assertNotEquals(0, e.code)
+            self.assertNotEqual(0, e.code)
             
         with fakestdout() as b:
             rosnode._rosnode_cmd_list([cmd, 'list'])
@@ -155,8 +155,8 @@ class TestRosnode(unittest.TestCase):
         with fakestdout() as b:
             rosnode._rosnode_cmd_list([cmd, 'list', '-u', '/'])
             l = tolist(b)
-            self.assertEquals(num_nodes, len(l))
-            self.failIf([n for n in l if not n.startswith('http://')])
+            self.assertEqual(num_nodes, len(l))
+            self.assertFalse([n for n in l if not n.startswith('http://')])
         # test -a all
         with fakestdout() as b:
             rosnode._rosnode_cmd_list([cmd, 'list', '-a', '/'])
@@ -164,8 +164,8 @@ class TestRosnode(unittest.TestCase):
             uris = [x.split()[0] for x in l if x]
             names = [x.split()[1] for x in l if x]
             self._check(nodes, names) 
-            self.assertEquals(num_nodes, len(uris))
-            self.failIf([n for n in uris if not n.startswith('http://')])
+            self.assertEqual(num_nodes, len(uris))
+            self.assertFalse([n for n in uris if not n.startswith('http://')])
             
             
         # test with namespace
@@ -187,7 +187,7 @@ class TestRosnode(unittest.TestCase):
         # test with no match        
         with fakestdout() as b:
             rosnode._rosnode_cmd_list([cmd, 'list', '/not/a/namespace/'])
-            self.assertEquals([], tolist(b))
+            self.assertEqual([], tolist(b))
             
 
     def test_rosnode_usage(self):
@@ -197,58 +197,58 @@ class TestRosnode(unittest.TestCase):
             try:
                 with fakestdout() as b:
                     rosnode.rosnodemain([cmd, c, '-h'])
-                    self.assert_("usage" in b.getvalue())
+                    self.assertTrue("usage" in b.getvalue())
                 self.fail("should have exited on usage")
             except SystemExit as e:
-                self.assertEquals(0, e.code)
+                self.assertEqual(0, e.code)
             
     def test_rosnode_ping(self):
         import rosnode
         cmd = 'rosnode'
         
-        self.failIf(rosnode.rosnode_ping('/fake_node', max_count=1))
-        self.assert_(rosnode.rosnode_ping('/rosout', max_count=1))
-        self.assert_(rosnode.rosnode_ping('/rosout', max_count=2))        
+        self.assertFalse(rosnode.rosnode_ping('/fake_node', max_count=1))
+        self.assertTrue(rosnode.rosnode_ping('/rosout', max_count=1))
+        self.assertTrue(rosnode.rosnode_ping('/rosout', max_count=2))        
 
         with fakestdout() as b:
-            self.assert_(rosnode.rosnode_ping('/rosout', max_count=2, verbose=True))
+            self.assertTrue(rosnode.rosnode_ping('/rosout', max_count=2, verbose=True))
             s = b.getvalue()
-            self.assert_('xmlrpc reply' in s, s)
-            self.assert_('ping average:' in s, s)
+            self.assertTrue('xmlrpc reply' in s, s)
+            self.assertTrue('ping average:' in s, s)
             
         # test via command-line API
         rosnode._rosnode_cmd_ping([cmd, 'ping', '-c', '1', '/fake_node'])
         with fakestdout() as b:
             rosnode._rosnode_cmd_ping([cmd, 'ping', '-c', '1', '/rosout'])
             s = b.getvalue()
-            self.assert_('xmlrpc reply' in s, s)
+            self.assertTrue('xmlrpc reply' in s, s)
         with fakestdout() as b:
             rosnode._rosnode_cmd_ping([cmd, 'ping', '-c', '1', 'rosout'])
             s = b.getvalue()
-            self.assert_('xmlrpc reply' in s, s)
+            self.assertTrue('xmlrpc reply' in s, s)
         with fakestdout() as b:
             rosnode._rosnode_cmd_ping([cmd, 'ping', '-c', '2', 'rosout'])
             s = b.getvalue()
-            self.assertEquals(2, s.count('xmlrpc reply'))
+            self.assertEqual(2, s.count('xmlrpc reply'))
         
     def test_rosnode_ping_all(self):
         import rosnode
         cmd = 'rosnode'
         
         pinged, unpinged = rosnode.rosnode_ping_all(verbose=False)
-        self.assert_('/rosout' in pinged)
+        self.assertTrue('/rosout' in pinged)
         with fakestdout() as b:
             pinged, unpinged = rosnode.rosnode_ping_all(verbose=True)
-            self.assert_('xmlrpc reply' in b.getvalue())
-            self.assert_('/rosout' in pinged)
+            self.assertTrue('xmlrpc reply' in b.getvalue())
+            self.assertTrue('/rosout' in pinged)
             
     def test_rosnode_kill(self):
         import rosnode
         cmd = 'rosnode'
         for n in ['to_kill/kill1', '/to_kill/kill2']:
-            self.assert_(rosnode.rosnode_ping(n, max_count=1))
+            self.assertTrue(rosnode.rosnode_ping(n, max_count=1))
             rosnode._rosnode_cmd_kill([cmd, 'kill', n])
-            self.failIf(rosnode.rosnode_ping(n, max_count=1))
+            self.assertFalse(rosnode.rosnode_ping(n, max_count=1))
         
     def test_fullusage(self):
         import rosnode

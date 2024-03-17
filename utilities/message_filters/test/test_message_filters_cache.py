@@ -82,17 +82,17 @@ class TestCache(unittest.TestCase):
 
         l = len(cache.getInterval(rospy.Time(2.5),
                                   rospy.Time(3.5)))
-        self.assertEquals(l, 1, "invalid number of messages" +
+        self.assertEqual(l, 1, "invalid number of messages" +
                                 " returned in getInterval 1")
 
         l = len(cache.getInterval(rospy.Time(2),
                                   rospy.Time(3)))
-        self.assertEquals(l, 2, "invalid number of messages" +
+        self.assertEqual(l, 2, "invalid number of messages" +
                                 " returned in getInterval 2")
 
         l = len(cache.getInterval(rospy.Time(0),
                                   rospy.Time(4)))
-        self.assertEquals(l, 5, "invalid number of messages" +
+        self.assertEqual(l, 5, "invalid number of messages" +
                                 " returned in getInterval 3")
 
         s = cache.getElemAfterTime(rospy.Time(0)).header.stamp

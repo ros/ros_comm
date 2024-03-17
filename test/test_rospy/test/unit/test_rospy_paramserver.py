@@ -47,7 +47,7 @@ class TestRospyParamServer(unittest.TestCase):
     def test_param_server_cache(self):
         from rospy.impl.paramserver import get_param_server_cache
         ps = get_param_server_cache()
-        self.assert_(ps is not None)
+        self.assertTrue(ps is not None)
         try:
             ps.get('foo')
             self.fail("get should fail on non-existent key")
@@ -63,10 +63,10 @@ class TestRospyParamServer(unittest.TestCase):
                 pass
                 
             ps.set(k, v)
-            self.assertEquals(v, ps.get(k))
+            self.assertEqual(v, ps.get(k))
             v = 'value-%s'%random.randint(0, 1000)
             ps.update(k, v)            
-            self.assertEquals(v, ps.get(k))
+            self.assertEqual(v, ps.get(k))
         
             ps.delete(k)
             try:

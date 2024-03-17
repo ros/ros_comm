@@ -68,22 +68,22 @@ class TestNodeprocess(unittest.TestCase):
 
         # test valid params
         p = create_master_process(run_id, type, ros_root, port)
-        self.assert_(isinstance(p, LocalProcess))
-        self.assertEquals(p.args[0], 'rosmaster')
+        self.assertTrue(isinstance(p, LocalProcess))
+        self.assertEqual(p.args[0], 'rosmaster')
         idx = p.args.index('-p')
-        self.failIf(idx < 1)
-        self.assertEquals(p.args[idx+1], str(port))
-        self.assert_('--core' in p.args)
+        self.assertFalse(idx < 1)
+        self.assertEqual(p.args[idx+1], str(port))
+        self.assertTrue('--core' in p.args)
 
-        self.assertEquals(p.package, 'rosmaster')
+        self.assertEqual(p.package, 'rosmaster')
         p = create_master_process(run_id, type, ros_root, port)
         
-        self.assertEquals(create_master_process(run_id, type, ros_root, port, sigint_timeout=3).sigint_timeout, 3)
-        self.assertEquals(create_master_process(run_id, type, ros_root, port, sigint_timeout=1).sigint_timeout, 1)
+        self.assertEqual(create_master_process(run_id, type, ros_root, port, sigint_timeout=3).sigint_timeout, 3)
+        self.assertEqual(create_master_process(run_id, type, ros_root, port, sigint_timeout=1).sigint_timeout, 1)
         self.assertRaises(RLException, create_master_process, run_id, type, ros_root, port, sigint_timeout=0)
 
-        self.assertEquals(create_master_process(run_id, type, ros_root, port, sigterm_timeout=3).sigterm_timeout, 3)
-        self.assertEquals(create_master_process(run_id, type, ros_root, port, sigterm_timeout=1).sigterm_timeout, 1)
+        self.assertEqual(create_master_process(run_id, type, ros_root, port, sigterm_timeout=3).sigterm_timeout, 3)
+        self.assertEqual(create_master_process(run_id, type, ros_root, port, sigterm_timeout=1).sigterm_timeout, 1)
         self.assertRaises(RLException, create_master_process, run_id, type, ros_root, port, sigterm_timeout=0)
         
         # TODO: have to think more as to the correct environment for the master process
@@ -134,52 +134,52 @@ class TestNodeprocess(unittest.TestCase):
         # basic integration test
         n.machine = m
         p = create_node_process(run_id, n, master_uri)
-        self.assert_(isinstance(p, LocalProcess))
+        self.assertTrue(isinstance(p, LocalProcess))
 
         # repeat some setup_local_process_env tests
         d = p.env
-        self.assertEquals(d['ROS_MASTER_URI'], master_uri)
-        self.assertEquals(d['ROS_ROOT'], ros_root)
-        self.assertEquals(d['PYTHONPATH'], os.environ['PYTHONPATH'])
+        self.assertEqual(d['ROS_MASTER_URI'], master_uri)
+        self.assertEqual(d['ROS_ROOT'], ros_root)
+        self.assertEqual(d['PYTHONPATH'], os.environ['PYTHONPATH'])
         if rpp:
-            self.assertEquals(d['ROS_PACKAGE_PATH'], rpp)
+            self.assertEqual(d['ROS_PACKAGE_PATH'], rpp)
         for k in ['ROS_IP', 'ROS_NAMESPACE']:
             if k in d:
                 self.fail('%s should not be set: %s'%(k,d[k]))
 
         # test package and name
-        self.assertEquals(p.package, 'roslaunch')
+        self.assertEqual(p.package, 'roslaunch')
         # - no 'correct' full answer here 
-        self.assert_(p.name.startswith('talker'), p.name)
+        self.assertTrue(p.name.startswith('talker'), p.name)
 
         # test log_output
         n.output = 'log'
-        self.assert_(create_node_process(run_id, n, master_uri).log_output)
+        self.assertTrue(create_node_process(run_id, n, master_uri).log_output)
         n.output = 'screen'
-        self.failIf(create_node_process(run_id, n, master_uri).log_output)
+        self.assertFalse(create_node_process(run_id, n, master_uri).log_output)
 
         # test respawn
         n.respawn = True
-        self.assert_(create_node_process(run_id, n, master_uri).respawn)
+        self.assertTrue(create_node_process(run_id, n, master_uri).respawn)
         n.respawn = False
-        self.failIf(create_node_process(run_id, n, master_uri).respawn)        
+        self.assertFalse(create_node_process(run_id, n, master_uri).respawn)        
 
         # test cwd
         n.cwd = None
-        self.assertEquals(create_node_process(run_id, n, master_uri).cwd, None)
+        self.assertEqual(create_node_process(run_id, n, master_uri).cwd, None)
         n.cwd = 'ros-root'
-        self.assertEquals(create_node_process(run_id, n, master_uri).cwd, 'ros-root')
+        self.assertEqual(create_node_process(run_id, n, master_uri).cwd, 'ros-root')
         n.cwd = 'node'                
-        self.assertEquals(create_node_process(run_id, n, master_uri).cwd, 'node')
+        self.assertEqual(create_node_process(run_id, n, master_uri).cwd, 'node')
 
         # sigint timeout
-        self.assertEquals(create_node_process(run_id, n, master_uri).sigint_timeout, 15)
-        self.assertEquals(create_node_process(run_id, n, master_uri, sigint_timeout=1).sigint_timeout, 1)
+        self.assertEqual(create_node_process(run_id, n, master_uri).sigint_timeout, 15)
+        self.assertEqual(create_node_process(run_id, n, master_uri, sigint_timeout=1).sigint_timeout, 1)
         self.assertRaises(RLException, create_node_process, run_id, n, master_uri, sigint_timeout=0)
 
         # sigterm timeout
-        self.assertEquals(create_node_process(run_id, n, master_uri).sigterm_timeout, 2)
-        self.assertEquals(create_node_process(run_id, n, master_uri, sigterm_timeout=1).sigterm_timeout, 1)
+        self.assertEqual(create_node_process(run_id, n, master_uri).sigterm_timeout, 2)
+        self.assertEqual(create_node_process(run_id, n, master_uri, sigterm_timeout=1).sigterm_timeout, 1)
         self.assertRaises(RLException, create_node_process, run_id, n, master_uri, sigterm_timeout=0)
 
         # test args
@@ -190,36 +190,36 @@ class TestNodeprocess(unittest.TestCase):
         # - the first arg should be the path to the node executable
         rospack = rospkg.RosPack()
         cmd = roslib.packages.find_node('roslaunch', 'talker.py', rospack)[0]
-        self.assertEquals(p.args[0], cmd)
+        self.assertEqual(p.args[0], cmd)
 
         # - test basic args
         n.args = "arg1 arg2 arg3"
         p = create_node_process(run_id, n, master_uri)
-        self.assertEquals(p.args[0], cmd)
+        self.assertEqual(p.args[0], cmd)
         for a in "arg1 arg2 arg3".split():
-            self.assert_(a in p.args)
+            self.assertTrue(a in p.args)
             
         # - test remap args
         n.remap_args = [('KEY1', 'VAL1'), ('KEY2', 'VAL2')]
         p = create_node_process(run_id, n, master_uri)
-        self.assert_('KEY1:=VAL1' in p.args)        
-        self.assert_('KEY2:=VAL2' in p.args)
+        self.assertTrue('KEY1:=VAL1' in p.args)        
+        self.assertTrue('KEY2:=VAL2' in p.args)
         
         # - test __name
         n = Node('roslaunch','talker.py')
         n.name = 'fooname'
         n.machine = m
-        self.assert_('__name:=fooname' in create_node_process(run_id, n, master_uri).args)
+        self.assertTrue('__name:=fooname' in create_node_process(run_id, n, master_uri).args)
         
         # - test substitution args
         os.environ['SUB_TEST'] = 'subtest'
         os.environ['SUB_TEST2'] = 'subtest2'
         n.args = 'foo $(env SUB_TEST) $(env SUB_TEST2)'
         p = create_node_process(run_id, n, master_uri)        
-        self.failIf('SUB_TEST' in p.args)
-        self.assert_('foo' in p.args)
-        self.assert_('subtest' in p.args)
-        self.assert_('subtest2' in p.args)
+        self.assertFalse('SUB_TEST' in p.args)
+        self.assertTrue('foo' in p.args)
+        self.assertTrue('subtest' in p.args)
+        self.assertTrue('subtest2' in p.args)
 
     def test_local_process_stop_timeouts(self):
         from roslaunch.core import Node, Machine
@@ -256,7 +256,7 @@ class TestNodeprocess(unittest.TestCase):
             pass
 
         p = create_node_process(run_id, n, master_uri, sigint_timeout=sigint_timeout, sigterm_timeout=sigterm_timeout)
-        self.assert_(isinstance(p, LocalProcess))
+        self.assertTrue(isinstance(p, LocalProcess))
 
         p.start()
         time.sleep(3)  # give it time to start
@@ -304,17 +304,17 @@ class TestNodeprocess(unittest.TestCase):
             '__name:=bar',
             'topic:=topic2']
 
-        self.assertEquals([], _cleanup_remappings([], '__log:='))
-        self.assertEquals(clean_args, _cleanup_remappings(args, '__log:='))
-        self.assertEquals(clean_args, _cleanup_remappings(clean_args, '__log:='))
-        self.assertEquals(args, _cleanup_remappings(args, '_foo'))
+        self.assertEqual([], _cleanup_remappings([], '__log:='))
+        self.assertEqual(clean_args, _cleanup_remappings(args, '__log:='))
+        self.assertEqual(clean_args, _cleanup_remappings(clean_args, '__log:='))
+        self.assertEqual(args, _cleanup_remappings(args, '_foo'))
         
     def test__next_counter(self):
         from roslaunch.nodeprocess import _next_counter
         x = _next_counter()
         y = _next_counter()
-        self.assert_(x +1 == y)
-        self.assert_(x > 0)
+        self.assertTrue(x +1 == y)
+        self.assertTrue(x > 0)
 
     def test_create_master_process2(self):
         # accidentally wrote two versions of this, need to merge
@@ -330,31 +330,31 @@ class TestNodeprocess(unittest.TestCase):
             create_master_process('runid-unittest', Master.ROSMASTER, rospkg.get_ros_root(), 0)
             failed = True
         except RLException: pass
-        self.failIf(failed, "invalid port should have triggered error")
+        self.assertFalse(failed, "invalid port should have triggered error")
 
         # test success with ROSMASTER
         m1 = create_master_process('runid-unittest', Master.ROSMASTER, ros_root, 1234)
-        self.assertEquals('runid-unittest', m1.run_id)
-        self.failIf(m1.started)
-        self.failIf(m1.stopped)
-        self.assertEquals(None, m1.cwd)
-        self.assertEquals('master', m1.name)
+        self.assertEqual('runid-unittest', m1.run_id)
+        self.assertFalse(m1.started)
+        self.assertFalse(m1.stopped)
+        self.assertEqual(None, m1.cwd)
+        self.assertEqual('master', m1.name)
         master_p = 'rosmaster'
-        self.assert_(master_p in m1.args)
+        self.assertTrue(master_p in m1.args)
         # - it should have the default environment
-        self.assertEquals(os.environ, m1.env)
+        self.assertEqual(os.environ, m1.env)
         #  - check args
-        self.assert_('--core' in m1.args)
+        self.assertTrue('--core' in m1.args)
         # - make sure port arguent is correct
         idx = m1.args.index('-p')
-        self.assertEquals('1234', m1.args[idx+1])
+        self.assertEqual('1234', m1.args[idx+1])
 
         # test port argument
         m2 = create_master_process('runid-unittest', Master.ROSMASTER, ros_root, 1234)
-        self.assertEquals('runid-unittest', m2.run_id)
+        self.assertEqual('runid-unittest', m2.run_id)
 
         # test ros_root argument 
         m3 = create_master_process('runid-unittest', Master.ROSMASTER, ros_root, 1234)
-        self.assertEquals('runid-unittest', m3.run_id)
+        self.assertEqual('runid-unittest', m3.run_id)
         master_p = 'rosmaster'
-        self.assert_(master_p in m3.args)
+        self.assertTrue(master_p in m3.args)

@@ -66,12 +66,12 @@ class TestPubSubToMultiplePubs(unittest.TestCase):
 
         # ensure that publishers are publishing
         for i in range(1, NUMBER_OF_TALKERS + 1):
-            self.assert_(rostest.is_publisher(
+            self.assertTrue(rostest.is_publisher(
                 rospy.resolve_name(TOPIC),
                 rospy.resolve_name(TALKER_NODE % i)), 'talker node %d is not up' % i)
 
         # ensure that subscriber is subscribed
-        self.assert_(rostest.is_subscriber(
+        self.assertTrue(rostest.is_subscriber(
             rospy.resolve_name(TOPIC),
             rospy.resolve_name(LISTENER_NODE)), 'listener node is not up')
 
@@ -81,13 +81,13 @@ class TestPubSubToMultiplePubs(unittest.TestCase):
         master = rosgraph.Master(NAME)
         node_api = master.lookupNode(LISTENER_NODE)
         if not node_api:
-            self.assert_(False, 'cannot contact [%s]: unknown node' % LISTENER_NODE)
+            self.assertTrue(False, 'cannot contact [%s]: unknown node' % LISTENER_NODE)
 
         socket.setdefaulttimeout(5.0)
         node = ServerProxy(node_api)
         code, _, businfo = node.getBusInfo(NAME)
         if code != 1:
-            self.assert_(False, 'cannot get node information')
+            self.assertTrue(False, 'cannot get node information')
         if businfo:
             for info in businfo:
                 topic = info[4]
@@ -100,7 +100,7 @@ class TestPubSubToMultiplePubs(unittest.TestCase):
                     if topic == TOPIC:
                         connections += 1
 
-        self.assert_(connections == NUMBER_OF_TALKERS, 'Found only %d connections instead of %d' % (connections, NUMBER_OF_TALKERS))
+        self.assertTrue(connections == NUMBER_OF_TALKERS, 'Found only %d connections instead of %d' % (connections, NUMBER_OF_TALKERS))
 
 if __name__ == '__main__':
     rospy.init_node(NAME)
