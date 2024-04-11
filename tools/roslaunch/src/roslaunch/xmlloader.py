@@ -302,8 +302,8 @@ class XmlLoader(loader.Loader):
             
             context.add_arg(name, value=value, default=default, doc=doc)
 
-        except substitution_args.ArgException as e:
-            raise XmlParseException(
+        except ArgException as e:
+            raise ArgException(
                 "arg '%s' is not defined. \n\nArg xml is %s"%(e, tag.toxml()))
         except ResourceNotFound as e:
             raise ResourceNotFound(
