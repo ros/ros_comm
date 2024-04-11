@@ -94,3 +94,8 @@ class TestRoslaunchRlutil(unittest.TestCase):
         filename = os.path.join(get_test_path(), 'test', 'xml', 'test-ignore-unset-args.launch')
         error_msg = roslaunch.rlutil.check_roslaunch(filename, ignore_unset_args=True)
         assert error_msg is None
+
+    def test_check_roslaunch_arg_in_arg(self):
+        filename = os.path.join(get_test_path(), 'test', 'xml', 'test-ignore-unset-args-arg-in-arg.launch')
+        error_msg = roslaunch.rlutil.check_roslaunch(filename, ignore_unset_args=True)
+        assert error_msg is None
