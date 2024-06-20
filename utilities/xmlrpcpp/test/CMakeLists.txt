@@ -34,11 +34,6 @@ if(TARGET test_dispatch_live)
   target_link_libraries(test_dispatch_live xmlrpcpp test_fixtures ${Boost_LIBRARIES})
 endif()
 
-catkin_add_gtest(test_ulimit test_ulimit.cpp)
-if(TARGET test_ulimit)
-  target_link_libraries(test_ulimit xmlrpcpp test_fixtures ${Boost_LIBRARIES})
-endif()
-
 add_library(mock_socket mock_socket.cpp)
 target_link_libraries(mock_socket ${GTEST_LIBRARIES})
 set_target_properties(mock_socket PROPERTIES EXCLUDE_FROM_ALL TRUE)

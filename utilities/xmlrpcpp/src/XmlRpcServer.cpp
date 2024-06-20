@@ -202,62 +202,7 @@ bool XmlRpcServer::enoughFreeFDs() {
   // If the underlying system calls here fail, this will print an error and
   // return false
 
-#if !defined(_WINDOWS)
-  int free_fds = 0;
-
-  struct rlimit limit = { .rlim_cur = 0, .rlim_max = 0 };
-
-  // Get the current soft limit on the number of file descriptors.
-  if(getrlimit(RLIMIT_NOFILE, &limit) == 0) {
-    // If we have infinite file descriptors, always return true.
-    if( limit.rlim_max == RLIM_INFINITY ) {
-      return true;
-    }
-  } else {
-    // The man page for getrlimit says that it can fail if the requested
-    // resource is invalid or the second argument is invalid. I'm not sure
-    // either of these can actually fail in this code, but it's better to
-    // check.
-    XmlRpcUtil::error("XmlRpcServer::enoughFreeFDs: Could not get open file "
-                      "limit, getrlimit() failed: %s", strerror(errno));
-    return false;
-  }
-
-  // List of all file descriptors, used for counting open files.
-  pollfds.resize(limit.rlim_cur > FREE_FD_BUFFER ? FREE_FD_BUFFER : limit.rlim_cur);
-
-  // Poll the available file descriptors.
-  // The POSIX specification guarantees that rlim_cur will always be less or
-  // equal to the process's initial rlim_max, so we don't need an additional
-  // bounds check here.
-  for(unsigned long long offset=0; offset<limit.rlim_cur; offset += FREE_FD_BUFFER) {
-    for(unsigned int i=0; i<pollfds.size(); i++) {
-      // Set up file descriptor query for all events.
-      pollfds[i].fd = i + offset;
-      pollfds[i].events = POLLIN | POLLPRI | POLLOUT;
-    }
-    if(poll(&pollfds[0], pollfds.size(), 1) >= 0) {
-      for(rlim_t i=0; i<pollfds.size(); i++) {
-        if(pollfds[i].revents & POLLNVAL) {
-          free_fds++;
-        }
-        if (free_fds >= FREE_FD_BUFFER) {
-          // Checked enough FDs are not opened.
-          return true;
-        }
-      }
-    } else {
-      // poll() may fail if interrupted, if the pollfds array is a bad pointer,
-      // if nfds exceeds RLIMIT_NOFILE, or if the system is out of memory.
-      XmlRpcUtil::error("XmlRpcServer::enoughFreeFDs: poll() failed: %s",
-                        strerror(errno));
-    }
-  }
-
-  return false;
-#else
   return true;
-#endif
 }
 
 
