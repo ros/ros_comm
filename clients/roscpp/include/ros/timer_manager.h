@@ -40,6 +40,8 @@
 #include "ros/assert.h"
 #include "ros/callback_queue_interface.h"
 
+#include <boost/bind/bind.hpp>
+
 #include <vector>
 #include <list>
 

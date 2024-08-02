@@ -47,6 +47,8 @@
 #include "ros/init.h"
 #include "common.h"
 
+#include <boost/bind/bind.hpp>
+
 #include <xmlrpcpp/XmlRpcValue.h>
 
 namespace ros

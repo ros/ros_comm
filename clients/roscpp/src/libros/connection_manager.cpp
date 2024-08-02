@@ -35,6 +35,7 @@
 #include "ros/file_log.h"
 #include "ros/network.h"
 
+#include <boost/bind/bind.hpp>
 #include <ros/assert.h>
 
 namespace ros

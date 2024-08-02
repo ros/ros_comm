@@ -43,6 +43,7 @@
 
 #include "xmlrpcpp/XmlRpc.h"
 
+#include <boost/bind/bind.hpp>
 #include <ros/console.h>
 
 using namespace XmlRpc; // A battle to be fought later
