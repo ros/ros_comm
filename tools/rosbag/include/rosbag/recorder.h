@@ -131,6 +131,18 @@ public:
 
     int run();
 
+    void SplitCount(uint64_t start) {
+        split_count_ = start;
+    }
+
+    void InitCurentFiles(const std::list<std::string> old_files) {
+        current_files_.insert(current_files_.end(), old_files.begin(),old_files.end());
+    }
+
+    void AsyncSpinThreadNum(uint8_t max_threads) {
+        async_spin_num_ = max_threads;
+    }
+
 private:
     void printUsage();
 
@@ -180,6 +192,8 @@ private:
     uint64_t                      max_queue_size_;       //!< max queue size
 
     uint64_t                      split_count_;          //!< split count
+
+    uint8_t                       async_spin_num_;       //!< async spinner thread num
 
     std::queue<OutgoingQueue>     queue_queue_;          //!< queue of queues to be used by the snapshot recorders
 

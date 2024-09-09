@@ -71,6 +71,8 @@ using ros::Time;
 
 namespace rosbag {
 
+static uint64_t max = 10000;
+
 // OutgoingMessage
 
 OutgoingMessage::OutgoingMessage(string const& _topic, topic_tools::ShapeShifter::ConstPtr _msg, boost::shared_ptr<ros::M_string> _connection_header, Time _time) :
@@ -123,6 +125,7 @@ Recorder::Recorder(RecorderOptions const& options) :
     exit_code_(0),
     queue_size_(0),
     split_count_(0),
+    async_spin_num_(10),
     writing_enabled_(true)
 {
 }
@@ -242,7 +245,7 @@ int Recorder::run() {
         check_master_timer = nh.createTimer(ros::Duration(1.0), boost::bind(&Recorder::doCheckMaster, this, boost::placeholders::_1, boost::ref(nh)));
     }
 
-    ros::AsyncSpinner s(10);
+    ros::AsyncSpinner s(async_spin_num_);
     s.start();
 
     record_thread.join();
@@ -397,8 +400,37 @@ void Recorder::updateFilenames() {
       prefix.erase(ind);
     }
 
-    if (prefix.length() > 0)
-        parts.push_back(prefix);
+    if (prefix.length() > 0) {
+        boost::regex pattern_1(R"((^/.*|^\./.*)(autorecord)_(\w+)_(\w+)_(\d+))");
+        boost::regex pattern_2(R"(^(?!.*NULL).*$)");
+        boost::smatch matches;
+        if(boost::regex_search(prefix, matches, pattern_1)
+            && boost::regex_search(prefix, pattern_2)) {
+            try {
+                target_filename_ = matches[1];
+                target_filename_ += matches[2];
+                if (options_.split) {
+                    target_filename_ += std::string("_") + (boost::format("%04d") % split_count_).str();
+                }
+                target_filename_ += std::string("_") + matches[3];
+                target_filename_ += std::string("_") + matches[4];
+                target_filename_ += std::string("_") + matches[5];
+                if (options_.append_date) {
+                    target_filename_ += std::string("_") + timeToStr(ros::WallTime::now());
+                }
+
+                target_filename_ += string(".bag");
+                write_filename_ = target_filename_ + string(".active");
+                return;
+            } catch(const std::out_of_range& e) {
+                ROS_WARN("Trying to access an out-of-range match: %s", e.what());
+                target_filename_.clear();
+                parts.push_back(prefix);
+            }
+        } else {
+            parts.push_back(prefix);
+        }
+    }
     if (options_.append_date)
         parts.push_back(timeToStr(ros::WallTime::now()));
     if (options_.split)
@@ -501,7 +533,9 @@ bool Recorder::checkSize()
             if (options_.split)
             {
                 stopWriting();
-                split_count_++;
+
+                split_count_ = (++split_count_) % max;
+
                 checkNumSplits();
                 startWriting();
             } else {
@@ -524,7 +558,9 @@ bool Recorder::checkDuration(const ros::Time& t)
                 while (start_time_ + options_.max_duration < t)
                 {
                     stopWriting();
-                    split_count_++;
+
+                    split_count_ = (++split_count_) % max;
+
                     checkNumSplits();
                     start_time_ += options_.max_duration;
                     startWriting();
@@ -766,6 +802,18 @@ bool Recorder::checkDisk() {
     {
         writing_enabled_ = false;
         throw BagException("Less than " + options_.min_space_str + " of space free on disk with " + bag_.getFileName() + ". Disabling recording.");
+    }
+    else if (info.available < 2 * options_.min_space) {
+        ROS_WARN("Less than 2 x %s of space free on disk with '%s'.", options_.min_space_str.c_str(), bag_.getFileName().c_str());
+        while(current_files_.size() > 0 && (boost::filesystem::space(p)).available < 2 * options_.min_space) {
+            int err = unlink(current_files_.front().c_str());
+            if(err != 0)
+            {
+                ROS_ERROR("Unable to remove %s: %s", current_files_.front().c_str(), strerror(errno));
+            }
+            current_files_.pop_front();
+        }
+        writing_enabled_ = true;
     }
     else if (info.available < 5 * options_.min_space)
     {
