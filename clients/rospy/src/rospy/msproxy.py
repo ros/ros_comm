@@ -168,6 +168,7 @@ class MasterProxy(object):
             value = rospy.impl.paramserver.get_param_server_cache().get(resolved_key)
         except KeyError:
             # first access, make call to parameter server
+            rospy.core.add_shutdown_hook(self.preshutdown_callback)
             code, msg, value = self.target.subscribeParam(rospy.names.get_caller_id(), rospy.core.get_node_uri(), resolved_key)
             if code != 1: #unwrap value with Python semantics
                 raise KeyError(key)
@@ -211,3 +212,12 @@ class MasterProxy(object):
             return value.__iter__()
         else:
             raise rospy.exceptions.ROSException("cannot retrieve parameter names: %s"%msg)
+
+    def unsubscribe_params(self):
+        for key in rospy.impl.paramserver.get_param_server_cache().subscribed_params:
+            self.target.unsubscribeParam(rospy.names.get_caller_id(), rospy.core.get_node_uri(), key[0])
+
+    def preshutdown_callback(self, reason):
+        # If we don't do this roscore will keep this node as active since it
+        # still has an active param subscription and won't free the node.
+        self.unsubscribe_params()
