@@ -334,9 +334,8 @@ void CallbackQueue::callAvailable(ros::WallDuration timeout)
     bool was_empty = tls->callbacks.empty();
 
     tls->callbacks.insert(tls->callbacks.end(), callbacks_.begin(), callbacks_.end());
+    calling_ += callbacks_.size();
     callbacks_.clear();
-
-    calling_ += tls->callbacks.size();
 
     if (was_empty)
     {
