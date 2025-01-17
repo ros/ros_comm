@@ -61,6 +61,7 @@ except ImportError:
     from io import BytesIO as StringIO  # Python 3.x
 
 import genmsg
+from genmsg.msg_loader import MsgNotFound
 import genpy
 import genpy.dynamic
 import genpy.message
@@ -2697,7 +2698,9 @@ class _BagReader200(_BagReader):
     def read_messages(self, topics, start_time, end_time, connection_filter, raw, return_connection_header=False):
         connections = self.bag._get_connections(topics, connection_filter)
         for entry in self.bag._get_entries(connections, start_time, end_time):
-            yield self.seek_and_read_message_data_record((entry.chunk_pos, entry.offset), raw, return_connection_header)
+            record = self.seek_and_read_message_data_record((entry.chunk_pos, entry.offset), raw, return_connection_header)
+            if record is not None:
+                yield record
 
     ###
 
@@ -2863,6 +2866,10 @@ class _BagReader200(_BagReader):
             msg_type = _get_message_type(connection_info)
         except KeyError:
             raise ROSBagException('Cannot deserialize messages of type [%s].  Message was not preceded in bag by definition' % connection_info.datatype)
+        except MsgNotFound as e:
+            print('WARNING: genmsg.msg_loader MsgNotFound exception raised for topic %s' % connection_info.topic)
+            print(e)
+            return None
 
         # Read the message content
         data = _read_record_data(f)
