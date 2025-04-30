@@ -572,11 +572,15 @@ class ProcessMonitor(Thread):
                             else:
                                 printlog_bold("[%s] %s"%(p.name, exit_code_str))
                             dead.append(p)
-                            
+
                         ## no need for lock as we require listeners be
                         ## added before process monitor is launched
-                        for l in self.listeners:
-                            l.process_died(p.name, p.exit_code)
+
+                        ## Prevent duplicate process died events by checking
+                        ## if process is already scheduled for respawn
+                        if not p in respawn:
+                            for l in self.listeners:
+                                l.process_died(p.name, p.exit_code)
 
                 except Exception as e:
                     traceback.print_exc()
